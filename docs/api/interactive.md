@@ -1,598 +1,329 @@
 # Interactive Component
 
-The Interactive component enables mouse and keyboard interaction on entities. It tracks clickable, draggable, hoverable, and keyable states, along with hover visual effects.
+The Interactive component tracks mouse interaction states: click, hover, drag.
 
-## Constants
-
-### DEFAULT_HOVER_FG
-
-Default hover effect foreground color (white).
-
-```typescript
-import { DEFAULT_HOVER_FG } from 'blecsd';
-
-DEFAULT_HOVER_FG; // 0xffffffff (white)
-```
-
----
-
-### DEFAULT_HOVER_BG
-
-Default hover effect background color (transparent).
-
-```typescript
-import { DEFAULT_HOVER_BG } from 'blecsd';
-
-DEFAULT_HOVER_BG; // 0x00000000 (transparent)
-```
-
----
-
-## Interactive Component
-
-The Interactive component stores interaction metadata using bitecs SoA (Structure of Arrays) pattern.
+## Component
 
 ```typescript
 import { Interactive } from 'blecsd';
 
-// Component arrays
-Interactive.clickable     // Uint8Array  - Whether entity responds to clicks (0=no, 1=yes)
-Interactive.draggable     // Uint8Array  - Whether entity can be dragged (0=no, 1=yes)
-Interactive.hoverable     // Uint8Array  - Whether entity responds to hover (0=no, 1=yes)
-Interactive.hovered       // Uint8Array  - Current hover state (0=no, 1=yes)
-Interactive.pressed       // Uint8Array  - Current pressed state (0=no, 1=yes)
-Interactive.keyable       // Uint8Array  - Whether entity receives key events (0=no, 1=yes)
-Interactive.hoverEffectFg // Uint32Array - Hover effect foreground color
-Interactive.hoverEffectBg // Uint32Array - Hover effect background color
+// Component arrays (bitECS SoA pattern)
+Interactive.clickable     // Uint8Array  - Can be clicked
+Interactive.draggable     // Uint8Array  - Can be dragged
+Interactive.hoverable     // Uint8Array  - Responds to hover
+Interactive.keyable       // Uint8Array  - Responds to keyboard
+Interactive.hovered       // Uint8Array  - Currently hovered
+Interactive.pressed       // Uint8Array  - Currently pressed
+Interactive.hoverEffectFg // Uint32Array - Hover state foreground
+Interactive.hoverEffectBg // Uint32Array - Hover state background
 ```
 
----
+## Constants
+
+```typescript
+import { DEFAULT_HOVER_FG, DEFAULT_HOVER_BG } from 'blecsd';
+
+DEFAULT_HOVER_FG; // Default hover foreground color
+DEFAULT_HOVER_BG; // Default hover background color
+```
 
 ## Functions
 
-### setInteractive
+### hasInteractive
 
-Makes an entity interactive with the given options. Adds the Interactive component if not already present.
+Check if an entity has the Interactive component.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive } from 'blecsd';
+import { hasInteractive } from 'blecsd';
 
-const world = createWorld();
-const entity = addEntity(world);
-
-// Make entity clickable and hoverable
-setInteractive(world, entity, {
-  clickable: true,
-  hoverable: true,
-});
-
-// Configure with custom hover colors
-setInteractive(world, entity, {
-  clickable: true,
-  hoverable: true,
-  hoverEffectBg: 0x333333ff,
-  hoverEffectFg: 0xffff00ff,
-});
-
-// Enable all interaction types
-setInteractive(world, entity, {
-  clickable: true,
-  draggable: true,
-  hoverable: true,
-  keyable: true,
-});
+hasInteractive(world, entity); // true or false
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `options` - Interactive configuration options
-  - `clickable` - Whether entity responds to clicks
-  - `draggable` - Whether entity can be dragged
-  - `hoverable` - Whether entity responds to hover
-  - `keyable` - Whether entity receives key events
-  - `hoverEffectFg` - Hover effect foreground color
-  - `hoverEffectBg` - Hover effect background color
+### setInteractive
 
-**Returns:** The entity ID for chaining
+Set interaction options. Adds component if needed.
 
----
+```typescript
+import { setInteractive } from 'blecsd';
+
+setInteractive(world, entity, {
+  clickable: true,
+  hoverable: true,
+  draggable: false,
+  keyable: true,
+  hoverEffectFg: 0xffffffff,
+  hoverEffectBg: 0x444444ff,
+});
+```
 
 ### setClickable
 
-Sets whether an entity is clickable.
+Enable or disable click handling.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setClickable, isClickable } from 'blecsd';
-
-const world = createWorld();
-const entity = addEntity(world);
+import { setClickable } from 'blecsd';
 
 setClickable(world, entity, true);
-isClickable(world, entity); // true
-
-setClickable(world, entity, false);
-isClickable(world, entity); // false
 ```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `clickable` - Whether entity responds to clicks
-
-**Returns:** The entity ID for chaining
-
----
-
-### setDraggable
-
-Sets whether an entity is draggable.
-
-```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setDraggable, isDraggable } from 'blecsd';
-
-const world = createWorld();
-const entity = addEntity(world);
-
-setDraggable(world, entity, true);
-isDraggable(world, entity); // true
-```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `draggable` - Whether entity can be dragged
-
-**Returns:** The entity ID for chaining
-
----
-
-### setHoverable
-
-Sets whether an entity is hoverable.
-
-```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setHoverable, isHoverable } from 'blecsd';
-
-const world = createWorld();
-const entity = addEntity(world);
-
-setHoverable(world, entity, true);
-isHoverable(world, entity); // true
-```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `hoverable` - Whether entity responds to hover
-
-**Returns:** The entity ID for chaining
-
----
-
-### setKeyable
-
-Sets whether an entity receives key events.
-
-```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setKeyable, isKeyable } from 'blecsd';
-
-const world = createWorld();
-const entity = addEntity(world);
-
-setKeyable(world, entity, true);
-isKeyable(world, entity); // true
-```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `keyable` - Whether entity receives key events
-
-**Returns:** The entity ID for chaining
-
----
-
-### isHovered
-
-Checks if an entity is currently hovered.
-
-```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, setHovered, isHovered } from 'blecsd';
-
-const world = createWorld();
-const entity = addEntity(world);
-
-setInteractive(world, entity, { hoverable: true });
-isHovered(world, entity); // false
-
-setHovered(world, entity, true);
-isHovered(world, entity); // true
-```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-
-**Returns:** `true` if entity is hovered, `false` otherwise
-
----
-
-### isPressed
-
-Checks if an entity is currently pressed.
-
-```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, setPressed, isPressed } from 'blecsd';
-
-const world = createWorld();
-const entity = addEntity(world);
-
-setInteractive(world, entity, { clickable: true });
-isPressed(world, entity); // false
-
-setPressed(world, entity, true);
-isPressed(world, entity); // true
-```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-
-**Returns:** `true` if entity is pressed, `false` otherwise
-
----
 
 ### isClickable
 
-Checks if an entity is clickable.
+Check if an entity is clickable.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, isClickable } from 'blecsd';
+import { isClickable } from 'blecsd';
 
-const world = createWorld();
-const entity = addEntity(world);
-
-isClickable(world, entity); // false (no Interactive component)
-
-setInteractive(world, entity, { clickable: true });
-isClickable(world, entity); // true
+isClickable(world, entity); // true or false
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
+### setHoverable
 
-**Returns:** `true` if entity is clickable, `false` otherwise
-
----
-
-### isDraggable
-
-Checks if an entity is draggable.
+Enable or disable hover handling.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, isDraggable } from 'blecsd';
+import { setHoverable } from 'blecsd';
 
-const world = createWorld();
-const entity = addEntity(world);
-
-isDraggable(world, entity); // false
-
-setInteractive(world, entity, { draggable: true });
-isDraggable(world, entity); // true
+setHoverable(world, entity, true);
 ```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-
-**Returns:** `true` if entity is draggable, `false` otherwise
-
----
 
 ### isHoverable
 
-Checks if an entity is hoverable.
+Check if an entity responds to hover.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, isHoverable } from 'blecsd';
+import { isHoverable } from 'blecsd';
 
-const world = createWorld();
-const entity = addEntity(world);
-
-isHoverable(world, entity); // false
-
-setInteractive(world, entity, { hoverable: true });
-isHoverable(world, entity); // true
+isHoverable(world, entity); // true or false
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
+### setDraggable
 
-**Returns:** `true` if entity is hoverable, `false` otherwise
+Enable or disable drag handling.
 
----
+```typescript
+import { setDraggable } from 'blecsd';
+
+setDraggable(world, entity, true);
+```
+
+### isDraggable
+
+Check if an entity is draggable.
+
+```typescript
+import { isDraggable } from 'blecsd';
+
+isDraggable(world, entity); // true or false
+```
+
+### setKeyable
+
+Enable or disable keyboard handling.
+
+```typescript
+import { setKeyable } from 'blecsd';
+
+setKeyable(world, entity, true);
+```
 
 ### isKeyable
 
-Checks if an entity receives key events.
+Check if an entity responds to keyboard input.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, isKeyable } from 'blecsd';
+import { isKeyable } from 'blecsd';
 
-const world = createWorld();
-const entity = addEntity(world);
-
-isKeyable(world, entity); // false
-
-setInteractive(world, entity, { keyable: true });
-isKeyable(world, entity); // true
+isKeyable(world, entity); // true or false
 ```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-
-**Returns:** `true` if entity receives key events, `false` otherwise
-
----
 
 ### setHovered
 
-Sets the hover state of an entity.
+Set hover state.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, setHovered, isHovered } from 'blecsd';
+import { setHovered } from 'blecsd';
 
-const world = createWorld();
-const entity = addEntity(world);
-
-setInteractive(world, entity, { hoverable: true });
-
-// Typically called by input system when mouse enters entity bounds
-setHovered(world, entity, true);
-isHovered(world, entity); // true
-
-setHovered(world, entity, false);
-isHovered(world, entity); // false
+setHovered(world, entity, true);  // Mouse entered
+setHovered(world, entity, false); // Mouse left
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `hovered` - Whether entity is hovered
+### isHovered
 
-**Returns:** The entity ID for chaining
+Check if an entity is currently hovered.
 
----
+```typescript
+import { isHovered } from 'blecsd';
+
+isHovered(world, entity); // true or false
+```
 
 ### setPressed
 
-Sets the pressed state of an entity.
+Set pressed state.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, setPressed, isPressed } from 'blecsd';
+import { setPressed } from 'blecsd';
 
-const world = createWorld();
-const entity = addEntity(world);
-
-setInteractive(world, entity, { clickable: true });
-
-// Typically called by input system on mouse down
-setPressed(world, entity, true);
-isPressed(world, entity); // true
-
-// Called on mouse up
-setPressed(world, entity, false);
-isPressed(world, entity); // false
+setPressed(world, entity, true);  // Mouse down
+setPressed(world, entity, false); // Mouse up
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `pressed` - Whether entity is pressed
+### isPressed
 
-**Returns:** The entity ID for chaining
-
----
-
-### getInteractive
-
-Gets the interactive data of an entity.
+Check if an entity is currently pressed.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, setHovered, getInteractive } from 'blecsd';
+import { isPressed } from 'blecsd';
 
-const world = createWorld();
-const entity = addEntity(world);
-
-getInteractive(world, entity); // undefined (no Interactive component)
-
-setInteractive(world, entity, {
-  clickable: true,
-  hoverable: true,
-  hoverEffectBg: 0x333333ff,
-});
-setHovered(world, entity, true);
-
-const data = getInteractive(world, entity);
-// data = {
-//   clickable: true,
-//   draggable: false,
-//   hoverable: true,
-//   hovered: true,
-//   pressed: false,
-//   keyable: false,
-//   hoverEffectFg: 0xffffffff,
-//   hoverEffectBg: 0x333333ff
-// }
+isPressed(world, entity); // true or false
 ```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-
-**Returns:** `InteractiveData | undefined`
-
----
-
-### hasInteractive
-
-Checks if an entity has an Interactive component.
-
-```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, hasInteractive } from 'blecsd';
-
-const world = createWorld();
-const entity = addEntity(world);
-
-hasInteractive(world, entity); // false
-
-setInteractive(world, entity, { clickable: true });
-hasInteractive(world, entity); // true
-```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-
-**Returns:** `true` if entity has Interactive component, `false` otherwise
-
----
 
 ### clearInteractionState
 
-Clears the hover and pressed states of an entity. Useful when an entity becomes disabled or hidden.
+Clear hover and pressed states (useful on mouse leave).
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
-import { setInteractive, setHovered, setPressed, clearInteractionState, isHovered, isPressed } from 'blecsd';
-
-const world = createWorld();
-const entity = addEntity(world);
-
-setInteractive(world, entity, { clickable: true, hoverable: true });
-setHovered(world, entity, true);
-setPressed(world, entity, true);
-
-isHovered(world, entity); // true
-isPressed(world, entity); // true
+import { clearInteractionState } from 'blecsd';
 
 clearInteractionState(world, entity);
-
-isHovered(world, entity); // false
-isPressed(world, entity); // false
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
+### getInteractive
 
-**Returns:** The entity ID for chaining
+Get all interaction data for an entity.
 
----
+```typescript
+import { getInteractive } from 'blecsd';
+
+const data = getInteractive(world, entity);
+// {
+//   clickable: boolean,
+//   draggable: boolean,
+//   hoverable: boolean,
+//   keyable: boolean,
+//   hovered: boolean,
+//   pressed: boolean,
+//   hoverEffectFg: number,
+//   hoverEffectBg: number
+// }
+```
 
 ## Types
 
-### InteractiveOptions
-
-Options for configuring interactive behavior.
-
-```typescript
-interface InteractiveOptions {
-  clickable?: boolean;     // Whether entity responds to clicks
-  draggable?: boolean;     // Whether entity can be dragged
-  hoverable?: boolean;     // Whether entity responds to hover
-  keyable?: boolean;       // Whether entity receives key events
-  hoverEffectFg?: number;  // Hover effect foreground color
-  hoverEffectBg?: number;  // Hover effect background color
-}
-```
-
 ### InteractiveData
-
-Data returned by getInteractive.
 
 ```typescript
 interface InteractiveData {
-  readonly clickable: boolean;     // Whether entity responds to clicks
-  readonly draggable: boolean;     // Whether entity can be dragged
-  readonly hoverable: boolean;     // Whether entity responds to hover
-  readonly hovered: boolean;       // Current hover state
-  readonly pressed: boolean;       // Current pressed state
-  readonly keyable: boolean;       // Whether entity receives key events
-  readonly hoverEffectFg: number;  // Hover effect foreground color
-  readonly hoverEffectBg: number;  // Hover effect background color
+  readonly clickable: boolean;
+  readonly draggable: boolean;
+  readonly hoverable: boolean;
+  readonly keyable: boolean;
+  readonly hovered: boolean;
+  readonly pressed: boolean;
+  readonly hoverEffectFg: number;
+  readonly hoverEffectBg: number;
 }
 ```
 
----
-
-## Usage Example
-
-A complete example showing interactive button behavior.
+### InteractiveOptions
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+interface InteractiveOptions {
+  clickable?: boolean;
+  draggable?: boolean;
+  hoverable?: boolean;
+  keyable?: boolean;
+  hoverEffectFg?: number;
+  hoverEffectBg?: number;
+}
+```
+
+## Examples
+
+### Mouse Events
+
+```typescript
 import {
   setInteractive,
-  isHovered,
-  isPressed,
   setHovered,
   setPressed,
-  clearInteractionState,
-  DEFAULT_HOVER_FG,
+  isClickable,
+  isHovered,
+  isPressed,
+  getPosition,
+  getDimensions,
 } from 'blecsd';
 
-const world = createWorld();
-const button = addEntity(world);
-
-// Configure button as clickable and hoverable
+// Make entity interactive
 setInteractive(world, button, {
   clickable: true,
   hoverable: true,
-  hoverEffectBg: 0x444444ff,
 });
 
-// In your render system
-function renderButton(world, eid) {
-  if (isPressed(world, eid)) {
-    // Draw pressed state (darker)
-  } else if (isHovered(world, eid)) {
-    // Draw hovered state
-  } else {
-    // Draw normal state
+// Handle mouse move
+function onMouseMove(world, x, y) {
+  const entities = queryInteractive(world);
+
+  for (const eid of entities) {
+    const pos = getPosition(world, eid);
+    const dims = getDimensions(world, eid);
+
+    if (pos && dims) {
+      const inside = x >= pos.x && x < pos.x + dims.width &&
+                     y >= pos.y && y < pos.y + dims.height;
+      setHovered(world, eid, inside);
+    }
   }
 }
 
-// When button is disabled
-function disableButton(world, eid) {
-  clearInteractionState(world, eid);
-  setInteractive(world, eid, { clickable: false, hoverable: false });
+// Handle mouse down
+function onMouseDown(world, x, y) {
+  const hovered = findHoveredEntity(world);
+  if (hovered && isClickable(world, hovered)) {
+    setPressed(world, hovered, true);
+  }
+}
+
+// Handle mouse up
+function onMouseUp(world) {
+  const entities = queryInteractive(world);
+  for (const eid of entities) {
+    if (isPressed(world, eid)) {
+      setPressed(world, eid, false);
+      // Trigger click event
+      if (isHovered(world, eid)) {
+        handleClick(world, eid);
+      }
+    }
+  }
 }
 ```
 
----
+### Hover Styling
 
-## See Also
+```typescript
+import { setInteractive, isHovered, getStyle, getInteractive } from 'blecsd';
 
-- [Components Reference](./components.md) - All component documentation
-- [Position Component](./position.md) - Position for hit detection
-- [Dimensions Component](./dimensions.md) - Size for hit detection bounds
+// Set hover colors
+setInteractive(world, button, {
+  hoverable: true,
+  hoverEffectFg: 0xffffffff,
+  hoverEffectBg: 0x555555ff,
+});
+
+// In render, use hover colors when hovered
+function getEffectiveStyle(world, entity) {
+  const style = getStyle(world, entity);
+  const interactive = getInteractive(world, entity);
+
+  if (interactive?.hovered) {
+    return {
+      ...style,
+      fg: interactive.hoverEffectFg,
+      bg: interactive.hoverEffectBg,
+    };
+  }
+
+  return style;
+}
+```

@@ -2,219 +2,110 @@
 
 Type-safe event emitter for game events.
 
-## Quick Start
+## createEventBus
+
+Create an event bus with typed events.
 
 ```typescript
 import { createEventBus } from 'blecsd';
 
 interface GameEvents {
   'player:moved': { x: number; y: number };
-  'game:over': { score: number };
+  'enemy:killed': { id: number; score: number };
 }
 
 const events = createEventBus<GameEvents>();
+```
 
-// Subscribe to events
+## EventBus Methods
+
+### on
+
+Subscribe to an event.
+
+```typescript
 const unsubscribe = events.on('player:moved', (e) => {
   console.log(`Player at ${e.x}, ${e.y}`);
 });
 
-// Emit events
-events.emit('player:moved', { x: 10, y: 20 });
-
-// Unsubscribe when done
+// Later: stop listening
 unsubscribe();
 ```
 
-## Functions
-
-### createEventBus()
-
-Create a new type-safe event bus.
-
-```typescript
-function createEventBus<T extends EventMap>(): EventBus<T>
-```
-
-**Type Parameters:**
-- `T` - Event map defining event names and payload types
-
-**Returns:** A new `EventBus` instance
-
-**Example:**
-```typescript
-interface MyEvents {
-  'enemy:spawn': { type: string; x: number; y: number };
-  'player:death': { cause: string };
-}
-
-const events = createEventBus<MyEvents>();
-```
-
-## Classes
-
-### EventBus
-
-Type-safe event emitter class.
-
-#### Constructor
-
-```typescript
-new EventBus<T extends EventMap>()
-```
-
-While you can use the constructor directly, prefer `createEventBus()` for consistency.
-
-#### Methods
-
-##### on()
-
-Register an event listener.
-
-```typescript
-on<K extends keyof T>(event: K, handler: EventHandler<T[K]>): Unsubscribe
-```
-
 **Parameters:**
-- `event` - The event name to listen for
-- `handler` - Function called when event is emitted
+- `event` - Event name
+- `handler` - Callback function
 
-**Returns:** Unsubscribe function to remove the listener
+**Returns:** Unsubscribe function
 
-**Example:**
-```typescript
-const unsubscribe = events.on('resize', ({ width, height }) => {
-  console.log(`New size: ${width}x${height}`);
-});
+### once
 
-// Later, stop listening
-unsubscribe();
-```
-
-##### once()
-
-Register a one-time listener. Automatically removed after first call.
+Subscribe to an event once. Handler is removed after first call.
 
 ```typescript
-once<K extends keyof T>(event: K, handler: EventHandler<T[K]>): Unsubscribe
-```
-
-**Parameters:**
-- `event` - The event name to listen for
-- `handler` - Function called when event is emitted
-
-**Returns:** Unsubscribe function (can cancel before it fires)
-
-**Example:**
-```typescript
-events.once('game:over', ({ score }) => {
-  console.log(`Final score: ${score}`);
+events.once('game:over', (e) => {
+  console.log(`Final score: ${e.score}`);
 });
 ```
 
-##### off()
-
-Remove a specific listener.
-
-```typescript
-off<K extends keyof T>(event: K, handler: EventHandler<T[K]>): this
-```
-
-**Parameters:**
-- `event` - The event name
-- `handler` - The handler function to remove
-
-**Returns:** The EventBus for chaining
-
-**Example:**
-```typescript
-const handler = (e) => console.log(e);
-events.on('click', handler);
-// Later:
-events.off('click', handler);
-```
-
-##### emit()
+### emit
 
 Emit an event to all listeners.
 
 ```typescript
-emit<K extends keyof T>(event: K, payload: T[K]): boolean
+const hadListeners = events.emit('player:moved', { x: 10, y: 5 });
+// Returns true if any handlers were called
 ```
 
 **Parameters:**
-- `event` - The event name to emit
-- `payload` - The event data
+- `event` - Event name
+- `payload` - Event data
 
-**Returns:** `true` if any listeners were called, `false` otherwise
+**Returns:** `true` if any listeners were called
 
-**Example:**
-```typescript
-const hadListeners = events.emit('player:moved', { x: 5, y: 10 });
-if (!hadListeners) {
-  console.log('No one is listening for player movement');
-}
-```
+### off
 
-##### removeAllListeners()
-
-Remove all listeners for an event or all events.
+Remove a specific listener.
 
 ```typescript
-removeAllListeners<K extends keyof T>(event?: K): this
+const handler = (e) => console.log(e);
+events.on('click', handler);
+events.off('click', handler);
 ```
 
-**Parameters:**
-- `event` - Optional event name. If omitted, removes all listeners.
+### removeAllListeners
 
-**Returns:** The EventBus for chaining
+Remove all listeners for an event, or all events.
 
-**Example:**
 ```typescript
-events.removeAllListeners('click'); // Remove click listeners only
-events.removeAllListeners(); // Remove all listeners
+events.removeAllListeners('click');  // Remove click listeners
+events.removeAllListeners();          // Remove all listeners
 ```
 
-##### listenerCount()
+### listenerCount
 
 Get the number of listeners for an event.
 
 ```typescript
-listenerCount<K extends keyof T>(event: K): number
+const count = events.listenerCount('error');
 ```
 
-**Example:**
-```typescript
-if (events.listenerCount('error') === 0) {
-  console.warn('No error handlers registered');
-}
-```
-
-##### eventNames()
+### eventNames
 
 Get all event names that have listeners.
 
 ```typescript
-eventNames(): Array<keyof T>
+const names = events.eventNames();
+// ['player:moved', 'enemy:killed']
 ```
 
-**Example:**
-```typescript
-console.log('Active events:', events.eventNames());
-```
-
-##### hasListeners()
+### hasListeners
 
 Check if an event has any listeners.
 
 ```typescript
-hasListeners<K extends keyof T>(event: K): boolean
-```
-
-**Example:**
-```typescript
 if (events.hasListeners('debug')) {
-  events.emit('debug', { message: 'Detailed info' });
+  events.emit('debug', { message: 'info' });
 }
 ```
 
@@ -222,28 +113,25 @@ if (events.hasListeners('debug')) {
 
 ### EventHandler
 
-Function signature for event handlers.
-
 ```typescript
-type EventHandler<T> = (event: T) => void
+type EventHandler<T> = (event: T) => void;
 ```
 
 ### EventMap
 
-Base type constraint for event maps.
+Base constraint for event maps.
 
 ```typescript
-type EventMap = Record<string, any>
+type EventMap = Record<string, unknown>;
 ```
 
-Any interface with string keys satisfies this constraint:
+### Unsubscribe
 
 ```typescript
-interface MyEvents {
-  'player:moved': { x: number; y: number };
-  'game:over': { score: number };
-}
+type Unsubscribe = () => void;
 ```
+
+## Built-in Event Maps
 
 ### UIEventMap
 
@@ -280,7 +168,7 @@ interface ScreenEventMap {
 
 ### Scoped Events
 
-Use event prefixes to organize events by system:
+Use prefixes to organize events:
 
 ```typescript
 interface GameEvents {
@@ -293,7 +181,7 @@ interface GameEvents {
 }
 ```
 
-### Cleanup Pattern
+### Cleanup
 
 Always clean up listeners to prevent memory leaks:
 
@@ -317,20 +205,12 @@ class GameSystem {
 }
 ```
 
-### Event Debugging
+### Conditional Emit
 
-Log all events for debugging:
+Avoid emitting when no listeners exist:
 
 ```typescript
-// Development only
-const originalEmit = events.emit.bind(events);
-events.emit = (event, payload) => {
-  console.log(`[EVENT] ${String(event)}:`, payload);
-  return originalEmit(event, payload);
-};
+if (events.hasListeners('debug')) {
+  events.emit('debug', { message: expensiveDebugInfo() });
+}
 ```
-
-## See Also
-
-- [ECS Basics Guide](../guides/ecs-basics.md)
-- [Input Handling Guide](../guides/input-handling.md)

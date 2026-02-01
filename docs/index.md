@@ -1,132 +1,96 @@
-# blECSd Terminal Game Library
+# blECSd Documentation
 
-A modern terminal game library built on TypeScript and ECS architecture.
+A terminal game library built on TypeScript and bitECS.
 
-## Why blECSd?
+## What blECSd Provides
 
-blECSd makes building terminal games fast and intuitive:
+- **ECS Components** for game entities (position, rendering, hierarchy, focus, interaction)
+- **Input Parsing** for keyboard and mouse events
+- **Type-safe Events** with generic EventBus
+- **State Machines** attachable to entities
+- **Entity Factories** for common UI elements
+- **Optional Scheduler** with fixed phase ordering
 
-- **Responsive Input** - Input is always processed first, every frame
-- **ECS Architecture** - Clean separation of data (components) and logic (systems)
-- **Three-Tier API** - Simple for beginners, powerful for experts
-- **TypeScript First** - Full type safety with strict mode
+## What blECSd Does Not Do
 
-## Quick Start
+blECSd is a library, not a framework. It does not:
 
-```bash
-npm install blecsd
-```
+- Own or manage your game loop
+- Force a specific architecture
+- Provide a high-level widget API (yet)
+- Handle rendering to the terminal (bring your own renderer)
+
+You control the world. blECSd provides components and utilities.
+
+## Getting Started
+
+1. [Installation](./getting-started/installation.md) - Install and verify
+2. [Concepts](./getting-started/concepts.md) - Understand the architecture
+
+## API Reference
+
+### Components
+
+- [Position](./api/position.md) - Coordinates and z-index
+- [Renderable](./api/renderable.md) - Colors and visibility
+- [Dimensions](./api/dimensions.md) - Size and constraints
+- [Hierarchy](./api/hierarchy.md) - Parent-child trees
+- [Focusable](./api/focusable.md) - Keyboard focus
+- [Interactive](./api/interactive.md) - Mouse interaction
+- [Scrollable](./api/scrollable.md) - Scroll position
+- [Border](./api/border.md) - Box borders
+- [Content](./api/content.md) - Text content
+- [Padding](./api/padding.md) - Inner spacing
+- [Label](./api/label.md) - Text labels
+
+### Core
+
+- [Events](./api/events.md) - EventBus system
+- [Entities](./api/entities.md) - Entity factories
+- [Queries](./api/queries.md) - Entity queries
+
+### Terminal I/O
+
+- [ANSI](./api/ansi.md) - Escape sequences
+- [Program](./api/program.md) - Terminal control
+- [Detection](./api/detection.md) - Terminal capabilities
+- [Security](./api/security.md) - Input sanitization
+
+## Import Patterns
+
+### Components and Core
 
 ```typescript
-import { createGame } from 'blecsd';
+import {
+  // Components
+  setPosition,
+  setStyle,
+  setDimensions,
 
-const game = createGame({ title: 'Hello World' });
+  // Entity factories
+  createBoxEntity,
+  createTextEntity,
 
-game.createBox({
-  x: 'center',
-  y: 'center',
-  width: 30,
-  height: 5,
-  content: 'Hello, Terminal!',
-  border: 'line',
-});
+  // Events
+  createEventBus,
 
-game.onKey('q', () => game.quit());
-game.start();
+  // Scheduler
+  createScheduler,
+  LoopPhase,
+
+  // Input parsing
+  parseKeyBuffer,
+  parseMouseSequence,
+} from 'blecsd';
 ```
 
-## Learning Path
+### Terminal I/O (Advanced)
 
-1. **[Installation](./getting-started/installation.md)** - Get up and running (5 min)
-2. **[Hello World](./getting-started/hello-world.md)** - Your first program (5 min)
-3. **[Core Concepts](./getting-started/concepts.md)** - Understand the architecture (15 min)
-4. **[First Game](./getting-started/first-game.md)** - Build Snake step by step (30 min)
-
-## Documentation
-
-### Getting Started
-- [Installation](./getting-started/installation.md)
-- [Hello World](./getting-started/hello-world.md)
-- [Core Concepts](./getting-started/concepts.md)
-- [First Game (Snake)](./getting-started/first-game.md)
-
-### Tutorials
-- [Snake Game](./tutorials/snake.md)
-- [Roguelike Basics](./tutorials/roguelike.md)
-- [Breakout Clone](./tutorials/breakout.md)
-- [Menu Systems](./tutorials/menu-system.md)
-
-### Guides
-- [Input Handling](./guides/input-handling.md)
-- [Rendering](./guides/rendering.md)
-- [ECS Basics](./guides/ecs-basics.md)
-- [ECS Advanced](./guides/ecs-advanced.md)
-- [Widgets](./guides/widgets.md)
-- [Styling](./guides/styling.md)
-- [Performance](./guides/performance.md)
-- [Migration from Blessed](./guides/migration-blessed.md)
-
-### API Reference
-- [API Overview](./api/index.md)
-- [Game Class](./api/game.md)
-- [Widgets](./api/widgets/)
-- [Components](./api/components/)
-- [Systems](./api/systems/)
-- [Input](./api/input.md)
-- [Schemas](./api/schemas.md)
-
-### Terminal I/O (Internal)
-
-#### Core
-- [Program Class](./api/program.md) - Main terminal control interface
-- [ANSI Escape Codes](./api/ansi.md) - Cursor, style, screen, mouse sequences
-- [Terminal Detection](./api/detection.md) - Detect terminal capabilities
-- [Terminal Cleanup](./api/cleanup.md) - Global cleanup coordination
-
-#### Rendering
-- [Output Buffer](./api/output-buffer.md) - Efficient buffered output
-- [Screen Buffer](./api/screen-buffer.md) - Alternate screen buffer management
-- [Synchronized Output](./api/sync-output.md) - Flicker-free rendering
-
-#### Features
-- [Character Set Handling](./api/charset.md)
-- [Window Manipulation](./api/window-ops.md)
-- [Hyperlinks](./api/hyperlink.md)
-- [Suspend/Resume](./api/suspend.md)
-- [Process Utilities](./api/process.md)
-- [Debug Logging](./api/debug.md)
-
-#### Advanced (VT400+)
-- [Media Copy (Print)](./api/media-copy.md)
-- [Rectangular Area Operations](./api/rectangle.md)
-- [DEC Locator](./api/locator.md)
-
-#### Utilities
-- [Security (Escape Sanitization)](./api/security.md)
-- [Tmux Pass-Through](./api/tmux.md)
-- [Response Parser](./api/response-parser.md)
-
-## API Tiers
-
-| Tier | Audience | What You Get |
-|------|----------|--------------|
-| **Simple** | Beginners | `createGame()`, widget methods, `onKey()` |
-| **Standard** | Intermediate | Widget factories, input maps, events, styling |
-| **Advanced** | Power users | Raw ECS access, custom components/systems |
-
-## Examples
-
-Browse the [examples directory](https://github.com/your-repo/blessed/tree/main/example) for complete, runnable games:
-
-- `hello.ts` - Minimal hello world
-- `snake.ts` - Classic snake game (~200 LOC)
-- `roguelike.ts` - Basic dungeon crawler (~300 LOC)
-- `breakout.ts` - Breakout clone (~400 LOC)
-
-## Contributing
-
-See [Architecture](./contributing/architecture.md) to understand the codebase structure.
-
-## License
-
-MIT
+```typescript
+import {
+  cursor,
+  style,
+  screen,
+  mouse,
+} from 'blecsd/terminal';
+```

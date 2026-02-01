@@ -1,248 +1,214 @@
 # blECSd
 
-A modern terminal game library built on TypeScript and ECS architecture.
+A terminal game library built on TypeScript and bitECS.
 
-blECSd is a ground-up rewrite of the [blessed](https://github.com/chjj/blessed) library, reimagined for game development with an Entity Component System (ECS) foundation.
+blECSd provides ECS components, input parsing, and terminal I/O for building terminal-based games. It is a library, not a framework: you control the game loop, the world, and how components are used.
 
-## Features
-
-- **ECS Architecture** - Built on [bitecs](https://github.com/NateTheGreatt/bitECS) for high-performance game state management
-- **TypeScript First** - Strict types throughout with full IntelliSense support
-- **Library, Not Framework** - Use components standalone or with your own game loop
-- **Terminal I/O** - Complete keyboard and mouse input parsing, ANSI sequence generation
-- **Typed Events** - Generic EventBus with full type inference
-- **State Machines** - Built-in FSM component for game entity states
-- **Zod Validation** - Runtime validation at system boundaries
-
-## Installation
+## Install
 
 ```bash
 npm install blecsd
-# or
-pnpm add blecsd
 ```
 
-## Quick Start
+## Quick Example
 
 ```typescript
 import { createWorld, addEntity } from 'bitecs';
-import {
-  setPosition,
-  setRenderable,
-  createEventBus,
-  createScheduler,
-  LoopPhase
-} from 'blecsd';
+import { setPosition, setStyle, createEventBus } from 'blecsd';
 
-// Create your world
+// Your world, your control
 const world = createWorld();
-
-// Create an entity
 const player = addEntity(world);
-setPosition(world, player, 10, 5);
-setRenderable(world, player, { char: '@', fg: 0x00ff00 });
 
-// Create event bus for game events
+// Add components
+setPosition(world, player, 10, 5);
+setStyle(world, player, { fg: '#00ff00', bold: true });
+
+// Type-safe events
 interface GameEvents {
   'player:move': { x: number; y: number };
-  'game:over': { score: number };
 }
 const events = createEventBus<GameEvents>();
-
-// Subscribe to events
-events.on('player:move', ({ x, y }) => {
-  console.log(`Player moved to ${x}, ${y}`);
-});
-
-// Create scheduler for game loop
-const scheduler = createScheduler();
-scheduler.add(LoopPhase.UPDATE, (world, delta) => {
-  // Your update logic
-  return world;
-});
-
-// Run game loop
-scheduler.start(world);
+events.on('player:move', (e) => console.log(`Moved to ${e.x}, ${e.y}`));
 ```
 
-## Core Concepts
+## Components
 
-### Components
-
-blECSd provides ready-to-use ECS components:
+blECSd provides ECS components that work with any bitECS world:
 
 | Component | Purpose |
 |-----------|---------|
-| `Position` | 2D coordinates and z-index |
-| `Renderable` | Visual appearance (char, colors, visibility) |
-| `Dimensions` | Width, height, constraints |
-| `Hierarchy` | Parent-child relationships |
-| `Focusable` | Keyboard focus management |
-| `Interactive` | Mouse interaction (hover, click, drag) |
-| `Scrollable` | Scrolling content regions |
-| `Border` | Box borders with multiple styles |
-| `Content` | Text content with alignment |
-| `Padding` | Inner spacing |
-| `Label` | Text labels for elements |
+| Position | X/Y coordinates and z-index |
+| Renderable | Colors, visibility, text styles |
+| Dimensions | Width, height, min/max constraints |
+| Hierarchy | Parent-child relationships |
+| Focusable | Keyboard focus and tab order |
+| Interactive | Click, hover, drag states |
+| Scrollable | Scroll position and content size |
+| Border | Box borders with multiple styles |
+| Content | Text content with alignment |
+| Padding | Inner spacing |
+| Label | Text labels for elements |
 
-### Systems
-
-Systems are pure functions that process entities:
+Each component has getter/setter functions:
 
 ```typescript
-import { defineQuery, hasComponent } from 'bitecs';
-import { Position, Velocity } from 'blecsd';
+import { setPosition, getPosition, setStyle, isVisible } from 'blecsd';
 
-const movementQuery = defineQuery([Position, Velocity]);
+setPosition(world, entity, 10, 5);
+const pos = getPosition(world, entity); // { x: 10, y: 5, z: 0, absolute: false }
 
-function movementSystem(world: World): World {
-  for (const eid of movementQuery(world)) {
-    Position.x[eid] += Velocity.x[eid];
-    Position.y[eid] += Velocity.y[eid];
-  }
-  return world;
-}
+setStyle(world, entity, { fg: '#ff0000', bold: true });
+isVisible(world, entity); // true
 ```
 
-### Event Bus
+## Entity Factories
+
+Create pre-configured entities:
+
+```typescript
+import { createWorld, createBoxEntity, createTextEntity, BorderType } from 'blecsd';
+
+const world = createWorld();
+
+const box = createBoxEntity(world, {
+  x: 0,
+  y: 0,
+  width: 40,
+  height: 10,
+  border: { type: BorderType.Line },
+});
+
+const text = createTextEntity(world, {
+  x: 5,
+  y: 2,
+  text: 'Hello',
+  fg: 0xffffffff,
+});
+```
+
+## Event Bus
 
 Type-safe event handling:
 
 ```typescript
-import { createEventBus, type UIEventMap } from 'blecsd';
+import { createEventBus } from 'blecsd';
 
-// Use built-in UI events
-const uiEvents = createEventBus<UIEventMap>();
-uiEvents.on('focus', ({ entity }) => { /* ... */ });
-uiEvents.on('click', ({ entity, x, y }) => { /* ... */ });
-
-// Or define your own
-interface MyEvents {
+interface GameEvents {
   'enemy:spawn': { type: string; x: number; y: number };
-  'level:complete': { level: number; time: number };
+  'game:over': { score: number };
 }
-const gameEvents = createEventBus<MyEvents>();
-```
 
-### State Machines
+const events = createEventBus<GameEvents>();
 
-Attach state machines to entities:
-
-```typescript
-import { createStateMachine, attachStateMachine, sendEvent } from 'blecsd';
-
-const enemyFSM = createStateMachine({
-  initial: 'idle',
-  states: {
-    idle: { on: { ALERT: 'chasing' } },
-    chasing: { on: { LOST: 'searching', CAUGHT: 'attacking' } },
-    searching: { on: { FOUND: 'chasing', TIMEOUT: 'idle' } },
-    attacking: { on: { DEFEATED: 'idle' } }
-  }
+const unsubscribe = events.on('enemy:spawn', (e) => {
+  console.log(`${e.type} spawned at ${e.x}, ${e.y}`);
 });
 
-attachStateMachine(world, enemyEntity, enemyFSM);
-sendEvent(world, enemyEntity, 'ALERT'); // Transitions to 'chasing'
+events.emit('enemy:spawn', { type: 'goblin', x: 10, y: 5 });
+
+unsubscribe(); // Stop listening
 ```
 
-### Input Parsing
+## Scheduler
+
+Optional game loop with fixed phase ordering:
+
+```typescript
+import { createWorld, createScheduler, LoopPhase } from 'blecsd';
+
+const world = createWorld();
+const scheduler = createScheduler();
+
+scheduler.add(LoopPhase.UPDATE, (world, delta) => {
+  // Game logic runs here
+  return world;
+});
+
+scheduler.add(LoopPhase.RENDER, (world, delta) => {
+  // Rendering runs here
+  return world;
+});
+
+scheduler.start(world);
+```
+
+Phase order:
+1. INPUT (reserved, always first)
+2. EARLY_UPDATE
+3. UPDATE
+4. LATE_UPDATE
+5. PHYSICS
+6. LAYOUT
+7. RENDER
+8. POST_RENDER
+
+## Input Parsing
 
 Parse terminal input sequences:
 
 ```typescript
 import { parseKeyBuffer, parseMouseSequence } from 'blecsd';
 
-// Parse keyboard input
-const keyEvent = parseKeyBuffer(buffer);
-if (keyEvent) {
-  console.log(keyEvent.name, keyEvent.ctrl, keyEvent.shift);
+// Keyboard
+const key = parseKeyBuffer(buffer);
+if (key) {
+  console.log(key.name, key.ctrl, key.shift);
 }
 
-// Parse mouse input
-const mouseEvent = parseMouseSequence(sequence);
-if (mouseEvent) {
-  console.log(mouseEvent.action, mouseEvent.x, mouseEvent.y);
+// Mouse (SGR format)
+const mouse = parseMouseSequence(sequence);
+if (mouse) {
+  console.log(mouse.action, mouse.x, mouse.y);
 }
 ```
 
-## Documentation
+## State Machines
 
-Full API documentation is available in the `docs/` directory:
+Attach FSMs to entities:
+
+```typescript
+import { attachStateMachine, sendEvent, getState } from 'blecsd';
+
+const definition = {
+  initial: 'idle',
+  states: {
+    idle: { on: { ALERT: 'chase' } },
+    chase: { on: { LOST: 'search', CAUGHT: 'attack' } },
+    search: { on: { FOUND: 'chase', TIMEOUT: 'idle' } },
+    attack: { on: { DONE: 'idle' } },
+  },
+};
+
+attachStateMachine(world, enemy, definition);
+sendEvent(world, enemy, 'ALERT');
+getState(world, enemy); // 'chase'
+```
+
+## Documentation
 
 - [Getting Started](./docs/getting-started/installation.md)
 - [Core Concepts](./docs/getting-started/concepts.md)
 - [API Reference](./docs/api/index.md)
 
-### API Reference
+## Library Design
 
-**Components:**
-- [Position](./docs/api/position.md) - Coordinates and z-index
-- [Renderable](./docs/api/renderable.md) - Visual appearance
-- [Dimensions](./docs/api/dimensions.md) - Size and constraints
-- [Hierarchy](./docs/api/hierarchy.md) - Parent-child trees
-- [Focusable](./docs/api/focusable.md) - Focus management
-- [Interactive](./docs/api/interactive.md) - Mouse interaction
-- [Scrollable](./docs/api/scrollable.md) - Scrolling regions
-- [Border](./docs/api/border.md) - Box borders
-- [Content](./docs/api/content.md) - Text content
-- [Padding](./docs/api/padding.md) - Inner spacing
-- [Label](./docs/api/label.md) - Text labels
+blECSd is a library, not a framework. This means:
 
-**Core:**
-- [Events](./docs/api/events.md) - EventBus system
-- [Entities](./docs/api/entities.md) - Entity factories
-- [Queries](./docs/api/queries.md) - Entity queries
-
-**Terminal:**
-- [ANSI](./docs/api/ansi.md) - Escape sequences
-- [Program](./docs/api/program.md) - Terminal control
-- [Security](./docs/api/security.md) - Input sanitization
-
-## Architecture
-
-blECSd follows a library-first design:
-
-```
-src/
-├── components/     # ECS components (Position, Renderable, etc.)
-├── core/           # World, scheduler, events, entities, queries
-├── schemas/        # Zod validation schemas
-└── terminal/       # Terminal I/O (input parsing, ANSI, etc.)
-```
-
-**Key principles:**
-
-1. **Use components standalone** - Import into your own bitecs world
-2. **Skip the built-in loop** - All systems are callable functions
-3. **Mix and match** - Use our input parsing with your rendering
-4. **You control the world** - Functions take `world` as a parameter
+1. **Components work standalone** - Import them into any bitECS world
+2. **No required game loop** - All systems are callable functions
+3. **Mix and match** - Use our input parsing with your rendering, or vice versa
+4. **You own the world** - Functions take `world` as a parameter; we never hold global state
 
 ## Development
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Run tests
 pnpm test
-
-# Run tests in watch mode
-pnpm test:watch
-
-# Type check
-pnpm typecheck
-
-# Lint
 pnpm lint
-
-# Build
 pnpm build
 ```
 
 ## License
 
-MIT License - see [LICENSE](./LICENSE) for details.
-
-## Credits
-
-Inspired by the original [blessed](https://github.com/chjj/blessed) library by Christopher Jeffrey.
+MIT

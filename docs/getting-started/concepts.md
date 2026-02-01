@@ -1,268 +1,225 @@
 # Core Concepts
 
-Understand the architecture that makes blECSd fast and flexible.
-
-## Prerequisites
-
-- [Hello World](./hello-world.md) complete
-
-## The Big Picture
-
-blECSd is built on three core ideas:
-
-1. **Input First** - Input is always processed before anything else
-2. **Entity Component System (ECS)** - Data and logic are separated
-3. **Game Loop** - Everything runs in a predictable, frame-based cycle
-
-## Input First
-
-This is the most important principle. In a game, input must feel responsive. blECSd guarantees:
-
-- All pending input is processed at the start of every frame
-- No input events are ever lost or delayed
-- Input processing cannot be reordered by library users
-
-The game loop always runs in this order:
-
-```
-1. INPUT         <-- Always first, cannot be moved
-2. EARLY_UPDATE
-3. UPDATE
-4. LATE_UPDATE
-5. PHYSICS
-6. LAYOUT
-7. RENDER
-8. POST_RENDER
-```
-
-You can add custom code to any phase except INPUT, which is reserved.
-
 ## Entity Component System
 
-ECS separates "what things are" (entities + components) from "what things do" (systems).
+blECSd uses [bitECS](https://github.com/NateTheGreatt/bitECS) for its ECS implementation. The pattern separates data (components) from behavior (systems).
 
 ### Entities
 
-An entity is just an ID. It has no data or behavior on its own.
+An entity is an integer ID. It has no data or behavior.
 
 ```typescript
-const player = game.createEntity();
-const enemy = game.createEntity();
+import { createWorld, addEntity } from 'bitecs';
+
+const world = createWorld();
+const player = addEntity(world);   // Returns an integer like 1
+const enemy = addEntity(world);    // Returns 2
 ```
 
 ### Components
 
-Components are pure data. They describe properties of an entity.
+Components are typed data stores. blECSd provides components for common game needs:
 
 ```typescript
-// Position data
+import { Position, Renderable, Dimensions } from 'blecsd';
+
+// Components use Structure of Arrays (SoA) for performance
 Position.x[player] = 10;
 Position.y[player] = 5;
+Renderable.fg[player] = 0xffffffff;  // White foreground
+```
 
-// Velocity data
-Velocity.x[player] = 1;
-Velocity.y[player] = 0;
+blECSd wraps raw component access with helper functions:
 
-// What to render
-Renderable.char[player] = '@'.charCodeAt(0);
-Renderable.fg[player] = 0xffffff;
+```typescript
+import { setPosition, setStyle, getPosition } from 'blecsd';
+
+setPosition(world, player, 10, 5);
+setStyle(world, player, { fg: '#ffffff', bold: true });
+
+const pos = getPosition(world, player);
+// { x: 10, y: 5, z: 0, absolute: false }
 ```
 
 ### Systems
 
-Systems contain logic. They process entities that have specific components.
+Systems are functions that process entities with specific components:
 
 ```typescript
-// This system moves all entities that have Position and Velocity
-const movementSystem = defineSystem((world) => {
-  const entities = movementQuery(world);
+import { defineQuery } from 'bitecs';
+import { Position, Renderable, queryRenderable } from 'blecsd';
+
+// Query for entities with both Position and Renderable
+const renderQuery = defineQuery([Position, Renderable]);
+
+function renderSystem(world) {
+  const entities = renderQuery(world);
   for (const eid of entities) {
-    Position.x[eid] += Velocity.x[eid];
-    Position.y[eid] += Velocity.y[eid];
+    const x = Position.x[eid];
+    const y = Position.y[eid];
+    // Draw entity at x, y
   }
   return world;
-});
+}
 ```
 
-### Why ECS?
-
-| Traditional OOP | ECS |
-|----------------|-----|
-| Deep inheritance hierarchies | Flat composition |
-| Behavior scattered across classes | Logic centralized in systems |
-| Hard to add new behaviors | Add a component, write a system |
-| Memory scattered | Cache-friendly data layout |
-
-ECS shines for games because:
-- Adding new features is easy (new component + new system)
-- Performance is predictable
-- Debugging is straightforward (inspect component data)
-
-## The Game Loop
-
-blECSd runs at 60fps by default. Each frame:
-
-```
-┌─────────────────────────────────────┐
-│  Frame Start                        │
-├─────────────────────────────────────┤
-│  1. Process ALL pending input       │
-│  2. Run early update systems        │
-│  3. Run main update systems         │
-│  4. Run late update systems         │
-│  5. Run physics systems             │
-│  6. Calculate layouts               │
-│  7. Render to screen buffer         │
-│  8. Flush buffer to terminal        │
-│  9. Run post-render callbacks       │
-├─────────────────────────────────────┤
-│  Wait for next frame (~16.67ms)     │
-└─────────────────────────────────────┘
-```
-
-### Hooking Into the Loop
+blECSd provides pre-built queries:
 
 ```typescript
-// Run every frame
-game.onUpdate((deltaTime) => {
-  // deltaTime is seconds since last frame
-  player.x += speed * deltaTime;
-});
+import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd';
 
-// Run at fixed intervals (good for physics)
-game.onFixedUpdate((fixedDelta) => {
-  // fixedDelta is always the same (default: 1/60)
-  applyGravity(fixedDelta);
-});
-
-// Run after rendering
-game.onRender(() => {
-  // Good for debug overlays
-});
+const visibleEntities = filterVisible(world, queryRenderable(world));
+const sorted = sortByZIndex(world, visibleEntities);
 ```
 
-## Simple vs Advanced API
+## Library, Not Framework
 
-blECSd offers two ways to work:
+blECSd does not own your game loop or world. You can:
 
-### Simple API (Recommended for Most Users)
-
-Use the `Game` class methods. Components and systems are managed for you.
+1. Use components in your own bitECS world
+2. Skip the scheduler entirely
+3. Use only the parts you need
+4. Integrate with existing systems
 
 ```typescript
-const game = createGame({ title: 'My Game' });
+// Your own game loop
+function gameLoop() {
+  processInput();
+  updateGame(world);
+  render(world);
+  requestAnimationFrame(gameLoop);
+}
 
-// createBox() creates an entity with Position, Dimensions,
-// Renderable, and Box components automatically
-const box = game.createBox({ x: 10, y: 5, width: 20, height: 10 });
-
-// Methods operate on the underlying entity
-box.move(1, 0);
-box.setContent('New content');
+// blECSd components still work
+import { setPosition, getPosition } from 'blecsd';
+setPosition(world, player, x, y);
 ```
 
-### Advanced API (Full ECS Control)
+## Optional Scheduler
 
-Access the raw ECS world and create custom components/systems.
+The scheduler provides phase-ordered execution when you want it:
 
 ```typescript
-import { createWorld, addEntity, addComponent, defineQuery, defineSystem } from 'blecsd';
-import { Position, Velocity, Renderable } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd';
 
-// Create your own component
-const Health = defineComponent({ current: Types.ui16, max: Types.ui16 });
+const scheduler = createScheduler();
 
-// Create your own system
-const healthSystem = defineSystem((world) => {
-  const entities = healthQuery(world);
-  for (const eid of entities) {
-    if (Health.current[eid] <= 0) {
-      removeEntity(world, eid);
-    }
-  }
+scheduler.add(LoopPhase.UPDATE, (world, delta) => {
+  // Game logic
   return world;
 });
 
-// Register with the game
-game.addSystem(healthSystem, 'UPDATE');
+scheduler.add(LoopPhase.RENDER, (world, delta) => {
+  // Drawing
+  return world;
+});
+
+scheduler.start(world);
 ```
 
-## Widgets vs Entities
+Phase execution order:
 
-Widgets are convenient wrappers around entities:
+| Phase | Purpose |
+|-------|---------|
+| INPUT | Reserved for input processing (always first) |
+| EARLY_UPDATE | Pre-update logic |
+| UPDATE | Main game logic |
+| LATE_UPDATE | Post-update logic |
+| PHYSICS | Physics calculations |
+| LAYOUT | UI layout calculations |
+| RENDER | Drawing |
+| POST_RENDER | Cleanup, debug overlays |
 
-| Widget | Underlying Components |
-|--------|----------------------|
-| `Box` | Position, Dimensions, Renderable, BoxStyle |
-| `Text` | Position, Dimensions, Renderable, TextContent |
-| `Sprite` | Position, Sprite, Animation |
-| `Button` | Position, Dimensions, Renderable, Clickable, BoxStyle |
+The INPUT phase is reserved and cannot be reordered. All other phases are optional.
 
-You can access the underlying entity from any widget:
+## Event Bus
+
+Type-safe event handling:
 
 ```typescript
-const box = game.createBox({ x: 0, y: 0, width: 10, height: 5 });
+import { createEventBus } from 'blecsd';
 
-// Get the entity ID
-const eid = box.eid;
+interface GameEvents {
+  'player:moved': { x: number; y: number };
+  'enemy:killed': { id: number; score: number };
+}
 
-// Access components directly
-Position.x[eid] = 100;
+const events = createEventBus<GameEvents>();
+
+// Subscribe
+const unsubscribe = events.on('player:moved', (e) => {
+  console.log(`Player at ${e.x}, ${e.y}`);
+});
+
+// Emit
+events.emit('player:moved', { x: 10, y: 5 });
+
+// One-time listener
+events.once('enemy:killed', (e) => {
+  // Fires once, then auto-removes
+});
+
+// Cleanup
+unsubscribe();
 ```
 
-## Common Mistakes
+## State Machines
 
-### Mutating state outside systems
+Attach FSMs to entities for state management:
 
 ```typescript
-// DON'T do this - bypasses ECS
-game.onKey('space', () => {
-  Position.x[player]++; // Direct mutation
-});
+import { attachStateMachine, sendEvent, getState, isInState } from 'blecsd';
 
-// DO this - use systems or widget methods
-game.onKey('space', () => {
-  playerWidget.move(1, 0);
-});
+const enemyBehavior = {
+  initial: 'idle',
+  states: {
+    idle: { on: { ALERT: 'chase' } },
+    chase: { on: { LOST: 'search', CAUGHT: 'attack' } },
+    search: { on: { FOUND: 'chase', TIMEOUT: 'idle' } },
+    attack: { on: { DONE: 'idle' } },
+  },
+};
+
+attachStateMachine(world, enemy, enemyBehavior);
+
+// Transition
+sendEvent(world, enemy, 'ALERT');
+getState(world, enemy);     // 'chase'
+isInState(world, enemy, 'chase');  // true
 ```
 
-### Creating entities every frame
+## Input Parsing
+
+Parse terminal input sequences into structured events:
 
 ```typescript
-// DON'T do this - memory leak
-game.onUpdate(() => {
-  game.createBox({ ... }); // New entity every frame!
-});
+import { parseKeyBuffer, parseMouseSequence } from 'blecsd';
 
-// DO this - create once, update many
-const box = game.createBox({ ... });
-game.onUpdate(() => {
-  box.move(1, 0);
-});
-```
-
-### Blocking in update handlers
-
-```typescript
-// DON'T do this - blocks the game loop
-game.onUpdate(async () => {
-  const data = await fetchData(); // Blocks everything!
-});
-
-// DO this - fire and forget, update on completion
-game.onUpdate(() => {
-  if (needsData && !loading) {
-    loading = true;
-    fetchData().then(data => {
-      loading = false;
-      processData(data);
-    });
+// Keyboard
+process.stdin.on('data', (buffer) => {
+  const key = parseKeyBuffer(buffer);
+  if (key) {
+    console.log(key.name, key.ctrl, key.shift, key.meta);
   }
 });
+
+// Mouse (after enabling mouse tracking)
+const mouse = parseMouseSequence('\x1b[<0;10;5M');
+// { action: 'mousedown', button: 0, x: 10, y: 5, ... }
 ```
 
-## Next Steps
+## Component Summary
 
-- [First Game](./first-game.md) - Apply these concepts to build Snake
-- [ECS Basics Guide](../guides/ecs-basics.md) - Deep dive into ECS
-- [Input Handling Guide](../guides/input-handling.md) - Advanced input patterns
+| Component | Purpose | Key Functions |
+|-----------|---------|---------------|
+| Position | X, Y, Z coordinates | `setPosition`, `getPosition`, `moveBy` |
+| Renderable | Colors, visibility | `setStyle`, `show`, `hide`, `markDirty` |
+| Dimensions | Width, height | `setDimensions`, `setConstraints` |
+| Hierarchy | Parent-child trees | `setParent`, `appendChild`, `getChildren` |
+| Focusable | Keyboard focus | `focus`, `blur`, `focusNext`, `focusPrev` |
+| Interactive | Mouse interaction | `setClickable`, `setHoverable`, `isPressed` |
+| Scrollable | Scroll position | `scrollTo`, `scrollBy`, `getScrollPercentage` |
+| Border | Box borders | `setBorder`, `getBorderChar` |
+| Content | Text content | `setContent`, `getContent`, `appendContent` |
+| Padding | Inner spacing | `setPadding`, `getPadding` |
+| Label | Text labels | `setLabel`, `getLabelText` |

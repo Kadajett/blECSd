@@ -1,117 +1,247 @@
 # API Reference
 
-This section contains the API documentation for blECSd.
+## Components
 
-## Public API
+ECS components for game entities. Each component has a bitECS component definition and helper functions.
 
-The public API is stable and intended for general use:
+| Component | Purpose | Documentation |
+|-----------|---------|---------------|
+| Position | X, Y coordinates and z-index | [Position](./position.md) |
+| Renderable | Colors, visibility, dirty tracking | [Renderable](./renderable.md) |
+| Dimensions | Width, height, constraints | [Dimensions](./dimensions.md) |
+| Hierarchy | Parent-child relationships | [Hierarchy](./hierarchy.md) |
+| Focusable | Keyboard focus and tab order | [Focusable](./focusable.md) |
+| Interactive | Click, hover, drag states | [Interactive](./interactive.md) |
+| Scrollable | Scroll position and content size | [Scrollable](./scrollable.md) |
+| Border | Box borders | [Border](./border.md) |
+| Content | Text content and alignment | [Content](./content.md) |
+| Padding | Inner spacing | [Padding](./padding.md) |
+| Label | Text labels | [Label](./label.md) |
 
-- [Game Class](./game.md) - Main game interface
-- [Widgets](./widgets/) - UI widgets
-- [Components](./components/) - ECS components
-- [Systems](./systems/) - ECS systems
-- [Input](./input.md) - Input handling
-- [Schemas](./schemas.md) - Configuration schemas
+## Core
 
-## Terminal I/O (Internal)
+### Entity Factories
 
-These modules are used internally by the library. They are documented for advanced users and contributors:
+Create pre-configured entities with multiple components.
 
-### Core
+| Factory | Components Added |
+|---------|------------------|
+| `createBoxEntity` | Position, Dimensions, Renderable, Hierarchy, Border?, Padding? |
+| `createTextEntity` | Position, Dimensions, Renderable, Hierarchy, Content |
+| `createButtonEntity` | Position, Dimensions, Renderable, Hierarchy, Content, Interactive, Focusable |
+| `createInputEntity` | Position, Dimensions, Renderable, Hierarchy, Content, Interactive, Focusable |
+| `createListEntity` | Position, Dimensions, Renderable, Hierarchy, Content, Scrollable, Interactive, Focusable |
+| `createScreenEntity` | Position, Dimensions, Renderable, Hierarchy |
 
-- [Program Class](./program.md) - Main terminal control interface
-- [ANSI Escape Codes](./ansi.md) - Cursor, style, screen, mouse escape sequences
-- [Terminal Detection](./detection.md) - Detect terminal type and capabilities
-- [Terminal Cleanup](./cleanup.md) - Global cleanup coordination
+See [Entity Factories](./entities.md) for configuration options.
 
-### Rendering
+### Events
 
-- [Output Buffer](./output-buffer.md) - Efficient buffered output
-- [Screen Buffer](./screen-buffer.md) - Alternate screen buffer management
-- [Synchronized Output](./sync-output.md) - Flicker-free rendering (DEC 2026)
-
-### Features
-
-- [Character Set Handling](./charset.md) - G0-G3 designation, ACS mode, and box drawing
-- [Window Manipulation](./window-ops.md) - Window position, size, and state control
-- [Hyperlinks](./hyperlink.md) - Clickable links in terminal output (OSC 8)
-- [Suspend/Resume](./suspend.md) - SIGTSTP (Ctrl+Z) and SIGCONT handling
-- [Process Utilities](./process.md) - Spawn child processes with terminal state management
-- [Debug Logging](./debug.md) - Debug logging and terminal state dumping
-
-### Advanced (VT400+)
-
-- [Media Copy (Print)](./media-copy.md) - Terminal printing and media copy operations
-- [Rectangular Area Operations](./rectangle.md) - Copy, fill, erase rectangles (DECCRA, DECFRA, etc.)
-- [DEC Locator](./locator.md) - Advanced mouse protocol with pixel precision
-
-### Utilities
-
-- [Security (Escape Sanitization)](./security.md) - Sanitize escape sequences from untrusted input
-- [Tmux Pass-Through](./tmux.md) - Handle escape sequences in tmux sessions
-- [Response Parser](./response-parser.md) - Parse terminal query responses
-
-## Module Structure
-
-```
-blecsd/
-├── index.ts           # Public exports
-└── terminal/          # Terminal I/O (internal)
-    ├── ansi.ts        # ANSI escape code generators
-    ├── detection.ts   # Terminal capability detection
-    ├── program.ts     # Program class
-    ├── responseParser.ts  # Terminal response parsing
-    ├── security/      # Security utilities
-    │   └── sanitize.ts
-    └── ...
-```
-
-## Import Patterns
-
-### Public API
+Type-safe event bus.
 
 ```typescript
-import { createGame } from 'blecsd';
+import { createEventBus } from 'blecsd';
+
+interface Events {
+  'player:moved': { x: number; y: number };
+}
+
+const events = createEventBus<Events>();
+events.on('player:moved', (e) => console.log(e.x, e.y));
+events.emit('player:moved', { x: 10, y: 5 });
 ```
 
-### Terminal I/O (Advanced)
+See [Events](./events.md) for the full API.
+
+### Queries
+
+Pre-built queries and filters for finding entities.
+
+| Query/Filter | Purpose |
+|--------------|---------|
+| `queryRenderable` | Entities with Renderable |
+| `queryFocusable` | Entities with Focusable |
+| `queryInteractive` | Entities with Interactive |
+| `queryHierarchy` | Entities with Hierarchy |
+| `filterVisible` | Filter to visible entities |
+| `filterDirty` | Filter to dirty entities |
+| `filterFocusable` | Filter to focusable entities |
+| `filterClickable` | Filter to clickable entities |
+| `sortByZIndex` | Sort by z-index ascending |
+| `sortByDepth` | Sort by hierarchy depth |
+| `sortByTabIndex` | Sort by tab order |
+
+See [Queries](./queries.md) for usage.
+
+### Scheduler
+
+Optional game loop with phase ordering.
+
+```typescript
+import { createScheduler, LoopPhase } from 'blecsd';
+
+const scheduler = createScheduler();
+scheduler.add(LoopPhase.UPDATE, (world, delta) => world);
+scheduler.start(world);
+```
+
+Phases execute in order:
+1. INPUT (reserved)
+2. EARLY_UPDATE
+3. UPDATE
+4. LATE_UPDATE
+5. PHYSICS
+6. LAYOUT
+7. RENDER
+8. POST_RENDER
+
+## Input Parsing
+
+Parse terminal input into structured events.
+
+### Keyboard
+
+```typescript
+import { parseKeyBuffer, parseKeySequence } from 'blecsd';
+
+const key = parseKeyBuffer(buffer);
+// { name: 'a', ctrl: false, meta: false, shift: false, sequence: 'a' }
+```
+
+### Mouse
+
+```typescript
+import { parseMouseSequence, isMouseBuffer } from 'blecsd';
+
+const mouse = parseMouseSequence('\x1b[<0;10;5M');
+// { action: 'mousedown', button: 0, x: 10, y: 5, ... }
+```
+
+## Terminal I/O
+
+Low-level terminal control. Import from `blecsd/terminal`.
+
+### ANSI Escape Sequences
+
+```typescript
+import { cursor, style, screen, mouse } from 'blecsd/terminal';
+
+cursor.move(10, 5);      // Move cursor to column 10, row 5
+cursor.hide();           // Hide cursor
+cursor.show();           // Show cursor
+
+style.bold();            // Bold text
+style.fgRgb(255, 0, 0);  // Red foreground
+style.reset();           // Reset all styles
+
+screen.clear();          // Clear screen
+screen.alternateOn();    // Enter alternate buffer
+screen.alternateOff();   // Exit alternate buffer
+
+mouse.enableSgr();       // Enable SGR mouse tracking
+mouse.disableAll();      // Disable all mouse modes
+```
+
+See [ANSI](./ansi.md) for the complete reference.
+
+### Program Class
+
+High-level terminal control with event handling.
+
+```typescript
+import { Program } from 'blecsd/terminal';
+
+const program = new Program({
+  useAlternateScreen: true,
+  hideCursor: true,
+});
+
+await program.init();
+
+program.on('key', (event) => {
+  if (event.name === 'q') program.destroy();
+});
+
+program.on('resize', ({ cols, rows }) => {
+  // Handle resize
+});
+```
+
+See [Program](./program.md) for the full API.
+
+### Other Terminal Modules
+
+| Module | Purpose |
+|--------|---------|
+| [Detection](./detection.md) | Terminal capability detection |
+| [Security](./security.md) | Escape sequence sanitization |
+| [Cleanup](./cleanup.md) | Terminal state restoration |
+| [Output Buffer](./output-buffer.md) | Buffered output |
+| [Screen Buffer](./screen-buffer.md) | Alternate screen management |
+| [Sync Output](./sync-output.md) | Flicker-free rendering |
+| [Tmux](./tmux.md) | Tmux pass-through |
+
+## Validation Schemas
+
+Zod schemas for configuration validation.
 
 ```typescript
 import {
-  // Detection (public)
-  isTmux,
-  isColorSupported,
-  getTerminalInfo,
+  ColorStringSchema,
+  DimensionSchema,
+  PositionValueSchema,
+  PositiveIntSchema,
+} from 'blecsd';
 
-  // Character sets (internal)
-  charset,
-  boxDrawing,
-  DEC_SPECIAL_GRAPHICS,
-  UNICODE_TO_ASCII,
+ColorStringSchema.parse('#ff0000');     // Valid
+DimensionSchema.parse('50%');            // Valid
+PositionValueSchema.parse('center');     // Valid
+PositiveIntSchema.parse(10);             // Valid
+```
 
-  // Window manipulation (internal)
-  windowOps,
+## Types
 
-  // Hyperlinks (internal)
-  hyperlink,
-  isHyperlinkAllowed,
-  HYPERLINK_ALLOWED_PROTOCOLS,
+### World and Entity
 
-  // Suspend/Resume (internal)
-  suspend,
-  SuspendManager,
-  suspendSequences,
+```typescript
+import type { World, Entity, System } from 'blecsd';
 
-  // Sanitization (internal)
-  sanitizeForTerminal,
-  SafeStringBuilder,
+type World = ReturnType<typeof createWorld>;
+type Entity = number;
+type System = (world: World, deltaTime: number) => World;
+```
 
-  // Tmux (internal)
-  tmux,
+### Event Types
 
-  // Response parser (internal)
-  parseResponse,
-  query,
-  isCursorPosition,
-} from 'blecsd/terminal';
+```typescript
+import type { EventHandler, EventMap, Unsubscribe } from 'blecsd';
+
+type EventHandler<T> = (event: T) => void;
+type EventMap = Record<string, unknown>;
+type Unsubscribe = () => void;
+```
+
+### Input Types
+
+```typescript
+import type { KeyEvent, MouseEvent, KeyName, MouseAction } from 'blecsd';
+```
+
+### Component Data Types
+
+```typescript
+import type {
+  PositionData,
+  RenderableData,
+  StyleData,
+  DimensionsData,
+  HierarchyData,
+  FocusableData,
+  InteractiveData,
+  ScrollableData,
+  BorderData,
+  ContentData,
+  PaddingData,
+  LabelData,
+} from 'blecsd';
 ```

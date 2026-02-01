@@ -1,602 +1,316 @@
 # Focusable Component
 
-The Focusable component manages keyboard focus for entities. Only one entity can have focus at a time. Entities can be organized into a tab order for keyboard navigation.
+The Focusable component enables keyboard focus and tab navigation.
 
-## Constants
-
-### DEFAULT_FOCUS_FG
-
-Default foreground color for focus effects (white).
-
-```typescript
-import { DEFAULT_FOCUS_FG } from 'blecsd';
-
-DEFAULT_FOCUS_FG; // 0xffffffff (white)
-```
-
-### DEFAULT_FOCUS_BG
-
-Default background color for focus effects (transparent).
-
-```typescript
-import { DEFAULT_FOCUS_BG } from 'blecsd';
-
-DEFAULT_FOCUS_BG; // 0x00000000 (transparent)
-```
-
----
-
-## Focusable Component
-
-The Focusable component stores focus metadata using bitecs SoA (Structure of Arrays) pattern.
+## Component
 
 ```typescript
 import { Focusable } from 'blecsd';
 
-// Component arrays
-Focusable.focusable     // Uint8Array  - Whether entity can receive focus (0=no, 1=yes)
-Focusable.focused       // Uint8Array  - Whether entity currently has focus (0=no, 1=yes)
-Focusable.tabIndex      // Int16Array  - Tab order (-1 = not in tab order, 0+ = order)
-Focusable.focusEffectFg // Uint32Array - Focus effect foreground color
-Focusable.focusEffectBg // Uint32Array - Focus effect background color
+// Component arrays (bitECS SoA pattern)
+Focusable.focusable     // Uint8Array  - 0 = not focusable, 1 = focusable
+Focusable.focused       // Uint8Array  - 0 = not focused, 1 = focused
+Focusable.tabIndex      // Int16Array  - Tab order (-1 = not in tab order)
+Focusable.focusEffectFg // Uint32Array - Focus state foreground color
+Focusable.focusEffectBg // Uint32Array - Focus state background color
 ```
 
----
+## Constants
+
+```typescript
+import { DEFAULT_FOCUS_FG, DEFAULT_FOCUS_BG } from 'blecsd';
+
+DEFAULT_FOCUS_FG; // Default focus foreground color
+DEFAULT_FOCUS_BG; // Default focus background color
+```
 
 ## Functions
 
 ### hasFocusable
 
-Checks if an entity has a Focusable component.
+Check if an entity has the Focusable component.
 
 ```typescript
-import { createWorld, hasFocusable, setFocusable } from 'blecsd';
+import { hasFocusable } from 'blecsd';
 
-const world = createWorld();
-const eid = 1;
-
-hasFocusable(world, eid); // false
-
-setFocusable(world, eid, { focusable: true });
-hasFocusable(world, eid); // true
+hasFocusable(world, entity); // true or false
 ```
-
----
-
-### setFocusable
-
-Makes an entity focusable with the given options. Adds the Focusable component if not already present.
-
-```typescript
-import { createWorld, setFocusable } from 'blecsd';
-
-const world = createWorld();
-const eid = 1;
-
-// Set focusable with default options
-setFocusable(world, eid, { focusable: true });
-
-// Set focusable with tab index and custom focus colors
-setFocusable(world, eid, {
-  focusable: true,
-  tabIndex: 1,
-  focusEffectFg: 0xff00ffff, // Cyan
-  focusEffectBg: 0x333333ff, // Dark gray
-});
-```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `options` - Focusable configuration options
-  - `focusable` - Whether entity can receive focus
-  - `tabIndex` - Tab order (-1 = not in tab order)
-  - `focusEffectFg` - Focus effect foreground color
-  - `focusEffectBg` - Focus effect background color
-
-**Returns:** The entity ID for chaining
-
----
 
 ### makeFocusable
 
-Simple boolean setter for making an entity focusable or not. Adds the Focusable component if not already present.
+Make an entity focusable. Adds Focusable component if needed.
 
 ```typescript
-import { createWorld, makeFocusable, isFocusable } from 'blecsd';
+import { makeFocusable } from 'blecsd';
 
-const world = createWorld();
-const eid = 1;
-
-makeFocusable(world, eid, true);
-isFocusable(world, eid); // true
-
-makeFocusable(world, eid, false);
-isFocusable(world, eid); // false
+makeFocusable(world, entity);
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `focusable` - Whether entity can receive focus
+### setFocusable
 
-**Returns:** The entity ID for chaining
-
----
-
-### isFocused
-
-Checks if an entity is currently focused.
+Set focusable state and options.
 
 ```typescript
-import { createWorld, setFocusable, focus, isFocused } from 'blecsd';
+import { setFocusable } from 'blecsd';
 
-const world = createWorld();
-const eid = 1;
-
-setFocusable(world, eid, { focusable: true });
-isFocused(world, eid); // false
-
-focus(world, eid);
-isFocused(world, eid); // true
+setFocusable(world, entity, {
+  focusable: true,
+  tabIndex: 0,
+  focusEffectFg: 0xffffffff,
+  focusEffectBg: 0x0066ccff,
+});
 ```
-
----
 
 ### isFocusable
 
-Checks if an entity can receive focus.
+Check if an entity can receive focus.
 
 ```typescript
-import { createWorld, setFocusable, isFocusable } from 'blecsd';
+import { isFocusable } from 'blecsd';
 
-const world = createWorld();
-const eid = 1;
-
-isFocusable(world, eid); // false (no component)
-
-setFocusable(world, eid, { focusable: true });
-isFocusable(world, eid); // true
-
-setFocusable(world, eid, { focusable: false });
-isFocusable(world, eid); // false (disabled)
+isFocusable(world, entity); // true or false
 ```
-
----
 
 ### focus
 
-Focuses an entity, automatically unfocusing any previously focused entity. Only works if the entity is focusable.
+Focus an entity. Blurs the previously focused entity.
 
 ```typescript
-import { createWorld, setFocusable, focus, isFocused } from 'blecsd';
+import { focus } from 'blecsd';
 
-const world = createWorld();
-const button1 = 1;
-const button2 = 2;
-
-setFocusable(world, button1, { focusable: true });
-setFocusable(world, button2, { focusable: true });
-
-focus(world, button1);
-isFocused(world, button1); // true
-isFocused(world, button2); // false
-
-// Focusing another entity automatically blurs the previous one
-focus(world, button2);
-isFocused(world, button1); // false
-isFocused(world, button2); // true
+focus(world, entity);
 ```
-
-**Note:** Does nothing if the entity is not focusable.
-
-**Returns:** The entity ID for chaining
-
----
 
 ### blur
 
-Removes focus from an entity.
+Remove focus from an entity.
 
 ```typescript
-import { createWorld, setFocusable, focus, blur, isFocused } from 'blecsd';
+import { blur } from 'blecsd';
 
-const world = createWorld();
-const eid = 1;
-
-setFocusable(world, eid, { focusable: true });
-focus(world, eid);
-isFocused(world, eid); // true
-
-blur(world, eid);
-isFocused(world, eid); // false
+blur(world, entity);
 ```
 
-**Returns:** The entity ID for chaining
+### isFocused
 
----
-
-### getFocusable
-
-Gets full focus data for an entity.
+Check if an entity has focus.
 
 ```typescript
-import { createWorld, setFocusable, focus, getFocusable } from 'blecsd';
+import { isFocused } from 'blecsd';
 
-const world = createWorld();
-const eid = 1;
-
-getFocusable(world, eid); // undefined (no component)
-
-setFocusable(world, eid, {
-  focusable: true,
-  tabIndex: 2,
-  focusEffectFg: 0xffff00ff,
-  focusEffectBg: 0x000000ff,
-});
-
-focus(world, eid);
-
-const data = getFocusable(world, eid);
-// data = {
-//   focusable: true,
-//   focused: true,
-//   tabIndex: 2,
-//   focusEffectFg: 0xffff00ff,
-//   focusEffectBg: 0x000000ff
-// }
+isFocused(world, entity); // true or false
 ```
-
-**Returns:** `FocusableData | undefined`
-
----
 
 ### getFocusedEntity
 
-Gets the currently focused entity globally.
+Get the currently focused entity.
 
 ```typescript
-import { createWorld, setFocusable, focus, blur, getFocusedEntity } from 'blecsd';
+import { getFocusedEntity } from 'blecsd';
 
-const world = createWorld();
-const eid = 1;
-
-getFocusedEntity(); // null
-
-setFocusable(world, eid, { focusable: true });
-focus(world, eid);
-getFocusedEntity(); // 1
-
-blur(world, eid);
-getFocusedEntity(); // null
+const focused = getFocusedEntity(world);
+// Entity ID or undefined if nothing focused
 ```
-
-**Returns:** The focused entity ID or `null` if none
-
----
-
-### setTabIndex
-
-Sets the tab index of an entity. Adds the Focusable component if not already present.
-
-```typescript
-import { createWorld, setFocusable, setTabIndex, getTabIndex } from 'blecsd';
-
-const world = createWorld();
-const eid = 1;
-
-setFocusable(world, eid, { focusable: true });
-setTabIndex(world, eid, 5);
-getTabIndex(world, eid); // 5
-
-// Set to -1 to remove from tab order
-setTabIndex(world, eid, -1);
-```
-
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `index` - Tab index (-1 = not in tab order)
-
-**Returns:** The entity ID for chaining
-
----
-
-### getTabIndex
-
-Gets the tab index of an entity.
-
-```typescript
-import { createWorld, setFocusable, getTabIndex } from 'blecsd';
-
-const world = createWorld();
-const eid = 1;
-
-getTabIndex(world, eid); // -1 (no component)
-
-setFocusable(world, eid, { focusable: true, tabIndex: 3 });
-getTabIndex(world, eid); // 3
-```
-
-**Returns:** Tab index or -1 if not in tab order
-
----
-
-### isInTabOrder
-
-Checks if an entity is in the tab order. An entity must be focusable and have a tabIndex >= 0.
-
-```typescript
-import { createWorld, setFocusable, isInTabOrder } from 'blecsd';
-
-const world = createWorld();
-const eid = 1;
-
-isInTabOrder(world, eid); // false (no component)
-
-setFocusable(world, eid, { focusable: true, tabIndex: 0 });
-isInTabOrder(world, eid); // true
-
-setFocusable(world, eid, { focusable: false, tabIndex: 0 });
-isInTabOrder(world, eid); // false (not focusable)
-
-setFocusable(world, eid, { focusable: true, tabIndex: -1 });
-isInTabOrder(world, eid); // false (negative tabIndex)
-```
-
----
-
-### getTabOrder
-
-Gets entities sorted by tab index (ascending). Only includes entities that are in the tab order.
-
-```typescript
-import { createWorld, setFocusable, getTabOrder } from 'blecsd';
-
-const world = createWorld();
-const button1 = 1;
-const button2 = 2;
-const button3 = 3;
-
-setFocusable(world, button1, { focusable: true, tabIndex: 2 });
-setFocusable(world, button2, { focusable: true, tabIndex: 0 });
-setFocusable(world, button3, { focusable: true, tabIndex: 1 });
-
-const allEntities = [button1, button2, button3];
-const ordered = getTabOrder(world, allEntities);
-// ordered = [button2, button3, button1] (sorted by tabIndex: 0, 1, 2)
-```
-
-**Parameters:**
-- `world` - The ECS world
-- `entities` - Array of entities to consider
-
-**Returns:** Sorted array of entities in tab order
-
----
 
 ### focusNext
 
-Focuses the next entity in tab order. Wraps around to the first entity when at the end.
+Focus the next entity in tab order.
 
 ```typescript
-import { createWorld, setFocusable, focus, focusNext, getFocusedEntity } from 'blecsd';
+import { focusNext } from 'blecsd';
 
-const world = createWorld();
-const button1 = 1;
-const button2 = 2;
-const button3 = 3;
-
-setFocusable(world, button1, { focusable: true, tabIndex: 0 });
-setFocusable(world, button2, { focusable: true, tabIndex: 1 });
-setFocusable(world, button3, { focusable: true, tabIndex: 2 });
-
-const entities = [button1, button2, button3];
-
-focus(world, button1);
-getFocusedEntity(); // 1
-
-focusNext(world, entities);
-getFocusedEntity(); // 2
-
-focusNext(world, entities);
-getFocusedEntity(); // 3
-
-focusNext(world, entities);
-getFocusedEntity(); // 1 (wrapped around)
+focusNext(world);
+// Focuses next focusable entity, wraps around
 ```
-
-**Parameters:**
-- `world` - The ECS world
-- `entities` - Array of entities in the focusable set
-
-**Returns:** The newly focused entity or `null` if none
-
----
 
 ### focusPrev
 
-Focuses the previous entity in tab order. Wraps around to the last entity when at the beginning.
+Focus the previous entity in tab order.
 
 ```typescript
-import { createWorld, setFocusable, focus, focusPrev, getFocusedEntity } from 'blecsd';
+import { focusPrev } from 'blecsd';
 
-const world = createWorld();
-const button1 = 1;
-const button2 = 2;
-const button3 = 3;
-
-setFocusable(world, button1, { focusable: true, tabIndex: 0 });
-setFocusable(world, button2, { focusable: true, tabIndex: 1 });
-setFocusable(world, button3, { focusable: true, tabIndex: 2 });
-
-const entities = [button1, button2, button3];
-
-focus(world, button2);
-getFocusedEntity(); // 2
-
-focusPrev(world, entities);
-getFocusedEntity(); // 1
-
-focusPrev(world, entities);
-getFocusedEntity(); // 3 (wrapped around)
+focusPrev(world);
+// Focuses previous focusable entity, wraps around
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `entities` - Array of entities in the focusable set
+### setTabIndex
 
-**Returns:** The newly focused entity or `null` if none
+Set an entity's tab order index.
 
----
+```typescript
+import { setTabIndex } from 'blecsd';
+
+setTabIndex(world, entity, 0);  // First in tab order
+setTabIndex(world, entity, -1); // Remove from tab order
+```
+
+### getTabIndex
+
+Get an entity's tab order index.
+
+```typescript
+import { getTabIndex } from 'blecsd';
+
+const index = getTabIndex(world, entity);
+// number or undefined
+```
+
+### isInTabOrder
+
+Check if an entity is in the tab order.
+
+```typescript
+import { isInTabOrder } from 'blecsd';
+
+isInTabOrder(world, entity); // true if tabIndex >= 0
+```
+
+### getTabOrder
+
+Get all entities in tab order, sorted.
+
+```typescript
+import { getTabOrder } from 'blecsd';
+
+const entities = getTabOrder(world);
+// [entityA, entityB, ...] sorted by tabIndex
+```
+
+### getFocusable
+
+Get all focusable data for an entity.
+
+```typescript
+import { getFocusable } from 'blecsd';
+
+const data = getFocusable(world, entity);
+// {
+//   focusable: boolean,
+//   focused: boolean,
+//   tabIndex: number,
+//   focusEffectFg: number,
+//   focusEffectBg: number
+// }
+```
 
 ### resetFocusState
 
-Resets the focus state. Primarily used for testing.
+Clear all focus state (useful on screen change).
 
 ```typescript
 import { resetFocusState } from 'blecsd';
 
-beforeEach(() => {
-  resetFocusState();
-});
+resetFocusState(world);
 ```
-
----
 
 ## Types
 
-### FocusableOptions
-
-Options for configuring a focusable entity.
-
-```typescript
-interface FocusableOptions {
-  focusable?: boolean;     // Whether entity can receive focus
-  tabIndex?: number;       // Tab order (-1 = not in tab order)
-  focusEffectFg?: number;  // Focus effect foreground color
-  focusEffectBg?: number;  // Focus effect background color
-}
-```
-
 ### FocusableData
-
-Data returned by getFocusable.
 
 ```typescript
 interface FocusableData {
-  readonly focusable: boolean;     // Whether entity can receive focus
-  readonly focused: boolean;       // Whether entity currently has focus
-  readonly tabIndex: number;       // Tab order
-  readonly focusEffectFg: number;  // Focus effect foreground color
-  readonly focusEffectBg: number;  // Focus effect background color
+  readonly focusable: boolean;
+  readonly focused: boolean;
+  readonly tabIndex: number;
+  readonly focusEffectFg: number;
+  readonly focusEffectBg: number;
 }
 ```
 
----
-
-## Usage Examples
-
-### Basic Focus Management
+### FocusableOptions
 
 ```typescript
-import {
-  createWorld,
-  setFocusable,
-  focus,
-  blur,
-  isFocused,
-  getFocusedEntity,
-} from 'blecsd';
+interface FocusableOptions {
+  focusable?: boolean;
+  tabIndex?: number;
+  focusEffectFg?: number;
+  focusEffectBg?: number;
+}
+```
+
+## Examples
+
+### Basic Focus Handling
+
+```typescript
+import { createWorld, addEntity } from 'bitecs';
+import { makeFocusable, focus, isFocused, blur } from 'blecsd';
 
 const world = createWorld();
-const inputField = 1;
+const button = addEntity(world);
 
-// Make the input field focusable
-setFocusable(world, inputField, { focusable: true });
+makeFocusable(world, button);
+focus(world, button);
 
-// Focus the input field
-focus(world, inputField);
+isFocused(world, button); // true
 
-// Check if focused
-if (isFocused(world, inputField)) {
-  console.log('Input field is focused');
-}
-
-// Get the currently focused entity
-const focused = getFocusedEntity();
-console.log(`Focused entity: ${focused}`);
-
-// Remove focus
-blur(world, inputField);
+blur(world, button);
+isFocused(world, button); // false
 ```
 
 ### Tab Navigation
 
 ```typescript
 import {
-  createWorld,
-  setFocusable,
+  makeFocusable,
+  setTabIndex,
   focusNext,
   focusPrev,
   getFocusedEntity,
 } from 'blecsd';
 
-const world = createWorld();
+// Create focusable elements with tab order
+const button1 = addEntity(world);
+const button2 = addEntity(world);
+const button3 = addEntity(world);
 
-// Create a form with multiple fields
-const nameField = 1;
-const emailField = 2;
-const submitButton = 3;
+makeFocusable(world, button1);
+makeFocusable(world, button2);
+makeFocusable(world, button3);
 
-setFocusable(world, nameField, { focusable: true, tabIndex: 0 });
-setFocusable(world, emailField, { focusable: true, tabIndex: 1 });
-setFocusable(world, submitButton, { focusable: true, tabIndex: 2 });
+setTabIndex(world, button1, 0);
+setTabIndex(world, button2, 1);
+setTabIndex(world, button3, 2);
 
-const formEntities = [nameField, emailField, submitButton];
-
-// Handle Tab key
-function onTab() {
-  focusNext(world, formEntities);
-  console.log(`Now focused: ${getFocusedEntity()}`);
-}
-
-// Handle Shift+Tab
-function onShiftTab() {
-  focusPrev(world, formEntities);
-  console.log(`Now focused: ${getFocusedEntity()}`);
+// Navigate with Tab/Shift+Tab
+function handleKey(key) {
+  if (key.name === 'tab') {
+    if (key.shift) {
+      focusPrev(world);
+    } else {
+      focusNext(world);
+    }
+  }
 }
 ```
 
-### Custom Focus Effects
+### Focus Styling
 
 ```typescript
-import { createWorld, setFocusable, focus, getFocusable } from 'blecsd';
+import { setFocusable, isFocused, getStyle, getFocusable } from 'blecsd';
 
-const world = createWorld();
-const button = 1;
-
-// Configure custom focus colors
+// Set focus colors
 setFocusable(world, button, {
   focusable: true,
   tabIndex: 0,
-  focusEffectFg: 0x00ff00ff, // Bright green foreground
-  focusEffectBg: 0x003300ff, // Dark green background
+  focusEffectFg: 0xffffffff,
+  focusEffectBg: 0x3399ffff,
 });
 
-focus(world, button);
+// In render, use focus colors when focused
+function getEffectiveStyle(world, entity) {
+  const style = getStyle(world, entity);
+  const focusData = getFocusable(world, entity);
 
-// Use focus data in render system
-const data = getFocusable(world, button);
-if (data?.focused) {
-  // Apply focusEffectFg and focusEffectBg colors
+  if (focusData?.focused) {
+    return {
+      ...style,
+      fg: focusData.focusEffectFg,
+      bg: focusData.focusEffectBg,
+    };
+  }
+
+  return style;
 }
 ```
-
----
-
-## See Also
-
-- [Components Reference](./components.md) - All component documentation
-- [Entity Factories](./entities.md) - Creating entities with components
-- [Input Handling](./input.md) - Keyboard and mouse input

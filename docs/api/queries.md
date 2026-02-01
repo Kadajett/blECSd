@@ -1,371 +1,286 @@
-# Query Functions
+# Queries API
 
-Query functions find and filter entities based on component combinations. They provide efficient ways to select entities for systems and game logic.
+Pre-built queries and filters for finding and sorting entities.
 
-## Query Functions
+## Queries
+
+Queries return arrays of entity IDs that have specific components.
 
 ### queryRenderable
 
-Returns entities with Position, Dimensions, and Renderable components.
+Entities with the Renderable component.
 
 ```typescript
-import { createWorld, queryRenderable, Position, Renderable } from 'blecsd';
-
-const world = createWorld();
-// ... create entities ...
+import { queryRenderable } from 'blecsd';
 
 const entities = queryRenderable(world);
-for (const eid of entities) {
-  const x = Position.x[eid];
-  const y = Position.y[eid];
-  const visible = Renderable.visible[eid];
-}
+// [1, 2, 5, ...] entity IDs
 ```
-
----
 
 ### queryFocusable
 
-Returns entities with the Focusable component.
+Entities with the Focusable component.
 
 ```typescript
-import { createWorld, queryFocusable, Focusable } from 'blecsd';
+import { queryFocusable } from 'blecsd';
 
-const world = createWorld();
-// ... create focusable entities ...
-
-const focusables = queryFocusable(world);
-for (const eid of focusables) {
-  if (Focusable.focusable[eid] === 1) {
-    console.log(`Entity ${eid} is focusable`);
-  }
-}
+const entities = queryFocusable(world);
 ```
-
----
 
 ### queryInteractive
 
-Returns entities with the Interactive component.
+Entities with the Interactive component.
 
 ```typescript
-import { createWorld, queryInteractive, Interactive } from 'blecsd';
+import { queryInteractive } from 'blecsd';
 
-const world = createWorld();
-const interactives = queryInteractive(world);
-
-for (const eid of interactives) {
-  if (Interactive.clickable[eid] === 1) {
-    // Handle clickable entity
-  }
-}
+const entities = queryInteractive(world);
 ```
-
----
-
-### queryScrollable
-
-Returns entities with the Scrollable component.
-
-```typescript
-import { createWorld, queryScrollable, Scrollable } from 'blecsd';
-
-const world = createWorld();
-const scrollables = queryScrollable(world);
-
-for (const eid of scrollables) {
-  const scrollY = Scrollable.scrollY[eid];
-  const scrollHeight = Scrollable.scrollHeight[eid];
-}
-```
-
----
-
-### queryContent
-
-Returns entities with Position, Dimensions, Renderable, and Content components.
-
-```typescript
-import { createWorld, queryContent, getContent } from 'blecsd';
-
-const world = createWorld();
-const contentEntities = queryContent(world);
-
-for (const eid of contentEntities) {
-  const text = getContent(world, eid);
-  console.log(`Entity ${eid} has content: ${text}`);
-}
-```
-
----
-
-### queryBorder
-
-Returns entities with Position, Dimensions, Renderable, and Border components.
-
-```typescript
-import { createWorld, queryBorder, Border } from 'blecsd';
-
-const world = createWorld();
-const borderedEntities = queryBorder(world);
-
-for (const eid of borderedEntities) {
-  const borderType = Border.type[eid];
-  const hasBorder = Border.left[eid] || Border.right[eid] ||
-                    Border.top[eid] || Border.bottom[eid];
-}
-```
-
----
-
-### queryPadding
-
-Returns entities with Position, Dimensions, Renderable, and Padding components.
-
-```typescript
-import { createWorld, queryPadding, Padding } from 'blecsd';
-
-const world = createWorld();
-const paddedEntities = queryPadding(world);
-
-for (const eid of paddedEntities) {
-  const totalHorizontal = Padding.left[eid] + Padding.right[eid];
-  const totalVertical = Padding.top[eid] + Padding.bottom[eid];
-}
-```
-
----
 
 ### queryHierarchy
 
-Returns entities with the Hierarchy component.
+Entities with the Hierarchy component.
 
 ```typescript
-import { createWorld, queryHierarchy, Hierarchy, NULL_ENTITY } from 'blecsd';
+import { queryHierarchy } from 'blecsd';
 
-const world = createWorld();
-const hierarchicalEntities = queryHierarchy(world);
-
-for (const eid of hierarchicalEntities) {
-  const parent = Hierarchy.parent[eid];
-  if (parent === NULL_ENTITY) {
-    console.log(`Entity ${eid} is a root entity`);
-  }
-}
+const entities = queryHierarchy(world);
 ```
 
----
+### queryBorder
 
-## Filter Functions
+Entities with the Border component.
 
-Filter functions refine entity arrays based on specific conditions.
+```typescript
+import { queryBorder } from 'blecsd';
+
+const entities = queryBorder(world);
+```
+
+### queryContent
+
+Entities with the Content component.
+
+```typescript
+import { queryContent } from 'blecsd';
+
+const entities = queryContent(world);
+```
+
+### queryPadding
+
+Entities with the Padding component.
+
+```typescript
+import { queryPadding } from 'blecsd';
+
+const entities = queryPadding(world);
+```
+
+### queryScrollable
+
+Entities with the Scrollable component.
+
+```typescript
+import { queryScrollable } from 'blecsd';
+
+const entities = queryScrollable(world);
+```
+
+## Filters
+
+Filters take an array of entity IDs and return a filtered subset.
 
 ### filterVisible
 
-Returns only entities where `Renderable.visible === 1`.
+Keep only visible entities.
 
 ```typescript
-import { createWorld, queryRenderable, filterVisible } from 'blecsd';
+import { queryRenderable, filterVisible } from 'blecsd';
 
-const world = createWorld();
-const allRenderables = queryRenderable(world);
-const visibleOnly = filterVisible(world, allRenderables);
-
-for (const eid of visibleOnly) {
-  // Only process visible entities
-}
+const all = queryRenderable(world);
+const visible = filterVisible(world, all);
 ```
-
----
 
 ### filterDirty
 
-Returns only entities where `Renderable.dirty === 1`.
+Keep only entities marked dirty (needing redraw).
 
 ```typescript
-import { createWorld, queryRenderable, filterDirty } from 'blecsd';
+import { queryRenderable, filterDirty } from 'blecsd';
 
-const world = createWorld();
-const allRenderables = queryRenderable(world);
-const needsRedraw = filterDirty(world, allRenderables);
-
-for (const eid of needsRedraw) {
-  // Only redraw dirty entities
-}
+const all = queryRenderable(world);
+const dirty = filterDirty(world, all);
 ```
-
----
 
 ### filterVisibleDirty
 
-Returns only entities that are both visible AND dirty. Optimized for render systems.
+Keep entities that are both visible and dirty.
 
 ```typescript
-import { createWorld, queryRenderable, filterVisibleDirty } from 'blecsd';
+import { queryRenderable, filterVisibleDirty } from 'blecsd';
 
-const world = createWorld();
-const allRenderables = queryRenderable(world);
-const toRender = filterVisibleDirty(world, allRenderables);
-
-for (const eid of toRender) {
-  // Render only visible entities that need redrawing
-}
+const toRender = filterVisibleDirty(world, queryRenderable(world));
 ```
-
----
 
 ### filterFocusable
 
-Returns only entities where `Focusable.focusable === 1`.
+Keep only focusable entities.
 
 ```typescript
-import { createWorld, queryFocusable, filterFocusable } from 'blecsd';
+import { queryFocusable, filterFocusable } from 'blecsd';
 
-const world = createWorld();
-const allFocusables = queryFocusable(world);
-const enabledFocusables = filterFocusable(world, allFocusables);
-
-for (const eid of enabledFocusables) {
-  // Process only enabled focusable entities
-}
+const focusable = filterFocusable(world, queryFocusable(world));
 ```
-
----
 
 ### filterClickable
 
-Returns only entities where `Interactive.clickable === 1`.
+Keep only clickable entities.
 
 ```typescript
-import { createWorld, queryInteractive, filterClickable } from 'blecsd';
+import { queryInteractive, filterClickable } from 'blecsd';
 
-const world = createWorld();
-const allInteractives = queryInteractive(world);
-const clickables = filterClickable(world, allInteractives);
-
-for (const eid of clickables) {
-  // Process only clickable entities
-}
+const clickable = filterClickable(world, queryInteractive(world));
 ```
 
----
+## Sorting
 
-## Hierarchy Functions
-
-Functions for working with the entity hierarchy.
-
-### getChildEntities
-
-Gets all direct child entities of a parent.
-
-```typescript
-import { createWorld, createBoxEntity, getChildEntities } from 'blecsd';
-
-const world = createWorld();
-const parent = createBoxEntity(world, { x: 0, y: 0 });
-const child1 = createBoxEntity(world, { parent, x: 1, y: 1 });
-const child2 = createBoxEntity(world, { parent, x: 2, y: 2 });
-
-const children = getChildEntities(world, parent);
-// children = [child1, child2]
-```
-
----
-
-### getDescendantEntities
-
-Gets all descendant entities (children, grandchildren, etc.).
-
-```typescript
-import { createWorld, createBoxEntity, getDescendantEntities } from 'blecsd';
-
-const world = createWorld();
-const root = createBoxEntity(world, { x: 0, y: 0 });
-const child = createBoxEntity(world, { parent: root, x: 1, y: 1 });
-const grandchild = createBoxEntity(world, { parent: child, x: 2, y: 2 });
-
-const descendants = getDescendantEntities(world, root);
-// descendants = [child, grandchild]
-```
-
----
-
-### getRootEntities
-
-Gets all entities with no parent (root entities).
-
-```typescript
-import { createWorld, createBoxEntity, getRootEntities } from 'blecsd';
-
-const world = createWorld();
-const root1 = createBoxEntity(world, { x: 0, y: 0 });
-const root2 = createBoxEntity(world, { x: 10, y: 0 });
-const child = createBoxEntity(world, { parent: root1, x: 1, y: 1 });
-
-const roots = getRootEntities(world);
-// roots = [root1, root2]
-```
-
----
-
-## Sort Functions
-
-Functions for sorting entity arrays.
+Sort functions return a new sorted array.
 
 ### sortByZIndex
 
-Sorts entities by z-index for proper layering during rendering. Higher z-index entities are rendered later (on top).
+Sort by z-index, lowest first.
 
 ```typescript
-import { createWorld, queryRenderable, sortByZIndex } from 'blecsd';
+import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd';
 
-const world = createWorld();
-const renderables = queryRenderable(world);
-const sortedForRender = sortByZIndex(world, renderables);
-
-for (const eid of sortedForRender) {
-  // Render in correct z-order
-}
+const entities = queryRenderable(world);
+const visible = filterVisible(world, entities);
+const sorted = sortByZIndex(world, visible);
+// Lowest z-index first for proper render order
 ```
-
----
-
-### sortByTabIndex
-
-Sorts entities by tab index for focus navigation. Entities with lower tabIndex are focused first.
-
-```typescript
-import { createWorld, queryFocusable, sortByTabIndex, filterFocusable } from 'blecsd';
-
-const world = createWorld();
-const focusables = queryFocusable(world);
-const enabled = filterFocusable(world, focusables);
-const tabOrder = sortByTabIndex(world, enabled);
-
-// tabOrder is now in correct focus navigation order
-```
-
----
 
 ### sortByDepth
 
-Sorts entities by hierarchy depth (ancestors first). Useful for processing in parent-to-child order.
+Sort by hierarchy depth, shallowest first.
 
 ```typescript
-import { createWorld, queryHierarchy, sortByDepth } from 'blecsd';
+import { queryHierarchy, sortByDepth } from 'blecsd';
 
-const world = createWorld();
-const hierarchical = queryHierarchy(world);
-const topDown = sortByDepth(world, hierarchical);
+const entities = queryHierarchy(world);
+const sorted = sortByDepth(world, entities);
+// Root entities first, then children
+```
 
-for (const eid of topDown) {
-  // Process parent before children
+### sortByTabIndex
+
+Sort by tab index for focus navigation.
+
+```typescript
+import { queryFocusable, filterFocusable, sortByTabIndex } from 'blecsd';
+
+const focusable = filterFocusable(world, queryFocusable(world));
+const tabOrder = sortByTabIndex(world, focusable);
+```
+
+## Hierarchy Queries
+
+### getRootEntities
+
+Get entities with no parent.
+
+```typescript
+import { getRootEntities } from 'blecsd';
+
+const roots = getRootEntities(world);
+```
+
+### getChildEntities
+
+Get direct children of an entity.
+
+```typescript
+import { getChildEntities } from 'blecsd';
+
+const children = getChildEntities(world, parentEntity);
+```
+
+### getDescendantEntities
+
+Get all descendants of an entity (children, grandchildren, etc.).
+
+```typescript
+import { getDescendantEntities } from 'blecsd';
+
+const descendants = getDescendantEntities(world, rootEntity);
+```
+
+## Patterns
+
+### Render Pipeline
+
+```typescript
+import {
+  queryRenderable,
+  filterVisible,
+  sortByZIndex,
+} from 'blecsd';
+
+function getRenderOrder(world) {
+  const entities = queryRenderable(world);
+  const visible = filterVisible(world, entities);
+  return sortByZIndex(world, visible);
 }
 ```
 
----
+### Focus Navigation
 
-## See Also
+```typescript
+import {
+  queryFocusable,
+  filterFocusable,
+  sortByTabIndex,
+} from 'blecsd';
 
-- [Entity Factories](./entities.md) - Creating entities
-- [Components Reference](./components.md) - Component documentation
+function getTabOrder(world) {
+  const entities = queryFocusable(world);
+  const focusable = filterFocusable(world, entities);
+  return sortByTabIndex(world, focusable);
+}
+```
+
+### Hit Testing
+
+```typescript
+import {
+  queryInteractive,
+  filterClickable,
+  filterVisible,
+  sortByZIndex,
+  getPosition,
+  getDimensions,
+} from 'blecsd';
+
+function getEntityAtPoint(world, x, y) {
+  const entities = queryInteractive(world);
+  const clickable = filterClickable(world, entities);
+  const visible = filterVisible(world, clickable);
+  const sorted = sortByZIndex(world, visible);
+
+  // Check in reverse order (highest z-index first)
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    const eid = sorted[i];
+    const pos = getPosition(world, eid);
+    const dims = getDimensions(world, eid);
+
+    if (pos && dims) {
+      if (x >= pos.x && x < pos.x + dims.width &&
+          y >= pos.y && y < pos.y + dims.height) {
+        return eid;
+      }
+    }
+  }
+
+  return null;
+}
+```

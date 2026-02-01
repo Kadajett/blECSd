@@ -1,31 +1,23 @@
 # Installation
 
-Get blecsd installed and ready to use.
+## Requirements
 
-## Prerequisites
-
-- **Node.js** 18 or later
-- **npm**, **pnpm**, or **yarn**
-- A terminal that supports at least 256 colors (most modern terminals do)
+- Node.js 18+
+- A terminal with 256-color support (most modern terminals)
 
 ## Install
 
 ```bash
-# npm
 npm install blecsd
-
-# pnpm
+# or
 pnpm add blecsd
-
-# yarn
+# or
 yarn add blecsd
 ```
 
-## TypeScript Setup
+## TypeScript Configuration
 
-blECSd is written in TypeScript and ships with full type definitions. No additional `@types` packages needed.
-
-For the best experience, enable strict mode in your `tsconfig.json`:
+blECSd ships with type definitions. For the best experience, enable strict mode:
 
 ```json
 {
@@ -41,66 +33,79 @@ For the best experience, enable strict mode in your `tsconfig.json`:
 
 ## Verify Installation
 
-Create a file called `test.ts`:
+Create `test.ts`:
 
 ```typescript
-import { createGame } from 'blecsd';
+import { createWorld, setPosition, getPosition } from 'blecsd';
+import { addEntity } from 'bitecs';
 
-const game = createGame({ title: 'Test' });
+const world = createWorld();
+const entity = addEntity(world);
 
-game.createText({
-  x: 0,
-  y: 0,
-  content: 'blECSd is working!',
-});
+setPosition(world, entity, 10, 5);
+const pos = getPosition(world, entity);
 
-game.onKey('q', () => game.quit());
-game.start();
+console.log(`Position: ${pos?.x}, ${pos?.y}`);
 ```
 
-Run it:
+Run:
 
 ```bash
 npx tsx test.ts
 ```
 
-You should see "blECSd is working!" in your terminal. Press `q` to quit.
+Expected output:
+
+```
+Position: 10, 5
+```
 
 ## Terminal Compatibility
 
-blECSd works best in terminals with truecolor (24-bit) support:
+blECSd works with any terminal that supports ANSI escape sequences. Truecolor (24-bit) support is recommended:
 
 | Terminal | Truecolor | Notes |
 |----------|-----------|-------|
 | iTerm2 | Yes | Recommended for macOS |
-| Kitty | Yes | Fast GPU rendering |
+| Kitty | Yes | GPU-accelerated |
 | Alacritty | Yes | Cross-platform |
 | Windows Terminal | Yes | Recommended for Windows |
-| VS Code Terminal | Yes | Works great |
+| VS Code Terminal | Yes | Works well |
 | macOS Terminal.app | No | 256 colors only |
-| xterm | Varies | Check config |
 
-blECSd automatically detects terminal capabilities and falls back gracefully.
+blECSd does not handle terminal capability detection automatically. Use the detection utilities if you need to check capabilities:
 
-## Common Issues
+```typescript
+import { getTerminalInfo } from 'blecsd/terminal';
+
+const info = getTerminalInfo();
+console.log(info.colorDepth); // 24, 8, or 4
+```
+
+## Troubleshooting
 
 ### "Cannot find module 'blecsd'"
 
-Make sure you're in the correct directory and have run `npm install`.
-
-### Colors look wrong
-
-Your terminal may not support truecolor. Try a different terminal or set:
+Verify the package is installed:
 
 ```bash
-export COLORTERM=truecolor
+npm ls blecsd
 ```
 
-### Input feels laggy
+### "Cannot find module 'bitecs'"
 
-blECSd processes input at 60fps by default. If you're experiencing lag, check that no other processes are consuming CPU.
+blECSd has bitecs as a peer dependency. Install it:
 
-## Next Steps
+```bash
+npm install bitecs
+```
 
-- [Hello World](./hello-world.md) - Write your first program
-- [Core Concepts](./concepts.md) - Understand how blessed works
+### Colors appear wrong
+
+Your terminal may not support truecolor. Check:
+
+```bash
+echo $COLORTERM
+```
+
+If empty or not `truecolor`, your terminal is limited to 256 colors. blECSd still works, but colors will be approximated.
