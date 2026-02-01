@@ -1,0 +1,501 @@
+/**
+ * Renderable component for visual styling of entities.
+ * @module components/renderable
+ */
+
+import { addComponent, hasComponent } from 'bitecs';
+import type { Entity, World } from '../core/types';
+
+/** Default entity capacity for typed arrays */
+const DEFAULT_CAPACITY = 10000;
+
+/**
+ * Packs RGBA color components into a single 32-bit integer.
+ *
+ * @param r - Red component (0-255)
+ * @param g - Green component (0-255)
+ * @param b - Blue component (0-255)
+ * @param a - Alpha component (0-255, default: 255)
+ * @returns Packed 32-bit color value
+ *
+ * @example
+ * ```typescript
+ * const red = packColor(255, 0, 0);
+ * const semiTransparentBlue = packColor(0, 0, 255, 128);
+ * ```
+ */
+export function packColor(r: number, g: number, b: number, a = 255): number {
+	return ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+}
+
+/**
+ * Unpacks a 32-bit color value into RGBA components.
+ *
+ * @param color - Packed 32-bit color value
+ * @returns Object with r, g, b, a components (0-255 each)
+ *
+ * @example
+ * ```typescript
+ * const { r, g, b, a } = unpackColor(0xff0000ff); // Red with full alpha
+ * ```
+ */
+export function unpackColor(color: number): { r: number; g: number; b: number; a: number } {
+	return {
+		r: (color >> 16) & 0xff,
+		g: (color >> 8) & 0xff,
+		b: color & 0xff,
+		a: (color >> 24) & 0xff,
+	};
+}
+
+/**
+ * Converts a hex color string to a packed 32-bit color.
+ *
+ * @param hex - Hex color string (#RGB, #RGBA, #RRGGBB, or #RRGGBBAA)
+ * @returns Packed 32-bit color value
+ *
+ * @example
+ * ```typescript
+ * const red = hexToColor('#ff0000');
+ * const semiTransparent = hexToColor('#ff000080');
+ * ```
+ */
+export function hexToColor(hex: string): number {
+	const clean = hex.replace('#', '');
+	let r: number;
+	let g: number;
+	let b: number;
+	let a = 255;
+
+	if (clean.length === 3 || clean.length === 4) {
+		const c0 = clean.charAt(0);
+		const c1 = clean.charAt(1);
+		const c2 = clean.charAt(2);
+		r = Number.parseInt(c0 + c0, 16);
+		g = Number.parseInt(c1 + c1, 16);
+		b = Number.parseInt(c2 + c2, 16);
+		if (clean.length === 4) {
+			const c3 = clean.charAt(3);
+			a = Number.parseInt(c3 + c3, 16);
+		}
+	} else if (clean.length === 6 || clean.length === 8) {
+		r = Number.parseInt(clean.slice(0, 2), 16);
+		g = Number.parseInt(clean.slice(2, 4), 16);
+		b = Number.parseInt(clean.slice(4, 6), 16);
+		if (clean.length === 8) {
+			a = Number.parseInt(clean.slice(6, 8), 16);
+		}
+	} else {
+		return 0;
+	}
+
+	return packColor(r, g, b, a);
+}
+
+/**
+ * Converts a packed 32-bit color to a hex string.
+ *
+ * @param color - Packed 32-bit color value
+ * @param includeAlpha - Whether to include alpha in output (default: false)
+ * @returns Hex color string
+ *
+ * @example
+ * ```typescript
+ * const hex = colorToHex(0xffff0000); // '#ff0000'
+ * const hexWithAlpha = colorToHex(0x80ff0000, true); // '#ff000080'
+ * ```
+ */
+export function colorToHex(color: number, includeAlpha = false): string {
+	const { r, g, b, a } = unpackColor(color);
+	const rHex = r.toString(16).padStart(2, '0');
+	const gHex = g.toString(16).padStart(2, '0');
+	const bHex = b.toString(16).padStart(2, '0');
+
+	if (includeAlpha) {
+		const aHex = a.toString(16).padStart(2, '0');
+		return `#${rHex}${gHex}${bHex}${aHex}`;
+	}
+	return `#${rHex}${gHex}${bHex}`;
+}
+
+/**
+ * Default foreground color (white).
+ */
+export const DEFAULT_FG = packColor(255, 255, 255);
+
+/**
+ * Default background color (black, fully transparent).
+ */
+export const DEFAULT_BG = packColor(0, 0, 0, 0);
+
+/**
+ * Renderable component store using SoA (Structure of Arrays) for performance.
+ *
+ * - `visible`: Whether entity should be rendered (0=hidden, 1=visible)
+ * - `dirty`: Whether entity needs redraw (0=clean, 1=dirty)
+ * - `fg`: Foreground color (packed RGBA)
+ * - `bg`: Background color (packed RGBA)
+ * - `bold`, `underline`, `blink`, `inverse`: Text styling flags
+ * - `transparent`: Whether background is transparent
+ *
+ * @example
+ * ```typescript
+ * import { Renderable, setStyle, getStyle, markDirty } from 'blecsd';
+ *
+ * setStyle(world, entity, { fg: '#ff0000', bold: true });
+ * markDirty(world, entity);
+ *
+ * const style = getStyle(world, entity);
+ * console.log(style.bold); // true
+ * ```
+ */
+export const Renderable = {
+	/** 0 = hidden, 1 = visible */
+	visible: new Uint8Array(DEFAULT_CAPACITY),
+	/** 0 = clean, 1 = needs redraw */
+	dirty: new Uint8Array(DEFAULT_CAPACITY),
+	/** Foreground color (packed RGBA) */
+	fg: new Uint32Array(DEFAULT_CAPACITY),
+	/** Background color (packed RGBA) */
+	bg: new Uint32Array(DEFAULT_CAPACITY),
+	/** Bold text */
+	bold: new Uint8Array(DEFAULT_CAPACITY),
+	/** Underlined text */
+	underline: new Uint8Array(DEFAULT_CAPACITY),
+	/** Blinking text */
+	blink: new Uint8Array(DEFAULT_CAPACITY),
+	/** Inverse colors */
+	inverse: new Uint8Array(DEFAULT_CAPACITY),
+	/** Transparent background */
+	transparent: new Uint8Array(DEFAULT_CAPACITY),
+};
+
+/**
+ * Style options for setStyle.
+ */
+export interface StyleOptions {
+	/** Foreground color (hex string or packed number) */
+	fg?: string | number;
+	/** Background color (hex string or packed number) */
+	bg?: string | number;
+	/** Bold text */
+	bold?: boolean;
+	/** Underlined text */
+	underline?: boolean;
+	/** Blinking text */
+	blink?: boolean;
+	/** Inverse colors */
+	inverse?: boolean;
+	/** Transparent background */
+	transparent?: boolean;
+}
+
+/**
+ * Style data returned by getStyle.
+ */
+export interface StyleData {
+	readonly fg: number;
+	readonly bg: number;
+	readonly bold: boolean;
+	readonly underline: boolean;
+	readonly blink: boolean;
+	readonly inverse: boolean;
+	readonly transparent: boolean;
+}
+
+/**
+ * Renderable data returned by getRenderable.
+ */
+export interface RenderableData extends StyleData {
+	readonly visible: boolean;
+	readonly dirty: boolean;
+}
+
+/**
+ * Parses a color value (hex string or number) to a packed color.
+ */
+function parseColor(color: string | number): number {
+	if (typeof color === 'string') {
+		return hexToColor(color);
+	}
+	return color;
+}
+
+/**
+ * Initializes a Renderable component with default values.
+ */
+function initRenderable(eid: Entity): void {
+	Renderable.visible[eid] = 1;
+	Renderable.dirty[eid] = 1;
+	Renderable.fg[eid] = DEFAULT_FG;
+	Renderable.bg[eid] = DEFAULT_BG;
+	Renderable.bold[eid] = 0;
+	Renderable.underline[eid] = 0;
+	Renderable.blink[eid] = 0;
+	Renderable.inverse[eid] = 0;
+	Renderable.transparent[eid] = 0;
+}
+
+/**
+ * Ensures an entity has the Renderable component, initializing if needed.
+ */
+function ensureRenderable(world: World, eid: Entity): void {
+	if (!hasComponent(world, eid, Renderable)) {
+		addComponent(world, eid, Renderable);
+		initRenderable(eid);
+	}
+}
+
+/**
+ * Sets the visual style of an entity.
+ * Adds the Renderable component if not already present.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param style - Style options to apply
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { createWorld, addEntity } from 'bitecs';
+ * import { setStyle } from 'blecsd';
+ *
+ * const world = createWorld();
+ * const entity = addEntity(world);
+ *
+ * // Set style with hex colors
+ * setStyle(world, entity, {
+ *   fg: '#ff0000',
+ *   bg: '#000000',
+ *   bold: true,
+ * });
+ *
+ * // Or with packed colors
+ * setStyle(world, entity, { fg: 0xffff0000 });
+ * ```
+ */
+export function setStyle(world: World, eid: Entity, style: StyleOptions): Entity {
+	ensureRenderable(world, eid);
+	applyStyleOptions(eid, style);
+	Renderable.dirty[eid] = 1;
+	return eid;
+}
+
+/**
+ * Applies color options to a renderable entity.
+ * @internal
+ */
+function applyColorOptions(eid: Entity, style: StyleOptions): void {
+	if (style.fg !== undefined) Renderable.fg[eid] = parseColor(style.fg);
+	if (style.bg !== undefined) Renderable.bg[eid] = parseColor(style.bg);
+}
+
+/**
+ * Applies text decoration options to a renderable entity.
+ * @internal
+ */
+function applyDecorationOptions(eid: Entity, style: StyleOptions): void {
+	if (style.bold !== undefined) Renderable.bold[eid] = style.bold ? 1 : 0;
+	if (style.underline !== undefined) Renderable.underline[eid] = style.underline ? 1 : 0;
+	if (style.blink !== undefined) Renderable.blink[eid] = style.blink ? 1 : 0;
+	if (style.inverse !== undefined) Renderable.inverse[eid] = style.inverse ? 1 : 0;
+	if (style.transparent !== undefined) Renderable.transparent[eid] = style.transparent ? 1 : 0;
+}
+
+/**
+ * Applies style options to a renderable entity.
+ * @internal
+ */
+function applyStyleOptions(eid: Entity, style: StyleOptions): void {
+	applyColorOptions(eid, style);
+	applyDecorationOptions(eid, style);
+}
+
+/**
+ * Gets the style data of an entity.
+ * Returns undefined if the entity doesn't have a Renderable component.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns Style data or undefined
+ *
+ * @example
+ * ```typescript
+ * import { getStyle, colorToHex } from 'blecsd';
+ *
+ * const style = getStyle(world, entity);
+ * if (style) {
+ *   console.log(`FG: ${colorToHex(style.fg)}, Bold: ${style.bold}`);
+ * }
+ * ```
+ */
+export function getStyle(world: World, eid: Entity): StyleData | undefined {
+	if (!hasComponent(world, eid, Renderable)) {
+		return undefined;
+	}
+	return {
+		fg: Renderable.fg[eid] as number,
+		bg: Renderable.bg[eid] as number,
+		bold: Renderable.bold[eid] === 1,
+		underline: Renderable.underline[eid] === 1,
+		blink: Renderable.blink[eid] === 1,
+		inverse: Renderable.inverse[eid] === 1,
+		transparent: Renderable.transparent[eid] === 1,
+	};
+}
+
+/**
+ * Gets the full renderable data of an entity.
+ * Returns undefined if the entity doesn't have a Renderable component.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns Renderable data or undefined
+ */
+export function getRenderable(world: World, eid: Entity): RenderableData | undefined {
+	if (!hasComponent(world, eid, Renderable)) {
+		return undefined;
+	}
+	return {
+		visible: Renderable.visible[eid] === 1,
+		dirty: Renderable.dirty[eid] === 1,
+		fg: Renderable.fg[eid] as number,
+		bg: Renderable.bg[eid] as number,
+		bold: Renderable.bold[eid] === 1,
+		underline: Renderable.underline[eid] === 1,
+		blink: Renderable.blink[eid] === 1,
+		inverse: Renderable.inverse[eid] === 1,
+		transparent: Renderable.transparent[eid] === 1,
+	};
+}
+
+/**
+ * Marks an entity as needing redraw.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { markDirty } from 'blecsd';
+ *
+ * // After changing entity state, mark for redraw
+ * markDirty(world, entity);
+ * ```
+ */
+export function markDirty(world: World, eid: Entity): Entity {
+	ensureRenderable(world, eid);
+	Renderable.dirty[eid] = 1;
+	return eid;
+}
+
+/**
+ * Marks an entity as clean (no redraw needed).
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ */
+export function markClean(world: World, eid: Entity): Entity {
+	if (hasComponent(world, eid, Renderable)) {
+		Renderable.dirty[eid] = 0;
+	}
+	return eid;
+}
+
+/**
+ * Checks if an entity needs redraw.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if dirty, false otherwise
+ */
+export function isDirty(world: World, eid: Entity): boolean {
+	if (!hasComponent(world, eid, Renderable)) {
+		return false;
+	}
+	return Renderable.dirty[eid] === 1;
+}
+
+/**
+ * Sets visibility of an entity.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param visible - true to show, false to hide
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { setVisible } from 'blecsd';
+ *
+ * setVisible(world, entity, false); // Hide entity
+ * setVisible(world, entity, true);  // Show entity
+ * ```
+ */
+export function setVisible(world: World, eid: Entity, visible: boolean): Entity {
+	ensureRenderable(world, eid);
+	const wasVisible = Renderable.visible[eid] === 1;
+	Renderable.visible[eid] = visible ? 1 : 0;
+	if (wasVisible !== visible) {
+		Renderable.dirty[eid] = 1;
+	}
+	return eid;
+}
+
+/**
+ * Checks if an entity is visible.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if visible, false otherwise
+ *
+ * @example
+ * ```typescript
+ * import { isVisible } from 'blecsd';
+ *
+ * if (isVisible(world, entity)) {
+ *   // Render the entity
+ * }
+ * ```
+ */
+export function isVisible(world: World, eid: Entity): boolean {
+	if (!hasComponent(world, eid, Renderable)) {
+		return false;
+	}
+	return Renderable.visible[eid] === 1;
+}
+
+/**
+ * Checks if an entity has a Renderable component.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if entity has Renderable component
+ */
+export function hasRenderable(world: World, eid: Entity): boolean {
+	return hasComponent(world, eid, Renderable);
+}
+
+/**
+ * Shows an entity (sets visible to true).
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ */
+export function show(world: World, eid: Entity): Entity {
+	return setVisible(world, eid, true);
+}
+
+/**
+ * Hides an entity (sets visible to false).
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ */
+export function hide(world: World, eid: Entity): Entity {
+	return setVisible(world, eid, false);
+}

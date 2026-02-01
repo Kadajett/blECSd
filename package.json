@@ -1,0 +1,66 @@
+{
+  "name": "blecsd",
+  "version": "0.0.1",
+  "description": "A modern terminal game library built on TypeScript and ECS architecture",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "terminal",
+    "tui",
+    "game",
+    "ecs",
+    "curses",
+    "cli",
+    "console"
+  ],
+  "author": "Jeremy Stover",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kadajett/blessed.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kadajett/blessed/issues"
+  },
+  "homepage": "https://github.com/kadajett/blessed#readme",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.13",
+    "@types/node": "^25.2.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "bitecs": "^0.4.0",
+    "zod": "^4.3.6"
+  }
+}
