@@ -3,6 +3,15 @@
  * @module systems
  */
 
+// Animation system
+export {
+	animationSystem,
+	createAnimationSystem,
+	hasAnimationSystem,
+	queryAnimation,
+	registerAnimationSystem,
+	updateAnimations,
+} from './animationSystem';
 // Input system
 export type {
 	HitTestResult,

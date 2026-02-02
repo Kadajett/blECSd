@@ -3,6 +3,39 @@
  * @module components
  */
 
+// Animation component
+export type {
+	AnimationData,
+	AnimationDefinition,
+	AnimationFrame,
+	AnimationOptions,
+	PlayAnimationOptions,
+} from './animation';
+export {
+	Animation,
+	AnimationDirection,
+	animationStore,
+	getAnimation,
+	getAnimationByName,
+	getAnimationData,
+	getAnimationIdByName,
+	getEntityAnimation,
+	hasAnimation,
+	isAnimationPlaying,
+	pauseAnimation,
+	playAnimation,
+	playAnimationByName,
+	registerAnimation,
+	removeAnimation,
+	resetAnimationStore,
+	resumeAnimation,
+	setAnimationDirection,
+	setAnimationLoop,
+	setAnimationSpeed,
+	stopAnimation,
+	unregisterAnimation,
+	updateAnimationEntity,
+} from './animation';
 // Border component
 export type { BorderCharset, BorderData, BorderOptions } from './border';
 export {
