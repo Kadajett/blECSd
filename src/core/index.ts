@@ -44,22 +44,6 @@ export {
 	resolveEffectConfig,
 	syncEffects,
 } from './effects';
-// Entity data storage
-export type { DataValue, EntityDataMap } from './entityData';
-export {
-	clearAllEntityData,
-	clearEntityData,
-	deleteEntityData,
-	getAllEntityData,
-	getEntityData,
-	getEntityDataCount,
-	getEntityDataKeys,
-	hasAnyEntityData,
-	hasEntityData,
-	setEntityData,
-	setEntityDataBulk,
-	updateEntityData,
-} from './entityData';
 export type {
 	BoxConfig,
 	ButtonConfig,
@@ -109,6 +93,22 @@ export {
 	TextboxConfigSchema,
 	TextConfigSchema,
 } from './entities';
+// Entity data storage
+export type { DataValue, EntityDataMap } from './entityData';
+export {
+	clearAllEntityData,
+	clearEntityData,
+	deleteEntityData,
+	getAllEntityData,
+	getEntityData,
+	getEntityDataCount,
+	getEntityDataKeys,
+	hasAnyEntityData,
+	hasEntityData,
+	setEntityData,
+	setEntityDataBulk,
+	updateEntityData,
+} from './entityData';
 // Event bubbling
 export type {
 	BubbleableEvent,
@@ -308,3 +308,30 @@ export {
 export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
 export { createWorld, resetWorld } from './world';
+// Key bindings
+export type {
+	BindingMatch,
+	ConditionContext,
+	KeyBinding,
+	KeyBindingRegistry,
+	ParsedKey,
+} from './keyBindings';
+export {
+	createKeyBindingRegistry,
+	DEFAULT_NAV_BINDINGS,
+	DEFAULT_TEXT_BINDINGS,
+	evaluateCondition,
+	formatKey,
+	formatKeyEvent,
+	getBindingForAction,
+	getBindingsForKey,
+	KeyBindingSchema,
+	KeyBindingsArraySchema,
+	listBindings,
+	matchesKey,
+	matchEvent,
+	parseKeyString,
+	registerBinding,
+	registerBindings,
+	unregisterBinding,
+} from './keyBindings';
