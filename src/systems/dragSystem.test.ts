@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Dimensions, setDimensions } from '../components/dimensions';
 import { setParent } from '../components/hierarchy';
 import { setDraggable } from '../components/interactive';
-import { getPosition, setPosition } from '../components/position';
+import { getPosition, getZIndex, setPosition, setZIndex } from '../components/position';
 import { EventBus } from '../core/events';
 import type { Entity, World } from '../core/types';
 import {
@@ -312,6 +312,35 @@ describe('dragSystem', () => {
 				pos = getPosition(world, entity);
 				expect(pos.x).toBe(50);
 				expect(pos.y).toBe(50);
+			});
+		});
+
+		describe('bringToFront', () => {
+			it('should bring entity to front when drag starts', () => {
+				setZIndex(world, entity, 10);
+				setDragConstraints(entity, { bringToFront: true });
+
+				dragSystem.startDrag(world, entity, 15, 25);
+
+				expect(getZIndex(world, entity)).toBe(9999);
+			});
+
+			it('should use custom frontZIndex', () => {
+				setZIndex(world, entity, 10);
+				setDragConstraints(entity, { bringToFront: true, frontZIndex: 500 });
+
+				dragSystem.startDrag(world, entity, 15, 25);
+
+				expect(getZIndex(world, entity)).toBe(500);
+			});
+
+			it('should not change z-index if bringToFront is false', () => {
+				setZIndex(world, entity, 10);
+				setDragConstraints(entity, { bringToFront: false });
+
+				dragSystem.startDrag(world, entity, 15, 25);
+
+				expect(getZIndex(world, entity)).toBe(10);
 			});
 		});
 

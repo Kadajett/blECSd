@@ -11,7 +11,7 @@ import { hasComponent } from 'bitecs';
 import { Dimensions, getDimensions } from '../components/dimensions';
 import { getParent, Hierarchy, NULL_ENTITY } from '../components/hierarchy';
 import { Interactive, isDraggable } from '../components/interactive';
-import { getPosition, Position, setPosition } from '../components/position';
+import { getPosition, Position, setPosition, setZIndex } from '../components/position';
 import { EventBus } from '../core/events';
 import type { Entity, World } from '../core/types';
 
@@ -33,6 +33,10 @@ export interface DragConstraints {
 	minY?: number;
 	/** Maximum Y position */
 	maxY?: number;
+	/** Bring entity to front (highest z-index) when dragging starts */
+	bringToFront?: boolean;
+	/** Z-index to use when bringing to front */
+	frontZIndex?: number;
 }
 
 /**
@@ -418,6 +422,12 @@ export function createDragSystem(eventBus: EventBus<DragEventMap>) {
 			state.lastY = pos.y;
 			state.constraints = getDragConstraints(eid);
 			state.verifyCallback = getDragVerifyCallback(eid);
+
+			// Bring to front if configured
+			if (state.constraints.bringToFront) {
+				const frontZ = state.constraints.frontZIndex ?? 9999;
+				setZIndex(world, eid, frontZ);
+			}
 
 			eventBus.emit('dragstart', {
 				entity: eid,
