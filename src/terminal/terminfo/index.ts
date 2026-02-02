@@ -112,3 +112,23 @@ export {
 	XTERM_16COLOR,
 	XTERM_256COLOR,
 } from './builtin';
+
+// =============================================================================
+// ACS - Alternate Character Set maps
+// =============================================================================
+
+export type { AcsCharacter } from './acs';
+export {
+	ACS,
+	ACSC_CODES,
+	containsBoxDrawing,
+	createBox,
+	getAcsChar,
+	getAcsCharByCode,
+	getAcsCharNames,
+	isBoxDrawingChar,
+	parseAcsc,
+	stringToAscii,
+	UNICODE_TO_ASCII,
+	unicodeToAscii,
+} from './acs';
