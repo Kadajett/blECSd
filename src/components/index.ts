@@ -497,14 +497,21 @@ export {
 // Position component
 export type { PositionData } from './position';
 export {
+	bringToFront,
 	getPosition,
+	getZIndex,
 	hasPosition,
 	isAbsolute,
+	moveBackward,
 	moveBy,
+	moveForward,
+	normalizeZIndices,
 	Position,
+	sendToBack,
 	setAbsolute,
 	setPosition,
 	setZIndex,
+	swapZIndex,
 } from './position';
 // ProgressBar component
 export type {
