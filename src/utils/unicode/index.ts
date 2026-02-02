@@ -10,6 +10,24 @@ export {
 	isCombiningChar,
 	isCombiningCharBinarySearch,
 } from './combining';
+export type { SliceResult, WidthOptions } from './stringWidth';
+export {
+	centerByWidth,
+	charWidth,
+	charWidthAt,
+	codePointWidth,
+	columnAtIndex,
+	hasWideChars,
+	hasZeroWidthChars,
+	indexAtColumn,
+	padEndByWidth,
+	padStartByWidth,
+	sliceByWidth,
+	stringWidth,
+	strWidth,
+	truncateByWidth,
+	truncateWithEllipsis,
+} from './stringWidth';
 export type { CodePointRange } from './widthTables';
 export {
 	AMBIGUOUS_RANGES,

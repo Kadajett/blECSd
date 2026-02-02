@@ -409,6 +409,208 @@ Use `isZeroWidthChar()` for display width calculation, and `isCombiningChar()` f
 
 ---
 
+---
+
+## String Width Measurement
+
+Functions for measuring and manipulating strings based on display width.
+
+### WidthOptions
+
+Options for string width calculation.
+
+```typescript
+interface WidthOptions {
+  tabWidth?: number;       // Tab width (default: 8)
+  ambiguousAsWide?: boolean; // Treat ambiguous as wide (default: false)
+}
+```
+
+### stringWidth / strWidth
+
+Calculates the display width of a string in terminal columns.
+
+```typescript
+function stringWidth(str: string, options?: WidthOptions): number
+function strWidth(str: string, options?: WidthOptions): number  // alias
+```
+
+**Example:**
+```typescript
+import { stringWidth, strWidth } from 'blecsd';
+
+stringWidth('Hello');      // 5
+stringWidth('你好');        // 4
+stringWidth('Hello😀');    // 7
+stringWidth('café');       // 4 (combining accent is zero-width)
+stringWidth('A\tB');       // 9 (A=1, tab=8)
+stringWidth('A\tB', { tabWidth: 4 }); // 5
+
+// strWidth is an alias
+strWidth('Hello世界');     // 9
+```
+
+### charWidth
+
+Gets the display width of a single character.
+
+```typescript
+function charWidth(char: string, ambiguousAsWide?: boolean): 0 | 1 | 2
+```
+
+**Example:**
+```typescript
+import { charWidth } from 'blecsd';
+
+charWidth('A');  // 1
+charWidth('中'); // 2
+charWidth('😀'); // 2
+```
+
+### charWidthAt
+
+Gets the display width of the character at a specific index.
+
+```typescript
+function charWidthAt(str: string, index: number, ambiguousAsWide?: boolean): 0 | 1 | 2 | -1
+```
+
+**Example:**
+```typescript
+import { charWidthAt } from 'blecsd';
+
+const str = 'A中😀';
+charWidthAt(str, 0);  // 1
+charWidthAt(str, 1);  // 2
+charWidthAt(str, 2);  // 2
+charWidthAt(str, 3);  // -1 (out of bounds)
+```
+
+### sliceByWidth
+
+Slices a string to fit within a maximum display width.
+
+```typescript
+function sliceByWidth(str: string, maxWidth: number, options?: WidthOptions): SliceResult
+
+interface SliceResult {
+  text: string;      // The sliced string
+  width: number;     // Display width of result
+  truncated: boolean; // Whether truncation occurred
+}
+```
+
+**Example:**
+```typescript
+import { sliceByWidth } from 'blecsd';
+
+sliceByWidth('Hello World', 8);
+// { text: 'Hello Wo', width: 8, truncated: true }
+
+sliceByWidth('你好世界', 5);
+// { text: '你好', width: 4, truncated: true }
+```
+
+### truncateByWidth
+
+Truncates a string to fit within a maximum display width.
+
+```typescript
+function truncateByWidth(str: string, maxWidth: number, options?: WidthOptions): string
+```
+
+**Example:**
+```typescript
+import { truncateByWidth } from 'blecsd';
+
+truncateByWidth('Hello World', 8);  // 'Hello Wo'
+truncateByWidth('你好世界', 5);      // '你好'
+```
+
+### truncateWithEllipsis
+
+Truncates a string with an ellipsis if it exceeds the maximum width.
+
+```typescript
+function truncateWithEllipsis(
+  str: string,
+  maxWidth: number,
+  ellipsis?: string,
+  options?: WidthOptions
+): string
+```
+
+**Example:**
+```typescript
+import { truncateWithEllipsis } from 'blecsd';
+
+truncateWithEllipsis('Hello World', 8);       // 'Hello W…'
+truncateWithEllipsis('Hello World', 8, '...'); // 'Hello...'
+truncateWithEllipsis('Hi', 10);               // 'Hi'
+```
+
+### Padding Functions
+
+```typescript
+function padEndByWidth(str: string, targetWidth: number, padChar?: string, options?: WidthOptions): string
+function padStartByWidth(str: string, targetWidth: number, padChar?: string, options?: WidthOptions): string
+function centerByWidth(str: string, targetWidth: number, padChar?: string, options?: WidthOptions): string
+```
+
+**Example:**
+```typescript
+import { padEndByWidth, padStartByWidth, centerByWidth } from 'blecsd';
+
+padEndByWidth('Hi', 5);      // 'Hi   '
+padStartByWidth('Hi', 5);    // '   Hi'
+centerByWidth('Hi', 6);      // '  Hi  '
+
+padEndByWidth('你好', 6);     // '你好  '
+padStartByWidth('Hi', 5, '0'); // '000Hi'
+```
+
+### Index/Column Mapping
+
+```typescript
+function indexAtColumn(str: string, column: number, options?: WidthOptions): number
+function columnAtIndex(str: string, index: number, options?: WidthOptions): number
+```
+
+**Example:**
+```typescript
+import { indexAtColumn, columnAtIndex } from 'blecsd';
+
+const str = 'A中B';
+indexAtColumn(str, 0);  // 0 ('A')
+indexAtColumn(str, 1);  // 1 ('中')
+indexAtColumn(str, 2);  // 1 ('中' spans columns 1-2)
+indexAtColumn(str, 3);  // 2 ('B')
+
+columnAtIndex(str, 0);  // 0 ('A' at column 0)
+columnAtIndex(str, 1);  // 1 ('中' at column 1)
+columnAtIndex(str, 2);  // 3 ('B' at column 3)
+```
+
+### Utility Functions
+
+```typescript
+function hasWideChars(str: string): boolean
+function hasZeroWidthChars(str: string): boolean
+```
+
+**Example:**
+```typescript
+import { hasWideChars, hasZeroWidthChars } from 'blecsd';
+
+hasWideChars('Hello');     // false
+hasWideChars('Hello中');   // true
+
+hasZeroWidthChars('café');      // false (precomposed)
+hasZeroWidthChars('cafe\u0301'); // true (decomposed)
+```
+
+---
+
 ## Related
 
 - [Text Wrap](./text-wrap.md) - Text wrapping with width awareness
