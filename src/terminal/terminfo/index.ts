@@ -54,3 +54,25 @@ export {
 	listTerminalsMatching,
 	terminalExists,
 } from './locator';
+
+// =============================================================================
+// CAPABILITIES - Capability name mappings and aliases
+// =============================================================================
+
+export type { BooleanCapName, CapabilityType, NumberCapName, StringCapName } from './capabilities';
+export {
+	BOOLEAN_CAPS,
+	CAPABILITY_ALIASES,
+	CAPABILITY_REVERSE_ALIASES,
+	getCapabilitiesByType,
+	getCapabilityIndex,
+	getCapabilityType,
+	getTermcapName,
+	isBooleanCapability,
+	isCapabilityName,
+	isNumberCapability,
+	isStringCapability,
+	NUMBER_CAPS,
+	resolveCapabilityName,
+	STRING_CAPS,
+} from './capabilities';
