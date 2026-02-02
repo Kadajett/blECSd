@@ -156,12 +156,11 @@ export function matchColor(rgb: RGB, options: MatchOptions = {}): Color256 {
 
 	for (let i = 0; i < palette.length; i++) {
 		const paletteColor = palette[i];
-		if (!paletteColor) continue;
 		const dist = distance(rgb, paletteColor);
 
 		if (dist < bestDistance) {
 			bestDistance = dist;
-			bestIndex = indices ? (indices[i] ?? i) : i;
+			bestIndex = indices ? indices[i] : i;
 		}
 
 		// Early exit for exact match
@@ -543,8 +542,5 @@ export function colorsSimilar(c1: RGB, c2: RGB, threshold: number = 2.5): boolea
  */
 export function color256Similar(a: Color256, b: Color256, threshold: number = 2.5): boolean {
 	if (a === b) return true;
-	const colorA = PALETTE_RGB[a];
-	const colorB = PALETTE_RGB[b];
-	if (!colorA || !colorB) return false;
-	return colorsSimilar(colorA, colorB, threshold);
+	return colorsSimilar(PALETTE_RGB[a], PALETTE_RGB[b], threshold);
 }

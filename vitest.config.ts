@@ -34,12 +34,5 @@ export default defineConfig({
 
 		// Reporter
 		reporters: ['default'],
-
-		// Benchmark configuration
-		benchmark: {
-			include: ['src/**/*.bench.ts'],
-			reporters: ['default'],
-			outputFile: './benchmark-results.json',
-		},
 	},
 });
