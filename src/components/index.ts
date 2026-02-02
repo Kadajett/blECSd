@@ -57,6 +57,30 @@ export {
 	setBorder,
 	setBorderChars,
 } from './border';
+// Collision component
+export type { AABB, ColliderData, ColliderOptions, CollisionPair } from './collision';
+export {
+	Collider,
+	ColliderType,
+	canLayersCollide,
+	collisionPairKey,
+	createCollisionPair,
+	DEFAULT_LAYER,
+	DEFAULT_MASK,
+	getCollider,
+	getColliderAABB,
+	hasCollider,
+	isTrigger,
+	removeCollider,
+	setCollider,
+	setCollisionLayer,
+	setCollisionMask,
+	setTrigger,
+	testAABBOverlap,
+	testCircleAABBOverlap,
+	testCircleOverlap,
+	testCollision,
+} from './collision';
 // Content component
 export type { ContentData, ContentOptions } from './content';
 export {

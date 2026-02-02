@@ -12,6 +12,28 @@ export {
 	registerAnimationSystem,
 	updateAnimations,
 } from './animationSystem';
+// Collision system
+export type {
+	CollisionEventData,
+	CollisionEventMap,
+	CollisionSystemState,
+} from './collisionSystem';
+export {
+	areColliding,
+	collisionSystem,
+	createCollisionSystem,
+	detectCollisions,
+	getActiveCollisions,
+	getActiveTriggers,
+	getCollidingEntities,
+	getCollisionEventBus,
+	getTriggerZones,
+	isColliding,
+	isInTrigger,
+	queryColliders,
+	registerCollisionSystem,
+	resetCollisionState,
+} from './collisionSystem';
 // Input system
 export type {
 	HitTestResult,
