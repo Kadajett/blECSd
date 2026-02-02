@@ -17,3 +17,7 @@ export { createTable, isTableWidget, TableWidgetConfigSchema } from './table';
 // ListTable widget
 export type { ListTableStyleConfig, ListTableWidget, ListTableWidgetConfig } from './listTable';
 export { createListTable, isListTableWidget, ListTableWidgetConfigSchema } from './listTable';
+
+// Listbar widget
+export type { ListbarItem, ListbarStyleConfig, ListbarWidget, ListbarWidgetConfig } from './listbar';
+export { createListbar, isListbarWidget, ListbarWidgetConfigSchema, resetListbarStore } from './listbar';
