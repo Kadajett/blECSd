@@ -64,15 +64,13 @@ function createTestWorld(entityCount: number, screenWidth = 200, screenHeight = 
 		// Make interactive
 		setInteractive(world, eid as Entity, { clickable: true, hoverable: true });
 
-		// Cache position for hit testing
+		// Cache position for hit testing (xi, xl, yi, yl, base)
 		setPositionCache(world, eid as Entity, {
-			x,
-			y,
-			width: 10,
-			height: 3,
-			innerWidth: 10,
-			innerHeight: 3,
-			scrollBase: 0,
+			xi: x,
+			xl: x + 10,
+			yi: y,
+			yl: y + 3,
+			base: 0,
 		});
 	}
 
@@ -248,14 +246,14 @@ describe('Cache Operations', () => {
 describe('Position Cache', () => {
 	describe('cache population', () => {
 		bench('cache 100 entity positions', () => {
-			const world = createTestWorld(100);
-			// Position cache is already populated by createTestWorld
+			// Position cache is populated by createTestWorld
 			// This benchmarks the world creation with position caching
+			createTestWorld(100);
 		});
 
 		bench('cache 1,000 entity positions', () => {
-			const world = createTestWorld(1000);
-			// Position cache is already populated by createTestWorld
+			// Position cache is populated by createTestWorld
+			createTestWorld(1000);
 		});
 	});
 });

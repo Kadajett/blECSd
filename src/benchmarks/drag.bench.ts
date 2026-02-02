@@ -464,7 +464,6 @@ describe('Multi-Panel Operations', () => {
 	});
 
 	describe('constraint lookup with many panels', () => {
-		let world: World;
 		let panels: Entity[];
 
 		bench(
@@ -481,7 +480,6 @@ describe('Multi-Panel Operations', () => {
 				setup() {
 					cleanup();
 					const setup = createPanelWorld(100);
-					world = setup.world;
 					panels = setup.panels;
 				},
 			},
