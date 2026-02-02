@@ -76,6 +76,21 @@ export {
 	resetHoverTextStore,
 	setHoverText,
 } from './hoverText';
+// Line widget
+export type { LineConfig, LineOrientation, LineWidget } from './line';
+export {
+	createLine,
+	DEFAULT_HORIZONTAL_CHAR,
+	DEFAULT_LINE_LENGTH,
+	DEFAULT_VERTICAL_CHAR,
+	getLineChar,
+	getLineOrientation,
+	isLine,
+	Line,
+	LineConfigSchema,
+	resetLineStore,
+	setLineChar,
+} from './line';
 // List widget
 export type { ListStyleConfig, ListWidget, ListWidgetConfig } from './list';
 export { createList, isListWidget, ListWidgetConfigSchema } from './list';
