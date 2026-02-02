@@ -1,0 +1,575 @@
+/**
+ * Drag and drop system for interactive entities.
+ *
+ * Handles drag initiation, position updates during drag, and drop handling.
+ * Supports constraints like parent bounds, axis locking, and grid snapping.
+ *
+ * @module systems/dragSystem
+ */
+
+import { getDimensions } from '../components/dimensions';
+import { getParent, NULL_ENTITY } from '../components/hierarchy';
+import { isDraggable } from '../components/interactive';
+import { getPosition, Position, setPosition, setZIndex } from '../components/position';
+import type { EventBus } from '../core/events';
+import type { Entity, World } from '../core/types';
+
+/**
+ * Drag constraint configuration.
+ */
+export interface DragConstraints {
+	/** Constrain to parent bounds */
+	constrainToParent?: boolean;
+	/** Lock to a single axis */
+	constrainAxis?: 'x' | 'y' | null;
+	/** Snap to grid */
+	snapToGrid?: { x: number; y: number } | null;
+	/** Minimum X position */
+	minX?: number;
+	/** Maximum X position */
+	maxX?: number;
+	/** Minimum Y position */
+	minY?: number;
+	/** Maximum Y position */
+	maxY?: number;
+	/** Bring entity to front (highest z-index) when dragging starts */
+	bringToFront?: boolean;
+	/** Z-index to use when bringing to front */
+	frontZIndex?: number;
+}
+
+/**
+ * Drag verification callback.
+ * Return false to cancel the drag movement.
+ */
+export type DragVerifyCallback = (entity: Entity, dx: number, dy: number) => boolean;
+
+/**
+ * Drag start event data.
+ */
+export interface DragStartEvent {
+	/** Entity being dragged */
+	entity: Entity;
+	/** Starting X position */
+	startX: number;
+	/** Starting Y position */
+	startY: number;
+	/** Mouse X at drag start */
+	mouseX: number;
+	/** Mouse Y at drag start */
+	mouseY: number;
+}
+
+/**
+ * Drag move event data.
+ */
+export interface DragMoveEvent {
+	/** Entity being dragged */
+	entity: Entity;
+	/** Current X position */
+	x: number;
+	/** Current Y position */
+	y: number;
+	/** Change in X since last move */
+	dx: number;
+	/** Change in Y since last move */
+	dy: number;
+	/** Current mouse X */
+	mouseX: number;
+	/** Current mouse Y */
+	mouseY: number;
+}
+
+/**
+ * Drag end event data.
+ */
+export interface DragEndEvent {
+	/** Entity that was dragged */
+	entity: Entity;
+	/** Final X position */
+	x: number;
+	/** Final Y position */
+	y: number;
+	/** Total change in X */
+	totalDx: number;
+	/** Total change in Y */
+	totalDy: number;
+	/** Whether drag was cancelled */
+	cancelled: boolean;
+}
+
+/**
+ * Drop event data.
+ */
+export interface DropEvent {
+	/** Entity that was dropped */
+	entity: Entity;
+	/** Drop X position */
+	x: number;
+	/** Drop Y position */
+	y: number;
+	/** Entity under drop point (if any) */
+	dropTarget: Entity | null;
+}
+
+/**
+ * Drag system event map.
+ */
+export interface DragEventMap {
+	dragstart: DragStartEvent;
+	drag: DragMoveEvent;
+	dragend: DragEndEvent;
+	drop: DropEvent;
+}
+
+/**
+ * Current drag state.
+ */
+export interface DragState {
+	/** Entity currently being dragged */
+	dragging: Entity | null;
+	/** Starting position of drag */
+	startX: number;
+	startY: number;
+	/** Mouse offset from entity origin at drag start */
+	offsetX: number;
+	offsetY: number;
+	/** Last known position during drag */
+	lastX: number;
+	lastY: number;
+	/** Constraints for current drag */
+	constraints: DragConstraints;
+	/** Verification callback */
+	verifyCallback: DragVerifyCallback | null;
+}
+
+/**
+ * Store for entity drag constraints.
+ */
+const constraintStore = new Map<Entity, DragConstraints>();
+
+/**
+ * Store for entity drag verification callbacks.
+ */
+const verifyStore = new Map<Entity, DragVerifyCallback>();
+
+/**
+ * Creates a new drag state.
+ */
+function createDragState(): DragState {
+	return {
+		dragging: null,
+		startX: 0,
+		startY: 0,
+		offsetX: 0,
+		offsetY: 0,
+		lastX: 0,
+		lastY: 0,
+		constraints: {},
+		verifyCallback: null,
+	};
+}
+
+/**
+ * Sets drag constraints for an entity.
+ *
+ * @param eid - The entity ID
+ * @param constraints - Drag constraints
+ *
+ * @example
+ * ```typescript
+ * import { setDragConstraints } from 'blecsd';
+ *
+ * // Constrain to parent bounds
+ * setDragConstraints(entity, { constrainToParent: true });
+ *
+ * // Lock to horizontal axis with grid snap
+ * setDragConstraints(entity, {
+ *   constrainAxis: 'x',
+ *   snapToGrid: { x: 10, y: 10 }
+ * });
+ * ```
+ */
+export function setDragConstraints(eid: Entity, constraints: DragConstraints): void {
+	constraintStore.set(eid, constraints);
+}
+
+/**
+ * Gets drag constraints for an entity.
+ *
+ * @param eid - The entity ID
+ * @returns Drag constraints or empty object
+ */
+export function getDragConstraints(eid: Entity): DragConstraints {
+	return constraintStore.get(eid) ?? {};
+}
+
+/**
+ * Clears drag constraints for an entity.
+ *
+ * @param eid - The entity ID
+ */
+export function clearDragConstraints(eid: Entity): void {
+	constraintStore.delete(eid);
+}
+
+/**
+ * Sets a drag verification callback for an entity.
+ *
+ * @param eid - The entity ID
+ * @param callback - Verification callback (return false to cancel movement)
+ *
+ * @example
+ * ```typescript
+ * import { setDragVerifyCallback } from 'blecsd';
+ *
+ * // Prevent dragging into certain areas
+ * setDragVerifyCallback(entity, (entity, dx, dy) => {
+ *   const newX = Position.x[entity] + dx;
+ *   const newY = Position.y[entity] + dy;
+ *
+ *   // Don't allow dragging into forbidden zone
+ *   if (newX > 50 && newX < 60) return false;
+ *
+ *   return true;
+ * });
+ * ```
+ */
+export function setDragVerifyCallback(eid: Entity, callback: DragVerifyCallback | null): void {
+	if (callback) {
+		verifyStore.set(eid, callback);
+	} else {
+		verifyStore.delete(eid);
+	}
+}
+
+/**
+ * Gets the drag verification callback for an entity.
+ *
+ * @param eid - The entity ID
+ * @returns The verification callback or null
+ */
+export function getDragVerifyCallback(eid: Entity): DragVerifyCallback | null {
+	return verifyStore.get(eid) ?? null;
+}
+
+/**
+ * Applies constraints to a position.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity being dragged
+ * @param x - Proposed X position
+ * @param y - Proposed Y position
+ * @param constraints - Constraints to apply
+ * @returns Constrained position
+ */
+function applyConstraints(
+	world: World,
+	eid: Entity,
+	x: number,
+	y: number,
+	constraints: DragConstraints,
+): { x: number; y: number } {
+	let newX = x;
+	let newY = y;
+
+	// Apply axis constraint
+	if (constraints.constrainAxis === 'x') {
+		newY = (Position.y[eid] as number | undefined) ?? y;
+	} else if (constraints.constrainAxis === 'y') {
+		newX = (Position.x[eid] as number | undefined) ?? x;
+	}
+
+	// Apply grid snap
+	if (constraints.snapToGrid) {
+		const gridX = constraints.snapToGrid.x;
+		const gridY = constraints.snapToGrid.y;
+		newX = Math.round(newX / gridX) * gridX;
+		newY = Math.round(newY / gridY) * gridY;
+	}
+
+	// Apply min/max bounds
+	if (constraints.minX !== undefined) newX = Math.max(newX, constraints.minX);
+	if (constraints.maxX !== undefined) newX = Math.min(newX, constraints.maxX);
+	if (constraints.minY !== undefined) newY = Math.max(newY, constraints.minY);
+	if (constraints.maxY !== undefined) newY = Math.min(newY, constraints.maxY);
+
+	// Apply parent bounds constraint
+	if (constraints.constrainToParent) {
+		const parent = getParent(world, eid);
+		if (parent !== NULL_ENTITY) {
+			const parentDims = getDimensions(world, parent);
+			const entityDims = getDimensions(world, eid);
+
+			if (parentDims) {
+				const entityWidth = entityDims?.width ?? 1;
+				const entityHeight = entityDims?.height ?? 1;
+
+				newX = Math.max(0, Math.min(newX, parentDims.width - entityWidth));
+				newY = Math.max(0, Math.min(newY, parentDims.height - entityHeight));
+			}
+		}
+	}
+
+	return { x: newX, y: newY };
+}
+
+/**
+ * Creates a drag system with event handling.
+ *
+ * @param eventBus - Event bus for drag events
+ * @returns Drag system API
+ *
+ * @example
+ * ```typescript
+ * import { createDragSystem, EventBus } from 'blecsd';
+ *
+ * const dragEvents = new EventBus<DragEventMap>();
+ * const dragSystem = createDragSystem(dragEvents);
+ *
+ * // Listen for drag events
+ * dragEvents.on('dragstart', (e) => {
+ *   console.log(`Started dragging entity ${e.entity}`);
+ * });
+ *
+ * dragEvents.on('drag', (e) => {
+ *   console.log(`Dragged to ${e.x}, ${e.y}`);
+ * });
+ *
+ * dragEvents.on('dragend', (e) => {
+ *   console.log(`Drag ended, cancelled: ${e.cancelled}`);
+ * });
+ *
+ * // In mouse event handler
+ * function onMouseDown(x: number, y: number, entity: Entity) {
+ *   if (dragSystem.canDrag(world, entity)) {
+ *     dragSystem.startDrag(world, entity, x, y);
+ *   }
+ * }
+ *
+ * function onMouseMove(x: number, y: number) {
+ *   dragSystem.updateDrag(world, x, y);
+ * }
+ *
+ * function onMouseUp(x: number, y: number, dropTarget: Entity | null) {
+ *   dragSystem.endDrag(world, dropTarget);
+ * }
+ * ```
+ */
+export function createDragSystem(eventBus: EventBus<DragEventMap>) {
+	const state = createDragState();
+
+	return {
+		/**
+		 * Gets the current drag state.
+		 */
+		getState(): Readonly<DragState> {
+			return state;
+		},
+
+		/**
+		 * Checks if an entity is currently being dragged.
+		 */
+		isDragging(): boolean {
+			return state.dragging !== null;
+		},
+
+		/**
+		 * Gets the entity currently being dragged.
+		 */
+		getDraggingEntity(): Entity | null {
+			return state.dragging;
+		},
+
+		/**
+		 * Checks if an entity can be dragged.
+		 *
+		 * @param world - The ECS world
+		 * @param eid - The entity to check
+		 */
+		canDrag(world: World, eid: Entity): boolean {
+			return isDraggable(world, eid);
+		},
+
+		/**
+		 * Starts dragging an entity.
+		 *
+		 * @param world - The ECS world
+		 * @param eid - The entity to drag
+		 * @param mouseX - Current mouse X
+		 * @param mouseY - Current mouse Y
+		 * @returns True if drag started successfully
+		 */
+		startDrag(world: World, eid: Entity, mouseX: number, mouseY: number): boolean {
+			if (!isDraggable(world, eid)) {
+				return false;
+			}
+
+			// Already dragging something
+			if (state.dragging !== null) {
+				return false;
+			}
+
+			const pos = getPosition(world, eid);
+			if (!pos) {
+				return false;
+			}
+
+			state.dragging = eid;
+			state.startX = pos.x;
+			state.startY = pos.y;
+			state.offsetX = mouseX - pos.x;
+			state.offsetY = mouseY - pos.y;
+			state.lastX = pos.x;
+			state.lastY = pos.y;
+			state.constraints = getDragConstraints(eid);
+			state.verifyCallback = getDragVerifyCallback(eid);
+
+			// Bring to front if configured
+			if (state.constraints.bringToFront) {
+				const frontZ = state.constraints.frontZIndex ?? 9999;
+				setZIndex(world, eid, frontZ);
+			}
+
+			eventBus.emit('dragstart', {
+				entity: eid,
+				startX: pos.x,
+				startY: pos.y,
+				mouseX,
+				mouseY,
+			});
+
+			return true;
+		},
+
+		/**
+		 * Updates the drag position based on mouse movement.
+		 *
+		 * @param world - The ECS world
+		 * @param mouseX - Current mouse X
+		 * @param mouseY - Current mouse Y
+		 * @returns True if position was updated
+		 */
+		updateDrag(world: World, mouseX: number, mouseY: number): boolean {
+			if (state.dragging === null) {
+				return false;
+			}
+
+			const eid = state.dragging;
+
+			// Calculate new position
+			let newX = mouseX - state.offsetX;
+			let newY = mouseY - state.offsetY;
+
+			// Apply constraints
+			const constrained = applyConstraints(world, eid, newX, newY, state.constraints);
+			newX = constrained.x;
+			newY = constrained.y;
+
+			// Calculate delta
+			const dx = newX - state.lastX;
+			const dy = newY - state.lastY;
+
+			// Skip if no movement
+			if (dx === 0 && dy === 0) {
+				return false;
+			}
+
+			// Call verification callback
+			if (state.verifyCallback && !state.verifyCallback(eid, dx, dy)) {
+				return false;
+			}
+
+			// Update position
+			setPosition(world, eid, newX, newY);
+			state.lastX = newX;
+			state.lastY = newY;
+
+			eventBus.emit('drag', {
+				entity: eid,
+				x: newX,
+				y: newY,
+				dx,
+				dy,
+				mouseX,
+				mouseY,
+			});
+
+			return true;
+		},
+
+		/**
+		 * Ends the current drag operation.
+		 *
+		 * @param world - The ECS world
+		 * @param dropTarget - Entity under the drop point (if any)
+		 * @param cancelled - Whether the drag was cancelled
+		 */
+		endDrag(world: World, dropTarget: Entity | null = null, cancelled = false): void {
+			if (state.dragging === null) {
+				return;
+			}
+
+			const eid = state.dragging;
+			const finalPos = getPosition(world, eid);
+			const finalX = finalPos?.x ?? state.lastX;
+			const finalY = finalPos?.y ?? state.lastY;
+
+			eventBus.emit('dragend', {
+				entity: eid,
+				x: finalX,
+				y: finalY,
+				totalDx: finalX - state.startX,
+				totalDy: finalY - state.startY,
+				cancelled,
+			});
+
+			if (!cancelled) {
+				eventBus.emit('drop', {
+					entity: eid,
+					x: finalX,
+					y: finalY,
+					dropTarget,
+				});
+			}
+
+			// Reset state
+			state.dragging = null;
+			state.startX = 0;
+			state.startY = 0;
+			state.offsetX = 0;
+			state.offsetY = 0;
+			state.lastX = 0;
+			state.lastY = 0;
+			state.constraints = {};
+			state.verifyCallback = null;
+		},
+
+		/**
+		 * Cancels the current drag and restores original position.
+		 *
+		 * @param world - The ECS world
+		 */
+		cancelDrag(world: World): void {
+			if (state.dragging === null) {
+				return;
+			}
+
+			const eid = state.dragging;
+
+			// Restore original position
+			setPosition(world, eid, state.startX, state.startY);
+
+			this.endDrag(world, null, true);
+		},
+	};
+}
+
+/**
+ * Resets all drag-related stores.
+ * Useful for testing.
+ */
+export function resetDragStores(): void {
+	constraintStore.clear();
+	verifyStore.clear();
+}
