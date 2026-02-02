@@ -3,28 +3,144 @@
  * @module core
  */
 
+// Clipping system
+export type {
+	ClipRect,
+	ClippingData,
+	ClippingOptions,
+	ClipStack,
+	OverflowValue,
+} from './clipping';
+export {
+	clampToClipRect,
+	Clipping,
+	createClipRect,
+	createClipStack,
+	createInfiniteClipRect,
+	getClipping,
+	getClipRect,
+	getClipRectHeight,
+	getClipRectToAncestor,
+	getClipRectWidth,
+	getCurrentClip,
+	getOverflow,
+	hasClipping,
+	intersectClipRects,
+	isClipRectEmpty,
+	isPointVisible,
+	isRectVisible,
+	Overflow,
+	popClipRect,
+	pushClipRect,
+	setOverflow,
+	shouldClipContent,
+} from './clipping';
+// Computed position
+export type {
+	AbsolutePosition,
+	ComputedPositionData,
+	InnerDimensions,
+	InnerPosition,
+	RelativePosition,
+	TotalPadding,
+} from './computedPosition';
+export {
+	getAbsolutePosition,
+	getComputedPosition,
+	getInnerDimensions,
+	getInnerPosition,
+	getRelativePosition,
+	getTotalPadding,
+	isPointInEntity,
+	isPointInInnerBounds,
+	setAbsolutePosition,
+	setRelativePosition,
+} from './computedPosition';
+// Effects system
+export type { DynamicValue, EffectConfig, ResolvedEffect } from './effects';
+export {
+	applyCustomEffect,
+	applyFocusEffect,
+	applyHoverEffect,
+	clearAllStoredStyles,
+	clearStoredStyle,
+	getComputedEffectStyle,
+	getOriginalStyle,
+	getStoredStyle,
+	hasFocusEffectApplied,
+	hasHoverEffectApplied,
+	hasStoredStyle,
+	removeAllEffects,
+	removeFocusEffect,
+	removeHoverEffect,
+	resolveEffectConfig,
+	syncEffects,
+} from './effects';
 export type {
 	BoxConfig,
 	ButtonConfig,
+	CheckboxConfig,
+	FormConfig,
 	InputConfig,
 	ListConfig,
+	ProgressBarConfig,
+	RadioButtonConfig,
+	RadioSetConfig,
 	ScreenConfig,
+	SelectConfig,
+	SliderConfig,
+	TextareaConfig,
+	TextboxConfig,
 	TextConfig,
 } from './entities';
 export {
 	BoxConfigSchema,
 	ButtonConfigSchema,
+	CheckboxConfigSchema,
 	createBoxEntity,
 	createButtonEntity,
+	createCheckboxEntity,
+	createFormEntity,
 	createInputEntity,
 	createListEntity,
+	createProgressBarEntity,
+	createRadioButtonEntity,
+	createRadioSetEntity,
 	createScreenEntity,
+	createSelectEntity,
+	createSliderEntity,
+	createTextareaEntity,
+	createTextboxEntity,
 	createTextEntity,
+	FormConfigSchema,
 	InputConfigSchema,
 	ListConfigSchema,
+	ProgressBarConfigSchema,
+	RadioButtonConfigSchema,
+	RadioSetConfigSchema,
 	ScreenConfigSchema,
+	SelectConfigSchema,
+	SliderConfigSchema,
+	TextareaConfigSchema,
+	TextboxConfigSchema,
 	TextConfigSchema,
 } from './entities';
+// Entity data storage
+export type { DataValue, EntityDataMap } from './entityData';
+export {
+	clearAllEntityData,
+	clearEntityData,
+	deleteEntityData,
+	getAllEntityData,
+	getEntityData,
+	getEntityDataCount,
+	getEntityDataKeys,
+	hasAnyEntityData,
+	hasEntityData,
+	setEntityData,
+	setEntityDataBulk,
+	updateEntityData,
+} from './entityData';
 // Event bubbling
 export type {
 	BubbleableEvent,
@@ -41,7 +157,15 @@ export {
 export type { EventHandler, EventMap, ScreenEventMap, UIEventMap } from './events';
 export { createEventBus, EventBus } from './events';
 // Game loop
-export type { GameLoopHooks, GameLoopOptions, LoopHook, LoopStats } from './gameLoop';
+export type {
+	FixedTimestepConfig,
+	FixedUpdateHook,
+	GameLoopHooks,
+	GameLoopOptions,
+	InterpolateHook,
+	LoopHook,
+	LoopStats,
+} from './gameLoop';
 export {
 	createGameLoop,
 	GameLoop,
@@ -49,10 +173,25 @@ export {
 	isLoopRunning,
 	LoopState,
 } from './gameLoop';
+// Input action mapping
+export type {
+	ActionBinding,
+	ActionCallback,
+	ActionState,
+	SerializedBindings,
+} from './inputActions';
+export {
+	ActionBindingSchema,
+	ActionPresets,
+	createInputActionManager,
+	InputActionManager,
+	SerializedBindingsSchema,
+} from './inputActions';
 // Input event buffer
 export type {
 	InputBufferStats,
 	InputEventBufferOptions,
+	InputLatencyStats,
 	TimestampedInputEvent,
 	TimestampedKeyEvent,
 	TimestampedMouseEvent,
@@ -62,6 +201,78 @@ export {
 	globalInputBuffer,
 	InputEventBuffer,
 } from './inputEventBuffer';
+// Input state tracking
+export type {
+	InputStateConfig,
+	InputStateStats,
+	KeyState,
+	MouseButtonState,
+	MouseState,
+} from './inputState';
+export {
+	createInputState,
+	getMovementDirection,
+	InputState,
+	isAllKeysDown,
+	isAnyKeyDown,
+	isAnyKeyPressed,
+} from './inputState';
+// Key bindings
+export type {
+	BindingMatch,
+	ConditionContext,
+	KeyBinding,
+	KeyBindingRegistry,
+	ParsedKey,
+} from './keyBindings';
+export {
+	createKeyBindingRegistry,
+	DEFAULT_NAV_BINDINGS,
+	DEFAULT_TEXT_BINDINGS,
+	evaluateCondition,
+	formatKey,
+	formatKeyEvent,
+	getBindingForAction,
+	getBindingsForKey,
+	KeyBindingSchema,
+	KeyBindingsArraySchema,
+	listBindings,
+	matchEvent,
+	matchesKey,
+	parseKeyString,
+	registerBinding,
+	registerBindings,
+	unregisterBinding,
+} from './keyBindings';
+// Lifecycle events
+export type {
+	AdoptEvent,
+	AttachEvent,
+	DestroyEvent,
+	DetachEvent,
+	LifecycleEvent,
+	LifecycleEventMap,
+	LifecycleEventName,
+	RemoveEvent,
+	ReparentEvent,
+} from './lifecycleEvents';
+export {
+	clearLifecycleEventBuses,
+	emitAdopt,
+	emitAttach,
+	emitDestroy,
+	emitDetach,
+	emitRemove,
+	emitReparent,
+	getLifecycleEventBus,
+	onAdopt,
+	onAttach,
+	onDestroy,
+	onDetach,
+	onRemove,
+	onReparent,
+	removeLifecycleEventBus,
+} from './lifecycleEvents';
 // Phase manager
 export type { PhaseId } from './phaseManager';
 export {
@@ -71,6 +282,21 @@ export {
 	isBuiltinPhase,
 	PhaseManager,
 } from './phaseManager';
+// Position cache
+export type { CachedPosition, SetPositionCacheOptions } from './positionCache';
+export {
+	clearAllPositionCaches,
+	getCachedInnerHeight,
+	getCachedInnerWidth,
+	getPositionCache,
+	hasValidPositionCache,
+	invalidatePositionCache,
+	invalidatePositionCacheTree,
+	isPointInCachedBounds,
+	PositionCache,
+	setPositionCache,
+	updateCachedScrollBase,
+} from './positionCache';
 // Positioning
 export type { PositionValue } from './positioning';
 export {
@@ -117,6 +343,27 @@ export {
 	getShrinkHeight,
 	getShrinkWidth,
 } from './shrinkToContent';
+// Style inheritance
+export {
+	clearStyleCache,
+	computeInheritedStyle,
+	doesPropertyInherit,
+	findPropertySource,
+	getCacheGeneration,
+	getComputedStyles,
+	getDefaultStyle,
+	getInheritedProperty,
+	getLocalStyle,
+	hasValidStyleCache,
+	INHERITING_PROPERTIES,
+	invalidateAllStyleCaches,
+	invalidateStyleCache,
+	isDefaultColor,
+	mergeStyles,
+	NON_INHERITING_PROPERTIES,
+	precomputeStyles,
+	resolveStyle,
+} from './styleInheritance';
 export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
 export { createWorld, resetWorld } from './world';
