@@ -132,3 +132,16 @@ export {
 	UNICODE_TO_ASCII,
 	unicodeToAscii,
 } from './acs';
+
+// =============================================================================
+// SPRINTF - Printf-style string formatting
+// =============================================================================
+
+export type { FormatFlags, FormatSpec, FormatType } from './sprintf';
+export {
+	countFormatArgs,
+	createFormatter,
+	isValidFormat,
+	parseFormat,
+	sprintf,
+} from './sprintf';
