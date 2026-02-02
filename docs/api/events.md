@@ -1,27 +1,29 @@
 # Events API
 
-Type-safe event emitter for game events.
+Type-safe event emitter for decoupling application systems. Events let systems communicate without direct dependencies on each other.
 
-## createEventBus
+## How do I create an event bus?
 
-Create an event bus with typed events.
+### createEventBus
 
 ```typescript
 import { createEventBus } from 'blecsd';
 
-interface GameEvents {
-  'player:moved': { x: number; y: number };
-  'enemy:killed': { id: number; score: number };
+interface AppEvents {
+  'panel:resized': { width: number; height: number };
+  'file:selected': { path: string; name: string };
 }
 
-const events = createEventBus<GameEvents>();
+const events = createEventBus<AppEvents>();
 ```
 
-## EventBus Methods
+---
+
+## How do I subscribe to events?
 
 ### on
 
-Subscribe to an event.
+Subscribe to an event. Returns an unsubscribe function.
 
 ```typescript
 const unsubscribe = events.on('player:moved', (e) => {
@@ -32,9 +34,7 @@ const unsubscribe = events.on('player:moved', (e) => {
 unsubscribe();
 ```
 
-**Parameters:**
-- `event` - Event name
-- `handler` - Callback function
+**Parameters:** `event` (event name), `handler` (callback function)
 
 **Returns:** Unsubscribe function
 
@@ -48,6 +48,10 @@ events.once('game:over', (e) => {
 });
 ```
 
+---
+
+## How do I emit events?
+
 ### emit
 
 Emit an event to all listeners.
@@ -57,11 +61,13 @@ const hadListeners = events.emit('player:moved', { x: 10, y: 5 });
 // Returns true if any handlers were called
 ```
 
-**Parameters:**
-- `event` - Event name
-- `payload` - Event data
+**Parameters:** `event` (event name), `payload` (event data)
 
 **Returns:** `true` if any listeners were called
+
+---
+
+## How do I unsubscribe?
 
 ### off
 
@@ -75,16 +81,18 @@ events.off('click', handler);
 
 ### removeAllListeners
 
-Remove all listeners for an event, or all events.
+Remove all listeners for an event, or all listeners for all events.
 
 ```typescript
 events.removeAllListeners('click');  // Remove click listeners
 events.removeAllListeners();          // Remove all listeners
 ```
 
-### listenerCount
+---
 
-Get the number of listeners for an event.
+## How do I check listener state?
+
+### listenerCount
 
 ```typescript
 const count = events.listenerCount('error');
@@ -101,13 +109,13 @@ const names = events.eventNames();
 
 ### hasListeners
 
-Check if an event has any listeners.
-
 ```typescript
 if (events.hasListeners('debug')) {
   events.emit('debug', { message: 'info' });
 }
 ```
+
+---
 
 ## Types
 
@@ -119,8 +127,6 @@ type EventHandler<T> = (event: T) => void;
 
 ### EventMap
 
-Base constraint for event maps.
-
 ```typescript
 type EventMap = Record<string, unknown>;
 ```
@@ -130,6 +136,8 @@ type EventMap = Record<string, unknown>;
 ```typescript
 type Unsubscribe = () => void;
 ```
+
+---
 
 ## Built-in Event Maps
 
@@ -164,20 +172,24 @@ interface ScreenEventMap {
 }
 ```
 
-## Patterns
+---
+
+## Common Patterns
 
 ### Scoped Events
 
 Use prefixes to organize events:
 
 ```typescript
-interface GameEvents {
-  'player:spawn': { id: string };
-  'player:death': { id: string; cause: string };
-  'enemy:spawn': { type: string; x: number; y: number };
-  'enemy:death': { id: string };
-  'ui:menu:open': { menuId: string };
-  'ui:menu:close': { menuId: string };
+interface AppEvents {
+  'file:open': { path: string };
+  'file:save': { path: string; content: string };
+  'file:close': { path: string };
+  'panel:focus': { panelId: string };
+  'panel:resize': { panelId: string; width: number; height: number };
+  'ui:modal:open': { modalId: string };
+  'ui:modal:close': { modalId: string };
+  'ui:toast:show': { message: string; type: 'info' | 'error' | 'success' };
 }
 ```
 
@@ -186,31 +198,39 @@ interface GameEvents {
 Always clean up listeners to prevent memory leaks:
 
 ```typescript
-class GameSystem {
-  private unsubscribers: Unsubscribe[] = [];
+function createGameSystem(events) {
+  const unsubscribers = [];
 
-  init(events: EventBus<GameEvents>) {
-    this.unsubscribers.push(
-      events.on('player:moved', this.handleMove),
-      events.on('game:over', this.handleGameOver)
+  function init() {
+    unsubscribers.push(
+      events.on('player:moved', handleMove),
+      events.on('game:over', handleGameOver)
     );
   }
 
-  destroy() {
-    for (const unsub of this.unsubscribers) {
+  function destroy() {
+    for (const unsub of unsubscribers) {
       unsub();
     }
-    this.unsubscribers = [];
+    unsubscribers.length = 0;
   }
+
+  return { init, destroy };
 }
 ```
 
 ### Conditional Emit
 
-Avoid emitting when no listeners exist:
+Skip expensive work when no listeners exist:
 
 ```typescript
 if (events.hasListeners('debug')) {
   events.emit('debug', { message: expensiveDebugInfo() });
 }
 ```
+
+---
+
+## See Also
+
+- [Core Concepts](../getting-started/concepts.md) - Event bus overview
