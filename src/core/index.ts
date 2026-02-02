@@ -136,6 +136,21 @@ export {
 	isBuiltinPhase,
 	PhaseManager,
 } from './phaseManager';
+// Position cache
+export type { CachedPosition, SetPositionCacheOptions } from './positionCache';
+export {
+	clearAllPositionCaches,
+	getCachedInnerHeight,
+	getCachedInnerWidth,
+	getPositionCache,
+	hasValidPositionCache,
+	invalidatePositionCache,
+	invalidatePositionCacheTree,
+	isPointInCachedBounds,
+	PositionCache,
+	setPositionCache,
+	updateCachedScrollBase,
+} from './positionCache';
 // Positioning
 export type { PositionValue } from './positioning';
 export {
