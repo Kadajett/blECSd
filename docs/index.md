@@ -58,6 +58,7 @@ Working applications demonstrating blECSd patterns:
 
 - [Physics-Based Animations](./guides/animations.md) - Momentum, springs, and smooth transitions
 - [Game Development](./guides/game-development.md) - Building terminal games with blECSd
+- [FAQ & Troubleshooting](./faq.md) - Common questions and solutions
 
 ## API Reference
 
