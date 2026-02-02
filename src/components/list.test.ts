@@ -6,24 +6,30 @@ import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Entity, World } from '../core/types';
 import {
-	LIST_STATE_MACHINE_CONFIG,
 	activateSelected,
 	addItem,
+	appendToSearchQuery,
 	attachListBehavior,
+	backspaceSearchQuery,
 	blurList,
 	clearItems,
 	clearListCallbacks,
 	clearListDisplay,
+	clearSearchQuery,
 	clearSelection,
 	disableList,
 	enableList,
+	endListSearch,
 	ensureVisible,
+	findAndSelectByText,
+	findNextMatch,
 	focusList,
 	getFirstVisible,
 	getItem,
 	getItemCount,
 	getItems,
 	getListDisplay,
+	getListSearchQuery,
 	getListState,
 	getSelectedIndex,
 	getSelectedItem,
@@ -37,8 +43,12 @@ import {
 	isListInteractive,
 	isListKeysEnabled,
 	isListMouseEnabled,
+	isListSearchEnabled,
+	isListSearching,
+	LIST_STATE_MACHINE_CONFIG,
 	listStore,
 	onListActivate,
+	onListSearchChange,
 	onListSelect,
 	removeItem,
 	renderListItems,
@@ -55,8 +65,10 @@ import {
 	setListInteractive,
 	setListKeys,
 	setListMouse,
+	setListSearchQuery,
 	setSelectedIndex,
 	setVisibleCount,
+	startListSearch,
 	updateItem,
 } from './list';
 
@@ -77,20 +89,28 @@ describe('List Component', () => {
 
 		it('should have correct state transitions from idle', () => {
 			const idleTransitions = LIST_STATE_MACHINE_CONFIG.states.idle.on;
-			expect(idleTransitions.focus).toBe('focused');
-			expect(idleTransitions.disable).toBe('disabled');
+			expect(idleTransitions?.focus).toBe('focused');
+			expect(idleTransitions?.disable).toBe('disabled');
 		});
 
 		it('should have correct state transitions from focused', () => {
 			const focusedTransitions = LIST_STATE_MACHINE_CONFIG.states.focused.on;
-			expect(focusedTransitions.blur).toBe('idle');
-			expect(focusedTransitions.startSelect).toBe('selecting');
-			expect(focusedTransitions.disable).toBe('disabled');
+			expect(focusedTransitions?.blur).toBe('idle');
+			expect(focusedTransitions?.startSelect).toBe('selecting');
+			expect(focusedTransitions?.startSearch).toBe('searching');
+			expect(focusedTransitions?.disable).toBe('disabled');
+		});
+
+		it('should have correct state transitions from searching', () => {
+			const searchingTransitions = LIST_STATE_MACHINE_CONFIG.states.searching.on;
+			expect(searchingTransitions?.endSearch).toBe('focused');
+			expect(searchingTransitions?.blur).toBe('idle');
+			expect(searchingTransitions?.disable).toBe('disabled');
 		});
 
 		it('should have correct state transitions from disabled', () => {
 			const disabledTransitions = LIST_STATE_MACHINE_CONFIG.states.disabled.on;
-			expect(disabledTransitions.enable).toBe('idle');
+			expect(disabledTransitions?.enable).toBe('idle');
 		});
 	});
 
@@ -118,18 +138,13 @@ describe('List Component', () => {
 		});
 
 		it('should initialize list with custom options', () => {
-			attachListBehavior(
-				world,
-				eid,
-				[{ text: 'Item 1' }],
-				{
-					interactive: false,
-					mouse: false,
-					keys: false,
-					selectedIndex: 0,
-					visibleCount: 5,
-				},
-			);
+			attachListBehavior(world, eid, [{ text: 'Item 1' }], {
+				interactive: false,
+				mouse: false,
+				keys: false,
+				selectedIndex: 0,
+				visibleCount: 5,
+			});
 
 			expect(isListInteractive(eid)).toBe(false);
 			expect(isListMouseEnabled(eid)).toBe(false);
@@ -535,11 +550,7 @@ describe('List Component', () => {
 
 	describe('Key Handling', () => {
 		beforeEach(() => {
-			attachListBehavior(world, eid, [
-				{ text: 'Item 1' },
-				{ text: 'Item 2' },
-				{ text: 'Item 3' },
-			]);
+			attachListBehavior(world, eid, [{ text: 'Item 1' }, { text: 'Item 2' }, { text: 'Item 3' }]);
 		});
 
 		it('should return selectPrev for up key', () => {
@@ -614,11 +625,7 @@ describe('List Component', () => {
 
 	describe('Rendering', () => {
 		beforeEach(() => {
-			attachListBehavior(world, eid, [
-				{ text: 'Item 1' },
-				{ text: 'Item 2' },
-				{ text: 'Item 3' },
-			]);
+			attachListBehavior(world, eid, [{ text: 'Item 1' }, { text: 'Item 2' }, { text: 'Item 3' }]);
 		});
 
 		it('should render items with default prefixes', () => {
@@ -634,6 +641,153 @@ describe('List Component', () => {
 			const lines = renderListItems(eid, 15);
 			expect(lines[0]?.length).toBeLessThanOrEqual(15);
 			expect(lines[0]).toContain('…');
+		});
+	});
+
+	describe('Search Mode', () => {
+		it('should enable search mode', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			expect(isListSearchEnabled(eid)).toBe(true);
+		});
+
+		it('should disable search mode by default', () => {
+			attachListBehavior(world, eid);
+			expect(isListSearchEnabled(eid)).toBe(false);
+		});
+
+		it('should start search when enabled', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			focusList(world, eid);
+			expect(startListSearch(world, eid)).toBe(true);
+			expect(isListSearching(world, eid)).toBe(true);
+		});
+
+		it('should not start search when disabled', () => {
+			attachListBehavior(world, eid, [], { search: false });
+			focusList(world, eid);
+			expect(startListSearch(world, eid)).toBe(false);
+			expect(isListSearching(world, eid)).toBe(false);
+		});
+
+		it('should end search mode', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			focusList(world, eid);
+			startListSearch(world, eid);
+			expect(endListSearch(world, eid)).toBe(true);
+			expect(isListSearching(world, eid)).toBe(false);
+		});
+
+		it('should track search query', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			focusList(world, eid);
+			startListSearch(world, eid);
+			expect(getListSearchQuery(eid)).toBe('');
+
+			setListSearchQuery(world, eid, 'test');
+			expect(getListSearchQuery(eid)).toBe('test');
+		});
+
+		it('should append to search query', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			focusList(world, eid);
+			startListSearch(world, eid);
+
+			appendToSearchQuery(world, eid, 't');
+			expect(getListSearchQuery(eid)).toBe('t');
+
+			appendToSearchQuery(world, eid, 'e');
+			expect(getListSearchQuery(eid)).toBe('te');
+		});
+
+		it('should backspace search query', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			focusList(world, eid);
+			startListSearch(world, eid);
+			setListSearchQuery(world, eid, 'test');
+
+			backspaceSearchQuery(world, eid);
+			expect(getListSearchQuery(eid)).toBe('tes');
+		});
+
+		it('should clear search query', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			focusList(world, eid);
+			startListSearch(world, eid);
+			setListSearchQuery(world, eid, 'test');
+
+			clearSearchQuery(world, eid);
+			expect(getListSearchQuery(eid)).toBe('');
+		});
+
+		it('should find and select by text', () => {
+			const items: ListItem[] = [{ text: 'Apple' }, { text: 'Banana' }, { text: 'Cherry' }];
+			attachListBehavior(world, eid, items, { search: true });
+			focusList(world, eid);
+			startListSearch(world, eid);
+
+			expect(findAndSelectByText(world, eid, 'ban')).toBe(true);
+			expect(getSelectedIndex(eid)).toBe(1);
+		});
+
+		it('should find next match', () => {
+			const items: ListItem[] = [{ text: 'Apple' }, { text: 'Apricot' }, { text: 'Avocado' }];
+			attachListBehavior(world, eid, items, { search: true });
+			focusList(world, eid);
+			startListSearch(world, eid);
+
+			setListSearchQuery(world, eid, 'a');
+			setSelectedIndex(world, eid, 0);
+
+			expect(findNextMatch(world, eid)).toBe(true);
+			expect(getSelectedIndex(eid)).toBe(1);
+
+			expect(findNextMatch(world, eid)).toBe(true);
+			expect(getSelectedIndex(eid)).toBe(2);
+		});
+
+		it('should fire search change callback', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			focusList(world, eid);
+			startListSearch(world, eid);
+
+			const queries: string[] = [];
+			const unsubscribe = onListSearchChange(eid, (query) => queries.push(query));
+
+			setListSearchQuery(world, eid, 'a');
+			setListSearchQuery(world, eid, 'ab');
+			setListSearchQuery(world, eid, 'abc');
+
+			expect(queries).toEqual(['a', 'ab', 'abc']);
+			unsubscribe();
+		});
+
+		it('should handle search key press', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			focusList(world, eid);
+
+			const action = handleListKeyPress(world, eid, '/');
+			expect(action?.type).toBe('startSearch');
+		});
+
+		it('should handle escape in search mode', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			focusList(world, eid);
+			startListSearch(world, eid);
+
+			const action = handleListKeyPress(world, eid, 'escape');
+			expect(action?.type).toBe('endSearch');
+		});
+
+		it('should handle character input in search mode', () => {
+			attachListBehavior(world, eid, [], { search: true });
+			focusList(world, eid);
+			startListSearch(world, eid);
+
+			const action = handleListKeyPress(world, eid, 'a');
+			expect(action?.type).toBe('searchChar');
+			if (action?.type === 'searchChar') {
+				expect(action.char).toBe('a');
+			}
 		});
 	});
 
