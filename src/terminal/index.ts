@@ -227,3 +227,13 @@ export { SuspendManager, suspend, suspendSequences } from './suspend';
 // Synchronized output (internal)
 export type { SyncOutputOptions } from './syncOutput';
 export { isSyncOutputSupported, SynchronizedOutput } from './syncOutput';
+// Terminfo (internal)
+export type {
+	BooleanCapability,
+	NumberCapability,
+	StringCapability,
+	TerminfoData,
+	Tput,
+	TputConfig,
+} from './terminfo';
+export { createTput, getDefaultTput, getDefaultXtermData, resetDefaultTput } from './terminfo';
