@@ -90,3 +90,25 @@ export {
 	precompileCapabilities,
 	tparm,
 } from './compiler';
+
+// =============================================================================
+// BUILTIN - Hardcoded terminfo fallback data
+// =============================================================================
+
+export {
+	BUILTIN_TERMINALS,
+	getBestBuiltinTerminfo,
+	getBuiltinTerminfo,
+	hasBuiltinTerminfo,
+	LINUX,
+	listBuiltinTerminals,
+	SCREEN,
+	SCREEN_256COLOR,
+	TMUX,
+	TMUX_256COLOR,
+	VT100,
+	VT220,
+	XTERM,
+	XTERM_16COLOR,
+	XTERM_256COLOR,
+} from './builtin';
