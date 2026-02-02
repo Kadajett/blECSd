@@ -17,7 +17,6 @@ import {
 	DEFAULT_SPINNER_CHARS,
 	DEFAULT_SPINNER_INTERVAL,
 	getSpinnerChar,
-	getSpinnerData,
 	hasSpinner,
 	removeSpinner,
 	resetSpinner,

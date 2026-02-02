@@ -16,13 +16,13 @@ import {
 	setBorder,
 	setBorderChars,
 } from '../components/border';
-import { getContent, setContent, TextAlign, TextVAlign } from '../components/content';
+import { setContent, TextAlign, TextVAlign } from '../components/content';
 import { getDimensions, setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
 import { setPadding } from '../components/padding';
 import { moveBy, setPosition } from '../components/position';
-import { hexToColor, markDirty, setStyle, setVisible, getRenderable } from '../components/renderable';
+import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -577,14 +577,13 @@ export function createPanel(world: World, entity: Entity, config: PanelConfig = 
 
 	// Set up border (default to single line)
 	const borderConfig = validated.style?.border;
-	const borderType =
-		borderConfig?.type === 'none'
-			? BorderType.None
-			: borderConfig?.type === 'bg'
-				? BorderType.Bg
-				: BorderType.Line;
-
-	setBorder(world, eid, borderType);
+	if (borderConfig?.type !== 'none') {
+		setBorder(world, eid, {
+			type: borderConfig?.type === 'bg' ? BorderType.Background : BorderType.Line,
+			fg: borderConfig?.fg !== undefined ? parseColor(borderConfig.fg) : undefined,
+			bg: borderConfig?.bg !== undefined ? parseColor(borderConfig.bg) : undefined,
+		});
+	}
 	setBorderChars(world, eid, getBorderCharset(borderConfig?.ch));
 
 	// Set up padding for content area (add 1 to top for title bar)
@@ -610,7 +609,7 @@ export function createPanel(world: World, entity: Entity, config: PanelConfig = 
 
 	// Set initial content
 	if (validated.content) {
-		setContent(world, eid, validated.content, TextAlign.Left, TextVAlign.Top);
+		setContent(world, eid, validated.content, { align: TextAlign.Left, valign: TextVAlign.Top });
 	}
 
 	// Make focusable
@@ -666,7 +665,7 @@ export function createPanel(world: World, entity: Entity, config: PanelConfig = 
 		// Content
 		setContent(text: string): PanelWidget {
 			contentStore.set(eid, text);
-			setContent(world, eid, text, TextAlign.Left, TextVAlign.Top);
+			setContent(world, eid, text, { align: TextAlign.Left, valign: TextVAlign.Top });
 			markDirty(world, eid);
 			return widget;
 		},

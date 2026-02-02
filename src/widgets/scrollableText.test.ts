@@ -192,8 +192,8 @@ describe('ScrollableText widget', () => {
 				const widget = createScrollableText(world, eid, {
 					width: 40,
 					height: 10,
-					contentWidth: 100,
-					contentHeight: 100,
+					scrollWidth: 100,
+					scrollHeight: 100,
 				});
 
 				widget.scrollTo(10, 20);
@@ -208,8 +208,8 @@ describe('ScrollableText widget', () => {
 				const widget = createScrollableText(world, eid, {
 					width: 40,
 					height: 10,
-					contentWidth: 100,
-					contentHeight: 100,
+					scrollWidth: 100,
+					scrollHeight: 100,
 				});
 
 				widget.scrollTo(10, 10);
@@ -225,8 +225,8 @@ describe('ScrollableText widget', () => {
 				const widget = createScrollableText(world, eid, {
 					width: 40,
 					height: 10,
-					contentWidth: 100,
-					contentHeight: 100,
+					scrollWidth: 100,
+					scrollHeight: 100,
 				});
 
 				widget.scrollTo(10, 50);
@@ -241,8 +241,8 @@ describe('ScrollableText widget', () => {
 				const widget = createScrollableText(world, eid, {
 					width: 40,
 					height: 10,
-					contentWidth: 100,
-					contentHeight: 100,
+					scrollWidth: 100,
+					scrollHeight: 100,
 				});
 
 				widget.scrollToBottom();
@@ -307,8 +307,8 @@ describe('ScrollableText widget', () => {
 				top: 0,
 				width: 40,
 				height: 10,
-				contentWidth: 100,
-				contentHeight: 100,
+				scrollWidth: 100,
+				scrollHeight: 100,
 			});
 
 			widget

@@ -9,12 +9,12 @@
 
 import { removeEntity } from 'bitecs';
 import { z } from 'zod';
-import { setBorder, BorderType, BORDER_SINGLE, type BorderCharset } from '../components/border';
-import { getDimensions, setDimensions } from '../components/dimensions';
+import { setBorder, BorderType, type BorderCharset } from '../components/border';
+import { setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
 import { moveBy, setPosition } from '../components/position';
-import { hexToColor, markDirty, setStyle, setVisible, getRenderable } from '../components/renderable';
+import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -382,14 +382,6 @@ function parseDimension(value: string | number | undefined): number | `${number}
 	return value;
 }
 
-/**
- * Converts border charset name to actual charset.
- */
-function getBorderCharset(ch: string | object | undefined): BorderCharset {
-	if (ch === undefined || ch === 'single') return BORDER_SINGLE;
-	if (typeof ch === 'object') return ch as BorderCharset;
-	return BORDER_SINGLE;
-}
 
 /**
  * Validated config type.
@@ -518,14 +510,13 @@ export function createTabs(world: World, entity: Entity, config: TabsConfig = {}
 
 	// Set up border
 	const borderConfig = validated.style?.border;
-	const borderType =
-		borderConfig?.type === 'none'
-			? BorderType.None
-			: borderConfig?.type === 'bg'
-				? BorderType.Bg
-				: BorderType.Line;
-
-	setBorder(world, eid, borderType);
+	if (borderConfig?.type !== 'none') {
+		setBorder(world, eid, {
+			type: borderConfig?.type === 'bg' ? BorderType.Background : BorderType.Line,
+			fg: borderConfig?.fg !== undefined ? parseColor(borderConfig.fg) : undefined,
+			bg: borderConfig?.bg !== undefined ? parseColor(borderConfig.bg) : undefined,
+		});
+	}
 
 	// Make focusable
 	setFocusable(world, eid, { focusable: true });

@@ -11,7 +11,6 @@ import { getRenderable, hexToColor } from '../components/renderable';
 import type { World } from '../core/types';
 import {
 	createTabs,
-	DEFAULT_TAB_POSITION,
 	getActiveTabIndex,
 	getTabCount,
 	getTabPosition,
