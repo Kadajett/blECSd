@@ -141,11 +141,11 @@ import { cursor, style, screen } from 'blecsd/terminal';
 
 const world = createWorld();
 
-// Create entities
-const player = addEntity(world);
-setPosition(world, player, 10, 5);
-setStyle(world, player, { fg: '#00ff00' });
-setContent(world, player, '@');
+// Create a status indicator entity
+const statusIndicator = addEntity(world);
+setPosition(world, statusIndicator, 10, 5);
+setStyle(world, statusIndicator, { fg: '#00ff00' });
+setContent(world, statusIndicator, '● Online');
 
 // Simple render function
 function render() {
@@ -201,11 +201,11 @@ process.stdin.on('data', (buffer) => {
     process.exit(0);
   }
 
-  // Arrow keys move the player
-  if (key.name === 'up') moveBy(world, player, 0, -1);
-  if (key.name === 'down') moveBy(world, player, 0, 1);
-  if (key.name === 'left') moveBy(world, player, -1, 0);
-  if (key.name === 'right') moveBy(world, player, 1, 0);
+  // Arrow keys move the selected element
+  if (key.name === 'up') moveBy(world, statusIndicator, 0, -1);
+  if (key.name === 'down') moveBy(world, statusIndicator, 0, 1);
+  if (key.name === 'left') moveBy(world, statusIndicator, -1, 0);
+  if (key.name === 'right') moveBy(world, statusIndicator, 1, 0);
 
   render();
 });
