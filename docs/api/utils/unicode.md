@@ -736,6 +736,94 @@ hasZeroWidthChars('cafe\u0301'); // true (decomposed)
 
 ---
 
+## Normalization Utilities
+
+Functions for normalizing and simplifying Unicode text.
+
+### dropUnicode
+
+Replaces complex Unicode characters with a simple replacement.
+
+```typescript
+function dropUnicode(text: string, options?: DropUnicodeOptions): string
+
+interface DropUnicodeOptions {
+  replacement?: string;     // Default: '?'
+  dropWide?: boolean;       // Default: true
+  dropCombining?: boolean;  // Default: true
+  dropAstral?: boolean;     // Default: true
+  dropZeroWidth?: boolean;  // Default: true
+  dropControl?: boolean;    // Default: false
+}
+```
+
+**Example:**
+```typescript
+import { dropUnicode } from 'blecsd';
+
+dropUnicode('Hello 世界');     // 'Hello ??'
+dropUnicode('Hello😀');       // 'Hello?'
+
+// Custom replacement
+dropUnicode('Hello 中国', { replacement: '_' });  // 'Hello __'
+
+// Keep specific character types
+dropUnicode('Hello 中国', { dropWide: false });  // 'Hello 中国'
+```
+
+### toAscii
+
+Converts a string to ASCII-only.
+
+```typescript
+function toAscii(text: string, replacement?: string): string
+```
+
+**Example:**
+```typescript
+import { toAscii } from 'blecsd';
+
+toAscii('Hello 世界');  // 'Hello ??'
+toAscii('café');        // 'caf?'
+```
+
+### Strip Functions
+
+```typescript
+function stripZeroWidth(text: string): string
+function stripCombining(text: string): string
+function stripControl(text: string): string
+```
+
+**Example:**
+```typescript
+import { stripZeroWidth, stripCombining, stripControl } from 'blecsd';
+
+stripZeroWidth('a\u200Bb');  // 'ab'
+stripCombining('e\u0301');   // 'e'
+stripControl('Hello\x00World');  // 'HelloWorld'
+```
+
+### Normalization Forms
+
+```typescript
+function normalizeNFC(text: string): string   // Canonical composition
+function normalizeNFD(text: string): string   // Canonical decomposition
+function normalizeNFKC(text: string): string  // Compatibility composition
+function normalizeNFKD(text: string): string  // Compatibility decomposition
+```
+
+**Example:**
+```typescript
+import { normalizeNFC, normalizeNFD, normalizeNFKC } from 'blecsd';
+
+normalizeNFC('e\u0301');   // 'é' (composed)
+normalizeNFD('é');         // 'e\u0301' (decomposed)
+normalizeNFKC('Ａ');       // 'A' (fullwidth to ASCII)
+```
+
+---
+
 ## Related
 
 - [Text Wrap](./text-wrap.md) - Text wrapping with width awareness

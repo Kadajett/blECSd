@@ -33,6 +33,18 @@ export {
 	isCombiningChar,
 	isCombiningCharBinarySearch,
 } from './combining';
+export type { DropUnicodeOptions } from './normalize';
+export {
+	dropUnicode,
+	normalizeNFC,
+	normalizeNFD,
+	normalizeNFKC,
+	normalizeNFKD,
+	stripCombining,
+	stripControl,
+	stripZeroWidth,
+	toAscii,
+} from './normalize';
 export type { SliceResult, WidthOptions } from './stringWidth';
 export {
 	centerByWidth,
