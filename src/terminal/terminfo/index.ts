@@ -36,3 +36,21 @@ export {
 	TERMINFO_MAGIC_LEGACY,
 	toTerminfoData,
 } from './parser';
+
+// =============================================================================
+// LOCATOR - Terminfo file location
+// =============================================================================
+
+export type { LocatorConfig, LocatorResult } from './locator';
+export {
+	findCurrentTerminfo,
+	findTerminfo,
+	findTerminfoDetailed,
+	getCurrentTerminal,
+	getExistingSearchPaths,
+	getTerminfoPath,
+	getTerminfoSearchPaths,
+	listTerminals,
+	listTerminalsMatching,
+	terminalExists,
+} from './locator';
