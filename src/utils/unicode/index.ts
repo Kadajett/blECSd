@@ -33,6 +33,20 @@ export {
 	isCombiningChar,
 	isCombiningCharBinarySearch,
 } from './combining';
+export type { GraphemeSliceResult } from './grapheme';
+export {
+	graphemeAt,
+	graphemeClusters,
+	graphemeCount,
+	graphemeWidth,
+	hasGraphemeSegmenter,
+	reverseGraphemes,
+	sliceByWidthGrapheme,
+	sliceGraphemes,
+	stringWidthGrapheme,
+	toGraphemes,
+	truncateWithEllipsisGrapheme,
+} from './grapheme';
 export type { DropUnicodeOptions } from './normalize';
 export {
 	dropUnicode,
