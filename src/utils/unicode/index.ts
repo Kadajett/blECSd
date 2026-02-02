@@ -3,6 +3,13 @@
  * @module utils/unicode
  */
 
+export {
+	COMBINING_RANGES,
+	COMBINING_SET,
+	getCombiningCharCount,
+	isCombiningChar,
+	isCombiningCharBinarySearch,
+} from './combining';
 export type { CodePointRange } from './widthTables';
 export {
 	AMBIGUOUS_RANGES,

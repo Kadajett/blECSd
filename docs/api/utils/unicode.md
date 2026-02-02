@@ -1,6 +1,6 @@
-# Unicode Width Tables
+# Unicode Utilities
 
-Unicode East Asian Width utilities for calculating character display widths in terminal applications.
+Unicode utilities for terminal text handling, including character width calculation and combining character detection.
 
 ## Overview
 
@@ -10,7 +10,9 @@ Terminal emulators display characters at different widths:
 - **Zero-width (width = 0)**: Combining marks, control characters, zero-width joiners
 - **Ambiguous**: Characters that may be narrow or wide depending on context
 
-This module provides efficient lookup functions using binary search over sorted Unicode ranges.
+**Combining characters** are marks that attach to the preceding base character (accents, diacritics, tone marks). All combining characters are zero-width.
+
+This module provides efficient lookup functions using binary search and pre-computed sets.
 
 ## Types
 
@@ -296,6 +298,116 @@ function padEnd(str: string, targetWidth: number): string {
 console.log(padEnd('Name', 10) + '| Value');
 console.log(padEnd('日本語', 10) + '| Japanese');
 ```
+
+---
+
+## Combining Characters
+
+Combining characters are marks that attach to the preceding base character. They include accents, diacritics, vowel signs, and tone marks.
+
+### COMBINING_RANGES
+
+Sorted array of combining character ranges.
+
+```typescript
+import { COMBINING_RANGES } from 'blecsd';
+
+// Check how many ranges are covered
+console.log(COMBINING_RANGES.length);
+```
+
+**Covered blocks:**
+- Combining Diacritical Marks (U+0300-U+036F)
+- Combining Diacritical Marks Extended (U+1AB0-U+1AFF)
+- Combining Diacritical Marks Supplement (U+1DC0-U+1DFF)
+- Combining Diacritical Marks for Symbols (U+20D0-U+20FF)
+- Arabic, Hebrew, Indic, Thai, and other script combining marks
+- Variation Selectors (U+FE00-U+FE0F, U+E0100-U+E01EF)
+
+### COMBINING_SET
+
+Pre-computed Set of all combining character code points for O(1) lookup.
+
+```typescript
+import { COMBINING_SET } from 'blecsd';
+
+if (COMBINING_SET.has(codePoint)) {
+  // Character is a combining mark
+}
+```
+
+### isCombiningChar
+
+Checks if a character is a combining character using the pre-computed Set.
+
+```typescript
+function isCombiningChar(codePoint: number): boolean
+```
+
+**Parameters:**
+- `codePoint` - Unicode code point to check
+
+**Returns:** `true` if the character is a combining character
+
+**Example:**
+```typescript
+import { isCombiningChar } from 'blecsd';
+
+isCombiningChar(0x0300); // true - Combining grave accent
+isCombiningChar(0x0301); // true - Combining acute accent
+isCombiningChar(0x0308); // true - Combining diaeresis
+isCombiningChar(0x0041); // false - Latin 'A'
+isCombiningChar(0x200b); // false - Zero-width space (not combining)
+isCombiningChar(0x200d); // false - Zero-width joiner (not combining)
+```
+
+### isCombiningCharBinarySearch
+
+Checks if a character is a combining character using binary search. Slightly slower than `isCombiningChar()` but uses less memory.
+
+```typescript
+function isCombiningCharBinarySearch(codePoint: number): boolean
+```
+
+**Example:**
+```typescript
+import { isCombiningCharBinarySearch } from 'blecsd';
+
+isCombiningCharBinarySearch(0x0300); // true
+isCombiningCharBinarySearch(0x0041); // false
+```
+
+### getCombiningCharCount
+
+Gets the total number of combining character code points covered.
+
+```typescript
+function getCombiningCharCount(): number
+```
+
+**Example:**
+```typescript
+import { getCombiningCharCount } from 'blecsd';
+
+const count = getCombiningCharCount();
+console.log(`Covering ${count} combining characters`);
+```
+
+### Combining vs Zero-Width
+
+Not all zero-width characters are combining characters:
+
+| Character Type | Zero-Width | Combining |
+|----------------|------------|-----------|
+| Combining accents (U+0300-U+036F) | Yes | Yes |
+| Control characters (U+0000-U+001F) | Yes | No |
+| Zero-width space (U+200B) | Yes | No |
+| Zero-width joiner (U+200D) | Yes | No |
+| BOM (U+FEFF) | Yes | No |
+
+Use `isZeroWidthChar()` for display width calculation, and `isCombiningChar()` for text processing that needs to identify combining marks specifically.
+
+---
 
 ## Related
 
