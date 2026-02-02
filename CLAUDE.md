@@ -1,28 +1,19 @@
-# blECSd Terminal UI Library
+# blECSd Terminal Game Library
 
 > **Note:** This library is being renamed from "blessed" to "blECSd" to reflect its ECS-first architecture and distinguish it from the original blessed library.
 
 ## Project Overview
 
-This is a rewrite of the 11-year-old blessed node library into a modern, high-performance terminal UI library. blECSd uses an Entity Component System (ECS) architecture that enables building everything from simple CLI tools to complex dashboards to terminal games.
+This is a rewrite of the 11-year-old blessed node library into a modern terminal game library built on curses. The rewrite prioritizes game development use cases over general TUI applications.
 
 **This is NOT a backwards-compatible rewrite.** We are building a new library inspired by blessed's architecture.
-
-### Why ECS for Terminal UIs?
-
-ECS provides significant advantages for terminal applications:
-
-- **Performance**: Structure-of-Arrays layout enables efficient batch processing of thousands of UI elements
-- **Composition**: Build complex UIs by combining simple components rather than deep inheritance hierarchies
-- **Flexibility**: Same architecture scales from a simple menu to a full IDE or game
-- **Testability**: Pure functions operating on data are trivial to unit test
 
 ## Core Technologies
 
 | Technology | Purpose |
 |------------|---------|
 | **TypeScript** | Strict types everywhere (`strict: true`, `noUncheckedIndexedAccess: true`) |
-| **bitecs** | Entity Component System for high-performance UI state management |
+| **bitecs** | Entity Component System for game state management |
 | **Zod** | Runtime validation for configuration, input, and data boundaries |
 | **Biome** | Linting and formatting |
 | **Vitest** | Testing framework |
@@ -34,7 +25,7 @@ ECS provides significant advantages for terminal applications:
 **blECSd is a library, not a framework.** Users must be able to:
 
 1. **Use components standalone** - Import Position, Renderable, etc. into their own bitecs world
-2. **Skip the built-in update loop** - All systems are callable functions, not loop-dependent
+2. **Skip the built-in game loop** - All systems are callable functions, not loop-dependent
 3. **Mix and match** - Use our input parsing but their own rendering, or vice versa
 4. **Control the world** - All functions take `world` as a parameter; we never own a global world
 
@@ -45,42 +36,40 @@ import { createWorld, addEntity } from 'bitecs';
 
 const world = createWorld();  // User's world
 const eid = addEntity(world);
-setPosition(world, eid, 10, 5);  // Works without our update loop
+setPosition(world, eid, 10, 5);  // Works without our game loop
 ```
 
-**Never create implicit dependencies on the update loop.** Systems should be pure functions that transform world state.
+**Never create implicit dependencies on the game loop.** Systems should be pure functions that transform world state.
 
 ### Input Priority (HARD REQUIREMENT)
 
 **Input must ALWAYS feel responsive and smooth.** This is a non-negotiable requirement for all controls and inputs in this library.
 
-Default update loop order:
+Default game loop order:
 1. **INPUT** (always first, cannot be reordered)
 2. EARLY_UPDATE
 3. UPDATE
 4. LATE_UPDATE
-5. ANIMATION (physics, tweens, transitions)
+5. PHYSICS
 6. LAYOUT
 7. RENDER
 8. POST_RENDER
 
 The INPUT phase processes ALL pending input immediately every frame. No input events should ever be lost or delayed. Library users can customize other phases but cannot move INPUT from first position.
 
-**Note on the ANIMATION phase:** This phase handles physics-based animations, spring dynamics, momentum scrolling, and other time-based transitions. While "physics" might sound game-specific, these patterns are increasingly common in modern UIs (think iOS bounce effects, Material Design transitions, or kinetic scrolling).
-
 ### Entity Component System (bitecs)
 
-All UI elements are entities with components:
+All game objects are entities with components:
 
 ```typescript
 // Components are typed data stores
 const Position = defineComponent({ x: Types.f32, y: Types.f32 })
 const Renderable = defineComponent({ char: Types.ui8, fg: Types.ui32, bg: Types.ui32 })
-const Velocity = defineComponent({ x: Types.f32, y: Types.f32 })  // For animations, momentum scrolling
+const Velocity = defineComponent({ x: Types.f32, y: Types.f32 })
 
 // Systems process entities with specific components
-const animationSystem = defineSystem((world) => {
-  const entities = animatedQuery(world)
+const movementSystem = defineSystem((world) => {
+  const entities = movementQuery(world)
   for (const eid of entities) {
     Position.x[eid] += Velocity.x[eid]
     Position.y[eid] += Velocity.y[eid]
@@ -96,60 +85,6 @@ const animationSystem = defineSystem((world) => {
 - All objects have defined interfaces
 - Use branded types for IDs and special values
 - Prefer `readonly` arrays and objects where possible
-
-### Functional Programming (HARD REQUIREMENT)
-
-**This is a purely functional codebase. OOP is permanently banned.**
-
-**Prohibited patterns:**
-- `class` keyword (no classes, ever)
-- `this` keyword
-- `new` keyword (except for built-ins like `Map`, `Set`, `Error`)
-- Prototype manipulation
-- Instance methods
-- Inheritance hierarchies
-- Stateful objects with methods
-
-**Required patterns:**
-- Pure functions that take data and return data
-- Data as plain objects and arrays
-- Composition over inheritance
-- Explicit state passed as parameters
-- Immutable data transformations
-
-```typescript
-// BANNED - OOP style
-class Player {
-  private x: number;
-  private y: number;
-
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-
-  move(dx: number, dy: number): void {
-    this.x += dx;
-    this.y += dy;
-  }
-}
-
-// REQUIRED - Functional style
-interface Player {
-  readonly x: number;
-  readonly y: number;
-}
-
-function createPlayer(x: number, y: number): Player {
-  return { x, y };
-}
-
-function movePlayer(player: Player, dx: number, dy: number): Player {
-  return { x: player.x + dx, y: player.y + dy };
-}
-```
-
-**Why:** ECS is inherently data-oriented. Classes create implicit coupling between data and behavior. Pure functions are easier to test, compose, and reason about. This aligns with bitecs' design philosophy.
 
 ### Code Style: Early Returns and Guard Clauses
 
@@ -266,11 +201,11 @@ src/
 ├── components/        # bitecs components
 │   ├── position.ts
 │   ├── renderable.ts
-│   ├── velocity.ts    # For animations, transitions
+│   ├── velocity.ts
 │   └── ...
 ├── systems/           # bitecs systems
-│   ├── animation.ts   # Physics-based animations
-│   ├── layout.ts      # UI layout calculation
+│   ├── movement.ts
+│   ├── collision.ts
 │   ├── render.ts
 │   └── ...
 ├── widgets/           # High-level UI widgets (optional)
@@ -301,8 +236,8 @@ src/
 
 ### What We Drop
 - Browser support (terminal-only)
-- Backwards compatibility with original blessed
-- Widget-centric class hierarchies (replaced by ECS composition)
+- Backwards compatibility
+- Widget-centric architecture (replaced by ECS)
 
 ## Testing Strategy
 
@@ -315,7 +250,7 @@ describe('colors', () => {
 })
 
 // Integration tests for systems
-describe('animation system', () => {
+describe('movement system', () => {
   it('updates position based on velocity', () => {
     const world = createWorld()
     const eid = addEntity(world)
@@ -324,7 +259,7 @@ describe('animation system', () => {
     Position.x[eid] = 0
     Velocity.x[eid] = 1
 
-    animationSystem(world)
+    movementSystem(world)
 
     expect(Position.x[eid]).toBe(1)
   })
