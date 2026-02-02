@@ -204,7 +204,7 @@ const screen = createScreenEntity(world, {
 const namedScreen = createScreenEntity(world, {
   width: 120,
   height: 40,
-  title: 'File Manager',
+  title: 'My Terminal Game',
 });
 ```
 
@@ -309,7 +309,7 @@ const menuList = createListEntity(world, {
   y: 0,
   width: 25,
   height: 8,
-  items: ['New File', 'Open File', 'Save', 'Settings', 'Exit'],
+  items: ['New Game', 'Load Game', 'Options', 'Credits', 'Exit'],
   selectedIndex: 0,
   scrollable: true,
   border: {
