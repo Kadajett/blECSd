@@ -249,35 +249,3 @@ export {
 	rgbTo8,
 	rgbTo16,
 } from './reduce';
-
-// =============================================================================
-// TRUECOLOR - 24-bit RGB color support with automatic downgrade
-// =============================================================================
-
-export type {
-	Color,
-	ColorDepthLevelValue,
-	TruecolorConfig,
-	TruecolorSupport,
-} from './truecolor';
-
-export {
-	// Convenience functions
-	bg,
-	// Constants
-	ColorDepthLevel,
-	color,
-	// Factory
-	createTruecolorSupport,
-	fg,
-	// Depth detection
-	getColorDepthLevel,
-	// Default instance
-	getDefaultTruecolor,
-	// Color creators
-	hex,
-	isTruecolor,
-	resetDefaultTruecolor,
-	rgb,
-	rgba,
-} from './truecolor';
