@@ -512,6 +512,64 @@ describe('Optimization Effectiveness', () => {
 });
 
 // =============================================================================
+// 10K CELLS/FRAME BENCHMARK (ACCEPTANCE CRITERIA)
+// =============================================================================
+
+describe('10K Cells/Frame (Acceptance Criteria)', () => {
+	let buffer: OutputBufferData;
+
+	bench(
+		'10,000 cells with uniform color',
+		() => {
+			for (let i = 0; i < 10000; i++) {
+				writeCellAt(buffer, i % 100, Math.floor(i / 100), 'X', 0xffffff, 0x000000);
+			}
+		},
+		{
+			setup() {
+				buffer = createOutputBuffer({ syncMode: false, trackStats: true });
+				setScreenSize(buffer, 100, 100);
+			},
+		},
+	);
+
+	bench(
+		'10,000 cells with varied colors',
+		() => {
+			for (let i = 0; i < 10000; i++) {
+				writeCellAt(buffer, i % 100, Math.floor(i / 100), 'X', i * 0x101, i * 0x202);
+			}
+		},
+		{
+			setup() {
+				buffer = createOutputBuffer({ syncMode: false, trackStats: true });
+				setScreenSize(buffer, 100, 100);
+			},
+		},
+	);
+
+	bench(
+		'60fps: 10K cells/frame for 1 second (60 frames)',
+		() => {
+			for (let frame = 0; frame < 60; frame++) {
+				beginFrame(buffer);
+				for (let i = 0; i < 10000; i++) {
+					writeCellAt(buffer, i % 100, Math.floor(i / 100), 'X', 0xffffff, 0x000000);
+				}
+				endFrame(buffer);
+				clearBuffer(buffer);
+			}
+		},
+		{
+			setup() {
+				buffer = createOutputBuffer({ syncMode: true, trackStats: true });
+				setScreenSize(buffer, 100, 100);
+			},
+		},
+	);
+});
+
+// =============================================================================
 // 60 FPS SIMULATION
 // =============================================================================
 
