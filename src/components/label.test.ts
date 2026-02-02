@@ -193,7 +193,6 @@ describe('Label Component', () => {
 
 		it('cleans up label text from store', () => {
 			setLabel(world, eid, 'Test');
-			const _labelId = Label.labelId[eid];
 
 			removeLabel(world, eid);
 
