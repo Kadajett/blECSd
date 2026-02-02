@@ -258,6 +258,27 @@ export {
 	sortByZIndex,
 } from './queries';
 export { createScheduler, getDeltaTime, Scheduler } from './scheduler';
+// Style inheritance
+export {
+	clearStyleCache,
+	computeInheritedStyle,
+	doesPropertyInherit,
+	findPropertySource,
+	getCacheGeneration,
+	getComputedStyles,
+	getDefaultStyle,
+	getInheritedProperty,
+	getLocalStyle,
+	hasValidStyleCache,
+	INHERITING_PROPERTIES,
+	invalidateAllStyleCaches,
+	invalidateStyleCache,
+	isDefaultColor,
+	mergeStyles,
+	NON_INHERITING_PROPERTIES,
+	precomputeStyles,
+	resolveStyle,
+} from './styleInheritance';
 // Shrink-to-content
 export type { ShrinkBox } from './shrinkToContent';
 export {
