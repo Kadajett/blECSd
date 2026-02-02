@@ -403,7 +403,7 @@ function processKeyEvent(world: World, event: ParsedKeyEvent): void {
 
 	// If there's a focused entity, update its KeyboardInput component
 	if (focusedEntity !== null) {
-		const keyCode = event.raw.length > 0 ? (event.raw[0] ?? 0) : 0;
+		const keyCode = event.raw.length > 0 ? event.raw.charCodeAt(0) : 0;
 		setKeyboardInput(world, focusedEntity, {
 			lastKeyCode: keyCode,
 			lastKeyTime: Date.now(),

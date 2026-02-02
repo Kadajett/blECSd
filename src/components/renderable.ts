@@ -26,8 +26,7 @@ const DEFAULT_CAPACITY = 10000;
  * ```
  */
 export function packColor(r: number, g: number, b: number, a = 255): number {
-	// Use >>> 0 to ensure unsigned 32-bit result (JavaScript bitwise ops return signed)
-	return (((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff)) >>> 0;
+	return ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
 }
 
 /**
