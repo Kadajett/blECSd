@@ -6,12 +6,14 @@
  */
 
 // Parser exports
-export type { Attribute, InternalColor } from './parser';
+export type { Attribute, CodeAttrOptions, InternalColor, OutputColorDepth } from './parser';
 export {
 	AttributeSchema,
 	applySgrCodes,
 	attrCode,
+	attrToSgrCodes,
 	attributesEqual,
+	codeAttr,
 	ColorType,
 	cloneAttribute,
 	createAttribute,
@@ -20,6 +22,7 @@ export {
 	hasStyle,
 	packRgb,
 	parseSgrString,
+	sgrReset,
 	stripAnsi,
 	TextStyle,
 	unpackRgb,
