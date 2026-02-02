@@ -389,7 +389,7 @@ export type {
 	ArtificialCursor,
 	ArtificialCursorOptions,
 	CursorManager,
-	CursorShape,
+	CursorShape as ArtificialCursorShapeType,
 	RenderedCursor,
 } from './cursor';
 export {

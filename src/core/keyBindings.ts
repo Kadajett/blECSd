@@ -167,7 +167,9 @@ export function parseKeyString(keyString: string): ParsedKey | null {
 			// Modifier
 			const modifier = resolveModifier(part);
 			if (!modifier) return null;
-			parsed[modifier] = true;
+			if (modifier === 'ctrl') parsed.ctrl = true;
+			else if (modifier === 'meta') parsed.meta = true;
+			else if (modifier === 'shift') parsed.shift = true;
 		}
 	}
 
@@ -457,7 +459,10 @@ function evaluateSingleCondition(condition: string, context: ConditionContext): 
 
 	// Equality check
 	if (trimmed.includes('==')) {
-		const [left, right] = trimmed.split('==').map((s) => s.trim());
+		const parts = trimmed.split('==').map((s) => s.trim());
+		const left = parts[0];
+		const right = parts[1];
+		if (!left || !right) return false;
 		const leftValue = getContextValue(left, context);
 		const rightValue = right.replace(/^['"]|['"]$/g, ''); // Remove quotes
 		return String(leftValue) === rightValue;
@@ -465,7 +470,10 @@ function evaluateSingleCondition(condition: string, context: ConditionContext): 
 
 	// Inequality check
 	if (trimmed.includes('!=')) {
-		const [left, right] = trimmed.split('!=').map((s) => s.trim());
+		const parts = trimmed.split('!=').map((s) => s.trim());
+		const left = parts[0];
+		const right = parts[1];
+		if (!left || !right) return false;
 		const leftValue = getContextValue(left, context);
 		const rightValue = right.replace(/^['"]|['"]$/g, '');
 		return String(leftValue) !== rightValue;

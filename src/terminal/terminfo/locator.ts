@@ -124,7 +124,7 @@ function getHomeDir(config?: LocatorConfig): string {
 	if (config?.homeDir) {
 		return config.homeDir;
 	}
-	return process.env.HOME ?? process.env.USERPROFILE ?? '';
+	return process.env['HOME'] ?? process.env['USERPROFILE'] ?? '';
 }
 
 // =============================================================================
@@ -159,7 +159,7 @@ export function getTerminfoSearchPaths(config?: LocatorConfig): readonly string[
 	const paths: string[] = [];
 
 	// 1. TERMINFO environment variable (highest priority)
-	const terminfo = process.env.TERMINFO;
+	const terminfo = process.env['TERMINFO'];
 	if (terminfo && terminfo.length > 0) {
 		paths.push(terminfo);
 	}
@@ -171,7 +171,7 @@ export function getTerminfoSearchPaths(config?: LocatorConfig): readonly string[
 	}
 
 	// 3. TERMINFO_DIRS (colon-separated list)
-	const terminfoDirs = process.env.TERMINFO_DIRS;
+	const terminfoDirs = process.env['TERMINFO_DIRS'];
 	if (terminfoDirs) {
 		const dirs = terminfoDirs.split(':').filter((d) => d.length > 0);
 		paths.push(...dirs);
@@ -485,7 +485,7 @@ export function terminalExists(terminal: string, config?: LocatorConfig): boolea
  * ```
  */
 export function getCurrentTerminal(): string {
-	return process.env.TERM ?? 'dumb';
+	return process.env['TERM'] ?? 'dumb';
 }
 
 /**

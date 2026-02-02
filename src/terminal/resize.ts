@@ -36,7 +36,7 @@
  */
 
 import type { World } from '../core/types';
-import { createEventBus, type EventBus, type ScreenEventMap } from '../core/events';
+import { createEventBus, type EventBus } from '../core/events';
 import { getScreen, resizeScreen, getScreenSize } from '../components/screen';
 import { markAllDirty } from '../systems/renderSystem';
 import { invalidateAllLayouts } from '../systems/layoutSystem';
@@ -44,7 +44,7 @@ import {
 	getOutputBuffer,
 	setOutputBuffer,
 } from '../systems/outputSystem';
-import { resizeDoubleBuffer, type DoubleBufferData } from './screen/doubleBuffer';
+import { resizeDoubleBuffer } from './screen/doubleBuffer';
 import type { Program, ResizeEvent } from './program';
 
 // =============================================================================

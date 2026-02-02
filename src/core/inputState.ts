@@ -226,7 +226,6 @@ export class InputState {
 	private frameCount = 0;
 	private keyEventsThisFrame = 0;
 	private mouseEventsThisFrame = 0;
-	private _lastUpdateTime = 0;
 
 	// Modifiers tracked separately for convenience
 	private ctrlDown = false;
@@ -276,8 +275,6 @@ export class InputState {
 		this.mouseEventsThisFrame = mouseEvents.length;
 
 		const deltaMs = deltaTime * 1000;
-		const currentTime = performance.now();
-		this._lastUpdateTime = currentTime;
 
 		// Clear just pressed/released flags from previous frame
 		this.clearTransientFlags();

@@ -9,8 +9,7 @@
 
 import { getTerminalCapabilities, type TerminalCapabilities } from '../capabilities';
 import { type ColorValue, hexToRgb, parseColor, rgbToColor256 } from './convert';
-import { matchColorSmart, matchStandardColor } from './match';
-import type { Color256, RGB, RGBA } from './palette';
+import type { Color256, RGB } from './palette';
 import { rgbTo8, rgbTo16 } from './reduce';
 
 // =============================================================================
@@ -381,7 +380,7 @@ export function createTruecolorSupport(config: TruecolorConfig = {}): TruecolorS
 		}
 
 		// Check environment for 256-color support
-		const term = process.env.TERM ?? '';
+		const term = process.env['TERM'] ?? '';
 		if (term.includes('256color') || term.includes('256-color')) {
 			return ColorDepthLevel.PALETTE_256;
 		}
@@ -412,13 +411,13 @@ export function createTruecolorSupport(config: TruecolorConfig = {}): TruecolorS
 		}
 
 		// Synchronous fallback based on environment
-		const colorterm = process.env.COLORTERM;
+		const colorterm = process.env['COLORTERM'];
 		if (colorterm === 'truecolor' || colorterm === '24bit') {
 			cachedDepth = ColorDepthLevel.TRUECOLOR;
 			return cachedDepth;
 		}
 
-		const term = process.env.TERM ?? '';
+		const term = process.env['TERM'] ?? '';
 		if (term.includes('256color')) {
 			cachedDepth = ColorDepthLevel.PALETTE_256;
 			return cachedDepth;

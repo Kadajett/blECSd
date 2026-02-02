@@ -79,13 +79,13 @@ export function getTermcapSearchPaths(options: TermcapLocatorOptions = {}): read
 	const paths: string[] = [];
 
 	// TERMCAP environment variable (if it's a path)
-	const termcap = options.termcapEnv ?? process.env.TERMCAP ?? '';
+	const termcap = options.termcapEnv ?? process.env['TERMCAP'] ?? '';
 	if (termcap.startsWith('/')) {
 		paths.push(termcap);
 	}
 
 	// TERMPATH directories
-	const termpath = options.termpath ?? process.env.TERMPATH ?? '';
+	const termpath = options.termpath ?? process.env['TERMPATH'] ?? '';
 	if (termpath) {
 		paths.push(...termpath.split(/[: ]/));
 	}
@@ -96,7 +96,7 @@ export function getTermcapSearchPaths(options: TermcapLocatorOptions = {}): read
 	}
 
 	// Standard paths
-	const home = options.home ?? process.env.HOME ?? '';
+	const home = options.home ?? process.env['HOME'] ?? '';
 	if (home) {
 		paths.push(path.join(home, '.termcap'));
 	}
@@ -500,7 +500,7 @@ export function readTermcapFile(filePath: string): TermcapParseResult | null {
  * @internal
  */
 function resolveInheritance(entry: TermcapEntry, database: TermcapDatabase): TermcapEntry {
-	const tcValue = entry.strings.tc;
+	const tcValue = entry.strings['tc'];
 	if (!tcValue) {
 		return entry;
 	}
@@ -523,7 +523,7 @@ function resolveInheritance(entry: TermcapEntry, database: TermcapDatabase): Ter
 	};
 
 	// Remove tc= from merged strings (use undefined instead of delete for performance)
-	merged.strings.tc = undefined as unknown as string;
+	merged.strings['tc'] = undefined as unknown as string;
 
 	return merged;
 }

@@ -424,11 +424,12 @@ function compileToInstructions(format: string): Instruction[] {
 			default:
 				// Handle printf-style format specifiers like %2d, %-3d, %02d
 				if (
-					(code >= '0' && code <= '9') ||
+					code !== undefined &&
+					((code >= '0' && code <= '9') ||
 					code === ':' ||
 					code === ' ' ||
 					code === '#' ||
-					code === '-'
+					code === '-')
 				) {
 					// Skip format flags and width
 					while (i < format.length) {

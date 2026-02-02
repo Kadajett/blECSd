@@ -78,7 +78,11 @@ export function parsePadding(spec: string): PaddingSpec | null {
 		return null;
 	}
 
-	const [original, delayStr, proportional, mandatory] = match;
+	const original = match[0];
+	const delayStr = match[1];
+	const proportional = match[2];
+	const mandatory = match[3];
+	if (!delayStr) return null;
 	return {
 		delay: Number.parseInt(delayStr, 10),
 		proportional: proportional === '*',
@@ -101,7 +105,11 @@ export function extractPadding(input: string): PaddingSpec[] {
 		const match = regex.exec(input);
 		if (match === null) break;
 
-		const [original, delayStr, proportional, mandatory] = match;
+		const original = match[0];
+		const delayStr = match[1];
+		const proportional = match[2];
+		const mandatory = match[3];
+		if (!delayStr) continue;
 		specs.push({
 			delay: Number.parseInt(delayStr, 10),
 			proportional: proportional === '*',

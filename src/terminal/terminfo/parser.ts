@@ -856,8 +856,9 @@ function parseExtended(
 
 	const extBoolCount = readInt16LE(buffer, offset);
 	const extNumCount = readInt16LE(buffer, offset + 2);
-	const extStrCount = readInt16LE(buffer, offset + 4);
-	const extStrTableCount = readInt16LE(buffer, offset + 6);
+	// extStrCount and extStrTableCount are in the header but not needed for parsing
+	// const extStrCount = readInt16LE(buffer, offset + 4);
+	// const extStrTableCount = readInt16LE(buffer, offset + 6);
 	const extStrTableSize = readInt16LE(buffer, offset + 8);
 
 	offset += 10;

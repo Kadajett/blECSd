@@ -573,7 +573,8 @@ export function createSelectConfig(
 	const highlightAction: Action<SelectContext> = (ctx) =>
 		ctx.onHighlight?.(ctx.highlightedIndex ?? 0);
 	const disableAction: Action<SelectContext> = (ctx) => ctx.onDisable?.();
-	const _enableAction: Action<SelectContext> = (ctx) => ctx.onEnable?.();
+	// Reserved for future disabled state transitions
+	// const enableAction: Action<SelectContext> = (ctx) => ctx.onEnable?.();
 
 	return {
 		initial: 'closed',

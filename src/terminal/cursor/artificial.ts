@@ -39,8 +39,8 @@
  * ```
  */
 
-import type { AttrFlags, Cell } from '../screen/cell';
-import { Attr, cloneCell, createCell, DEFAULT_BG, DEFAULT_FG } from '../screen/cell';
+import type { Cell } from '../screen/cell';
+import { Attr, createCell, DEFAULT_BG, DEFAULT_FG } from '../screen/cell';
 
 // =============================================================================
 // TYPES

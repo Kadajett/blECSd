@@ -275,9 +275,9 @@ function applyConstraints(
 
 	// Apply axis constraint
 	if (constraints.constrainAxis === 'x') {
-		newY = Position.y[eid];
+		newY = (Position.y[eid] as number | undefined) ?? y;
 	} else if (constraints.constrainAxis === 'y') {
-		newX = Position.x[eid];
+		newX = (Position.x[eid] as number | undefined) ?? x;
 	}
 
 	// Apply grid snap
@@ -411,6 +411,9 @@ export function createDragSystem(eventBus: EventBus<DragEventMap>) {
 			}
 
 			const pos = getPosition(world, eid);
+			if (!pos) {
+				return false;
+			}
 
 			state.dragging = eid;
 			state.startX = pos.x;
@@ -509,21 +512,23 @@ export function createDragSystem(eventBus: EventBus<DragEventMap>) {
 
 			const eid = state.dragging;
 			const finalPos = getPosition(world, eid);
+			const finalX = finalPos?.x ?? state.lastX;
+			const finalY = finalPos?.y ?? state.lastY;
 
 			eventBus.emit('dragend', {
 				entity: eid,
-				x: finalPos.x,
-				y: finalPos.y,
-				totalDx: finalPos.x - state.startX,
-				totalDy: finalPos.y - state.startY,
+				x: finalX,
+				y: finalY,
+				totalDx: finalX - state.startX,
+				totalDy: finalY - state.startY,
 				cancelled,
 			});
 
 			if (!cancelled) {
 				eventBus.emit('drop', {
 					entity: eid,
-					x: finalPos.x,
-					y: finalPos.y,
+					x: finalX,
+					y: finalY,
 					dropTarget,
 				});
 			}

@@ -6,7 +6,8 @@
 
 import { hasComponent, query } from 'bitecs';
 import { Border, BorderType, getBorder, hasBorderVisible } from '../components/border';
-import { getChildren } from '../components/hierarchy';
+// getChildren reserved for future tree-based rendering mode
+// import { getChildren } from '../components/hierarchy';
 import { Position } from '../components/position';
 import {
 	getStyle,
@@ -409,7 +410,8 @@ function renderEntity(ctx: RenderContext, eid: Entity): void {
  * @param ctx - Render context
  * @param eid - Entity ID
  */
-function _renderEntityTree(ctx: RenderContext, eid: Entity): void {
+/*
+function renderEntityTree(ctx: RenderContext, eid: Entity): void {
 	const { world } = ctx;
 
 	// Render this entity if visible and dirty
@@ -432,9 +434,10 @@ function _renderEntityTree(ctx: RenderContext, eid: Entity): void {
 
 	// Render children recursively
 	for (const child of sortedChildren) {
-		_renderEntityTree(ctx, child.eid);
+		renderEntityTree(ctx, child.eid);
 	}
 }
+*/
 
 // =============================================================================
 // RENDER SYSTEM

@@ -292,14 +292,14 @@ function bgColorSequence(packed: number, use256: boolean): string {
 function attrSequence(attrs: number): string {
 	const codes: number[] = [];
 
-	if (attrs & Attr.BOLD) codes.push(SGR.bold);
-	if (attrs & Attr.DIM) codes.push(SGR.dim);
-	if (attrs & Attr.ITALIC) codes.push(SGR.italic);
-	if (attrs & Attr.UNDERLINE) codes.push(SGR.underline);
-	if (attrs & Attr.BLINK) codes.push(SGR.blink);
-	if (attrs & Attr.INVERSE) codes.push(SGR.inverse);
-	if (attrs & Attr.HIDDEN) codes.push(SGR.hidden);
-	if (attrs & Attr.STRIKETHROUGH) codes.push(SGR.strikethrough);
+	if (attrs & Attr.BOLD) codes.push(SGR.BOLD);
+	if (attrs & Attr.DIM) codes.push(SGR.DIM);
+	if (attrs & Attr.ITALIC) codes.push(SGR.ITALIC);
+	if (attrs & Attr.UNDERLINE) codes.push(SGR.UNDERLINE);
+	if (attrs & Attr.BLINK) codes.push(SGR.BLINK);
+	if (attrs & Attr.INVERSE) codes.push(SGR.INVERSE);
+	if (attrs & Attr.HIDDEN) codes.push(SGR.HIDDEN);
+	if (attrs & Attr.STRIKETHROUGH) codes.push(SGR.STRIKETHROUGH);
 
 	if (codes.length === 0) return '';
 	return `${CSI}${codes.join(';')}m`;
