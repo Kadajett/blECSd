@@ -1,12 +1,35 @@
 # Core Concepts
 
+## Library, Not Framework
+
+blECSd does not own your game loop or world. You can:
+
+1. Use components in your own bitECS world
+2. Skip the scheduler entirely
+3. Use only the parts you need
+4. Integrate with existing systems
+
+```typescript
+// Your own game loop
+function gameLoop() {
+  processInput();
+  updateGame(world);
+  render(world);
+  requestAnimationFrame(gameLoop);
+}
+
+// blECSd components still work
+import { setPosition, getPosition } from 'blecsd';
+setPosition(world, player, x, y);
+```
+
 ## Entity Component System
 
 blECSd uses [bitECS](https://github.com/NateTheGreatt/bitECS) for its ECS implementation. The pattern separates data (components) from behavior (systems).
 
 ### Entities
 
-An entity is an integer ID. It has no data or behavior.
+An entity is an integer ID with no data or behavior.
 
 ```typescript
 import { createWorld, addEntity } from 'bitecs';
@@ -70,29 +93,6 @@ import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd';
 
 const visibleEntities = filterVisible(world, queryRenderable(world));
 const sorted = sortByZIndex(world, visibleEntities);
-```
-
-## Library, Not Framework
-
-blECSd does not own your game loop or world. You can:
-
-1. Use components in your own bitECS world
-2. Skip the scheduler entirely
-3. Use only the parts you need
-4. Integrate with existing systems
-
-```typescript
-// Your own game loop
-function gameLoop() {
-  processInput();
-  updateGame(world);
-  render(world);
-  requestAnimationFrame(gameLoop);
-}
-
-// blECSd components still work
-import { setPosition, getPosition } from 'blecsd';
-setPosition(world, player, x, y);
 ```
 
 ## Optional Scheduler

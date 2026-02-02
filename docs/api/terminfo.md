@@ -1,30 +1,10 @@
 # Terminfo (Tput) Module
 
-The Tput module provides access to terminal capabilities through the terminfo database. It uses functional patterns to query boolean, numeric, and string capabilities, and to format parameterized control sequences.
+The Tput module provides access to terminal capabilities through the terminfo database. Instead of hardcoding escape sequences for specific terminals, terminfo lets your code work across different terminal emulators by looking up the correct sequences at runtime.
 
-## Overview
+## How do I create a Tput instance?
 
-```typescript
-import { createTput, getDefaultTput } from 'blecsd';
-
-// Create with default terminal ($TERM)
-const tput = createTput();
-
-// Check capabilities
-console.log(`Max colors: ${tput.getNumber('max_colors')}`);
-
-// Move cursor to row 10, column 5
-process.stdout.write(tput.cup(10, 5));
-
-// Set foreground color to red
-process.stdout.write(tput.setaf(1));
-```
-
----
-
-## createTput
-
-Creates a Tput instance for terminal capability access.
+### createTput
 
 ```typescript
 import { createTput } from 'blecsd';
@@ -48,19 +28,13 @@ const custom = createTput({
 });
 ```
 
-**Parameters:**
-- `config` - Tput configuration
-  - `terminal` - Terminal name (defaults to $TERM)
-  - `data` - Custom terminfo data (bypasses default lookup)
-  - `extended` - Whether to use extended capabilities
+**Parameters:** `config` (optional) containing `terminal` (name), `data` (custom terminfo), `extended` (use extended capabilities)
 
 **Returns:** `Tput`
 
----
+### getDefaultTput
 
-## getDefaultTput
-
-Gets the default Tput instance. Creates one on first call using the $TERM environment variable.
+Gets the shared default Tput instance. Creates one on first call using $TERM.
 
 ```typescript
 import { getDefaultTput } from 'blecsd';
@@ -69,11 +43,9 @@ const tput = getDefaultTput();
 console.log(`Terminal: ${tput.terminal}`);
 ```
 
----
+### resetDefaultTput
 
-## resetDefaultTput
-
-Resets the default Tput instance. Useful for testing or when terminal changes.
+Resets the default instance. Useful when terminal changes or for testing.
 
 ```typescript
 import { resetDefaultTput } from 'blecsd';
@@ -81,22 +53,20 @@ import { resetDefaultTput } from 'blecsd';
 resetDefaultTput();
 ```
 
----
+### getDefaultXtermData
 
-## getDefaultXtermData
-
-Gets the default xterm-256color data. Useful for testing or as a fallback.
+Gets xterm-256color data as a fallback.
 
 ```typescript
 import { getDefaultXtermData } from 'blecsd';
 
 const data = getDefaultXtermData();
-console.log(data.name); // 'xterm-256color'
+console.log(data.name);  // 'xterm-256color'
 ```
 
 ---
 
-## Tput Interface Methods
+## How do I check terminal capabilities?
 
 ### has
 
@@ -129,7 +99,7 @@ console.log(`Terminal size: ${cols}x${rows}`);
 
 ### getString
 
-Gets a string capability value.
+Gets a string capability (control sequence).
 
 ```typescript
 const clearSeq = tput.getString('clear_screen');
@@ -143,9 +113,13 @@ const resetSeq = tput.getString('exit_attribute_mode');
 
 **Returns:** `string | null`
 
+---
+
+## How do I use parameterized sequences?
+
 ### tparm
 
-Formats a parameterized string capability. Replaces parameter placeholders with actual values.
+Formats a parameterized string capability. Replaces placeholders with values.
 
 ```typescript
 // Move cursor to row 10, column 5
@@ -163,9 +137,13 @@ const scrollSeq = tput.tparm('change_scroll_region', 5, 20);
 
 **Returns:** `string | null`
 
+---
+
+## What shortcuts are available?
+
 ### cup
 
-Shortcut for cursor positioning.
+Cursor positioning shortcut.
 
 ```typescript
 // Move cursor to row 10, column 5 (0-indexed)
@@ -177,60 +155,50 @@ process.stdout.write(tput.cup(0, 0));
 
 ### sgr
 
-Shortcut for setting graphics rendition (SGR).
+Set graphics rendition.
 
 ```typescript
-// Reset all attributes
-process.stdout.write(tput.sgr(0));
-
-// Bold
-process.stdout.write(tput.sgr(1));
-
-// Underline
-process.stdout.write(tput.sgr(4));
+process.stdout.write(tput.sgr(0));  // Reset all
+process.stdout.write(tput.sgr(1));  // Bold
+process.stdout.write(tput.sgr(4));  // Underline
 ```
 
 ### setaf
 
-Shortcut for setting ANSI foreground color.
+Set foreground color.
 
 ```typescript
 // Basic colors (0-7)
-process.stdout.write(tput.setaf(0)); // Black
-process.stdout.write(tput.setaf(1)); // Red
-process.stdout.write(tput.setaf(2)); // Green
-process.stdout.write(tput.setaf(3)); // Yellow
-process.stdout.write(tput.setaf(4)); // Blue
-process.stdout.write(tput.setaf(5)); // Magenta
-process.stdout.write(tput.setaf(6)); // Cyan
-process.stdout.write(tput.setaf(7)); // White
+process.stdout.write(tput.setaf(0));  // Black
+process.stdout.write(tput.setaf(1));  // Red
+process.stdout.write(tput.setaf(2));  // Green
+process.stdout.write(tput.setaf(3));  // Yellow
+process.stdout.write(tput.setaf(4));  // Blue
+process.stdout.write(tput.setaf(5));  // Magenta
+process.stdout.write(tput.setaf(6));  // Cyan
+process.stdout.write(tput.setaf(7));  // White
 
 // Bright colors (8-15)
-process.stdout.write(tput.setaf(9));  // Bright red
+process.stdout.write(tput.setaf(9));   // Bright red
 
 // 256 colors (16-255)
-process.stdout.write(tput.setaf(196)); // Bright red from palette
+process.stdout.write(tput.setaf(196));  // Red from extended palette
 ```
 
 ### setab
 
-Shortcut for setting ANSI background color.
+Set background color.
 
 ```typescript
-// Basic colors
-process.stdout.write(tput.setab(4)); // Blue background
-
-// 256 colors
-process.stdout.write(tput.setab(232)); // Dark gray background
+process.stdout.write(tput.setab(4));    // Blue background
+process.stdout.write(tput.setab(232));  // Dark gray background
 ```
 
 ---
 
-## Capability Types
+## What capabilities are available?
 
-### BooleanCapability
-
-Boolean capabilities indicate presence/absence of terminal features.
+### Boolean Capabilities
 
 ```typescript
 type BooleanCapability =
@@ -243,9 +211,7 @@ type BooleanCapability =
   // ... and more
 ```
 
-### NumberCapability
-
-Numeric capabilities represent values like dimensions and counts.
+### Numeric Capabilities
 
 ```typescript
 type NumberCapability =
@@ -257,9 +223,7 @@ type NumberCapability =
   // ... and more
 ```
 
-### StringCapability
-
-String capabilities represent control sequences for terminal operations.
+### String Capabilities
 
 ```typescript
 type StringCapability =
@@ -295,8 +259,6 @@ type StringCapability =
 
 ### TerminfoData
 
-Raw terminfo data structure.
-
 ```typescript
 interface TerminfoData {
   readonly name: string;
@@ -310,19 +272,15 @@ interface TerminfoData {
 
 ### TputConfig
 
-Tput instance configuration.
-
 ```typescript
 interface TputConfig {
-  readonly terminal?: string;      // Terminal name (defaults to $TERM)
-  readonly data?: TerminfoData;    // Custom terminfo data
-  readonly extended?: boolean;     // Use extended capabilities
+  readonly terminal?: string;
+  readonly data?: TerminfoData;
+  readonly extended?: boolean;
 }
 ```
 
 ### Tput
-
-Tput API interface.
 
 ```typescript
 interface Tput {
@@ -344,7 +302,7 @@ interface Tput {
 
 ## Parameter Language
 
-The `tparm` method processes terminfo parameter strings. Common operations:
+The `tparm` method processes terminfo parameter strings:
 
 | Code | Description |
 |------|-------------|
@@ -379,9 +337,9 @@ const rows = tput.getNumber('lines') ?? 24;
 process.stdout.write(tput.cup(Math.floor(rows / 2), Math.floor(cols / 2)));
 
 // Print colored text
-process.stdout.write(tput.setaf(2)); // Green
+process.stdout.write(tput.setaf(2));  // Green
 process.stdout.write('Hello, World!');
-process.stdout.write(tput.getString('orig_pair') ?? ''); // Reset colors
+process.stdout.write(tput.getString('orig_pair') ?? '');  // Reset
 ```
 
 ### Alternate Screen Buffer
@@ -407,55 +365,12 @@ import { createTput } from 'blecsd';
 
 const tput = createTput();
 
-// Hide cursor
 process.stdout.write(tput.getString('cursor_invisible') ?? '');
-
-// ... do work without cursor flicker ...
-
-// Show cursor
+// ... work without cursor flicker ...
 process.stdout.write(tput.getString('cursor_normal') ?? '');
 ```
 
-### Text Attributes
-
-```typescript
-import { createTput } from 'blecsd';
-
-const tput = createTput();
-
-// Bold text
-process.stdout.write(tput.getString('enter_bold_mode') ?? '');
-process.stdout.write('Bold text');
-
-// Underlined text
-process.stdout.write(tput.getString('enter_underline_mode') ?? '');
-process.stdout.write('Underlined text');
-
-// Reset all attributes
-process.stdout.write(tput.getString('exit_attribute_mode') ?? '');
-```
-
-### Scrolling Region
-
-```typescript
-import { createTput } from 'blecsd';
-
-const tput = createTput();
-
-// Set scroll region to lines 5-20
-const scrollSeq = tput.tparm('change_scroll_region', 5, 20);
-if (scrollSeq) {
-  process.stdout.write(scrollSeq);
-}
-
-// Insert 3 lines at current position
-const insertSeq = tput.tparm('parm_insert_line', 3);
-if (insertSeq) {
-  process.stdout.write(insertSeq);
-}
-```
-
-### Checking Terminal Capabilities
+### Checking Capabilities
 
 ```typescript
 import { createTput } from 'blecsd';
@@ -474,8 +389,16 @@ function printCapabilities() {
 
 ---
 
+## Limitations
+
+- **$TERM dependency**: Capability lookup requires $TERM to be set correctly. SSH sessions, Docker containers, or misconfigured terminals may have incorrect $TERM values.
+- **Missing capabilities**: If a capability returns `null`, the terminal doesn't support that feature. Always handle the `null` case.
+- **Extended capabilities**: Extended (non-standard) capabilities may not be available on all systems.
+- **Fallback behavior**: When terminfo data isn't available for a terminal, blECSd falls back to xterm-256color, which may not match the actual terminal's capabilities.
+
+---
+
 ## See Also
 
-- [Terminal Detection](./detection.md) - Detecting terminal type and capabilities
+- [Terminal Detection](./detection.md) - Detecting terminal type
 - [ANSI Module](./ansi.md) - Direct ANSI escape sequence generation
-- [Colors](./terminal/colors.md) - Color handling and conversion
