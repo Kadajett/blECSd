@@ -1,0 +1,274 @@
+name: Benchmark
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run benchmarks
+        run: pnpm vitest bench --run --outputJson=benchmark-results.json
+        continue-on-error: true
+
+      - name: Process benchmark results
+        id: benchmark
+        run: |
+          if [ ! -f benchmark-results.json ]; then
+            echo "No benchmark results found"
+            exit 0
+          fi
+
+          # Extract and format benchmark results
+          node -e "
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('benchmark-results.json', 'utf8'));
+
+            // Create summary
+            let summary = '## Benchmark Results\n\n';
+            let hasResults = false;
+
+            // Vitest bench uses files[].groups[].benchmarks[] structure
+            for (const file of results.files || []) {
+              const fileName = file.filepath?.replace(/^.*\/benchmarks\//, '') || 'unknown';
+
+              for (const group of file.groups || []) {
+                const benchmarks = group.benchmarks || [];
+                if (benchmarks.length > 0) {
+                  hasResults = true;
+                  summary += '### ' + group.fullName.replace(/^.*\/benchmarks\//, '') + '\n\n';
+                  summary += '| Benchmark | ops/sec | Mean | p99 |\n';
+                  summary += '|-----------|---------|------|-----|\n';
+
+                  for (const bench of benchmarks) {
+                    const hz = bench.hz?.toLocaleString('en-US', { maximumFractionDigits: 2 }) || 'N/A';
+                    const mean = (bench.mean * 1000)?.toFixed(4) || 'N/A';
+                    const p99 = (bench.p99 * 1000)?.toFixed(4) || 'N/A';
+                    summary += '| ' + bench.name + ' | ' + hz + ' | ' + mean + 'ms | ' + p99 + 'ms |\n';
+                  }
+                  summary += '\n';
+                }
+              }
+            }
+
+            if (!hasResults) {
+              summary += 'No benchmark results available.\n';
+            }
+
+            fs.writeFileSync('benchmark-summary.md', summary);
+            console.log('Benchmark summary created');
+          " || echo "Failed to process benchmark results"
+
+      - name: Store benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            benchmark-results.json
+            benchmark-summary.md
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Download baseline (for comparison)
+        if: github.event_name == 'pull_request'
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: benchmark.yml
+          branch: ${{ github.base_ref }}
+          name: benchmark-results
+          path: baseline
+        continue-on-error: true
+
+      - name: Compare with baseline
+        if: github.event_name == 'pull_request'
+        id: compare
+        run: |
+          if [ ! -f baseline/benchmark-results.json ] || [ ! -f benchmark-results.json ]; then
+            echo "No baseline available for comparison"
+            echo "has_regression=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Compare benchmarks and detect regressions
+          node -e "
+            const fs = require('fs');
+            const baseline = JSON.parse(fs.readFileSync('baseline/benchmark-results.json', 'utf8'));
+            const current = JSON.parse(fs.readFileSync('benchmark-results.json', 'utf8'));
+
+            const REGRESSION_THRESHOLD = 0.10; // 10% regression threshold
+
+            let regressions = [];
+            let improvements = [];
+
+            // Build baseline map (vitest bench uses files[].groups[].benchmarks[])
+            const baselineMap = new Map();
+            for (const file of baseline.files || []) {
+              for (const group of file.groups || []) {
+                for (const bench of group.benchmarks || []) {
+                  // Use full name for unique identification
+                  const key = group.fullName + ' > ' + bench.name;
+                  baselineMap.set(key, bench.hz);
+                }
+              }
+            }
+
+            // Compare current to baseline
+            for (const file of current.files || []) {
+              for (const group of file.groups || []) {
+                for (const bench of group.benchmarks || []) {
+                  const key = group.fullName + ' > ' + bench.name;
+                  const baseHz = baselineMap.get(key);
+                  if (baseHz && bench.hz) {
+                    const change = (bench.hz - baseHz) / baseHz;
+                    const changePercent = (change * 100).toFixed(2);
+
+                    if (change < -REGRESSION_THRESHOLD) {
+                      regressions.push({
+                        name: bench.name,
+                        baseline: baseHz.toFixed(2),
+                        current: bench.hz.toFixed(2),
+                        change: changePercent
+                      });
+                    } else if (change > REGRESSION_THRESHOLD) {
+                      improvements.push({
+                        name: bench.name,
+                        baseline: baseHz.toFixed(2),
+                        current: bench.hz.toFixed(2),
+                        change: changePercent
+                      });
+                    }
+                  }
+                }
+              }
+            }
+
+            let report = '## Benchmark Comparison\n\n';
+
+            if (regressions.length > 0) {
+              report += '### Regressions (>10% slower)\n\n';
+              report += '| Benchmark | Baseline | Current | Change |\n';
+              report += '|-----------|----------|---------|--------|\n';
+              for (const r of regressions) {
+                report += '| ' + r.name + ' | ' + r.baseline + ' ops/sec | ' + r.current + ' ops/sec | ' + r.change + '% |\n';
+              }
+              report += '\n';
+            }
+
+            if (improvements.length > 0) {
+              report += '### Improvements (>10% faster)\n\n';
+              report += '| Benchmark | Baseline | Current | Change |\n';
+              report += '|-----------|----------|---------|--------|\n';
+              for (const i of improvements) {
+                report += '| ' + i.name + ' | ' + i.baseline + ' ops/sec | ' + i.current + ' ops/sec | +' + i.change + '% |\n';
+              }
+              report += '\n';
+            }
+
+            if (regressions.length === 0 && improvements.length === 0) {
+              report += 'No significant performance changes detected.\n';
+            }
+
+            fs.writeFileSync('comparison-report.md', report);
+
+            // Output for GitHub Actions
+            console.log('has_regression=' + (regressions.length > 0));
+            console.log('regression_count=' + regressions.length);
+            console.log('improvement_count=' + improvements.length);
+
+            // Write to outputs file
+            const outputFile = process.env.GITHUB_OUTPUT;
+            if (outputFile) {
+              fs.appendFileSync(outputFile, 'has_regression=' + (regressions.length > 0) + '\n');
+              fs.appendFileSync(outputFile, 'regression_count=' + regressions.length + '\n');
+            }
+          " || echo "Failed to compare benchmarks"
+
+      - name: Comment on PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let body = '';
+
+            // Add comparison if available
+            if (fs.existsSync('comparison-report.md')) {
+              body += fs.readFileSync('comparison-report.md', 'utf8') + '\n';
+            }
+
+            // Add current results summary
+            if (fs.existsSync('benchmark-summary.md')) {
+              body += '\n<details>\n<summary>Full Benchmark Results</summary>\n\n';
+              body += fs.readFileSync('benchmark-summary.md', 'utf8');
+              body += '\n</details>\n';
+            }
+
+            if (!body) {
+              body = 'No benchmark results available.';
+            }
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' &&
+              c.body.includes('## Benchmark')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Fail on regression
+        if: github.event_name == 'pull_request' && steps.compare.outputs.has_regression == 'true'
+        run: |
+          echo "Performance regressions detected (>10% slowdown)"
+          echo "See PR comment for details"
+          exit 1
