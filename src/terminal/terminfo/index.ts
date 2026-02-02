@@ -169,3 +169,28 @@ export {
 
 export type { CaptoInfoOptions } from './captoinfo';
 export { captoinfo, convertTermcapStrings, needsConversion } from './captoinfo';
+
+// =============================================================================
+// FEATURES - Terminal feature detection
+// =============================================================================
+
+export type { FeatureDetectionOptions, ModernProtocols, TerminalFeatures } from './features';
+export {
+	detect256Color,
+	detectAlternateScreen,
+	detectBracketedPaste,
+	detectBrokenACS,
+	detectColors,
+	detectFeatures,
+	detectFocusEvents,
+	detectMagicCookie,
+	detectModernProtocols,
+	detectMouse,
+	detectPadding,
+	detectPCRomSet,
+	detectSetbuf,
+	detectTitle,
+	detectTrueColor,
+	detectUnicode,
+	getFeatureSummary,
+} from './features';
