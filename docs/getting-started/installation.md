@@ -3,7 +3,22 @@
 ## Requirements
 
 - Node.js 18+
-- A terminal with 256-color support (most modern terminals)
+- A terminal with 256-color support
+
+### Supported Terminals
+
+| Terminal | Platform | Truecolor | Notes |
+|----------|----------|-----------|-------|
+| iTerm2 | macOS | Yes | Recommended for macOS |
+| Kitty | Linux, macOS | Yes | GPU-accelerated |
+| Alacritty | All | Yes | Cross-platform, GPU-accelerated |
+| Windows Terminal | Windows | Yes | Recommended for Windows |
+| GNOME Terminal | Linux | Yes | Default on many Linux distros |
+| Konsole | Linux | Yes | KDE default |
+| VS Code Terminal | All | Yes | Works well |
+| Hyper | All | Yes | Electron-based |
+| Terminal.app | macOS | No | 256 colors only |
+| xterm | All | Partial | Depends on configuration |
 
 ## Install
 
@@ -60,18 +75,38 @@ Expected output:
 Position: 10, 5
 ```
 
-## Terminal Compatibility
+## When to Use blECSd
 
-blECSd works with any terminal that supports ANSI escape sequences. Truecolor (24-bit) support is recommended:
+blECSd excels at:
 
-| Terminal | Truecolor | Notes |
-|----------|-----------|-------|
-| iTerm2 | Yes | Recommended for macOS |
-| Kitty | Yes | GPU-accelerated |
-| Alacritty | Yes | Cross-platform |
-| Windows Terminal | Yes | Recommended for Windows |
-| VS Code Terminal | Yes | Works well |
-| macOS Terminal.app | No | 256 colors only |
+| Scenario | Why blECSd |
+|----------|------------|
+| Complex TUI applications | ECS scales to thousands of UI elements with consistent performance |
+| Dashboards and monitoring tools | Efficient updates and rendering for real-time data |
+| File managers and dev tools | Rich interaction patterns (focus, drag, keyboard navigation) |
+| Terminal games | Full animation system, state machines, high frame rates |
+| Applications needing animations | Physics-based transitions, momentum scrolling, spring dynamics |
+
+## When NOT to Use blECSd
+
+Consider alternatives for these scenarios:
+
+| Scenario | Recommendation |
+|----------|----------------|
+| Simple CLI prompts | Use [inquirer](https://github.com/SBoudrias/Inquirer.js) or [prompts](https://github.com/terkelg/prompts) |
+| Need browser support | blECSd is terminal-only; use a web UI library |
+| Prefer React-style composition | Use [Ink](https://github.com/vadimdemedes/ink) for React-in-terminal |
+| Want ready-made widgets with no setup | blECSd provides primitives you compose into widgets |
+| Unfamiliar with ECS and don't want to learn | blECSd is built around bitECS; the paradigm is different from OOP |
+
+### Limitations
+
+- **No browser support**: Terminal-only library
+- **Primitives over widgets**: You compose UI from components (though entity factories help)
+- **ECS learning curve**: Requires understanding Entity Component System patterns
+- **Terminal-dependent features**: Some capabilities vary by terminal emulator
+
+## Terminal Capability Detection
 
 blECSd does not handle terminal capability detection automatically. Use the detection utilities if you need to check capabilities:
 

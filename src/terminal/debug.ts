@@ -89,8 +89,8 @@ const LEVEL_NAMES: Record<LogLevelValue, string> = {
  * Check if debug mode is enabled via environment variables
  */
 function isDebugEnabled(): boolean {
-	const debugEnv = process.env['DEBUG'] ?? '';
-	const blecsdDebug = process.env['BLECSD_DEBUG'] ?? '';
+	const debugEnv = process.env.DEBUG ?? '';
+	const blecsdDebug = process.env.BLECSD_DEBUG ?? '';
 
 	// Check for any blecsd-related debug flags
 	if (blecsdDebug === '1' || blecsdDebug.toLowerCase() === 'true') {
@@ -117,7 +117,7 @@ function isDebugEnabled(): boolean {
  * Parse namespace filter from DEBUG environment variable
  */
 function parseNamespaceFilter(filter?: string): string[] {
-	const debugEnv = filter ?? process.env['DEBUG'] ?? '';
+	const debugEnv = filter ?? process.env.DEBUG ?? '';
 	if (!debugEnv) {
 		return ['*'];
 	}
@@ -479,9 +479,9 @@ export function dumpTerminalState(termState: Partial<TerminalStateDump>, label?:
 	}
 
 	const environment: TerminalStateDump['environment'] = {};
-	const term = process.env['TERM'];
-	const colorterm = process.env['COLORTERM'];
-	const termProgram = process.env['TERM_PROGRAM'];
+	const term = process.env.TERM;
+	const colorterm = process.env.COLORTERM;
+	const termProgram = process.env.TERM_PROGRAM;
 	if (term !== undefined) environment.TERM = term;
 	if (colorterm !== undefined) environment.COLORTERM = colorterm;
 	if (termProgram !== undefined) environment.TERM_PROGRAM = termProgram;
