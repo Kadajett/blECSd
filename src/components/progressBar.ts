@@ -195,7 +195,7 @@ export function attachProgressBarBehavior(
  * }
  * ```
  */
-export function isProgressBar(world: World, eid: Entity): boolean {
+export function isProgressBar(_world: World, eid: Entity): boolean {
 	return progressBarStore.isProgressBar[eid] === 1;
 }
 

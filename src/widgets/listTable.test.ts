@@ -65,10 +65,7 @@ describe('ListTable Widget', () => {
 	describe('visibility', () => {
 		beforeEach(() => {
 			widget = createListTable(world, eid, {
-				data: [
-					['A'],
-					['B'],
-				],
+				data: [['A'], ['B']],
 			});
 		});
 
@@ -325,12 +322,7 @@ describe('ListTable Widget', () => {
 	describe('selection', () => {
 		beforeEach(() => {
 			widget = createListTable(world, eid, {
-				data: [
-					['Header'],
-					['Item1'],
-					['Item2'],
-					['Item3'],
-				],
+				data: [['Header'], ['Item1'], ['Item2'], ['Item3']],
 				headerRows: 1,
 			});
 		});
@@ -380,14 +372,7 @@ describe('ListTable Widget', () => {
 	describe('scrolling', () => {
 		beforeEach(() => {
 			widget = createListTable(world, eid, {
-				data: [
-					['Header'],
-					['Item1'],
-					['Item2'],
-					['Item3'],
-					['Item4'],
-					['Item5'],
-				],
+				data: [['Header'], ['Item1'], ['Item2'], ['Item3'], ['Item4'], ['Item5']],
 				headerRows: 1,
 				height: 3,
 			});
@@ -409,12 +394,7 @@ describe('ListTable Widget', () => {
 	describe('search', () => {
 		beforeEach(() => {
 			widget = createListTable(world, eid, {
-				data: [
-					['Name'],
-					['Alice'],
-					['Bob'],
-					['Carol'],
-				],
+				data: [['Name'], ['Alice'], ['Bob'], ['Carol']],
 				headerRows: 1,
 				search: true,
 			});
@@ -442,11 +422,7 @@ describe('ListTable Widget', () => {
 	describe('events', () => {
 		beforeEach(() => {
 			widget = createListTable(world, eid, {
-				data: [
-					['Header'],
-					['Item1'],
-					['Item2'],
-				],
+				data: [['Header'], ['Item1'], ['Item2']],
 				headerRows: 1,
 			});
 		});
@@ -494,12 +470,7 @@ describe('ListTable Widget', () => {
 	describe('key handling', () => {
 		beforeEach(() => {
 			widget = createListTable(world, eid, {
-				data: [
-					['Header'],
-					['Item1'],
-					['Item2'],
-					['Item3'],
-				],
+				data: [['Header'], ['Item1'], ['Item2'], ['Item3']],
 				headerRows: 1,
 			});
 			widget.focus();

@@ -3,8 +3,7 @@
  */
 
 import { addEntity, createWorld } from 'bitecs';
-import { describe, expect, it, beforeEach } from 'vitest';
-import type { Entity, World } from './types';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	clearAllPositionCaches,
 	getCachedInnerHeight,
@@ -18,6 +17,7 @@ import {
 	setPositionCache,
 	updateCachedScrollBase,
 } from './positionCache';
+import type { Entity, World } from './types';
 
 describe('positionCache', () => {
 	let world: World;

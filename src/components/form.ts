@@ -6,12 +6,12 @@
 
 import type { Entity, World } from '../core/types';
 import { getButtonState, isButton } from './button';
-import { getCheckboxState, isCheckbox, isChecked, sendCheckboxEvent, setChecked } from './checkbox';
+import { isCheckbox, isChecked, setChecked } from './checkbox';
 import { getContent, setContent } from './content';
 import { focusNext, focusPrev, getTabOrder, isFocusable } from './focusable';
-import { getChildren, getDescendants } from './hierarchy';
+import { getDescendants } from './hierarchy';
 import { markDirty } from './renderable';
-import { getTextInputState, isTextInput, sendTextInputEvent } from './textInput';
+import { isTextInput } from './textInput';
 
 /** Default capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;
@@ -144,7 +144,7 @@ export function attachFormBehavior(
  * }
  * ```
  */
-export function isForm(world: World, eid: Entity): boolean {
+export function isForm(_world: World, eid: Entity): boolean {
 	return formStore.isForm[eid] === 1;
 }
 
@@ -219,7 +219,7 @@ export function registerFormField(
  * @param formEntity - Form entity ID
  * @param fieldEntity - Field entity to unregister
  */
-export function unregisterFormField(world: World, formEntity: Entity, fieldEntity: Entity): void {
+export function unregisterFormField(_world: World, formEntity: Entity, fieldEntity: Entity): void {
 	const names = fieldNamesStore.get(formEntity);
 	const initials = initialValuesStore.get(formEntity);
 
@@ -238,7 +238,7 @@ export function unregisterFormField(world: World, formEntity: Entity, fieldEntit
  * @param formEntity - Form entity ID
  * @returns Array of field entity IDs
  */
-export function getFormFields(world: World, formEntity: Entity): Entity[] {
+export function getFormFields(_world: World, formEntity: Entity): Entity[] {
 	const names = fieldNamesStore.get(formEntity);
 	if (!names) {
 		return [];

@@ -42,7 +42,6 @@ import {
 	selectOptionByIndex,
 	selectOptionByValue,
 	selectStore,
-	sendSelectEvent,
 	setHighlightedIndex,
 	setSelectDisplay,
 	setSelectOptions,

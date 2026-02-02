@@ -1205,7 +1205,11 @@ export async function loadItems(
  * @param eid - The entity ID
  * @returns Object with needsLoad flag and range to load
  */
-export function checkNeedsLoad(eid: Entity): { needsLoad: boolean; startIndex: number; count: number } {
+export function checkNeedsLoad(eid: Entity): {
+	needsLoad: boolean;
+	startIndex: number;
+	count: number;
+} {
 	const firstVisible = listStore.firstVisible[eid] ?? 0;
 	const visibleCount = listStore.visibleCount[eid] ?? 0;
 	const totalCount = listStore.totalCount[eid] ?? 0;
@@ -1842,7 +1846,7 @@ export function renderListItems(eid: Entity, width: number): string[] {
 
 		// Truncate if needed
 		const maxTextWidth = width - prefix.length;
-		const truncatedText = text.length > maxTextWidth ? text.slice(0, maxTextWidth - 1) + '…' : text;
+		const truncatedText = text.length > maxTextWidth ? `${text.slice(0, maxTextWidth - 1)}…` : text;
 
 		lines.push(prefix + truncatedText);
 	}

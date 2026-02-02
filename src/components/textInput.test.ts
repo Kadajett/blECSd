@@ -44,7 +44,6 @@ import {
 	isTextInputEditing,
 	isTextInputError,
 	isTextInputFocused,
-	isTextInputInState,
 	maskValue,
 	moveCursor,
 	onTextInputCancel,
@@ -52,7 +51,6 @@ import {
 	onTextInputSubmit,
 	resetCursorBlink,
 	resetTextInputStore,
-	sendTextInputEvent,
 	setCursorBlinkEnabled,
 	setCursorConfig,
 	setCursorMode,
@@ -726,7 +724,7 @@ describe('TextInput Component', () => {
 				setCursorBlinkEnabled(world, eid, false);
 				setCursorPos(world, eid, 3);
 				const result = getCursorDisplayText(world, eid, 'Hello');
-				expect(result.displayText).toBe('Hel' + DEFAULT_CURSOR_LINE_CHAR + 'lo');
+				expect(result.displayText).toBe(`Hel${DEFAULT_CURSOR_LINE_CHAR}lo`);
 				expect(result.cursorVisible).toBe(true);
 				expect(result.cursorPosition).toBe(3);
 			});
@@ -736,7 +734,7 @@ describe('TextInput Component', () => {
 				setCursorMode(world, eid, CursorMode.Block);
 				setCursorPos(world, eid, 2);
 				const result = getCursorDisplayText(world, eid, 'Hello');
-				expect(result.displayText).toBe('He' + DEFAULT_CURSOR_BLOCK_CHAR + 'lo');
+				expect(result.displayText).toBe(`He${DEFAULT_CURSOR_BLOCK_CHAR}lo`);
 				expect(result.cursorVisible).toBe(true);
 			});
 
@@ -745,14 +743,14 @@ describe('TextInput Component', () => {
 				setTextInputConfig(eid, { secret: true, censor: '*' });
 				setCursorPos(world, eid, 3);
 				const result = getCursorDisplayText(world, eid, 'pass');
-				expect(result.displayText).toBe('***' + DEFAULT_CURSOR_LINE_CHAR + '*');
+				expect(result.displayText).toBe(`***${DEFAULT_CURSOR_LINE_CHAR}*`);
 			});
 
 			it('should insert cursor at end of text', () => {
 				setCursorBlinkEnabled(world, eid, false);
 				setCursorPos(world, eid, 5);
 				const result = getCursorDisplayText(world, eid, 'Hello');
-				expect(result.displayText).toBe('Hello' + DEFAULT_CURSOR_LINE_CHAR);
+				expect(result.displayText).toBe(`Hello${DEFAULT_CURSOR_LINE_CHAR}`);
 			});
 		});
 

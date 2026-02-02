@@ -5,13 +5,7 @@
 import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Entity, World } from '../core/types';
-import {
-	createListbar,
-	isListbarWidget,
-	type ListbarItem,
-	type ListbarWidget,
-	resetListbarStore,
-} from './listbar';
+import { createListbar, isListbarWidget, type ListbarWidget, resetListbarStore } from './listbar';
 
 describe('Listbar Widget', () => {
 	let world: World;
@@ -457,7 +451,10 @@ describe('Listbar Widget', () => {
 
 		it('should render with custom keys', () => {
 			widget = createListbar(world, eid, {
-				items: [{ text: 'File', key: 'f' }, { text: 'Edit', key: 'e' }],
+				items: [
+					{ text: 'File', key: 'f' },
+					{ text: 'Edit', key: 'e' },
+				],
 			});
 
 			const line = widget.renderLine();

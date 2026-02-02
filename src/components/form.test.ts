@@ -2,16 +2,12 @@ import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createBoxEntity, createCheckboxEntity, createTextboxEntity } from '../core/entities';
 import type { World } from '../core/types';
-import { resetCheckboxStore, setChecked } from './checkbox';
-import { resetContentStore, setContent } from './content';
+import { resetCheckboxStore } from './checkbox';
+import { resetContentStore } from './content';
 import { resetFocusState } from './focusable';
 import {
 	attachFormBehavior,
-	autoRegisterFields,
 	clearFormCallbacks,
-	focusNextField,
-	focusPrevField,
-	formStore,
 	getFieldName,
 	getFieldValue,
 	getFormFields,
@@ -30,7 +26,7 @@ import {
 	unregisterFormField,
 } from './form';
 import { StateMachineStore } from './stateMachine';
-import { attachTextInputBehavior, resetTextInputStore } from './textInput';
+import { resetTextInputStore } from './textInput';
 
 describe('Form Component', () => {
 	let world: World;

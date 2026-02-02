@@ -860,7 +860,7 @@ export function renderTableLines(eid: Entity, width: number): string[] {
 
 			let text = cell.value;
 			if (text.length > contentWidth) {
-				text = text.slice(0, contentWidth - 1) + '…';
+				text = `${text.slice(0, contentWidth - 1)}…`;
 			}
 
 			// Pad based on alignment

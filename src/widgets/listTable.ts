@@ -46,6 +46,7 @@ import { Position, setPosition } from '../components/position';
 import { markDirty, setVisible } from '../components/renderable';
 import {
 	attachTableBehavior,
+	type CellAlign,
 	clearData,
 	detachTableBehavior,
 	getCell,
@@ -67,10 +68,9 @@ import {
 	setCellBorders,
 	setCellPadding,
 	setData,
-	setHeaders,
 	setHeaderRowCount,
+	setHeaders,
 	setTableDisplay,
-	type CellAlign,
 	type TableCell,
 	type TableColumn,
 	type TableData,

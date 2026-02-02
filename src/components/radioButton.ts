@@ -210,7 +210,7 @@ export function attachRadioSetBehavior(world: World, eid: Entity): void {
  * @param eid - Entity to check
  * @returns True if entity is a radio set
  */
-export function isRadioSet(world: World, eid: Entity): boolean {
+export function isRadioSet(_world: World, eid: Entity): boolean {
 	return radioSetStore.isRadioSet[eid] === 1;
 }
 
@@ -345,7 +345,7 @@ export function attachRadioButtonBehavior(world: World, eid: Entity, radioSetId?
  * @param eid - Entity to check
  * @returns True if entity is a radio button
  */
-export function isRadioButton(world: World, eid: Entity): boolean {
+export function isRadioButton(_world: World, eid: Entity): boolean {
 	return radioButtonStore.isRadioButton[eid] === 1;
 }
 

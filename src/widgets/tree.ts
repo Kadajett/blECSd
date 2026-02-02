@@ -459,7 +459,10 @@ function flattenNodes(
 	return result;
 }
 
-function findNodeByPath(nodes: readonly InternalTreeNode[], path: string): InternalTreeNode | undefined {
+function findNodeByPath(
+	nodes: readonly InternalTreeNode[],
+	path: string,
+): InternalTreeNode | undefined {
 	if (!path) {
 		return nodes[0];
 	}
@@ -855,7 +858,7 @@ export function createTree(
 		collapse(path: string): TreeWidget {
 			const nodes = nodesStore.get(eid) ?? [];
 			const node = findNodeByPath(nodes, path);
-			if (node && node.expanded) {
+			if (node?.expanded) {
 				setNodeExpanded(node, false);
 				markDirty(world, eid);
 				notifyToggle(path, false);
@@ -1011,7 +1014,7 @@ export function createTree(
 
 				// Add icon if present
 				if (node.icon) {
-					line += node.icon + ' ';
+					line += `${node.icon} `;
 				}
 
 				// Add label
@@ -1019,7 +1022,7 @@ export function createTree(
 
 				// Truncate if needed
 				if (line.length > width) {
-					line = line.slice(0, width - 1) + '…';
+					line = `${line.slice(0, width - 1)}…`;
 				}
 
 				// Mark selected (for simple text rendering)

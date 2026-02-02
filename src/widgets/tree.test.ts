@@ -123,9 +123,7 @@ describe('Tree Widget', () => {
 	describe('nodes', () => {
 		it('should set nodes', () => {
 			widget = createTree(world, eid);
-			const result = widget.setNodes([
-				{ label: 'New Root', children: [{ label: 'Child' }] },
-			]);
+			const result = widget.setNodes([{ label: 'New Root', children: [{ label: 'Child' }] }]);
 
 			expect(result).toBe(widget);
 			expect(widget.getNodes()).toHaveLength(1);
@@ -173,11 +171,7 @@ describe('Tree Widget', () => {
 					{
 						label: 'Root',
 						expanded: true,
-						children: [
-							{ label: 'Child 1' },
-							{ label: 'Child 2' },
-							{ label: 'Child 3' },
-						],
+						children: [{ label: 'Child 1' }, { label: 'Child 2' }, { label: 'Child 3' }],
 					},
 				],
 			});

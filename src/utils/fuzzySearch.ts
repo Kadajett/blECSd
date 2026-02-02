@@ -392,11 +392,7 @@ export function fuzzyFilter(
  * fuzzyTest('xyz', 'application'); // false
  * ```
  */
-export function fuzzyTest(
-	query: string,
-	text: string,
-	options: FuzzyOptions = {},
-): boolean {
+export function fuzzyTest(query: string, text: string, options: FuzzyOptions = {}): boolean {
 	const match = fuzzyMatch(query, text, options);
 	return match !== null && match.score >= (options.threshold ?? 0);
 }

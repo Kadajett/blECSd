@@ -8,11 +8,15 @@ import type { Entity, World } from '../core/types';
 import {
 	activateSelected,
 	addItem,
+	// Virtualization exports
+	appendItems,
 	appendToSearchQuery,
 	attachListBehavior,
 	backspaceSearchQuery,
 	blurList,
+	checkNeedsLoad,
 	clearItems,
+	clearLazyLoadCallback,
 	clearListCallbacks,
 	clearListDisplay,
 	clearSearchQuery,
@@ -28,11 +32,15 @@ import {
 	getItem,
 	getItemCount,
 	getItems,
+	getLazyLoadCallback,
 	getListDisplay,
 	getListSearchQuery,
 	getListState,
+	getLoadingPlaceholder,
+	getScrollInfo,
 	getSelectedIndex,
 	getSelectedItem,
+	getTotalCount,
 	getVisibleCount,
 	getVisibleItems,
 	handleListKeyPress,
@@ -42,12 +50,16 @@ import {
 	isListInState,
 	isListInteractive,
 	isListKeysEnabled,
+	isListLoading,
 	isListMouseEnabled,
 	isListSearchEnabled,
 	isListSearching,
 	LIST_STATE_MACHINE_CONFIG,
+	type ListItem,
 	listStore,
+	loadItems,
 	onListActivate,
+	onListScroll,
 	onListSearchChange,
 	onListSelect,
 	removeItem,
@@ -61,31 +73,19 @@ import {
 	selectPrev,
 	setFirstVisible,
 	setItems,
+	setLazyLoadCallback,
 	setListDisplay,
 	setListInteractive,
 	setListKeys,
+	setListLoading,
 	setListMouse,
 	setListSearchQuery,
+	setLoadingPlaceholder,
 	setSelectedIndex,
+	setTotalCount,
 	setVisibleCount,
 	startListSearch,
 	updateItem,
-	// Virtualization exports
-	appendItems,
-	checkNeedsLoad,
-	clearLazyLoadCallback,
-	getLazyLoadCallback,
-	getLoadingPlaceholder,
-	getScrollInfo,
-	getTotalCount,
-	isListLoading,
-	loadItems,
-	onListScroll,
-	setLazyLoadCallback,
-	setListLoading,
-	setLoadingPlaceholder,
-	setTotalCount,
-	type ListItem,
 } from './list';
 
 describe('List Component', () => {
@@ -1010,10 +1010,7 @@ describe('List Component', () => {
 				attachListBehavior(world, eid, []);
 				setTotalCount(world, eid, 10);
 
-				const mockItems: ListItem[] = [
-					{ text: 'Item 1' },
-					{ text: 'Item 2' },
-				];
+				const mockItems: ListItem[] = [{ text: 'Item 1' }, { text: 'Item 2' }];
 				const callback = vi.fn().mockResolvedValue(mockItems);
 				setLazyLoadCallback(eid, callback);
 
