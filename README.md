@@ -50,155 +50,31 @@ blECSd provides ECS components that work with any bitECS world:
 | Padding | Inner spacing |
 | Label | Text labels for elements |
 
-Each component has getter/setter functions:
-
-```typescript
-import { setPosition, getPosition, setStyle, isVisible } from 'blecsd';
-
-setPosition(world, entity, 10, 5);
-const pos = getPosition(world, entity); // { x: 10, y: 5, z: 0, absolute: false }
-
-setStyle(world, entity, { fg: '#ff0000', bold: true });
-isVisible(world, entity); // true
-```
-
-## Entity Factories
-
-Create pre-configured entities:
-
-```typescript
-import { createWorld, createBoxEntity, createTextEntity, BorderType } from 'blecsd';
-
-const world = createWorld();
-
-const box = createBoxEntity(world, {
-  x: 0,
-  y: 0,
-  width: 40,
-  height: 10,
-  border: { type: BorderType.Line },
-});
-
-const text = createTextEntity(world, {
-  x: 5,
-  y: 2,
-  text: 'Hello',
-  fg: 0xffffffff,
-});
-```
-
-## Event Bus
-
-Type-safe event handling:
-
-```typescript
-import { createEventBus } from 'blecsd';
-
-interface GameEvents {
-  'enemy:spawn': { type: string; x: number; y: number };
-  'game:over': { score: number };
-}
-
-const events = createEventBus<GameEvents>();
-
-const unsubscribe = events.on('enemy:spawn', (e) => {
-  console.log(`${e.type} spawned at ${e.x}, ${e.y}`);
-});
-
-events.emit('enemy:spawn', { type: 'goblin', x: 10, y: 5 });
-
-unsubscribe(); // Stop listening
-```
-
-## Scheduler
-
-Optional game loop with fixed phase ordering:
-
-```typescript
-import { createWorld, createScheduler, LoopPhase } from 'blecsd';
-
-const world = createWorld();
-const scheduler = createScheduler();
-
-scheduler.add(LoopPhase.UPDATE, (world, delta) => {
-  // Game logic runs here
-  return world;
-});
-
-scheduler.add(LoopPhase.RENDER, (world, delta) => {
-  // Rendering runs here
-  return world;
-});
-
-scheduler.start(world);
-```
-
-Phase order:
-1. INPUT (reserved, always first)
-2. EARLY_UPDATE
-3. UPDATE
-4. LATE_UPDATE
-5. PHYSICS
-6. LAYOUT
-7. RENDER
-8. POST_RENDER
-
-## Input Parsing
-
-Parse terminal input sequences:
-
-```typescript
-import { parseKeyBuffer, parseMouseSequence } from 'blecsd';
-
-// Keyboard
-const key = parseKeyBuffer(buffer);
-if (key) {
-  console.log(key.name, key.ctrl, key.shift);
-}
-
-// Mouse (SGR format)
-const mouse = parseMouseSequence(sequence);
-if (mouse) {
-  console.log(mouse.action, mouse.x, mouse.y);
-}
-```
-
-## State Machines
-
-Attach FSMs to entities:
-
-```typescript
-import { attachStateMachine, sendEvent, getState } from 'blecsd';
-
-const definition = {
-  initial: 'idle',
-  states: {
-    idle: { on: { ALERT: 'chase' } },
-    chase: { on: { LOST: 'search', CAUGHT: 'attack' } },
-    search: { on: { FOUND: 'chase', TIMEOUT: 'idle' } },
-    attack: { on: { DONE: 'idle' } },
-  },
-};
-
-attachStateMachine(world, enemy, definition);
-sendEvent(world, enemy, 'ALERT');
-getState(world, enemy); // 'chase'
-```
-
-## Documentation
-
-- [Getting Started](./docs/getting-started/installation.md)
-- [Core Concepts](./docs/getting-started/concepts.md)
-- [API Reference](./docs/api/index.md)
+Each component has getter/setter functions. See [API Reference](./docs/api/index.md) for details.
 
 ## Library Design
 
-blECSd is a library, not a framework. This means:
+blECSd is a library, not a framework:
 
-1. **Components work standalone** - Import them into any bitECS world
-2. **No required game loop** - All systems are callable functions
-3. **Mix and match** - Use our input parsing with your rendering, or vice versa
-4. **You own the world** - Functions take `world` as a parameter; we never hold global state
+1. **Components work standalone**: Import them into any bitECS world
+2. **No required game loop**: All systems are callable functions
+3. **Mix and match**: Use our input parsing with your rendering, or vice versa
+4. **You own the world**: Functions take `world` as a parameter; we never hold global state
+
+## Limitations
+
+- **Terminal only**: No browser support. Use a canvas/WebGL library for browser games.
+- **No built-in widgets**: blECSd provides primitives, not ready-made UI components. You build menus, dialogs, and forms from components and systems.
+- **ECS architecture required**: blECSd is built around bitECS. OOP patterns will fight the library.
+- **Terminal-dependent features**: Color support, text decorations, and input capabilities vary by terminal emulator.
+
+For TUI applications (forms, menus, dialogs), consider [Ink](https://github.com/vadimdemedes/ink), [blessed](https://github.com/chjj/blessed), or [Textual](https://textual.textualize.io/) instead.
+
+## Documentation
+
+- [Installation](./docs/getting-started/installation.md): Requirements, terminal compatibility, setup
+- [Core Concepts](./docs/getting-started/concepts.md): ECS, scheduler, events
+- [API Reference](./docs/api/index.md): Components, queries, terminal I/O
 
 ## Development
 

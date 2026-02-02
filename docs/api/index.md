@@ -21,58 +21,13 @@ ECS components for game entities. Each component has a bitECS component definiti
 
 ## Core
 
-### Entity Factories
-
-Create pre-configured entities with multiple components.
-
-| Factory | Components Added |
-|---------|------------------|
-| `createBoxEntity` | Position, Dimensions, Renderable, Hierarchy, Border?, Padding? |
-| `createTextEntity` | Position, Dimensions, Renderable, Hierarchy, Content |
-| `createButtonEntity` | Position, Dimensions, Renderable, Hierarchy, Content, Interactive, Focusable |
-| `createInputEntity` | Position, Dimensions, Renderable, Hierarchy, Content, Interactive, Focusable |
-| `createListEntity` | Position, Dimensions, Renderable, Hierarchy, Content, Scrollable, Interactive, Focusable |
-| `createScreenEntity` | Position, Dimensions, Renderable, Hierarchy |
-
-See [Entity Factories](./entities.md) for configuration options.
-
 ### Events
-
-Type-safe event bus.
-
-```typescript
-import { createEventBus } from 'blecsd';
-
-interface Events {
-  'player:moved': { x: number; y: number };
-}
-
-const events = createEventBus<Events>();
-events.on('player:moved', (e) => console.log(e.x, e.y));
-events.emit('player:moved', { x: 10, y: 5 });
-```
 
 See [Events](./events.md) for the full API.
 
 ### Queries
 
-Pre-built queries and filters for finding entities.
-
-| Query/Filter | Purpose |
-|--------------|---------|
-| `queryRenderable` | Entities with Renderable |
-| `queryFocusable` | Entities with Focusable |
-| `queryInteractive` | Entities with Interactive |
-| `queryHierarchy` | Entities with Hierarchy |
-| `filterVisible` | Filter to visible entities |
-| `filterDirty` | Filter to dirty entities |
-| `filterFocusable` | Filter to focusable entities |
-| `filterClickable` | Filter to clickable entities |
-| `sortByZIndex` | Sort by z-index ascending |
-| `sortByDepth` | Sort by hierarchy depth |
-| `sortByTabIndex` | Sort by tab order |
-
-See [Queries](./queries.md) for usage.
+See [Queries](./queries.md) for pre-built queries, filters, and sorting functions.
 
 ### Scheduler
 
@@ -96,9 +51,22 @@ Phases execute in order:
 7. RENDER
 8. POST_RENDER
 
-## Systems
+## Entity Factories
 
-ECS systems for game logic.
+Create pre-configured entities with multiple components.
+
+| Factory | Components Added |
+|---------|------------------|
+| `createBoxEntity` | Position, Dimensions, Renderable, Hierarchy, Border?, Padding? |
+| `createTextEntity` | Position, Dimensions, Renderable, Hierarchy, Content |
+| `createButtonEntity` | Position, Dimensions, Renderable, Hierarchy, Content, Interactive, Focusable |
+| `createInputEntity` | Position, Dimensions, Renderable, Hierarchy, Content, Interactive, Focusable |
+| `createListEntity` | Position, Dimensions, Renderable, Hierarchy, Content, Scrollable, Interactive, Focusable |
+| `createScreenEntity` | Position, Dimensions, Renderable, Hierarchy |
+
+See [Entity Factories](./entities.md) for configuration options.
+
+## Systems
 
 | System | Purpose | Documentation |
 |--------|---------|---------------|
@@ -109,36 +77,15 @@ ECS systems for game logic.
 
 ### Input Stream Handler
 
-Wrap a NodeJS readable stream to get typed input events.
-
-```typescript
-import { createInputHandler } from 'blecsd';
-
-const handler = createInputHandler(process.stdin);
-handler.onKey((e) => console.log(e.name));
-handler.onMouse((e) => console.log(e.x, e.y));
-handler.start();
-```
-
-See [Input Stream](./input-stream.md) for the full API.
+See [Input Stream](./input-stream.md) for wrapping NodeJS readable streams.
 
 ### Input Parsing
 
-Parse terminal input into structured events.
-
-#### Keyboard
-
 ```typescript
-import { parseKeyBuffer, parseKeySequence } from 'blecsd';
+import { parseKeyBuffer, parseMouseSequence } from 'blecsd';
 
 const key = parseKeyBuffer(buffer);
 // { name: 'a', ctrl: false, meta: false, shift: false, sequence: 'a' }
-```
-
-#### Mouse
-
-```typescript
-import { parseMouseSequence, isMouseBuffer } from 'blecsd';
 
 const mouse = parseMouseSequence('\x1b[<0;10;5M');
 // { action: 'mousedown', button: 0, x: 10, y: 5, ... }
@@ -148,59 +95,12 @@ const mouse = parseMouseSequence('\x1b[<0;10;5M');
 
 Low-level terminal control. Import from `blecsd/terminal`.
 
-### ANSI Escape Sequences
-
-```typescript
-import { cursor, style, screen, mouse } from 'blecsd/terminal';
-
-cursor.move(10, 5);      // Move cursor to column 10, row 5
-cursor.hide();           // Hide cursor
-cursor.show();           // Show cursor
-
-style.bold();            // Bold text
-style.fgRgb(255, 0, 0);  // Red foreground
-style.reset();           // Reset all styles
-
-screen.clear();          // Clear screen
-screen.alternateOn();    // Enter alternate buffer
-screen.alternateOff();   // Exit alternate buffer
-
-mouse.enableSgr();       // Enable SGR mouse tracking
-mouse.disableAll();      // Disable all mouse modes
-```
-
-See [ANSI](./ansi.md) for the complete reference.
-
-### Program Class
-
-High-level terminal control with event handling.
-
-```typescript
-import { Program } from 'blecsd/terminal';
-
-const program = new Program({
-  useAlternateScreen: true,
-  hideCursor: true,
-});
-
-await program.init();
-
-program.on('key', (event) => {
-  if (event.name === 'q') program.destroy();
-});
-
-program.on('resize', ({ cols, rows }) => {
-  // Handle resize
-});
-```
-
-See [Program](./program.md) for the full API.
-
-### Other Terminal Modules
-
 | Module | Purpose |
 |--------|---------|
+| [Terminfo](./terminfo.md) | Terminal capability access |
+| [ANSI](./ansi.md) | Direct ANSI escape sequences |
 | [Detection](./detection.md) | Terminal capability detection |
+| [Program](./program.md) | High-level terminal control |
 | [Security](./security.md) | Escape sequence sanitization |
 | [Cleanup](./cleanup.md) | Terminal state restoration |
 | [Output Buffer](./output-buffer.md) | Buffered output |
@@ -220,17 +120,15 @@ import {
   PositiveIntSchema,
 } from 'blecsd';
 
-ColorStringSchema.parse('#ff0000');     // Valid
-DimensionSchema.parse('50%');            // Valid
-PositionValueSchema.parse('center');     // Valid
-PositiveIntSchema.parse(10);             // Valid
+ColorStringSchema.parse('#ff0000');
+DimensionSchema.parse('50%');
+PositionValueSchema.parse('center');
+PositiveIntSchema.parse(10);
 ```
 
 ## Utilities
 
 ### Box Rendering
-
-Low-level utilities for drawing boxes, borders, and text to cell buffers.
 
 | Function | Purpose |
 |----------|---------|
@@ -248,8 +146,6 @@ Low-level utilities for drawing boxes, borders, and text to cell buffers.
 See [Box Utilities](./utils/box.md) for the full API.
 
 ### Text Wrapping
-
-Utilities for wrapping, aligning, and measuring text with ANSI support.
 
 | Function | Purpose |
 |----------|---------|
@@ -279,10 +175,6 @@ type System = (world: World, deltaTime: number) => World;
 
 ```typescript
 import type { EventHandler, EventMap, Unsubscribe } from 'blecsd';
-
-type EventHandler<T> = (event: T) => void;
-type EventMap = Record<string, unknown>;
-type Unsubscribe = () => void;
 ```
 
 ### Input Types
