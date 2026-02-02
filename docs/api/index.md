@@ -17,6 +17,7 @@ ECS components for game entities. Each component has a bitECS component definiti
 | Content | Text content and alignment | [Content](./content.md) |
 | Padding | Inner spacing | [Padding](./padding.md) |
 | Label | Text labels | [Label](./label.md) |
+| Input | Keyboard, mouse, text buffer state | [Input](./components/input.md) |
 
 ## Core
 
@@ -95,11 +96,37 @@ Phases execute in order:
 7. RENDER
 8. POST_RENDER
 
-## Input Parsing
+## Systems
+
+ECS systems for game logic.
+
+| System | Purpose | Documentation |
+|--------|---------|---------------|
+| Input System | Process input events, hit testing, focus | [Input System](./systems/input-system.md) |
+| State Machine | Update entity state age | (built-in) |
+
+## Input Handling
+
+### Input Stream Handler
+
+Wrap a NodeJS readable stream to get typed input events.
+
+```typescript
+import { createInputHandler } from 'blecsd';
+
+const handler = createInputHandler(process.stdin);
+handler.onKey((e) => console.log(e.name));
+handler.onMouse((e) => console.log(e.x, e.y));
+handler.start();
+```
+
+See [Input Stream](./input-stream.md) for the full API.
+
+### Input Parsing
 
 Parse terminal input into structured events.
 
-### Keyboard
+#### Keyboard
 
 ```typescript
 import { parseKeyBuffer, parseKeySequence } from 'blecsd';
@@ -108,7 +135,7 @@ const key = parseKeyBuffer(buffer);
 // { name: 'a', ctrl: false, meta: false, shift: false, sequence: 'a' }
 ```
 
-### Mouse
+#### Mouse
 
 ```typescript
 import { parseMouseSequence, isMouseBuffer } from 'blecsd';
