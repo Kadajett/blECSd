@@ -244,15 +244,15 @@ export class SynchronizedOutput {
  * Check if running in kitty terminal.
  */
 function isKitty(): boolean {
-	const term = process.env.TERM ?? '';
-	return term === 'xterm-kitty' || process.env.KITTY_WINDOW_ID !== undefined;
+	const term = process.env['TERM'] ?? '';
+	return term === 'xterm-kitty' || process.env['KITTY_WINDOW_ID'] !== undefined;
 }
 
 /**
  * Check if running in foot terminal.
  */
 function isFoot(): boolean {
-	const term = process.env.TERM ?? '';
+	const term = process.env['TERM'] ?? '';
 	return term === 'foot' || term === 'foot-extra';
 }
 
@@ -260,25 +260,25 @@ function isFoot(): boolean {
  * Check if running in contour terminal.
  */
 function isContour(): boolean {
-	return process.env.TERMINAL_VERSION_STRING?.includes('contour') ?? false;
+	return process.env['TERMINAL_VERSION_STRING']?.includes('contour') ?? false;
 }
 
 /**
  * Check if running in WezTerm.
  */
 function isWezTerm(): boolean {
-	return process.env.TERM_PROGRAM === 'WezTerm';
+	return process.env['TERM_PROGRAM'] === 'WezTerm';
 }
 
 /**
  * Check if running in iTerm2 3.5+.
  */
 function isITerm2WithSync(): boolean {
-	if (process.env.TERM_PROGRAM !== 'iTerm.app') {
+	if (process.env['TERM_PROGRAM'] !== 'iTerm.app') {
 		return false;
 	}
 
-	const version = process.env.TERM_PROGRAM_VERSION;
+	const version = process.env['TERM_PROGRAM_VERSION'];
 	if (!version) {
 		return false;
 	}
@@ -292,7 +292,7 @@ function isITerm2WithSync(): boolean {
  * Check if running in mintty.
  */
 function isMintty(): boolean {
-	return process.env.TERM_PROGRAM === 'mintty';
+	return process.env['TERM_PROGRAM'] === 'mintty';
 }
 
 /**
