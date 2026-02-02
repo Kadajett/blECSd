@@ -51,3 +51,14 @@ export {
 	wordWrap,
 	wrapText,
 } from './textWrap';
+// Fuzzy search utilities
+export type { FuzzyMatch, FuzzyOptions, FuzzySearchOptions } from './fuzzySearch';
+export {
+	fuzzyFilter,
+	fuzzyMatch,
+	FuzzyOptionsSchema,
+	fuzzySearch,
+	fuzzySearchBy,
+	fuzzyTest,
+	highlightMatch,
+} from './fuzzySearch';
