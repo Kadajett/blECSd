@@ -67,6 +67,45 @@ export interface ListStore {
 	keys: Uint8Array;
 	/** Whether search mode is enabled */
 	searchEnabled: Uint8Array;
+	/** Total item count for virtualized lists (may be > itemCount) */
+	totalCount: Uint32Array;
+	/** Whether items are currently loading */
+	isLoading: Uint8Array;
+}
+
+/**
+ * Lazy load callback for virtualized lists.
+ * Called when items need to be loaded for a range.
+ *
+ * @param startIndex - First item index to load
+ * @param count - Number of items to load
+ * @returns Promise that resolves when items are loaded
+ */
+export type ListLazyLoadCallback = (startIndex: number, count: number) => Promise<ListItem[]>;
+
+/**
+ * Scroll event callback for infinite scroll detection.
+ *
+ * @param scrollInfo - Information about current scroll state
+ */
+export type ListScrollCallback = (scrollInfo: ListScrollInfo) => void;
+
+/**
+ * Scroll information for infinite scroll.
+ */
+export interface ListScrollInfo {
+	/** First visible item index */
+	readonly firstVisible: number;
+	/** Number of visible items */
+	readonly visibleCount: number;
+	/** Total loaded items */
+	readonly loadedCount: number;
+	/** Total items (may be larger than loaded for infinite scroll) */
+	readonly totalCount: number;
+	/** Whether we're near the end (within threshold) */
+	readonly nearEnd: boolean;
+	/** Whether we're near the start (within threshold) */
+	readonly nearStart: boolean;
 }
 
 /**
@@ -170,10 +209,24 @@ export const listStore: ListStore = {
 	mouse: new Uint8Array(MAX_ENTITIES),
 	keys: new Uint8Array(MAX_ENTITIES),
 	searchEnabled: new Uint8Array(MAX_ENTITIES),
+	totalCount: new Uint32Array(MAX_ENTITIES),
+	isLoading: new Uint8Array(MAX_ENTITIES),
 };
 
 /** Store for list items */
 const itemsStore = new Map<Entity, ListItem[]>();
+
+/** Store for lazy load callbacks */
+const lazyLoadCallbacks = new Map<Entity, ListLazyLoadCallback>();
+
+/** Store for scroll callbacks */
+const scrollCallbacks = new Map<Entity, Set<ListScrollCallback>>();
+
+/** Store for loading placeholder text */
+const loadingPlaceholderStore = new Map<Entity, string>();
+
+/** Default loading placeholder */
+const DEFAULT_LOADING_PLACEHOLDER = 'Loading...';
 
 /** Store for list display configuration */
 const displayStore = new Map<Entity, ListDisplay>();
@@ -832,9 +885,12 @@ export function getFirstVisible(eid: Entity): number {
  */
 export function setFirstVisible(world: World, eid: Entity, index: number): void {
 	const itemCount = listStore.itemCount[eid] ?? 0;
-	const clamped = Math.max(0, Math.min(index, Math.max(0, itemCount - 1)));
+	const totalCount = listStore.totalCount[eid] ?? itemCount;
+	const maxIndex = Math.max(0, Math.max(itemCount, totalCount) - 1);
+	const clamped = Math.max(0, Math.min(index, maxIndex));
 	listStore.firstVisible[eid] = clamped;
 	markDirty(world, eid);
+	notifyScrollCallbacks(eid);
 }
 
 /**
@@ -932,6 +988,284 @@ export function getVisibleItems(eid: Entity): Array<{ index: number; item: ListI
 		}
 	}
 	return result;
+}
+
+// =============================================================================
+// VIRTUALIZATION
+// =============================================================================
+
+/**
+ * Sets the total item count for virtualized lists.
+ * This can be larger than the actual loaded items count for infinite scroll.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param count - Total item count
+ */
+export function setTotalCount(world: World, eid: Entity, count: number): void {
+	listStore.totalCount[eid] = count;
+	markDirty(world, eid);
+}
+
+/**
+ * Gets the total item count (may be larger than loaded items).
+ *
+ * @param eid - The entity ID
+ * @returns Total item count
+ */
+export function getTotalCount(eid: Entity): number {
+	const total = listStore.totalCount[eid] ?? 0;
+	// If totalCount is 0 (not explicitly set), fall back to itemCount
+	if (total === 0) {
+		return listStore.itemCount[eid] ?? 0;
+	}
+	return total;
+}
+
+/**
+ * Sets the lazy load callback for loading items on demand.
+ *
+ * @param eid - The entity ID
+ * @param callback - Callback function to load items
+ */
+export function setLazyLoadCallback(eid: Entity, callback: ListLazyLoadCallback): void {
+	lazyLoadCallbacks.set(eid, callback);
+}
+
+/**
+ * Gets the lazy load callback.
+ *
+ * @param eid - The entity ID
+ * @returns Lazy load callback or undefined
+ */
+export function getLazyLoadCallback(eid: Entity): ListLazyLoadCallback | undefined {
+	return lazyLoadCallbacks.get(eid);
+}
+
+/**
+ * Clears the lazy load callback.
+ *
+ * @param eid - The entity ID
+ */
+export function clearLazyLoadCallback(eid: Entity): void {
+	lazyLoadCallbacks.delete(eid);
+}
+
+/**
+ * Registers a scroll callback for detecting scroll events.
+ *
+ * @param eid - The entity ID
+ * @param callback - Callback function
+ * @returns Unsubscribe function
+ */
+export function onListScroll(eid: Entity, callback: ListScrollCallback): () => void {
+	let callbacks = scrollCallbacks.get(eid);
+	if (!callbacks) {
+		callbacks = new Set();
+		scrollCallbacks.set(eid, callbacks);
+	}
+	callbacks.add(callback);
+	return () => {
+		callbacks?.delete(callback);
+	};
+}
+
+/**
+ * Notifies scroll callbacks of scroll state change.
+ *
+ * @param eid - The entity ID
+ * @param threshold - Items from end to trigger nearEnd (default: visibleCount)
+ */
+function notifyScrollCallbacks(eid: Entity, threshold?: number): void {
+	const callbacks = scrollCallbacks.get(eid);
+	if (!callbacks || callbacks.size === 0) {
+		return;
+	}
+
+	const firstVisible = listStore.firstVisible[eid] ?? 0;
+	const visibleCount = listStore.visibleCount[eid] ?? 0;
+	const loadedCount = listStore.itemCount[eid] ?? 0;
+	const totalCount = listStore.totalCount[eid] ?? loadedCount;
+	const scrollThreshold = threshold ?? visibleCount;
+
+	const info: ListScrollInfo = {
+		firstVisible,
+		visibleCount,
+		loadedCount,
+		totalCount,
+		nearEnd: firstVisible + visibleCount >= loadedCount - scrollThreshold,
+		nearStart: firstVisible <= scrollThreshold,
+	};
+
+	for (const callback of callbacks) {
+		callback(info);
+	}
+}
+
+/**
+ * Sets the loading state for a list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param loading - Whether items are loading
+ */
+export function setListLoading(world: World, eid: Entity, loading: boolean): void {
+	listStore.isLoading[eid] = loading ? 1 : 0;
+	markDirty(world, eid);
+}
+
+/**
+ * Checks if a list is currently loading items.
+ *
+ * @param eid - The entity ID
+ * @returns true if loading
+ */
+export function isListLoading(eid: Entity): boolean {
+	return listStore.isLoading[eid] === 1;
+}
+
+/**
+ * Sets the loading placeholder text.
+ *
+ * @param eid - The entity ID
+ * @param text - Placeholder text to show while loading
+ */
+export function setLoadingPlaceholder(eid: Entity, text: string): void {
+	loadingPlaceholderStore.set(eid, text);
+}
+
+/**
+ * Gets the loading placeholder text.
+ *
+ * @param eid - The entity ID
+ * @returns Loading placeholder text
+ */
+export function getLoadingPlaceholder(eid: Entity): string {
+	return loadingPlaceholderStore.get(eid) ?? DEFAULT_LOADING_PLACEHOLDER;
+}
+
+/**
+ * Loads items for a range using the lazy load callback.
+ * Returns immediately if no callback is set or already loading.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param startIndex - First item to load
+ * @param count - Number of items to load
+ * @returns Promise that resolves when loading completes
+ */
+export async function loadItems(
+	world: World,
+	eid: Entity,
+	startIndex: number,
+	count: number,
+): Promise<void> {
+	const callback = lazyLoadCallbacks.get(eid);
+	if (!callback) {
+		return;
+	}
+
+	// Don't start another load if already loading
+	if (listStore.isLoading[eid] === 1) {
+		return;
+	}
+
+	setListLoading(world, eid, true);
+
+	try {
+		const newItems = await callback(startIndex, count);
+
+		// Merge loaded items into the items store
+		const items = itemsStore.get(eid) ?? [];
+
+		// Ensure array is large enough
+		while (items.length < startIndex + newItems.length) {
+			items.push({ text: '', disabled: true });
+		}
+
+		// Insert loaded items
+		for (let i = 0; i < newItems.length; i++) {
+			const item = newItems[i];
+			if (item) {
+				items[startIndex + i] = item;
+			}
+		}
+
+		itemsStore.set(eid, items);
+		listStore.itemCount[eid] = items.length;
+		markDirty(world, eid);
+	} finally {
+		setListLoading(world, eid, false);
+	}
+}
+
+/**
+ * Checks if items need to be loaded for the current visible range.
+ *
+ * @param eid - The entity ID
+ * @returns Object with needsLoad flag and range to load
+ */
+export function checkNeedsLoad(eid: Entity): { needsLoad: boolean; startIndex: number; count: number } {
+	const firstVisible = listStore.firstVisible[eid] ?? 0;
+	const visibleCount = listStore.visibleCount[eid] ?? 0;
+	const totalCount = listStore.totalCount[eid] ?? 0;
+	const items = itemsStore.get(eid) ?? [];
+
+	// Check if we need to load items in the visible range
+	const endVisible = Math.min(firstVisible + visibleCount, totalCount);
+
+	for (let i = firstVisible; i < endVisible; i++) {
+		const item = items[i];
+		// Item is considered unloaded if it doesn't exist or has empty text
+		if (!item || item.text === '') {
+			return {
+				needsLoad: true,
+				startIndex: firstVisible,
+				count: visibleCount,
+			};
+		}
+	}
+
+	return { needsLoad: false, startIndex: 0, count: 0 };
+}
+
+/**
+ * Gets scroll info for the list.
+ *
+ * @param eid - The entity ID
+ * @param threshold - Items from end to trigger nearEnd (default: visibleCount)
+ * @returns Scroll information
+ */
+export function getScrollInfo(eid: Entity, threshold?: number): ListScrollInfo {
+	const firstVisible = listStore.firstVisible[eid] ?? 0;
+	const visibleCount = listStore.visibleCount[eid] ?? 0;
+	const loadedCount = listStore.itemCount[eid] ?? 0;
+	const totalCount = getTotalCount(eid);
+	const scrollThreshold = threshold ?? visibleCount;
+
+	return {
+		firstVisible,
+		visibleCount,
+		loadedCount,
+		totalCount,
+		nearEnd: firstVisible + visibleCount >= loadedCount - scrollThreshold,
+		nearStart: firstVisible <= scrollThreshold,
+	};
+}
+
+/**
+ * Appends items to the list (useful for infinite scroll).
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param newItems - Items to append
+ */
+export function appendItems(world: World, eid: Entity, newItems: readonly ListItem[]): void {
+	const items = itemsStore.get(eid) ?? [];
+	items.push(...newItems);
+	itemsStore.set(eid, items);
+	listStore.itemCount[eid] = items.length;
+	markDirty(world, eid);
 }
 
 // =============================================================================
@@ -1533,10 +1867,15 @@ export function resetListStore(): void {
 	listStore.mouse.fill(0);
 	listStore.keys.fill(0);
 	listStore.searchEnabled.fill(0);
+	listStore.totalCount.fill(0);
+	listStore.isLoading.fill(0);
 	itemsStore.clear();
 	displayStore.clear();
 	selectCallbacks.clear();
 	activateCallbacks.clear();
 	searchQueryStore.clear();
 	searchChangeCallbacks.clear();
+	lazyLoadCallbacks.clear();
+	scrollCallbacks.clear();
+	loadingPlaceholderStore.clear();
 }

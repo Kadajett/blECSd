@@ -377,6 +377,9 @@ export type {
 	ListDisplayOptions,
 	ListEvent,
 	ListItem,
+	ListLazyLoadCallback,
+	ListScrollCallback,
+	ListScrollInfo,
 	ListSelectCallback,
 	ListState,
 	ListStore,
@@ -455,6 +458,21 @@ export {
 	setVisibleCount,
 	startListSearch,
 	updateItem,
+	// Virtualization exports
+	appendItems,
+	checkNeedsLoad,
+	clearLazyLoadCallback,
+	getLazyLoadCallback,
+	getLoadingPlaceholder,
+	getScrollInfo,
+	getTotalCount,
+	isListLoading,
+	loadItems,
+	onListScroll,
+	setLazyLoadCallback,
+	setListLoading,
+	setLoadingPlaceholder,
+	setTotalCount,
 } from './list';
 // Padding component
 export type { PaddingData, PaddingOptions } from './padding';

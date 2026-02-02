@@ -70,6 +70,22 @@ import {
 	setVisibleCount,
 	startListSearch,
 	updateItem,
+	// Virtualization exports
+	appendItems,
+	checkNeedsLoad,
+	clearLazyLoadCallback,
+	getLazyLoadCallback,
+	getLoadingPlaceholder,
+	getScrollInfo,
+	getTotalCount,
+	isListLoading,
+	loadItems,
+	onListScroll,
+	setLazyLoadCallback,
+	setListLoading,
+	setLoadingPlaceholder,
+	setTotalCount,
+	type ListItem,
 } from './list';
 
 describe('List Component', () => {
@@ -803,6 +819,266 @@ describe('List Component', () => {
 
 			resetListStore();
 			expect(listStore.isList[eid]).toBe(0);
+		});
+	});
+
+	describe('Virtualization', () => {
+		describe('Total Count', () => {
+			it('should set and get total count', () => {
+				attachListBehavior(world, eid, [{ text: 'A' }]);
+				setTotalCount(world, eid, 1000);
+
+				expect(getTotalCount(eid)).toBe(1000);
+			});
+
+			it('should default to item count when total not set', () => {
+				attachListBehavior(world, eid, [{ text: 'A' }, { text: 'B' }]);
+
+				expect(getTotalCount(eid)).toBe(2);
+			});
+		});
+
+		describe('Loading State', () => {
+			it('should set and check loading state', () => {
+				attachListBehavior(world, eid);
+
+				expect(isListLoading(eid)).toBe(false);
+
+				setListLoading(world, eid, true);
+				expect(isListLoading(eid)).toBe(true);
+
+				setListLoading(world, eid, false);
+				expect(isListLoading(eid)).toBe(false);
+			});
+		});
+
+		describe('Loading Placeholder', () => {
+			it('should set and get loading placeholder', () => {
+				attachListBehavior(world, eid);
+				setLoadingPlaceholder(eid, 'Please wait...');
+
+				expect(getLoadingPlaceholder(eid)).toBe('Please wait...');
+			});
+
+			it('should return default placeholder when not set', () => {
+				attachListBehavior(world, eid);
+
+				expect(getLoadingPlaceholder(eid)).toBe('Loading...');
+			});
+		});
+
+		describe('Lazy Load Callback', () => {
+			it('should set and get lazy load callback', () => {
+				attachListBehavior(world, eid);
+				const callback = vi.fn().mockResolvedValue([]);
+
+				setLazyLoadCallback(eid, callback);
+
+				expect(getLazyLoadCallback(eid)).toBe(callback);
+			});
+
+			it('should clear lazy load callback', () => {
+				attachListBehavior(world, eid);
+				const callback = vi.fn().mockResolvedValue([]);
+
+				setLazyLoadCallback(eid, callback);
+				clearLazyLoadCallback(eid);
+
+				expect(getLazyLoadCallback(eid)).toBeUndefined();
+			});
+		});
+
+		describe('Scroll Info', () => {
+			it('should get scroll info', () => {
+				attachListBehavior(world, eid, [
+					{ text: 'A' },
+					{ text: 'B' },
+					{ text: 'C' },
+					{ text: 'D' },
+					{ text: 'E' },
+				]);
+				setVisibleCount(world, eid, 3);
+
+				const info = getScrollInfo(eid);
+
+				expect(info.firstVisible).toBe(0);
+				expect(info.visibleCount).toBe(3);
+				expect(info.loadedCount).toBe(5);
+				expect(info.totalCount).toBe(5);
+				expect(info.nearStart).toBe(true);
+				expect(info.nearEnd).toBe(true);
+			});
+
+			it('should detect near end with threshold', () => {
+				attachListBehavior(world, eid, [
+					{ text: 'A' },
+					{ text: 'B' },
+					{ text: 'C' },
+					{ text: 'D' },
+					{ text: 'E' },
+					{ text: 'F' },
+					{ text: 'G' },
+					{ text: 'H' },
+					{ text: 'I' },
+					{ text: 'J' },
+				]);
+				setVisibleCount(world, eid, 3);
+				setFirstVisible(world, eid, 5);
+
+				const info = getScrollInfo(eid, 2);
+
+				expect(info.firstVisible).toBe(5);
+				expect(info.nearEnd).toBe(true); // 5 + 3 = 8, 10 - 2 = 8
+				expect(info.nearStart).toBe(false);
+			});
+		});
+
+		describe('Scroll Callbacks', () => {
+			it('should register and call scroll callbacks', () => {
+				attachListBehavior(world, eid, [
+					{ text: 'A' },
+					{ text: 'B' },
+					{ text: 'C' },
+					{ text: 'D' },
+					{ text: 'E' },
+				]);
+				setVisibleCount(world, eid, 3);
+
+				const callback = vi.fn();
+				onListScroll(eid, callback);
+
+				setFirstVisible(world, eid, 1);
+
+				expect(callback).toHaveBeenCalledWith(
+					expect.objectContaining({
+						firstVisible: 1,
+						visibleCount: 3,
+					}),
+				);
+			});
+
+			it('should unsubscribe scroll callback', () => {
+				attachListBehavior(world, eid, [{ text: 'A' }, { text: 'B' }]);
+
+				const callback = vi.fn();
+				const unsubscribe = onListScroll(eid, callback);
+				unsubscribe();
+
+				setFirstVisible(world, eid, 1);
+
+				expect(callback).not.toHaveBeenCalled();
+			});
+		});
+
+		describe('Check Needs Load', () => {
+			it('should indicate no load needed when all items present', () => {
+				attachListBehavior(world, eid, [{ text: 'A' }, { text: 'B' }]);
+				setVisibleCount(world, eid, 2);
+
+				const result = checkNeedsLoad(eid);
+
+				expect(result.needsLoad).toBe(false);
+			});
+
+			it('should indicate load needed when items missing', () => {
+				attachListBehavior(world, eid, []);
+				setTotalCount(world, eid, 10);
+				setVisibleCount(world, eid, 5);
+
+				const result = checkNeedsLoad(eid);
+
+				expect(result.needsLoad).toBe(true);
+				expect(result.startIndex).toBe(0);
+				expect(result.count).toBe(5);
+			});
+		});
+
+		describe('Append Items', () => {
+			it('should append items to list', () => {
+				attachListBehavior(world, eid, [{ text: 'A' }]);
+
+				appendItems(world, eid, [{ text: 'B' }, { text: 'C' }]);
+
+				expect(getItemCount(eid)).toBe(3);
+				expect(getItems(eid)).toHaveLength(3);
+				expect(getItem(eid, 2)?.text).toBe('C');
+			});
+		});
+
+		describe('Load Items', () => {
+			it('should load items via callback', async () => {
+				attachListBehavior(world, eid, []);
+				setTotalCount(world, eid, 10);
+
+				const mockItems: ListItem[] = [
+					{ text: 'Item 1' },
+					{ text: 'Item 2' },
+				];
+				const callback = vi.fn().mockResolvedValue(mockItems);
+				setLazyLoadCallback(eid, callback);
+
+				await loadItems(world, eid, 0, 2);
+
+				expect(callback).toHaveBeenCalledWith(0, 2);
+				expect(getItem(eid, 0)?.text).toBe('Item 1');
+				expect(getItem(eid, 1)?.text).toBe('Item 2');
+			});
+
+			it('should set loading state during load', async () => {
+				attachListBehavior(world, eid, []);
+
+				let loadingDuringCallback = false;
+				const callback = vi.fn().mockImplementation(async () => {
+					loadingDuringCallback = isListLoading(eid);
+					return [{ text: 'A' }];
+				});
+				setLazyLoadCallback(eid, callback);
+
+				await loadItems(world, eid, 0, 1);
+
+				expect(loadingDuringCallback).toBe(true);
+				expect(isListLoading(eid)).toBe(false);
+			});
+
+			it('should not start another load while loading', async () => {
+				attachListBehavior(world, eid, []);
+
+				let callCount = 0;
+				const callback = vi.fn().mockImplementation(async () => {
+					callCount++;
+					await new Promise((resolve) => setTimeout(resolve, 10));
+					return [{ text: 'A' }];
+				});
+				setLazyLoadCallback(eid, callback);
+
+				// Start loading and immediately try to start another
+				const loadPromise = loadItems(world, eid, 0, 1);
+				await loadItems(world, eid, 0, 1); // Should be ignored
+				await loadPromise;
+
+				expect(callCount).toBe(1);
+			});
+
+			it('should not call callback if not set', async () => {
+				attachListBehavior(world, eid, []);
+
+				// Should not throw
+				await loadItems(world, eid, 0, 5);
+
+				expect(getItemCount(eid)).toBe(0);
+			});
+		});
+
+		describe('Virtualized Scrolling', () => {
+			it('should allow scrolling beyond loaded items when total is set', () => {
+				attachListBehavior(world, eid, [{ text: 'A' }, { text: 'B' }]);
+				setTotalCount(world, eid, 100);
+				setVisibleCount(world, eid, 3);
+
+				setFirstVisible(world, eid, 50);
+
+				expect(getFirstVisible(eid)).toBe(50);
+			});
 		});
 	});
 });
