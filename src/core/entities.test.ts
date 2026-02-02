@@ -35,6 +35,27 @@ import {
 	ProgressOrientation,
 	resetProgressBarStore,
 } from '../components/progressBar';
+import {
+	getSelectedIndex,
+	getSelectDisplay,
+	getSelectOptions,
+	getSelectState,
+	isSelect,
+	resetSelectStore,
+} from '../components/select';
+import {
+	getSliderDisplay,
+	getSliderMax,
+	getSliderMin,
+	getSliderOrientation,
+	getSliderState,
+	getSliderStep,
+	getSliderValue,
+	isShowingSliderValue,
+	isSlider,
+	resetSliderStore,
+	SliderOrientation,
+} from '../components/slider';
 import { Content, getContent, resetContentStore } from '../components/content';
 import { Dimensions } from '../components/dimensions';
 import { Focusable, resetFocusState } from '../components/focusable';
@@ -57,6 +78,8 @@ import {
 	createListEntity,
 	createProgressBarEntity,
 	createScreenEntity,
+	createSelectEntity,
+	createSliderEntity,
 	createTextareaEntity,
 	createTextboxEntity,
 	createTextEntity,
@@ -65,6 +88,8 @@ import {
 	ListConfigSchema,
 	ProgressBarConfigSchema,
 	ScreenConfigSchema,
+	SelectConfigSchema,
+	SliderConfigSchema,
 	TextareaConfigSchema,
 	TextboxConfigSchema,
 	TextConfigSchema,
@@ -82,6 +107,8 @@ describe('Entity Factories', () => {
 		resetTextInputStore();
 		resetFormStore();
 		resetProgressBarStore();
+		resetSelectStore();
+		resetSliderStore();
 		StateMachineStore.clear();
 	});
 
@@ -860,6 +887,352 @@ describe('Entity Factories', () => {
 			expect(config.placeholder).toBe('Enter text...');
 			expect(config.scrollable).toBe(true);
 			expect(config.maxLength).toBe(500);
+		});
+	});
+
+	describe('createSelectEntity', () => {
+		it('creates a select with default values', () => {
+			const eid = createSelectEntity(world);
+
+			expect(Interactive.clickable[eid]).toBe(1);
+			expect(Interactive.keyable[eid]).toBe(1);
+			expect(Interactive.hoverable[eid]).toBe(1);
+			expect(Focusable.focusable[eid]).toBe(1);
+		});
+
+		it('creates a select with state machine', () => {
+			const eid = createSelectEntity(world);
+
+			expect(isSelect(world, eid)).toBe(true);
+			expect(getSelectState(world, eid)).toBe('closed');
+		});
+
+		it('creates a select with options', () => {
+			const eid = createSelectEntity(world, {
+				options: [
+					{ label: 'Red', value: 'red' },
+					{ label: 'Green', value: 'green' },
+					{ label: 'Blue', value: 'blue' },
+				],
+			});
+
+			expect(getSelectOptions(eid).length).toBe(3);
+			expect(getSelectOptions(eid)[0]).toEqual({ label: 'Red', value: 'red' });
+		});
+
+		it('creates a select with selected index', () => {
+			const eid = createSelectEntity(world, {
+				options: [
+					{ label: 'Red', value: 'red' },
+					{ label: 'Green', value: 'green' },
+				],
+				selectedIndex: 1,
+			});
+
+			expect(getSelectedIndex(eid)).toBe(1);
+		});
+
+		it('creates a select with placeholder in content when no selection', () => {
+			const eid = createSelectEntity(world, {
+				placeholder: 'Choose a color...',
+			});
+
+			expect(getContent(world, eid)).toBe('Choose a color...');
+		});
+
+		it('creates a select with selected value in content', () => {
+			const eid = createSelectEntity(world, {
+				options: [
+					{ label: 'Red', value: 'red' },
+					{ label: 'Green', value: 'green' },
+				],
+				selectedIndex: 0,
+			});
+
+			expect(getContent(world, eid)).toBe('Red');
+		});
+
+		it('creates a select with custom display indicators', () => {
+			const eid = createSelectEntity(world, {
+				closedIndicator: 'v',
+				openIndicator: '^',
+				selectedMark: '*',
+			});
+
+			const display = getSelectDisplay(eid);
+			expect(display.closedIndicator).toBe('v');
+			expect(display.openIndicator).toBe('^');
+			expect(display.selectedMark).toBe('*');
+		});
+
+		it('creates a select with custom interactive options', () => {
+			const eid = createSelectEntity(world, {
+				hoverEffectFg: 0x00ffffff,
+				hoverEffectBg: 0xff00ffff,
+			});
+
+			expect(Interactive.hoverEffectFg[eid]).toBe(0x00ffffff);
+			expect(Interactive.hoverEffectBg[eid]).toBe(0xff00ffff);
+		});
+
+		it('creates a select with custom focusable options', () => {
+			const eid = createSelectEntity(world, {
+				focusable: true,
+				tabIndex: 5,
+				focusEffectFg: 0xffff00ff,
+				focusEffectBg: 0x0000ffff,
+			});
+
+			expect(Focusable.tabIndex[eid]).toBe(5);
+			expect(Focusable.focusEffectFg[eid]).toBe(0xffff00ff);
+			expect(Focusable.focusEffectBg[eid]).toBe(0x0000ffff);
+		});
+
+		it('creates a select with position', () => {
+			const eid = createSelectEntity(world, {
+				x: 15,
+				y: 8,
+			});
+
+			expect(Position.x[eid]).toBe(15);
+			expect(Position.y[eid]).toBe(8);
+		});
+
+		it('creates a select with dimensions', () => {
+			const eid = createSelectEntity(world, {
+				width: 30,
+				height: 1,
+			});
+
+			expect(Dimensions.width[eid]).toBe(30);
+			expect(Dimensions.height[eid]).toBe(1);
+		});
+
+		it('creates a select with border', () => {
+			const eid = createSelectEntity(world, {
+				border: {
+					type: BorderType.Line,
+					left: true,
+					right: true,
+					top: true,
+					bottom: true,
+				},
+			});
+
+			expect(Border.type[eid]).toBe(BorderType.Line);
+		});
+
+		it('creates a select with padding', () => {
+			const eid = createSelectEntity(world, {
+				padding: {
+					left: 1,
+					right: 1,
+				},
+			});
+
+			expect(Padding.left[eid]).toBe(1);
+			expect(Padding.right[eid]).toBe(1);
+		});
+
+		it('creates a select with parent', () => {
+			const parent = createBoxEntity(world);
+			const select = createSelectEntity(world, { parent });
+
+			expect(Hierarchy.parent[select]).toBe(parent);
+		});
+
+		it('validates select config with schema', () => {
+			const config = SelectConfigSchema.parse({
+				x: 10,
+				y: 5,
+				width: 30,
+				options: [
+					{ label: 'Option 1', value: 'opt1' },
+					{ label: 'Option 2', value: 'opt2' },
+				],
+				selectedIndex: 0,
+				placeholder: 'Select an option...',
+			});
+
+			expect(config.x).toBe(10);
+			expect(config.y).toBe(5);
+			expect(config.width).toBe(30);
+			expect(config.options?.length).toBe(2);
+			expect(config.selectedIndex).toBe(0);
+			expect(config.placeholder).toBe('Select an option...');
+		});
+	});
+
+	describe('createSliderEntity', () => {
+		it('creates a slider with default values', () => {
+			const eid = createSliderEntity(world);
+
+			expect(Interactive.clickable[eid]).toBe(1);
+			expect(Interactive.draggable[eid]).toBe(1);
+			expect(Interactive.keyable[eid]).toBe(1);
+			expect(Interactive.hoverable[eid]).toBe(1);
+			expect(Focusable.focusable[eid]).toBe(1);
+		});
+
+		it('creates a slider with state machine', () => {
+			const eid = createSliderEntity(world);
+
+			expect(isSlider(world, eid)).toBe(true);
+			expect(getSliderState(world, eid)).toBe('idle');
+		});
+
+		it('creates a slider with default range', () => {
+			const eid = createSliderEntity(world);
+
+			expect(getSliderMin(eid)).toBe(0);
+			expect(getSliderMax(eid)).toBe(100);
+			expect(getSliderValue(eid)).toBe(0);
+			expect(getSliderStep(eid)).toBe(1);
+		});
+
+		it('creates a slider with custom range', () => {
+			const eid = createSliderEntity(world, {
+				min: 10,
+				max: 50,
+				value: 25,
+				step: 5,
+			});
+
+			expect(getSliderMin(eid)).toBe(10);
+			expect(getSliderMax(eid)).toBe(50);
+			expect(getSliderValue(eid)).toBe(25);
+			expect(getSliderStep(eid)).toBe(5);
+		});
+
+		it('creates a slider with orientation', () => {
+			const horizontal = createSliderEntity(world, {
+				orientation: SliderOrientation.Horizontal,
+			});
+			const vertical = createSliderEntity(world, {
+				orientation: SliderOrientation.Vertical,
+			});
+
+			expect(getSliderOrientation(horizontal)).toBe(SliderOrientation.Horizontal);
+			expect(getSliderOrientation(vertical)).toBe(SliderOrientation.Vertical);
+		});
+
+		it('creates a slider with showValue', () => {
+			const eid = createSliderEntity(world, {
+				showValue: true,
+			});
+
+			expect(isShowingSliderValue(eid)).toBe(true);
+		});
+
+		it('creates a slider with custom display options', () => {
+			const eid = createSliderEntity(world, {
+				trackChar: '=',
+				thumbChar: 'O',
+				fillChar: '#',
+			});
+
+			const display = getSliderDisplay(eid);
+			expect(display.trackChar).toBe('=');
+			expect(display.thumbChar).toBe('O');
+			expect(display.fillChar).toBe('#');
+		});
+
+		it('creates a slider with custom interactive options', () => {
+			const eid = createSliderEntity(world, {
+				hoverEffectFg: 0x00ffffff,
+				hoverEffectBg: 0xff00ffff,
+			});
+
+			expect(Interactive.hoverEffectFg[eid]).toBe(0x00ffffff);
+			expect(Interactive.hoverEffectBg[eid]).toBe(0xff00ffff);
+		});
+
+		it('creates a slider with custom focusable options', () => {
+			const eid = createSliderEntity(world, {
+				focusable: true,
+				tabIndex: 5,
+				focusEffectFg: 0xffff00ff,
+				focusEffectBg: 0x0000ffff,
+			});
+
+			expect(Focusable.tabIndex[eid]).toBe(5);
+			expect(Focusable.focusEffectFg[eid]).toBe(0xffff00ff);
+			expect(Focusable.focusEffectBg[eid]).toBe(0x0000ffff);
+		});
+
+		it('creates a slider with position', () => {
+			const eid = createSliderEntity(world, {
+				x: 15,
+				y: 8,
+			});
+
+			expect(Position.x[eid]).toBe(15);
+			expect(Position.y[eid]).toBe(8);
+		});
+
+		it('creates a slider with dimensions', () => {
+			const eid = createSliderEntity(world, {
+				width: 30,
+				height: 1,
+			});
+
+			expect(Dimensions.width[eid]).toBe(30);
+			expect(Dimensions.height[eid]).toBe(1);
+		});
+
+		it('creates a slider with border', () => {
+			const eid = createSliderEntity(world, {
+				border: {
+					type: BorderType.Line,
+					left: true,
+					right: true,
+					top: true,
+					bottom: true,
+				},
+			});
+
+			expect(Border.type[eid]).toBe(BorderType.Line);
+		});
+
+		it('creates a slider with padding', () => {
+			const eid = createSliderEntity(world, {
+				padding: {
+					left: 1,
+					right: 1,
+				},
+			});
+
+			expect(Padding.left[eid]).toBe(1);
+			expect(Padding.right[eid]).toBe(1);
+		});
+
+		it('creates a slider with parent', () => {
+			const parent = createBoxEntity(world);
+			const slider = createSliderEntity(world, { parent });
+
+			expect(Hierarchy.parent[slider]).toBe(parent);
+		});
+
+		it('validates slider config with schema', () => {
+			const config = SliderConfigSchema.parse({
+				x: 10,
+				y: 5,
+				width: 30,
+				min: 0,
+				max: 100,
+				value: 50,
+				step: 5,
+				showValue: true,
+			});
+
+			expect(config.x).toBe(10);
+			expect(config.y).toBe(5);
+			expect(config.width).toBe(30);
+			expect(config.min).toBe(0);
+			expect(config.max).toBe(100);
+			expect(config.value).toBe(50);
+			expect(config.step).toBe(5);
+			expect(config.showValue).toBe(true);
 		});
 	});
 

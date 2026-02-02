@@ -33,6 +33,17 @@ import {
 	setRadioButtonDisplay,
 	setRadioValue,
 } from '../components/radioButton';
+import {
+	attachSelectBehavior,
+	type SelectOption,
+	setSelectDisplay,
+} from '../components/select';
+import {
+	attachSliderBehavior,
+	setSliderDisplay,
+	setSliderOrientation,
+	setShowSliderValue,
+} from '../components/slider';
 import { Content, type ContentOptions, setContent } from '../components/content';
 import { Dimensions, type DimensionValue } from '../components/dimensions';
 import { Focusable, type FocusableOptions, setFocusable } from '../components/focusable';
@@ -587,6 +598,141 @@ export const TextareaConfigSchema = z
  * @see {@link createTextareaEntity} for entity creation
  */
 export type TextareaConfig = z.infer<typeof TextareaConfigSchema>;
+
+/**
+ * Zod schema for validating select/dropdown entity configuration.
+ *
+ * Select entities are dropdown controls with a list of options.
+ * They support click to open, keyboard navigation, and selection.
+ *
+ * @example
+ * ```typescript
+ * import { SelectConfigSchema } from 'blecsd';
+ *
+ * const config = SelectConfigSchema.parse({
+ *   x: 10,
+ *   y: 5,
+ *   width: 30,
+ *   options: [
+ *     { label: 'Option 1', value: 'opt1' },
+ *     { label: 'Option 2', value: 'opt2' },
+ *   ],
+ *   selectedIndex: 0,
+ *   placeholder: 'Select an option...',
+ * });
+ * ```
+ */
+export const SelectConfigSchema = z
+	.object({
+		parent: z.number().optional(),
+		/** Array of options */
+		options: z
+			.array(
+				z.object({
+					label: z.string(),
+					value: z.string(),
+				}),
+			)
+			.optional(),
+		/** Initially selected option index (-1 for none) */
+		selectedIndex: z.number().optional(),
+		/** Placeholder text when no selection */
+		placeholder: z.string().optional(),
+		/** Dropdown indicator when closed */
+		closedIndicator: z.string().optional(),
+		/** Dropdown indicator when open */
+		openIndicator: z.string().optional(),
+		/** Selected option mark in dropdown */
+		selectedMark: z.string().optional(),
+		border: BorderConfigSchema.optional(),
+		padding: PaddingConfigSchema.optional(),
+	})
+	.merge(PositionConfigSchema)
+	.merge(DimensionConfigSchema)
+	.merge(StyleConfigSchema)
+	.merge(InteractiveConfigSchema)
+	.merge(FocusableConfigSchema);
+
+/**
+ * Configuration options for creating a select entity.
+ *
+ * @see {@link SelectConfigSchema} for validation
+ * @see {@link createSelectEntity} for entity creation
+ */
+export type SelectConfig = z.infer<typeof SelectConfigSchema>;
+
+/**
+ * Zod schema for validating slider entity configuration.
+ *
+ * Slider entities are range input controls with a track and thumb.
+ * They support click/drag to change value, keyboard navigation,
+ * and customizable display.
+ *
+ * @example
+ * ```typescript
+ * import { SliderConfigSchema } from 'blecsd';
+ *
+ * const config = SliderConfigSchema.parse({
+ *   x: 10,
+ *   y: 5,
+ *   width: 30,
+ *   min: 0,
+ *   max: 100,
+ *   value: 50,
+ *   step: 5,
+ *   showValue: true,
+ * });
+ * ```
+ */
+export const SliderConfigSchema = z
+	.object({
+		parent: z.number().optional(),
+		/** Minimum value (default: 0) */
+		min: z.number().optional(),
+		/** Maximum value (default: 100) */
+		max: z.number().optional(),
+		/** Initial value (default: 0) */
+		value: z.number().optional(),
+		/** Step increment (default: 1) */
+		step: z.number().optional(),
+		/** Orientation (0=horizontal, 1=vertical) */
+		orientation: z.number().optional(),
+		/** Whether to display value text */
+		showValue: z.boolean().optional(),
+		/** Track character */
+		trackChar: z.string().optional(),
+		/** Thumb character */
+		thumbChar: z.string().optional(),
+		/** Fill character */
+		fillChar: z.string().optional(),
+		/** Track foreground color */
+		trackFg: z.number().optional(),
+		/** Track background color */
+		trackBg: z.number().optional(),
+		/** Thumb foreground color */
+		thumbFg: z.number().optional(),
+		/** Thumb background color */
+		thumbBg: z.number().optional(),
+		/** Fill foreground color */
+		fillFg: z.number().optional(),
+		/** Fill background color */
+		fillBg: z.number().optional(),
+		border: BorderConfigSchema.optional(),
+		padding: PaddingConfigSchema.optional(),
+	})
+	.merge(PositionConfigSchema)
+	.merge(DimensionConfigSchema)
+	.merge(StyleConfigSchema)
+	.merge(InteractiveConfigSchema)
+	.merge(FocusableConfigSchema);
+
+/**
+ * Configuration options for creating a slider entity.
+ *
+ * @see {@link SliderConfigSchema} for validation
+ * @see {@link createSliderEntity} for entity creation
+ */
+export type SliderConfig = z.infer<typeof SliderConfigSchema>;
 
 /**
  * Schema for validating form configuration.
@@ -2059,6 +2205,290 @@ export function createTextareaEntity(world: World, config: TextareaConfig = {}):
 		maxLength: validated.maxLength ?? 0,
 		multiline: true, // Key difference from Textbox
 	});
+
+	if (validated.parent !== undefined) {
+		setParent(world, eid, validated.parent as Entity);
+	}
+
+	return eid;
+}
+
+/**
+ * Creates a Select/Dropdown entity with the specified configuration.
+ *
+ * Select entities are dropdown controls with a list of options.
+ * They support click to open, keyboard navigation (Up/Down to navigate,
+ * Enter/Space to select, Escape to close), and customizable display.
+ *
+ * Selects are focusable, clickable, and keyable by default.
+ *
+ * @param world - The ECS world to create the entity in
+ * @param config - Optional select configuration options
+ * @returns The created entity ID
+ *
+ * @example
+ * ```typescript
+ * import { createWorld, createSelectEntity, onSelectChange } from 'blecsd';
+ *
+ * const world = createWorld();
+ *
+ * // Create a simple select
+ * const select = createSelectEntity(world, {
+ *   x: 10,
+ *   y: 5,
+ *   width: 30,
+ *   options: [
+ *     { label: 'Red', value: 'red' },
+ *     { label: 'Green', value: 'green' },
+ *     { label: 'Blue', value: 'blue' },
+ *   ],
+ *   selectedIndex: 0,
+ * });
+ *
+ * // Create a select with placeholder
+ * const colorPicker = createSelectEntity(world, {
+ *   x: 10,
+ *   y: 8,
+ *   width: 30,
+ *   options: [
+ *     { label: 'Primary', value: 'primary' },
+ *     { label: 'Secondary', value: 'secondary' },
+ *     { label: 'Accent', value: 'accent' },
+ *   ],
+ *   placeholder: 'Choose a color...',
+ *   border: {
+ *     type: 1,
+ *     left: true,
+ *     right: true,
+ *     top: true,
+ *     bottom: true,
+ *   },
+ * });
+ *
+ * // Listen for selection changes
+ * onSelectChange(colorPicker, (value, label, index) => {
+ *   console.log(`Selected: ${label} (${value})`);
+ * });
+ * ```
+ */
+export function createSelectEntity(world: World, config: SelectConfig = {}): Entity {
+	const validated = SelectConfigSchema.parse(config);
+	const eid = addEntity(world) as Entity;
+
+	initBaseComponents(world, eid);
+	applyPositionConfig(eid, validated);
+	applyDimensionConfig(eid, validated);
+	applyStyleConfig(world, eid, validated);
+	applyBorderConfig(world, eid, validated.border);
+	applyPaddingConfig(world, eid, validated.padding);
+
+	// Initialize Content component for displaying selected value
+	initContentComponent(world, eid);
+	Content.align[eid] = 0; // Left align
+	Content.valign[eid] = 1; // Middle
+
+	// Initialize Interactive component
+	addComponent(world, eid, Interactive);
+	Interactive.clickable[eid] = 1; // Selects are clickable by default
+	Interactive.draggable[eid] = 0;
+	Interactive.hoverable[eid] = 1; // Selects are hoverable by default
+	Interactive.hovered[eid] = 0;
+	Interactive.pressed[eid] = 0;
+	Interactive.keyable[eid] = 1; // Selects respond to keys by default
+	Interactive.hoverEffectFg[eid] = 0xffffffff;
+	Interactive.hoverEffectBg[eid] = 0x333333ff;
+
+	const interactiveOptions: InteractiveOptions = {};
+	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
+	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
+	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
+	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
+	if (validated.hoverEffectFg !== undefined)
+		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
+	if (validated.hoverEffectBg !== undefined)
+		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
+
+	if (Object.keys(interactiveOptions).length > 0) {
+		setInteractive(world, eid, interactiveOptions);
+	}
+
+	// Initialize Focusable component
+	addComponent(world, eid, Focusable);
+	Focusable.focusable[eid] = 1; // Selects are focusable by default
+	Focusable.focused[eid] = 0;
+	Focusable.tabIndex[eid] = 0;
+	Focusable.focusEffectFg[eid] = 0xffffffff;
+	Focusable.focusEffectBg[eid] = 0x0066ffff;
+
+	const focusableOptions: FocusableOptions = {};
+	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
+	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
+	if (validated.focusEffectFg !== undefined)
+		focusableOptions.focusEffectFg = validated.focusEffectFg;
+	if (validated.focusEffectBg !== undefined)
+		focusableOptions.focusEffectBg = validated.focusEffectBg;
+
+	if (Object.keys(focusableOptions).length > 0) {
+		setFocusable(world, eid, focusableOptions);
+	}
+
+	// Attach select behavior with options
+	const options: SelectOption[] = validated.options ?? [];
+	const selectedIndex = validated.selectedIndex ?? -1;
+	attachSelectBehavior(world, eid, options, selectedIndex);
+
+	// Set up display configuration
+	const selectDisplayOptions: {
+		closedIndicator?: string;
+		openIndicator?: string;
+		selectedMark?: string;
+	} = {};
+	if (validated.closedIndicator !== undefined)
+		selectDisplayOptions.closedIndicator = validated.closedIndicator;
+	if (validated.openIndicator !== undefined)
+		selectDisplayOptions.openIndicator = validated.openIndicator;
+	if (validated.selectedMark !== undefined)
+		selectDisplayOptions.selectedMark = validated.selectedMark;
+	setSelectDisplay(eid, selectDisplayOptions);
+
+	// Set initial content to placeholder or selected value
+	if (selectedIndex >= 0 && options[selectedIndex]) {
+		setContent(world, eid, options[selectedIndex].label);
+	} else if (validated.placeholder) {
+		setContent(world, eid, validated.placeholder);
+	}
+
+	if (validated.parent !== undefined) {
+		setParent(world, eid, validated.parent as Entity);
+	}
+
+	return eid;
+}
+
+/**
+ * Creates a slider entity.
+ *
+ * Sliders allow users to select a value from a range using keyboard or mouse.
+ *
+ * @param world - The ECS world
+ * @param config - Slider configuration
+ * @returns Entity ID
+ *
+ * @example
+ * ```typescript
+ * import { createSliderEntity, onSliderChange } from 'blecsd';
+ *
+ * const slider = createSliderEntity(world, {
+ *   x: 10,
+ *   y: 5,
+ *   width: 30,
+ *   min: 0,
+ *   max: 100,
+ *   value: 50,
+ *   step: 5,
+ *   showValue: true,
+ * });
+ *
+ * onSliderChange(slider, (value) => {
+ *   console.log('Volume:', value);
+ * });
+ * ```
+ */
+export function createSliderEntity(world: World, config: SliderConfig = {}): Entity {
+	const validated = SliderConfigSchema.parse(config);
+	const eid = addEntity(world) as Entity;
+
+	initBaseComponents(world, eid);
+	applyPositionConfig(eid, validated);
+	applyDimensionConfig(eid, validated);
+	applyStyleConfig(world, eid, validated);
+	applyBorderConfig(world, eid, validated.border);
+	applyPaddingConfig(world, eid, validated.padding);
+
+	// Initialize Interactive component
+	addComponent(world, eid, Interactive);
+	Interactive.clickable[eid] = 1;
+	Interactive.draggable[eid] = 1;
+	Interactive.hoverable[eid] = 1;
+	Interactive.keyable[eid] = 1;
+	Interactive.hovered[eid] = 0;
+	Interactive.pressed[eid] = 0;
+	Interactive.hoverEffectFg[eid] = 0xffffffff;
+	Interactive.hoverEffectBg[eid] = 0x333333ff;
+
+	const interactiveOptions: InteractiveOptions = {};
+	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
+	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
+	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
+	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
+	if (validated.hoverEffectFg !== undefined)
+		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
+	if (validated.hoverEffectBg !== undefined)
+		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
+
+	if (Object.keys(interactiveOptions).length > 0) {
+		setInteractive(world, eid, interactiveOptions);
+	}
+
+	// Initialize Focusable component
+	addComponent(world, eid, Focusable);
+	Focusable.focusable[eid] = 1; // Sliders are focusable by default
+	Focusable.focused[eid] = 0;
+	Focusable.tabIndex[eid] = 0;
+	Focusable.focusEffectFg[eid] = 0xffffffff;
+	Focusable.focusEffectBg[eid] = 0x0066ffff;
+
+	const focusableOptions: FocusableOptions = {};
+	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
+	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
+	if (validated.focusEffectFg !== undefined)
+		focusableOptions.focusEffectFg = validated.focusEffectFg;
+	if (validated.focusEffectBg !== undefined)
+		focusableOptions.focusEffectBg = validated.focusEffectBg;
+
+	if (Object.keys(focusableOptions).length > 0) {
+		setFocusable(world, eid, focusableOptions);
+	}
+
+	// Attach slider behavior
+	const min = validated.min ?? 0;
+	const max = validated.max ?? 100;
+	const value = validated.value ?? 0;
+	const step = validated.step ?? 1;
+	attachSliderBehavior(world, eid, min, max, value, step);
+
+	// Set orientation if specified
+	if (validated.orientation !== undefined) {
+		setSliderOrientation(world, eid, validated.orientation as 0 | 1);
+	}
+
+	// Set show value if specified
+	if (validated.showValue !== undefined) {
+		setShowSliderValue(world, eid, validated.showValue);
+	}
+
+	// Set up display configuration
+	const sliderDisplayOptions: {
+		trackChar?: string;
+		thumbChar?: string;
+		fillChar?: string;
+		trackFg?: number;
+		trackBg?: number;
+		thumbFg?: number;
+		thumbBg?: number;
+		fillFg?: number;
+		fillBg?: number;
+	} = {};
+	if (validated.trackChar !== undefined) sliderDisplayOptions.trackChar = validated.trackChar;
+	if (validated.thumbChar !== undefined) sliderDisplayOptions.thumbChar = validated.thumbChar;
+	if (validated.fillChar !== undefined) sliderDisplayOptions.fillChar = validated.fillChar;
+	if (validated.trackFg !== undefined) sliderDisplayOptions.trackFg = validated.trackFg;
+	if (validated.trackBg !== undefined) sliderDisplayOptions.trackBg = validated.trackBg;
+	if (validated.thumbFg !== undefined) sliderDisplayOptions.thumbFg = validated.thumbFg;
+	if (validated.thumbBg !== undefined) sliderDisplayOptions.thumbBg = validated.thumbBg;
+	if (validated.fillFg !== undefined) sliderDisplayOptions.fillFg = validated.fillFg;
+	if (validated.fillBg !== undefined) sliderDisplayOptions.fillBg = validated.fillBg;
+	setSliderDisplay(eid, sliderDisplayOptions);
 
 	if (validated.parent !== undefined) {
 		setParent(world, eid, validated.parent as Entity);
