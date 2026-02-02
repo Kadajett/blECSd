@@ -145,3 +145,20 @@ export {
 	parseFormat,
 	sprintf,
 } from './sprintf';
+
+// =============================================================================
+// TERMCAP - Text termcap format parser
+// =============================================================================
+
+export type { TermcapDatabase, TermcapEntry, TermcapLocatorOptions, TermcapParseResult } from './termcap';
+export {
+	findTermcapEntry,
+	findTermcapFile,
+	getTermcapData,
+	getTermcapSearchPaths,
+	listTermcapTerminals,
+	parseTermcap,
+	readTermcapFile,
+	termcapFileExists,
+	termcapToTerminfo,
+} from './termcap';
