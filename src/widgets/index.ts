@@ -6,22 +6,51 @@
  * @module widgets
  */
 
+// Content line manipulation
+export {
+	clearLines,
+	deleteBottom,
+	deleteLine,
+	deleteTop,
+	getBaseLine,
+	getLine,
+	getLineCount,
+	getLines,
+	insertBottom,
+	insertLine,
+	insertTop,
+	popLine,
+	pushLine,
+	replaceLines,
+	setBaseLine,
+	setLine,
+	setLines,
+	shiftLine,
+	spliceLines,
+	unshiftLine,
+} from './contentManipulation';
 // List widget
 export type { ListStyleConfig, ListWidget, ListWidgetConfig } from './list';
 export { createList, isListWidget, ListWidgetConfigSchema } from './list';
-
-// Table widget
-export type { TableStyleConfig, TableWidget, TableWidgetConfig } from './table';
-export { createTable, isTableWidget, TableWidgetConfigSchema } from './table';
-
+// Listbar widget
+export type {
+	ListbarItem,
+	ListbarStyleConfig,
+	ListbarWidget,
+	ListbarWidgetConfig,
+} from './listbar';
+export {
+	createListbar,
+	isListbarWidget,
+	ListbarWidgetConfigSchema,
+	resetListbarStore,
+} from './listbar';
 // ListTable widget
 export type { ListTableStyleConfig, ListTableWidget, ListTableWidgetConfig } from './listTable';
 export { createListTable, isListTableWidget, ListTableWidgetConfigSchema } from './listTable';
-
-// Listbar widget
-export type { ListbarItem, ListbarStyleConfig, ListbarWidget, ListbarWidgetConfig } from './listbar';
-export { createListbar, isListbarWidget, ListbarWidgetConfigSchema, resetListbarStore } from './listbar';
-
+// Table widget
+export type { TableStyleConfig, TableWidget, TableWidgetConfig } from './table';
+export { createTable, isTableWidget, TableWidgetConfigSchema } from './table';
 // Tree widget
 export type {
 	FlattenedNode,
