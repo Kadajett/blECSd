@@ -271,6 +271,34 @@ export {
 	setScrollbarVisibility,
 	setScrollSize,
 } from './scrollable';
+// Sprite component
+export type {
+	SpriteCell,
+	SpriteData,
+	SpriteFrame,
+	SpriteSheetData,
+	SpriteSheetOptions,
+} from './sprite';
+export {
+	getCurrentFrame,
+	getEntitySpriteSheet,
+	getSprite,
+	getSpriteIdByName,
+	getSpriteSheet,
+	getSpriteSheetByName,
+	hasSprite,
+	nextFrame,
+	prevFrame,
+	registerSprite,
+	removeSprite,
+	resetSpriteStore,
+	Sprite,
+	setFrame,
+	setSprite,
+	setSpriteByName,
+	spriteStore,
+	unregisterSprite,
+} from './sprite';
 // State Machine component
 export {
 	attachStateMachine,
