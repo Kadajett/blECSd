@@ -1,12 +1,13 @@
 # Hierarchy Component
 
-The Hierarchy component manages parent-child relationships between entities. Use it to build scene graphs, UI trees, or any structure where entities need to know their relationships. Child positions are relative to their parent, and visibility cascades down the tree.
+The Hierarchy component manages parent-child relationships between entities.
 
-## Component Structure
+## Component
 
 ```typescript
 import { Hierarchy } from 'blecsd';
 
+// Component arrays (bitECS SoA pattern)
 Hierarchy.parent       // Uint32Array - Parent entity ID (0 = no parent)
 Hierarchy.firstChild   // Uint32Array - First child entity ID
 Hierarchy.nextSibling  // Uint32Array - Next sibling entity ID
@@ -14,145 +15,131 @@ Hierarchy.prevSibling  // Uint32Array - Previous sibling entity ID
 Hierarchy.depth        // Uint16Array - Depth in hierarchy (0 = root)
 ```
 
+## Constants
+
 ### NULL_ENTITY
+
+Represents no entity (used for root entities with no parent).
 
 ```typescript
 import { NULL_ENTITY } from 'blecsd';
 
-NULL_ENTITY;  // 0 (represents no entity)
+NULL_ENTITY; // 0
 ```
 
----
-
-## How do I check if an entity has hierarchy data?
+## Functions
 
 ### hasHierarchy
 
+Check if an entity has the Hierarchy component.
+
 ```typescript
-import { hasHierarchy, setParent } from 'blecsd';
+import { hasHierarchy } from 'blecsd';
 
-hasHierarchy(world, entity);  // false
-
-setParent(world, child, parent);
-hasHierarchy(world, child);   // true
+hasHierarchy(world, entity); // true or false
 ```
-
----
-
-## How do I create parent-child relationships?
 
 ### setParent
 
-Sets an entity's parent. Adds Hierarchy component if needed. Removes from previous parent automatically.
+Set an entity's parent. Adds Hierarchy component if needed.
 
 ```typescript
-import { setParent, getParent } from 'blecsd';
+import { setParent } from 'blecsd';
 
 setParent(world, child, parent);
-getParent(world, child);  // parent entity ID
 ```
+
+Removes from previous parent if already parented.
 
 ### appendChild
 
-Adds an entity as the last child of a parent.
+Add an entity as the last child of a parent.
 
 ```typescript
-import { appendChild, getChildren } from 'blecsd';
+import { appendChild } from 'blecsd';
 
-appendChild(world, parent, child1);
-appendChild(world, parent, child2);
-getChildren(world, parent);  // [child1, child2]
+appendChild(world, parent, child);
 ```
-
-### prepend
-
-Adds an entity as the first child of a parent.
-
-```typescript
-import { prepend, appendChild, getChildren } from 'blecsd';
-
-appendChild(world, parent, child2);
-prepend(world, parent, child1);
-getChildren(world, parent);  // [child1, child2]
-```
-
----
-
-## How do I insert children at specific positions?
-
-### insertAt
-
-Inserts at a specific index. Negative indices count from the end.
-
-```typescript
-import { insertAt, appendChild, getChildren } from 'blecsd';
-
-appendChild(world, parent, child1);
-appendChild(world, parent, child3);
-insertAt(world, parent, child2, 1);
-getChildren(world, parent);  // [child1, child2, child3]
-
-// Insert before last
-insertAt(world, parent, newChild, -1);
-```
-
-### insertBefore
-
-Inserts before a sibling.
-
-```typescript
-import { insertBefore, appendChild, getChildren } from 'blecsd';
-
-appendChild(world, parent, child1);
-appendChild(world, parent, child3);
-insertBefore(world, child2, child3);
-getChildren(world, parent);  // [child1, child2, child3]
-```
-
-### insertAfter
-
-Inserts after a sibling.
-
-```typescript
-import { insertAfter, appendChild, getChildren } from 'blecsd';
-
-appendChild(world, parent, child1);
-appendChild(world, parent, child3);
-insertAfter(world, child2, child1);
-getChildren(world, parent);  // [child1, child2, child3]
-```
-
----
-
-## How do I remove children?
 
 ### removeChild
 
-Removes a child from its parent.
+Remove an entity from its parent.
 
 ```typescript
-import { removeChild, getChildren } from 'blecsd';
+import { removeChild } from 'blecsd';
 
 removeChild(world, parent, child);
 ```
 
-### detach
+### prepend
 
-Convenience function to remove an entity from its parent.
+Add an entity as the first child of a parent.
 
 ```typescript
-import { detach, appendChild, getParent, NULL_ENTITY } from 'blecsd';
+import { prepend, getChildren } from 'blecsd';
+
+appendChild(world, parent, child2);
+prepend(world, parent, child1);
+getChildren(world, parent); // [child1, child2]
+```
+
+### insertAt
+
+Insert an entity at a specific index in the parent's children.
+
+```typescript
+import { insertAt, getChildren } from 'blecsd';
+
+appendChild(world, parent, child1);
+appendChild(world, parent, child3);
+insertAt(world, parent, child2, 1);
+getChildren(world, parent); // [child1, child2, child3]
+
+// Negative indices count from end
+insertAt(world, parent, child, -1); // Insert before last
+```
+
+### insertBefore
+
+Insert an entity before a sibling.
+
+```typescript
+import { insertBefore, getChildren } from 'blecsd';
+
+appendChild(world, parent, child1);
+appendChild(world, parent, child3);
+insertBefore(world, child2, child3);
+getChildren(world, parent); // [child1, child2, child3]
+```
+
+### insertAfter
+
+Insert an entity after a sibling.
+
+```typescript
+import { insertAfter, getChildren } from 'blecsd';
+
+appendChild(world, parent, child1);
+appendChild(world, parent, child3);
+insertAfter(world, child2, child1);
+getChildren(world, parent); // [child1, child2, child3]
+```
+
+### detach
+
+Remove an entity from its parent (convenience for setParent to NULL_ENTITY).
+
+```typescript
+import { detach, getParent, NULL_ENTITY } from 'blecsd';
 
 appendChild(world, parent, child);
 detach(world, child);
-getParent(world, child);  // NULL_ENTITY
+getParent(world, child); // NULL_ENTITY
 ```
 
----
-
-## How do I navigate the hierarchy?
-
 ### getParent
+
+Get an entity's parent ID.
 
 ```typescript
 import { getParent } from 'blecsd';
@@ -163,7 +150,7 @@ const parent = getParent(world, entity);
 
 ### getChildren
 
-Returns direct children only.
+Get all direct children of an entity.
 
 ```typescript
 import { getChildren } from 'blecsd';
@@ -174,89 +161,132 @@ const children = getChildren(world, parent);
 
 ### getDescendants
 
-Returns all descendants (children, grandchildren, etc.) in depth-first order.
+Get all descendants (children, grandchildren, etc.).
 
 ```typescript
 import { getDescendants } from 'blecsd';
 
 const all = getDescendants(world, root);
+// Depth-first order
 ```
 
 ### getAncestors
 
-Returns all ancestors, nearest first.
+Get all ancestors (parent, grandparent, etc.).
 
 ```typescript
 import { getAncestors } from 'blecsd';
 
 const ancestors = getAncestors(world, entity);
-// [parent, grandparent, ...]
+// [parent, grandparent, ...] nearest first
 ```
 
-### getFirstChild / getLastChild
+### getFirstChild
+
+Get the first child of an entity.
 
 ```typescript
-import { getFirstChild, getLastChild, NULL_ENTITY } from 'blecsd';
+import { getFirstChild, NULL_ENTITY } from 'blecsd';
 
-const first = getFirstChild(world, parent);  // Entity ID or NULL_ENTITY
-const last = getLastChild(world, parent);    // Entity ID or NULL_ENTITY
+const first = getFirstChild(world, parent);
+// Entity ID or NULL_ENTITY if no children
+```
+
+### getLastChild
+
+Get the last child of an entity.
+
+```typescript
+import { getLastChild, NULL_ENTITY } from 'blecsd';
+
+const last = getLastChild(world, parent);
+// Entity ID or NULL_ENTITY if no children
 ```
 
 ### getChildAt
 
+Get a child at a specific index.
+
 ```typescript
-import { getChildAt, appendChild, NULL_ENTITY } from 'blecsd';
+import { getChildAt, NULL_ENTITY } from 'blecsd';
 
 appendChild(world, parent, child1);
 appendChild(world, parent, child2);
-getChildAt(world, parent, 0);  // child1
-getChildAt(world, parent, 1);  // child2
-getChildAt(world, parent, 5);  // NULL_ENTITY (out of bounds)
+getChildAt(world, parent, 0); // child1
+getChildAt(world, parent, 1); // child2
+getChildAt(world, parent, 5); // NULL_ENTITY (out of bounds)
 ```
 
 ### getChildIndex
 
+Get the index of a child within its parent's children.
+
 ```typescript
-import { getChildIndex, appendChild } from 'blecsd';
+import { getChildIndex } from 'blecsd';
 
 appendChild(world, parent, child1);
 appendChild(world, parent, child2);
-getChildIndex(world, child1);  // 0
-getChildIndex(world, child2);  // 1
-getChildIndex(world, orphan);  // -1 (not a child)
+getChildIndex(world, child1); // 0
+getChildIndex(world, child2); // 1
+getChildIndex(world, orphan); // -1 (not a child)
 ```
 
-### getNextSibling / getPrevSibling
+### getNextSibling
+
+Get the next sibling entity.
 
 ```typescript
-import { getNextSibling, getPrevSibling, NULL_ENTITY } from 'blecsd';
+import { getNextSibling } from 'blecsd';
 
-const next = getNextSibling(world, entity);  // Entity ID or NULL_ENTITY
-const prev = getPrevSibling(world, entity);  // Entity ID or NULL_ENTITY
+const next = getNextSibling(world, entity);
+// Entity ID or NULL_ENTITY
+```
+
+### getPrevSibling
+
+Get the previous sibling entity.
+
+```typescript
+import { getPrevSibling, NULL_ENTITY } from 'blecsd';
+
+const prev = getPrevSibling(world, entity);
+// Entity ID or NULL_ENTITY
 ```
 
 ### getDepth
 
+Get an entity's depth in the hierarchy.
+
 ```typescript
 import { getDepth } from 'blecsd';
 
-getDepth(world, root);        // 0
-getDepth(world, child);       // 1
-getDepth(world, grandchild);  // 2
+const depth = getDepth(world, entity);
+// 0 for root, 1 for children of root, etc.
 ```
 
-### isRoot / isLeaf
+### isRoot
+
+Check if an entity has no parent.
 
 ```typescript
-import { isRoot, isLeaf } from 'blecsd';
+import { isRoot } from 'blecsd';
 
-isRoot(world, entity);  // true if no parent
-isLeaf(world, entity);  // true if no children
+isRoot(world, entity); // true if no parent
+```
+
+### isLeaf
+
+Check if an entity has no children.
+
+```typescript
+import { isLeaf } from 'blecsd';
+
+isLeaf(world, entity); // true if no children
 ```
 
 ### getHierarchy
 
-Returns all hierarchy data for an entity.
+Get all hierarchy data for an entity.
 
 ```typescript
 import { getHierarchy } from 'blecsd';
@@ -271,8 +301,6 @@ const data = getHierarchy(world, entity);
 // }
 ```
 
----
-
 ## Types
 
 ### HierarchyData
@@ -283,12 +311,10 @@ interface HierarchyData {
   readonly firstChild: Entity;    // NULL_ENTITY if no children
   readonly nextSibling: Entity;   // NULL_ENTITY if last sibling
   readonly prevSibling: Entity;   // NULL_ENTITY if first sibling
-  readonly childCount: number;
-  readonly depth: number;         // 0 = root
+  readonly childCount: number;    // Number of direct children
+  readonly depth: number;         // Depth in hierarchy (0 = root)
 }
 ```
-
----
 
 ## Examples
 
@@ -309,16 +335,16 @@ appendChild(world, root, child1);
 appendChild(world, root, child2);
 appendChild(world, child1, grandchild);
 
-getChildren(world, root);       // [child1, child2]
-getDepth(world, root);          // 0
-getDepth(world, child1);        // 1
-getDepth(world, grandchild);    // 2
+getChildren(world, root);      // [child1, child2]
+getDepth(world, root);         // 0
+getDepth(world, child1);       // 1
+getDepth(world, grandchild);   // 2
 ```
 
 ### Traversing Descendants
 
 ```typescript
-import { getDescendants, getPosition, setPosition } from 'blecsd';
+import { getDescendants, getPosition } from 'blecsd';
 
 function moveEntityAndDescendants(world, entity, dx, dy) {
   const entities = [entity, ...getDescendants(world, entity)];
@@ -345,6 +371,33 @@ function getRoot(world, entity) {
 }
 ```
 
+### Reordering Children
+
+```typescript
+import {
+  appendChild,
+  insertBefore,
+  insertAfter,
+  getFirstChild,
+  getLastChild
+} from 'blecsd';
+
+// Build initial list
+appendChild(world, list, item1);
+appendChild(world, list, item2);
+appendChild(world, list, item3);
+
+// Move item3 to beginning
+const first = getFirstChild(world, list);
+insertBefore(world, item3, first);
+// Now: [item3, item1, item2]
+
+// Move item1 to end
+const last = getLastChild(world, list);
+insertAfter(world, item1, last);
+// Now: [item3, item2, item1]
+```
+
 ### Moving Between Parents
 
 ```typescript
@@ -354,18 +407,3 @@ import { detach, appendChild } from 'blecsd';
 detach(world, child);
 appendChild(world, parent2, child);
 ```
-
----
-
-## Limitations
-
-- **Depth limit**: Hierarchy depth is stored as Uint16, limiting to 65535 levels. In practice, deep hierarchies (>20 levels) may cause performance issues with cascading operations.
-- **Cycle detection**: The library does not prevent creating cycles. Setting entity A as a child of entity B when B is already a descendant of A will create a cycle and cause infinite loops in traversal functions.
-- **Single parent**: Each entity can have only one parent. Multi-parent graphs require a different approach.
-
----
-
-## See Also
-
-- [Position Component](./position.md) - Relative positioning uses parent position
-- [Renderable Component](./renderable.md) - Visibility cascades through hierarchy

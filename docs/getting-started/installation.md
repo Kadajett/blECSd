@@ -3,22 +3,7 @@
 ## Requirements
 
 - Node.js 18+
-- A terminal with 256-color support
-
-### Supported Terminals
-
-| Terminal | Platform | Truecolor | Notes |
-|----------|----------|-----------|-------|
-| iTerm2 | macOS | Yes | Recommended for macOS |
-| Kitty | Linux, macOS | Yes | GPU-accelerated |
-| Alacritty | All | Yes | Cross-platform, GPU-accelerated |
-| Windows Terminal | Windows | Yes | Recommended for Windows |
-| GNOME Terminal | Linux | Yes | Default on many Linux distros |
-| Konsole | Linux | Yes | KDE default |
-| VS Code Terminal | All | Yes | Works well |
-| Hyper | All | Yes | Electron-based |
-| Terminal.app | macOS | No | 256 colors only |
-| xterm | All | Partial | Depends on configuration |
+- A terminal with 256-color support (most modern terminals)
 
 ## Install
 
@@ -75,26 +60,18 @@ Expected output:
 Position: 10, 5
 ```
 
-## When NOT to Use blECSd
+## Terminal Compatibility
 
-blECSd is not the right choice for every project. Consider alternatives if:
+blECSd works with any terminal that supports ANSI escape sequences. Truecolor (24-bit) support is recommended:
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Building a TUI application (forms, menus, dialogs) | Use [Ink](https://github.com/vadimdemedes/ink), [blessed](https://github.com/chjj/blessed), or [Textual](https://textual.textualize.io/) |
-| Need browser support | blECSd is terminal-only; use a canvas/WebGL game library |
-| Building a simple CLI tool | Use [inquirer](https://github.com/SBoudrias/Inquirer.js) or [prompts](https://github.com/terkelg/prompts) |
-| Need GUI widgets out of the box | blECSd provides primitives, not ready-made widgets |
-| Working with non-ECS architecture | blECSd is built around bitECS; OOP patterns will fight the library |
-
-### Limitations
-
-- **No browser support**: Terminal-only library
-- **No built-in widgets**: You build UI from components and systems
-- **ECS learning curve**: Requires understanding Entity Component System patterns
-- **Terminal-dependent features**: Some capabilities vary by terminal emulator
-
-## Terminal Capability Detection
+| Terminal | Truecolor | Notes |
+|----------|-----------|-------|
+| iTerm2 | Yes | Recommended for macOS |
+| Kitty | Yes | GPU-accelerated |
+| Alacritty | Yes | Cross-platform |
+| Windows Terminal | Yes | Recommended for Windows |
+| VS Code Terminal | Yes | Works well |
+| macOS Terminal.app | No | 256 colors only |
 
 blECSd does not handle terminal capability detection automatically. Use the detection utilities if you need to check capabilities:
 

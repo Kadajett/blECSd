@@ -1060,12 +1060,13 @@ describe('charset namespace', () => {
 		});
 
 		it('can use G1 for alternate charset', () => {
-			const setup = `${charset.designate('dec-graphics', 1) + charset.invokeG1()}lqk${charset.invokeG0()}`;
+			const setup =
+				charset.designate('dec-graphics', 1) + charset.invokeG1() + 'lqk' + charset.invokeG0();
 			expect(setup).toBe('\x1b)0\x0elqk\x0f');
 		});
 
 		it('can use single shift for individual characters', () => {
-			const seq = `${charset.designate('dec-graphics', 2) + charset.singleShiftG2()}q`;
+			const seq = charset.designate('dec-graphics', 2) + charset.singleShiftG2() + 'q';
 			expect(seq).toBe('\x1b*0\x1bNq');
 		});
 	});
@@ -1394,7 +1395,7 @@ describe('hyperlink namespace', () => {
 		});
 
 		it('can create multi-line links', () => {
-			const result = `${hyperlink.start('https://example.com')}Line 1\nLine 2${hyperlink.end()}`;
+			const result = hyperlink.start('https://example.com') + 'Line 1\nLine 2' + hyperlink.end();
 			expect(result).toBe('\x1b]8;;https://example.com\x1b\\Line 1\nLine 2\x1b]8;;\x1b\\');
 		});
 	});
