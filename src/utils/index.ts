@@ -214,3 +214,28 @@ export {
 	substring,
 	verify,
 } from './rope';
+// Fast word wrap with caching
+export type {
+	FastWrapOptions,
+	LinePosition,
+	ProgressiveWrapResult,
+	WrapCache,
+	WrapCacheStats,
+	WrapEntry,
+} from './fastWrap';
+export {
+	clearWrapCache,
+	continueWrap,
+	createWrapCache,
+	DEFAULT_BATCH_SIZE,
+	getWrapCacheStats,
+	invalidateAll,
+	invalidateParagraph,
+	invalidateRange,
+	lineToPosition,
+	MAX_PARAGRAPH_CHUNK,
+	positionToLine,
+	resizeWrapCache,
+	wrapVisibleFirst,
+	wrapWithCache,
+} from './fastWrap';
