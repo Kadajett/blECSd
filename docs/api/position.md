@@ -1,14 +1,15 @@
 # Position Component
 
-Position tracks where an entity appears in the terminal grid. Without position data, entities cannot be rendered or participate in layout calculations.
+Position tracks an entity's location in the terminal grid, including X/Y coordinates, Z-index for layering, and whether positioning is absolute or relative to parent.
 
-## Component Structure
+## Position Component
 
-The Position component uses bitecs SoA (Structure of Arrays) pattern for cache-friendly access:
+The Position component stores coordinates using bitecs SoA (Structure of Arrays) pattern.
 
 ```typescript
 import { Position } from 'blecsd';
 
+// Component arrays
 Position.x        // Float32Array - X coordinate in terminal cells
 Position.y        // Float32Array - Y coordinate in terminal cells
 Position.z        // Uint16Array  - Z-index for layering (0-65535)
@@ -17,9 +18,11 @@ Position.absolute // Uint8Array   - 0 = relative to parent, 1 = absolute
 
 ---
 
-## How do I check if an entity has a position?
+## Functions
 
 ### hasPosition
+
+Checks if an entity has a Position component.
 
 ```typescript
 import { createWorld, hasPosition, setPosition } from 'blecsd';
@@ -27,47 +30,47 @@ import { createWorld, hasPosition, setPosition } from 'blecsd';
 const world = createWorld();
 const eid = 1;
 
-hasPosition(world, eid);        // false
+hasPosition(world, eid); // false
+
 setPosition(world, eid, 10, 5);
-hasPosition(world, eid);        // true
+hasPosition(world, eid); // true
 ```
 
 ---
-
-## How do I set an entity's position?
 
 ### setPosition
 
-Sets the X, Y, and optional Z coordinates. Adds the Position component if not present.
+Sets the position of an entity. Adds the Position component if not present.
 
 ```typescript
-import { createWorld, setPosition, getPosition } from 'blecsd';
+import { createWorld, setPosition } from 'blecsd';
 
 const world = createWorld();
 const eid = 1;
 
-// Set x=10, y=5
-const result = setPosition(world, eid, 10, 5);
-// Returns: 1 (the entity ID, for chaining)
+// Set x, y coordinates
+setPosition(world, eid, 10, 5);
 
-// Set x=10, y=5, z=100
+// Set x, y, and z-index
 setPosition(world, eid, 10, 5, 100);
 
-const pos = getPosition(world, eid);
-// { x: 10, y: 5, z: 100, absolute: false }
+// Returns entity ID for chaining
 ```
 
-**Parameters:** `world` (ECS world), `eid` (entity ID), `x` (X coordinate), `y` (Y coordinate), `z` (Z-index, default: 0)
+**Parameters:**
+- `world` - The ECS world
+- `eid` - The entity ID
+- `x` - X coordinate
+- `y` - Y coordinate
+- `z` - Z-index for layering (default: 0)
 
-**Returns:** Entity ID for chaining
+**Returns:** The entity ID for chaining
 
 ---
 
-## How do I read an entity's position?
-
 ### getPosition
 
-Returns position data or `undefined` if the entity has no Position component.
+Gets the position data of an entity.
 
 ```typescript
 import { createWorld, setPosition, getPosition } from 'blecsd';
@@ -75,12 +78,12 @@ import { createWorld, setPosition, getPosition } from 'blecsd';
 const world = createWorld();
 const eid = 1;
 
-getPosition(world, eid);  // undefined
+getPosition(world, eid); // undefined (no position)
 
 setPosition(world, eid, 10, 5, 50);
 
 const pos = getPosition(world, eid);
-// {
+// pos = {
 //   x: 10,
 //   y: 5,
 //   z: 50,
@@ -92,11 +95,9 @@ const pos = getPosition(world, eid);
 
 ---
 
-## How do I use absolute vs relative positioning?
-
 ### setAbsolute
 
-Absolute positioning places the entity relative to the screen origin (0, 0). Relative positioning (the default) places it relative to its parent entity.
+Sets whether the entity uses absolute screen positioning.
 
 ```typescript
 import { createWorld, setPosition, setAbsolute, isAbsolute } from 'blecsd';
@@ -105,41 +106,49 @@ const world = createWorld();
 const eid = 1;
 
 setPosition(world, eid, 10, 5);
-isAbsolute(world, eid);  // false (default is relative)
 
+// Make entity use absolute screen coordinates
 setAbsolute(world, eid, true);
-isAbsolute(world, eid);  // true
+isAbsolute(world, eid); // true
 
+// Switch back to relative positioning
 setAbsolute(world, eid, false);
-isAbsolute(world, eid);  // false
+isAbsolute(world, eid); // false
 ```
 
-**Parameters:** `world` (ECS world), `eid` (entity ID), `absolute` (true for absolute, false for relative)
+**Parameters:**
+- `world` - The ECS world
+- `eid` - The entity ID
+- `absolute` - true for absolute, false for relative to parent
 
-**Returns:** Entity ID for chaining
+**Returns:** The entity ID for chaining
+
+---
 
 ### isAbsolute
 
+Checks if an entity uses absolute positioning.
+
 ```typescript
 import { createWorld, setPosition, setAbsolute, isAbsolute } from 'blecsd';
 
 const world = createWorld();
 const eid = 1;
 
-isAbsolute(world, eid);         // false (no position component)
+isAbsolute(world, eid); // false (no position)
+
 setPosition(world, eid, 10, 5);
-isAbsolute(world, eid);         // false (default)
+isAbsolute(world, eid); // false (default is relative)
+
 setAbsolute(world, eid, true);
-isAbsolute(world, eid);         // true
+isAbsolute(world, eid); // true
 ```
 
 ---
 
-## How do I move an entity by a delta?
-
 ### moveBy
 
-Adds delta values to the current position.
+Moves an entity by a delta amount.
 
 ```typescript
 import { createWorld, setPosition, getPosition, moveBy } from 'blecsd';
@@ -149,24 +158,30 @@ const eid = 1;
 
 setPosition(world, eid, 10, 5);
 
+// Move 3 cells right, 2 cells down
 moveBy(world, eid, 3, 2);
-// Now at x=13, y=7
 
+const pos = getPosition(world, eid);
+// pos.x = 13, pos.y = 7
+
+// Move left and up with negative values
 moveBy(world, eid, -1, -1);
-// Now at x=12, y=6
+// pos.x = 12, pos.y = 6
 ```
 
-**Parameters:** `world` (ECS world), `eid` (entity ID), `dx` (delta X), `dy` (delta Y)
+**Parameters:**
+- `world` - The ECS world
+- `eid` - The entity ID
+- `dx` - Delta X (added to current x)
+- `dy` - Delta Y (added to current y)
 
-**Returns:** Entity ID for chaining
+**Returns:** The entity ID for chaining
 
 ---
 
-## How do I control layering with z-index?
-
 ### setZIndex
 
-Higher z-index values render on top of lower values. Range is 0-65535.
+Sets the z-index of an entity for layering.
 
 ```typescript
 import { createWorld, setPosition, setZIndex, getPosition } from 'blecsd';
@@ -175,21 +190,28 @@ const world = createWorld();
 const eid = 1;
 
 setPosition(world, eid, 10, 5);
+
+// Bring entity to front
 setZIndex(world, eid, 1000);
 
 const pos = getPosition(world, eid);
 // pos.z = 1000
 ```
 
-**Parameters:** `world` (ECS world), `eid` (entity ID), `z` (Z-index, 0-65535)
+**Parameters:**
+- `world` - The ECS world
+- `eid` - The entity ID
+- `z` - Z-index (0-65535, higher values render on top)
 
-**Returns:** Entity ID for chaining
+**Returns:** The entity ID for chaining
 
 ---
 
 ## Types
 
 ### PositionData
+
+Data returned by getPosition.
 
 ```typescript
 interface PositionData {
@@ -202,14 +224,8 @@ interface PositionData {
 
 ---
 
-## Limitations
-
-- **Z-index range**: Limited to 0-65535 (Uint16). Exceeding this range will wrap around.
-- **Float coordinates**: X and Y are stored as Float32, which provides sub-cell precision but may have floating-point rounding at extreme values.
-
----
-
 ## See Also
 
 - [Dimensions Component](./dimensions.md) - Entity width and height
-- [Hierarchy Component](./hierarchy.md) - Parent-child relationships affect relative positioning
+- [Components Reference](./components.md) - All component documentation
+- [Entity Factories](./entities.md) - Creating entities with components
