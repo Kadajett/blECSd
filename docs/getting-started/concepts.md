@@ -1,32 +1,55 @@
 # Core Concepts
 
+## Library, Not Framework
+
+blECSd does not own your update loop or world. You can:
+
+1. Use components in your own bitECS world
+2. Skip the scheduler entirely
+3. Use only the parts you need
+4. Integrate with existing systems
+
+```typescript
+// Your own update loop
+function updateLoop() {
+  processInput();
+  updateUI(world);
+  render(world);
+  requestAnimationFrame(updateLoop);
+}
+
+// blECSd components still work
+import { setPosition, getPosition } from 'blecsd';
+setPosition(world, panel, x, y);
+```
+
 ## Entity Component System
 
 blECSd uses [bitECS](https://github.com/NateTheGreatt/bitECS) for its ECS implementation. The pattern separates data (components) from behavior (systems).
 
 ### Entities
 
-An entity is an integer ID. It has no data or behavior.
+An entity is an integer ID with no data or behavior.
 
 ```typescript
 import { createWorld, addEntity } from 'bitecs';
 
 const world = createWorld();
-const player = addEntity(world);   // Returns an integer like 1
-const enemy = addEntity(world);    // Returns 2
+const sidebar = addEntity(world);   // Returns an integer like 1
+const mainPanel = addEntity(world); // Returns 2
 ```
 
 ### Components
 
-Components are typed data stores. blECSd provides components for common game needs:
+Components are typed data stores. blECSd provides components for common UI needs:
 
 ```typescript
 import { Position, Renderable, Dimensions } from 'blecsd';
 
 // Components use Structure of Arrays (SoA) for performance
-Position.x[player] = 10;
-Position.y[player] = 5;
-Renderable.fg[player] = 0xffffffff;  // White foreground
+Position.x[sidebar] = 0;
+Position.y[sidebar] = 0;
+Renderable.fg[sidebar] = 0xffffffff;  // White foreground
 ```
 
 blECSd wraps raw component access with helper functions:
@@ -72,29 +95,6 @@ const visibleEntities = filterVisible(world, queryRenderable(world));
 const sorted = sortByZIndex(world, visibleEntities);
 ```
 
-## Library, Not Framework
-
-blECSd does not own your game loop or world. You can:
-
-1. Use components in your own bitECS world
-2. Skip the scheduler entirely
-3. Use only the parts you need
-4. Integrate with existing systems
-
-```typescript
-// Your own game loop
-function gameLoop() {
-  processInput();
-  updateGame(world);
-  render(world);
-  requestAnimationFrame(gameLoop);
-}
-
-// blECSd components still work
-import { setPosition, getPosition } from 'blecsd';
-setPosition(world, player, x, y);
-```
-
 ## Optional Scheduler
 
 The scheduler provides phase-ordered execution when you want it:
@@ -123,14 +123,16 @@ Phase execution order:
 |-------|---------|
 | INPUT | Reserved for input processing (always first) |
 | EARLY_UPDATE | Pre-update logic |
-| UPDATE | Main game logic |
+| UPDATE | Main application logic |
 | LATE_UPDATE | Post-update logic |
-| PHYSICS | Physics calculations |
+| ANIMATION | Physics-based animations, transitions, momentum |
 | LAYOUT | UI layout calculations |
 | RENDER | Drawing |
 | POST_RENDER | Cleanup, debug overlays |
 
 The INPUT phase is reserved and cannot be reordered. All other phases are optional.
+
+**Note on ANIMATION phase:** This handles physics-based UI animations like spring dynamics, momentum scrolling, bounce effects, and smooth transitions. These patterns are common in modern UIs (iOS bounce, Material Design, kinetic scrolling) and equally useful for games.
 
 ## Event Bus
 
@@ -139,23 +141,23 @@ Type-safe event handling:
 ```typescript
 import { createEventBus } from 'blecsd';
 
-interface GameEvents {
-  'player:moved': { x: number; y: number };
-  'enemy:killed': { id: number; score: number };
+interface AppEvents {
+  'panel:resized': { width: number; height: number };
+  'file:selected': { path: string; name: string };
 }
 
-const events = createEventBus<GameEvents>();
+const events = createEventBus<AppEvents>();
 
 // Subscribe
-const unsubscribe = events.on('player:moved', (e) => {
-  console.log(`Player at ${e.x}, ${e.y}`);
+const unsubscribe = events.on('panel:resized', (e) => {
+  console.log(`Panel is now ${e.width}x${e.height}`);
 });
 
 // Emit
-events.emit('player:moved', { x: 10, y: 5 });
+events.emit('panel:resized', { width: 80, height: 24 });
 
 // One-time listener
-events.once('enemy:killed', (e) => {
+events.once('file:selected', (e) => {
   // Fires once, then auto-removes
 });
 
@@ -170,23 +172,27 @@ Attach FSMs to entities for state management:
 ```typescript
 import { attachStateMachine, sendEvent, getState, isInState } from 'blecsd';
 
-const enemyBehavior = {
-  initial: 'idle',
+// Example: Modal dialog states
+const modalBehavior = {
+  initial: 'closed',
   states: {
-    idle: { on: { ALERT: 'chase' } },
-    chase: { on: { LOST: 'search', CAUGHT: 'attack' } },
-    search: { on: { FOUND: 'chase', TIMEOUT: 'idle' } },
-    attack: { on: { DONE: 'idle' } },
+    closed: { on: { OPEN: 'opening' } },
+    opening: { on: { ANIMATION_DONE: 'open' } },
+    open: { on: { CLOSE: 'closing', SUBMIT: 'submitting' } },
+    closing: { on: { ANIMATION_DONE: 'closed' } },
+    submitting: { on: { SUCCESS: 'closing', ERROR: 'open' } },
   },
 };
 
-attachStateMachine(world, enemy, enemyBehavior);
+attachStateMachine(world, dialog, modalBehavior);
 
 // Transition
-sendEvent(world, enemy, 'ALERT');
-getState(world, enemy);     // 'chase'
-isInState(world, enemy, 'chase');  // true
+sendEvent(world, dialog, 'OPEN');
+getState(world, dialog);     // 'opening'
+isInState(world, dialog, 'opening');  // true
 ```
+
+State machines are useful for UI workflows, form validation states, loading indicators, and any element with discrete states.
 
 ## Input Parsing
 
