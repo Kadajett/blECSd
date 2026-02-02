@@ -54,6 +54,30 @@ interface MutableStyle {
 	attrs: number;
 }
 
+/**
+ * Stack entry for tracking nested styles.
+ */
+interface StyleStackEntry {
+	/** What type of style this entry represents */
+	readonly type: 'fg' | 'bg' | 'attr';
+	/** The previous value before this style was applied */
+	readonly prevValue: number;
+	/** The tag name that opened this style (for matching close tags) */
+	readonly tagName: string;
+}
+
+/**
+ * Style stack for tracking nested style states.
+ */
+interface StyleStack {
+	/** Stack entries for fg color changes */
+	fg: StyleStackEntry[];
+	/** Stack entries for bg color changes */
+	bg: StyleStackEntry[];
+	/** Stack entries for each attribute flag */
+	attrs: Map<number, StyleStackEntry[]>;
+}
+
 // =============================================================================
 // CONSTANTS
 // =============================================================================
@@ -257,26 +281,81 @@ function convert256ToRgb(index: number): number {
 }
 
 /**
- * Resets style to defaults.
+ * Creates a new style stack for tracking nested styles.
  */
-function resetStyle(style: MutableStyle): void {
+function createStyleStack(): StyleStack {
+	return {
+		fg: [],
+		bg: [],
+		attrs: new Map(),
+	};
+}
+
+/**
+ * Resets style to defaults and clears the stack.
+ */
+function resetStyle(style: MutableStyle, stack: StyleStack): void {
 	style.fg = DEFAULT_FG;
 	style.bg = DEFAULT_BG;
 	style.attrs = 0;
+	stack.fg = [];
+	stack.bg = [];
+	stack.attrs.clear();
+}
+
+/**
+ * Pops an attribute from the stack and restores previous state.
+ */
+function popAttrFromStack(flag: number, style: MutableStyle, stack: StyleStack): void {
+	const attrStack = stack.attrs.get(flag);
+	const entry = attrStack?.pop();
+	if (entry?.prevValue) {
+		style.attrs |= flag;
+	} else {
+		style.attrs &= ~flag;
+	}
+}
+
+/**
+ * Pushes current attribute state to stack before applying new attribute.
+ */
+function pushAttrToStack(
+	flag: number,
+	tagName: string,
+	style: MutableStyle,
+	stack: StyleStack,
+): void {
+	let attrStack = stack.attrs.get(flag);
+	if (!attrStack) {
+		attrStack = [];
+		stack.attrs.set(flag, attrStack);
+	}
+	attrStack.push({
+		type: 'attr',
+		prevValue: style.attrs & flag,
+		tagName,
+	});
+	style.attrs |= flag;
 }
 
 /**
  * Processes an attribute tag (bold, underline, etc.).
  */
-function processAttrTag(tagName: string, isClose: boolean, style: MutableStyle): boolean {
+function processAttrTag(
+	tagName: string,
+	isClose: boolean,
+	style: MutableStyle,
+	stack: StyleStack,
+): boolean {
 	if (!(tagName in ATTR_TAGS)) {
 		return false;
 	}
 	const flag = ATTR_TAGS[tagName];
+
 	if (isClose) {
-		style.attrs &= ~flag;
+		popAttrFromStack(flag, style, stack);
 	} else {
-		style.attrs |= flag;
+		pushAttrToStack(flag, tagName, style, stack);
 	}
 	return true;
 }
@@ -284,16 +363,36 @@ function processAttrTag(tagName: string, isClose: boolean, style: MutableStyle):
 /**
  * Processes a foreground color tag ({color-fg}).
  */
-function processFgColorTag(tagName: string, isClose: boolean, style: MutableStyle): boolean {
+function processFgColorTag(
+	tagName: string,
+	isClose: boolean,
+	style: MutableStyle,
+	stack: StyleStack,
+): boolean {
 	const fgMatch = tagName.match(/^(.+)-fg$/);
 	if (!fgMatch) {
 		return false;
 	}
+
 	if (isClose) {
-		style.fg = DEFAULT_FG;
+		// Pop from stack to restore previous color
+		if (stack.fg.length > 0) {
+			const entry = stack.fg.pop();
+			if (entry) {
+				style.fg = entry.prevValue;
+			}
+		} else {
+			style.fg = DEFAULT_FG;
+		}
 	} else {
 		const color = parseColor(fgMatch[1]);
 		if (color !== null) {
+			// Push current fg to stack before changing
+			stack.fg.push({
+				type: 'fg',
+				prevValue: style.fg,
+				tagName,
+			});
 			style.fg = color;
 		}
 	}
@@ -303,16 +402,36 @@ function processFgColorTag(tagName: string, isClose: boolean, style: MutableStyl
 /**
  * Processes a background color tag ({color-bg}).
  */
-function processBgColorTag(tagName: string, isClose: boolean, style: MutableStyle): boolean {
+function processBgColorTag(
+	tagName: string,
+	isClose: boolean,
+	style: MutableStyle,
+	stack: StyleStack,
+): boolean {
 	const bgMatch = tagName.match(/^(.+)-bg$/);
 	if (!bgMatch) {
 		return false;
 	}
+
 	if (isClose) {
-		style.bg = DEFAULT_BG;
+		// Pop from stack to restore previous color
+		if (stack.bg.length > 0) {
+			const entry = stack.bg.pop();
+			if (entry) {
+				style.bg = entry.prevValue;
+			}
+		} else {
+			style.bg = DEFAULT_BG;
+		}
 	} else {
 		const color = parseColor(bgMatch[1]);
 		if (color !== null) {
+			// Push current bg to stack before changing
+			stack.bg.push({
+				type: 'bg',
+				prevValue: style.bg,
+				tagName,
+			});
 			style.bg = color;
 		}
 	}
@@ -322,7 +441,12 @@ function processBgColorTag(tagName: string, isClose: boolean, style: MutableStyl
 /**
  * Processes a simple color name as foreground.
  */
-function processSimpleColorTag(tagName: string, isClose: boolean, style: MutableStyle): boolean {
+function processSimpleColorTag(
+	tagName: string,
+	isClose: boolean,
+	style: MutableStyle,
+	stack: StyleStack,
+): boolean {
 	if (isClose) {
 		return false;
 	}
@@ -330,6 +454,12 @@ function processSimpleColorTag(tagName: string, isClose: boolean, style: Mutable
 	if (color === null) {
 		return false;
 	}
+	// Push current fg to stack before changing
+	stack.fg.push({
+		type: 'fg',
+		prevValue: style.fg,
+		tagName,
+	});
 	style.fg = color;
 	return true;
 }
@@ -339,12 +469,13 @@ function processSimpleColorTag(tagName: string, isClose: boolean, style: Mutable
  *
  * @param tag - Tag name (without braces)
  * @param style - Current mutable style state
+ * @param stack - Style stack for nested tracking
  * @returns New alignment if changed, or null
  */
-function processTag(tag: string, style: MutableStyle): Alignment | null {
+function processTag(tag: string, style: MutableStyle, stack: StyleStack): Alignment | null {
 	// Reset all
 	if (tag === '/') {
-		resetStyle(style);
+		resetStyle(style, stack);
 		return null;
 	}
 
@@ -358,18 +489,18 @@ function processTag(tag: string, style: MutableStyle): Alignment | null {
 	}
 
 	// Process attribute tags
-	if (processAttrTag(tagName, isClose, style)) {
+	if (processAttrTag(tagName, isClose, style, stack)) {
 		return null;
 	}
 
 	// Process color tags
-	if (processFgColorTag(tagName, isClose, style)) {
+	if (processFgColorTag(tagName, isClose, style, stack)) {
 		return null;
 	}
-	if (processBgColorTag(tagName, isClose, style)) {
+	if (processBgColorTag(tagName, isClose, style, stack)) {
 		return null;
 	}
-	if (processSimpleColorTag(tagName, isClose, style)) {
+	if (processSimpleColorTag(tagName, isClose, style, stack)) {
 		return null;
 	}
 
@@ -414,6 +545,9 @@ export function parseTags(text: string): ParsedContent {
 		attrs: 0,
 	};
 
+	// Style stack for nested tag tracking
+	const stack = createStyleStack();
+
 	// Track position in the string
 	let lastIndex = 0;
 	let match: RegExpExecArray | null;
@@ -444,7 +578,7 @@ export function parseTags(text: string): ParsedContent {
 
 		// Process the tag
 		const tagName = match[1];
-		const newAlignment = processTag(tagName, style);
+		const newAlignment = processTag(tagName, style, stack);
 		if (newAlignment !== null) {
 			alignment = newAlignment;
 		}

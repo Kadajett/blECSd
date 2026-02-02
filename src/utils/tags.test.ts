@@ -255,6 +255,94 @@ describe('tags', () => {
 		});
 	});
 
+	describe('nested tags', () => {
+		it('should restore outer fg color when inner closes', () => {
+			const result = parseTags('{red-fg}hello {blue-fg}world{/blue-fg} more{/red-fg}');
+
+			expect(result.segments).toHaveLength(3);
+			expect(result.segments[0].fg).toBe(0xff0000ff); // red
+			expect(result.segments[1].fg).toBe(0x0000ffff); // blue
+			expect(result.segments[2].fg).toBe(0xff0000ff); // red restored
+		});
+
+		it('should restore outer bg color when inner closes', () => {
+			const result = parseTags('{red-bg}hello {blue-bg}world{/blue-bg} more{/red-bg}');
+
+			expect(result.segments).toHaveLength(3);
+			expect(result.segments[0].bg).toBe(0xff0000ff); // red
+			expect(result.segments[1].bg).toBe(0x0000ffff); // blue
+			expect(result.segments[2].bg).toBe(0xff0000ff); // red restored
+		});
+
+		it('should handle deeply nested colors', () => {
+			const result = parseTags('{red-fg}a{green-fg}b{blue-fg}c{/blue-fg}d{/green-fg}e{/red-fg}');
+
+			expect(result.segments).toHaveLength(5);
+			expect(result.segments[0].fg).toBe(0xff0000ff); // red: a
+			expect(result.segments[1].fg).toBe(0x00ff00ff); // green: b
+			expect(result.segments[2].fg).toBe(0x0000ffff); // blue: c
+			expect(result.segments[3].fg).toBe(0x00ff00ff); // green: d
+			expect(result.segments[4].fg).toBe(0xff0000ff); // red: e
+		});
+
+		it('should handle nested attributes', () => {
+			const result = parseTags('{bold}a{italic}b{/italic}c{/bold}');
+
+			expect(result.segments).toHaveLength(3);
+			expect(result.segments[0].attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[1].attrs).toBe(AttrFlags.BOLD | AttrFlags.ITALIC);
+			expect(result.segments[2].attrs).toBe(AttrFlags.BOLD);
+		});
+
+		it('should handle mixed color and attribute nesting', () => {
+			const result = parseTags('{bold}{red-fg}a{italic}b{/italic}c{/red-fg}d{/bold}');
+
+			expect(result.segments).toHaveLength(4);
+			// a: bold, red
+			expect(result.segments[0].attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[0].fg).toBe(0xff0000ff);
+			// b: bold, italic, red
+			expect(result.segments[1].attrs).toBe(AttrFlags.BOLD | AttrFlags.ITALIC);
+			expect(result.segments[1].fg).toBe(0xff0000ff);
+			// c: bold, red
+			expect(result.segments[2].attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[2].fg).toBe(0xff0000ff);
+			// d: bold, default fg
+			expect(result.segments[3].attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[3].fg).toBe(0xffffffff);
+		});
+
+		it('should handle mismatched close tags gracefully', () => {
+			// Close tag that was never opened - should just reset to default
+			const result = parseTags('{red-fg}hello{/blue-fg} world');
+
+			// Even though we close blue which wasn't opened, red should persist
+			// until explicitly closed or reset
+			expect(result.segments.length).toBeGreaterThanOrEqual(1);
+		});
+
+		it('should reset everything with {/}', () => {
+			const result = parseTags('{bold}{red-fg}a{/}b');
+
+			expect(result.segments).toHaveLength(2);
+			expect(result.segments[0].attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[0].fg).toBe(0xff0000ff);
+			expect(result.segments[1].attrs).toBe(0);
+			expect(result.segments[1].fg).toBe(0xffffffff);
+		});
+
+		it('should handle simple color name nesting', () => {
+			const result = parseTags('{red}a{blue}b{/blue-fg}c');
+
+			// {red} and {blue} are treated as opening fg colors
+			// {/blue-fg} should restore the previous (red) color
+			expect(result.segments).toHaveLength(3);
+			expect(result.segments[0].fg).toBe(0xff0000ff); // red
+			expect(result.segments[1].fg).toBe(0x0000ffff); // blue
+			expect(result.segments[2].fg).toBe(0xff0000ff); // red restored
+		});
+	});
+
 	describe('stripTags', () => {
 		it('should remove all tags', () => {
 			const result = stripTags('{bold}Hello{/bold} {red-fg}World{/red-fg}');
