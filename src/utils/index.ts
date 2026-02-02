@@ -21,3 +21,15 @@ export {
 	renderText,
 	renderVLine,
 } from './box';
+
+// Text wrapping utilities
+export type { TextAlign, WrapOptions } from './textWrap';
+export {
+	alignLine,
+	getVisibleWidth,
+	padHeight,
+	stripAnsi,
+	truncate,
+	wordWrap,
+	wrapText,
+} from './textWrap';

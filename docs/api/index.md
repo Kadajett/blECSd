@@ -247,6 +247,22 @@ Low-level utilities for drawing boxes, borders, and text to cell buffers.
 
 See [Box Utilities](./utils/box.md) for the full API.
 
+### Text Wrapping
+
+Utilities for wrapping, aligning, and measuring text with ANSI support.
+
+| Function | Purpose |
+|----------|---------|
+| `wrapText` | Wrap and align text with options |
+| `wordWrap` | Wrap text at word boundaries |
+| `alignLine` | Align a single line (left/center/right) |
+| `truncate` | Truncate text with ellipsis |
+| `padHeight` | Pad lines to a specific height |
+| `getVisibleWidth` | Get text width excluding ANSI |
+| `stripAnsi` | Remove ANSI escape sequences |
+
+See [Text Wrapping](./utils/text-wrap.md) for the full API.
+
 ## Types
 
 ### World and Entity

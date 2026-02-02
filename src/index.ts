@@ -385,7 +385,7 @@ export {
 // =============================================================================
 // UTILS - Utility Functions
 // =============================================================================
-export type { BoxChars, Cell, CellBuffer, RenderBoxOptions } from './utils';
+export type { BoxChars, Cell, CellBuffer, RenderBoxOptions, TextAlign, WrapOptions } from './utils';
 export {
 	BOX_ASCII,
 	BOX_BOLD,
@@ -393,12 +393,19 @@ export {
 	BOX_DOUBLE,
 	BOX_ROUNDED,
 	BOX_SINGLE,
+	alignLine,
 	bufferToString,
 	charsetToBoxChars,
 	createCellBuffer,
 	fillRect,
+	getVisibleWidth,
+	padHeight,
 	renderBox,
 	renderHLine,
 	renderText,
 	renderVLine,
+	stripAnsi,
+	truncate,
+	wordWrap,
+	wrapText,
 } from './utils';
