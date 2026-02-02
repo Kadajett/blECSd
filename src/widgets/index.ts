@@ -194,6 +194,9 @@ export {
 	ScrollableBox,
 	ScrollableBoxConfigSchema,
 } from './scrollableBox';
+// ScrollableText widget
+export type { ScrollableTextConfig, ScrollableTextWidget } from './scrollableText';
+export { createScrollableText, isScrollableText } from './scrollableText';
 // Table widget
 export type { TableStyleConfig, TableWidget, TableWidgetConfig } from './table';
 export { createTable, isTableWidget, TableWidgetConfigSchema } from './table';
