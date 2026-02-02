@@ -194,3 +194,23 @@ export {
 	detectUnicode,
 	getFeatureSummary,
 } from './features';
+
+// =============================================================================
+// PADDING - Terminal output timing/delay
+// =============================================================================
+
+export type { PaddingConfig, PaddingSpec, PrintResult } from './padding';
+export {
+	addPadding,
+	calculateDelay,
+	calculateTotalDelay,
+	createPaddedPrint,
+	createPaddedPrintSync,
+	DEFAULT_PADDING_CONFIG,
+	extractPadding,
+	formatPadding,
+	hasPadding,
+	parsePadding,
+	processPadding,
+	stripPadding,
+} from './padding';
