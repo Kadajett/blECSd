@@ -1,8 +1,8 @@
 # Queries API
 
-Queries find subsets of entities for rendering, focus navigation, or hit testing. Without queries, you'd have to iterate all entities manually and check component membership yourself.
+Pre-built queries and filters for finding and sorting entities.
 
-## What queries are available?
+## Queries
 
 Queries return arrays of entity IDs that have specific components.
 
@@ -14,10 +14,12 @@ Entities with the Renderable component.
 import { queryRenderable } from 'blecsd';
 
 const entities = queryRenderable(world);
-// [1, 2, 5] - entity IDs with Renderable
+// [1, 2, 5, ...] entity IDs
 ```
 
 ### queryFocusable
+
+Entities with the Focusable component.
 
 ```typescript
 import { queryFocusable } from 'blecsd';
@@ -27,6 +29,8 @@ const entities = queryFocusable(world);
 
 ### queryInteractive
 
+Entities with the Interactive component.
+
 ```typescript
 import { queryInteractive } from 'blecsd';
 
@@ -34,6 +38,8 @@ const entities = queryInteractive(world);
 ```
 
 ### queryHierarchy
+
+Entities with the Hierarchy component.
 
 ```typescript
 import { queryHierarchy } from 'blecsd';
@@ -43,6 +49,8 @@ const entities = queryHierarchy(world);
 
 ### queryBorder
 
+Entities with the Border component.
+
 ```typescript
 import { queryBorder } from 'blecsd';
 
@@ -50,6 +58,8 @@ const entities = queryBorder(world);
 ```
 
 ### queryContent
+
+Entities with the Content component.
 
 ```typescript
 import { queryContent } from 'blecsd';
@@ -59,6 +69,8 @@ const entities = queryContent(world);
 
 ### queryPadding
 
+Entities with the Padding component.
+
 ```typescript
 import { queryPadding } from 'blecsd';
 
@@ -67,17 +79,17 @@ const entities = queryPadding(world);
 
 ### queryScrollable
 
+Entities with the Scrollable component.
+
 ```typescript
 import { queryScrollable } from 'blecsd';
 
 const entities = queryScrollable(world);
 ```
 
----
+## Filters
 
-## How do I filter entities?
-
-Filters take an array of entity IDs and return a subset matching specific criteria.
+Filters take an array of entity IDs and return a filtered subset.
 
 ### filterVisible
 
@@ -131,15 +143,13 @@ import { queryInteractive, filterClickable } from 'blecsd';
 const clickable = filterClickable(world, queryInteractive(world));
 ```
 
----
+## Sorting
 
-## How do I sort entities?
-
-Sort functions return a new sorted array (they don't mutate the input).
+Sort functions return a new sorted array.
 
 ### sortByZIndex
 
-Sort by z-index, lowest first. Use for render order.
+Sort by z-index, lowest first.
 
 ```typescript
 import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd';
@@ -173,13 +183,11 @@ const focusable = filterFocusable(world, queryFocusable(world));
 const tabOrder = sortByTabIndex(world, focusable);
 ```
 
----
-
-## How do I query the hierarchy?
+## Hierarchy Queries
 
 ### getRootEntities
 
-Entities with no parent.
+Get entities with no parent.
 
 ```typescript
 import { getRootEntities } from 'blecsd';
@@ -189,7 +197,7 @@ const roots = getRootEntities(world);
 
 ### getChildEntities
 
-Direct children of an entity.
+Get direct children of an entity.
 
 ```typescript
 import { getChildEntities } from 'blecsd';
@@ -199,7 +207,7 @@ const children = getChildEntities(world, parentEntity);
 
 ### getDescendantEntities
 
-All descendants (children, grandchildren, etc.).
+Get all descendants of an entity (children, grandchildren, etc.).
 
 ```typescript
 import { getDescendantEntities } from 'blecsd';
@@ -207,9 +215,7 @@ import { getDescendantEntities } from 'blecsd';
 const descendants = getDescendantEntities(world, rootEntity);
 ```
 
----
-
-## Common Patterns
+## Patterns
 
 ### Render Pipeline
 
@@ -278,10 +284,3 @@ function getEntityAtPoint(world, x, y) {
   return null;
 }
 ```
-
----
-
-## See Also
-
-- [Renderable Component](./renderable.md) - Visibility and dirty state
-- [Hierarchy Component](./hierarchy.md) - Parent-child relationships

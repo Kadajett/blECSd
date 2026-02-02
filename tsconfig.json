@@ -8,8 +8,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    // TODO: Re-enable and fix all issues
-    // "exactOptionalPropertyTypes": true,
+    "exactOptionalPropertyTypes": true,
     "noPropertyAccessFromIndexSignature": true,
     "forceConsistentCasingInFileNames": true,
 
