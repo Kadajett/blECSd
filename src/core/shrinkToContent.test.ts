@@ -1,6 +1,6 @@
 import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { setBorder } from '../components/border';
+import { BorderType, setBorder } from '../components/border';
 import { resetContentStore, setContent } from '../components/content';
 import { Dimensions, setConstraints, setDimensions, setShrink } from '../components/dimensions';
 import { setPadding, setPaddingAll } from '../components/padding';
@@ -58,7 +58,7 @@ describe('shrinkToContent', () => {
 			const entity = addEntity(world);
 
 			setContent(world, entity, 'Hello');
-			setBorder(world, entity, { type: 'single' });
+			setBorder(world, entity, { type: BorderType.Line });
 
 			expect(getShrinkWidth(world, entity)).toBe(7); // 5 content + 2 border
 		});
@@ -69,7 +69,7 @@ describe('shrinkToContent', () => {
 
 			setContent(world, entity, 'Hello');
 			setPaddingAll(world, entity, 1);
-			setBorder(world, entity, { type: 'single' });
+			setBorder(world, entity, { type: BorderType.Line });
 
 			expect(getShrinkWidth(world, entity)).toBe(9); // 5 content + 2 padding + 2 border
 		});
@@ -125,7 +125,7 @@ describe('shrinkToContent', () => {
 			const entity = addEntity(world);
 
 			setContent(world, entity, 'Hello');
-			setBorder(world, entity, { type: 'single' });
+			setBorder(world, entity, { type: BorderType.Line });
 
 			expect(getShrinkHeight(world, entity)).toBe(3); // 1 content + 2 border
 		});
@@ -177,7 +177,7 @@ describe('shrinkToContent', () => {
 
 			setContent(world, entity, 'Hi');
 			setPaddingAll(world, entity, 1);
-			setBorder(world, entity, { type: 'single' });
+			setBorder(world, entity, { type: BorderType.Line });
 
 			const box = getShrinkBox(world, entity);
 			expect(box.width).toBe(6); // 2 content + 2 padding + 2 border

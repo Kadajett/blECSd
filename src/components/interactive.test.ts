@@ -2,8 +2,17 @@ import { addEntity, createWorld } from 'bitecs';
 import { describe, expect, it } from 'vitest';
 import {
 	clearInteractionState,
+	disableInput,
+	disableKeys,
+	disableMouse,
+	enableInput,
+	enableKeys,
+	enableMouse,
 	getInteractive,
+	hasInputEnabled,
 	hasInteractive,
+	hasKeysEnabled,
+	hasMouseEnabled,
 	Interactive,
 	isClickable,
 	isDraggable,
@@ -436,6 +445,229 @@ describe('Interactive component', () => {
 			const result = clearInteractionState(world, entity);
 
 			expect(result).toBe(entity);
+		});
+	});
+
+	describe('enableMouse', () => {
+		it('enables clickable and hoverable', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			enableMouse(world, entity);
+
+			expect(isClickable(world, entity)).toBe(true);
+			expect(isHoverable(world, entity)).toBe(true);
+		});
+
+		it('returns entity for chaining', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			const result = enableMouse(world, entity);
+
+			expect(result).toBe(entity);
+		});
+	});
+
+	describe('disableMouse', () => {
+		it('disables clickable and hoverable', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			enableMouse(world, entity);
+			disableMouse(world, entity);
+
+			expect(isClickable(world, entity)).toBe(false);
+			expect(isHoverable(world, entity)).toBe(false);
+		});
+
+		it('handles entity without Interactive', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			// Should not throw
+			disableMouse(world, entity);
+
+			expect(hasInteractive(world, entity)).toBe(false);
+		});
+	});
+
+	describe('enableKeys', () => {
+		it('enables keyable', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			enableKeys(world, entity);
+
+			expect(isKeyable(world, entity)).toBe(true);
+		});
+
+		it('returns entity for chaining', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			const result = enableKeys(world, entity);
+
+			expect(result).toBe(entity);
+		});
+	});
+
+	describe('disableKeys', () => {
+		it('disables keyable', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			enableKeys(world, entity);
+			disableKeys(world, entity);
+
+			expect(isKeyable(world, entity)).toBe(false);
+		});
+
+		it('handles entity without Interactive', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			// Should not throw
+			disableKeys(world, entity);
+
+			expect(hasInteractive(world, entity)).toBe(false);
+		});
+	});
+
+	describe('enableInput', () => {
+		it('enables clickable, hoverable, and keyable', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			enableInput(world, entity);
+
+			expect(isClickable(world, entity)).toBe(true);
+			expect(isHoverable(world, entity)).toBe(true);
+			expect(isKeyable(world, entity)).toBe(true);
+		});
+
+		it('returns entity for chaining', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			const result = enableInput(world, entity);
+
+			expect(result).toBe(entity);
+		});
+	});
+
+	describe('disableInput', () => {
+		it('disables clickable, hoverable, and keyable', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			enableInput(world, entity);
+			disableInput(world, entity);
+
+			expect(isClickable(world, entity)).toBe(false);
+			expect(isHoverable(world, entity)).toBe(false);
+			expect(isKeyable(world, entity)).toBe(false);
+		});
+
+		it('handles entity without Interactive', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			// Should not throw
+			disableInput(world, entity);
+
+			expect(hasInteractive(world, entity)).toBe(false);
+		});
+	});
+
+	describe('hasMouseEnabled', () => {
+		it('returns true if clickable is enabled', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setClickable(world, entity, true);
+
+			expect(hasMouseEnabled(world, entity)).toBe(true);
+		});
+
+		it('returns true if hoverable is enabled', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setHoverable(world, entity, true);
+
+			expect(hasMouseEnabled(world, entity)).toBe(true);
+		});
+
+		it('returns false if only keyable is enabled', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setKeyable(world, entity, true);
+
+			expect(hasMouseEnabled(world, entity)).toBe(false);
+		});
+
+		it('returns false for entity without Interactive', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			expect(hasMouseEnabled(world, entity)).toBe(false);
+		});
+	});
+
+	describe('hasKeysEnabled', () => {
+		it('returns true if keyable is enabled', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			enableKeys(world, entity);
+
+			expect(hasKeysEnabled(world, entity)).toBe(true);
+		});
+
+		it('returns false if only mouse is enabled', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			enableMouse(world, entity);
+
+			expect(hasKeysEnabled(world, entity)).toBe(false);
+		});
+
+		it('returns false for entity without Interactive', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			expect(hasKeysEnabled(world, entity)).toBe(false);
+		});
+	});
+
+	describe('hasInputEnabled', () => {
+		it('returns true if any input is enabled', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setClickable(world, entity, true);
+
+			expect(hasInputEnabled(world, entity)).toBe(true);
+		});
+
+		it('returns false if all input is disabled', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			enableInput(world, entity);
+			disableInput(world, entity);
+
+			expect(hasInputEnabled(world, entity)).toBe(false);
+		});
+
+		it('returns false for entity without Interactive', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			expect(hasInputEnabled(world, entity)).toBe(false);
 		});
 	});
 });

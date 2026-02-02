@@ -21,12 +21,25 @@ function createMockOutput(): { output: Writable; getOutput: () => string } {
 	};
 }
 
+// Mock input interface for typed this access
+interface MockInputData {
+	_rawMode: boolean;
+	_paused: boolean;
+	isRaw: boolean;
+	setRawMode(mode: boolean): this;
+	pause(): this;
+	resume(): this;
+	on: ReturnType<typeof vi.fn>;
+	once: ReturnType<typeof vi.fn>;
+	removeListener: ReturnType<typeof vi.fn>;
+}
+
 // Create a mock input stream with raw mode support
 function createMockInput(): NodeJS.ReadStream & {
 	_rawMode: boolean;
 	_paused: boolean;
 } {
-	const mock = {
+	const mock: MockInputData = {
 		_rawMode: true,
 		_paused: false,
 		isRaw: true,
@@ -46,8 +59,8 @@ function createMockInput(): NodeJS.ReadStream & {
 		on: vi.fn().mockReturnThis(),
 		once: vi.fn().mockReturnThis(),
 		removeListener: vi.fn().mockReturnThis(),
-	} as unknown as NodeJS.ReadStream & { _rawMode: boolean; _paused: boolean };
-	return mock;
+	};
+	return mock as unknown as NodeJS.ReadStream & { _rawMode: boolean; _paused: boolean };
 }
 
 describe('SuspendManager', () => {
