@@ -42,6 +42,15 @@ export {
 	releaseMouse,
 	resetInputState,
 } from './inputSystem';
+// Movement system
+export {
+	createMovementSystem,
+	hasMovementSystem,
+	movementSystem,
+	queryMovement,
+	registerMovementSystem,
+	updateMovements,
+} from './movementSystem';
 // State machine system
 export {
 	createStateMachineSystem,

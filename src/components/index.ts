@@ -346,3 +346,29 @@ export {
 	sendEvent,
 	updateStateAge,
 } from './stateMachine';
+// Velocity and Acceleration components
+export type { AccelerationData, VelocityData, VelocityOptions } from './velocity';
+export {
+	Acceleration,
+	addVelocity,
+	applyAccelerationToEntity,
+	applyFrictionToEntity,
+	applyVelocityToEntity,
+	clampSpeedForEntity,
+	clearAcceleration,
+	getAcceleration,
+	getSpeed,
+	getVelocity,
+	hasAcceleration,
+	hasVelocity,
+	removeAcceleration,
+	removeVelocity,
+	setAcceleration,
+	setFriction,
+	setMaxSpeed,
+	setVelocity,
+	setVelocityOptions,
+	stopEntity,
+	updateEntityMovement,
+	Velocity,
+} from './velocity';
