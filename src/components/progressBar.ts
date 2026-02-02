@@ -18,8 +18,7 @@ export const ProgressOrientation = {
 	Vertical: 1,
 } as const;
 
-export type ProgressOrientation =
-	(typeof ProgressOrientation)[keyof typeof ProgressOrientation];
+export type ProgressOrientation = (typeof ProgressOrientation)[keyof typeof ProgressOrientation];
 
 /**
  * ProgressBar component store for tracking progress bar entities.
@@ -335,11 +334,7 @@ export function setProgress(world: World, eid: Entity, value: number): void {
  * incrementProgress(world, progressBar, 10);
  * ```
  */
-export function incrementProgress(
-	world: World,
-	eid: Entity,
-	amount = 1,
-): void {
+export function incrementProgress(world: World, eid: Entity, amount = 1): void {
 	const current = progressBarStore.value[eid] as number;
 	setProgress(world, eid, current + amount);
 }
@@ -351,11 +346,7 @@ export function incrementProgress(
  * @param eid - Progress bar entity ID
  * @param amount - Amount to subtract (default: 1)
  */
-export function decrementProgress(
-	world: World,
-	eid: Entity,
-	amount = 1,
-): void {
+export function decrementProgress(world: World, eid: Entity, amount = 1): void {
 	const current = progressBarStore.value[eid] as number;
 	setProgress(world, eid, current - amount);
 }
@@ -420,21 +411,14 @@ export function isProgressComplete(eid: Entity): boolean {
  * });
  * ```
  */
-export function setProgressBarDisplay(
-	eid: Entity,
-	options: ProgressBarDisplayOptions,
-): void {
+export function setProgressBarDisplay(eid: Entity, options: ProgressBarDisplayOptions): void {
 	const existing = displayStore.get(eid);
 	const orientation = progressBarStore.orientation[eid] as ProgressOrientation;
 
 	const defaultFill =
-		orientation === ProgressOrientation.Vertical
-			? DEFAULT_FILL_CHAR_VERTICAL
-			: DEFAULT_FILL_CHAR;
+		orientation === ProgressOrientation.Vertical ? DEFAULT_FILL_CHAR_VERTICAL : DEFAULT_FILL_CHAR;
 	const defaultEmpty =
-		orientation === ProgressOrientation.Vertical
-			? DEFAULT_EMPTY_CHAR_VERTICAL
-			: DEFAULT_EMPTY_CHAR;
+		orientation === ProgressOrientation.Vertical ? DEFAULT_EMPTY_CHAR_VERTICAL : DEFAULT_EMPTY_CHAR;
 
 	displayStore.set(eid, {
 		fillChar: options.fillChar ?? existing?.fillChar ?? defaultFill,
@@ -461,13 +445,9 @@ export function getProgressBarDisplay(eid: Entity): ProgressBarDisplay {
 	// Return defaults
 	const orientation = progressBarStore.orientation[eid] as ProgressOrientation;
 	const defaultFill =
-		orientation === ProgressOrientation.Vertical
-			? DEFAULT_FILL_CHAR_VERTICAL
-			: DEFAULT_FILL_CHAR;
+		orientation === ProgressOrientation.Vertical ? DEFAULT_FILL_CHAR_VERTICAL : DEFAULT_FILL_CHAR;
 	const defaultEmpty =
-		orientation === ProgressOrientation.Vertical
-			? DEFAULT_EMPTY_CHAR_VERTICAL
-			: DEFAULT_EMPTY_CHAR;
+		orientation === ProgressOrientation.Vertical ? DEFAULT_EMPTY_CHAR_VERTICAL : DEFAULT_EMPTY_CHAR;
 
 	return {
 		fillChar: defaultFill,
@@ -550,10 +530,7 @@ export function renderProgressString(eid: Entity, width: number): string {
  * });
  * ```
  */
-export function onProgressComplete(
-	eid: Entity,
-	callback: ProgressCompleteCallback,
-): () => void {
+export function onProgressComplete(eid: Entity, callback: ProgressCompleteCallback): () => void {
 	const callbacks = completeCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	completeCallbacks.set(eid, callbacks);
@@ -576,10 +553,7 @@ export function onProgressComplete(
  * @param callback - Function to call on change
  * @returns Unsubscribe function
  */
-export function onProgressChange(
-	eid: Entity,
-	callback: ProgressChangeCallback,
-): () => void {
+export function onProgressChange(eid: Entity, callback: ProgressChangeCallback): () => void {
 	const callbacks = changeCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	changeCallbacks.set(eid, callbacks);
@@ -658,11 +632,7 @@ export function setProgressOrientation(
  * @param eid - Progress bar entity ID
  * @param show - Whether to show percentage
  */
-export function setShowPercentage(
-	world: World,
-	eid: Entity,
-	show: boolean,
-): void {
+export function setShowPercentage(world: World, eid: Entity, show: boolean): void {
 	progressBarStore.showPercentage[eid] = show ? 1 : 0;
 	markDirty(world, eid);
 }
@@ -675,12 +645,7 @@ export function setShowPercentage(
  * @param min - Minimum value
  * @param max - Maximum value
  */
-export function setProgressRange(
-	world: World,
-	eid: Entity,
-	min: number,
-	max: number,
-): void {
+export function setProgressRange(world: World, eid: Entity, min: number, max: number): void {
 	progressBarStore.min[eid] = min;
 	progressBarStore.max[eid] = max;
 

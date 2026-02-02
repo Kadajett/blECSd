@@ -1,15 +1,15 @@
 import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { World } from '../core/types';
 import { createBoxEntity } from '../core/entities';
+import type { World } from '../core/types';
 import {
 	attachProgressBarBehavior,
 	clearProgressBarCallbacks,
 	clearProgressBarDisplay,
 	completeProgress,
-	decrementProgress,
-	DEFAULT_FILL_CHAR,
 	DEFAULT_EMPTY_CHAR,
+	DEFAULT_FILL_CHAR,
+	decrementProgress,
 	getProgress,
 	getProgressBarDisplay,
 	getProgressMax,

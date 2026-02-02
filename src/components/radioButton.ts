@@ -155,7 +155,10 @@ const valueStore = new Map<Entity, string>();
 /**
  * Callback type for radio set selection change.
  */
-export type RadioSelectCallback = (selectedValue: string | null, selectedEntity: Entity | null) => void;
+export type RadioSelectCallback = (
+	selectedValue: string | null,
+	selectedEntity: Entity | null,
+) => void;
 
 /**
  * Store for selection change callbacks.
@@ -261,10 +264,7 @@ export function getSelectedValue(eid: Entity): string | null {
  * });
  * ```
  */
-export function onRadioSelect(
-	eid: Entity,
-	callback: RadioSelectCallback,
-): () => void {
+export function onRadioSelect(eid: Entity, callback: RadioSelectCallback): () => void {
 	const callbacks = selectCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	selectCallbacks.set(eid, callbacks);
@@ -324,11 +324,7 @@ export function clearRadioSetCallbacks(eid: Entity): void {
  * const machineId = attachRadioButtonBehavior(world, buttonEntity, radioSetEntity);
  * ```
  */
-export function attachRadioButtonBehavior(
-	world: World,
-	eid: Entity,
-	radioSetId?: Entity,
-): number {
+export function attachRadioButtonBehavior(world: World, eid: Entity, radioSetId?: Entity): number {
 	radioButtonStore.isRadioButton[eid] = 1;
 	radioButtonStore.radioSetId[eid] = radioSetId ?? 0;
 
@@ -368,10 +364,7 @@ export function isRadioButton(world: World, eid: Entity): boolean {
  * // 'unselected' | 'selected' | 'disabled'
  * ```
  */
-export function getRadioButtonState(
-	world: World,
-	eid: Entity,
-): RadioButtonState | undefined {
+export function getRadioButtonState(world: World, eid: Entity): RadioButtonState | undefined {
 	if (!isRadioButton(world, eid)) {
 		return undefined;
 	}
@@ -389,11 +382,7 @@ export function getRadioButtonState(
  * @param event - Event to send
  * @returns True if event caused a state change
  */
-export function sendRadioButtonEvent(
-	world: World,
-	eid: Entity,
-	event: RadioButtonEvent,
-): boolean {
+export function sendRadioButtonEvent(world: World, eid: Entity, event: RadioButtonEvent): boolean {
 	if (!isRadioButton(world, eid)) {
 		return false;
 	}
@@ -408,11 +397,7 @@ export function sendRadioButtonEvent(
  * @param state - State to check for
  * @returns True if in the specified state
  */
-export function isRadioButtonInState(
-	world: World,
-	eid: Entity,
-	state: RadioButtonState,
-): boolean {
+export function isRadioButtonInState(world: World, eid: Entity, state: RadioButtonState): boolean {
 	if (!isRadioButton(world, eid)) {
 		return false;
 	}
@@ -602,14 +587,12 @@ export function enableRadioButton(world: World, eid: Entity): void {
  * });
  * ```
  */
-export function setRadioButtonDisplay(
-	eid: Entity,
-	options: RadioButtonDisplayOptions,
-): void {
+export function setRadioButtonDisplay(eid: Entity, options: RadioButtonDisplayOptions): void {
 	const existing = displayStore.get(eid);
 	displayStore.set(eid, {
 		selectedChar: options.selectedChar ?? existing?.selectedChar ?? DEFAULT_RADIO_SELECTED_CHAR,
-		unselectedChar: options.unselectedChar ?? existing?.unselectedChar ?? DEFAULT_RADIO_UNSELECTED_CHAR,
+		unselectedChar:
+			options.unselectedChar ?? existing?.unselectedChar ?? DEFAULT_RADIO_UNSELECTED_CHAR,
 	});
 }
 
@@ -620,10 +603,12 @@ export function setRadioButtonDisplay(
  * @returns Display configuration
  */
 export function getRadioButtonDisplay(eid: Entity): RadioButtonDisplay {
-	return displayStore.get(eid) ?? {
-		selectedChar: DEFAULT_RADIO_SELECTED_CHAR,
-		unselectedChar: DEFAULT_RADIO_UNSELECTED_CHAR,
-	};
+	return (
+		displayStore.get(eid) ?? {
+			selectedChar: DEFAULT_RADIO_SELECTED_CHAR,
+			unselectedChar: DEFAULT_RADIO_UNSELECTED_CHAR,
+		}
+	);
 }
 
 /**
@@ -679,11 +664,7 @@ export function clearRadioButtonDisplay(eid: Entity): void {
  * }
  * ```
  */
-export function handleRadioButtonKeyPress(
-	world: World,
-	eid: Entity,
-	key: string,
-): boolean {
+export function handleRadioButtonKeyPress(world: World, eid: Entity, key: string): boolean {
 	if (!isRadioButton(world, eid)) {
 		return false;
 	}
@@ -710,10 +691,7 @@ export function handleRadioButtonKeyPress(
 export function getRadioButtonsInSet(radioSetId: Entity): Entity[] {
 	const buttons: Entity[] = [];
 	for (let i = 0; i < radioButtonStore.isRadioButton.length; i++) {
-		if (
-			radioButtonStore.isRadioButton[i] === 1 &&
-			radioButtonStore.radioSetId[i] === radioSetId
-		) {
+		if (radioButtonStore.isRadioButton[i] === 1 && radioButtonStore.radioSetId[i] === radioSetId) {
 			buttons.push(i as Entity);
 		}
 	}
@@ -735,11 +713,7 @@ export function getRadioButtonsInSet(radioSetId: Entity): Entity[] {
  * selectRadioByValue(world, radioSet, 'option2');
  * ```
  */
-export function selectRadioByValue(
-	world: World,
-	radioSetId: Entity,
-	value: string,
-): boolean {
+export function selectRadioByValue(world: World, radioSetId: Entity, value: string): boolean {
 	const buttons = getRadioButtonsInSet(radioSetId);
 	for (const button of buttons) {
 		if (valueStore.get(button) === value) {

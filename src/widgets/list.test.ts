@@ -4,9 +4,9 @@
 
 import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { resetListStore } from '../components/list';
 import type { Entity, World } from '../core/types';
 import { createList, isListWidget, type ListWidget } from './list';
-import { resetListStore } from '../components/list';
 
 describe('List Widget', () => {
 	let world: World;

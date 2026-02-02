@@ -6,8 +6,6 @@ import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Entity, World } from '../core/types';
 import {
-	SLIDER_STATE_MACHINE_CONFIG,
-	SliderOrientation,
 	attachSliderBehavior,
 	blurSlider,
 	clearSliderCallbacks,
@@ -39,6 +37,8 @@ import {
 	onSliderDragStart,
 	renderSliderString,
 	resetSliderStore,
+	SLIDER_STATE_MACHINE_CONFIG,
+	SliderOrientation,
 	setShowSliderValue,
 	setSliderDisplay,
 	setSliderFromPercentage,

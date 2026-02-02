@@ -879,15 +879,11 @@ export function getCursorDisplayText(
 	if (mode === CursorMode.Block && cursorPos < displayValue.length) {
 		// Block mode replaces character at cursor position
 		displayText =
-			displayValue.substring(0, cursorPos) +
-			cursorChar +
-			displayValue.substring(cursorPos + 1);
+			displayValue.substring(0, cursorPos) + cursorChar + displayValue.substring(cursorPos + 1);
 	} else {
 		// Line mode inserts cursor between characters
 		displayText =
-			displayValue.substring(0, cursorPos) +
-			cursorChar +
-			displayValue.substring(cursorPos);
+			displayValue.substring(0, cursorPos) + cursorChar + displayValue.substring(cursorPos);
 	}
 
 	return {

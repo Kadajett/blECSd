@@ -14,13 +14,14 @@ import {
 	DEFAULT_UNCHECKED_CHAR,
 	setCheckboxDisplay,
 } from '../components/checkbox';
-import {
-	attachTextInputBehavior,
-	DEFAULT_CENSOR_CHAR,
-	DEFAULT_PLACEHOLDER,
-	setTextInputConfig,
-} from '../components/textInput';
+import { Content, type ContentOptions, setContent } from '../components/content';
+import { Dimensions, type DimensionValue } from '../components/dimensions';
+import { Focusable, type FocusableOptions, setFocusable } from '../components/focusable';
 import { attachFormBehavior, registerFormField } from '../components/form';
+import { Hierarchy, setParent } from '../components/hierarchy';
+import { Interactive, type InteractiveOptions, setInteractive } from '../components/interactive';
+import { Padding, type PaddingOptions, setPadding } from '../components/padding';
+import { Position } from '../components/position';
 import {
 	attachProgressBarBehavior,
 	ProgressOrientation,
@@ -33,26 +34,21 @@ import {
 	setRadioButtonDisplay,
 	setRadioValue,
 } from '../components/radioButton';
-import {
-	attachSelectBehavior,
-	type SelectOption,
-	setSelectDisplay,
-} from '../components/select';
-import {
-	attachSliderBehavior,
-	setSliderDisplay,
-	setSliderOrientation,
-	setShowSliderValue,
-} from '../components/slider';
-import { Content, type ContentOptions, setContent } from '../components/content';
-import { Dimensions, type DimensionValue } from '../components/dimensions';
-import { Focusable, type FocusableOptions, setFocusable } from '../components/focusable';
-import { Hierarchy, setParent } from '../components/hierarchy';
-import { Interactive, type InteractiveOptions, setInteractive } from '../components/interactive';
-import { Padding, type PaddingOptions, setPadding } from '../components/padding';
-import { Position } from '../components/position';
 import { Renderable, type StyleOptions, setStyle } from '../components/renderable';
 import { Scrollable, type ScrollableOptions, setScrollable } from '../components/scrollable';
+import { attachSelectBehavior, type SelectOption, setSelectDisplay } from '../components/select';
+import {
+	attachSliderBehavior,
+	setShowSliderValue,
+	setSliderDisplay,
+	setSliderOrientation,
+} from '../components/slider';
+import {
+	attachTextInputBehavior,
+	DEFAULT_CENSOR_CHAR,
+	DEFAULT_PLACEHOLDER,
+	setTextInputConfig,
+} from '../components/textInput';
 import type { Entity, World } from './types';
 
 // =============================================================================
@@ -2553,13 +2549,7 @@ export function createFormEntity(world: World, config: FormConfig = {}): Entity 
 	// Register any pre-configured fields
 	if (validated.fields) {
 		for (const field of validated.fields) {
-			registerFormField(
-				world,
-				eid,
-				field.entity as Entity,
-				field.name,
-				field.initialValue,
-			);
+			registerFormField(world, eid, field.entity as Entity, field.name, field.initialValue);
 		}
 	}
 
@@ -2600,10 +2590,7 @@ export function createFormEntity(world: World, config: FormConfig = {}): Entity 
  * setProgress(world, progressBar, 50);
  * ```
  */
-export function createProgressBarEntity(
-	world: World,
-	config: ProgressBarConfig = {},
-): Entity {
+export function createProgressBarEntity(world: World, config: ProgressBarConfig = {}): Entity {
 	const validated = ProgressBarConfigSchema.parse(config);
 	const eid = addEntity(world) as Entity;
 
@@ -2619,8 +2606,7 @@ export function createProgressBarEntity(
 		value: validated.value ?? 0,
 		min: validated.min ?? 0,
 		max: validated.max ?? 100,
-		orientation:
-			(validated.orientation as ProgressOrientation) ?? ProgressOrientation.Horizontal,
+		orientation: (validated.orientation as ProgressOrientation) ?? ProgressOrientation.Horizontal,
 		showPercentage: validated.showPercentage ?? false,
 	});
 
@@ -2680,10 +2666,7 @@ export function createProgressBarEntity(
  * });
  * ```
  */
-export function createRadioSetEntity(
-	world: World,
-	config: RadioSetConfig = {},
-): Entity {
+export function createRadioSetEntity(world: World, config: RadioSetConfig = {}): Entity {
 	const validated = RadioSetConfigSchema.parse(config);
 	const eid = addEntity(world) as Entity;
 
@@ -2728,10 +2711,7 @@ export function createRadioSetEntity(
  * selectRadioButton(world, button);
  * ```
  */
-export function createRadioButtonEntity(
-	world: World,
-	config: RadioButtonConfig = {},
-): Entity {
+export function createRadioButtonEntity(world: World, config: RadioButtonConfig = {}): Entity {
 	const validated = RadioButtonConfigSchema.parse(config);
 	const eid = addEntity(world) as Entity;
 

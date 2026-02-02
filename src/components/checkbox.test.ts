@@ -25,8 +25,8 @@ import {
 	onCheckboxChange,
 	resetCheckboxStore,
 	sendCheckboxEvent,
-	setChecked,
 	setCheckboxDisplay,
+	setChecked,
 	toggleCheckbox,
 	uncheckCheckbox,
 } from './checkbox';

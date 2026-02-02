@@ -1,8 +1,7 @@
 import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { World } from '../core/types';
 import { createBoxEntity } from '../core/entities';
-import { StateMachineStore } from './stateMachine';
+import type { World } from '../core/types';
 import {
 	attachRadioButtonBehavior,
 	attachRadioSetBehavior,
@@ -15,8 +14,8 @@ import {
 	enableRadioButton,
 	getRadioButtonChar,
 	getRadioButtonDisplay,
-	getRadioButtonsInSet,
 	getRadioButtonState,
+	getRadioButtonsInSet,
 	getRadioSet,
 	getRadioValue,
 	getSelectedButton,
@@ -34,6 +33,7 @@ import {
 	setRadioSet,
 	setRadioValue,
 } from './radioButton';
+import { StateMachineStore } from './stateMachine';
 
 describe('RadioButton Component', () => {
 	let world: World;

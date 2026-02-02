@@ -610,10 +610,12 @@ export function setCheckboxDisplay(eid: Entity, options: CheckboxDisplayOptions)
  * ```
  */
 export function getCheckboxDisplay(eid: Entity): CheckboxDisplay {
-	return displayStore.get(eid) ?? {
-		checkedChar: DEFAULT_CHECKED_CHAR,
-		uncheckedChar: DEFAULT_UNCHECKED_CHAR,
-	};
+	return (
+		displayStore.get(eid) ?? {
+			checkedChar: DEFAULT_CHECKED_CHAR,
+			uncheckedChar: DEFAULT_UNCHECKED_CHAR,
+		}
+	);
 }
 
 /**

@@ -9,12 +9,7 @@
 import type { StateMachineConfig } from '../core/stateMachine';
 import type { Entity, World } from '../core/types';
 import { markDirty } from './renderable';
-import {
-	attachStateMachine,
-	getState,
-	hasStateMachine,
-	sendEvent,
-} from './stateMachine';
+import { attachStateMachine, getState, hasStateMachine, sendEvent } from './stateMachine';
 
 // =============================================================================
 // TYPES
@@ -652,7 +647,8 @@ export function selectHighlighted(world: World, eid: Entity): boolean {
 export function setSelectDisplay(eid: Entity, options: SelectDisplayOptions): void {
 	const existing = displayStore.get(eid);
 	displayStore.set(eid, {
-		closedIndicator: options.closedIndicator ?? existing?.closedIndicator ?? DEFAULT_CLOSED_INDICATOR,
+		closedIndicator:
+			options.closedIndicator ?? existing?.closedIndicator ?? DEFAULT_CLOSED_INDICATOR,
 		openIndicator: options.openIndicator ?? existing?.openIndicator ?? DEFAULT_OPEN_INDICATOR,
 		selectedMark: options.selectedMark ?? existing?.selectedMark ?? DEFAULT_SELECTED_MARK,
 		separator: options.separator ?? existing?.separator ?? DEFAULT_SEPARATOR,
@@ -822,11 +818,7 @@ export type SelectAction =
  * }
  * ```
  */
-export function handleSelectKeyPress(
-	world: World,
-	eid: Entity,
-	key: string,
-): SelectAction | null {
+export function handleSelectKeyPress(world: World, eid: Entity, key: string): SelectAction | null {
 	if (!isSelect(world, eid)) {
 		return null;
 	}

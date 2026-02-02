@@ -1,11 +1,10 @@
 import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createBoxEntity, createCheckboxEntity, createTextboxEntity } from '../core/entities';
 import type { World } from '../core/types';
+import { resetCheckboxStore, setChecked } from './checkbox';
 import { resetContentStore, setContent } from './content';
 import { resetFocusState } from './focusable';
-import { StateMachineStore } from './stateMachine';
-import { resetCheckboxStore, setChecked } from './checkbox';
-import { resetTextInputStore, attachTextInputBehavior } from './textInput';
 import {
 	attachFormBehavior,
 	autoRegisterFields,
@@ -30,11 +29,8 @@ import {
 	submitForm,
 	unregisterFormField,
 } from './form';
-import {
-	createBoxEntity,
-	createCheckboxEntity,
-	createTextboxEntity,
-} from '../core/entities';
+import { StateMachineStore } from './stateMachine';
+import { attachTextInputBehavior, resetTextInputStore } from './textInput';
 
 describe('Form Component', () => {
 	let world: World;

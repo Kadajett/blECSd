@@ -1,7 +1,6 @@
 import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Entity, World } from '../core/types';
-import { StateMachineStore } from './stateMachine';
 import {
 	attachSelectBehavior,
 	clearSelectCallbacks,
@@ -17,11 +16,11 @@ import {
 	getHighlightedIndex,
 	getOptionAt,
 	getOptionCount,
+	getSelectDisplay,
 	getSelectedIndex,
 	getSelectedLabel,
 	getSelectedOption,
 	getSelectedValue,
-	getSelectDisplay,
 	getSelectIndicator,
 	getSelectOptions,
 	getSelectState,
@@ -38,6 +37,7 @@ import {
 	openSelect,
 	resetSelectStore,
 	SELECT_STATE_MACHINE_CONFIG,
+	type SelectOption,
 	selectHighlighted,
 	selectOptionByIndex,
 	selectOptionByValue,
@@ -47,8 +47,8 @@ import {
 	setSelectDisplay,
 	setSelectOptions,
 	toggleSelect,
-	type SelectOption,
 } from './select';
+import { StateMachineStore } from './stateMachine';
 
 describe('Select Component', () => {
 	let world: World;

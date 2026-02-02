@@ -9,12 +9,7 @@
 import type { StateMachineConfig } from '../core/stateMachine';
 import type { Entity, World } from '../core/types';
 import { markDirty } from './renderable';
-import {
-	attachStateMachine,
-	getState,
-	hasStateMachine,
-	sendEvent,
-} from './stateMachine';
+import { attachStateMachine, getState, hasStateMachine, sendEvent } from './stateMachine';
 
 // =============================================================================
 // TYPES

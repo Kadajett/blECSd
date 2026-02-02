@@ -5,23 +5,13 @@
  */
 
 import type { Entity, World } from '../core/types';
+import { getButtonState, isButton } from './button';
+import { getCheckboxState, isCheckbox, isChecked, sendCheckboxEvent, setChecked } from './checkbox';
 import { getContent, setContent } from './content';
 import { focusNext, focusPrev, getTabOrder, isFocusable } from './focusable';
 import { getChildren, getDescendants } from './hierarchy';
 import { markDirty } from './renderable';
-import {
-	getTextInputState,
-	isTextInput,
-	sendTextInputEvent,
-} from './textInput';
-import {
-	getCheckboxState,
-	isCheckbox,
-	isChecked,
-	sendCheckboxEvent,
-	setChecked,
-} from './checkbox';
-import { getButtonState, isButton } from './button';
+import { getTextInputState, isTextInput, sendTextInputEvent } from './textInput';
 
 /** Default capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;
@@ -229,11 +219,7 @@ export function registerFormField(
  * @param formEntity - Form entity ID
  * @param fieldEntity - Field entity to unregister
  */
-export function unregisterFormField(
-	world: World,
-	formEntity: Entity,
-	fieldEntity: Entity,
-): void {
+export function unregisterFormField(world: World, formEntity: Entity, fieldEntity: Entity): void {
 	const names = fieldNamesStore.get(formEntity);
 	const initials = initialValuesStore.get(formEntity);
 
@@ -267,10 +253,7 @@ export function getFormFields(world: World, formEntity: Entity): Entity[] {
  * @param fieldEntity - Field entity ID
  * @returns Field name or undefined
  */
-export function getFieldName(
-	formEntity: Entity,
-	fieldEntity: Entity,
-): string | undefined {
+export function getFieldName(formEntity: Entity, fieldEntity: Entity): string | undefined {
 	return fieldNamesStore.get(formEntity)?.get(fieldEntity);
 }
 
@@ -311,11 +294,7 @@ export function getFieldValue(world: World, eid: Entity): FormFieldValue {
  * @param eid - Field entity ID
  * @param value - Value to set
  */
-export function setFieldValue(
-	world: World,
-	eid: Entity,
-	value: FormFieldValue,
-): void {
+export function setFieldValue(world: World, eid: Entity, value: FormFieldValue): void {
 	// TextInput: set content
 	if (isTextInput(world, eid)) {
 		setContent(world, eid, String(value ?? ''));
@@ -443,10 +422,7 @@ export function submitForm(world: World, formEntity: Entity): FormValues {
  * });
  * ```
  */
-export function onFormSubmit(
-	eid: Entity,
-	callback: FormSubmitCallback,
-): () => void {
+export function onFormSubmit(eid: Entity, callback: FormSubmitCallback): () => void {
 	const callbacks = submitCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	submitCallbacks.set(eid, callbacks);
@@ -509,10 +485,7 @@ export function clearFormCallbacks(eid: Entity): void {
  * focusNextField(world, form);
  * ```
  */
-export function focusNextField(
-	world: World,
-	formEntity: Entity,
-): Entity | null {
+export function focusNextField(world: World, formEntity: Entity): Entity | null {
 	const fields = getFormFields(world, formEntity);
 	const focusableFields = fields.filter((eid) => isFocusable(world, eid));
 	return focusNext(world, focusableFields);
@@ -532,10 +505,7 @@ export function focusNextField(
  * focusPrevField(world, form);
  * ```
  */
-export function focusPrevField(
-	world: World,
-	formEntity: Entity,
-): Entity | null {
+export function focusPrevField(world: World, formEntity: Entity): Entity | null {
 	const fields = getFormFields(world, formEntity);
 	const focusableFields = fields.filter((eid) => isFocusable(world, eid));
 	return focusPrev(world, focusableFields);
@@ -615,11 +585,7 @@ export function handleFormKeyPress(
  * @param formEntity - Form entity ID
  * @param namePrefix - Optional prefix for auto-generated names
  */
-export function autoRegisterFields(
-	world: World,
-	formEntity: Entity,
-	namePrefix = 'field_',
-): void {
+export function autoRegisterFields(world: World, formEntity: Entity, namePrefix = 'field_'): void {
 	const descendants = getDescendants(world, formEntity);
 
 	for (const eid of descendants) {

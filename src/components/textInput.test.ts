@@ -6,10 +6,10 @@ import { StateMachineStore } from './stateMachine';
 import {
 	attachTextInputBehavior,
 	blurTextInput,
+	CursorMode,
 	clearSelection,
 	clearTextInputCallbacks,
 	clearTextInputError,
-	CursorMode,
 	DEFAULT_CENSOR_CHAR,
 	DEFAULT_CURSOR_BLINK_MS,
 	DEFAULT_CURSOR_BLOCK_CHAR,

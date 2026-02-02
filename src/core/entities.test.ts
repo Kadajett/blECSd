@@ -10,13 +10,9 @@ import {
 	resetCheckboxStore,
 	toggleCheckbox,
 } from '../components/checkbox';
-import {
-	getTextInputConfig,
-	getTextInputState,
-	isMultiline,
-	isTextInput,
-	resetTextInputStore,
-} from '../components/textInput';
+import { Content, getContent, resetContentStore } from '../components/content';
+import { Dimensions } from '../components/dimensions';
+import { Focusable, resetFocusState } from '../components/focusable';
 import {
 	getFormFields,
 	isForm,
@@ -24,6 +20,10 @@ import {
 	isFormSubmitOnEnter,
 	resetFormStore,
 } from '../components/form';
+import { Hierarchy } from '../components/hierarchy';
+import { Interactive } from '../components/interactive';
+import { Padding } from '../components/padding';
+import { Position } from '../components/position';
 import {
 	getProgress,
 	getProgressBarDisplay,
@@ -35,9 +35,11 @@ import {
 	ProgressOrientation,
 	resetProgressBarStore,
 } from '../components/progressBar';
+import { Renderable } from '../components/renderable';
+import { hasScrollable, Scrollable } from '../components/scrollable';
 import {
-	getSelectedIndex,
 	getSelectDisplay,
+	getSelectedIndex,
 	getSelectOptions,
 	getSelectState,
 	isSelect,
@@ -56,16 +58,14 @@ import {
 	resetSliderStore,
 	SliderOrientation,
 } from '../components/slider';
-import { Content, getContent, resetContentStore } from '../components/content';
-import { Dimensions } from '../components/dimensions';
-import { Focusable, resetFocusState } from '../components/focusable';
-import { Hierarchy } from '../components/hierarchy';
-import { Interactive } from '../components/interactive';
-import { Padding } from '../components/padding';
-import { Position } from '../components/position';
-import { Renderable } from '../components/renderable';
-import { hasScrollable, Scrollable } from '../components/scrollable';
 import { StateMachineStore } from '../components/stateMachine';
+import {
+	getTextInputConfig,
+	getTextInputState,
+	isMultiline,
+	isTextInput,
+	resetTextInputStore,
+} from '../components/textInput';
 import {
 	BoxConfigSchema,
 	ButtonConfigSchema,
@@ -1327,9 +1327,7 @@ describe('Entity Factories', () => {
 		it('creates a form with pre-registered fields', () => {
 			const field = createTextboxEntity(world);
 			const eid = createFormEntity(world, {
-				fields: [
-					{ name: 'username', entity: field },
-				],
+				fields: [{ name: 'username', entity: field }],
 			});
 
 			const fields = getFormFields(world, eid);
