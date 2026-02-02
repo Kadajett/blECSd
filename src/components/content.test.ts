@@ -8,12 +8,14 @@ import {
 	getContentData,
 	getContentHash,
 	getContentLength,
+	getText,
 	hasContent,
 	isParsingTags,
 	isTextWrapped,
 	resetContentStore,
 	setContent,
 	setParseTags,
+	setText,
 	setTextAlign,
 	setTextVAlign,
 	setTextWrap,
@@ -480,6 +482,90 @@ describe('Content component', () => {
 			expect(TextVAlign.Top).toBe(0);
 			expect(TextVAlign.Middle).toBe(1);
 			expect(TextVAlign.Bottom).toBe(2);
+		});
+	});
+
+	describe('setText', () => {
+		it('strips ANSI codes from content', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setText(world, entity, '\x1b[31mRed Text\x1b[0m');
+
+			expect(getContent(world, entity)).toBe('Red Text');
+		});
+
+		it('strips multiple ANSI codes', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setText(world, entity, '\x1b[1m\x1b[31mBold Red\x1b[0m Normal');
+
+			expect(getContent(world, entity)).toBe('Bold Red Normal');
+		});
+
+		it('handles text without ANSI codes', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setText(world, entity, 'Plain text');
+
+			expect(getContent(world, entity)).toBe('Plain text');
+		});
+
+		it('accepts options', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setText(world, entity, '\x1b[32mGreen\x1b[0m', { align: TextAlign.Center });
+
+			expect(getContent(world, entity)).toBe('Green');
+			expect(Content.align[entity]).toBe(TextAlign.Center);
+		});
+
+		it('returns entity for chaining', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			const result = setText(world, entity, 'test');
+
+			expect(result).toBe(entity);
+		});
+	});
+
+	describe('getText', () => {
+		it('returns empty string for entity without Content', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			expect(getText(world, entity)).toBe('');
+		});
+
+		it('returns content with ANSI codes stripped', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setContent(world, entity, '\x1b[31mRed\x1b[0m');
+
+			expect(getText(world, entity)).toBe('Red');
+		});
+
+		it('returns plain content unchanged', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setContent(world, entity, 'Plain text');
+
+			expect(getText(world, entity)).toBe('Plain text');
+		});
+
+		it('strips complex ANSI sequences', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			setContent(world, entity, '\x1b[38;5;196mColored\x1b[0m');
+
+			expect(getText(world, entity)).toBe('Colored');
 		});
 	});
 });

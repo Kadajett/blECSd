@@ -5,6 +5,7 @@
 
 import { addComponent, hasComponent } from 'bitecs';
 import type { Entity, World } from '../core/types';
+import { stripAnsi } from '../utils/textWrap';
 
 /** Default entity capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;
@@ -304,6 +305,57 @@ export function getContentData(world: World, eid: Entity): ContentData | undefin
 		valign: Content.valign[eid] as TextVAlign,
 		parseTags: Content.parseTags[eid] === 1,
 	};
+}
+
+/**
+ * Sets the text content of an entity, stripping any ANSI escape codes.
+ * Use this when you want to set plain text without formatting codes.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param text - The text to set (ANSI codes will be stripped)
+ * @param options - Optional content options
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { setText, getText } from 'blecsd';
+ *
+ * // ANSI codes are stripped
+ * setText(world, entity, '\x1b[31mRed Text\x1b[0m');
+ * console.log(getText(world, entity)); // 'Red Text'
+ * ```
+ */
+export function setText(
+	world: World,
+	eid: Entity,
+	text: string,
+	options?: ContentOptions,
+): Entity {
+	const plainText = stripAnsi(text);
+	return setContent(world, eid, plainText, options);
+}
+
+/**
+ * Gets the text content of an entity with ANSI codes stripped.
+ * Returns empty string if no Content component.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The plain text content without ANSI codes
+ *
+ * @example
+ * ```typescript
+ * import { setContent, getText } from 'blecsd';
+ *
+ * // Content may contain ANSI codes
+ * setContent(world, entity, '\x1b[31mRed\x1b[0m');
+ * console.log(getText(world, entity)); // 'Red'
+ * ```
+ */
+export function getText(world: World, eid: Entity): string {
+	const content = getContent(world, eid);
+	return stripAnsi(content);
 }
 
 /**

@@ -128,6 +128,50 @@ getContent(world, eid); // 'Hello, World!'
 
 ---
 
+### setText
+
+Sets text content, stripping any ANSI escape codes. Use this when you want to store plain text without formatting codes.
+
+```typescript
+import { createWorld, setText, getText } from 'blecsd';
+
+const world = createWorld();
+const eid = 1;
+
+// ANSI codes are stripped
+setText(world, eid, '\x1b[31mRed Text\x1b[0m');
+getText(world, eid); // 'Red Text'
+
+// Accepts same options as setContent
+setText(world, eid, '\x1b[32mGreen\x1b[0m', {
+  align: TextAlign.Center,
+  wrap: true,
+});
+```
+
+**Returns:** The entity ID for chaining
+
+---
+
+### getText
+
+Gets text content with ANSI codes stripped. Use this to get plain text for display width calculations or logging.
+
+```typescript
+import { createWorld, setContent, getText } from 'blecsd';
+
+const world = createWorld();
+const eid = 1;
+
+getText(world, eid); // '' (no content)
+
+// Content may contain ANSI codes
+setContent(world, eid, '\x1b[31mRed\x1b[0m and \x1b[32mGreen\x1b[0m');
+getText(world, eid); // 'Red and Green'
+```
+
+---
+
 ### getContentData
 
 Gets full content data for an entity.
