@@ -50,27 +50,11 @@ export const Interactive = {
 	pressed: new Uint8Array(DEFAULT_CAPACITY),
 	/** Whether entity receives key events (0=no, 1=yes) */
 	keyable: new Uint8Array(DEFAULT_CAPACITY),
-	/** Whether entity can receive focus (0=no, 1=yes) */
-	focusable: new Uint8Array(DEFAULT_CAPACITY),
-	/** Current focus state (0=no, 1=yes) */
-	focused: new Uint8Array(DEFAULT_CAPACITY),
-	/** Tab index for focus order (-1=skip, 0+=order) */
-	tabIndex: new Int16Array(DEFAULT_CAPACITY),
 	/** Hover effect foreground color */
 	hoverEffectFg: new Uint32Array(DEFAULT_CAPACITY),
 	/** Hover effect background color */
 	hoverEffectBg: new Uint32Array(DEFAULT_CAPACITY),
-	/** Focus effect foreground color */
-	focusEffectFg: new Uint32Array(DEFAULT_CAPACITY),
-	/** Focus effect background color */
-	focusEffectBg: new Uint32Array(DEFAULT_CAPACITY),
 };
-
-/** Default focus effect foreground color (cyan) */
-export const DEFAULT_FOCUS_FG = 0xff00ffff;
-
-/** Default focus effect background color (transparent) */
-export const DEFAULT_FOCUS_BG = 0x00000000;
 
 /**
  * Interactive configuration options.
@@ -84,18 +68,10 @@ export interface InteractiveOptions {
 	hoverable?: boolean;
 	/** Whether entity receives key events */
 	keyable?: boolean;
-	/** Whether entity can receive focus */
-	focusable?: boolean;
-	/** Tab index for focus order (-1=skip, 0+=order) */
-	tabIndex?: number;
 	/** Hover effect foreground color */
 	hoverEffectFg?: number;
 	/** Hover effect background color */
 	hoverEffectBg?: number;
-	/** Focus effect foreground color */
-	focusEffectFg?: number;
-	/** Focus effect background color */
-	focusEffectBg?: number;
 }
 
 /**
@@ -108,13 +84,8 @@ export interface InteractiveData {
 	readonly hovered: boolean;
 	readonly pressed: boolean;
 	readonly keyable: boolean;
-	readonly focusable: boolean;
-	readonly focused: boolean;
-	readonly tabIndex: number;
 	readonly hoverEffectFg: number;
 	readonly hoverEffectBg: number;
-	readonly focusEffectFg: number;
-	readonly focusEffectBg: number;
 }
 
 /**
@@ -127,13 +98,8 @@ function initInteractive(eid: Entity): void {
 	Interactive.hovered[eid] = 0;
 	Interactive.pressed[eid] = 0;
 	Interactive.keyable[eid] = 0;
-	Interactive.focusable[eid] = 0;
-	Interactive.focused[eid] = 0;
-	Interactive.tabIndex[eid] = 0;
 	Interactive.hoverEffectFg[eid] = DEFAULT_HOVER_FG;
 	Interactive.hoverEffectBg[eid] = DEFAULT_HOVER_BG;
-	Interactive.focusEffectFg[eid] = DEFAULT_FOCUS_FG;
-	Interactive.focusEffectBg[eid] = DEFAULT_FOCUS_BG;
 }
 
 /**
@@ -177,12 +143,8 @@ export function setInteractive(world: World, eid: Entity, options: InteractiveOp
 	if (options.draggable !== undefined) Interactive.draggable[eid] = options.draggable ? 1 : 0;
 	if (options.hoverable !== undefined) Interactive.hoverable[eid] = options.hoverable ? 1 : 0;
 	if (options.keyable !== undefined) Interactive.keyable[eid] = options.keyable ? 1 : 0;
-	if (options.focusable !== undefined) Interactive.focusable[eid] = options.focusable ? 1 : 0;
-	if (options.tabIndex !== undefined) Interactive.tabIndex[eid] = options.tabIndex;
 	if (options.hoverEffectFg !== undefined) Interactive.hoverEffectFg[eid] = options.hoverEffectFg;
 	if (options.hoverEffectBg !== undefined) Interactive.hoverEffectBg[eid] = options.hoverEffectBg;
-	if (options.focusEffectFg !== undefined) Interactive.focusEffectFg[eid] = options.focusEffectFg;
-	if (options.focusEffectBg !== undefined) Interactive.focusEffectBg[eid] = options.focusEffectBg;
 
 	return eid;
 }
@@ -374,146 +336,6 @@ export function setPressed(world: World, eid: Entity, pressed: boolean): Entity 
 }
 
 /**
- * Checks if an entity can receive focus.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns true if entity is focusable
- *
- * @example
- * ```typescript
- * import { isFocusable } from 'blecsd';
- *
- * if (isFocusable(world, entity)) {
- *   // Can focus this entity
- * }
- * ```
- */
-export function isFocusable(world: World, eid: Entity): boolean {
-	if (!hasComponent(world, eid, Interactive)) {
-		return false;
-	}
-	return Interactive.focusable[eid] === 1;
-}
-
-/**
- * Checks if an entity is currently focused.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns true if entity is focused
- *
- * @example
- * ```typescript
- * import { isFocused } from 'blecsd';
- *
- * if (isFocused(world, entity)) {
- *   // Draw focus ring
- * }
- * ```
- */
-export function isFocused(world: World, eid: Entity): boolean {
-	if (!hasComponent(world, eid, Interactive)) {
-		return false;
-	}
-	return Interactive.focused[eid] === 1;
-}
-
-/**
- * Sets whether an entity can receive focus.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @param focusable - Whether entity can be focused
- * @returns The entity ID for chaining
- */
-export function setFocusable(world: World, eid: Entity, focusable: boolean): Entity {
-	ensureInteractive(world, eid);
-	Interactive.focusable[eid] = focusable ? 1 : 0;
-	return eid;
-}
-
-/**
- * Sets the focus state of an entity.
- * Note: This only sets the component state. Use the focus system for
- * proper focus management with events.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @param focused - Whether entity is focused
- * @returns The entity ID for chaining
- */
-export function setFocusedState(world: World, eid: Entity, focused: boolean): Entity {
-	ensureInteractive(world, eid);
-	Interactive.focused[eid] = focused ? 1 : 0;
-	return eid;
-}
-
-/**
- * Gets the tab index of an entity.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns Tab index (-1 if not focusable via tab, 0+ for order)
- */
-export function getTabIndex(world: World, eid: Entity): number {
-	if (!hasComponent(world, eid, Interactive)) {
-		return -1;
-	}
-	return Interactive.tabIndex[eid] as number;
-}
-
-/**
- * Sets the tab index of an entity.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @param tabIndex - Tab index (-1=skip, 0+=order)
- * @returns The entity ID for chaining
- */
-export function setTabIndex(world: World, eid: Entity, tabIndex: number): Entity {
-	ensureInteractive(world, eid);
-	Interactive.tabIndex[eid] = tabIndex;
-	return eid;
-}
-
-/**
- * Gets the focus effect colors.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns Focus effect colors or undefined
- */
-export function getFocusEffect(
-	world: World,
-	eid: Entity,
-): { fg: number; bg: number } | undefined {
-	if (!hasComponent(world, eid, Interactive)) {
-		return undefined;
-	}
-	return {
-		fg: Interactive.focusEffectFg[eid] as number,
-		bg: Interactive.focusEffectBg[eid] as number,
-	};
-}
-
-/**
- * Sets the focus effect colors.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @param fg - Focus effect foreground color
- * @param bg - Focus effect background color
- * @returns The entity ID for chaining
- */
-export function setFocusEffect(world: World, eid: Entity, fg: number, bg: number): Entity {
-	ensureInteractive(world, eid);
-	Interactive.focusEffectFg[eid] = fg;
-	Interactive.focusEffectBg[eid] = bg;
-	return eid;
-}
-
-/**
  * Gets the interactive data of an entity.
  * Returns undefined if no Interactive component.
  *
@@ -532,13 +354,8 @@ export function getInteractive(world: World, eid: Entity): InteractiveData | und
 		hovered: Interactive.hovered[eid] === 1,
 		pressed: Interactive.pressed[eid] === 1,
 		keyable: Interactive.keyable[eid] === 1,
-		focusable: Interactive.focusable[eid] === 1,
-		focused: Interactive.focused[eid] === 1,
-		tabIndex: Interactive.tabIndex[eid] as number,
 		hoverEffectFg: Interactive.hoverEffectFg[eid] as number,
 		hoverEffectBg: Interactive.hoverEffectBg[eid] as number,
-		focusEffectFg: Interactive.focusEffectFg[eid] as number,
-		focusEffectBg: Interactive.focusEffectBg[eid] as number,
 	};
 }
 
@@ -566,213 +383,5 @@ export function clearInteractionState(world: World, eid: Entity): Entity {
 	}
 	Interactive.hovered[eid] = 0;
 	Interactive.pressed[eid] = 0;
-	Interactive.focused[eid] = 0;
 	return eid;
-}
-
-// =============================================================================
-// ENABLE INPUT CONVENIENCE FUNCTIONS
-// =============================================================================
-
-/**
- * Enables mouse events on an entity.
- * Sets clickable and hoverable to true.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns The entity ID for chaining
- *
- * @example
- * ```typescript
- * import { enableMouse, isClickable, isHoverable } from 'blecsd';
- *
- * enableMouse(world, button);
- *
- * isClickable(world, button); // true
- * isHoverable(world, button); // true
- * ```
- */
-export function enableMouse(world: World, eid: Entity): Entity {
-	ensureInteractive(world, eid);
-	Interactive.clickable[eid] = 1;
-	Interactive.hoverable[eid] = 1;
-	return eid;
-}
-
-/**
- * Disables mouse events on an entity.
- * Sets clickable and hoverable to false.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns The entity ID for chaining
- *
- * @example
- * ```typescript
- * import { enableMouse, disableMouse, isClickable } from 'blecsd';
- *
- * enableMouse(world, button);
- * disableMouse(world, button);
- *
- * isClickable(world, button); // false
- * ```
- */
-export function disableMouse(world: World, eid: Entity): Entity {
-	if (!hasComponent(world, eid, Interactive)) {
-		return eid;
-	}
-	Interactive.clickable[eid] = 0;
-	Interactive.hoverable[eid] = 0;
-	return eid;
-}
-
-/**
- * Enables key events on an entity.
- * Sets keyable to true.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns The entity ID for chaining
- *
- * @example
- * ```typescript
- * import { enableKeys, isKeyable } from 'blecsd';
- *
- * enableKeys(world, textInput);
- *
- * isKeyable(world, textInput); // true
- * ```
- */
-export function enableKeys(world: World, eid: Entity): Entity {
-	ensureInteractive(world, eid);
-	Interactive.keyable[eid] = 1;
-	return eid;
-}
-
-/**
- * Disables key events on an entity.
- * Sets keyable to false.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns The entity ID for chaining
- *
- * @example
- * ```typescript
- * import { enableKeys, disableKeys, isKeyable } from 'blecsd';
- *
- * enableKeys(world, textInput);
- * disableKeys(world, textInput);
- *
- * isKeyable(world, textInput); // false
- * ```
- */
-export function disableKeys(world: World, eid: Entity): Entity {
-	if (!hasComponent(world, eid, Interactive)) {
-		return eid;
-	}
-	Interactive.keyable[eid] = 0;
-	return eid;
-}
-
-/**
- * Enables all input (mouse and keys) on an entity.
- * Sets clickable, hoverable, and keyable to true.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns The entity ID for chaining
- *
- * @example
- * ```typescript
- * import { enableInput, isClickable, isHoverable, isKeyable } from 'blecsd';
- *
- * enableInput(world, widget);
- *
- * isClickable(world, widget); // true
- * isHoverable(world, widget); // true
- * isKeyable(world, widget);   // true
- * ```
- */
-export function enableInput(world: World, eid: Entity): Entity {
-	ensureInteractive(world, eid);
-	Interactive.clickable[eid] = 1;
-	Interactive.hoverable[eid] = 1;
-	Interactive.keyable[eid] = 1;
-	return eid;
-}
-
-/**
- * Disables all input (mouse and keys) on an entity.
- * Sets clickable, hoverable, and keyable to false.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns The entity ID for chaining
- *
- * @example
- * ```typescript
- * import { enableInput, disableInput, isClickable } from 'blecsd';
- *
- * enableInput(world, widget);
- * disableInput(world, widget);
- *
- * isClickable(world, widget); // false
- * ```
- */
-export function disableInput(world: World, eid: Entity): Entity {
-	if (!hasComponent(world, eid, Interactive)) {
-		return eid;
-	}
-	Interactive.clickable[eid] = 0;
-	Interactive.hoverable[eid] = 0;
-	Interactive.keyable[eid] = 0;
-	return eid;
-}
-
-/**
- * Checks if an entity has mouse input enabled.
- * Returns true if either clickable or hoverable is enabled.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns true if mouse input is enabled
- */
-export function hasMouseEnabled(world: World, eid: Entity): boolean {
-	if (!hasComponent(world, eid, Interactive)) {
-		return false;
-	}
-	return Interactive.clickable[eid] === 1 || Interactive.hoverable[eid] === 1;
-}
-
-/**
- * Checks if an entity has key input enabled.
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns true if key input is enabled
- */
-export function hasKeysEnabled(world: World, eid: Entity): boolean {
-	if (!hasComponent(world, eid, Interactive)) {
-		return false;
-	}
-	return Interactive.keyable[eid] === 1;
-}
-
-/**
- * Checks if an entity has any input enabled (mouse or keys).
- *
- * @param world - The ECS world
- * @param eid - The entity ID
- * @returns true if any input is enabled
- */
-export function hasInputEnabled(world: World, eid: Entity): boolean {
-	if (!hasComponent(world, eid, Interactive)) {
-		return false;
-	}
-	return (
-		Interactive.clickable[eid] === 1 ||
-		Interactive.hoverable[eid] === 1 ||
-		Interactive.keyable[eid] === 1
-	);
 }
