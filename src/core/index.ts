@@ -108,35 +108,6 @@ export {
 // Event system
 export type { EventHandler, EventMap, ScreenEventMap, UIEventMap } from './events';
 export { createEventBus, EventBus } from './events';
-// Lifecycle events
-export type {
-	AdoptEvent,
-	AttachEvent,
-	DestroyEvent,
-	DetachEvent,
-	LifecycleEvent,
-	LifecycleEventMap,
-	LifecycleEventName,
-	RemoveEvent,
-	ReparentEvent,
-} from './lifecycleEvents';
-export {
-	clearLifecycleEventBuses,
-	emitAdopt,
-	emitAttach,
-	emitDestroy,
-	emitDetach,
-	emitRemove,
-	emitReparent,
-	getLifecycleEventBus,
-	onAdopt,
-	onAttach,
-	onDestroy,
-	onDetach,
-	onRemove,
-	onReparent,
-	removeLifecycleEventBus,
-} from './lifecycleEvents';
 // Game loop
 export type {
 	FixedTimestepConfig,
@@ -172,6 +143,7 @@ export {
 export type {
 	InputBufferStats,
 	InputEventBufferOptions,
+	InputLatencyStats,
 	TimestampedInputEvent,
 	TimestampedKeyEvent,
 	TimestampedMouseEvent,
@@ -197,6 +169,35 @@ export {
 	isAnyKeyDown,
 	isAnyKeyPressed,
 } from './inputState';
+// Lifecycle events
+export type {
+	AdoptEvent,
+	AttachEvent,
+	DestroyEvent,
+	DetachEvent,
+	LifecycleEvent,
+	LifecycleEventMap,
+	LifecycleEventName,
+	RemoveEvent,
+	ReparentEvent,
+} from './lifecycleEvents';
+export {
+	clearLifecycleEventBuses,
+	emitAdopt,
+	emitAttach,
+	emitDestroy,
+	emitDetach,
+	emitRemove,
+	emitReparent,
+	getLifecycleEventBus,
+	onAdopt,
+	onAttach,
+	onDestroy,
+	onDetach,
+	onRemove,
+	onReparent,
+	removeLifecycleEventBus,
+} from './lifecycleEvents';
 // Phase manager
 export type { PhaseId } from './phaseManager';
 export {
@@ -258,6 +259,15 @@ export {
 	sortByZIndex,
 } from './queries';
 export { createScheduler, getDeltaTime, Scheduler } from './scheduler';
+// Shrink-to-content
+export type { ShrinkBox } from './shrinkToContent';
+export {
+	applyShrink,
+	calculateShrinkSize,
+	getShrinkBox,
+	getShrinkHeight,
+	getShrinkWidth,
+} from './shrinkToContent';
 // Style inheritance
 export {
 	clearStyleCache,
@@ -279,15 +289,6 @@ export {
 	precomputeStyles,
 	resolveStyle,
 } from './styleInheritance';
-// Shrink-to-content
-export type { ShrinkBox } from './shrinkToContent';
-export {
-	applyShrink,
-	calculateShrinkSize,
-	getShrinkBox,
-	getShrinkHeight,
-	getShrinkWidth,
-} from './shrinkToContent';
 export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
 export { createWorld, resetWorld } from './world';

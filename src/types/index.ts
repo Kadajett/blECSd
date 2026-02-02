@@ -289,6 +289,8 @@ export type {
 	InputBufferStats,
 	/** Input event buffer options */
 	InputEventBufferOptions,
+	/** Input latency statistics */
+	InputLatencyStats,
 	/** Timestamped input event */
 	TimestampedInputEvent,
 	/** Timestamped keyboard event */
