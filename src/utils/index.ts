@@ -276,3 +276,31 @@ export {
 	setGrammar,
 	tokenizeLine,
 } from './syntaxHighlight';
+// Efficient text search
+export type {
+	ProgressiveSearchResult,
+	SearchCache,
+	SearchMatch,
+	SearchOptions,
+	SearchResult,
+} from './textSearch';
+export {
+	boyerMooreHorspool,
+	clearSearchCache,
+	createSearchCache,
+	DEFAULT_SEARCH_BATCH,
+	DEFAULT_TIMEOUT,
+	findNearestMatch,
+	getMatchAt,
+	getMatchStatus,
+	getNextMatch,
+	getPreviousMatch,
+	getVisibleMatches,
+	search,
+	searchBatch,
+	searchLiteral,
+	searchRegex,
+	searchReverse,
+	searchWithCache,
+	updateSearchQuery,
+} from './textSearch';
