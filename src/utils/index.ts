@@ -304,3 +304,35 @@ export {
 	searchWithCache,
 	updateSearchQuery,
 } from './textSearch';
+// Virtualized scrollback buffer
+export type {
+	Chunk,
+	LineRange,
+	ScrollbackBuffer,
+	ScrollbackConfig,
+	ScrollbackLine,
+	ScrollbackStats,
+} from './virtualScrollback';
+export {
+	appendLine,
+	appendLines,
+	clearScrollback,
+	compressOldChunks,
+	createScrollbackBuffer,
+	decompressAll,
+	DEFAULT_CHUNK_SIZE,
+	DEFAULT_MAX_CACHED,
+	DEFAULT_MAX_MEMORY,
+	exportToText,
+	getLine,
+	getLineRange,
+	getMemoryUsage,
+	getScrollbackStats,
+	getVisibleLines,
+	jumpToLine,
+	loadFromText,
+	scrollBy,
+	scrollToBottom,
+	scrollToTop,
+	trimToLineCount,
+} from './virtualScrollback';
