@@ -151,6 +151,33 @@ export {
 	showLoading,
 	updateLoadingAnimation,
 } from './loading';
+// Panel widget
+export type {
+	PanelAction,
+	PanelBorderConfig,
+	PanelConfig,
+	PanelContentStyle,
+	PanelStyleConfig,
+	PanelTitleStyle,
+	PanelWidget,
+	TitleAlign,
+} from './panel';
+export {
+	CLOSE_BUTTON_CHAR,
+	COLLAPSE_CHAR,
+	createPanel,
+	DEFAULT_PANEL_TITLE,
+	EXPAND_CHAR,
+	getPanelTitle,
+	getPanelTitleAlign,
+	isPanel,
+	isPanelCollapsed,
+	Panel,
+	PanelConfigSchema,
+	renderPanelTitleBar,
+	resetPanelStore,
+	setPanelTitle,
+} from './panel';
 // ScrollableBox widget
 export type {
 	ScrollableBoxConfig,
