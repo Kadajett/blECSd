@@ -84,6 +84,20 @@ export {
 	isLoopRunning,
 	LoopState,
 } from './gameLoop';
+// Input action mapping
+export type {
+	ActionBinding,
+	ActionCallback,
+	ActionState,
+	SerializedBindings,
+} from './inputActions';
+export {
+	ActionBindingSchema,
+	ActionPresets,
+	createInputActionManager,
+	InputActionManager,
+	SerializedBindingsSchema,
+} from './inputActions';
 // Input event buffer
 export type {
 	InputBufferStats,
