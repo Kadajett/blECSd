@@ -337,7 +337,7 @@ export const UNICODE_TO_ASCII: Readonly<Record<string, string>> = {
 	'≤': '<',
 	'≥': '>',
 	'≠': '!',
-	'π': 'p',
+	π: 'p',
 	'£': 'L',
 	'€': 'E',
 	'¥': 'Y',

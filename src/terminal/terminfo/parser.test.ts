@@ -21,7 +21,9 @@ import {
 /**
  * Creates a minimal valid terminfo buffer.
  */
-function createMinimalTerminfo(options: { magic?: number; names?: string; boolCount?: number } = {}): Buffer {
+function createMinimalTerminfo(
+	options: { magic?: number; names?: string; boolCount?: number } = {},
+): Buffer {
 	const magic = options.magic ?? TERMINFO_MAGIC_LEGACY;
 	const names = options.names ?? 'xterm|X terminal';
 	const boolCount = options.boolCount ?? 0;

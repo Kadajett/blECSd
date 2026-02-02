@@ -264,9 +264,9 @@ export type {
 export {
 	// Convenience functions
 	bg,
-	color,
 	// Constants
 	ColorDepthLevel,
+	color,
 	// Factory
 	createTruecolorSupport,
 	fg,

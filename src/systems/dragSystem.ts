@@ -12,7 +12,7 @@ import { Dimensions, getDimensions } from '../components/dimensions';
 import { getParent, Hierarchy, NULL_ENTITY } from '../components/hierarchy';
 import { Interactive, isDraggable } from '../components/interactive';
 import { getPosition, Position, setPosition, setZIndex } from '../components/position';
-import { EventBus } from '../core/events';
+import type { EventBus } from '../core/events';
 import type { Entity, World } from '../core/types';
 
 /**

@@ -230,8 +230,7 @@ describe('terminfo compiler', () => {
 
 			it('handles complex setaf with conditionals', () => {
 				// Simplified version of typical setaf
-				const setaf =
-					'\x1b[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m';
+				const setaf = '\x1b[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m';
 				expect(tparm(setaf, 1)).toBe('\x1b[31m'); // Basic color
 				expect(tparm(setaf, 9)).toBe('\x1b[91m'); // Bright color (9-8=1)
 				expect(tparm(setaf, 196)).toBe('\x1b[38;5;196m'); // 256 color

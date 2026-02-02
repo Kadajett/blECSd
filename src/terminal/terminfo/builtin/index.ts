@@ -32,11 +32,11 @@ import { SCREEN, SCREEN_256COLOR, TMUX, TMUX_256COLOR } from './screen';
 import { VT100, VT220 } from './vt100';
 import { XTERM, XTERM_16COLOR, XTERM_256COLOR } from './xterm';
 
+export { LINUX } from './linux';
+export { SCREEN, SCREEN_256COLOR, TMUX, TMUX_256COLOR } from './screen';
+export { VT100, VT220 } from './vt100';
 // Re-export individual terminal definitions
 export { XTERM, XTERM_16COLOR, XTERM_256COLOR } from './xterm';
-export { VT100, VT220 } from './vt100';
-export { SCREEN, SCREEN_256COLOR, TMUX, TMUX_256COLOR } from './screen';
-export { LINUX } from './linux';
 
 /**
  * Map of terminal names to their builtin terminfo data.

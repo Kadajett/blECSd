@@ -5,8 +5,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	bg,
-	color,
+	type Color,
 	ColorDepthLevel,
+	color,
 	createTruecolorSupport,
 	fg,
 	getColorDepthLevel,
@@ -16,7 +17,6 @@ import {
 	resetDefaultTruecolor,
 	rgb,
 	rgba,
-	type Color,
 	type TruecolorSupport,
 } from './truecolor';
 

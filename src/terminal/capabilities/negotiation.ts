@@ -12,9 +12,9 @@ import { z } from 'zod';
 import {
 	isPrimaryDA,
 	isSecondaryDA,
+	type PrimaryDAResponse,
 	parseResponse,
 	query,
-	type PrimaryDAResponse,
 	type SecondaryDAResponse,
 } from '../responseParser';
 
@@ -75,8 +75,7 @@ export const KittyKeyboardLevel = {
 	REPORT_TEXT: 16,
 } as const;
 
-export type KittyKeyboardLevelValue =
-	(typeof KittyKeyboardLevel)[keyof typeof KittyKeyboardLevel];
+export type KittyKeyboardLevelValue = (typeof KittyKeyboardLevel)[keyof typeof KittyKeyboardLevel];
 
 /**
  * Graphics protocol types.
@@ -233,12 +232,7 @@ function detectTruecolorFromEnv(): boolean {
 
 	// Known truecolor terminals
 	const termProgram = process.env.TERM_PROGRAM ?? '';
-	const knownTruecolor = [
-		'iTerm.app',
-		'Apple_Terminal',
-		'Hyper',
-		'vscode',
-	];
+	const knownTruecolor = ['iTerm.app', 'Apple_Terminal', 'Hyper', 'vscode'];
 	if (knownTruecolor.includes(termProgram)) {
 		return true;
 	}
@@ -312,12 +306,7 @@ function detectGraphicsFromEnv(): GraphicsProtocolValue | false {
 function detectSyncOutputFromEnv(): boolean {
 	// Most modern terminals support it
 	const termProgram = process.env.TERM_PROGRAM ?? '';
-	const supportingSyncOutput = [
-		'iTerm.app',
-		'WezTerm',
-		'vscode',
-		'Hyper',
-	];
+	const supportingSyncOutput = ['iTerm.app', 'WezTerm', 'vscode', 'Hyper'];
 
 	if (supportingSyncOutput.includes(termProgram)) {
 		return true;
@@ -335,12 +324,7 @@ function detectSyncOutputFromEnv(): boolean {
 function detectHyperlinksFromEnv(): boolean {
 	// Most modern terminals support OSC 8
 	const termProgram = process.env.TERM_PROGRAM ?? '';
-	const supportingHyperlinks = [
-		'iTerm.app',
-		'WezTerm',
-		'vscode',
-		'Hyper',
-	];
+	const supportingHyperlinks = ['iTerm.app', 'WezTerm', 'vscode', 'Hyper'];
 
 	if (supportingHyperlinks.includes(termProgram)) {
 		return true;
@@ -616,10 +600,7 @@ export function createCapabilityNegotiator(config: NegotiatorConfig = {}): Capab
 		}
 
 		// Prepare queries
-		const queries = [
-			query.primaryDA(),
-			query.secondaryDA(),
-		];
+		const queries = [query.primaryDA(), query.secondaryDA()];
 
 		try {
 			// Set raw mode for response collection
@@ -816,9 +797,7 @@ export async function getTerminalCapabilities(): Promise<TerminalCapabilities> {
  * }
  * ```
  */
-export async function hasCapability(
-	capability: keyof TerminalCapabilities,
-): Promise<boolean> {
+export async function hasCapability(capability: keyof TerminalCapabilities): Promise<boolean> {
 	const caps = await getTerminalCapabilities();
 	const value = caps[capability];
 

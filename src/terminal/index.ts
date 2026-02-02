@@ -82,6 +82,30 @@ export {
 	unpackRgb,
 	visibleLength,
 } from './ansi/parser';
+// Capability negotiation (internal)
+export type {
+	CapabilityNegotiator,
+	GraphicsProtocolValue,
+	KittyKeyboardLevelValue,
+	NegotiationTimingValue,
+	NegotiatorConfig,
+	TerminalCapabilities,
+} from './capabilities';
+export {
+	capabilityQuery,
+	createCapabilityNegotiator,
+	DEFAULT_QUERY_TIMEOUT,
+	GraphicsProtocol,
+	getDefaultNegotiator,
+	getTerminalCapabilities,
+	hasCapability,
+	KittyKeyboardLevel,
+	MAX_QUERY_TIMEOUT,
+	MIN_QUERY_TIMEOUT,
+	NegotiationTiming,
+	NegotiatorConfigSchema,
+	resetDefaultNegotiator,
+} from './capabilities';
 // Cleanup and signal handling (internal)
 export type { CleanupHandler, ExitHandler, ExitInfo, ExitReason } from './cleanup';
 export {
@@ -237,27 +261,3 @@ export type {
 	TputConfig,
 } from './terminfo';
 export { createTput, getDefaultTput, getDefaultXtermData, resetDefaultTput } from './terminfo';
-// Capability negotiation (internal)
-export type {
-	CapabilityNegotiator,
-	GraphicsProtocolValue,
-	KittyKeyboardLevelValue,
-	NegotiationTimingValue,
-	NegotiatorConfig,
-	TerminalCapabilities,
-} from './capabilities';
-export {
-	capabilityQuery,
-	createCapabilityNegotiator,
-	DEFAULT_QUERY_TIMEOUT,
-	getDefaultNegotiator,
-	getTerminalCapabilities,
-	GraphicsProtocol,
-	hasCapability,
-	KittyKeyboardLevel,
-	MAX_QUERY_TIMEOUT,
-	MIN_QUERY_TIMEOUT,
-	NegotiationTiming,
-	NegotiatorConfigSchema,
-	resetDefaultNegotiator,
-} from './capabilities';

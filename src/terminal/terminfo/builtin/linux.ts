@@ -73,10 +73,12 @@ export const LINUX: TerminfoData = {
 		set_a_foreground: '\x1b[3%p1%dm',
 		set_a_background: '\x1b[4%p1%dm',
 		orig_pair: '\x1b[39;49m',
-		initialize_color: '\x1b]P%p1%x%p2%{255}%*%{1000}%/%02x%p3%{255}%*%{1000}%/%02x%p4%{255}%*%{1000}%/%02x',
+		initialize_color:
+			'\x1b]P%p1%x%p2%{255}%*%{1000}%/%02x%p3%{255}%*%{1000}%/%02x%p4%{255}%*%{1000}%/%02x',
 
 		// ACS for box drawing
-		acs_chars: '+\x10,\x11-\x18.\x190\xdb`\x04a\xb1f\xf8g\xf1h\xb0i\xcfj\xd9k\xbfl\xdam\xc0n\xc5o~p\xc4q\xc4r\xc4s_t\xc3u\xb4v\xc1w\xc2x\xb3y\xf3z\xf2{\xe3|\xd8}\x9c~\xfe',
+		acs_chars:
+			'+\x10,\x11-\x18.\x190\xdb`\x04a\xb1f\xf8g\xf1h\xb0i\xcfj\xd9k\xbfl\xdam\xc0n\xc5o~p\xc4q\xc4r\xc4s_t\xc3u\xb4v\xc1w\xc2x\xb3y\xf3z\xf2{\xe3|\xd8}\x9c~\xfe',
 		enter_alt_charset_mode: '\x1b[11m',
 		exit_alt_charset_mode: '\x1b[10m',
 

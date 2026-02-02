@@ -7,13 +7,9 @@
  * @module terminal/colors/truecolor
  */
 
+import { getTerminalCapabilities, hasCapability, type TerminalCapabilities } from '../capabilities';
 import {
-	getTerminalCapabilities,
-	hasCapability,
-	type TerminalCapabilities,
-} from '../capabilities';
-import type { Color256, RGB, RGBA } from './palette';
-import {
+	type ColorValue,
 	hexToRgb,
 	parseColor,
 	rgbToColor256,
@@ -27,10 +23,10 @@ import {
 	toHex,
 	toTruecolor,
 	truecolorToRgb,
-	type ColorValue,
 } from './convert';
 import { matchColorSmart, matchStandardColor } from './match';
-import { rgbTo16, rgbTo8 } from './reduce';
+import type { Color256, RGB, RGBA } from './palette';
+import { rgbTo8, rgbTo16 } from './reduce';
 
 // =============================================================================
 // CONSTANTS

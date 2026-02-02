@@ -102,7 +102,8 @@ export const XTERM_256COLOR: TerminfoData = {
 		set_a_background: '\x1b[%?%p1%{8}%<%t4%p1%d%e%p1%{16}%<%t10%p1%{8}%-%d%e48;5;%p1%d%;m',
 		orig_pair: '\x1b[39;49m',
 		orig_colors: '\x1b]104\x07',
-		initialize_color: '\x1b]4;%p1%d;rgb:%p2%{255}%*%{1000}%/%2.2X/%p3%{255}%*%{1000}%/%2.2X/%p4%{255}%*%{1000}%/%2.2X\x1b\\',
+		initialize_color:
+			'\x1b]4;%p1%d;rgb:%p2%{255}%*%{1000}%/%2.2X/%p3%{255}%*%{1000}%/%2.2X/%p4%{255}%*%{1000}%/%2.2X\x1b\\',
 
 		// Alternate screen
 		enter_ca_mode: '\x1b[?1049h\x1b[22;0;0t',

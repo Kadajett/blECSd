@@ -150,7 +150,12 @@ export {
 // TERMCAP - Text termcap format parser
 // =============================================================================
 
-export type { TermcapDatabase, TermcapEntry, TermcapLocatorOptions, TermcapParseResult } from './termcap';
+export type {
+	TermcapDatabase,
+	TermcapEntry,
+	TermcapLocatorOptions,
+	TermcapParseResult,
+} from './termcap';
 export {
 	findTermcapEntry,
 	findTermcapFile,

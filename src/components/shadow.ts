@@ -240,7 +240,8 @@ function applyShadowOptions(eid: Entity, options: ShadowOptions): void {
 	if (options.offsetX !== undefined) Shadow.offsetX[eid] = options.offsetX;
 	if (options.offsetY !== undefined) Shadow.offsetY[eid] = options.offsetY;
 	if (options.color !== undefined) Shadow.color[eid] = parseColor(options.color);
-	if (options.opacity !== undefined) Shadow.opacity[eid] = Math.max(0, Math.min(255, options.opacity));
+	if (options.opacity !== undefined)
+		Shadow.opacity[eid] = Math.max(0, Math.min(255, options.opacity));
 	if (options.char !== undefined) Shadow.char[eid] = options.char;
 	if (options.blendWithBg !== undefined) Shadow.blendWithBg[eid] = options.blendWithBg ? 1 : 0;
 }

@@ -5,7 +5,6 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TerminfoData } from './tput';
 import {
 	detect256Color,
 	detectAlternateScreen,
@@ -25,6 +24,7 @@ import {
 	detectUnicode,
 	getFeatureSummary,
 } from './features';
+import type { TerminfoData } from './tput';
 
 // Helper to create minimal TerminfoData
 function createTerminfo(overrides: Partial<TerminfoData> = {}): TerminfoData {

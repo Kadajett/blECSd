@@ -223,7 +223,9 @@ describe('padding', () => {
 		});
 
 		it('adds both flags', () => {
-			expect(addPadding('\x1b[H', 50, { proportional: true, mandatory: true })).toBe('\x1b[H$<50*/>');
+			expect(addPadding('\x1b[H', 50, { proportional: true, mandatory: true })).toBe(
+				'\x1b[H$<50*/>',
+			);
 		});
 	});
 

@@ -7,9 +7,9 @@ import {
 	capabilityQuery,
 	createCapabilityNegotiator,
 	DEFAULT_QUERY_TIMEOUT,
+	GraphicsProtocol,
 	getDefaultNegotiator,
 	getTerminalCapabilities,
-	GraphicsProtocol,
 	hasCapability,
 	KittyKeyboardLevel,
 	MAX_QUERY_TIMEOUT,
@@ -235,13 +235,9 @@ describe('negotiation', () => {
 
 			negotiator.destroy();
 
-			await expect(negotiator.getCapabilities()).rejects.toThrow(
-				'Negotiator has been destroyed',
-			);
+			await expect(negotiator.getCapabilities()).rejects.toThrow('Negotiator has been destroyed');
 
-			await expect(negotiator.renegotiate()).rejects.toThrow(
-				'Negotiator has been destroyed',
-			);
+			await expect(negotiator.renegotiate()).rejects.toThrow('Negotiator has been destroyed');
 		});
 	});
 

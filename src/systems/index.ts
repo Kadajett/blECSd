@@ -20,26 +20,6 @@ export {
 	registerCameraSystem,
 	updateCameras,
 } from './cameraSystem';
-// Drag system
-export type {
-	DragConstraints,
-	DragEndEvent,
-	DragEventMap,
-	DragMoveEvent,
-	DragStartEvent,
-	DragState,
-	DragVerifyCallback,
-	DropEvent,
-} from './dragSystem';
-export {
-	clearDragConstraints,
-	createDragSystem,
-	getDragConstraints,
-	getDragVerifyCallback,
-	resetDragStores,
-	setDragConstraints,
-	setDragVerifyCallback,
-} from './dragSystem';
 // Collision system
 export type {
 	CollisionEventData,
@@ -62,6 +42,26 @@ export {
 	registerCollisionSystem,
 	resetCollisionState,
 } from './collisionSystem';
+// Drag system
+export type {
+	DragConstraints,
+	DragEndEvent,
+	DragEventMap,
+	DragMoveEvent,
+	DragStartEvent,
+	DragState,
+	DragVerifyCallback,
+	DropEvent,
+} from './dragSystem';
+export {
+	clearDragConstraints,
+	createDragSystem,
+	getDragConstraints,
+	getDragVerifyCallback,
+	resetDragStores,
+	setDragConstraints,
+	setDragVerifyCallback,
+} from './dragSystem';
 // Input system
 export type {
 	HitTestResult,

@@ -667,7 +667,7 @@ function parseNames(namesStr: string): { names: string[]; description: string } 
 	}
 
 	// Last part is typically the description
-	const description = parts.length > 1 ? parts[parts.length - 1] ?? '' : '';
+	const description = parts.length > 1 ? (parts[parts.length - 1] ?? '') : '';
 	const names = parts.length > 1 ? parts.slice(0, -1) : parts;
 
 	return {
@@ -776,7 +776,9 @@ function parseNumbers(
 	}
 
 	for (let i = 0; i < count; i++) {
-		const value = is32bit ? readInt32LE(buffer, offset + i * size) : readInt16LE(buffer, offset + i * size);
+		const value = is32bit
+			? readInt32LE(buffer, offset + i * size)
+			: readInt16LE(buffer, offset + i * size);
 
 		if (value !== absent && value >= 0 && i < NUMBER_NAMES.length) {
 			const name = NUMBER_NAMES[i];
@@ -818,7 +820,11 @@ function parseStrings(
 			if (i < STRING_NAMES.length) {
 				const name = STRING_NAMES[i];
 				if (name) {
-					const str = readNullTerminatedString(buffer, tableStart + strOffset, tableSize - strOffset);
+					const str = readNullTerminatedString(
+						buffer,
+						tableStart + strOffset,
+						tableSize - strOffset,
+					);
 					if (str.length > 0) {
 						strings[name] = str;
 					}
@@ -866,7 +872,10 @@ function parseExtended(
 	// Full implementation would read extended booleans, numbers, strings, and name table
 	// This is complex and rarely needed for basic terminal operations
 
-	return { extended, offset: offset + extBoolCount + extNumCount * (is32bit ? 4 : 2) + extStrTableSize };
+	return {
+		extended,
+		offset: offset + extBoolCount + extNumCount * (is32bit ? 4 : 2) + extStrTableSize,
+	};
 }
 
 /**

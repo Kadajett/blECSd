@@ -29,6 +29,33 @@ export {
 	spliceLines,
 	unshiftLine,
 } from './contentManipulation';
+// HoverText (Tooltip) system
+export type {
+	HoverTextConfig,
+	HoverTextManager,
+	HoverTextManagerConfig,
+	TooltipPosition,
+	TooltipRenderData,
+	TooltipState,
+	TooltipStyle,
+} from './hoverText';
+export {
+	clearAllHoverText,
+	clearHoverText,
+	createHoverTextManager,
+	DEFAULT_CURSOR_OFFSET_X,
+	DEFAULT_CURSOR_OFFSET_Y,
+	DEFAULT_HIDE_DELAY,
+	DEFAULT_HOVER_DELAY,
+	DEFAULT_TOOLTIP_BG,
+	DEFAULT_TOOLTIP_BORDER,
+	DEFAULT_TOOLTIP_FG,
+	getHoverText,
+	getHoverTextCount,
+	hasHoverText,
+	resetHoverTextStore,
+	setHoverText,
+} from './hoverText';
 // List widget
 export type { ListStyleConfig, ListWidget, ListWidgetConfig } from './list';
 export { createList, isListWidget, ListWidgetConfigSchema } from './list';
@@ -60,30 +87,3 @@ export type {
 	TreeWidgetConfig,
 } from './tree';
 export { createTree, isTreeWidget, resetTreeStore, TreeWidgetConfigSchema } from './tree';
-// HoverText (Tooltip) system
-export type {
-	HoverTextConfig,
-	HoverTextManager,
-	HoverTextManagerConfig,
-	TooltipPosition,
-	TooltipRenderData,
-	TooltipState,
-	TooltipStyle,
-} from './hoverText';
-export {
-	clearAllHoverText,
-	clearHoverText,
-	createHoverTextManager,
-	DEFAULT_CURSOR_OFFSET_X,
-	DEFAULT_CURSOR_OFFSET_Y,
-	DEFAULT_HIDE_DELAY,
-	DEFAULT_HOVER_DELAY,
-	DEFAULT_TOOLTIP_BG,
-	DEFAULT_TOOLTIP_BORDER,
-	DEFAULT_TOOLTIP_FG,
-	getHoverText,
-	getHoverTextCount,
-	hasHoverText,
-	resetHoverTextStore,
-	setHoverText,
-} from './hoverText';
