@@ -188,12 +188,12 @@ function clampScrollToBounds(eid: Entity): void {
  * @internal
  */
 function applyNumericOptions(eid: Entity, options: ScrollableOptions): void {
-	Scrollable.scrollWidth[eid] = options.scrollWidth ?? Scrollable.scrollWidth[eid];
-	Scrollable.scrollHeight[eid] = options.scrollHeight ?? Scrollable.scrollHeight[eid];
-	Scrollable.viewportWidth[eid] = options.viewportWidth ?? Scrollable.viewportWidth[eid];
-	Scrollable.viewportHeight[eid] = options.viewportHeight ?? Scrollable.viewportHeight[eid];
-	Scrollable.scrollbarVisible[eid] =
-		options.scrollbarVisible ?? Scrollable.scrollbarVisible[eid];
+	if (options.scrollWidth !== undefined) Scrollable.scrollWidth[eid] = options.scrollWidth;
+	if (options.scrollHeight !== undefined) Scrollable.scrollHeight[eid] = options.scrollHeight;
+	if (options.viewportWidth !== undefined) Scrollable.viewportWidth[eid] = options.viewportWidth;
+	if (options.viewportHeight !== undefined) Scrollable.viewportHeight[eid] = options.viewportHeight;
+	if (options.scrollbarVisible !== undefined)
+		Scrollable.scrollbarVisible[eid] = options.scrollbarVisible;
 }
 
 /**
@@ -221,8 +221,8 @@ function applyScrollableOptions(eid: Entity, options: ScrollableOptions): void {
 	applyBooleanOptions(eid, options);
 
 	// Apply scroll positions last so they get clamped if viewport is set
-	Scrollable.scrollX[eid] = options.scrollX ?? Scrollable.scrollX[eid];
-	Scrollable.scrollY[eid] = options.scrollY ?? Scrollable.scrollY[eid];
+	if (options.scrollX !== undefined) Scrollable.scrollX[eid] = options.scrollX;
+	if (options.scrollY !== undefined) Scrollable.scrollY[eid] = options.scrollY;
 
 	// Clamp scroll after all options are applied
 	clampScrollToBounds(eid);
