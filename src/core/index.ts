@@ -88,6 +88,35 @@ export {
 // Event system
 export type { EventHandler, EventMap, ScreenEventMap, UIEventMap } from './events';
 export { createEventBus, EventBus } from './events';
+// Lifecycle events
+export type {
+	AdoptEvent,
+	AttachEvent,
+	DestroyEvent,
+	DetachEvent,
+	LifecycleEvent,
+	LifecycleEventMap,
+	LifecycleEventName,
+	RemoveEvent,
+	ReparentEvent,
+} from './lifecycleEvents';
+export {
+	clearLifecycleEventBuses,
+	emitAdopt,
+	emitAttach,
+	emitDestroy,
+	emitDetach,
+	emitRemove,
+	emitReparent,
+	getLifecycleEventBus,
+	onAdopt,
+	onAttach,
+	onDestroy,
+	onDetach,
+	onRemove,
+	onReparent,
+	removeLifecycleEventBus,
+} from './lifecycleEvents';
 // Game loop
 export type {
 	FixedTimestepConfig,
