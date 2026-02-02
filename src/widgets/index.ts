@@ -76,6 +76,28 @@ export {
 	resetHoverTextStore,
 	setHoverText,
 } from './hoverText';
+// Layout widget
+export type {
+	AlignItems,
+	ChildLayoutData,
+	FlexDirection,
+	JustifyContent,
+	LayoutConfig,
+	LayoutMode,
+	LayoutPosition,
+	LayoutWidget,
+} from './layout';
+export {
+	calculateFlexLayout,
+	calculateGridLayout,
+	calculateInlineLayout,
+	createLayout,
+	getLayoutMode,
+	isLayout,
+	Layout,
+	LayoutConfigSchema,
+	resetLayoutStore,
+} from './layout';
 // Line widget
 export type { LineConfig, LineOrientation, LineWidget } from './line';
 export {
