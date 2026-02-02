@@ -197,6 +197,33 @@ export {
 // Table widget
 export type { TableStyleConfig, TableWidget, TableWidgetConfig } from './table';
 export { createTable, isTableWidget, TableWidgetConfigSchema } from './table';
+// Tabs widget
+export type {
+	ContentStyleConfig as TabsContentStyleConfig,
+	TabConfig,
+	TabData,
+	TabPosition,
+	TabStyleConfig,
+	TabsAction,
+	TabsBorderConfig,
+	TabsConfig,
+	TabsStyleConfig,
+	TabsWidget,
+} from './tabs';
+export {
+	createTabs,
+	DEFAULT_TAB_POSITION,
+	getActiveTabIndex,
+	getTabCount,
+	getTabPosition,
+	isTabs,
+	renderTabBar,
+	resetTabsStore,
+	TAB_CLOSE_CHAR,
+	TAB_SEPARATOR,
+	Tabs,
+	TabsConfigSchema,
+} from './tabs';
 // Text widget
 export type { TextConfig, TextWidget } from './text';
 export {
