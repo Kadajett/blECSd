@@ -14,51 +14,6 @@ import type { System, World } from './types';
 export type LoopHook = (world: World, deltaTime: number) => void;
 
 /**
- * Configuration for fixed timestep mode.
- *
- * Fixed timestep runs game logic at a consistent rate, independent of
- * rendering frame rate. This is essential for:
- * - Deterministic physics simulations
- * - Network synchronization
- * - Replays and recording
- *
- * @example
- * ```typescript
- * const loop = createGameLoop(world, {
- *   fixedTimestepMode: {
- *     tickRate: 60,           // 60 physics updates per second
- *     maxUpdatesPerFrame: 5,  // Prevent spiral of death
- *     interpolate: true,      // Smooth rendering between ticks
- *   },
- * });
- * ```
- */
-export interface FixedTimestepConfig {
-	/**
-	 * Number of fixed updates per second.
-	 * Common values: 30, 60, 120 (higher = more precision, more CPU)
-	 * @default 60
-	 */
-	readonly tickRate: number;
-
-	/**
-	 * Maximum fixed updates to run per frame.
-	 * Prevents "spiral of death" when game can't keep up.
-	 * If exceeded, game will run slower than real-time.
-	 * @default 5
-	 */
-	readonly maxUpdatesPerFrame: number;
-
-	/**
-	 * Whether to interpolate render state between fixed updates.
-	 * When true, rendering will be smooth even at low tick rates.
-	 * When false, rendering shows the last completed tick state.
-	 * @default true
-	 */
-	readonly interpolate: boolean;
-}
-
-/**
  * Configuration options for the game loop.
  */
 export interface GameLoopOptions {
@@ -72,7 +27,6 @@ export interface GameLoopOptions {
 	 * Whether to use fixed timestep for physics stability.
 	 * When true, deltaTime will be capped to prevent spiral of death.
 	 * @default true
-	 * @deprecated Use fixedTimestepMode for true fixed timestep with interpolation
 	 */
 	fixedTimestep?: boolean;
 
@@ -81,40 +35,7 @@ export interface GameLoopOptions {
 	 * @default 0.1 (100ms)
 	 */
 	maxDeltaTime?: number;
-
-	/**
-	 * Fixed timestep mode configuration.
-	 * When set, the loop will use true fixed timestep with optional interpolation.
-	 * INPUT is still processed every frame for responsiveness.
-	 *
-	 * @example
-	 * ```typescript
-	 * const loop = createGameLoop(world, {
-	 *   fixedTimestepMode: {
-	 *     tickRate: 60,
-	 *     maxUpdatesPerFrame: 5,
-	 *     interpolate: true,
-	 *   },
-	 * });
-	 * ```
-	 */
-	fixedTimestepMode?: FixedTimestepConfig;
 }
-
-/**
- * Hook function for fixed timestep updates.
- * @param world - The current ECS world
- * @param fixedDeltaTime - Fixed delta time (always the same)
- * @param tickNumber - The current tick number since loop start
- */
-export type FixedUpdateHook = (world: World, fixedDeltaTime: number, tickNumber: number) => void;
-
-/**
- * Hook function for interpolated rendering.
- * @param world - The current ECS world
- * @param alpha - Interpolation factor (0-1) between previous and current tick
- */
-export type InterpolateHook = (world: World, alpha: number) => void;
 
 /**
  * Lifecycle hooks for the game loop.
@@ -169,25 +90,6 @@ export interface GameLoopHooks {
 	 * Called when the loop resumes from pause.
 	 */
 	onResume?: () => void;
-
-	/**
-	 * Called before each fixed timestep update.
-	 * Only used when fixedTimestepMode is enabled.
-	 */
-	onBeforeFixedUpdate?: FixedUpdateHook;
-
-	/**
-	 * Called after each fixed timestep update.
-	 * Only used when fixedTimestepMode is enabled.
-	 */
-	onAfterFixedUpdate?: FixedUpdateHook;
-
-	/**
-	 * Called before render with interpolation alpha.
-	 * Only used when fixedTimestepMode.interpolate is true.
-	 * Use this to interpolate positions for smooth rendering.
-	 */
-	onInterpolate?: InterpolateHook;
 }
 
 /**
@@ -213,31 +115,6 @@ export interface LoopStats {
 	 * Total time the loop has been running in seconds.
 	 */
 	runningTime: number;
-
-	/**
-	 * Total fixed updates since start.
-	 * Only meaningful when fixedTimestepMode is enabled.
-	 */
-	tickCount: number;
-
-	/**
-	 * Fixed updates per second (actual rate).
-	 * Only meaningful when fixedTimestepMode is enabled.
-	 */
-	ticksPerSecond: number;
-
-	/**
-	 * Current interpolation alpha (0-1).
-	 * Represents how far between the last tick and the next tick we are.
-	 * Only meaningful when fixedTimestepMode.interpolate is true.
-	 */
-	interpolationAlpha: number;
-
-	/**
-	 * Number of fixed updates that were skipped this frame due to maxUpdatesPerFrame.
-	 * Non-zero value indicates the game can't keep up with the tick rate.
-	 */
-	skippedUpdates: number;
 }
 
 /**
@@ -299,9 +176,7 @@ export class GameLoop {
 	private scheduler: Scheduler;
 	private state: LoopState = LoopState.STOPPED;
 	private hooks: GameLoopHooks;
-	private options: Required<Omit<GameLoopOptions, 'fixedTimestepMode'>> & {
-		fixedTimestepMode: FixedTimestepConfig | undefined;
-	};
+	private options: Required<GameLoopOptions>;
 
 	// Timing
 	private lastTime = 0;
@@ -314,15 +189,6 @@ export class GameLoop {
 	private framesThisSecond = 0;
 	private currentFPS = 0;
 	private currentFrameTime = 0;
-
-	// Fixed timestep state
-	private accumulator = 0;
-	private fixedDeltaTime = 1 / 60;
-	private tickCount = 0;
-	private ticksThisSecond = 0;
-	private currentTicksPerSecond = 0;
-	private currentAlpha = 0;
-	private currentSkippedUpdates = 0;
 
 	// Loop control
 	private immediateId: ReturnType<typeof setImmediate> | null = null;
@@ -344,15 +210,9 @@ export class GameLoop {
 			targetFPS: options.targetFPS ?? 60,
 			fixedTimestep: options.fixedTimestep ?? true,
 			maxDeltaTime: options.maxDeltaTime ?? 0.1,
-			fixedTimestepMode: options.fixedTimestepMode,
 		};
 
 		this.frameInterval = this.options.targetFPS > 0 ? 1 / this.options.targetFPS : 0;
-
-		// Configure fixed timestep mode if provided
-		if (this.options.fixedTimestepMode) {
-			this.fixedDeltaTime = 1 / this.options.fixedTimestepMode.tickRate;
-		}
 	}
 
 	/**
@@ -392,44 +252,7 @@ export class GameLoop {
 			frameTime: this.currentFrameTime,
 			frameCount: this.frameCount,
 			runningTime: this.state !== LoopState.STOPPED ? getTime() - this.startTime : 0,
-			tickCount: this.tickCount,
-			ticksPerSecond: this.currentTicksPerSecond,
-			interpolationAlpha: this.currentAlpha,
-			skippedUpdates: this.currentSkippedUpdates,
 		};
-	}
-
-	/**
-	 * Gets the current interpolation alpha (0-1).
-	 * Useful for interpolating visual state between fixed updates.
-	 *
-	 * @returns The interpolation factor, or 0 if not in fixed timestep mode
-	 *
-	 * @example
-	 * ```typescript
-	 * // In render system
-	 * const alpha = loop.getInterpolationAlpha();
-	 * const renderX = prevX + (currentX - prevX) * alpha;
-	 * ```
-	 */
-	getInterpolationAlpha(): number {
-		return this.currentAlpha;
-	}
-
-	/**
-	 * Gets the fixed timestep configuration.
-	 *
-	 * @returns The fixed timestep config, or undefined if not enabled
-	 */
-	getFixedTimestepConfig(): FixedTimestepConfig | undefined {
-		return this.options.fixedTimestepMode;
-	}
-
-	/**
-	 * Checks if fixed timestep mode is enabled.
-	 */
-	isFixedTimestepMode(): boolean {
-		return this.options.fixedTimestepMode !== undefined;
 	}
 
 	/**
@@ -537,13 +360,6 @@ export class GameLoop {
 			this.startTime = this.lastTime;
 			this.lastFPSUpdate = this.lastTime;
 			this.framesThisSecond = 0;
-			// Reset fixed timestep state
-			this.accumulator = 0;
-			this.tickCount = 0;
-			this.ticksThisSecond = 0;
-			this.currentTicksPerSecond = 0;
-			this.currentAlpha = 0;
-			this.currentSkippedUpdates = 0;
 			this.hooks.onStart?.();
 		} else {
 			// Resuming from pause
@@ -605,54 +421,8 @@ export class GameLoop {
 		this.lastTime = now;
 
 		const cappedDt = Math.min(dt, this.options.maxDeltaTime);
-
-		if (this.options.fixedTimestepMode) {
-			this.executeFixedTimestepFrame(cappedDt);
-		} else {
-			this.executeFrame(cappedDt);
-		}
-
+		this.executeFrame(cappedDt);
 		this.currentFrameTime = cappedDt * 1000;
-	}
-
-	/**
-	 * Runs a single fixed update manually.
-	 * Only works when fixedTimestepMode is enabled.
-	 * Useful for testing deterministic behavior.
-	 *
-	 * @throws Error if fixedTimestepMode is not enabled
-	 *
-	 * @example
-	 * ```typescript
-	 * const loop = createGameLoop(world, {
-	 *   fixedTimestepMode: { tickRate: 60, maxUpdatesPerFrame: 5, interpolate: true },
-	 * });
-	 *
-	 * // Run exactly one fixed update
-	 * loop.stepFixed();
-	 * ```
-	 */
-	stepFixed(): void {
-		if (!this.options.fixedTimestepMode) {
-			throw new Error('stepFixed() requires fixedTimestepMode to be enabled');
-		}
-
-		// Before fixed update hook
-		this.hooks.onBeforeFixedUpdate?.(this.world, this.fixedDeltaTime, this.tickCount);
-
-		// Before update hook (for compatibility)
-		this.hooks.onBeforeUpdate?.(this.world, this.fixedDeltaTime);
-
-		// Run fixed update phases
-		this.world = this.scheduler.runFixedUpdatePhases(this.world, this.fixedDeltaTime);
-
-		// After update hook (for compatibility)
-		this.hooks.onAfterUpdate?.(this.world, this.fixedDeltaTime);
-
-		// After fixed update hook
-		this.hooks.onAfterFixedUpdate?.(this.world, this.fixedDeltaTime, this.tickCount);
-
-		this.tickCount++;
 	}
 
 	/**
@@ -705,16 +475,12 @@ export class GameLoop {
 		this.lastTime = now;
 
 		// Cap delta time to prevent spiral of death
-		if (deltaTime > this.options.maxDeltaTime) {
+		if (this.options.fixedTimestep && deltaTime > this.options.maxDeltaTime) {
 			deltaTime = this.options.maxDeltaTime;
 		}
 
 		// Execute the frame
-		if (this.options.fixedTimestepMode) {
-			this.executeFixedTimestepFrame(deltaTime);
-		} else {
-			this.executeFrame(deltaTime);
-		}
+		this.executeFrame(deltaTime);
 
 		// Update stats
 		this.updateStats(now, deltaTime);
@@ -725,7 +491,6 @@ export class GameLoop {
 
 	/**
 	 * Executes a single frame with the given delta time.
-	 * Used in variable timestep mode.
 	 */
 	private executeFrame(deltaTime: number): void {
 		// Before input hook
@@ -756,101 +521,16 @@ export class GameLoop {
 	}
 
 	/**
-	 * Executes a frame using fixed timestep mode.
-	 *
-	 * IMPORTANT: Input is ALWAYS processed every frame for responsiveness,
-	 * regardless of fixed timestep rate.
-	 *
-	 * Fixed timestep loop:
-	 * 1. Process input (every frame, not at fixed rate)
-	 * 2. Accumulate real time
-	 * 3. Run fixed updates at consistent rate
-	 * 4. Calculate interpolation alpha
-	 * 5. Render (optionally with interpolation)
-	 */
-	private executeFixedTimestepFrame(deltaTime: number): void {
-		const config = this.options.fixedTimestepMode;
-		if (!config) {
-			return;
-		}
-
-		// CRITICAL: Always process input first, every frame, for responsiveness
-		this.hooks.onBeforeInput?.(this.world, deltaTime);
-		this.world = this.scheduler.runInputOnly(this.world, deltaTime);
-		this.hooks.onAfterInput?.(this.world, deltaTime);
-
-		// Accumulate time
-		this.accumulator += deltaTime;
-
-		// Track skipped updates
-		this.currentSkippedUpdates = 0;
-		let updates = 0;
-
-		// Run fixed updates
-		while (this.accumulator >= this.fixedDeltaTime) {
-			// Check for spiral of death
-			if (updates >= config.maxUpdatesPerFrame) {
-				// Consume remaining accumulator to prevent spiral
-				const skipped = Math.floor(this.accumulator / this.fixedDeltaTime);
-				this.currentSkippedUpdates = skipped;
-				this.accumulator = this.accumulator % this.fixedDeltaTime;
-				break;
-			}
-
-			// Before fixed update hook
-			this.hooks.onBeforeFixedUpdate?.(this.world, this.fixedDeltaTime, this.tickCount);
-
-			// Before update hook (for compatibility)
-			this.hooks.onBeforeUpdate?.(this.world, this.fixedDeltaTime);
-
-			// Run fixed update phases (UPDATE, LATE_UPDATE, PHYSICS)
-			this.world = this.scheduler.runFixedUpdatePhases(this.world, this.fixedDeltaTime);
-
-			// After update hook (for compatibility)
-			this.hooks.onAfterUpdate?.(this.world, this.fixedDeltaTime);
-
-			// After fixed update hook
-			this.hooks.onAfterFixedUpdate?.(this.world, this.fixedDeltaTime, this.tickCount);
-
-			this.accumulator -= this.fixedDeltaTime;
-			this.tickCount++;
-			this.ticksThisSecond++;
-			updates++;
-		}
-
-		// Calculate interpolation alpha
-		this.currentAlpha = config.interpolate ? this.accumulator / this.fixedDeltaTime : 0;
-
-		// Call interpolation hook if enabled
-		if (config.interpolate && this.hooks.onInterpolate) {
-			this.hooks.onInterpolate(this.world, this.currentAlpha);
-		}
-
-		// Before render hook
-		this.hooks.onBeforeRender?.(this.world, deltaTime);
-
-		// Run render phases (LAYOUT, RENDER, POST_RENDER)
-		this.world = this.scheduler.runRenderPhases(this.world, deltaTime);
-
-		// After render hook
-		this.hooks.onAfterRender?.(this.world, deltaTime);
-
-		this.frameCount++;
-	}
-
-	/**
 	 * Updates performance statistics.
 	 */
 	private updateStats(now: number, deltaTime: number): void {
 		this.currentFrameTime = deltaTime * 1000;
 		this.framesThisSecond++;
 
-		// Update FPS and ticks per second every second
+		// Update FPS every second
 		if (now - this.lastFPSUpdate >= 1) {
 			this.currentFPS = this.framesThisSecond;
-			this.currentTicksPerSecond = this.ticksThisSecond;
 			this.framesThisSecond = 0;
-			this.ticksThisSecond = 0;
 			this.lastFPSUpdate = now;
 		}
 	}
