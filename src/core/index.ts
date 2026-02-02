@@ -24,6 +24,26 @@ export {
 	setAbsolutePosition,
 	setRelativePosition,
 } from './computedPosition';
+// Effects system
+export type { DynamicValue, EffectConfig, ResolvedEffect } from './effects';
+export {
+	applyCustomEffect,
+	applyFocusEffect,
+	applyHoverEffect,
+	clearAllStoredStyles,
+	clearStoredStyle,
+	getComputedEffectStyle,
+	getOriginalStyle,
+	getStoredStyle,
+	hasFocusEffectApplied,
+	hasHoverEffectApplied,
+	hasStoredStyle,
+	removeAllEffects,
+	removeFocusEffect,
+	removeHoverEffect,
+	resolveEffectConfig,
+	syncEffects,
+} from './effects';
 export type {
 	BoxConfig,
 	ButtonConfig,
