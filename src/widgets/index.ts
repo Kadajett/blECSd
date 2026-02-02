@@ -118,7 +118,10 @@ export type { ListStyleConfig, ListWidget, ListWidgetConfig } from './list';
 export { createList, isListWidget, ListWidgetConfigSchema } from './list';
 // Listbar widget
 export type {
+	ListbarAction,
 	ListbarItem,
+	ListbarSelectCallback,
+	ListbarState,
 	ListbarStyleConfig,
 	ListbarWidget,
 	ListbarWidgetConfig,

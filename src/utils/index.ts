@@ -296,6 +296,7 @@ export {
 	getNextMatch,
 	getPreviousMatch,
 	getVisibleMatches,
+	positionToLineColumn,
 	search,
 	searchBatch,
 	searchLiteral,
@@ -303,6 +304,8 @@ export {
 	searchReverse,
 	searchWithCache,
 	updateSearchQuery,
+	WORD_BOUNDARY_AFTER,
+	WORD_BOUNDARY_BEFORE,
 } from './textSearch';
 // Virtualized scrollback buffer
 export type {
@@ -317,6 +320,7 @@ export {
 	appendLine,
 	appendLines,
 	clearScrollback,
+	COMPRESSION_RATIO,
 	compressOldChunks,
 	createScrollbackBuffer,
 	decompressAll,

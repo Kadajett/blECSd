@@ -113,9 +113,10 @@ export const DEFAULT_TIMEOUT = 5000;
 /** Default batch size for progressive search */
 export const DEFAULT_SEARCH_BATCH = 100000;
 
-/** Word boundary pattern */
-const WORD_BOUNDARY_BEFORE = /(?:^|[^\w])/;
-const WORD_BOUNDARY_AFTER = /(?:$|[^\w])/;
+/** Word boundary pattern (for matching word boundaries before a match) */
+export const WORD_BOUNDARY_BEFORE = /(?:^|[^\w])/;
+/** Word boundary pattern (for matching word boundaries after a match) */
+export const WORD_BOUNDARY_AFTER = /(?:$|[^\w])/;
 
 // =============================================================================
 // BOYER-MOORE-HORSPOOL
@@ -223,8 +224,18 @@ function computeTextHash(text: string): number {
 
 /**
  * Finds line and column for a position in text.
+ *
+ * @param text - The text to search in
+ * @param position - Character position in text
+ * @returns Object with line number (0-indexed) and column
+ *
+ * @example
+ * ```typescript
+ * const { line, column } = positionToLineColumn('hello\nworld', 7);
+ * // line = 1, column = 1 (the 'o' in 'world')
+ * ```
  */
-function positionToLineColumn(text: string, position: number): { line: number; column: number } {
+export function positionToLineColumn(text: string, position: number): { line: number; column: number } {
 	let line = 0;
 	let lineStart = 0;
 

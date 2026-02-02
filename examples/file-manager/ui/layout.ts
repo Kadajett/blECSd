@@ -4,8 +4,8 @@
  */
 
 import { addEntity } from 'bitecs';
-import type { Entity, World } from 'blecsd';
-import { createListbar, type ListbarWidget } from '../../../src/widgets/listbar';
+import type { Entity, World, ListbarWidget } from 'blecsd';
+import { createListbar } from 'blecsd';
 import {
 	setSelection,
 	setVirtualList,

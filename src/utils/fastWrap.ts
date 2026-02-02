@@ -141,13 +141,16 @@ function hashString(str: string): number {
  * Gets the visible width of a string.
  * Uses Unicode-aware width by default.
  */
-function getWidth(text: string, unicodeWidth: boolean): number {
+function getCharWidth(text: string, unicodeWidth: boolean): number {
 	if (unicodeWidth) {
 		return stringWidth(text);
 	}
 	// Simple ASCII width (faster but less accurate)
 	return text.length;
 }
+
+// Export for use by other modules
+export { getCharWidth as getWidth };
 
 // =============================================================================
 // CACHE CREATION
@@ -237,7 +240,6 @@ function wrapParagraph(
 
 	let lineStart = 0;
 	let lineWidth = 0;
-	let wordStart = lineStart;
 	let wordWidth = 0;
 	let lastBreakable = -1;
 	let lastBreakableWidth = 0;
@@ -259,7 +261,6 @@ function wrapParagraph(
 			}
 			lineStart = i + 1;
 			lineWidth = 0;
-			wordStart = lineStart;
 			wordWidth = 0;
 			lastBreakable = -1;
 			continue;
@@ -271,7 +272,6 @@ function wrapParagraph(
 			// Space is a breakable point
 			lastBreakable = i;
 			lastBreakableWidth = lineWidth;
-			wordStart = i + 1;
 			wordWidth = 0;
 			lineWidth += charWidth;
 		} else {
@@ -296,7 +296,6 @@ function wrapParagraph(
 				breakPoints.push(i);
 				lineStart = i;
 				lineWidth = charWidth;
-				wordStart = i;
 				wordWidth = charWidth;
 				lastBreakable = -1;
 			}

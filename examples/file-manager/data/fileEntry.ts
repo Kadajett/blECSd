@@ -77,7 +77,7 @@ export function isDirectory(entry: FileEntry): boolean {
 	return entry.type === FileType.Directory;
 }
 
-import { fuzzyTest, fuzzyMatch } from '../../../src/utils/fuzzySearch';
+import { fuzzyTest, fuzzyMatch } from 'blecsd';
 
 /**
  * Checks if a file entry matches a filter query using fuzzy matching.
@@ -136,7 +136,7 @@ export type FileCategory =
 /**
  * Gets the category of a file for icon/color purposes.
  */
-export function getFileCategory(entry: FileEntry): FileCategory {
+export function getFileCategory(entry: Pick<FileEntry, 'type' | 'isExecutable' | 'extension'>): FileCategory {
 	if (entry.type === FileType.Directory) return 'directory';
 	if (entry.type === FileType.Symlink) return 'symlink';
 	if (entry.isExecutable) return 'executable';

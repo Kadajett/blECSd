@@ -4,7 +4,7 @@
  */
 
 import type { Entity, World } from 'blecsd';
-import { sortByName } from '../../../src/utils/helpers';
+import { sortByName } from 'blecsd';
 import { SortDirection, SortField, type FileManagerConfig } from '../config';
 import type { FileEntry } from './fileEntry';
 import { FileType, fuzzyMatchEntry } from './fileEntry';

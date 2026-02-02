@@ -3,7 +3,7 @@
  * @module systems/syntaxHighlight
  */
 
-import type { TextSegment } from '../../../src/utils/tags';
+import type { TextSegment } from 'blecsd';
 import { packColor } from 'blecsd';
 
 /**
@@ -382,7 +382,7 @@ function highlightMarkdown(line: string, defaultFg: number): HighlightedLine {
 	// Heading
 	if (/^#{1,6}\s/.test(line)) {
 		const match = line.match(/^(#{1,6})\s(.*)$/);
-		if (match) {
+		if (match && match[1] && match[2]) {
 			addSegment(match[1] + ' ', SYNTAX_COLORS.mdHeading);
 			addSegment(match[2], SYNTAX_COLORS.mdHeading);
 			return { segments };
@@ -398,7 +398,7 @@ function highlightMarkdown(line: string, defaultFg: number): HighlightedLine {
 	// List item
 	if (/^(\s*)([-*+]|\d+\.)\s/.test(line)) {
 		const match = line.match(/^(\s*)([-*+]|\d+\.)\s(.*)$/);
-		if (match) {
+		if (match && match[1] !== undefined && match[2] && match[3] !== undefined) {
 			addSegment(match[1], defaultFg);
 			addSegment(match[2] + ' ', SYNTAX_COLORS.keyword);
 			// Process rest of line for inline formatting
@@ -475,7 +475,7 @@ function highlightYAML(line: string, defaultFg: number): HighlightedLine {
 	// Comment
 	if (/^\s*#/.test(line)) {
 		const match = line.match(/^(\s*)(#.*)$/);
-		if (match) {
+		if (match && match[1] !== undefined && match[2]) {
 			addSegment(match[1], defaultFg);
 			addSegment(match[2], SYNTAX_COLORS.comment);
 			return { segments };
@@ -484,7 +484,7 @@ function highlightYAML(line: string, defaultFg: number): HighlightedLine {
 
 	// Key: value
 	const kvMatch = line.match(/^(\s*)([^:]+)(:)(.*)$/);
-	if (kvMatch) {
+	if (kvMatch && kvMatch[1] !== undefined && kvMatch[2] && kvMatch[3] && kvMatch[4] !== undefined) {
 		addSegment(kvMatch[1], defaultFg);
 		addSegment(kvMatch[2], SYNTAX_COLORS.jsonKey);
 		addSegment(kvMatch[3], SYNTAX_COLORS.punctuation);
@@ -505,7 +505,7 @@ function highlightYAML(line: string, defaultFg: number): HighlightedLine {
 	// List item
 	if (/^\s*-\s/.test(line)) {
 		const match = line.match(/^(\s*)(-)(\s.*)$/);
-		if (match) {
+		if (match && match[1] !== undefined && match[2] && match[3]) {
 			addSegment(match[1], defaultFg);
 			addSegment(match[2], SYNTAX_COLORS.keyword);
 			addSegment(match[3], defaultFg);

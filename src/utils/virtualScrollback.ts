@@ -134,8 +134,8 @@ export const DEFAULT_MAX_MEMORY = 200 * 1024 * 1024;
 /** Approximate bytes per character */
 const BYTES_PER_CHAR = 2;
 
-/** Compression ratio estimate */
-const COMPRESSION_RATIO = 0.5;
+/** Compression ratio estimate (used for memory projections) */
+export const COMPRESSION_RATIO = 0.5;
 
 // =============================================================================
 // BUFFER CREATION
@@ -511,12 +511,7 @@ export function getLineRange(buffer: ScrollbackBuffer, startLine: number, endLin
 		}
 	}
 
-	// Sort by position (chunks may be out of order)
-	lines.sort((a, b) => {
-		// Lines are in order within the result, but we need to ensure order
-		// This is implicit since we iterate chunks in order
-		return 0;
-	});
+	// Lines are already in order since we iterate chunks sequentially
 
 	evictChunks(buffer);
 

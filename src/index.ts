@@ -871,6 +871,7 @@ export type {
 	MouseButton,
 	MouseEvent,
 	MouseProtocol,
+	ParsedMouseEvent,
 	ParseMouseResult,
 } from './terminal';
 export {
@@ -970,6 +971,7 @@ export {
 	sattrMerge,
 	sattrRemoveFlag,
 	segmentToTaggedText,
+	sortByName,
 	stripAnsi,
 	stripTags,
 	styleToAttrs,
@@ -1023,3 +1025,247 @@ export {
 	createInputLogger,
 	createMiniProfiler,
 } from './debug/overlay';
+// =============================================================================
+// WIDGETS - High-level UI Widgets
+// =============================================================================
+export type {
+	// Tabs
+	TabsWidget,
+	TabsConfig,
+	TabConfig,
+	TabData,
+	TabsStyleConfig,
+	TabsAction,
+	// Listbar
+	ListbarWidget,
+	ListbarWidgetConfig,
+	ListbarItem,
+	ListbarStyleConfig,
+	ListbarState,
+	ListbarAction,
+	ListbarSelectCallback,
+	// List widget
+	ListWidget,
+	ListWidgetConfig,
+	ListStyleConfig,
+} from './widgets';
+export {
+	// Tabs
+	createTabs,
+	TabsConfigSchema,
+	// Listbar
+	createListbar,
+	isListbarWidget,
+	ListbarWidgetConfigSchema,
+	// List widget
+	createList,
+	isListWidget,
+	ListWidgetConfigSchema,
+} from './widgets';
+// =============================================================================
+// LIST COMPONENT - Virtualized List Behavior
+// =============================================================================
+export type {
+	ListItem,
+	ListState,
+	ListEvent,
+	ListStore,
+	ListLazyLoadCallback,
+	ListScrollCallback,
+	ListScrollInfo,
+	ListDisplay,
+	ListDisplayOptions,
+	ListSelectCallback,
+	ListAction,
+} from './components';
+export {
+	// List state machine and behavior
+	attachListBehavior,
+	LIST_STATE_MACHINE_CONFIG,
+	listStore,
+	resetListStore,
+	// List state queries
+	isList,
+	getListState,
+	isListInState,
+	isListFocused,
+	isListDisabled,
+	// List state transitions
+	sendListEvent,
+	focusList,
+	blurList,
+	disableList,
+	enableList,
+	// Item management
+	getItems,
+	setItems,
+	addItem,
+	removeItem,
+	getItem,
+	updateItem,
+	getItemCount,
+	clearItems,
+	appendItems,
+	// Selection
+	getListSelectedIndex,
+	getSelectedItem,
+	setListSelectedIndex,
+	selectPrev,
+	selectNext,
+	selectFirst,
+	selectLast,
+	selectByValue,
+	clearListSelection,
+	activateSelected,
+	// Scrolling and visibility
+	getFirstVisible,
+	setFirstVisible,
+	getVisibleCount,
+	setVisibleCount,
+	ensureVisible,
+	scrollPage,
+	getVisibleItems,
+	// Virtualization / lazy loading
+	setTotalCount,
+	getTotalCount,
+	setLazyLoadCallback,
+	getLazyLoadCallback,
+	clearLazyLoadCallback,
+	onListScroll,
+	setListLoading,
+	isListLoading,
+	setLoadingPlaceholder,
+	getLoadingPlaceholder,
+	loadItems,
+	checkNeedsLoad,
+	getScrollInfo,
+	// Display options
+	setListDisplay,
+	getListDisplay,
+	clearListDisplay,
+	// Interaction modes
+	isListInteractive,
+	setListInteractive,
+	isListMouseEnabled,
+	setListMouse,
+	isListKeysEnabled,
+	setListKeys,
+	// Incremental search
+	isListSearchEnabled,
+	setListSearchEnabled,
+	isListSearching,
+	startListSearch,
+	endListSearch,
+	getListSearchQuery,
+	setListSearchQuery,
+	appendToSearchQuery,
+	backspaceSearchQuery,
+	clearSearchQuery,
+	findAndSelectByText,
+	findNextMatch,
+	onListSearchChange,
+	// Callbacks
+	onListSelect,
+	onListActivate,
+	clearListCallbacks,
+	// Input handling
+	handleListKeyPress,
+	// Rendering
+	renderListItems,
+	// Constants
+	DEFAULT_SELECTED_PREFIX,
+	DEFAULT_UNSELECTED_PREFIX,
+	DEFAULT_SELECTED_FG,
+	DEFAULT_SELECTED_BG,
+	DEFAULT_ITEM_FG,
+	DEFAULT_ITEM_BG,
+	DEFAULT_DISABLED_FG,
+} from './components';
+// =============================================================================
+// SYNTAX HIGHLIGHTING - Incremental Syntax Highlighting
+// =============================================================================
+export type {
+	Grammar,
+	HighlightCache,
+	HighlightResult,
+	HighlightStats,
+	LineEntry,
+	LineState,
+	Token,
+	TokenType,
+} from './utils';
+export {
+	// Cache management
+	clearHighlightCache,
+	createHighlightCache,
+	getHighlightStats,
+	// Language detection
+	detectLanguage,
+	detectLanguageFromContent,
+	getGrammarByName,
+	// Grammars
+	GRAMMAR_GO,
+	GRAMMAR_JAVASCRIPT,
+	GRAMMAR_JSON,
+	GRAMMAR_PLAINTEXT,
+	GRAMMAR_PYTHON,
+	GRAMMAR_RUST,
+	GRAMMAR_SHELL,
+	GRAMMARS,
+	// Highlighting
+	continueHighlight,
+	highlightVisibleFirst,
+	highlightWithCache,
+	setGrammar,
+	tokenizeLine,
+	// Invalidation
+	invalidateAllLines,
+	invalidateLine,
+	invalidateLines,
+	// Constants
+	DEFAULT_HIGHLIGHT_BATCH,
+	EMPTY_STATE,
+} from './utils';
+// =============================================================================
+// SCROLLBACK BUFFER - Virtual Scrollback for Large Content
+// =============================================================================
+export type {
+	Chunk,
+	LineRange,
+	ScrollbackBuffer,
+	ScrollbackConfig,
+	ScrollbackLine,
+	ScrollbackStats,
+} from './utils';
+export {
+	// Buffer creation
+	createScrollbackBuffer,
+	// Adding content
+	appendLine,
+	appendLines,
+	// Reading content
+	getScrollbackLine,
+	getLineRange,
+	getVisibleLines,
+	// Navigation
+	scrollBy as scrollScrollbackBy,
+	scrollToBottom as scrollbackToBottom,
+	scrollToTop as scrollbackToTop,
+	jumpToLine,
+	// Buffer management
+	clearScrollback,
+	trimToLineCount,
+	compressOldChunks,
+	decompressAll,
+	// Export/import
+	exportToText,
+	loadFromText,
+	// Stats
+	getMemoryUsage,
+	getScrollbackStats,
+	// Constants
+	DEFAULT_CHUNK_SIZE,
+	DEFAULT_MAX_CACHED,
+	DEFAULT_MAX_MEMORY,
+	COMPRESSION_RATIO,
+} from './utils';

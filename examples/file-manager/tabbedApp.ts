@@ -7,7 +7,7 @@
 
 import { pathToFileURL } from 'node:url';
 import { addEntity } from 'bitecs';
-import type { Entity, World, KeyEvent, MouseEvent, CellBuffer } from '../../src/index';
+import type { Entity, World, KeyEvent, ParsedMouseEvent, CellBuffer, ListItem } from 'blecsd';
 import {
 	createWorld,
 	parseKeyBuffer,
@@ -29,20 +29,19 @@ import {
 	checkNeedsLoad,
 	loadItems,
 	ensureVisible,
-	handleListKeyPress,
 	clearItems,
 	getScrollInfo,
-} from '../../src/index';
-import type { ListItem } from '../../src/index';
-import { createTabs, type TabsWidget } from '../../src/widgets/tabs';
-import { createListbar, type ListbarWidget } from '../../src/widgets/listbar';
-import { getIcon } from './ui/icons';
-import { createConfig, type FileManagerConfig, formatDate, formatSize, nextSizeFormat, nextSortField, toggleSortDirection, SortField } from './config';
-import { createFileStore, type FileStore } from './data/fileStore';
-import { FileType, getFileCategory } from './data/fileEntry';
-import { getHomePath } from './data/filesystem';
-import { loadPreview, createQuickPreview, EMPTY_PREVIEW, type PreviewContent } from './data/preview';
-import {
+	selectPrev,
+	selectNext,
+	selectFirst,
+	selectLast,
+	scrollPage,
+	// Tabs and listbar widgets
+	createTabs,
+	type TabsWidget,
+	createListbar,
+	type ListbarWidget,
+	// Syntax highlighting
 	createHighlightCache,
 	detectLanguage,
 	detectLanguageFromContent,
@@ -51,21 +50,20 @@ import {
 	type HighlightCache,
 	type LineEntry,
 	type TokenType,
+	// Scrollback buffer
 	appendLines,
 	clearScrollback,
 	createScrollbackBuffer,
 	getVisibleLines,
-	scrollBy as scrollScrollbackBy,
+	scrollScrollbackBy,
 	type ScrollbackBuffer,
-} from '../../src/utils/syntaxHighlight';
-import {
-	appendLines,
-	clearScrollback,
-	createScrollbackBuffer,
-	getVisibleLines,
-	scrollBy as scrollScrollbackBy,
-	type ScrollbackBuffer,
-} from '../../src/utils/virtualScrollback';
+} from 'blecsd';
+import { getIcon } from './ui/icons';
+import { createConfig, type FileManagerConfig, formatDate, formatSize, nextSizeFormat, nextSortField, toggleSortDirection, SortField } from './config';
+import { createFileStore, type FileStore } from './data/fileStore';
+import { FileType, getFileCategory } from './data/fileEntry';
+import { getHomePath } from './data/filesystem';
+import { loadPreview, createQuickPreview, EMPTY_PREVIEW, type PreviewContent } from './data/preview';
 
 // =============================================================================
 // TYPES
@@ -106,6 +104,13 @@ interface RenderState {
 	tabHitRegions: Array<{ start: number; end: number; index: number }>;
 }
 
+interface ClickState {
+	lastClickTime: number;
+	lastClickIndex: number;
+	lastClickX: number;
+	lastClickY: number;
+}
+
 interface AppState {
 	world: World;
 	config: FileManagerConfig;
@@ -119,6 +124,7 @@ interface AppState {
 	actionBar: ListbarWidget;
 	running: boolean;
 	needsRedraw: boolean;
+	clickState: ClickState;
 }
 
 // =============================================================================
@@ -126,41 +132,78 @@ interface AppState {
 // =============================================================================
 
 const COLORS = {
-	bg: packColor(0, 0, 0),
-	panelBg: packColor(10, 10, 10),
-	borderFg: packColor(70, 70, 70),
+	// Base colors
+	bg: packColor(24, 24, 28),
+	panelBg: packColor(30, 30, 36),
+	borderFg: packColor(60, 60, 70),
+	borderFocused: packColor(100, 150, 255),
+
+	// Header and navigation
 	headFg: packColor(255, 255, 255),
-	headBg: packColor(0, 70, 140),
-	columnFg: packColor(255, 255, 255),
-	columnBg: packColor(40, 40, 40),
-	statusFg: packColor(255, 255, 255),
-	statusBg: packColor(0, 70, 140),
-	actionFg: packColor(200, 200, 200),
-	actionBg: packColor(30, 30, 30),
-	rowFg: packColor(220, 220, 220),
-	rowAltBg: packColor(20, 20, 20),	
-	rowSelectedFg: packColor(0, 0, 0),
-	rowSelectedBg: packColor(0, 200, 200),
-	rowCurrentFg: packColor(0, 0, 0),
-	rowCurrentBg: packColor(255, 255, 255),
-	rowCurrentSelectedBg: packColor(0, 220, 220),
-	directoryFg: packColor(90, 160, 255),
-	symlinkFg: packColor(180, 120, 255),
-	executableFg: packColor(120, 255, 120),
-	archiveFg: packColor(255, 110, 110),
-	imageFg: packColor(255, 190, 120),
-	audioFg: packColor(255, 255, 120),
-	videoFg: packColor(255, 120, 255),
-	codeFg: packColor(120, 255, 210),
-	previewMetaFg: packColor(180, 180, 180),
-	previewContentFg: packColor(210, 210, 210),
-	previewBinaryFg: packColor(120, 170, 230),
-	matchHighlightFg: packColor(255, 220, 0),
+	headBg: packColor(45, 90, 160),
+	columnFg: packColor(180, 185, 195),
+	columnBg: packColor(38, 38, 46),
+	columnSortFg: packColor(100, 180, 255),
+
+	// Status bar
+	statusFg: packColor(220, 225, 235),
+	statusBg: packColor(45, 90, 160),
+	statusDimFg: packColor(160, 170, 190),
+
+	// Action bar
+	actionFg: packColor(170, 175, 185),
+	actionBg: packColor(32, 32, 40),
+	actionKeyFg: packColor(100, 180, 255),
+
+	// List rows
+	rowFg: packColor(210, 215, 225),
+	rowBg: packColor(30, 30, 36),
+	rowAltBg: packColor(35, 35, 42),
+	rowSelectedFg: packColor(255, 255, 255),
+	rowSelectedBg: packColor(50, 100, 180),
+	rowCurrentFg: packColor(255, 255, 255),
+	rowCurrentBg: packColor(70, 130, 220),
+	rowCurrentSelectedBg: packColor(80, 150, 240),
+	rowHoverBg: packColor(45, 45, 55),
+
+	// File type colors
+	directoryFg: packColor(100, 170, 255),
+	symlinkFg: packColor(180, 130, 255),
+	executableFg: packColor(100, 230, 100),
+	archiveFg: packColor(255, 130, 130),
+	imageFg: packColor(255, 180, 100),
+	audioFg: packColor(255, 220, 100),
+	videoFg: packColor(255, 130, 220),
+	codeFg: packColor(100, 230, 200),
+	documentFg: packColor(200, 200, 200),
+	textFg: packColor(180, 180, 180),
+
+	// Preview
+	previewMetaFg: packColor(140, 145, 160),
+	previewContentFg: packColor(200, 205, 215),
+	previewBinaryFg: packColor(100, 150, 220),
+	previewBg: packColor(28, 28, 34),
+	previewLineFg: packColor(80, 85, 100),
+
+	// Highlights
+	matchHighlightFg: packColor(255, 200, 50),
+	matchHighlightBg: packColor(80, 60, 0),
+
+	// Tabs
 	tabActiveFg: packColor(255, 255, 255),
-	tabActiveBg: packColor(0, 90, 170),
-	tabInactiveFg: packColor(200, 200, 200),
-	tabInactiveBg: packColor(30, 30, 30),
-	filterFg: packColor(255, 220, 0),
+	tabActiveBg: packColor(55, 100, 180),
+	tabInactiveFg: packColor(160, 165, 175),
+	tabInactiveBg: packColor(38, 38, 46),
+	tabHoverBg: packColor(50, 50, 60),
+
+	// Filter
+	filterFg: packColor(255, 200, 50),
+	filterBg: packColor(60, 50, 20),
+
+	// Scrollbar
+	scrollbarBg: packColor(40, 40, 50),
+	scrollbarFg: packColor(80, 85, 100),
+	scrollbarHoverFg: packColor(100, 110, 130),
 };
 
 const TOKEN_COLORS: Record<TokenType, number> = {
@@ -381,6 +424,12 @@ async function createAppState(initialPath: string, width: number, height: number
 		actionBar,
 		running: true,
 		needsRedraw: true,
+		clickState: {
+			lastClickTime: 0,
+			lastClickIndex: -1,
+			lastClickX: -1,
+			lastClickY: -1,
+		},
 	};
 }
 
@@ -439,7 +488,12 @@ async function handleKeyInput(state: AppState, event: KeyEvent): Promise<void> {
 	if (!tab) return;
 
 	if (key === 'q' || (event.ctrl && key === 'c')) {
-		state.running = false;
+		const stateWithExit = state as AppState & { exit?: () => void };
+		if (stateWithExit.exit) {
+			stateWithExit.exit();
+		} else {
+			state.running = false;
+		}
 		return;
 	}
 
@@ -539,17 +593,67 @@ async function handleKeyInput(state: AppState, event: KeyEvent): Promise<void> {
 		}
 	}
 
-	const listAction = handleListKeyPress(state.world, tab.listEid, key);
-	if (listAction) {
+	// Handle list navigation keys directly
+	if (key === 'up' || key === 'k') {
+		selectPrev(state.world, tab.listEid);
 		const selectedIndex = getListSelectedIndex(tab.listEid);
-		if (selectedIndex >= 0) {
-			ensureVisible(state.world, tab.listEid, selectedIndex);
-		}
-		if (key === ' ' || key === 'space') {
-			toggleSelection(tab, selectedIndex);
-		}
+		ensureVisible(state.world, tab.listEid, selectedIndex);
 		state.needsRedraw = true;
 		await updatePreviewForSelection(state, tab);
+		return;
+	}
+
+	if (key === 'down' || key === 'j') {
+		selectNext(state.world, tab.listEid);
+		const selectedIndex = getListSelectedIndex(tab.listEid);
+		ensureVisible(state.world, tab.listEid, selectedIndex);
+		state.needsRedraw = true;
+		await updatePreviewForSelection(state, tab);
+		return;
+	}
+
+	if (key === 'pageup') {
+		scrollPage(state.world, tab.listEid, -1);
+		const selectedIndex = getListSelectedIndex(tab.listEid);
+		ensureVisible(state.world, tab.listEid, selectedIndex);
+		state.needsRedraw = true;
+		await updatePreviewForSelection(state, tab);
+		return;
+	}
+
+	if (key === 'pagedown') {
+		scrollPage(state.world, tab.listEid, 1);
+		const selectedIndex = getListSelectedIndex(tab.listEid);
+		ensureVisible(state.world, tab.listEid, selectedIndex);
+		state.needsRedraw = true;
+		await updatePreviewForSelection(state, tab);
+		return;
+	}
+
+	if (key === 'home' || key === 'g') {
+		selectFirst(state.world, tab.listEid);
+		const selectedIndex = getListSelectedIndex(tab.listEid);
+		ensureVisible(state.world, tab.listEid, selectedIndex);
+		state.needsRedraw = true;
+		await updatePreviewForSelection(state, tab);
+		return;
+	}
+
+	if (key === 'end') {
+		selectLast(state.world, tab.listEid);
+		const selectedIndex = getListSelectedIndex(tab.listEid);
+		ensureVisible(state.world, tab.listEid, selectedIndex);
+		state.needsRedraw = true;
+		await updatePreviewForSelection(state, tab);
+		return;
+	}
+
+	if (key === ' ' || key === 'space') {
+		const selectedIndex = getListSelectedIndex(tab.listEid);
+		toggleSelection(tab, selectedIndex);
+		selectNext(state.world, tab.listEid);
+		ensureVisible(state.world, tab.listEid, getListSelectedIndex(tab.listEid));
+		state.needsRedraw = true;
 		return;
 	}
 
@@ -569,7 +673,7 @@ async function handleKeyInput(state: AppState, event: KeyEvent): Promise<void> {
 	}
 }
 
-function handleMouseInput(state: AppState, event: MouseEvent): void {
+function handleMouseInput(state: AppState, event: ParsedMouseEvent): void {
 	const tab = getActiveTab(state);
 	if (!tab) return;
 
@@ -600,11 +704,29 @@ function handleMouseInput(state: AppState, event: MouseEvent): void {
 		if (event.y >= listStartY && event.y <= listEndY && event.x <= listEndX) {
 			const index = getVisibleIndexAtRow(tab.listEid, event.y - listStartY);
 			if (index !== null) {
-				setListSelectedIndex(state.world, tab.listEid, index);
-				ensureVisible(state.world, tab.listEid, index);
-				state.focusedPane = 'list';
-				state.needsRedraw = true;
-				updatePreviewForSelection(state, tab).catch(() => undefined);
+				const now = Date.now();
+				const isDoubleClick =
+					state.clickState.lastClickIndex === index &&
+					now - state.clickState.lastClickTime < 400;
+
+				// Update click state
+				state.clickState.lastClickTime = now;
+				state.clickState.lastClickIndex = index;
+				state.clickState.lastClickX = event.x;
+				state.clickState.lastClickY = event.y;
+
+				if (isDoubleClick) {
+					// Double-click: open the item
+					setListSelectedIndex(state.world, tab.listEid, index);
+					openSelection(state, tab).catch(() => undefined);
+				} else {
+					// Single-click: select the item
+					setListSelectedIndex(state.world, tab.listEid, index);
+					ensureVisible(state.world, tab.listEid, index);
+					state.focusedPane = 'list';
+					state.needsRedraw = true;
+					updatePreviewForSelection(state, tab).catch(() => undefined);
+				}
 			}
 			return;
 		}
@@ -781,18 +903,26 @@ function renderApp(state: AppState): void {
 	if (!tab) return;
 
 	const { buffer, width, height, listWidth, previewWidth, contentHeight, listHeight } = state.renderState;
-	fillRect(buffer, 0, 0, width, height, ' ', COLORS.headFg, COLORS.bg);
 
+	// Clear entire screen with background
+	fillRect(buffer, 0, 0, width, height, ' ', COLORS.rowFg, COLORS.bg);
+
+	// Render UI sections
 	renderTabBar(state, width);
 	renderPathBar(state, tab, width);
-	renderColumnHeaders(state, listWidth);
+	renderColumnHeaders(state, listWidth - 1);
 	renderList(state, tab, listWidth, listHeight, 0, 3);
 
 	if (state.config.showPreview && previewWidth > 0) {
-		renderPreview(state, tab, listWidth + 1, 3, previewWidth, contentHeight);
+		renderPreview(state, tab, listWidth + 1, 3, previewWidth - 1, contentHeight);
+
+		// Vertical divider between list and preview
+		const dividerColor = state.focusedPane === 'list' ? COLORS.borderFg : COLORS.borderFocused;
 		for (let y = 2; y < height - 2; y++) {
-			buffer.setCell(listWidth, y, '│', COLORS.borderFg, COLORS.bg);
+			buffer.setCell(listWidth, y, '│', dividerColor, COLORS.bg);
 		}
+		// Connect divider to column header bar
+		buffer.setCell(listWidth, 2, '┬', COLORS.borderFg, COLORS.columnBg);
 	}
 
 	renderStatusBar(state, tab, width, height - 2);
@@ -801,62 +931,113 @@ function renderApp(state: AppState): void {
 
 function renderTabBar(state: AppState, width: number): void {
 	const y = 0;
+	const buffer = state.renderState.buffer;
 	state.renderState.tabHitRegions = [];
 
-	let x = 0;
+	// Fill background
+	fillRect(buffer, 0, y, width, 1, ' ', COLORS.tabInactiveFg, COLORS.tabInactiveBg);
+
+	let x = 1;
 	for (let i = 0; i < state.tabs.length; i++) {
 		const isActive = i === state.activeTab;
 		const label = state.tabs[i]?.title ?? `Tab ${i + 1}`;
-		const text = isActive ? ` ${label} ` : ` ${label} `;
+		const tabNum = `${i + 1}`;
+		const text = isActive ? ` ${tabNum}:${label} ` : ` ${tabNum}:${label} `;
 		const fg = isActive ? COLORS.tabActiveFg : COLORS.tabInactiveFg;
 		const bg = isActive ? COLORS.tabActiveBg : COLORS.tabInactiveBg;
-		if (x >= width) break;
+		if (x >= width - 2) break;
 
-		renderText(state.renderState.buffer, x, y, text.slice(0, width - x), fg, bg);
-		state.renderState.tabHitRegions.push({ start: x, end: Math.min(width - 1, x + text.length - 1), index: i });
-		x += text.length + 1;
+		// Add separator before non-first tabs
+		if (i > 0) {
+			renderText(buffer, x - 1, y, '│', COLORS.borderFg, COLORS.tabInactiveBg);
+		}
+
+		renderText(buffer, x, y, text.slice(0, width - x - 1), fg, bg);
+		state.renderState.tabHitRegions.push({ start: x, end: Math.min(width - 2, x + text.length - 1), index: i });
+		x += text.length;
 	}
 
-	if (x < width) {
-		renderText(state.renderState.buffer, x, y, ' '.repeat(width - x), COLORS.tabInactiveFg, COLORS.tabInactiveBg);
+	// Add "+" button for new tab
+	if (x < width - 4) {
+		renderText(buffer, x, y, ' │', COLORS.borderFg, COLORS.tabInactiveBg);
+		renderText(buffer, x + 2, y, ' + ', COLORS.actionKeyFg, COLORS.tabInactiveBg);
 	}
 }
 
 function renderPathBar(state: AppState, tab: TabState, width: number): void {
 	const y = 1;
-	const pathText = tab.path;
-	const focusText = state.focusedPane === 'list' ? 'LIST' : 'PREVIEW';
-	const right = `[${focusText}]`;
+	const buffer = state.renderState.buffer;
 
-	renderText(state.renderState.buffer, 0, y, ' '.repeat(width), COLORS.headFg, COLORS.headBg);
-	renderText(state.renderState.buffer, 1, y, pathText.slice(0, width - right.length - 3), COLORS.headFg, COLORS.headBg);
-	renderText(state.renderState.buffer, width - right.length - 1, y, right, COLORS.headFg, COLORS.headBg);
+	fillRect(buffer, 0, y, width, 1, ' ', COLORS.headFg, COLORS.headBg);
 
 	if (state.filterMode) {
-		const prompt = FILTER_PROMPT + state.filterQuery;
-		renderText(state.renderState.buffer, 2, y, prompt.slice(0, width - 4), COLORS.filterFg, COLORS.headBg);
+		// Show filter input prominently
+		const prompt = '🔍 ' + state.filterQuery + '█';
+		renderText(buffer, 2, y, prompt.slice(0, width - 4), COLORS.filterFg, COLORS.headBg);
+
+		const hint = 'ESC cancel │ Enter apply';
+		if (width > prompt.length + hint.length + 6) {
+			renderText(buffer, width - hint.length - 2, y, hint, COLORS.statusDimFg, COLORS.headBg);
+		}
+		return;
 	}
+
+	// Path with breadcrumb-style display
+	const pathParts = tab.path.split('/').filter(Boolean);
+	let pathDisplay = '';
+	if (pathParts.length === 0) {
+		pathDisplay = '/';
+	} else if (pathParts.length <= 3) {
+		pathDisplay = '/' + pathParts.join('/');
+	} else {
+		// Show first, ellipsis, and last 2 parts
+		pathDisplay = `/${pathParts[0]}/…/${pathParts.slice(-2).join('/')}`;
+	}
+
+	// Focus indicator
+	const focusIcon = state.focusedPane === 'list' ? '◀' : '▶';
+	const focusLabel = state.focusedPane === 'list' ? 'LIST' : 'PREVIEW';
+	const focusText = `${focusIcon} ${focusLabel}`;
+
+	// Item count
+	const countText = `${tab.fileStore.count} items`;
+
+	const rightText = `${countText} │ ${focusText}`;
+	const maxPathWidth = width - rightText.length - 4;
+
+	renderText(buffer, 2, y, ' 📁 ', COLORS.headFg, COLORS.headBg);
+	renderText(buffer, 6, y, pathDisplay.slice(0, maxPathWidth), COLORS.headFg, COLORS.headBg);
+	renderText(buffer, width - rightText.length - 1, y, rightText, COLORS.headFg, COLORS.headBg);
 }
 
 function renderColumnHeaders(state: AppState, listWidth: number): void {
 	const y = 2;
 	const buffer = state.renderState.buffer;
-	renderText(buffer, 0, y, ' '.repeat(listWidth), COLORS.columnFg, COLORS.columnBg);
+	fillRect(buffer, 0, y, listWidth, 1, ' ', COLORS.columnFg, COLORS.columnBg);
 
-	const name = 'Name';
-	const size = 'Size';
-	const modified = 'Modified';
-	const type = 'Type';
+	const sortField = state.config.sortField;
+	const sortDir = state.config.sortDirection === 0 ? '▲' : '▼';
 
 	const sizeWidth = 10;
-	const dateWidth = 10;
-	const typeWidth = 8;
-	const nameWidth = Math.max(8, listWidth - sizeWidth - dateWidth - typeWidth - 5);
+	const dateWidth = 12;
+	const typeWidth = 6;
+	const nameWidth = Math.max(8, listWidth - sizeWidth - dateWidth - typeWidth - 6);
 
-	renderText(buffer, 2, y, name.padEnd(nameWidth), COLORS.columnFg, COLORS.columnBg);
-	renderText(buffer, 2 + nameWidth + 1, y, size.padEnd(sizeWidth), COLORS.columnFg, COLORS.columnBg);
-	renderText(buffer, 2 + nameWidth + sizeWidth + 2, y, modified.padEnd(dateWidth), COLORS.columnFg, COLORS.columnBg);
-	renderText(buffer, 2 + nameWidth + sizeWidth + dateWidth + 3, y, type.padEnd(typeWidth), COLORS.columnFg, COLORS.columnBg);
+	// Column headers with sort indicators
+	const nameLabel = sortField === SortField.Name ? `Name ${sortDir}` : 'Name';
+	const sizeLabel = sortField === SortField.Size ? `Size ${sortDir}` : 'Size';
+	const modLabel = sortField === SortField.Modified ? `Modified ${sortDir}` : 'Modified';
+	const typeLabel = sortField === SortField.Type ? `Type ${sortDir}` : 'Type';
+
+	const nameFg = sortField === SortField.Name ? COLORS.columnSortFg : COLORS.columnFg;
+	const sizeFg = sortField === SortField.Size ? COLORS.columnSortFg : COLORS.columnFg;
+	const modFg = sortField === SortField.Modified ? COLORS.columnSortFg : COLORS.columnFg;
+	const typeFg = sortField === SortField.Type ? COLORS.columnSortFg : COLORS.columnFg;
+
+	renderText(buffer, 3, y, nameLabel.slice(0, nameWidth), nameFg, COLORS.columnBg);
+	renderText(buffer, 3 + nameWidth + 1, y, sizeLabel.padStart(sizeWidth - 1), sizeFg, COLORS.columnBg);
+	renderText(buffer, 3 + nameWidth + sizeWidth + 1, y, modLabel.slice(0, dateWidth), modFg, COLORS.columnBg);
+	renderText(buffer, 3 + nameWidth + sizeWidth + dateWidth + 2, y, typeLabel.slice(0, typeWidth), typeFg, COLORS.columnBg);
 }
 
 function renderList(
@@ -870,11 +1051,16 @@ function renderList(
 	const buffer = state.renderState.buffer;
 	const visibleItems = getVisibleItems(tab.listEid);
 	const selectedIndex = getListSelectedIndex(tab.listEid);
+	const scrollInfo = getScrollInfo(tab.listEid);
+	const totalCount = scrollInfo.totalCount ?? 0;
+	const firstVisible = scrollInfo.firstVisible ?? 0;
 
+	// Reserve 1 column for scrollbar
+	const contentWidth = width - 1;
 	const sizeWidth = 10;
-	const dateWidth = 10;
-	const typeWidth = 8;
-	const nameWidth = Math.max(8, width - sizeWidth - dateWidth - typeWidth - 5);
+	const dateWidth = 12;
+	const typeWidth = 6;
+	const nameWidth = Math.max(8, contentWidth - sizeWidth - dateWidth - typeWidth - 6);
 
 	for (let row = 0; row < height; row++) {
 		const item = visibleItems[row];
@@ -882,30 +1068,90 @@ function renderList(
 		const entry = index >= 0 ? tab.fileStore.getEntryAt(index) : undefined;
 		const isSelected = tab.selection.has(index);
 		const isCurrent = index === selectedIndex;
-		let fg = COLORS.rowFg;
-		if (isCurrent) fg = COLORS.rowCurrentFg;
-		else if (isSelected) fg = COLORS.rowSelectedFg;
-		let bg = row % 2 === 0 ? COLORS.panelBg : COLORS.rowAltBg;
-		if (isSelected && isCurrent) bg = COLORS.rowCurrentSelectedBg;
-		else if (isSelected) bg = COLORS.rowSelectedBg;
-		else if (isCurrent) bg = COLORS.rowCurrentBg;
 
-		fillRect(buffer, x, y + row, width, 1, ' ', fg, bg);
+		// Determine row colors with improved visual hierarchy
+		let fg = COLORS.rowFg;
+		let bg = row % 2 === 0 ? COLORS.rowBg : COLORS.rowAltBg;
+
+		if (isCurrent && isSelected) {
+			fg = COLORS.rowCurrentFg;
+			bg = COLORS.rowCurrentSelectedBg;
+		} else if (isCurrent) {
+			fg = COLORS.rowCurrentFg;
+			bg = COLORS.rowCurrentBg;
+		} else if (isSelected) {
+			fg = COLORS.rowSelectedFg;
+			bg = COLORS.rowSelectedBg;
+		}
+
+		fillRect(buffer, x, y + row, contentWidth, 1, ' ', fg, bg);
+
 		if (!entry) continue;
 
 		const icon = getIcon(getFileCategory(entry));
 		const nameText = entry.name;
-		const sizeText = entry.type === FileType.Directory ? '<DIR>' : formatSize(entry.size, state.config.sizeFormat);
+		const sizeText = entry.type === FileType.Directory ? '   <DIR>' : formatSize(entry.size, state.config.sizeFormat).padStart(sizeWidth - 1);
 		const dateText = formatDate(entry.modified);
-		const typeText = entry.extension ? entry.extension.toUpperCase().slice(0, typeWidth - 1) : '-';
+		const typeText = entry.extension ? entry.extension.toLowerCase().slice(0, typeWidth - 1) : '─';
 
-		const nameX = x + 2;
-		const iconFg = isSelected || isCurrent ? fg : fileFg(entry);
-		renderText(buffer, nameX - 2, y + row, icon, iconFg, bg);
-		renderNameWithMatch(buffer, nameX, y + row, nameText, nameWidth, fg, bg, tab.fileStore.getMatchInfo(index)?.indices ?? []);
-		renderText(buffer, nameX + nameWidth + 1, y + row, sizeText.padEnd(sizeWidth), fg, bg);
-		renderText(buffer, nameX + nameWidth + sizeWidth + 2, y + row, dateText.padEnd(dateWidth), fg, bg);
-		renderText(buffer, nameX + nameWidth + sizeWidth + dateWidth + 3, y + row, typeText.padEnd(typeWidth), fg, bg);
+		// Selection marker
+		const marker = isSelected ? '●' : ' ';
+		const markerFg = isSelected ? COLORS.matchHighlightFg : fg;
+		renderText(buffer, x, y + row, marker, markerFg, bg);
+
+		// Icon with file type color
+		const iconFg = isCurrent || isSelected ? fg : fileFg(entry);
+		renderText(buffer, x + 2, y + row, icon, iconFg, bg);
+
+		// Name with match highlighting
+		const nameFg = isCurrent || isSelected ? fg : (entry.type === FileType.Directory ? COLORS.directoryFg : fg);
+		renderNameWithMatch(buffer, x + 4, y + row, nameText, nameWidth - 1, nameFg, bg, tab.fileStore.getMatchInfo(index)?.indices ?? []);
+
+		// Size (right-aligned, dimmer for directories)
+		const sizeFg = entry.type === FileType.Directory ? COLORS.previewMetaFg : fg;
+		renderText(buffer, x + 3 + nameWidth, y + row, sizeText, sizeFg, bg);
+
+		// Modified date
+		const dateFg = isCurrent || isSelected ? fg : COLORS.previewMetaFg;
+		renderText(buffer, x + 3 + nameWidth + sizeWidth, y + row, dateText.slice(0, dateWidth), dateFg, bg);
+
+		// Type/extension
+		const typeFg = isCurrent || isSelected ? fg : COLORS.previewMetaFg;
+		renderText(buffer, x + 3 + nameWidth + sizeWidth + dateWidth + 1, y + row, typeText.padEnd(typeWidth), typeFg, bg);
+	}
+
+	// Render scrollbar
+	renderScrollbar(buffer, x + contentWidth, y, height, totalCount, height, firstVisible);
+}
+
+function renderScrollbar(
+	buffer: CellBuffer,
+	x: number,
+	y: number,
+	height: number,
+	totalItems: number,
+	visibleItems: number,
+	firstVisible: number,
+): void {
+	if (totalItems <= visibleItems) {
+		// No scrollbar needed, fill with background
+		for (let i = 0; i < height; i++) {
+			buffer.setCell(x, y + i, '│', COLORS.borderFg, COLORS.bg);
+		}
+		return;
+	}
+
+	// Calculate scrollbar thumb position and size
+	const thumbSize = Math.max(1, Math.floor((visibleItems / totalItems) * height));
+	const maxScroll = totalItems - visibleItems;
+	const scrollRatio = maxScroll > 0 ? firstVisible / maxScroll : 0;
+	const thumbStart = Math.floor(scrollRatio * (height - thumbSize));
+
+	for (let i = 0; i < height; i++) {
+		const isThumb = i >= thumbStart && i < thumbStart + thumbSize;
+		const char = isThumb ? '█' : '░';
+		const fg = isThumb ? COLORS.scrollbarHoverFg : COLORS.scrollbarFg;
+		buffer.setCell(x, y + i, char, fg, COLORS.scrollbarBg);
 	}
 }
 
@@ -920,19 +1166,38 @@ function renderNameWithMatch(
 	indices: readonly number[],
 ): void {
 	const indexSet = new Set(indices);
+	const hasMatches = indices.length > 0;
+
 	for (let i = 0; i < width; i++) {
 		const char = text[i] ?? ' ';
-		const color = indexSet.has(i) ? COLORS.matchHighlightFg : fg;
-		buffer.setCell(x + i, y, char, color, bg);
+		const isMatch = indexSet.has(i);
+		// Use highlight background for matches to make them stand out
+		const charFg = isMatch ? COLORS.matchHighlightFg : fg;
+		const charBg = isMatch && hasMatches ? COLORS.matchHighlightBg : bg;
+		buffer.setCell(x + i, y, char, charFg, charBg);
 	}
 }
 
 function renderPreview(state: AppState, tab: TabState, x: number, y: number, width: number, height: number): void {
 	const buffer = state.renderState.buffer;
 	const preview = tab.preview;
+	const isFocused = state.focusedPane === 'preview';
+	const borderColor = isFocused ? COLORS.borderFocused : COLORS.borderFg;
 
-	fillRect(buffer, x, y, width, height, ' ', COLORS.previewContentFg, COLORS.bg);
-	renderBox(buffer, x, y - 1, width, height + 1, BOX_SINGLE, COLORS.borderFg, COLORS.bg);
+	// Background
+	fillRect(buffer, x, y, width, height, ' ', COLORS.previewContentFg, COLORS.previewBg);
+
+	// Border with focus indicator
+	renderBox(buffer, x, y - 1, width, height + 1, BOX_SINGLE, { fg: borderColor, bg: COLORS.bg });
+
+	// Title in border
+	const title = preview.content.name ? ` ${preview.content.name} ` : ' Preview ';
+	const titleX = x + 2;
+	renderText(buffer, titleX, y - 1, title.slice(0, width - 6), COLORS.headFg, COLORS.bg);
+
+	// Line numbers width
+	const lineNumWidth = 4;
+	const contentWidth = width - lineNumWidth - 3;
 
 	const range = getVisibleLines(preview.scrollback, preview.scrollLine, height);
 	const visibleStart = range.startLine;
@@ -954,25 +1219,54 @@ function renderPreview(state: AppState, tab: TabState, x: number, y: number, wid
 		const rowY = y + i;
 		if (!line) continue;
 
+		// Render line number for content lines
+		if (lineIndex >= preview.contentStartLine) {
+			const contentLineNum = lineIndex - preview.contentStartLine + 1;
+			const lineNumText = contentLineNum.toString().padStart(lineNumWidth - 1);
+			renderText(buffer, x + 1, rowY, lineNumText, COLORS.previewLineFg, COLORS.previewBg);
+			renderText(buffer, x + lineNumWidth, rowY, '│', COLORS.borderFg, COLORS.previewBg);
+		}
+
+		// Metadata lines (before content)
 		if (lineIndex < preview.contentStartLine) {
-			renderText(buffer, x + 1, rowY, line.text.slice(0, width - 2), COLORS.previewMetaFg, COLORS.bg);
+			// Metadata section styling
+			const text = line.text;
+			if (lineIndex === 0 && preview.content.name) {
+				// File name header
+				renderText(buffer, x + 2, rowY, text.slice(0, width - 4), COLORS.headFg, COLORS.previewBg);
+			} else {
+				renderText(buffer, x + 2, rowY, text.slice(0, width - 4), COLORS.previewMetaFg, COLORS.previewBg);
+			}
 			continue;
 		}
 
 		const contentLineIndex = lineIndex - preview.contentStartLine;
 		const highlighted = highlightLines[contentLineIndex - (visibleStart - preview.contentStartLine)];
+		const textX = x + lineNumWidth + 2;
+
 		if (!highlighted || preview.content.isBinary) {
-			renderText(buffer, x + 1, rowY, line.text.slice(0, width - 2), preview.content.isBinary ? COLORS.previewBinaryFg : COLORS.previewContentFg, COLORS.bg);
+			const textFg = preview.content.isBinary ? COLORS.previewBinaryFg : COLORS.previewContentFg;
+			renderText(buffer, textX, rowY, line.text.slice(0, contentWidth), textFg, COLORS.previewBg);
 			continue;
 		}
 
-		renderHighlightedLine(buffer, x + 1, rowY, highlighted, width - 2);
+		renderHighlightedLine(buffer, textX, rowY, highlighted, contentWidth);
 	}
 
+	// Loading indicator
 	if (preview.isLoading) {
 		const spinner = SPINNER_FRAMES[Math.floor(Date.now() / 80) % SPINNER_FRAMES.length];
-		const label = ` ${spinner} Loading preview...`;
-		renderText(buffer, x + 2, y + height - 2, label.slice(0, width - 4), COLORS.matchHighlightFg, COLORS.bg);
+		const label = ` ${spinner} Loading... `;
+		const labelX = x + Math.floor((width - label.length) / 2);
+		renderText(buffer, labelX, y + Math.floor(height / 2), label, COLORS.matchHighlightFg, COLORS.previewBg);
+	}
+
+	// Scroll position indicator
+	const totalLines = preview.scrollback.totalLines;
+	if (totalLines > height) {
+		const scrollPercent = Math.floor((preview.scrollLine / Math.max(1, totalLines - height)) * 100);
+		const posText = ` ${scrollPercent}% `;
+		renderText(buffer, x + width - posText.length - 2, y - 1, posText, COLORS.previewMetaFg, COLORS.bg);
 	}
 }
 
@@ -983,7 +1277,7 @@ function renderHighlightedLine(buffer: CellBuffer, x: number, y: number, line: L
 		const text = token.text;
 		for (let i = 0; i < text.length && cursor < width; i++) {
 			const char = text[i] ?? ' ';
-			buffer.setCell(x + cursor, y, char, color, COLORS.bg);
+			buffer.setCell(x + cursor, y, char, color, COLORS.previewBg);
 			cursor++;
 		}
 		if (cursor >= width) break;
@@ -992,37 +1286,79 @@ function renderHighlightedLine(buffer: CellBuffer, x: number, y: number, line: L
 
 function renderStatusBar(state: AppState, tab: TabState, width: number, y: number): void {
 	const buffer = state.renderState.buffer;
-	renderText(buffer, 0, y, ' '.repeat(width), COLORS.statusFg, COLORS.statusBg);
+	fillRect(buffer, 0, y, width, 1, ' ', COLORS.statusFg, COLORS.statusBg);
 
-	const count = tab.fileStore.count.toLocaleString();
+	const selectedIndex = getListSelectedIndex(tab.listEid);
 	const totalSize = formatSize(tab.fileStore.getTotalSize(), state.config.sizeFormat);
 	const selectedCount = tab.selection.size;
-	const filterText = state.filterQuery ? `Filter: ${state.filterQuery}` : 'No filter';
-	const left = `${count} items · ${totalSize} · ${selectedCount} selected`;
-	const right = `Sort: ${SortField[state.config.sortField]} ${state.config.sortDirection === 0 ? '↑' : '↓'} · ${filterText}`;
 
-	renderText(buffer, 1, y, left.slice(0, width - 2), COLORS.statusFg, COLORS.statusBg);
-	renderText(buffer, Math.max(1, width - right.length - 1), y, right.slice(0, width - 2), COLORS.statusFg, COLORS.statusBg);
+	// Left side: selection info
+	let leftParts: string[] = [];
+	if (selectedCount > 0) {
+		leftParts.push(`✓ ${selectedCount} selected`);
+	}
+	if (selectedIndex >= 0) {
+		const entry = tab.fileStore.getEntryAt(selectedIndex);
+		if (entry) {
+			const size = entry.type === FileType.Directory ? 'DIR' : formatSize(entry.size, state.config.sizeFormat);
+			leftParts.push(`${entry.name} (${size})`);
+		}
+	}
+	const left = leftParts.length > 0 ? leftParts.join(' │ ') : `Total: ${totalSize}`;
+
+	// Right side: position and filter
+	const position = selectedIndex >= 0 ? `${selectedIndex + 1}/${tab.fileStore.count}` : '─';
+	const hiddenText = state.config.showHidden ? 'H:on' : 'H:off';
+	const filterText = state.filterQuery ? `🔍"${state.filterQuery}"` : '';
+	const rightParts = [position, hiddenText];
+	if (filterText) rightParts.push(filterText);
+	const right = rightParts.join(' │ ');
+
+	renderText(buffer, 2, y, left.slice(0, width - right.length - 6), COLORS.statusFg, COLORS.statusBg);
+	renderText(buffer, width - right.length - 2, y, right, COLORS.statusFg, COLORS.statusBg);
 }
 
 function renderActionBar(state: AppState, width: number, y: number): void {
-	state.actionBar.setPosition(0, y);
-	const line = state.actionBar.renderLine();
-	renderText(state.renderState.buffer, 0, y, ' '.repeat(width), COLORS.actionFg, COLORS.actionBg);
-	renderText(state.renderState.buffer, 0, y, line.slice(0, width), COLORS.actionFg, COLORS.actionBg);
+	const buffer = state.renderState.buffer;
+	fillRect(buffer, 0, y, width, 1, ' ', COLORS.actionFg, COLORS.actionBg);
+
+	// Render action items with highlighted keys
+	let x = 1;
+	for (const item of ACTION_ITEMS) {
+		if (x >= width - 4) break;
+
+		// Key in brackets
+		const keyText = `[${item.key.toUpperCase()}]`;
+		const labelText = item.text;
+
+		renderText(buffer, x, y, keyText, COLORS.actionKeyFg, COLORS.actionBg);
+		x += keyText.length;
+		renderText(buffer, x, y, labelText, COLORS.actionFg, COLORS.actionBg);
+		x += labelText.length + 2;
+	}
+
+	// Show keyboard shortcuts hint on the right
+	const hint = '↑↓ Navigate  Enter Open  Space Select  Tab Focus';
+	if (width > x + hint.length + 4) {
+		renderText(buffer, width - hint.length - 2, y, hint, COLORS.previewMetaFg, COLORS.actionBg);
+	}
 }
 
-function fileFg(entry: { type: FileType; isExecutable: boolean; extension?: string }): number {
+function fileFg(entry: { type: FileType; isExecutable: boolean; extension: string }): number {
 	const category = getFileCategory(entry);
-	if (category === 'directory') return COLORS.directoryFg;
-	if (category === 'symlink') return COLORS.symlinkFg;
-	if (category === 'executable') return COLORS.executableFg;
-	if (category === 'archive') return COLORS.archiveFg;
-	if (category === 'image') return COLORS.imageFg;
-	if (category === 'audio') return COLORS.audioFg;
-	if (category === 'video') return COLORS.videoFg;
-	if (category === 'code') return COLORS.codeFg;
-	return COLORS.rowFg;
+	switch (category) {
+		case 'directory': return COLORS.directoryFg;
+		case 'symlink': return COLORS.symlinkFg;
+		case 'executable': return COLORS.executableFg;
+		case 'archive': return COLORS.archiveFg;
+		case 'image': return COLORS.imageFg;
+		case 'audio': return COLORS.audioFg;
+		case 'video': return COLORS.videoFg;
+		case 'code': return COLORS.codeFg;
+		case 'document': return COLORS.documentFg;
+		case 'text': return COLORS.textFg;
+		default: return COLORS.rowFg;
+	}
 }
 
 function bufferToAnsi(state: RenderState): string {
@@ -1153,15 +1489,21 @@ async function main(): Promise<void> {
 
 	startRenderLoop(state);
 
-	const exit = (): void => {
-		state.running = false;
-		restoreTerminal();
-		process.exit(0);
-	};
+	// Return a promise that resolves when the app exits
+	return new Promise<void>((resolve) => {
+		const exit = (): void => {
+			state.running = false;
+			restoreTerminal();
+			resolve();
+		};
 
-	process.on('SIGINT', exit);
-	process.on('SIGTERM', exit);
-	process.on('exit', restoreTerminal);
+		// Store exit function so it can be called from key handlers
+		(state as AppState & { exit: () => void }).exit = exit;
+
+		process.on('SIGINT', exit);
+		process.on('SIGTERM', exit);
+		process.on('exit', restoreTerminal);
+	});
 }
 
 export async function runTabbedApp(): Promise<void> {

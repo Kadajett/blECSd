@@ -3,7 +3,7 @@
  * @module systems/renderSystem
  */
 
-import type { Entity, World } from 'blecsd';
+import type { Entity, World, CellBuffer } from 'blecsd';
 import {
 	createCellBuffer,
 	renderBox,
@@ -11,11 +11,10 @@ import {
 	renderHLine,
 	fillRect,
 	BOX_SINGLE,
-	type CellBuffer,
 	packColor,
+	parseTags,
+	createTaggedText,
 } from 'blecsd';
-// Import tag utilities from source for styled text support
-import { parseTags, createTaggedText } from '../../../src/utils/tags';
 import type { FileStore, FileEntry, PreviewContent } from '../data';
 import { highlightContent, supportsHighlighting, SYNTAX_COLORS } from './syntaxHighlight';
 import type { FileManagerConfig, SizeFormat } from '../config';

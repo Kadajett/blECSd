@@ -460,7 +460,7 @@ export function parseMarkdown(source: string): MarkdownParseResult {
 				hash: hashString(code + lang),
 				data: {
 					kind: 'code',
-					language: lang || detectLanguage('code.txt', code) || '',
+					language: lang || detectLanguage('code.txt').name || '',
 					code,
 				},
 			});

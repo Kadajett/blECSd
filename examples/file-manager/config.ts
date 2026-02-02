@@ -126,10 +126,27 @@ function formatHumanSize(bytes: number): string {
 
 /**
  * Formats a date for display.
+ * Shows "HH:MM" for today, "Mon DD" for this year, "Mon DD YY" for older.
  */
 export function formatDate(date: Date): string {
+	const now = new Date();
 	const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-	const month = months[date.getMonth()];
+	const month = months[date.getMonth()] ?? 'Jan';
 	const day = date.getDate().toString().padStart(2, ' ');
-	return `${month} ${day}`;
+
+	// Same day: show time
+	if (date.toDateString() === now.toDateString()) {
+		const hours = date.getHours().toString().padStart(2, '0');
+		const mins = date.getMinutes().toString().padStart(2, '0');
+		return `   ${hours}:${mins}`;
+	}
+
+	// Same year: show month and day
+	if (date.getFullYear() === now.getFullYear()) {
+		return `${month} ${day}   `;
+	}
+
+	// Older: show month, day, and year
+	const year = (date.getFullYear() % 100).toString().padStart(2, '0');
+	return `${month} ${day} '${year}`;
 }
