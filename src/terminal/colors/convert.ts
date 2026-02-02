@@ -50,9 +50,12 @@ export function hexToRgb(hex: string): RGB | RGBA {
 
 	if (h.length === 3) {
 		// #RGB -> #RRGGBB
-		r = Number.parseInt(h[0] + h[0], 16);
-		g = Number.parseInt(h[1] + h[1], 16);
-		b = Number.parseInt(h[2] + h[2], 16);
+		const h0 = h[0] ?? '0';
+		const h1 = h[1] ?? '0';
+		const h2 = h[2] ?? '0';
+		r = Number.parseInt(h0 + h0, 16);
+		g = Number.parseInt(h1 + h1, 16);
+		b = Number.parseInt(h2 + h2, 16);
 	} else if (h.length === 6) {
 		// #RRGGBB
 		r = Number.parseInt(h.slice(0, 2), 16);
@@ -258,6 +261,7 @@ export function rgbToColor256(rgb: RGB): Color256 {
 
 	for (let i = 0; i < 256; i++) {
 		const palette = PALETTE_RGB[i];
+		if (!palette) continue;
 		const dr = rgb.r - palette.r;
 		const dg = rgb.g - palette.g;
 		const db = rgb.b - palette.b;
@@ -290,7 +294,11 @@ export function rgbToColor256(rgb: RGB): Color256 {
  * ```
  */
 export function color256ToRgb(color: Color256): RGB {
-	return PALETTE_RGB[color];
+	const rgb = PALETTE_RGB[color];
+	if (!rgb) {
+		throw new Error(`Invalid Color256: ${color}`);
+	}
+	return rgb;
 }
 
 /**
@@ -325,7 +333,11 @@ export function hexToColor256(hex: string): Color256 {
  * ```
  */
 export function color256ToHex(color: Color256): string {
-	return rgbToHex(PALETTE_RGB[color]);
+	const rgb = PALETTE_RGB[color];
+	if (!rgb) {
+		throw new Error(`Invalid Color256: ${color}`);
+	}
+	return rgbToHex(rgb);
 }
 
 // =============================================================================
@@ -440,7 +452,11 @@ export function truecolorToColor256(color: number): Color256 {
  * ```
  */
 export function color256ToTruecolor(color: Color256): number {
-	return rgbToTruecolor(PALETTE_RGB[color]);
+	const rgb = PALETTE_RGB[color];
+	if (!rgb) {
+		throw new Error(`Invalid Color256: ${color}`);
+	}
+	return rgbToTruecolor(rgb);
 }
 
 // =============================================================================
