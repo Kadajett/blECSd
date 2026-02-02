@@ -524,6 +524,33 @@ export {
 	registerRectBorder,
 	resizeDockingContext,
 } from './borderDocking';
+// Dirty rectangle tracking
+export type {
+	DirtyRect,
+	DirtyStats,
+	DirtyTrackerData,
+} from './dirtyRects';
+export {
+	clearDirtyTracking,
+	createDirtyTracker,
+	forceFullRedrawFlag,
+	getDirtyEntities,
+	getDirtyRegions,
+	getDirtyRegionsInViewport,
+	getDirtyStats,
+	hasDirtyEntities,
+	isCellDirty,
+	isEntityDirty,
+	markAllEntitiesDirty,
+	markCellDirty,
+	markEntityDirty,
+	markRegionDirty,
+	needsFullRedraw,
+	regionIntersectsDirty,
+	removeEntityFromTracking,
+	resizeDirtyTracker,
+	updateEntityBounds,
+} from './dirtyRects';
 export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
 export { createWorld, resetWorld } from './world';
