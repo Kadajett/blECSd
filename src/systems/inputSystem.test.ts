@@ -11,8 +11,8 @@ import {
 import { KeyboardInput, MouseInput, setKeyboardInput, setMouseInput } from '../components/input';
 import { isHovered, isPressed, setInteractive } from '../components/interactive';
 import { setPosition } from '../components/position';
-import type { KeyEvent, KeyName } from '../terminal/keyParser';
-import type { MouseAction, MouseButton, MouseEvent } from '../terminal/mouseParser';
+import type { KeyEvent } from '../terminal/keyParser';
+import type { MouseEvent } from '../terminal/mouseParser';
 import {
 	captureMouseTo,
 	clearEntityInput,
@@ -33,41 +33,6 @@ import {
 	resetInputState,
 } from './inputSystem';
 
-// Helper to create a valid KeyEvent
-function createKeyEvent(
-	name: KeyName,
-	opts: { ctrl?: boolean; meta?: boolean; shift?: boolean } = {},
-): KeyEvent {
-	return {
-		sequence: name,
-		name,
-		ctrl: opts.ctrl ?? false,
-		meta: opts.meta ?? false,
-		shift: opts.shift ?? false,
-		raw: new Uint8Array([name.charCodeAt(0)]),
-	};
-}
-
-// Helper to create a valid MouseEvent
-function createMouseEvent(
-	x: number,
-	y: number,
-	button: MouseButton,
-	action: MouseAction,
-): MouseEvent {
-	return {
-		x,
-		y,
-		button,
-		action,
-		ctrl: false,
-		meta: false,
-		shift: false,
-		protocol: 'sgr',
-		raw: new Uint8Array(),
-	};
-}
-
 describe('inputSystem', () => {
 	let world: ReturnType<typeof createWorld>;
 
@@ -84,28 +49,46 @@ describe('inputSystem', () => {
 
 	describe('event queue', () => {
 		it('queues key events', () => {
-			const event = createKeyEvent('a');
+			const event: KeyEvent = {
+				name: 'a',
+				ctrl: false,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([97]),
+			};
 
 			queueKeyEvent(event);
 
 			const queue = getEventQueue();
 			expect(queue.length).toBe(1);
-			expect(queue[0]!.type).toBe('key');
+			expect(queue[0].type).toBe('key');
 		});
 
 		it('queues mouse events', () => {
-			const event = createMouseEvent(10, 5, 'left', 'press');
+			const event: MouseEvent = {
+				x: 10,
+				y: 5,
+				button: 'left',
+				action: 'press',
+				raw: '',
+			};
 
 			queueMouseEvent(event);
 
 			const queue = getEventQueue();
 			expect(queue.length).toBe(1);
-			expect(queue[0]!.type).toBe('mouse');
+			expect(queue[0].type).toBe('mouse');
 		});
 
 		it('clears event queue', () => {
-			queueKeyEvent(createKeyEvent('a'));
-			queueMouseEvent(createMouseEvent(0, 0, 'left', 'press'));
+			queueKeyEvent({
+				name: 'a',
+				ctrl: false,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([97]),
+			});
+			queueMouseEvent({ x: 0, y: 0, button: 'left', action: 'press', raw: '' });
 
 			clearEventQueue();
 
@@ -127,9 +110,15 @@ describe('inputSystem', () => {
 			setDimensions(world, eid, 100, 100);
 			focus(world, eid);
 
-			queueKeyEvent(createKeyEvent('a'));
-			queueMouseEvent(createMouseEvent(10, 5, 'left', 'press'));
-			queueMouseEvent(createMouseEvent(10, 5, 'left', 'release'));
+			queueKeyEvent({
+				name: 'a',
+				ctrl: false,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([97]),
+			});
+			queueMouseEvent({ x: 10, y: 5, button: 'left', action: 'press', raw: '' });
+			queueMouseEvent({ x: 10, y: 5, button: 'left', action: 'release', raw: '' });
 
 			inputSystem(world);
 
@@ -199,10 +188,10 @@ describe('inputSystem', () => {
 			const hits = hitTest(world, 15, 15);
 
 			expect(hits.length).toBe(1);
-			expect(hits[0]!.entity).toBe(eid);
-			expect(hits[0]!.localX).toBe(5);
-			expect(hits[0]!.localY).toBe(5);
-			expect(hits[0]!.zIndex).toBe(5);
+			expect(hits[0].entity).toBe(eid);
+			expect(hits[0].localX).toBe(5);
+			expect(hits[0].localY).toBe(5);
+			expect(hits[0].zIndex).toBe(5);
 		});
 
 		it('returns multiple overlapping entities sorted by z-index', () => {
@@ -221,9 +210,9 @@ describe('inputSystem', () => {
 			const hits = hitTest(world, 25, 25);
 
 			expect(hits.length).toBe(3);
-			expect(hits[0]!.entity).toBe(eid2); // z=10 (highest)
-			expect(hits[1]!.entity).toBe(eid3); // z=5
-			expect(hits[2]!.entity).toBe(eid1); // z=1 (lowest)
+			expect(hits[0].entity).toBe(eid2); // z=10 (highest)
+			expect(hits[1].entity).toBe(eid3); // z=5
+			expect(hits[2].entity).toBe(eid1); // z=1 (lowest)
 		});
 	});
 
@@ -303,7 +292,7 @@ describe('inputSystem', () => {
 			captureMouseTo(eid1);
 
 			// Click at eid2's position
-			queueMouseEvent(createMouseEvent(70, 70, 'left', 'press'));
+			queueMouseEvent({ x: 70, y: 70, button: 'left', action: 'press', raw: '' });
 			inputSystem(world);
 
 			// eid1 should receive the event
@@ -320,7 +309,7 @@ describe('inputSystem', () => {
 			setDimensions(world, eid, 50, 50);
 			setInteractive(world, eid, { hoverable: true });
 
-			queueMouseEvent(createMouseEvent(25, 25, 'unknown', 'move'));
+			queueMouseEvent({ x: 25, y: 25, button: 'none', action: 'move', raw: '' });
 			inputSystem(world);
 
 			expect(isHovered(world, eid)).toBe(true);
@@ -333,12 +322,12 @@ describe('inputSystem', () => {
 			setInteractive(world, eid, { hoverable: true });
 
 			// Enter
-			queueMouseEvent(createMouseEvent(25, 25, 'unknown', 'move'));
+			queueMouseEvent({ x: 25, y: 25, button: 'none', action: 'move', raw: '' });
 			inputSystem(world);
 			expect(isHovered(world, eid)).toBe(true);
 
 			// Leave
-			queueMouseEvent(createMouseEvent(100, 100, 'unknown', 'move'));
+			queueMouseEvent({ x: 100, y: 100, button: 'none', action: 'move', raw: '' });
 			inputSystem(world);
 			expect(isHovered(world, eid)).toBe(false);
 		});
@@ -351,7 +340,7 @@ describe('inputSystem', () => {
 			setDimensions(world, eid, 50, 50);
 			setInteractive(world, eid, { clickable: true });
 
-			queueMouseEvent(createMouseEvent(25, 25, 'left', 'press'));
+			queueMouseEvent({ x: 25, y: 25, button: 'left', action: 'press', raw: '' });
 			inputSystem(world);
 
 			expect(isPressed(world, eid)).toBe(true);
@@ -363,10 +352,10 @@ describe('inputSystem', () => {
 			setDimensions(world, eid, 50, 50);
 			setInteractive(world, eid, { clickable: true });
 
-			queueMouseEvent(createMouseEvent(25, 25, 'left', 'press'));
+			queueMouseEvent({ x: 25, y: 25, button: 'left', action: 'press', raw: '' });
 			inputSystem(world);
 
-			queueMouseEvent(createMouseEvent(25, 25, 'left', 'release'));
+			queueMouseEvent({ x: 25, y: 25, button: 'left', action: 'release', raw: '' });
 			inputSystem(world);
 
 			expect(isPressed(world, eid)).toBe(false);
@@ -381,7 +370,7 @@ describe('inputSystem', () => {
 			setInteractive(world, eid, { clickable: true });
 			makeFocusable(world, eid, true);
 
-			queueMouseEvent(createMouseEvent(25, 25, 'left', 'press'));
+			queueMouseEvent({ x: 25, y: 25, button: 'left', action: 'press', raw: '' });
 			inputSystem(world);
 
 			expect(getFocusedEntity()).toBe(eid);
@@ -397,7 +386,13 @@ describe('inputSystem', () => {
 			focus(world, eid1);
 			expect(getFocusedEntity()).toBe(eid1);
 
-			queueKeyEvent(createKeyEvent('tab'));
+			queueKeyEvent({
+				name: 'tab',
+				ctrl: false,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([9]),
+			});
 			inputSystem(world);
 
 			expect(getFocusedEntity()).toBe(eid2);
@@ -413,7 +408,13 @@ describe('inputSystem', () => {
 			focus(world, eid2);
 			expect(getFocusedEntity()).toBe(eid2);
 
-			queueKeyEvent(createKeyEvent('tab', { shift: true }));
+			queueKeyEvent({
+				name: 'tab',
+				ctrl: false,
+				meta: false,
+				shift: true,
+				raw: new Uint8Array([9]),
+			});
 			inputSystem(world);
 
 			expect(getFocusedEntity()).toBe(eid1);
@@ -427,7 +428,13 @@ describe('inputSystem', () => {
 			setKeyboardInput(world, eid, {});
 			focus(world, eid);
 
-			queueKeyEvent(createKeyEvent('a', { ctrl: true }));
+			queueKeyEvent({
+				name: 'a',
+				ctrl: true,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([97]),
+			});
 			inputSystem(world);
 
 			expect(KeyboardInput.lastKeyCode[eid]).toBe(97); // 'a' char code
@@ -444,8 +451,8 @@ describe('inputSystem', () => {
 			setDimensions(world, eid, 50, 50);
 			setInteractive(world, eid, { clickable: true });
 
-			queueMouseEvent(createMouseEvent(25, 25, 'left', 'press'));
-			queueMouseEvent(createMouseEvent(25, 25, 'left', 'release'));
+			queueMouseEvent({ x: 25, y: 25, button: 'left', action: 'press', raw: '' });
+			queueMouseEvent({ x: 25, y: 25, button: 'left', action: 'release', raw: '' });
 			inputSystem(world);
 
 			expect(handler).toHaveBeenCalledWith({ x: 25, y: 25, button: 1 });
@@ -455,7 +462,7 @@ describe('inputSystem', () => {
 			const handler = vi.fn();
 			getInputEventBus().on('mousemove', handler);
 
-			queueMouseEvent(createMouseEvent(10, 20, 'unknown', 'move'));
+			queueMouseEvent({ x: 10, y: 20, button: 'none', action: 'move', raw: '' });
 			inputSystem(world);
 
 			expect(handler).toHaveBeenCalledWith({ x: 10, y: 20 });
@@ -470,7 +477,7 @@ describe('inputSystem', () => {
 			setDimensions(world, eid, 50, 50);
 			setInteractive(world, eid, { clickable: true });
 
-			queueMouseEvent(createMouseEvent(25, 25, 'wheelUp', 'wheel'));
+			queueMouseEvent({ x: 25, y: 25, button: 'wheelup', action: 'wheel', raw: '' });
 			inputSystem(world);
 
 			expect(handler).toHaveBeenCalledWith({ direction: 'up', amount: 1 });
@@ -534,7 +541,13 @@ describe('inputSystem', () => {
 
 	describe('resetInputState', () => {
 		it('clears all state', () => {
-			queueKeyEvent(createKeyEvent('a'));
+			queueKeyEvent({
+				name: 'a',
+				ctrl: false,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([97]),
+			});
 			captureMouseTo(1);
 			inputState.lastMouseX = 100;
 			inputState.lastMouseY = 100;
