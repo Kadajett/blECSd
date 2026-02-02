@@ -96,12 +96,11 @@ export {
 	getContentHash,
 	getContentLength,
 	getDepth,
-	getText,
 	getDescendants,
 	getDimensions,
+	getFirstChild,
 	getFocusable,
 	getFocusedEntity,
-	getFirstChild,
 	getHierarchy,
 	getHorizontalPadding,
 	getInteractive,
@@ -128,6 +127,7 @@ export {
 	getStyle,
 	getTabIndex,
 	getTabOrder,
+	getText,
 	getVerticalPadding,
 	Hierarchy,
 	hasBorder,
@@ -183,8 +183,8 @@ export {
 	NULL_ENTITY,
 	Padding,
 	Position,
-	prepend,
 	packColor,
+	prepend,
 	Renderable,
 	removeChild,
 	removeLabel,
@@ -258,6 +258,7 @@ export type {
 	GetEntityEventBus,
 	InputConfig,
 	ListConfig,
+	PositionValue,
 	ScreenConfig,
 	ScreenEventMap,
 	ShrinkBox,
@@ -273,6 +274,8 @@ export {
 	ButtonConfigSchema,
 	bubbleEvent,
 	calculateShrinkSize,
+	centerPosition,
+	clampPosition,
 	createBoxEntity,
 	createBubbleableEvent,
 	createButtonEntity,
@@ -298,8 +301,15 @@ export {
 	getShrinkHeight,
 	getShrinkWidth,
 	InputConfigSchema,
+	isKeywordPosition,
+	isPercentagePosition,
 	ListConfigSchema,
 	LoopPhase,
+	PositionValueSchema,
+	parsePosition,
+	parsePositionWithNegative,
+	percentOffsetPosition,
+	percentPosition,
 	queryBorder,
 	queryContent,
 	queryFocusable,
@@ -309,6 +319,8 @@ export {
 	queryRenderable,
 	queryScrollable,
 	resetWorld,
+	resolvePosition,
+	resolvePositionClamped,
 	Scheduler,
 	ScreenConfigSchema,
 	sortByDepth,
@@ -320,20 +332,12 @@ export {
 // =============================================================================
 // SCHEMAS - Zod Validation
 // =============================================================================
-export type {
-	ColorString,
-	Dimension,
-	NonNegativeInt,
-	Percentage,
-	PositionValue,
-	PositiveInt,
-} from './schemas';
+export type { ColorString, Dimension, NonNegativeInt, Percentage, PositiveInt } from './schemas';
 export {
 	ColorStringSchema,
 	DimensionSchema,
 	NonNegativeIntSchema,
 	PercentageSchema,
-	PositionValueSchema,
 	PositiveIntSchema,
 } from './schemas';
 
@@ -405,17 +409,17 @@ export {
 // =============================================================================
 // UTILS - Utility Functions
 // =============================================================================
-export type { BoxChars, Cell, CellBuffer, RenderBoxOptions, StyleAttr, StyleInput, TextAlign, WrapOptions } from './utils';
+export type { BoxChars, Cell, CellBuffer, RenderBoxOptions, StyleAttr, StyleInput, WrapOptions } from './utils';
 export {
 	AttrFlags,
+	alignLine,
+	attrsToStyle,
 	BOX_ASCII,
 	BOX_BOLD,
 	BOX_DASHED,
 	BOX_DOUBLE,
 	BOX_ROUNDED,
 	BOX_SINGLE,
-	alignLine,
-	attrsToStyle,
 	bufferToString,
 	charsetToBoxChars,
 	createCellBuffer,

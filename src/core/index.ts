@@ -40,6 +40,21 @@ export {
 // Event system
 export type { EventHandler, EventMap, ScreenEventMap, UIEventMap } from './events';
 export { createEventBus, EventBus } from './events';
+// Positioning
+export type { PositionValue } from './positioning';
+export {
+	centerPosition,
+	clampPosition,
+	isKeywordPosition,
+	isPercentagePosition,
+	PositionValueSchema,
+	parsePosition,
+	parsePositionWithNegative,
+	percentOffsetPosition,
+	percentPosition,
+	resolvePosition,
+	resolvePositionClamped,
+} from './positioning';
 export {
 	filterClickable,
 	filterDirty,
