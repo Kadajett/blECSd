@@ -8,6 +8,31 @@ import { addComponent, addEntity } from 'bitecs';
 import { z } from 'zod';
 
 import { Border, type BorderCharset, type BorderOptions, setBorder } from '../components/border';
+import {
+	attachCheckboxBehavior,
+	DEFAULT_CHECKED_CHAR,
+	DEFAULT_UNCHECKED_CHAR,
+	setCheckboxDisplay,
+} from '../components/checkbox';
+import {
+	attachTextInputBehavior,
+	DEFAULT_CENSOR_CHAR,
+	DEFAULT_PLACEHOLDER,
+	setTextInputConfig,
+} from '../components/textInput';
+import { attachFormBehavior, registerFormField } from '../components/form';
+import {
+	attachProgressBarBehavior,
+	ProgressOrientation,
+	setProgressBarDisplay,
+} from '../components/progressBar';
+import {
+	attachRadioButtonBehavior,
+	attachRadioSetBehavior,
+	selectRadioButton,
+	setRadioButtonDisplay,
+	setRadioValue,
+} from '../components/radioButton';
 import { Content, type ContentOptions, setContent } from '../components/content';
 import { Dimensions, type DimensionValue } from '../components/dimensions';
 import { Focusable, type FocusableOptions, setFocusable } from '../components/focusable';
@@ -400,6 +425,304 @@ export const ListConfigSchema = z
  * @see {@link createListEntity} for entity creation
  */
 export type ListConfig = z.infer<typeof ListConfigSchema>;
+
+/**
+ * Zod schema for validating checkbox entity configuration.
+ *
+ * Checkbox entities are toggle controls with checked/unchecked states.
+ * They support keyboard interaction (Enter/Space to toggle), focus handling,
+ * and customizable display characters for both states.
+ *
+ * @example
+ * ```typescript
+ * import { CheckboxConfigSchema } from 'blecsd';
+ *
+ * const config = CheckboxConfigSchema.parse({
+ *   x: 5,
+ *   y: 10,
+ *   label: 'Accept terms and conditions',
+ *   checked: false,
+ *   checkedChar: '☑',
+ *   uncheckedChar: '☐',
+ *   focusable: true,
+ * });
+ * ```
+ */
+export const CheckboxConfigSchema = z
+	.object({
+		parent: z.number().optional(),
+		/** Label text displayed next to the checkbox */
+		label: z.string().optional(),
+		/** Initial checked state (default: false) */
+		checked: z.boolean().optional(),
+		/** Character displayed when checked (default: '☑') */
+		checkedChar: z.string().optional(),
+		/** Character displayed when unchecked (default: '☐') */
+		uncheckedChar: z.string().optional(),
+		border: BorderConfigSchema.optional(),
+		padding: PaddingConfigSchema.optional(),
+	})
+	.merge(PositionConfigSchema)
+	.merge(DimensionConfigSchema)
+	.merge(StyleConfigSchema)
+	.merge(InteractiveConfigSchema)
+	.merge(FocusableConfigSchema);
+
+/**
+ * Configuration options for creating a checkbox entity.
+ *
+ * @see {@link CheckboxConfigSchema} for validation
+ * @see {@link createCheckboxEntity} for entity creation
+ */
+export type CheckboxConfig = z.infer<typeof CheckboxConfigSchema>;
+
+/**
+ * Zod schema for validating textbox entity configuration.
+ *
+ * Textbox entities are single-line text input fields with cursor support,
+ * password masking, placeholder text, and keyboard navigation. They support
+ * Enter to submit, Escape to cancel, and standard text editing keys.
+ *
+ * @example
+ * ```typescript
+ * import { TextboxConfigSchema } from 'blecsd';
+ *
+ * const config = TextboxConfigSchema.parse({
+ *   x: 10,
+ *   y: 5,
+ *   width: 30,
+ *   value: '',
+ *   placeholder: 'Enter your name...',
+ *   maxLength: 50,
+ *   focusable: true,
+ * });
+ *
+ * // Password field
+ * const passwordConfig = TextboxConfigSchema.parse({
+ *   x: 10,
+ *   y: 8,
+ *   width: 30,
+ *   secret: true,
+ *   censor: '*',
+ *   placeholder: 'Enter password...',
+ * });
+ * ```
+ */
+export const TextboxConfigSchema = z
+	.object({
+		parent: z.number().optional(),
+		/** Initial text value */
+		value: z.string().optional(),
+		/** Placeholder text shown when empty */
+		placeholder: z.string().optional(),
+		/** Password mode - masks input with censor character */
+		secret: z.boolean().optional(),
+		/** Character used to mask password input (default: '*') */
+		censor: z.string().optional(),
+		/** Maximum input length (0 = unlimited) */
+		maxLength: z.number().optional(),
+		border: BorderConfigSchema.optional(),
+		padding: PaddingConfigSchema.optional(),
+	})
+	.merge(PositionConfigSchema)
+	.merge(DimensionConfigSchema)
+	.merge(StyleConfigSchema)
+	.merge(InteractiveConfigSchema)
+	.merge(FocusableConfigSchema);
+
+/**
+ * Configuration options for creating a textbox entity.
+ *
+ * @see {@link TextboxConfigSchema} for validation
+ * @see {@link createTextboxEntity} for entity creation
+ */
+export type TextboxConfig = z.infer<typeof TextboxConfigSchema>;
+
+/**
+ * Zod schema for validating textarea entity configuration.
+ *
+ * Textarea entities are multi-line text input fields. They support Enter for
+ * new lines, scrolling when content exceeds visible area, and submit via
+ * Escape or Ctrl+Enter.
+ *
+ * @example
+ * ```typescript
+ * import { TextareaConfigSchema } from 'blecsd';
+ *
+ * const config = TextareaConfigSchema.parse({
+ *   x: 10,
+ *   y: 5,
+ *   width: 40,
+ *   height: 5,
+ *   placeholder: 'Enter your message...',
+ *   scrollable: true,
+ * });
+ * ```
+ */
+export const TextareaConfigSchema = z
+	.object({
+		parent: z.number().optional(),
+		/** Initial text value */
+		value: z.string().optional(),
+		/** Placeholder text shown when empty */
+		placeholder: z.string().optional(),
+		/** Maximum input length (0 = unlimited) */
+		maxLength: z.number().optional(),
+		/** Whether textarea should scroll when content exceeds visible area */
+		scrollable: z.boolean().optional(),
+		border: BorderConfigSchema.optional(),
+		padding: PaddingConfigSchema.optional(),
+	})
+	.merge(PositionConfigSchema)
+	.merge(DimensionConfigSchema)
+	.merge(StyleConfigSchema)
+	.merge(InteractiveConfigSchema)
+	.merge(FocusableConfigSchema)
+	.merge(ScrollableConfigSchema);
+
+/**
+ * Configuration options for creating a textarea entity.
+ *
+ * @see {@link TextareaConfigSchema} for validation
+ * @see {@link createTextareaEntity} for entity creation
+ */
+export type TextareaConfig = z.infer<typeof TextareaConfigSchema>;
+
+/**
+ * Schema for validating form configuration.
+ */
+export const FormConfigSchema = z
+	.object({
+		parent: z.number().optional(),
+		/** Enable Tab/Shift+Tab navigation between fields */
+		keys: z.boolean().optional(),
+		/** Submit form when Enter is pressed on last field */
+		submitOnEnter: z.boolean().optional(),
+		/** Field configurations with names for the form */
+		fields: z
+			.array(
+				z.object({
+					name: z.string(),
+					entity: z.number(),
+					initialValue: z.unknown().optional(),
+				}),
+			)
+			.optional(),
+		border: BorderConfigSchema.optional(),
+		padding: PaddingConfigSchema.optional(),
+	})
+	.merge(PositionConfigSchema)
+	.merge(DimensionConfigSchema)
+	.merge(StyleConfigSchema);
+
+/**
+ * Configuration options for creating a form entity.
+ *
+ * @see {@link FormConfigSchema} for validation
+ * @see {@link createFormEntity} for entity creation
+ */
+export type FormConfig = z.infer<typeof FormConfigSchema>;
+
+/**
+ * Schema for validating progress bar configuration.
+ */
+export const ProgressBarConfigSchema = z
+	.object({
+		parent: z.number().optional(),
+		/** Current value (default: 0) */
+		value: z.number().optional(),
+		/** Minimum value (default: 0) */
+		min: z.number().optional(),
+		/** Maximum value (default: 100) */
+		max: z.number().optional(),
+		/** Orientation (0 = horizontal, 1 = vertical) */
+		orientation: z.number().optional(),
+		/** Whether to display percentage text */
+		showPercentage: z.boolean().optional(),
+		/** Fill character for completed portion */
+		fillChar: z.string().optional(),
+		/** Empty character for remaining portion */
+		emptyChar: z.string().optional(),
+		/** Fill foreground color */
+		fillFg: z.number().optional(),
+		/** Fill background color */
+		fillBg: z.number().optional(),
+		/** Empty foreground color */
+		emptyFg: z.number().optional(),
+		/** Empty background color */
+		emptyBg: z.number().optional(),
+		border: BorderConfigSchema.optional(),
+		padding: PaddingConfigSchema.optional(),
+	})
+	.merge(PositionConfigSchema)
+	.merge(DimensionConfigSchema)
+	.merge(StyleConfigSchema);
+
+/**
+ * Configuration options for creating a progress bar entity.
+ *
+ * @see {@link ProgressBarConfigSchema} for validation
+ * @see {@link createProgressBarEntity} for entity creation
+ */
+export type ProgressBarConfig = z.infer<typeof ProgressBarConfigSchema>;
+
+/**
+ * Schema for validating radio set configuration.
+ */
+export const RadioSetConfigSchema = z
+	.object({
+		parent: z.number().optional(),
+		/** Initial selected index (0-based) */
+		selectedIndex: z.number().optional(),
+		border: BorderConfigSchema.optional(),
+		padding: PaddingConfigSchema.optional(),
+	})
+	.merge(PositionConfigSchema)
+	.merge(DimensionConfigSchema)
+	.merge(StyleConfigSchema);
+
+/**
+ * Configuration options for creating a radio set entity.
+ *
+ * @see {@link RadioSetConfigSchema} for validation
+ * @see {@link createRadioSetEntity} for entity creation
+ */
+export type RadioSetConfig = z.infer<typeof RadioSetConfigSchema>;
+
+/**
+ * Schema for validating radio button configuration.
+ */
+export const RadioButtonConfigSchema = z
+	.object({
+		parent: z.number().optional(),
+		/** RadioSet container this button belongs to */
+		radioSet: z.number().optional(),
+		/** Value associated with this button */
+		value: z.string().optional(),
+		/** Label text */
+		label: z.string().optional(),
+		/** Whether this button starts selected */
+		selected: z.boolean().optional(),
+		/** Custom selected character */
+		selectedChar: z.string().optional(),
+		/** Custom unselected character */
+		unselectedChar: z.string().optional(),
+		border: BorderConfigSchema.optional(),
+		padding: PaddingConfigSchema.optional(),
+	})
+	.merge(PositionConfigSchema)
+	.merge(DimensionConfigSchema)
+	.merge(StyleConfigSchema)
+	.merge(InteractiveConfigSchema)
+	.merge(FocusableConfigSchema);
+
+/**
+ * Configuration options for creating a radio button entity.
+ *
+ * @see {@link RadioButtonConfigSchema} for validation
+ * @see {@link createRadioButtonEntity} for entity creation
+ */
+export type RadioButtonConfig = z.infer<typeof RadioButtonConfigSchema>;
 
 // =============================================================================
 // ENTITY FACTORIES
@@ -1286,6 +1609,786 @@ export function createListEntity(world: World, config: ListConfig = {}): Entity 
 
 	if (validated.parent !== undefined) {
 		setParent(world, eid, validated.parent as Entity);
+	}
+
+	return eid;
+}
+
+/**
+ * Creates a Checkbox entity with the specified configuration.
+ *
+ * Checkbox entities are toggle controls with checked/unchecked/disabled states.
+ * They support keyboard interaction (Enter/Space to toggle), focus handling,
+ * and customizable display characters. Checkboxes are focusable, clickable,
+ * and keyable by default.
+ *
+ * The checkbox displays a check character followed by an optional label.
+ * The display characters can be customized to use ASCII or Unicode symbols.
+ *
+ * @param world - The ECS world to create the entity in
+ * @param config - Optional checkbox configuration options
+ * @returns The created entity ID
+ *
+ * @example
+ * ```typescript
+ * import { createWorld, createCheckboxEntity } from 'blecsd';
+ *
+ * const world = createWorld();
+ *
+ * // Create a simple checkbox
+ * const checkbox = createCheckboxEntity(world, {
+ *   x: 5,
+ *   y: 10,
+ *   label: 'Enable notifications',
+ * });
+ *
+ * // Create a pre-checked checkbox
+ * const acceptTerms = createCheckboxEntity(world, {
+ *   x: 5,
+ *   y: 12,
+ *   label: 'I accept the terms and conditions',
+ *   checked: true,
+ * });
+ *
+ * // Create a checkbox with ASCII characters
+ * const asciiCheckbox = createCheckboxEntity(world, {
+ *   x: 5,
+ *   y: 14,
+ *   label: 'Use ASCII mode',
+ *   checkedChar: '[x]',
+ *   uncheckedChar: '[ ]',
+ * });
+ *
+ * // Create a styled checkbox with custom focus colors
+ * const styledCheckbox = createCheckboxEntity(world, {
+ *   x: 5,
+ *   y: 16,
+ *   label: 'Dark mode',
+ *   focusEffectFg: 0x00ff00ff,
+ *   focusEffectBg: 0x111111ff,
+ *   tabIndex: 1,
+ * });
+ * ```
+ */
+export function createCheckboxEntity(world: World, config: CheckboxConfig = {}): Entity {
+	const validated = CheckboxConfigSchema.parse(config);
+	const eid = addEntity(world) as Entity;
+
+	initBaseComponents(world, eid);
+	applyPositionConfig(eid, validated);
+	applyDimensionConfig(eid, validated);
+	applyStyleConfig(world, eid, validated);
+	applyBorderConfig(world, eid, validated.border);
+	applyPaddingConfig(world, eid, validated.padding);
+
+	// Initialize Content component for label
+	initContentComponent(world, eid);
+	Content.align[eid] = 0; // Left align by default
+	Content.valign[eid] = 1; // Middle by default
+
+	if (validated.label !== undefined) {
+		setContent(world, eid, validated.label);
+	}
+
+	// Initialize Interactive component
+	addComponent(world, eid, Interactive);
+	Interactive.clickable[eid] = 1; // Checkboxes are clickable by default
+	Interactive.draggable[eid] = 0;
+	Interactive.hoverable[eid] = 1; // Checkboxes are hoverable by default
+	Interactive.hovered[eid] = 0;
+	Interactive.pressed[eid] = 0;
+	Interactive.keyable[eid] = 1; // Checkboxes respond to keys by default
+	Interactive.hoverEffectFg[eid] = 0xffffffff;
+	Interactive.hoverEffectBg[eid] = 0x444444ff;
+
+	const interactiveOptions: InteractiveOptions = {};
+	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
+	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
+	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
+	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
+	if (validated.hoverEffectFg !== undefined)
+		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
+	if (validated.hoverEffectBg !== undefined)
+		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
+
+	if (Object.keys(interactiveOptions).length > 0) {
+		setInteractive(world, eid, interactiveOptions);
+	}
+
+	// Initialize Focusable component
+	addComponent(world, eid, Focusable);
+	Focusable.focusable[eid] = 1; // Checkboxes are focusable by default
+	Focusable.focused[eid] = 0;
+	Focusable.tabIndex[eid] = 0;
+	Focusable.focusEffectFg[eid] = 0xffffffff;
+	Focusable.focusEffectBg[eid] = 0x0066ffff;
+
+	const focusableOptions: FocusableOptions = {};
+	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
+	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
+	if (validated.focusEffectFg !== undefined)
+		focusableOptions.focusEffectFg = validated.focusEffectFg;
+	if (validated.focusEffectBg !== undefined)
+		focusableOptions.focusEffectBg = validated.focusEffectBg;
+
+	if (Object.keys(focusableOptions).length > 0) {
+		setFocusable(world, eid, focusableOptions);
+	}
+
+	// Set up checkbox display characters
+	setCheckboxDisplay(eid, {
+		checkedChar: validated.checkedChar ?? DEFAULT_CHECKED_CHAR,
+		uncheckedChar: validated.uncheckedChar ?? DEFAULT_UNCHECKED_CHAR,
+	});
+
+	// Attach checkbox state machine behavior
+	attachCheckboxBehavior(world, eid, validated.checked ?? false);
+
+	if (validated.parent !== undefined) {
+		setParent(world, eid, validated.parent as Entity);
+	}
+
+	return eid;
+}
+
+/**
+ * Creates a Textbox entity with the specified configuration.
+ *
+ * Textbox entities are single-line text input fields with cursor support,
+ * password masking, placeholder text, and keyboard navigation. They support
+ * Enter to submit, Escape to cancel, and standard text editing keys
+ * (Backspace, Delete, Left/Right arrows, Home/End).
+ *
+ * Textboxes are focusable, clickable, and keyable by default.
+ *
+ * @param world - The ECS world to create the entity in
+ * @param config - Optional textbox configuration options
+ * @returns The created entity ID
+ *
+ * @example
+ * ```typescript
+ * import { createWorld, createTextboxEntity } from 'blecsd';
+ *
+ * const world = createWorld();
+ *
+ * // Create a simple textbox
+ * const textbox = createTextboxEntity(world, {
+ *   x: 10,
+ *   y: 5,
+ *   width: 30,
+ *   height: 1,
+ * });
+ *
+ * // Create a textbox with placeholder
+ * const nameInput = createTextboxEntity(world, {
+ *   x: 10,
+ *   y: 8,
+ *   width: 40,
+ *   height: 1,
+ *   placeholder: 'Enter your name...',
+ *   maxLength: 50,
+ * });
+ *
+ * // Create a password field
+ * const passwordInput = createTextboxEntity(world, {
+ *   x: 10,
+ *   y: 11,
+ *   width: 30,
+ *   height: 1,
+ *   secret: true,
+ *   censor: '*',
+ *   placeholder: 'Password',
+ * });
+ *
+ * // Create a styled textbox with custom focus colors
+ * const styledTextbox = createTextboxEntity(world, {
+ *   x: 10,
+ *   y: 14,
+ *   width: 30,
+ *   height: 1,
+ *   value: 'Initial value',
+ *   focusEffectFg: 0x00ff00ff,
+ *   focusEffectBg: 0x111111ff,
+ *   border: {
+ *     type: 1,
+ *     left: true,
+ *     right: true,
+ *     top: true,
+ *     bottom: true,
+ *   },
+ * });
+ * ```
+ */
+export function createTextboxEntity(world: World, config: TextboxConfig = {}): Entity {
+	const validated = TextboxConfigSchema.parse(config);
+	const eid = addEntity(world) as Entity;
+
+	initBaseComponents(world, eid);
+	applyPositionConfig(eid, validated);
+	applyDimensionConfig(eid, validated);
+	applyStyleConfig(world, eid, validated);
+	applyBorderConfig(world, eid, validated.border);
+	applyPaddingConfig(world, eid, validated.padding);
+
+	// Initialize Content component for value
+	initContentComponent(world, eid);
+	Content.align[eid] = 0; // Left align by default
+	Content.valign[eid] = 1; // Middle by default
+
+	if (validated.value !== undefined) {
+		setContent(world, eid, validated.value);
+	}
+
+	// Initialize Interactive component
+	addComponent(world, eid, Interactive);
+	Interactive.clickable[eid] = 1; // Textboxes are clickable by default
+	Interactive.draggable[eid] = 0;
+	Interactive.hoverable[eid] = 1; // Textboxes are hoverable by default
+	Interactive.hovered[eid] = 0;
+	Interactive.pressed[eid] = 0;
+	Interactive.keyable[eid] = 1; // Textboxes respond to keys by default
+	Interactive.hoverEffectFg[eid] = 0xffffffff;
+	Interactive.hoverEffectBg[eid] = 0x333333ff;
+
+	const interactiveOptions: InteractiveOptions = {};
+	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
+	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
+	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
+	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
+	if (validated.hoverEffectFg !== undefined)
+		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
+	if (validated.hoverEffectBg !== undefined)
+		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
+
+	if (Object.keys(interactiveOptions).length > 0) {
+		setInteractive(world, eid, interactiveOptions);
+	}
+
+	// Initialize Focusable component
+	addComponent(world, eid, Focusable);
+	Focusable.focusable[eid] = 1; // Textboxes are focusable by default
+	Focusable.focused[eid] = 0;
+	Focusable.tabIndex[eid] = 0;
+	Focusable.focusEffectFg[eid] = 0xffffffff;
+	Focusable.focusEffectBg[eid] = 0x0066ffff;
+
+	const focusableOptions: FocusableOptions = {};
+	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
+	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
+	if (validated.focusEffectFg !== undefined)
+		focusableOptions.focusEffectFg = validated.focusEffectFg;
+	if (validated.focusEffectBg !== undefined)
+		focusableOptions.focusEffectBg = validated.focusEffectBg;
+
+	if (Object.keys(focusableOptions).length > 0) {
+		setFocusable(world, eid, focusableOptions);
+	}
+
+	// Attach text input state machine behavior
+	attachTextInputBehavior(world, eid);
+
+	// Set up text input configuration
+	setTextInputConfig(eid, {
+		secret: validated.secret ?? false,
+		censor: validated.censor ?? DEFAULT_CENSOR_CHAR,
+		placeholder: validated.placeholder ?? DEFAULT_PLACEHOLDER,
+		maxLength: validated.maxLength ?? 0,
+	});
+
+	if (validated.parent !== undefined) {
+		setParent(world, eid, validated.parent as Entity);
+	}
+
+	return eid;
+}
+
+/**
+ * Creates a Textarea entity with the specified configuration.
+ *
+ * Textarea entities are multi-line text input fields with cursor support,
+ * placeholder text, scrolling, and keyboard navigation. They support
+ * Enter for new lines, Escape or Ctrl+Enter to submit, and standard text
+ * editing keys (Backspace, Delete, Left/Right/Up/Down arrows, Home/End).
+ *
+ * Textareas are focusable, clickable, and keyable by default.
+ *
+ * @param world - The ECS world to create the entity in
+ * @param config - Optional textarea configuration options
+ * @returns The created entity ID
+ *
+ * @example
+ * ```typescript
+ * import { createWorld, createTextareaEntity } from 'blecsd';
+ *
+ * const world = createWorld();
+ *
+ * // Create a simple textarea
+ * const textarea = createTextareaEntity(world, {
+ *   x: 10,
+ *   y: 5,
+ *   width: 40,
+ *   height: 5,
+ * });
+ *
+ * // Create a textarea with placeholder
+ * const messageInput = createTextareaEntity(world, {
+ *   x: 10,
+ *   y: 12,
+ *   width: 50,
+ *   height: 8,
+ *   placeholder: 'Enter your message...',
+ *   scrollable: true,
+ * });
+ *
+ * // Create a styled textarea with border
+ * const styledTextarea = createTextareaEntity(world, {
+ *   x: 10,
+ *   y: 22,
+ *   width: 50,
+ *   height: 10,
+ *   value: 'Initial content\nwith multiple lines',
+ *   maxLength: 500,
+ *   focusEffectFg: 0x00ff00ff,
+ *   focusEffectBg: 0x111111ff,
+ *   border: {
+ *     type: 1,
+ *     left: true,
+ *     right: true,
+ *     top: true,
+ *     bottom: true,
+ *   },
+ * });
+ * ```
+ */
+export function createTextareaEntity(world: World, config: TextareaConfig = {}): Entity {
+	const validated = TextareaConfigSchema.parse(config);
+	const eid = addEntity(world) as Entity;
+
+	initBaseComponents(world, eid);
+	applyPositionConfig(eid, validated);
+	applyDimensionConfig(eid, validated);
+	applyStyleConfig(world, eid, validated);
+	applyBorderConfig(world, eid, validated.border);
+	applyPaddingConfig(world, eid, validated.padding);
+
+	// Initialize Content component for value
+	initContentComponent(world, eid);
+	Content.align[eid] = 0; // Left align by default
+	Content.valign[eid] = 0; // Top align by default for multiline
+
+	if (validated.value !== undefined) {
+		setContent(world, eid, validated.value);
+	}
+
+	// Initialize Interactive component
+	addComponent(world, eid, Interactive);
+	Interactive.clickable[eid] = 1; // Textareas are clickable by default
+	Interactive.draggable[eid] = 0;
+	Interactive.hoverable[eid] = 1; // Textareas are hoverable by default
+	Interactive.hovered[eid] = 0;
+	Interactive.pressed[eid] = 0;
+	Interactive.keyable[eid] = 1; // Textareas respond to keys by default
+	Interactive.hoverEffectFg[eid] = 0xffffffff;
+	Interactive.hoverEffectBg[eid] = 0x333333ff;
+
+	const interactiveOptions: InteractiveOptions = {};
+	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
+	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
+	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
+	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
+	if (validated.hoverEffectFg !== undefined)
+		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
+	if (validated.hoverEffectBg !== undefined)
+		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
+
+	if (Object.keys(interactiveOptions).length > 0) {
+		setInteractive(world, eid, interactiveOptions);
+	}
+
+	// Initialize Focusable component
+	addComponent(world, eid, Focusable);
+	Focusable.focusable[eid] = 1; // Textareas are focusable by default
+	Focusable.focused[eid] = 0;
+	Focusable.tabIndex[eid] = 0;
+	Focusable.focusEffectFg[eid] = 0xffffffff;
+	Focusable.focusEffectBg[eid] = 0x0066ffff;
+
+	const focusableOptions: FocusableOptions = {};
+	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
+	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
+	if (validated.focusEffectFg !== undefined)
+		focusableOptions.focusEffectFg = validated.focusEffectFg;
+	if (validated.focusEffectBg !== undefined)
+		focusableOptions.focusEffectBg = validated.focusEffectBg;
+
+	if (Object.keys(focusableOptions).length > 0) {
+		setFocusable(world, eid, focusableOptions);
+	}
+
+	// Initialize Scrollable component if requested
+	if (validated.scrollable) {
+		addComponent(world, eid, Scrollable);
+		Scrollable.scrollX[eid] = 0;
+		Scrollable.scrollY[eid] = 0;
+		Scrollable.scrollWidth[eid] = 0;
+		Scrollable.scrollHeight[eid] = 0; // Will be updated when content changes
+		Scrollable.scrollbarVisible[eid] = 2; // Auto
+
+		const scrollableOptions: ScrollableOptions = {};
+		if (validated.scrollX !== undefined) scrollableOptions.scrollX = validated.scrollX;
+		if (validated.scrollY !== undefined) scrollableOptions.scrollY = validated.scrollY;
+		if (validated.scrollWidth !== undefined) scrollableOptions.scrollWidth = validated.scrollWidth;
+		if (validated.scrollHeight !== undefined)
+			scrollableOptions.scrollHeight = validated.scrollHeight;
+		if (validated.scrollbarVisible !== undefined)
+			scrollableOptions.scrollbarVisible = validated.scrollbarVisible;
+
+		if (Object.keys(scrollableOptions).length > 0) {
+			setScrollable(world, eid, scrollableOptions);
+		}
+	}
+
+	// Attach text input state machine behavior
+	attachTextInputBehavior(world, eid);
+
+	// Set up text input configuration with multiline enabled
+	setTextInputConfig(eid, {
+		secret: false, // Textareas don't support secret mode
+		censor: '', // Not applicable for textarea
+		placeholder: validated.placeholder ?? DEFAULT_PLACEHOLDER,
+		maxLength: validated.maxLength ?? 0,
+		multiline: true, // Key difference from Textbox
+	});
+
+	if (validated.parent !== undefined) {
+		setParent(world, eid, validated.parent as Entity);
+	}
+
+	return eid;
+}
+
+/**
+ * Creates a form container entity.
+ *
+ * Forms manage field navigation and data collection.
+ *
+ * @param world - The ECS world
+ * @param config - Form configuration
+ * @returns Entity ID
+ *
+ * @example
+ * ```typescript
+ * import { createFormEntity, createTextboxEntity, onFormSubmit, registerFormField } from 'blecsd';
+ *
+ * const form = createFormEntity(world, {
+ *   x: 10,
+ *   y: 5,
+ *   width: 40,
+ *   height: 10,
+ *   keys: true,
+ * });
+ *
+ * const username = createTextboxEntity(world, {
+ *   parent: form,
+ *   x: 1,
+ *   y: 1,
+ *   width: 30,
+ * });
+ *
+ * // Register field with name for form data
+ * registerFormField(world, form, username, 'username', '');
+ *
+ * onFormSubmit(form, (values) => {
+ *   console.log('Username:', values.username);
+ * });
+ * ```
+ */
+export function createFormEntity(world: World, config: FormConfig = {}): Entity {
+	const validated = FormConfigSchema.parse(config);
+	const eid = addEntity(world) as Entity;
+
+	initBaseComponents(world, eid);
+	applyPositionConfig(eid, validated);
+	applyDimensionConfig(eid, validated);
+	applyStyleConfig(world, eid, validated);
+	applyBorderConfig(world, eid, validated.border);
+	applyPaddingConfig(world, eid, validated.padding);
+
+	// Attach form behavior
+	attachFormBehavior(world, eid, {
+		keys: validated.keys ?? true,
+		submitOnEnter: validated.submitOnEnter ?? true,
+	});
+
+	// Register any pre-configured fields
+	if (validated.fields) {
+		for (const field of validated.fields) {
+			registerFormField(
+				world,
+				eid,
+				field.entity as Entity,
+				field.name,
+				field.initialValue,
+			);
+		}
+	}
+
+	if (validated.parent !== undefined) {
+		setParent(world, eid, validated.parent as Entity);
+	}
+
+	return eid;
+}
+
+/**
+ * Creates a progress bar entity.
+ *
+ * Progress bars display a visual indicator of completion.
+ *
+ * @param world - The ECS world
+ * @param config - Progress bar configuration
+ * @returns Entity ID
+ *
+ * @example
+ * ```typescript
+ * import { createProgressBarEntity, setProgress, onProgressComplete } from 'blecsd';
+ *
+ * const progressBar = createProgressBarEntity(world, {
+ *   x: 10,
+ *   y: 5,
+ *   width: 30,
+ *   height: 1,
+ *   value: 0,
+ *   max: 100,
+ * });
+ *
+ * onProgressComplete(progressBar, () => {
+ *   console.log('Task complete!');
+ * });
+ *
+ * // Update progress
+ * setProgress(world, progressBar, 50);
+ * ```
+ */
+export function createProgressBarEntity(
+	world: World,
+	config: ProgressBarConfig = {},
+): Entity {
+	const validated = ProgressBarConfigSchema.parse(config);
+	const eid = addEntity(world) as Entity;
+
+	initBaseComponents(world, eid);
+	applyPositionConfig(eid, validated);
+	applyDimensionConfig(eid, validated);
+	applyStyleConfig(world, eid, validated);
+	applyBorderConfig(world, eid, validated.border);
+	applyPaddingConfig(world, eid, validated.padding);
+
+	// Attach progress bar behavior
+	attachProgressBarBehavior(world, eid, {
+		value: validated.value ?? 0,
+		min: validated.min ?? 0,
+		max: validated.max ?? 100,
+		orientation:
+			(validated.orientation as ProgressOrientation) ?? ProgressOrientation.Horizontal,
+		showPercentage: validated.showPercentage ?? false,
+	});
+
+	// Set up display configuration
+	if (
+		validated.fillChar !== undefined ||
+		validated.emptyChar !== undefined ||
+		validated.fillFg !== undefined ||
+		validated.fillBg !== undefined ||
+		validated.emptyFg !== undefined ||
+		validated.emptyBg !== undefined
+	) {
+		setProgressBarDisplay(eid, {
+			fillChar: validated.fillChar,
+			emptyChar: validated.emptyChar,
+			fillFg: validated.fillFg,
+			fillBg: validated.fillBg,
+			emptyFg: validated.emptyFg,
+			emptyBg: validated.emptyBg,
+		});
+	}
+
+	if (validated.parent !== undefined) {
+		setParent(world, eid, validated.parent as Entity);
+	}
+
+	return eid;
+}
+
+/**
+ * Creates a radio set container entity.
+ *
+ * Radio sets manage mutual exclusion of radio buttons.
+ *
+ * @param world - The ECS world
+ * @param config - Radio set configuration
+ * @returns Entity ID
+ *
+ * @example
+ * ```typescript
+ * import { createRadioSetEntity, createRadioButtonEntity, onRadioSelect } from 'blecsd';
+ *
+ * const radioSet = createRadioSetEntity(world, {
+ *   x: 10,
+ *   y: 5,
+ * });
+ *
+ * const opt1 = createRadioButtonEntity(world, {
+ *   radioSet,
+ *   value: 'option1',
+ *   label: 'Option 1',
+ *   selected: true,
+ * });
+ *
+ * onRadioSelect(radioSet, (value) => {
+ *   console.log('Selected:', value);
+ * });
+ * ```
+ */
+export function createRadioSetEntity(
+	world: World,
+	config: RadioSetConfig = {},
+): Entity {
+	const validated = RadioSetConfigSchema.parse(config);
+	const eid = addEntity(world) as Entity;
+
+	initBaseComponents(world, eid);
+	applyPositionConfig(eid, validated);
+	applyDimensionConfig(eid, validated);
+	applyStyleConfig(world, eid, validated);
+	applyBorderConfig(world, eid, validated.border);
+	applyPaddingConfig(world, eid, validated.padding);
+
+	// Attach radio set behavior
+	attachRadioSetBehavior(world, eid);
+
+	if (validated.parent !== undefined) {
+		setParent(world, eid, validated.parent as Entity);
+	}
+
+	return eid;
+}
+
+/**
+ * Creates a radio button entity.
+ *
+ * Radio buttons provide exclusive selection within a radio set.
+ *
+ * @param world - The ECS world
+ * @param config - Radio button configuration
+ * @returns Entity ID
+ *
+ * @example
+ * ```typescript
+ * import { createRadioButtonEntity, selectRadioButton } from 'blecsd';
+ *
+ * const button = createRadioButtonEntity(world, {
+ *   radioSet: radioSetEntity,
+ *   value: 'choice1',
+ *   label: 'First Choice',
+ *   y: 0,
+ * });
+ *
+ * // Select this button
+ * selectRadioButton(world, button);
+ * ```
+ */
+export function createRadioButtonEntity(
+	world: World,
+	config: RadioButtonConfig = {},
+): Entity {
+	const validated = RadioButtonConfigSchema.parse(config);
+	const eid = addEntity(world) as Entity;
+
+	initBaseComponents(world, eid);
+	applyPositionConfig(eid, validated);
+	applyDimensionConfig(eid, validated);
+	applyStyleConfig(world, eid, validated);
+	applyBorderConfig(world, eid, validated.border);
+	applyPaddingConfig(world, eid, validated.padding);
+
+	// Initialize Content component for label
+	initContentComponent(world, eid);
+	Content.align[eid] = 0; // Left align by default
+	Content.valign[eid] = 1; // Middle by default
+
+	if (validated.label !== undefined) {
+		setContent(world, eid, validated.label);
+	}
+
+	// Initialize Interactive component
+	addComponent(world, eid, Interactive);
+	Interactive.clickable[eid] = 1;
+	Interactive.draggable[eid] = 0;
+	Interactive.hoverable[eid] = 1;
+	Interactive.hovered[eid] = 0;
+	Interactive.pressed[eid] = 0;
+	Interactive.keyable[eid] = 1;
+	Interactive.hoverEffectFg[eid] = 0xffffffff;
+	Interactive.hoverEffectBg[eid] = 0x333333ff;
+
+	const interactiveOptions: InteractiveOptions = {};
+	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
+	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
+	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
+	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
+	if (validated.hoverEffectFg !== undefined)
+		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
+	if (validated.hoverEffectBg !== undefined)
+		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
+
+	if (Object.keys(interactiveOptions).length > 0) {
+		setInteractive(world, eid, interactiveOptions);
+	}
+
+	// Initialize Focusable component
+	addComponent(world, eid, Focusable);
+	Focusable.focusable[eid] = 1;
+	Focusable.focused[eid] = 0;
+	Focusable.tabIndex[eid] = 0;
+	Focusable.focusEffectFg[eid] = 0xffffffff;
+	Focusable.focusEffectBg[eid] = 0x0066ffff;
+
+	const focusableOptions: FocusableOptions = {};
+	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
+	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
+	if (validated.focusEffectFg !== undefined)
+		focusableOptions.focusEffectFg = validated.focusEffectFg;
+	if (validated.focusEffectBg !== undefined)
+		focusableOptions.focusEffectBg = validated.focusEffectBg;
+
+	if (Object.keys(focusableOptions).length > 0) {
+		setFocusable(world, eid, focusableOptions);
+	}
+
+	// Attach radio button state machine
+	attachRadioButtonBehavior(world, eid, validated.radioSet as Entity | undefined);
+
+	// Set value if provided
+	if (validated.value !== undefined) {
+		setRadioValue(eid, validated.value);
+	}
+
+	// Set display characters if provided
+	if (validated.selectedChar !== undefined || validated.unselectedChar !== undefined) {
+		setRadioButtonDisplay(eid, {
+			selectedChar: validated.selectedChar,
+			unselectedChar: validated.unselectedChar,
+		});
+	}
+
+	if (validated.parent !== undefined) {
+		setParent(world, eid, validated.parent as Entity);
+	}
+
+	// Select if specified
+	if (validated.selected) {
+		selectRadioButton(world, eid);
 	}
 
 	return eid;

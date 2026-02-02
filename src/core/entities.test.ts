@@ -1,6 +1,40 @@
 import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Border, BorderType } from '../components/border';
+import {
+	getCheckboxChar,
+	getCheckboxDisplay,
+	getCheckboxState,
+	isCheckbox,
+	isChecked,
+	resetCheckboxStore,
+	toggleCheckbox,
+} from '../components/checkbox';
+import {
+	getTextInputConfig,
+	getTextInputState,
+	isMultiline,
+	isTextInput,
+	resetTextInputStore,
+} from '../components/textInput';
+import {
+	getFormFields,
+	isForm,
+	isFormKeysEnabled,
+	isFormSubmitOnEnter,
+	resetFormStore,
+} from '../components/form';
+import {
+	getProgress,
+	getProgressBarDisplay,
+	getProgressMax,
+	getProgressMin,
+	getProgressOrientation,
+	isProgressBar,
+	isShowingPercentage,
+	ProgressOrientation,
+	resetProgressBarStore,
+} from '../components/progressBar';
 import { Content, getContent, resetContentStore } from '../components/content';
 import { Dimensions } from '../components/dimensions';
 import { Focusable, resetFocusState } from '../components/focusable';
@@ -9,19 +43,30 @@ import { Interactive } from '../components/interactive';
 import { Padding } from '../components/padding';
 import { Position } from '../components/position';
 import { Renderable } from '../components/renderable';
-import { Scrollable } from '../components/scrollable';
+import { hasScrollable, Scrollable } from '../components/scrollable';
+import { StateMachineStore } from '../components/stateMachine';
 import {
 	BoxConfigSchema,
 	ButtonConfigSchema,
+	CheckboxConfigSchema,
 	createBoxEntity,
 	createButtonEntity,
+	createCheckboxEntity,
+	createFormEntity,
 	createInputEntity,
 	createListEntity,
+	createProgressBarEntity,
 	createScreenEntity,
+	createTextareaEntity,
+	createTextboxEntity,
 	createTextEntity,
+	FormConfigSchema,
 	InputConfigSchema,
 	ListConfigSchema,
+	ProgressBarConfigSchema,
 	ScreenConfigSchema,
+	TextareaConfigSchema,
+	TextboxConfigSchema,
 	TextConfigSchema,
 } from './entities';
 import type { World } from './types';
@@ -33,6 +78,11 @@ describe('Entity Factories', () => {
 		world = createWorld() as World;
 		resetContentStore();
 		resetFocusState();
+		resetCheckboxStore();
+		resetTextInputStore();
+		resetFormStore();
+		resetProgressBarStore();
+		StateMachineStore.clear();
 	});
 
 	describe('createBoxEntity', () => {
@@ -334,6 +384,692 @@ describe('Entity Factories', () => {
 		});
 	});
 
+	describe('createCheckboxEntity', () => {
+		it('creates a checkbox with default values', () => {
+			const eid = createCheckboxEntity(world);
+
+			expect(Interactive.clickable[eid]).toBe(1);
+			expect(Interactive.keyable[eid]).toBe(1);
+			expect(Interactive.hoverable[eid]).toBe(1);
+			expect(Focusable.focusable[eid]).toBe(1);
+		});
+
+		it('creates a checkbox with state machine', () => {
+			const eid = createCheckboxEntity(world);
+
+			expect(isCheckbox(world, eid)).toBe(true);
+			expect(getCheckboxState(world, eid)).toBe('unchecked');
+		});
+
+		it('creates a checkbox that starts unchecked by default', () => {
+			const eid = createCheckboxEntity(world);
+
+			expect(isChecked(world, eid)).toBe(false);
+		});
+
+		it('creates a checkbox that starts checked when specified', () => {
+			const eid = createCheckboxEntity(world, {
+				checked: true,
+			});
+
+			expect(isChecked(world, eid)).toBe(true);
+			expect(getCheckboxState(world, eid)).toBe('checked');
+		});
+
+		it('creates a checkbox with label', () => {
+			const eid = createCheckboxEntity(world, {
+				label: 'Accept terms',
+			});
+
+			const content = getContent(world, eid);
+			expect(content).toBe('Accept terms');
+		});
+
+		it('creates a checkbox with default display characters', () => {
+			const eid = createCheckboxEntity(world);
+
+			const display = getCheckboxDisplay(eid);
+			expect(display.checkedChar).toBe('☑');
+			expect(display.uncheckedChar).toBe('☐');
+		});
+
+		it('creates a checkbox with custom display characters', () => {
+			const eid = createCheckboxEntity(world, {
+				checkedChar: '[x]',
+				uncheckedChar: '[ ]',
+			});
+
+			const display = getCheckboxDisplay(eid);
+			expect(display.checkedChar).toBe('[x]');
+			expect(display.uncheckedChar).toBe('[ ]');
+		});
+
+		it('returns correct display character based on state', () => {
+			const eid = createCheckboxEntity(world, {
+				checkedChar: '[X]',
+				uncheckedChar: '[_]',
+			});
+
+			expect(getCheckboxChar(world, eid)).toBe('[_]');
+
+			toggleCheckbox(world, eid);
+
+			expect(getCheckboxChar(world, eid)).toBe('[X]');
+		});
+
+		it('creates a checkbox with custom interactive options', () => {
+			const eid = createCheckboxEntity(world, {
+				hoverEffectFg: 0x00ffffff,
+				hoverEffectBg: 0xff00ffff,
+			});
+
+			expect(Interactive.hoverEffectFg[eid]).toBe(0x00ffffff);
+			expect(Interactive.hoverEffectBg[eid]).toBe(0xff00ffff);
+		});
+
+		it('creates a checkbox with custom focusable options', () => {
+			const eid = createCheckboxEntity(world, {
+				focusable: true,
+				tabIndex: 3,
+				focusEffectFg: 0xffff00ff,
+				focusEffectBg: 0x0000ffff,
+			});
+
+			expect(Focusable.tabIndex[eid]).toBe(3);
+			expect(Focusable.focusEffectFg[eid]).toBe(0xffff00ff);
+			expect(Focusable.focusEffectBg[eid]).toBe(0x0000ffff);
+		});
+
+		it('creates a checkbox with position', () => {
+			const eid = createCheckboxEntity(world, {
+				x: 10,
+				y: 5,
+			});
+
+			expect(Position.x[eid]).toBe(10);
+			expect(Position.y[eid]).toBe(5);
+		});
+
+		it('creates a checkbox with border', () => {
+			const eid = createCheckboxEntity(world, {
+				border: {
+					type: BorderType.Line,
+					left: true,
+					right: true,
+					top: true,
+					bottom: true,
+				},
+			});
+
+			expect(Border.type[eid]).toBe(BorderType.Line);
+			expect(Border.left[eid]).toBe(1);
+		});
+
+		it('creates a checkbox with parent', () => {
+			const parent = createBoxEntity(world);
+			const checkbox = createCheckboxEntity(world, { parent });
+
+			expect(Hierarchy.parent[checkbox]).toBe(parent);
+		});
+
+		it('toggles checkbox state correctly', () => {
+			const eid = createCheckboxEntity(world);
+
+			expect(isChecked(world, eid)).toBe(false);
+
+			toggleCheckbox(world, eid);
+			expect(isChecked(world, eid)).toBe(true);
+
+			toggleCheckbox(world, eid);
+			expect(isChecked(world, eid)).toBe(false);
+		});
+	});
+
+	describe('createTextboxEntity', () => {
+		it('creates a textbox with default values', () => {
+			const eid = createTextboxEntity(world);
+
+			expect(Interactive.clickable[eid]).toBe(1);
+			expect(Interactive.keyable[eid]).toBe(1);
+			expect(Interactive.hoverable[eid]).toBe(1);
+			expect(Focusable.focusable[eid]).toBe(1);
+		});
+
+		it('creates a textbox with state machine', () => {
+			const eid = createTextboxEntity(world);
+
+			expect(isTextInput(world, eid)).toBe(true);
+			expect(getTextInputState(world, eid)).toBe('idle');
+		});
+
+		it('creates a textbox with empty value by default', () => {
+			const eid = createTextboxEntity(world);
+
+			const content = getContent(world, eid);
+			expect(content).toBe('');
+		});
+
+		it('creates a textbox with initial value', () => {
+			const eid = createTextboxEntity(world, {
+				value: 'Hello World',
+			});
+
+			const content = getContent(world, eid);
+			expect(content).toBe('Hello World');
+		});
+
+		it('creates a textbox with placeholder', () => {
+			const eid = createTextboxEntity(world, {
+				placeholder: 'Enter text...',
+			});
+
+			const config = getTextInputConfig(eid);
+			expect(config.placeholder).toBe('Enter text...');
+		});
+
+		it('creates a textbox with secret mode', () => {
+			const eid = createTextboxEntity(world, {
+				secret: true,
+			});
+
+			const config = getTextInputConfig(eid);
+			expect(config.secret).toBe(true);
+		});
+
+		it('creates a textbox with custom censor character', () => {
+			const eid = createTextboxEntity(world, {
+				secret: true,
+				censor: '#',
+			});
+
+			const config = getTextInputConfig(eid);
+			expect(config.censor).toBe('#');
+		});
+
+		it('creates a textbox with max length', () => {
+			const eid = createTextboxEntity(world, {
+				maxLength: 50,
+			});
+
+			const config = getTextInputConfig(eid);
+			expect(config.maxLength).toBe(50);
+		});
+
+		it('creates a textbox with custom interactive options', () => {
+			const eid = createTextboxEntity(world, {
+				hoverEffectFg: 0x00ffffff,
+				hoverEffectBg: 0xff00ffff,
+			});
+
+			expect(Interactive.hoverEffectFg[eid]).toBe(0x00ffffff);
+			expect(Interactive.hoverEffectBg[eid]).toBe(0xff00ffff);
+		});
+
+		it('creates a textbox with custom focusable options', () => {
+			const eid = createTextboxEntity(world, {
+				focusable: true,
+				tabIndex: 5,
+				focusEffectFg: 0xffff00ff,
+				focusEffectBg: 0x0000ffff,
+			});
+
+			expect(Focusable.tabIndex[eid]).toBe(5);
+			expect(Focusable.focusEffectFg[eid]).toBe(0xffff00ff);
+			expect(Focusable.focusEffectBg[eid]).toBe(0x0000ffff);
+		});
+
+		it('creates a textbox with position', () => {
+			const eid = createTextboxEntity(world, {
+				x: 15,
+				y: 8,
+			});
+
+			expect(Position.x[eid]).toBe(15);
+			expect(Position.y[eid]).toBe(8);
+		});
+
+		it('creates a textbox with dimensions', () => {
+			const eid = createTextboxEntity(world, {
+				width: 30,
+				height: 1,
+			});
+
+			expect(Dimensions.width[eid]).toBe(30);
+			expect(Dimensions.height[eid]).toBe(1);
+		});
+
+		it('creates a textbox with border', () => {
+			const eid = createTextboxEntity(world, {
+				border: {
+					type: BorderType.Line,
+					left: true,
+					right: true,
+					top: true,
+					bottom: true,
+				},
+			});
+
+			expect(Border.type[eid]).toBe(BorderType.Line);
+		});
+
+		it('creates a textbox with padding', () => {
+			const eid = createTextboxEntity(world, {
+				padding: {
+					left: 1,
+					right: 1,
+				},
+			});
+
+			expect(Padding.left[eid]).toBe(1);
+			expect(Padding.right[eid]).toBe(1);
+		});
+
+		it('creates a textbox with parent', () => {
+			const parent = createBoxEntity(world);
+			const textbox = createTextboxEntity(world, { parent });
+
+			expect(Hierarchy.parent[textbox]).toBe(parent);
+		});
+	});
+
+	describe('createTextareaEntity', () => {
+		it('creates a textarea with default values', () => {
+			const eid = createTextareaEntity(world);
+
+			expect(Interactive.clickable[eid]).toBe(1);
+			expect(Interactive.keyable[eid]).toBe(1);
+			expect(Interactive.hoverable[eid]).toBe(1);
+			expect(Focusable.focusable[eid]).toBe(1);
+		});
+
+		it('creates a textarea with state machine', () => {
+			const eid = createTextareaEntity(world);
+
+			expect(isTextInput(world, eid)).toBe(true);
+			expect(getTextInputState(world, eid)).toBe('idle');
+		});
+
+		it('creates a textarea with multiline enabled', () => {
+			const eid = createTextareaEntity(world);
+
+			expect(isMultiline(eid)).toBe(true);
+		});
+
+		it('creates a textarea with empty value by default', () => {
+			const eid = createTextareaEntity(world);
+
+			const content = getContent(world, eid);
+			expect(content).toBe('');
+		});
+
+		it('creates a textarea with initial value', () => {
+			const eid = createTextareaEntity(world, {
+				value: 'Line 1\nLine 2',
+			});
+
+			const content = getContent(world, eid);
+			expect(content).toBe('Line 1\nLine 2');
+		});
+
+		it('creates a textarea with placeholder', () => {
+			const eid = createTextareaEntity(world, {
+				placeholder: 'Enter your message...',
+			});
+
+			const config = getTextInputConfig(eid);
+			expect(config.placeholder).toBe('Enter your message...');
+		});
+
+		it('creates a textarea without secret mode', () => {
+			const eid = createTextareaEntity(world);
+
+			const config = getTextInputConfig(eid);
+			expect(config.secret).toBe(false);
+		});
+
+		it('creates a textarea with max length', () => {
+			const eid = createTextareaEntity(world, {
+				maxLength: 500,
+			});
+
+			const config = getTextInputConfig(eid);
+			expect(config.maxLength).toBe(500);
+		});
+
+		it('creates a textarea with scrollable component', () => {
+			const eid = createTextareaEntity(world, {
+				scrollable: true,
+			});
+
+			expect(hasScrollable(world, eid)).toBe(true);
+			expect(Scrollable.scrollX[eid]).toBe(0);
+			expect(Scrollable.scrollY[eid]).toBe(0);
+			expect(Scrollable.scrollbarVisible[eid]).toBe(2); // Auto
+		});
+
+		it('creates a textarea without scrollable by default', () => {
+			const eid = createTextareaEntity(world);
+
+			// Should not have Scrollable component
+			expect(hasScrollable(world, eid)).toBe(false);
+		});
+
+		it('creates a textarea with custom interactive options', () => {
+			const eid = createTextareaEntity(world, {
+				hoverEffectFg: 0x00ffffff,
+				hoverEffectBg: 0xff00ffff,
+			});
+
+			expect(Interactive.hoverEffectFg[eid]).toBe(0x00ffffff);
+			expect(Interactive.hoverEffectBg[eid]).toBe(0xff00ffff);
+		});
+
+		it('creates a textarea with custom focusable options', () => {
+			const eid = createTextareaEntity(world, {
+				focusable: true,
+				tabIndex: 5,
+				focusEffectFg: 0xffff00ff,
+				focusEffectBg: 0x0000ffff,
+			});
+
+			expect(Focusable.tabIndex[eid]).toBe(5);
+			expect(Focusable.focusEffectFg[eid]).toBe(0xffff00ff);
+			expect(Focusable.focusEffectBg[eid]).toBe(0x0000ffff);
+		});
+
+		it('creates a textarea with position', () => {
+			const eid = createTextareaEntity(world, {
+				x: 15,
+				y: 8,
+			});
+
+			expect(Position.x[eid]).toBe(15);
+			expect(Position.y[eid]).toBe(8);
+		});
+
+		it('creates a textarea with dimensions', () => {
+			const eid = createTextareaEntity(world, {
+				width: 50,
+				height: 10,
+			});
+
+			expect(Dimensions.width[eid]).toBe(50);
+			expect(Dimensions.height[eid]).toBe(10);
+		});
+
+		it('creates a textarea with border', () => {
+			const eid = createTextareaEntity(world, {
+				border: {
+					type: BorderType.Line,
+					left: true,
+					right: true,
+					top: true,
+					bottom: true,
+				},
+			});
+
+			expect(Border.type[eid]).toBe(BorderType.Line);
+		});
+
+		it('creates a textarea with padding', () => {
+			const eid = createTextareaEntity(world, {
+				padding: {
+					left: 1,
+					right: 1,
+					top: 1,
+					bottom: 1,
+				},
+			});
+
+			expect(Padding.left[eid]).toBe(1);
+			expect(Padding.right[eid]).toBe(1);
+			expect(Padding.top[eid]).toBe(1);
+			expect(Padding.bottom[eid]).toBe(1);
+		});
+
+		it('creates a textarea with parent', () => {
+			const parent = createBoxEntity(world);
+			const textarea = createTextareaEntity(world, { parent });
+
+			expect(Hierarchy.parent[textarea]).toBe(parent);
+		});
+
+		it('creates a textarea with top-aligned content by default', () => {
+			const eid = createTextareaEntity(world);
+
+			// Textareas should have top-aligned content for multiline
+			expect(Content.valign[eid]).toBe(0); // Top
+			expect(Content.align[eid]).toBe(0); // Left
+		});
+
+		it('validates textarea config with schema', () => {
+			const config = TextareaConfigSchema.parse({
+				x: 10,
+				y: 5,
+				width: 40,
+				height: 5,
+				placeholder: 'Enter text...',
+				scrollable: true,
+				maxLength: 500,
+			});
+
+			expect(config.x).toBe(10);
+			expect(config.y).toBe(5);
+			expect(config.width).toBe(40);
+			expect(config.height).toBe(5);
+			expect(config.placeholder).toBe('Enter text...');
+			expect(config.scrollable).toBe(true);
+			expect(config.maxLength).toBe(500);
+		});
+	});
+
+	describe('createFormEntity', () => {
+		it('creates a form with default values', () => {
+			const eid = createFormEntity(world);
+
+			expect(isForm(world, eid)).toBe(true);
+		});
+
+		it('creates a form with keys enabled by default', () => {
+			const eid = createFormEntity(world);
+
+			expect(isFormKeysEnabled(eid)).toBe(true);
+		});
+
+		it('creates a form with submit on enter enabled by default', () => {
+			const eid = createFormEntity(world);
+
+			expect(isFormSubmitOnEnter(eid)).toBe(true);
+		});
+
+		it('creates a form with keys disabled', () => {
+			const eid = createFormEntity(world, { keys: false });
+
+			expect(isFormKeysEnabled(eid)).toBe(false);
+		});
+
+		it('creates a form with submit on enter disabled', () => {
+			const eid = createFormEntity(world, { submitOnEnter: false });
+
+			expect(isFormSubmitOnEnter(eid)).toBe(false);
+		});
+
+		it('creates a form with position', () => {
+			const eid = createFormEntity(world, {
+				x: 10,
+				y: 5,
+			});
+
+			expect(Position.x[eid]).toBe(10);
+			expect(Position.y[eid]).toBe(5);
+		});
+
+		it('creates a form with dimensions', () => {
+			const eid = createFormEntity(world, {
+				width: 50,
+				height: 20,
+			});
+
+			expect(Dimensions.width[eid]).toBe(50);
+			expect(Dimensions.height[eid]).toBe(20);
+		});
+
+		it('creates a form with border', () => {
+			const eid = createFormEntity(world, {
+				border: {
+					type: BorderType.Line,
+					left: true,
+					right: true,
+					top: true,
+					bottom: true,
+				},
+			});
+
+			expect(Border.type[eid]).toBe(BorderType.Line);
+		});
+
+		it('creates a form with padding', () => {
+			const eid = createFormEntity(world, {
+				padding: {
+					left: 2,
+					right: 2,
+					top: 1,
+					bottom: 1,
+				},
+			});
+
+			expect(Padding.left[eid]).toBe(2);
+			expect(Padding.right[eid]).toBe(2);
+			expect(Padding.top[eid]).toBe(1);
+			expect(Padding.bottom[eid]).toBe(1);
+		});
+
+		it('creates a form with parent', () => {
+			const parent = createBoxEntity(world);
+			const form = createFormEntity(world, { parent });
+
+			expect(Hierarchy.parent[form]).toBe(parent);
+		});
+
+		it('creates a form with pre-registered fields', () => {
+			const field = createTextboxEntity(world);
+			const eid = createFormEntity(world, {
+				fields: [
+					{ name: 'username', entity: field },
+				],
+			});
+
+			const fields = getFormFields(world, eid);
+			expect(fields).toContain(field);
+		});
+	});
+
+	describe('createProgressBarEntity', () => {
+		it('creates a progress bar with default values', () => {
+			const eid = createProgressBarEntity(world);
+
+			expect(isProgressBar(world, eid)).toBe(true);
+			expect(getProgress(eid)).toBe(0);
+			expect(getProgressMin(eid)).toBe(0);
+			expect(getProgressMax(eid)).toBe(100);
+		});
+
+		it('creates a progress bar with initial value', () => {
+			const eid = createProgressBarEntity(world, { value: 50 });
+
+			expect(getProgress(eid)).toBe(50);
+		});
+
+		it('creates a progress bar with custom range', () => {
+			const eid = createProgressBarEntity(world, {
+				min: 10,
+				max: 200,
+			});
+
+			expect(getProgressMin(eid)).toBe(10);
+			expect(getProgressMax(eid)).toBe(200);
+		});
+
+		it('creates a progress bar with vertical orientation', () => {
+			const eid = createProgressBarEntity(world, {
+				orientation: ProgressOrientation.Vertical,
+			});
+
+			expect(getProgressOrientation(eid)).toBe(ProgressOrientation.Vertical);
+		});
+
+		it('creates a progress bar with percentage display', () => {
+			const eid = createProgressBarEntity(world, {
+				showPercentage: true,
+			});
+
+			expect(isShowingPercentage(eid)).toBe(true);
+		});
+
+		it('creates a progress bar with custom display characters', () => {
+			const eid = createProgressBarEntity(world, {
+				fillChar: '=',
+				emptyChar: '-',
+			});
+
+			const display = getProgressBarDisplay(eid);
+			expect(display.fillChar).toBe('=');
+			expect(display.emptyChar).toBe('-');
+		});
+
+		it('creates a progress bar with custom colors', () => {
+			const eid = createProgressBarEntity(world, {
+				fillFg: 0x00ff00ff,
+				fillBg: 0x000000ff,
+			});
+
+			const display = getProgressBarDisplay(eid);
+			expect(display.fillFg).toBe(0x00ff00ff);
+			expect(display.fillBg).toBe(0x000000ff);
+		});
+
+		it('creates a progress bar with position', () => {
+			const eid = createProgressBarEntity(world, {
+				x: 10,
+				y: 5,
+			});
+
+			expect(Position.x[eid]).toBe(10);
+			expect(Position.y[eid]).toBe(5);
+		});
+
+		it('creates a progress bar with dimensions', () => {
+			const eid = createProgressBarEntity(world, {
+				width: 30,
+				height: 1,
+			});
+
+			expect(Dimensions.width[eid]).toBe(30);
+			expect(Dimensions.height[eid]).toBe(1);
+		});
+
+		it('creates a progress bar with border', () => {
+			const eid = createProgressBarEntity(world, {
+				border: {
+					type: BorderType.Line,
+					left: true,
+					right: true,
+					top: true,
+					bottom: true,
+				},
+			});
+
+			expect(Border.type[eid]).toBe(BorderType.Line);
+		});
+
+		it('creates a progress bar with parent', () => {
+			const parent = createBoxEntity(world);
+			const progressBar = createProgressBarEntity(world, { parent });
+
+			expect(Hierarchy.parent[progressBar]).toBe(parent);
+		});
+	});
+
 	describe('Config Schemas', () => {
 		it('validates BoxConfigSchema', () => {
 			const result = BoxConfigSchema.safeParse({
@@ -391,6 +1127,100 @@ describe('Entity Factories', () => {
 				items: ['a', 'b', 'c'],
 				selectedIndex: 0,
 			});
+
+			expect(result.success).toBe(true);
+		});
+
+		it('validates CheckboxConfigSchema', () => {
+			const result = CheckboxConfigSchema.safeParse({
+				label: 'Accept terms',
+				checked: true,
+				checkedChar: '[x]',
+				uncheckedChar: '[ ]',
+				focusable: true,
+			});
+
+			expect(result.success).toBe(true);
+		});
+
+		it('validates CheckboxConfigSchema with minimal config', () => {
+			const result = CheckboxConfigSchema.safeParse({});
+
+			expect(result.success).toBe(true);
+		});
+
+		it('validates TextboxConfigSchema', () => {
+			const result = TextboxConfigSchema.safeParse({
+				value: 'Hello',
+				placeholder: 'Enter text...',
+				secret: false,
+				maxLength: 100,
+				focusable: true,
+			});
+
+			expect(result.success).toBe(true);
+		});
+
+		it('validates TextboxConfigSchema with secret mode', () => {
+			const result = TextboxConfigSchema.safeParse({
+				secret: true,
+				censor: '#',
+			});
+
+			expect(result.success).toBe(true);
+		});
+
+		it('validates TextboxConfigSchema with minimal config', () => {
+			const result = TextboxConfigSchema.safeParse({});
+
+			expect(result.success).toBe(true);
+		});
+
+		it('validates FormConfigSchema', () => {
+			const result = FormConfigSchema.safeParse({
+				x: 10,
+				y: 5,
+				width: 50,
+				height: 20,
+				keys: true,
+				submitOnEnter: true,
+			});
+
+			expect(result.success).toBe(true);
+		});
+
+		it('validates FormConfigSchema with fields', () => {
+			const result = FormConfigSchema.safeParse({
+				fields: [
+					{ name: 'username', entity: 1, initialValue: '' },
+					{ name: 'password', entity: 2, initialValue: '' },
+				],
+			});
+
+			expect(result.success).toBe(true);
+		});
+
+		it('validates FormConfigSchema with minimal config', () => {
+			const result = FormConfigSchema.safeParse({});
+
+			expect(result.success).toBe(true);
+		});
+
+		it('validates ProgressBarConfigSchema', () => {
+			const result = ProgressBarConfigSchema.safeParse({
+				value: 50,
+				min: 0,
+				max: 100,
+				orientation: 0,
+				showPercentage: true,
+				fillChar: '=',
+			});
+
+			expect(result.success).toBe(true);
+		});
+
+		it('validates ProgressBarConfigSchema with minimal config', () => {
+			const result = ProgressBarConfigSchema.safeParse({});
 
 			expect(result.success).toBe(true);
 		});
