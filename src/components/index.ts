@@ -813,6 +813,7 @@ export {
 	DEFAULT_CELL_FG,
 	DEFAULT_HEADER_BG,
 	DEFAULT_HEADER_FG,
+	detachTableBehavior,
 	getCell,
 	getCellPadding,
 	getCellValue,

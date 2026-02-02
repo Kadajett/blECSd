@@ -258,6 +258,31 @@ export function isTable(_world: World, eid: Entity): boolean {
 	return tableStore.isTable[eid] === 1;
 }
 
+/**
+ * Detaches table behavior from an entity.
+ *
+ * @param _world - The ECS world
+ * @param eid - The entity ID
+ */
+export function detachTableBehavior(_world: World, eid: Entity): void {
+	tableStore.isTable[eid] = 0;
+	tableStore.rowCount[eid] = 0;
+	tableStore.colCount[eid] = 0;
+	tableStore.headerRows[eid] = 1;
+	tableStore.pad[eid] = 1;
+	tableStore.cellBorders[eid] = 0;
+
+	Table.rowCount[eid] = 0;
+	Table.colCount[eid] = 0;
+	Table.headerRows[eid] = 1;
+	Table.pad[eid] = 1;
+	Table.cellBorders[eid] = 0;
+
+	dataStore.delete(eid);
+	columnStore.delete(eid);
+	displayStore.delete(eid);
+}
+
 // =============================================================================
 // DATA MANAGEMENT
 // =============================================================================

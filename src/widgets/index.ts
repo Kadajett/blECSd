@@ -9,3 +9,7 @@
 // List widget
 export type { ListStyleConfig, ListWidget, ListWidgetConfig } from './list';
 export { createList, isListWidget, ListWidgetConfigSchema } from './list';
+
+// Table widget
+export type { TableStyleConfig, TableWidget, TableWidgetConfig } from './table';
+export { createTable, isTableWidget, TableWidgetConfigSchema } from './table';
