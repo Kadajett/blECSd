@@ -277,13 +277,13 @@ export function nameToColor(name: string): Color256 | null {
 
 	// Check direct mapping first
 	if (normalized in COLOR_NAMES) {
-		return COLOR_NAMES[normalized] ?? null;
+		return COLOR_NAMES[normalized];
 	}
 
 	// Check aliases
 	const alias = COLOR_ALIASES[normalized];
 	if (alias && alias in COLOR_NAMES) {
-		return COLOR_NAMES[alias] ?? null;
+		return COLOR_NAMES[alias];
 	}
 
 	// Special values don't map to colors
@@ -294,13 +294,10 @@ export function nameToColor(name: string): Color256 | null {
 	// Try parsing compound names like 'bright-red', 'light_green'
 	const parts = normalized.split(/[-_\s]+/);
 	if (parts.length === 2) {
-		const modifier = parts[0];
-		const base = parts[1];
-		if (modifier && base) {
-			const compoundName = modifier + base;
-			if (compoundName in COLOR_NAMES) {
-				return COLOR_NAMES[compoundName] ?? null;
-			}
+		const [modifier, base] = parts;
+		const compoundName = modifier + base;
+		if (compoundName in COLOR_NAMES) {
+			return COLOR_NAMES[compoundName];
 		}
 	}
 
