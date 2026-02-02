@@ -8,7 +8,7 @@
  */
 
 import type { KeyEvent, KeyName } from '../terminal/keyParser';
-import type { MouseAction, MouseButton, MouseEvent } from '../terminal/mouseParser';
+import type { MouseButton, MouseEvent } from '../terminal/mouseParser';
 import type { TimestampedKeyEvent, TimestampedMouseEvent } from './inputEventBuffer';
 
 // =============================================================================
@@ -230,7 +230,6 @@ export class InputState {
 	private frameCount = 0;
 	private keyEventsThisFrame = 0;
 	private mouseEventsThisFrame = 0;
-	private lastUpdateTime = 0;
 
 	// Modifiers tracked separately for convenience
 	private ctrlDown = false;
@@ -441,7 +440,7 @@ export class InputState {
 			return;
 		}
 
-		if (event.action === 'mousedown') {
+		if (event.action === 'press') {
 			if (!button.pressed) {
 				button.pressed = true;
 				button.justPressed = true;
@@ -449,7 +448,7 @@ export class InputState {
 				button.heldTime = 0;
 			}
 			button.lastEventTime = timestamp;
-		} else if (event.action === 'mouseup') {
+		} else if (event.action === 'release') {
 			if (button.pressed) {
 				button.pressed = false;
 				button.justPressed = false;
@@ -462,7 +461,7 @@ export class InputState {
 	/**
 	 * Normalizes a key name to a consistent format.
 	 */
-	private normalizeKeyName(name: KeyName, event: KeyEvent): string {
+	private normalizeKeyName(name: KeyName, _event: KeyEvent): string {
 		// Include modifiers in the key identifier for combo tracking
 		// But store base key separately for simple queries
 		return name.toLowerCase();
@@ -927,7 +926,10 @@ export function isAnyKeyDown(inputState: InputState, keys: readonly (KeyName | s
  * }
  * ```
  */
-export function isAllKeysDown(inputState: InputState, keys: readonly (KeyName | string)[]): boolean {
+export function isAllKeysDown(
+	inputState: InputState,
+	keys: readonly (KeyName | string)[],
+): boolean {
 	for (const key of keys) {
 		if (!inputState.isKeyDown(key)) {
 			return false;

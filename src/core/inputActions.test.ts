@@ -3,6 +3,8 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { KeyName } from '../terminal/keyParser';
+import type { MouseAction, MouseButton, MouseProtocol } from '../terminal/mouseParser';
 import { ActionPresets, createInputActionManager, InputActionManager } from './inputActions';
 import type { TimestampedKeyEvent, TimestampedMouseEvent } from './inputEventBuffer';
 import { createInputState, type InputState } from './inputState';
@@ -16,8 +18,7 @@ describe('InputActionManager', () => {
 		return {
 			type: 'key',
 			event: {
-				// biome-ignore lint/suspicious/noExplicitAny: test helper accepts any key name string
-				name: name as any,
+				name: name as KeyName,
 				sequence: name,
 				ctrl: false,
 				meta: false,
@@ -30,7 +31,7 @@ describe('InputActionManager', () => {
 
 	// Helper to create a mouse event
 	function mouseEvent(
-		action: 'mousedown' | 'mouseup',
+		action: MouseAction,
 		button: string,
 		x = 0,
 		y = 0,
@@ -39,17 +40,14 @@ describe('InputActionManager', () => {
 		return {
 			type: 'mouse',
 			event: {
-				// biome-ignore lint/suspicious/noExplicitAny: test helper accepts action strings
-				action: action as any,
-				// biome-ignore lint/suspicious/noExplicitAny: test helper accepts button strings
-				button: button as any,
+				action,
+				button: button as MouseButton,
 				x,
 				y,
 				ctrl: false,
 				meta: false,
 				shift: false,
-				// biome-ignore lint/suspicious/noExplicitAny: test helper accepts protocol strings
-				protocol: 'SGR' as any,
+				protocol: 'sgr' as MouseProtocol,
 				raw: new Uint8Array([]),
 			},
 			timestamp,
@@ -226,15 +224,15 @@ describe('InputActionManager', () => {
 		});
 
 		it('should activate with mouse button', () => {
-			update([], [mouseEvent('mousedown', 'left')]);
+			update([], [mouseEvent('press', 'left')]);
 
 			expect(actions.isActive('attack')).toBe(true);
 			expect(actions.isJustActivated('attack')).toBe(true);
 		});
 
 		it('should deactivate when mouse button released', () => {
-			update([], [mouseEvent('mousedown', 'left')]);
-			update([], [mouseEvent('mouseup', 'left')]);
+			update([], [mouseEvent('press', 'left')]);
+			update([], [mouseEvent('release', 'left')]);
 
 			expect(actions.isActive('attack')).toBe(false);
 			expect(actions.isJustDeactivated('attack')).toBe(true);

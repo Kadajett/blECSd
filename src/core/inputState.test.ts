@@ -3,6 +3,8 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
+import type { KeyName } from '../terminal/keyParser';
+import type { MouseAction, MouseButton, MouseProtocol } from '../terminal/mouseParser';
 import type { TimestampedKeyEvent, TimestampedMouseEvent } from './inputEventBuffer';
 import {
 	createInputState,
@@ -21,7 +23,7 @@ describe('InputState', () => {
 		return {
 			type: 'key',
 			event: {
-				name: name as any,
+				name: name as KeyName,
 				sequence: name,
 				ctrl: false,
 				meta: false,
@@ -34,7 +36,7 @@ describe('InputState', () => {
 
 	// Helper to create a mouse event
 	function mouseEvent(
-		action: 'mousedown' | 'mouseup' | 'mousemove',
+		action: MouseAction,
 		button: string,
 		x: number,
 		y: number,
@@ -43,14 +45,14 @@ describe('InputState', () => {
 		return {
 			type: 'mouse',
 			event: {
-				action: action as any,
-				button: button as any,
+				action,
+				button: button as MouseButton,
 				x,
 				y,
 				ctrl: false,
 				meta: false,
 				shift: false,
-				protocol: 'SGR' as any,
+				protocol: 'sgr' as MouseProtocol,
 				raw: new Uint8Array([]),
 			},
 			timestamp,
@@ -265,7 +267,7 @@ describe('InputState', () => {
 
 	describe('mouse state tracking', () => {
 		it('should track mouse button press', () => {
-			inputState.update([], [mouseEvent('mousedown', 'left', 10, 20)], 0.016);
+			inputState.update([], [mouseEvent('press', 'left', 10, 20)], 0.016);
 
 			expect(inputState.isMouseButtonDown('left')).toBe(true);
 			expect(inputState.isMouseButtonPressed('left')).toBe(true);
@@ -273,15 +275,15 @@ describe('InputState', () => {
 		});
 
 		it('should track mouse button release', () => {
-			inputState.update([], [mouseEvent('mousedown', 'left', 10, 20)], 0.016);
-			inputState.update([], [mouseEvent('mouseup', 'left', 10, 20)], 0.016);
+			inputState.update([], [mouseEvent('press', 'left', 10, 20)], 0.016);
+			inputState.update([], [mouseEvent('release', 'left', 10, 20)], 0.016);
 
 			expect(inputState.isMouseButtonDown('left')).toBe(false);
 			expect(inputState.isMouseButtonReleased('left')).toBe(true);
 		});
 
 		it('should track mouse position', () => {
-			inputState.update([], [mouseEvent('mousemove', 'unknown', 50, 100)], 0.016);
+			inputState.update([], [mouseEvent('move', 'unknown', 50, 100)], 0.016);
 
 			expect(inputState.getMouseX()).toBe(50);
 			expect(inputState.getMouseY()).toBe(100);
@@ -289,8 +291,8 @@ describe('InputState', () => {
 		});
 
 		it('should track mouse delta', () => {
-			inputState.update([], [mouseEvent('mousemove', 'unknown', 0, 0)], 0.016);
-			inputState.update([], [mouseEvent('mousemove', 'unknown', 10, 20)], 0.016);
+			inputState.update([], [mouseEvent('move', 'unknown', 0, 0)], 0.016);
+			inputState.update([], [mouseEvent('move', 'unknown', 10, 20)], 0.016);
 
 			const delta = inputState.getMouseDelta();
 			expect(delta.deltaX).toBe(10);
@@ -301,9 +303,9 @@ describe('InputState', () => {
 			inputState.update(
 				[],
 				[
-					mouseEvent('mousedown', 'wheelup', 0, 0),
-					mouseEvent('mousedown', 'wheelup', 0, 0),
-					mouseEvent('mousedown', 'wheeldown', 0, 0),
+					mouseEvent('press', 'wheelup', 0, 0),
+					mouseEvent('press', 'wheelup', 0, 0),
+					mouseEvent('press', 'wheeldown', 0, 0),
 				],
 				0.016,
 			);
@@ -312,7 +314,7 @@ describe('InputState', () => {
 		});
 
 		it('should reset delta each frame', () => {
-			inputState.update([], [mouseEvent('mousemove', 'unknown', 10, 10)], 0.016);
+			inputState.update([], [mouseEvent('move', 'unknown', 10, 10)], 0.016);
 			inputState.update([], [], 0.016); // No movement this frame
 
 			const delta = inputState.getMouseDelta();
@@ -333,7 +335,7 @@ describe('InputState', () => {
 		it('should release all mouse buttons', () => {
 			inputState.update(
 				[],
-				[mouseEvent('mousedown', 'left', 0, 0), mouseEvent('mousedown', 'right', 0, 0)],
+				[mouseEvent('press', 'left', 0, 0), mouseEvent('press', 'right', 0, 0)],
 				0.016,
 			);
 
@@ -346,11 +348,7 @@ describe('InputState', () => {
 		});
 
 		it('should release all input', () => {
-			inputState.update(
-				[keyEvent('a')],
-				[mouseEvent('mousedown', 'left', 0, 0)],
-				0.016,
-			);
+			inputState.update([keyEvent('a')], [mouseEvent('press', 'left', 0, 0)], 0.016);
 
 			inputState.releaseAll();
 
@@ -361,7 +359,7 @@ describe('InputState', () => {
 
 	describe('stats', () => {
 		it('should report statistics', () => {
-			inputState.update([keyEvent('a'), keyEvent('b')], [mouseEvent('mousedown', 'left', 0, 0)], 0.016);
+			inputState.update([keyEvent('a'), keyEvent('b')], [mouseEvent('press', 'left', 0, 0)], 0.016);
 
 			const stats = inputState.getStats();
 			expect(stats.keysDown).toBe(2);
@@ -385,7 +383,7 @@ describe('InputState', () => {
 
 	describe('reset', () => {
 		it('should reset all state', () => {
-			inputState.update([keyEvent('a')], [mouseEvent('mousedown', 'left', 50, 50)], 0.016);
+			inputState.update([keyEvent('a')], [mouseEvent('press', 'left', 50, 50)], 0.016);
 			inputState.reset();
 
 			expect(inputState.getPressedKeys().length).toBe(0);
