@@ -68,7 +68,15 @@ export {
 export type { EventHandler, EventMap, ScreenEventMap, UIEventMap } from './events';
 export { createEventBus, EventBus } from './events';
 // Game loop
-export type { GameLoopHooks, GameLoopOptions, LoopHook, LoopStats } from './gameLoop';
+export type {
+	FixedTimestepConfig,
+	FixedUpdateHook,
+	GameLoopHooks,
+	GameLoopOptions,
+	InterpolateHook,
+	LoopHook,
+	LoopStats,
+} from './gameLoop';
 export {
 	createGameLoop,
 	GameLoop,
@@ -89,6 +97,22 @@ export {
 	globalInputBuffer,
 	InputEventBuffer,
 } from './inputEventBuffer';
+// Input state tracking
+export type {
+	InputStateConfig,
+	InputStateStats,
+	KeyState,
+	MouseButtonState,
+	MouseState,
+} from './inputState';
+export {
+	createInputState,
+	getMovementDirection,
+	InputState,
+	isAllKeysDown,
+	isAnyKeyDown,
+	isAnyKeyPressed,
+} from './inputState';
 // Phase manager
 export type { PhaseId } from './phaseManager';
 export {
