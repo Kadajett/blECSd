@@ -216,15 +216,15 @@ export function isRGB(value: unknown): value is RGB {
 	if (typeof value !== 'object' || value === null) return false;
 	const obj = value as Record<string, unknown>;
 	return (
-		typeof obj['r'] === 'number' &&
-		typeof obj['g'] === 'number' &&
-		typeof obj['b'] === 'number' &&
-		obj['r'] >= 0 &&
-		obj['r'] <= 255 &&
-		obj['g'] >= 0 &&
-		obj['g'] <= 255 &&
-		obj['b'] >= 0 &&
-		obj['b'] <= 255
+		typeof obj.r === 'number' &&
+		typeof obj.g === 'number' &&
+		typeof obj.b === 'number' &&
+		obj.r >= 0 &&
+		obj.r <= 255 &&
+		obj.g >= 0 &&
+		obj.g <= 255 &&
+		obj.b >= 0 &&
+		obj.b <= 255
 	);
 }
 
@@ -269,9 +269,9 @@ function generateColorCube(): readonly RGB[] {
 		for (let g = 0; g < 6; g++) {
 			for (let b = 0; b < 6; b++) {
 				colors.push({
-					r: levels[r] ?? 0,
-					g: levels[g] ?? 0,
-					b: levels[b] ?? 0,
+					r: levels[r],
+					g: levels[g],
+					b: levels[b],
 				});
 			}
 		}
@@ -358,11 +358,7 @@ export const PALETTE_HEX: readonly string[] = PALETTE_RGB.map(rgbToHexString) as
  * ```
  */
 export function getRGB(color: Color256): RGB {
-	const rgb = PALETTE_RGB[color];
-	if (!rgb) {
-		throw new Error(`Invalid Color256: ${color}`);
-	}
-	return rgb;
+	return PALETTE_RGB[color];
 }
 
 /**
@@ -380,11 +376,7 @@ export function getRGB(color: Color256): RGB {
  * ```
  */
 export function getHex(color: Color256): string {
-	const hex = PALETTE_HEX[color];
-	if (!hex) {
-		throw new Error(`Invalid Color256: ${color}`);
-	}
-	return hex;
+	return PALETTE_HEX[color];
 }
 
 // =============================================================================
