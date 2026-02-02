@@ -21,6 +21,17 @@ export {
 	renderText,
 	renderVLine,
 } from './box';
+// Fuzzy search utilities
+export type { FuzzyMatch, FuzzyOptions, FuzzySearchOptions } from './fuzzySearch';
+export {
+	FuzzyOptionsSchema,
+	fuzzyFilter,
+	fuzzyMatch,
+	fuzzySearch,
+	fuzzySearchBy,
+	fuzzyTest,
+	highlightMatch,
+} from './fuzzySearch';
 // Style attribute encoding
 export type { StyleAttr, StyleInput } from './sattr';
 export {
@@ -40,6 +51,20 @@ export {
 	sattrRemoveFlag,
 	styleToAttrs,
 } from './sattr';
+// Tag parsing utilities
+export type { Alignment, ParsedContent, TextSegment } from './tags';
+export {
+	AlignmentSchema,
+	createTaggedText,
+	escapeTags,
+	hasTags,
+	mergeSegments,
+	ParsedContentSchema,
+	parseTags,
+	stripTags,
+	TextSegmentSchema,
+	taggedLength,
+} from './tags';
 // Text wrapping utilities
 export type { TextAlign, WrapOptions } from './textWrap';
 export {
@@ -51,14 +76,3 @@ export {
 	wordWrap,
 	wrapText,
 } from './textWrap';
-// Fuzzy search utilities
-export type { FuzzyMatch, FuzzyOptions, FuzzySearchOptions } from './fuzzySearch';
-export {
-	fuzzyFilter,
-	fuzzyMatch,
-	FuzzyOptionsSchema,
-	fuzzySearch,
-	fuzzySearchBy,
-	fuzzyTest,
-	highlightMatch,
-} from './fuzzySearch';
