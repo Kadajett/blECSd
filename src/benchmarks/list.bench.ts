@@ -11,18 +11,18 @@
 import { addEntity, createWorld } from 'bitecs';
 import { bench, describe } from 'vitest';
 import {
-	createListItems,
-	getItemsInView,
-	getListItems,
+	attachListBehavior,
+	getItems,
 	getScrollInfo,
 	getSelectedIndex,
+	getVisibleItems,
 	handleListKeyPress,
-	initListWidget,
-	selectItem,
+	type ListItem,
 	scrollPage,
-	scrollToIndex,
-	setListHeight,
-	setListItems,
+	selectNext,
+	setItems,
+	setSelectedIndex,
+	setVisibleCount,
 } from '../components/list';
 import type { Entity, World } from '../core/types';
 
@@ -35,11 +35,13 @@ function createTestWorld(): World {
 }
 
 function createListEntity(world: World): Entity {
-	return addEntity(world) as Entity;
+	const eid = addEntity(world) as Entity;
+	attachListBehavior(world, eid);
+	return eid;
 }
 
-function generateItems(count: number): string[] {
-	return Array.from({ length: count }, (_, i) => `Item ${i + 1}`);
+function generateItems(count: number): ListItem[] {
+	return Array.from({ length: count }, (_, i) => ({ text: `Item ${i + 1}`, value: `${i}` }));
 }
 
 // Pre-generate item arrays
@@ -54,41 +56,41 @@ const items1000000 = generateItems(1000000);
 // =============================================================================
 
 describe('List Initialization', () => {
-	describe('initListWidget', () => {
-		bench('init empty list', () => {
+	describe('attachListBehavior', () => {
+		bench('attach behavior only', () => {
 			const world = createTestWorld();
-			const eid = createListEntity(world);
-			initListWidget(world, eid, { height: 10 });
+			const eid = addEntity(world) as Entity;
+			attachListBehavior(world, eid);
 		});
 
-		bench('init with 100 items', () => {
+		bench('attach + set 100 items', () => {
 			const world = createTestWorld();
 			const eid = createListEntity(world);
-			initListWidget(world, eid, { items: items100, height: 10 });
+			setItems(world, eid, items100);
 		});
 
-		bench('init with 1,000 items', () => {
+		bench('attach + set 1,000 items', () => {
 			const world = createTestWorld();
 			const eid = createListEntity(world);
-			initListWidget(world, eid, { items: items1000, height: 10 });
+			setItems(world, eid, items1000);
 		});
 
-		bench('init with 10,000 items', () => {
+		bench('attach + set 10,000 items', () => {
 			const world = createTestWorld();
 			const eid = createListEntity(world);
-			initListWidget(world, eid, { items: items10000, height: 10 });
+			setItems(world, eid, items10000);
 		});
 
-		bench('init with 100,000 items', () => {
+		bench('attach + set 100,000 items', () => {
 			const world = createTestWorld();
 			const eid = createListEntity(world);
-			initListWidget(world, eid, { items: items100000, height: 10 });
+			setItems(world, eid, items100000);
 		});
 
-		bench('init with 1,000,000 items', () => {
+		bench('attach + set 1,000,000 items', () => {
 			const world = createTestWorld();
 			const eid = createListEntity(world);
-			initListWidget(world, eid, { items: items1000000, height: 10 });
+			setItems(world, eid, items1000000);
 		});
 	});
 });
@@ -98,20 +100,19 @@ describe('List Initialization', () => {
 // =============================================================================
 
 describe('List Item Operations', () => {
-	describe('setListItems', () => {
+	describe('setItems', () => {
 		let world: World;
 		let eid: Entity;
 
 		bench(
 			'set 100 items',
 			() => {
-				setListItems(world, eid, items100);
+				setItems(world, eid, items100);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { height: 10 });
 				},
 			},
 		);
@@ -119,13 +120,12 @@ describe('List Item Operations', () => {
 		bench(
 			'set 10,000 items',
 			() => {
-				setListItems(world, eid, items10000);
+				setItems(world, eid, items10000);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { height: 10 });
 				},
 			},
 		);
@@ -133,32 +133,31 @@ describe('List Item Operations', () => {
 		bench(
 			'set 100,000 items',
 			() => {
-				setListItems(world, eid, items100000);
+				setItems(world, eid, items100000);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { height: 10 });
 				},
 			},
 		);
 	});
 
-	describe('getListItems', () => {
+	describe('getItems', () => {
 		let world: World;
 		let eid: Entity;
 
 		bench(
 			'get items from 100 item list',
 			() => {
-				getListItems(world, eid);
+				getItems(eid);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100, height: 10 });
+					setItems(world, eid, items100);
 				},
 			},
 		);
@@ -166,13 +165,13 @@ describe('List Item Operations', () => {
 		bench(
 			'get items from 100,000 item list',
 			() => {
-				getListItems(world, eid);
+				getItems(eid);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100000, height: 10 });
+					setItems(world, eid, items100000);
 				},
 			},
 		);
@@ -180,24 +179,25 @@ describe('List Item Operations', () => {
 });
 
 // =============================================================================
-// VIRTUALIZATION (Items in View)
+// VIRTUALIZATION (Visible Items)
 // =============================================================================
 
 describe('Virtualization', () => {
-	describe('getItemsInView', () => {
+	describe('getVisibleItems', () => {
 		let world: World;
 		let eid: Entity;
 
 		bench(
 			'100 items, 10 visible',
 			() => {
-				getItemsInView(world, eid);
+				getVisibleItems(eid);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100, height: 10 });
+					setItems(world, eid, items100);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -205,13 +205,14 @@ describe('Virtualization', () => {
 		bench(
 			'10,000 items, 10 visible',
 			() => {
-				getItemsInView(world, eid);
+				getVisibleItems(eid);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items10000, height: 10 });
+					setItems(world, eid, items10000);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -219,13 +220,14 @@ describe('Virtualization', () => {
 		bench(
 			'100,000 items, 10 visible',
 			() => {
-				getItemsInView(world, eid);
+				getVisibleItems(eid);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100000, height: 10 });
+					setItems(world, eid, items100000);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -233,13 +235,14 @@ describe('Virtualization', () => {
 		bench(
 			'1,000,000 items, 10 visible',
 			() => {
-				getItemsInView(world, eid);
+				getVisibleItems(eid);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items1000000, height: 10 });
+					setItems(world, eid, items1000000);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -247,13 +250,14 @@ describe('Virtualization', () => {
 		bench(
 			'1,000,000 items, 100 visible',
 			() => {
-				getItemsInView(world, eid);
+				getVisibleItems(eid);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items1000000, height: 100 });
+					setItems(world, eid, items1000000);
+					setVisibleCount(world, eid, 100);
 				},
 			},
 		);
@@ -265,20 +269,21 @@ describe('Virtualization', () => {
 // =============================================================================
 
 describe('Selection', () => {
-	describe('selectItem', () => {
+	describe('setSelectedIndex', () => {
 		let world: World;
 		let eid: Entity;
 
 		bench(
 			'select item in 100 item list',
 			() => {
-				selectItem(world, eid, 50);
+				setSelectedIndex(world, eid, 50);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100, height: 10 });
+					setItems(world, eid, items100);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -286,13 +291,14 @@ describe('Selection', () => {
 		bench(
 			'select item in 100,000 item list',
 			() => {
-				selectItem(world, eid, 50000);
+				setSelectedIndex(world, eid, 50000);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100000, height: 10 });
+					setItems(world, eid, items100000);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -300,13 +306,14 @@ describe('Selection', () => {
 		bench(
 			'select item in 1,000,000 item list',
 			() => {
-				selectItem(world, eid, 500000);
+				setSelectedIndex(world, eid, 500000);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items1000000, height: 10 });
+					setItems(world, eid, items1000000);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -319,13 +326,15 @@ describe('Selection', () => {
 		bench(
 			'get selection',
 			() => {
-				getSelectedIndex(world, eid);
+				getSelectedIndex(eid);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100000, height: 10, selected: 50000 });
+					setItems(world, eid, items100000);
+					setVisibleCount(world, eid, 10);
+					setSelectedIndex(world, eid, 50000);
 				},
 			},
 		);
@@ -337,48 +346,36 @@ describe('Selection', () => {
 // =============================================================================
 
 describe('Scrolling', () => {
-	describe('scrollToIndex', () => {
+	describe('selectNext (scroll by 1)', () => {
 		let world: World;
 		let eid: Entity;
 
 		bench(
-			'scroll to middle of 100 items',
+			'next in 100 item list',
 			() => {
-				scrollToIndex(world, eid, 50);
+				selectNext(world, eid);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100, height: 10 });
+					setItems(world, eid, items100);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
 
 		bench(
-			'scroll to middle of 100,000 items',
+			'next in 1,000,000 item list',
 			() => {
-				scrollToIndex(world, eid, 50000);
+				selectNext(world, eid);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100000, height: 10 });
-				},
-			},
-		);
-
-		bench(
-			'scroll to middle of 1,000,000 items',
-			() => {
-				scrollToIndex(world, eid, 500000);
-			},
-			{
-				setup() {
-					world = createTestWorld();
-					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items1000000, height: 10 });
+					setItems(world, eid, items1000000);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -391,13 +388,14 @@ describe('Scrolling', () => {
 		bench(
 			'page down in 100 item list',
 			() => {
-				scrollPage(world, eid, 'down');
+				scrollPage(world, eid, 1);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100, height: 10 });
+					setItems(world, eid, items100);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -405,13 +403,14 @@ describe('Scrolling', () => {
 		bench(
 			'page down in 1,000,000 item list',
 			() => {
-				scrollPage(world, eid, 'down');
+				scrollPage(world, eid, 1);
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items1000000, height: 10 });
+					setItems(world, eid, items1000000);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -432,7 +431,8 @@ describe('Scrolling', () => {
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100, height: 10 });
+					setItems(world, eid, items100);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -448,7 +448,8 @@ describe('Scrolling', () => {
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items1000000, height: 10 });
+					setItems(world, eid, items1000000);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);
@@ -466,13 +467,15 @@ describe('Scroll Info', () => {
 	bench(
 		'getScrollInfo',
 		() => {
-			getScrollInfo(world, eid);
+			getScrollInfo(eid);
 		},
 		{
 			setup() {
 				world = createTestWorld();
 				eid = createListEntity(world);
-				initListWidget(world, eid, { items: items100000, height: 10, selected: 50000 });
+				setItems(world, eid, items100000);
+				setVisibleCount(world, eid, 10);
+				setSelectedIndex(world, eid, 50000);
 			},
 		},
 	);
@@ -493,33 +496,34 @@ describe('Continuous Scrolling Simulation', () => {
 				// Simulate 60 frames of scrolling
 				for (let frame = 0; frame < 60; frame++) {
 					handleListKeyPress(world, eid, 'down');
-					getItemsInView(world, eid); // Would be rendered
+					getVisibleItems(eid); // Would be rendered
 				}
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items1000000, height: 20 });
+					setItems(world, eid, items1000000);
+					setVisibleCount(world, eid, 20);
 				},
 			},
 		);
 
 		bench(
-			'page scroll through entire 100,000 item list',
+			'page scroll through 10,000 items (100 pages)',
 			() => {
-				// Scroll through entire list page by page
-				const pages = Math.ceil(100000 / 10);
-				for (let page = 0; page < pages; page++) {
-					scrollPage(world, eid, 'down');
-					getItemsInView(world, eid);
+				// Scroll through list page by page
+				for (let page = 0; page < 100; page++) {
+					scrollPage(world, eid, 1);
+					getVisibleItems(eid);
 				}
 			},
 			{
 				setup() {
 					world = createTestWorld();
 					eid = createListEntity(world);
-					initListWidget(world, eid, { items: items100000, height: 10 });
+					setItems(world, eid, items10000);
+					setVisibleCount(world, eid, 10);
 				},
 			},
 		);

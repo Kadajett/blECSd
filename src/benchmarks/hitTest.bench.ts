@@ -21,9 +21,9 @@ import {
 	invalidateClickableCache,
 	updateClickableCache,
 } from '../core/hitTest';
-import { cacheEntityPosition, clearPositionCache } from '../core/positionCache';
+import { setPositionCache } from '../core/positionCache';
 import type { Entity, World } from '../core/types';
-import { ComputedLayout, hasComputedLayout } from '../systems/layoutSystem';
+import { ComputedLayout } from '../systems/layoutSystem';
 
 // =============================================================================
 // SETUP HELPERS
@@ -65,7 +65,15 @@ function createTestWorld(entityCount: number, screenWidth = 200, screenHeight = 
 		setInteractive(world, eid as Entity, { clickable: true, hoverable: true });
 
 		// Cache position for hit testing
-		cacheEntityPosition(world, eid as Entity);
+		setPositionCache(world, eid as Entity, {
+			x,
+			y,
+			width: 10,
+			height: 3,
+			innerWidth: 10,
+			innerHeight: 3,
+			scrollBase: 0,
+		});
 	}
 
 	return world;
@@ -241,18 +249,13 @@ describe('Position Cache', () => {
 	describe('cache population', () => {
 		bench('cache 100 entity positions', () => {
 			const world = createTestWorld(100);
-			clearPositionCache(world);
-			for (let eid = 0; eid < 100; eid++) {
-				cacheEntityPosition(world, eid as Entity);
-			}
+			// Position cache is already populated by createTestWorld
+			// This benchmarks the world creation with position caching
 		});
 
 		bench('cache 1,000 entity positions', () => {
 			const world = createTestWorld(1000);
-			clearPositionCache(world);
-			for (let eid = 0; eid < 1000; eid++) {
-				cacheEntityPosition(world, eid as Entity);
-			}
+			// Position cache is already populated by createTestWorld
 		});
 	});
 });
