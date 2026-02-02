@@ -1,10 +1,10 @@
 # Events API
 
-Type-safe event emitter for game events.
+Type-safe event emitter for decoupling game systems. Events let systems communicate without direct dependencies on each other.
 
-## createEventBus
+## How do I create an event bus?
 
-Create an event bus with typed events.
+### createEventBus
 
 ```typescript
 import { createEventBus } from 'blecsd';
@@ -17,11 +17,13 @@ interface GameEvents {
 const events = createEventBus<GameEvents>();
 ```
 
-## EventBus Methods
+---
+
+## How do I subscribe to events?
 
 ### on
 
-Subscribe to an event.
+Subscribe to an event. Returns an unsubscribe function.
 
 ```typescript
 const unsubscribe = events.on('player:moved', (e) => {
@@ -32,9 +34,7 @@ const unsubscribe = events.on('player:moved', (e) => {
 unsubscribe();
 ```
 
-**Parameters:**
-- `event` - Event name
-- `handler` - Callback function
+**Parameters:** `event` (event name), `handler` (callback function)
 
 **Returns:** Unsubscribe function
 
@@ -48,6 +48,10 @@ events.once('game:over', (e) => {
 });
 ```
 
+---
+
+## How do I emit events?
+
 ### emit
 
 Emit an event to all listeners.
@@ -57,11 +61,13 @@ const hadListeners = events.emit('player:moved', { x: 10, y: 5 });
 // Returns true if any handlers were called
 ```
 
-**Parameters:**
-- `event` - Event name
-- `payload` - Event data
+**Parameters:** `event` (event name), `payload` (event data)
 
 **Returns:** `true` if any listeners were called
+
+---
+
+## How do I unsubscribe?
 
 ### off
 
@@ -75,16 +81,18 @@ events.off('click', handler);
 
 ### removeAllListeners
 
-Remove all listeners for an event, or all events.
+Remove all listeners for an event, or all listeners for all events.
 
 ```typescript
 events.removeAllListeners('click');  // Remove click listeners
 events.removeAllListeners();          // Remove all listeners
 ```
 
-### listenerCount
+---
 
-Get the number of listeners for an event.
+## How do I check listener state?
+
+### listenerCount
 
 ```typescript
 const count = events.listenerCount('error');
@@ -101,13 +109,13 @@ const names = events.eventNames();
 
 ### hasListeners
 
-Check if an event has any listeners.
-
 ```typescript
 if (events.hasListeners('debug')) {
   events.emit('debug', { message: 'info' });
 }
 ```
+
+---
 
 ## Types
 
@@ -119,8 +127,6 @@ type EventHandler<T> = (event: T) => void;
 
 ### EventMap
 
-Base constraint for event maps.
-
 ```typescript
 type EventMap = Record<string, unknown>;
 ```
@@ -130,6 +136,8 @@ type EventMap = Record<string, unknown>;
 ```typescript
 type Unsubscribe = () => void;
 ```
+
+---
 
 ## Built-in Event Maps
 
@@ -164,7 +172,9 @@ interface ScreenEventMap {
 }
 ```
 
-## Patterns
+---
+
+## Common Patterns
 
 ### Scoped Events
 
@@ -186,31 +196,39 @@ interface GameEvents {
 Always clean up listeners to prevent memory leaks:
 
 ```typescript
-class GameSystem {
-  private unsubscribers: Unsubscribe[] = [];
+function createGameSystem(events) {
+  const unsubscribers = [];
 
-  init(events: EventBus<GameEvents>) {
-    this.unsubscribers.push(
-      events.on('player:moved', this.handleMove),
-      events.on('game:over', this.handleGameOver)
+  function init() {
+    unsubscribers.push(
+      events.on('player:moved', handleMove),
+      events.on('game:over', handleGameOver)
     );
   }
 
-  destroy() {
-    for (const unsub of this.unsubscribers) {
+  function destroy() {
+    for (const unsub of unsubscribers) {
       unsub();
     }
-    this.unsubscribers = [];
+    unsubscribers.length = 0;
   }
+
+  return { init, destroy };
 }
 ```
 
 ### Conditional Emit
 
-Avoid emitting when no listeners exist:
+Skip expensive work when no listeners exist:
 
 ```typescript
 if (events.hasListeners('debug')) {
   events.emit('debug', { message: expensiveDebugInfo() });
 }
 ```
+
+---
+
+## See Also
+
+- [Core Concepts](../getting-started/concepts.md) - Event bus overview

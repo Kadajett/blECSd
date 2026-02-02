@@ -385,3 +385,210 @@ export function clearInteractionState(world: World, eid: Entity): Entity {
 	Interactive.pressed[eid] = 0;
 	return eid;
 }
+
+// =============================================================================
+// ENABLE INPUT CONVENIENCE FUNCTIONS
+// =============================================================================
+
+/**
+ * Enables mouse events on an entity.
+ * Sets clickable and hoverable to true.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { enableMouse, isClickable, isHoverable } from 'blecsd';
+ *
+ * enableMouse(world, button);
+ *
+ * isClickable(world, button); // true
+ * isHoverable(world, button); // true
+ * ```
+ */
+export function enableMouse(world: World, eid: Entity): Entity {
+	ensureInteractive(world, eid);
+	Interactive.clickable[eid] = 1;
+	Interactive.hoverable[eid] = 1;
+	return eid;
+}
+
+/**
+ * Disables mouse events on an entity.
+ * Sets clickable and hoverable to false.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { enableMouse, disableMouse, isClickable } from 'blecsd';
+ *
+ * enableMouse(world, button);
+ * disableMouse(world, button);
+ *
+ * isClickable(world, button); // false
+ * ```
+ */
+export function disableMouse(world: World, eid: Entity): Entity {
+	if (!hasComponent(world, eid, Interactive)) {
+		return eid;
+	}
+	Interactive.clickable[eid] = 0;
+	Interactive.hoverable[eid] = 0;
+	return eid;
+}
+
+/**
+ * Enables key events on an entity.
+ * Sets keyable to true.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { enableKeys, isKeyable } from 'blecsd';
+ *
+ * enableKeys(world, textInput);
+ *
+ * isKeyable(world, textInput); // true
+ * ```
+ */
+export function enableKeys(world: World, eid: Entity): Entity {
+	ensureInteractive(world, eid);
+	Interactive.keyable[eid] = 1;
+	return eid;
+}
+
+/**
+ * Disables key events on an entity.
+ * Sets keyable to false.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { enableKeys, disableKeys, isKeyable } from 'blecsd';
+ *
+ * enableKeys(world, textInput);
+ * disableKeys(world, textInput);
+ *
+ * isKeyable(world, textInput); // false
+ * ```
+ */
+export function disableKeys(world: World, eid: Entity): Entity {
+	if (!hasComponent(world, eid, Interactive)) {
+		return eid;
+	}
+	Interactive.keyable[eid] = 0;
+	return eid;
+}
+
+/**
+ * Enables all input (mouse and keys) on an entity.
+ * Sets clickable, hoverable, and keyable to true.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { enableInput, isClickable, isHoverable, isKeyable } from 'blecsd';
+ *
+ * enableInput(world, widget);
+ *
+ * isClickable(world, widget); // true
+ * isHoverable(world, widget); // true
+ * isKeyable(world, widget);   // true
+ * ```
+ */
+export function enableInput(world: World, eid: Entity): Entity {
+	ensureInteractive(world, eid);
+	Interactive.clickable[eid] = 1;
+	Interactive.hoverable[eid] = 1;
+	Interactive.keyable[eid] = 1;
+	return eid;
+}
+
+/**
+ * Disables all input (mouse and keys) on an entity.
+ * Sets clickable, hoverable, and keyable to false.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { enableInput, disableInput, isClickable } from 'blecsd';
+ *
+ * enableInput(world, widget);
+ * disableInput(world, widget);
+ *
+ * isClickable(world, widget); // false
+ * ```
+ */
+export function disableInput(world: World, eid: Entity): Entity {
+	if (!hasComponent(world, eid, Interactive)) {
+		return eid;
+	}
+	Interactive.clickable[eid] = 0;
+	Interactive.hoverable[eid] = 0;
+	Interactive.keyable[eid] = 0;
+	return eid;
+}
+
+/**
+ * Checks if an entity has mouse input enabled.
+ * Returns true if either clickable or hoverable is enabled.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if mouse input is enabled
+ */
+export function hasMouseEnabled(world: World, eid: Entity): boolean {
+	if (!hasComponent(world, eid, Interactive)) {
+		return false;
+	}
+	return Interactive.clickable[eid] === 1 || Interactive.hoverable[eid] === 1;
+}
+
+/**
+ * Checks if an entity has key input enabled.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if key input is enabled
+ */
+export function hasKeysEnabled(world: World, eid: Entity): boolean {
+	if (!hasComponent(world, eid, Interactive)) {
+		return false;
+	}
+	return Interactive.keyable[eid] === 1;
+}
+
+/**
+ * Checks if an entity has any input enabled (mouse or keys).
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if any input is enabled
+ */
+export function hasInputEnabled(world: World, eid: Entity): boolean {
+	if (!hasComponent(world, eid, Interactive)) {
+		return false;
+	}
+	return (
+		Interactive.clickable[eid] === 1 ||
+		Interactive.hoverable[eid] === 1 ||
+		Interactive.keyable[eid] === 1
+	);
+}
