@@ -788,6 +788,273 @@ export function hasTags(text: string): boolean {
  */
 export const AlignmentSchema = z.enum(['left', 'center', 'right']);
 
+// =============================================================================
+// TAG GENERATION UTILITIES
+// =============================================================================
+
+/**
+ * Generates a foreground or background color tag.
+ *
+ * @param color - Packed RGBA color
+ * @param type - 'fg' for foreground, 'bg' for background
+ * @returns Color tag string (e.g., '{#ff0000-fg}')
+ *
+ * @example
+ * ```typescript
+ * import { colorToTag } from 'blecsd';
+ *
+ * const tag = colorToTag(0xff0000ff, 'fg');
+ * // tag = '{#ff0000-fg}'
+ * ```
+ */
+export function colorToTag(color: number, type: 'fg' | 'bg'): string {
+	// Check if color matches a named color
+	for (const [name, value] of Object.entries(NAMED_COLORS)) {
+		if (value === color) {
+			return `{${name}-${type}}`;
+		}
+	}
+	// Use hex format
+	const hex = colorToHex(color);
+	return `{#${hex}-${type}}`;
+}
+
+/**
+ * Generates an attribute tag from attribute flags.
+ *
+ * @param attr - Single attribute flag (e.g., AttrFlags.BOLD)
+ * @returns Attribute tag string (e.g., '{bold}')
+ *
+ * @example
+ * ```typescript
+ * import { attrToTag, AttrFlags } from 'blecsd';
+ *
+ * const tag = attrToTag(AttrFlags.BOLD);
+ * // tag = '{bold}'
+ * ```
+ */
+export function attrToTag(attr: number): string {
+	if (attr & AttrFlags.BOLD) return '{bold}';
+	if (attr & AttrFlags.UNDERLINE) return '{underline}';
+	if (attr & AttrFlags.BLINK) return '{blink}';
+	if (attr & AttrFlags.INVERSE) return '{inverse}';
+	if (attr & AttrFlags.INVISIBLE) return '{invisible}';
+	if (attr & AttrFlags.DIM) return '{dim}';
+	if (attr & AttrFlags.ITALIC) return '{italic}';
+	if (attr & AttrFlags.STRIKETHROUGH) return '{strikethrough}';
+	return '';
+}
+
+/**
+ * Generates an array of opening tags from a style.
+ * Does not include closing tags.
+ *
+ * @param style - Style input with colors and attributes
+ * @returns Array of opening tag strings
+ *
+ * @example
+ * ```typescript
+ * import { generateTags } from 'blecsd';
+ *
+ * const tags = generateTags({ bold: true, fg: 0xff0000ff });
+ * // tags = ['{bold}', '{#ff0000-fg}']
+ * ```
+ */
+export function generateTags(style: StyleInput): string[] {
+	const tags: string[] = [];
+
+	// Add attribute tags
+	if (style.bold) tags.push('{bold}');
+	if (style.underline) tags.push('{underline}');
+	if (style.blink) tags.push('{blink}');
+	if (style.inverse) tags.push('{inverse}');
+	if (style.invisible) tags.push('{invisible}');
+	if (style.dim) tags.push('{dim}');
+	if (style.italic) tags.push('{italic}');
+	if (style.strikethrough) tags.push('{strikethrough}');
+
+	// Add color tags
+	if (style.fg !== undefined && style.fg !== DEFAULT_FG) {
+		tags.push(colorToTag(style.fg, 'fg'));
+	}
+	if (style.bg !== undefined && style.bg !== DEFAULT_BG) {
+		tags.push(colorToTag(style.bg, 'bg'));
+	}
+
+	return tags;
+}
+
+/**
+ * Generates closing tags for a style.
+ * Returns specific closing tags for each style attribute.
+ *
+ * @param style - Style input with colors and attributes
+ * @returns Array of closing tag strings
+ *
+ * @example
+ * ```typescript
+ * import { generateCloseTags } from 'blecsd';
+ *
+ * const tags = generateCloseTags({ bold: true, fg: 0xff0000ff });
+ * // tags = ['{/bold}', '{/fg}']
+ * ```
+ */
+export function generateCloseTags(style: StyleInput): string[] {
+	const tags: string[] = [];
+
+	// Add closing tags in reverse order
+	if (style.bg !== undefined && style.bg !== DEFAULT_BG) {
+		tags.push('{/bg}');
+	}
+	if (style.fg !== undefined && style.fg !== DEFAULT_FG) {
+		tags.push('{/fg}');
+	}
+	if (style.strikethrough) tags.push('{/strikethrough}');
+	if (style.italic) tags.push('{/italic}');
+	if (style.dim) tags.push('{/dim}');
+	if (style.invisible) tags.push('{/invisible}');
+	if (style.inverse) tags.push('{/inverse}');
+	if (style.blink) tags.push('{/blink}');
+	if (style.underline) tags.push('{/underline}');
+	if (style.bold) tags.push('{/bold}');
+
+	return tags;
+}
+
+/**
+ * Wraps text with opening and closing tags.
+ *
+ * @param text - Text to wrap
+ * @param openTags - Array of opening tags
+ * @param closeTags - Array of closing tags (optional, uses '{/}' if not provided)
+ * @returns Tagged text
+ *
+ * @example
+ * ```typescript
+ * import { wrapWithTags } from 'blecsd';
+ *
+ * const tagged = wrapWithTags('Hello', ['{bold}', '{red-fg}'], ['{/bold}', '{/red-fg}']);
+ * // tagged = '{bold}{red-fg}Hello{/bold}{/red-fg}'
+ *
+ * // Or with universal close tag
+ * const simple = wrapWithTags('Hello', ['{bold}']);
+ * // simple = '{bold}Hello{/}'
+ * ```
+ */
+export function wrapWithTags(text: string, openTags: string[], closeTags?: string[]): string {
+	const escaped = escapeTags(text);
+	const open = openTags.join('');
+	const close = closeTags ? closeTags.join('') : '{/}';
+	return `${open}${escaped}${close}`;
+}
+
+/**
+ * Generates tags from attribute flags.
+ * Converts numeric attribute flags to tag strings.
+ *
+ * @param attrs - Packed attribute flags
+ * @returns Array of attribute tag strings
+ *
+ * @example
+ * ```typescript
+ * import { attrsToTags, AttrFlags } from 'blecsd';
+ *
+ * const tags = attrsToTags(AttrFlags.BOLD | AttrFlags.UNDERLINE);
+ * // tags = ['{bold}', '{underline}']
+ * ```
+ */
+export function attrsToTags(attrs: number): string[] {
+	const tags: string[] = [];
+
+	if (attrs & AttrFlags.BOLD) tags.push('{bold}');
+	if (attrs & AttrFlags.UNDERLINE) tags.push('{underline}');
+	if (attrs & AttrFlags.BLINK) tags.push('{blink}');
+	if (attrs & AttrFlags.INVERSE) tags.push('{inverse}');
+	if (attrs & AttrFlags.INVISIBLE) tags.push('{invisible}');
+	if (attrs & AttrFlags.DIM) tags.push('{dim}');
+	if (attrs & AttrFlags.ITALIC) tags.push('{italic}');
+	if (attrs & AttrFlags.STRIKETHROUGH) tags.push('{strikethrough}');
+
+	return tags;
+}
+
+/**
+ * Creates tagged text from a text segment.
+ * Useful for converting parsed segments back to tagged format.
+ *
+ * @param segment - Text segment with style info
+ * @returns Tagged text string
+ *
+ * @example
+ * ```typescript
+ * import { segmentToTaggedText, parseTags } from 'blecsd';
+ *
+ * const parsed = parseTags('{bold}Hello{/bold}');
+ * const tagged = segmentToTaggedText(parsed.segments[0]);
+ * // tagged = '{bold}Hello{/}'
+ * ```
+ */
+export function segmentToTaggedText(segment: TextSegment): string {
+	const tags: string[] = [];
+
+	// Add attribute tags
+	const attrTags = attrsToTags(segment.attrs);
+	tags.push(...attrTags);
+
+	// Add color tags
+	if (segment.fg !== DEFAULT_FG) {
+		tags.push(colorToTag(segment.fg, 'fg'));
+	}
+	if (segment.bg !== DEFAULT_BG) {
+		tags.push(colorToTag(segment.bg, 'bg'));
+	}
+
+	// Escape the text
+	const escaped = escapeTags(segment.text);
+
+	// Wrap with tags
+	if (tags.length === 0) {
+		return escaped;
+	}
+
+	return `${tags.join('')}${escaped}{/}`;
+}
+
+/**
+ * Converts parsed content back to tagged text format.
+ *
+ * @param content - Parsed content with segments
+ * @returns Reconstructed tagged text
+ *
+ * @example
+ * ```typescript
+ * import { parseTags, parsedToTaggedText } from 'blecsd';
+ *
+ * const content = parseTags('{bold}Hello{/bold} {red-fg}World{/red-fg}');
+ * const text = parsedToTaggedText(content);
+ * // Reconstructs the original tagged format
+ * ```
+ */
+export function parsedToTaggedText(content: ParsedContent): string {
+	const parts: string[] = [];
+
+	// Add alignment tag if not default
+	if (content.alignment !== 'left') {
+		parts.push(`{${content.alignment}}`);
+	}
+
+	// Convert each segment
+	for (const segment of content.segments) {
+		parts.push(segmentToTaggedText(segment));
+	}
+
+	return parts.join('');
+}
+
+// =============================================================================
+// SCHEMAS
+// =============================================================================
+
 /**
  * Zod schema for text segment.
  */

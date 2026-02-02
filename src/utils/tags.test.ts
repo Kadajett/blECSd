@@ -5,14 +5,22 @@
 import { describe, expect, it } from 'vitest';
 import { AttrFlags } from './sattr';
 import {
+	attrsToTags,
+	attrToTag,
+	colorToTag,
 	createTaggedText,
 	escapeTags,
+	generateCloseTags,
+	generateTags,
 	hasTags,
 	mergeSegments,
+	parsedToTaggedText,
 	parseTags,
+	segmentToTaggedText,
 	stripTags,
 	type TextSegment,
 	taggedLength,
+	wrapWithTags,
 } from './tags';
 
 describe('tags', () => {
@@ -599,6 +607,236 @@ describe('tags', () => {
 
 			expect(lower.segments[0].fg).toBe(upper.segments[0].fg);
 			expect(lower.segments[0].fg).toBe(mixed.segments[0].fg);
+		});
+	});
+
+	describe('colorToTag', () => {
+		it('should generate fg color tag with hex', () => {
+			const tag = colorToTag(0xaabbccff, 'fg');
+			expect(tag).toBe('{#aabbcc-fg}');
+		});
+
+		it('should generate bg color tag with hex', () => {
+			const tag = colorToTag(0x112233ff, 'bg');
+			expect(tag).toBe('{#112233-bg}');
+		});
+
+		it('should use named color when it matches', () => {
+			const tag = colorToTag(0xff0000ff, 'fg');
+			expect(tag).toBe('{red-fg}');
+		});
+
+		it('should use named color for white', () => {
+			const tag = colorToTag(0xffffffff, 'fg');
+			expect(tag).toBe('{white-fg}');
+		});
+	});
+
+	describe('attrToTag', () => {
+		it('should generate bold tag', () => {
+			expect(attrToTag(AttrFlags.BOLD)).toBe('{bold}');
+		});
+
+		it('should generate underline tag', () => {
+			expect(attrToTag(AttrFlags.UNDERLINE)).toBe('{underline}');
+		});
+
+		it('should generate italic tag', () => {
+			expect(attrToTag(AttrFlags.ITALIC)).toBe('{italic}');
+		});
+
+		it('should return empty string for no flags', () => {
+			expect(attrToTag(0)).toBe('');
+		});
+	});
+
+	describe('generateTags', () => {
+		it('should generate empty array for default style', () => {
+			const tags = generateTags({});
+			expect(tags).toEqual([]);
+		});
+
+		it('should generate attribute tags', () => {
+			const tags = generateTags({ bold: true, underline: true });
+			expect(tags).toContain('{bold}');
+			expect(tags).toContain('{underline}');
+		});
+
+		it('should generate color tags', () => {
+			const tags = generateTags({ fg: 0xff0000ff, bg: 0x00ff00ff });
+			expect(tags).toContain('{red-fg}');
+			expect(tags).toContain('{green-bg}');
+		});
+
+		it('should not include default colors', () => {
+			const tags = generateTags({ fg: 0xffffffff, bg: 0x00000000 });
+			expect(tags).toEqual([]);
+		});
+
+		it('should generate all attribute types', () => {
+			const tags = generateTags({
+				bold: true,
+				underline: true,
+				blink: true,
+				inverse: true,
+				invisible: true,
+				dim: true,
+				italic: true,
+				strikethrough: true,
+			});
+			expect(tags).toHaveLength(8);
+		});
+	});
+
+	describe('generateCloseTags', () => {
+		it('should generate empty array for default style', () => {
+			const tags = generateCloseTags({});
+			expect(tags).toEqual([]);
+		});
+
+		it('should generate closing tags for attributes', () => {
+			const tags = generateCloseTags({ bold: true, underline: true });
+			expect(tags).toContain('{/bold}');
+			expect(tags).toContain('{/underline}');
+		});
+
+		it('should generate closing tags for colors', () => {
+			const tags = generateCloseTags({ fg: 0xff0000ff, bg: 0x00ff00ff });
+			expect(tags).toContain('{/fg}');
+			expect(tags).toContain('{/bg}');
+		});
+	});
+
+	describe('wrapWithTags', () => {
+		it('should wrap text with tags', () => {
+			const result = wrapWithTags('Hello', ['{bold}', '{red-fg}']);
+			expect(result).toBe('{bold}{red-fg}Hello{/}');
+		});
+
+		it('should use provided closing tags', () => {
+			const result = wrapWithTags('Hello', ['{bold}'], ['{/bold}']);
+			expect(result).toBe('{bold}Hello{/bold}');
+		});
+
+		it('should escape text content', () => {
+			const result = wrapWithTags('Hello {World}', ['{bold}']);
+			expect(result).toBe('{bold}Hello {{World}}{/}');
+		});
+
+		it('should handle empty tags array', () => {
+			const result = wrapWithTags('Hello', []);
+			expect(result).toBe('Hello{/}');
+		});
+	});
+
+	describe('attrsToTags', () => {
+		it('should convert single attribute', () => {
+			const tags = attrsToTags(AttrFlags.BOLD);
+			expect(tags).toEqual(['{bold}']);
+		});
+
+		it('should convert multiple attributes', () => {
+			const tags = attrsToTags(AttrFlags.BOLD | AttrFlags.UNDERLINE | AttrFlags.ITALIC);
+			expect(tags).toContain('{bold}');
+			expect(tags).toContain('{underline}');
+			expect(tags).toContain('{italic}');
+			expect(tags).toHaveLength(3);
+		});
+
+		it('should return empty array for no attributes', () => {
+			const tags = attrsToTags(0);
+			expect(tags).toEqual([]);
+		});
+
+		it('should convert all attribute types', () => {
+			const allAttrs =
+				AttrFlags.BOLD |
+				AttrFlags.UNDERLINE |
+				AttrFlags.BLINK |
+				AttrFlags.INVERSE |
+				AttrFlags.INVISIBLE |
+				AttrFlags.DIM |
+				AttrFlags.ITALIC |
+				AttrFlags.STRIKETHROUGH;
+			const tags = attrsToTags(allAttrs);
+			expect(tags).toHaveLength(8);
+		});
+	});
+
+	describe('segmentToTaggedText', () => {
+		it('should convert plain segment', () => {
+			const segment: TextSegment = {
+				text: 'Hello',
+				fg: 0xffffffff,
+				bg: 0x00000000,
+				attrs: 0,
+			};
+			const result = segmentToTaggedText(segment);
+			expect(result).toBe('Hello');
+		});
+
+		it('should convert segment with attributes', () => {
+			const segment: TextSegment = {
+				text: 'Hello',
+				fg: 0xffffffff,
+				bg: 0x00000000,
+				attrs: AttrFlags.BOLD,
+			};
+			const result = segmentToTaggedText(segment);
+			expect(result).toBe('{bold}Hello{/}');
+		});
+
+		it('should convert segment with colors', () => {
+			const segment: TextSegment = {
+				text: 'Hello',
+				fg: 0xff0000ff,
+				bg: 0x00000000,
+				attrs: 0,
+			};
+			const result = segmentToTaggedText(segment);
+			expect(result).toBe('{red-fg}Hello{/}');
+		});
+
+		it('should escape text content', () => {
+			const segment: TextSegment = {
+				text: 'Hello {World}',
+				fg: 0xffffffff,
+				bg: 0x00000000,
+				attrs: AttrFlags.BOLD,
+			};
+			const result = segmentToTaggedText(segment);
+			expect(result).toBe('{bold}Hello {{World}}{/}');
+		});
+	});
+
+	describe('parsedToTaggedText', () => {
+		it('should reconstruct simple tagged text', () => {
+			const content = parseTags('{bold}Hello{/bold}');
+			const text = parsedToTaggedText(content);
+			// The reconstructed text should parse to same segments
+			const reparsed = parseTags(text);
+			expect(reparsed.segments[0].text).toBe('Hello');
+			expect(reparsed.segments[0].attrs).toBe(AttrFlags.BOLD);
+		});
+
+		it('should preserve alignment', () => {
+			const content = parseTags('{center}Hello');
+			const text = parsedToTaggedText(content);
+			expect(text).toContain('{center}');
+		});
+
+		it('should handle multiple segments', () => {
+			const content = parseTags('{bold}Hello{/bold} {red-fg}World{/red-fg}');
+			const text = parsedToTaggedText(content);
+			// Should contain content from both segments
+			expect(stripTags(text)).toContain('Hello');
+			expect(stripTags(text)).toContain('World');
+		});
+
+		it('should handle plain text', () => {
+			const content = parseTags('Plain text');
+			const text = parsedToTaggedText(content);
+			expect(text).toBe('Plain text');
 		});
 	});
 });

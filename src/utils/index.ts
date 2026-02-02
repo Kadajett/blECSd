@@ -55,15 +55,23 @@ export {
 export type { Alignment, ParsedContent, TextSegment } from './tags';
 export {
 	AlignmentSchema,
+	attrsToTags,
+	attrToTag,
+	colorToTag,
 	createTaggedText,
 	escapeTags,
+	generateCloseTags,
+	generateTags,
 	hasTags,
 	mergeSegments,
 	ParsedContentSchema,
+	parsedToTaggedText,
 	parseTags,
+	segmentToTaggedText,
 	stripTags,
 	TextSegmentSchema,
 	taggedLength,
+	wrapWithTags,
 } from './tags';
 // Text wrapping utilities
 export type { TextAlign, WrapOptions } from './textWrap';
