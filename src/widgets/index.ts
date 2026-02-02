@@ -21,3 +21,13 @@ export { createListTable, isListTableWidget, ListTableWidgetConfigSchema } from 
 // Listbar widget
 export type { ListbarItem, ListbarStyleConfig, ListbarWidget, ListbarWidgetConfig } from './listbar';
 export { createListbar, isListbarWidget, ListbarWidgetConfigSchema, resetListbarStore } from './listbar';
+
+// Tree widget
+export type {
+	FlattenedNode,
+	TreeNode,
+	TreeStyleConfig,
+	TreeWidget,
+	TreeWidgetConfig,
+} from './tree';
+export { createTree, isTreeWidget, resetTreeStore, TreeWidgetConfigSchema } from './tree';
