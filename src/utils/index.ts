@@ -324,7 +324,7 @@ export {
 	DEFAULT_MAX_CACHED,
 	DEFAULT_MAX_MEMORY,
 	exportToText,
-	getLine,
+	getLine as getScrollbackLine,
 	getLineRange,
 	getMemoryUsage,
 	getScrollbackStats,
@@ -336,3 +336,33 @@ export {
 	scrollToTop,
 	trimToLineCount,
 } from './virtualScrollback';
+// Efficient diff rendering
+export type {
+	DiffCache,
+	DiffChunk,
+	DiffConfig,
+	DiffLine,
+	DiffResult,
+	DiffType,
+	SideBySideLine,
+	VisibleDiff,
+} from './diffRender';
+export {
+	clearDiffCache,
+	collapseChunk,
+	collapseUnchanged,
+	computeDiff,
+	computeDiffCached,
+	createDiffCache,
+	DEFAULT_COLLAPSE_THRESHOLD,
+	DEFAULT_CONTEXT,
+	expandAll,
+	expandChunk,
+	getDiffStats,
+	getSideBySideView,
+	getTotalLineCount,
+	getVisibleDiffLines,
+	parseUnifiedDiff,
+	toggleChunk,
+	toUnifiedDiff,
+} from './diffRender';
