@@ -3,5 +3,3 @@ dist/
 coverage/
 *.log
 .DS_Store
-# bd worktree
-ks8-performance/
