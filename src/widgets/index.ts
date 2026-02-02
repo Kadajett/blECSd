@@ -13,3 +13,7 @@ export { createList, isListWidget, ListWidgetConfigSchema } from './list';
 // Table widget
 export type { TableStyleConfig, TableWidget, TableWidgetConfig } from './table';
 export { createTable, isTableWidget, TableWidgetConfigSchema } from './table';
+
+// ListTable widget
+export type { ListTableStyleConfig, ListTableWidget, ListTableWidgetConfig } from './listTable';
+export { createListTable, isListTableWidget, ListTableWidgetConfigSchema } from './listTable';
