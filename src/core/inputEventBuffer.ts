@@ -55,6 +55,29 @@ export interface InputBufferStats {
 }
 
 /**
+ * Latency statistics for input processing.
+ * All values in milliseconds.
+ */
+export interface InputLatencyStats {
+	/** Minimum latency observed */
+	min: number;
+	/** Maximum latency observed */
+	max: number;
+	/** Average latency */
+	avg: number;
+	/** 95th percentile latency */
+	p95: number;
+	/** 99th percentile latency */
+	p99: number;
+	/** Number of samples in the window */
+	sampleCount: number;
+	/** Last frame processing time in ms */
+	lastFrameProcessingTime: number;
+	/** Average frame processing time */
+	avgFrameProcessingTime: number;
+}
+
+/**
  * Configuration options for the input event buffer.
  */
 export interface InputEventBufferOptions {
@@ -76,6 +99,18 @@ export interface InputEventBufferOptions {
 	 * @default console.warn
 	 */
 	onOverflow?: (droppedCount: number) => void;
+
+	/**
+	 * Maximum number of latency samples to keep for statistics.
+	 * @default 1000
+	 */
+	maxLatencySamples?: number;
+
+	/**
+	 * Maximum number of frame processing time samples to keep.
+	 * @default 100
+	 */
+	maxFrameSamples?: number;
 }
 
 /**
@@ -126,6 +161,13 @@ export class InputEventBuffer {
 	private totalMouseEvents = 0;
 	private droppedEvents = 0;
 
+	// Latency tracking
+	private latencySamples: number[] = [];
+	private maxLatencySamples: number;
+	private frameProcessingTimes: number[] = [];
+	private maxFrameSamples: number;
+	private frameStartTime = 0;
+
 	/**
 	 * Creates a new input event buffer.
 	 *
@@ -141,6 +183,8 @@ export class InputEventBuffer {
 					console.warn(`[InputEventBuffer] Dropped ${count} events due to buffer overflow`);
 				}
 			});
+		this.maxLatencySamples = options.maxLatencySamples ?? 1000;
+		this.maxFrameSamples = options.maxFrameSamples ?? 100;
 	}
 
 	/**
@@ -366,6 +410,228 @@ export class InputEventBuffer {
 		this.totalKeyEvents = 0;
 		this.totalMouseEvents = 0;
 		this.droppedEvents = 0;
+	}
+
+	/**
+	 * Resets latency statistics.
+	 */
+	resetLatencyStats(): void {
+		this.latencySamples = [];
+		this.frameProcessingTimes = [];
+	}
+
+	/**
+	 * Marks the start of frame processing.
+	 * Call this at the beginning of your input processing phase.
+	 *
+	 * @example
+	 * ```typescript
+	 * buffer.beginFrame();
+	 * const keys = buffer.drainKeys();
+	 * // process keys...
+	 * buffer.endFrame();
+	 * ```
+	 */
+	beginFrame(): void {
+		this.frameStartTime = getTimestamp();
+	}
+
+	/**
+	 * Marks the end of frame processing and records the processing time.
+	 * Call this after all input events have been processed.
+	 *
+	 * @returns The frame processing time in milliseconds
+	 *
+	 * @example
+	 * ```typescript
+	 * buffer.beginFrame();
+	 * const keys = buffer.drainKeys();
+	 * // process keys...
+	 * const processingTime = buffer.endFrame();
+	 * ```
+	 */
+	endFrame(): number {
+		const endTime = getTimestamp();
+		const processingTime = endTime - this.frameStartTime;
+
+		this.frameProcessingTimes.push(processingTime);
+		if (this.frameProcessingTimes.length > this.maxFrameSamples) {
+			this.frameProcessingTimes.shift();
+		}
+
+		return processingTime;
+	}
+
+	/**
+	 * Records latency for a processed event.
+	 * Call this when an event has been fully processed to track input latency.
+	 *
+	 * @param eventTimestamp - The timestamp when the event was received
+	 * @returns The latency in milliseconds
+	 *
+	 * @example
+	 * ```typescript
+	 * for (const { event, timestamp } of buffer.drainKeys()) {
+	 *   handleKey(event);
+	 *   buffer.recordLatency(timestamp);
+	 * }
+	 * ```
+	 */
+	recordLatency(eventTimestamp: number): number {
+		const now = getTimestamp();
+		const latency = now - eventTimestamp;
+
+		this.latencySamples.push(latency);
+		if (this.latencySamples.length > this.maxLatencySamples) {
+			this.latencySamples.shift();
+		}
+
+		return latency;
+	}
+
+	/**
+	 * Records latency for multiple events at once.
+	 * More efficient than calling recordLatency for each event.
+	 *
+	 * @param events - Array of timestamped events that were processed
+	 * @returns Array of latencies in milliseconds
+	 *
+	 * @example
+	 * ```typescript
+	 * const keys = buffer.drainKeys();
+	 * for (const { event } of keys) {
+	 *   handleKey(event);
+	 * }
+	 * buffer.recordLatencyBatch(keys);
+	 * ```
+	 */
+	recordLatencyBatch(events: readonly TimestampedInputEvent[]): number[] {
+		const now = getTimestamp();
+		const latencies: number[] = [];
+
+		for (const event of events) {
+			const latency = now - event.timestamp;
+			latencies.push(latency);
+			this.latencySamples.push(latency);
+		}
+
+		// Trim to max samples
+		while (this.latencySamples.length > this.maxLatencySamples) {
+			this.latencySamples.shift();
+		}
+
+		return latencies;
+	}
+
+	/**
+	 * Gets latency statistics for input processing.
+	 * Returns min, max, average, and percentile latencies.
+	 *
+	 * @returns Latency statistics in milliseconds
+	 *
+	 * @example
+	 * ```typescript
+	 * const stats = buffer.getLatencyStats();
+	 * console.log(`Avg latency: ${stats.avg.toFixed(2)}ms`);
+	 * console.log(`P95 latency: ${stats.p95.toFixed(2)}ms`);
+	 * if (stats.max > 16) {
+	 *   console.warn('Input latency exceeds frame budget!');
+	 * }
+	 * ```
+	 */
+	getLatencyStats(): InputLatencyStats {
+		const samples = this.latencySamples;
+		const frameTimes = this.frameProcessingTimes;
+
+		if (samples.length === 0) {
+			return {
+				min: 0,
+				max: 0,
+				avg: 0,
+				p95: 0,
+				p99: 0,
+				sampleCount: 0,
+				lastFrameProcessingTime: frameTimes[frameTimes.length - 1] ?? 0,
+				avgFrameProcessingTime: this.calculateAverage(frameTimes),
+			};
+		}
+
+		// Sort samples for percentile calculation
+		const sorted = [...samples].sort((a, b) => a - b);
+
+		return {
+			min: sorted[0] ?? 0,
+			max: sorted[sorted.length - 1] ?? 0,
+			avg: this.calculateAverage(sorted),
+			p95: this.calculatePercentile(sorted, 0.95),
+			p99: this.calculatePercentile(sorted, 0.99),
+			sampleCount: sorted.length,
+			lastFrameProcessingTime: frameTimes[frameTimes.length - 1] ?? 0,
+			avgFrameProcessingTime: this.calculateAverage(frameTimes),
+		};
+	}
+
+	/**
+	 * Checks if the current latency is within acceptable bounds.
+	 * By default, checks if p95 latency is under 16ms (one frame at 60fps).
+	 *
+	 * @param maxLatencyMs - Maximum acceptable p95 latency in milliseconds
+	 * @returns True if latency is acceptable
+	 *
+	 * @example
+	 * ```typescript
+	 * if (!buffer.isLatencyAcceptable(16)) {
+	 *   console.warn('Input latency is too high!');
+	 * }
+	 * ```
+	 */
+	isLatencyAcceptable(maxLatencyMs = 16): boolean {
+		const stats = this.getLatencyStats();
+		return stats.p95 <= maxLatencyMs;
+	}
+
+	/**
+	 * Checks if frame processing time is within budget.
+	 * By default, checks if average processing time is under 1ms.
+	 *
+	 * @param maxProcessingTimeMs - Maximum acceptable processing time in milliseconds
+	 * @returns True if processing time is acceptable
+	 *
+	 * @example
+	 * ```typescript
+	 * if (!buffer.isProcessingTimeAcceptable(1)) {
+	 *   console.warn('Input processing is taking too long!');
+	 * }
+	 * ```
+	 */
+	isProcessingTimeAcceptable(maxProcessingTimeMs = 1): boolean {
+		const stats = this.getLatencyStats();
+		return stats.avgFrameProcessingTime <= maxProcessingTimeMs;
+	}
+
+	/**
+	 * Calculates the average of an array of numbers.
+	 */
+	private calculateAverage(values: number[]): number {
+		if (values.length === 0) {
+			return 0;
+		}
+		const sum = values.reduce((a, b) => a + b, 0);
+		return sum / values.length;
+	}
+
+	/**
+	 * Calculates a percentile from a sorted array.
+	 */
+	private calculatePercentile(sorted: number[], percentile: number): number {
+		if (sorted.length === 0) {
+			return 0;
+		}
+		if (sorted.length === 1) {
+			return sorted[0] ?? 0;
+		}
+		const index = Math.ceil(percentile * sorted.length) - 1;
+		return sorted[Math.max(0, Math.min(index, sorted.length - 1))] ?? 0;
 	}
 
 	/**
