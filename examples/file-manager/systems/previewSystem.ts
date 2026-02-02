@@ -116,12 +116,19 @@ export function updatePreview(
 }
 
 /**
+ * Buffer lines at the bottom of preview content.
+ * Allows last lines to scroll up away from the footer for comfortable viewing.
+ */
+const PREVIEW_BOTTOM_BUFFER = 5;
+
+/**
  * Scrolls preview content up.
  */
 export function scrollPreviewUp(world: World, previewEid: Entity, lines = 1, visibleHeight = 20): void {
 	const content = getPreviewContent(world, previewEid);
 	const contentLength = content?.content.length ?? 0;
-	const maxOffset = Math.max(0, contentLength - visibleHeight);
+	// Add buffer so last lines can scroll above the footer
+	const maxOffset = Math.max(0, contentLength - visibleHeight + PREVIEW_BOTTOM_BUFFER);
 	scrollPreview(world, previewEid, -lines, maxOffset);
 }
 
@@ -131,7 +138,8 @@ export function scrollPreviewUp(world: World, previewEid: Entity, lines = 1, vis
 export function scrollPreviewDown(world: World, previewEid: Entity, lines = 1, visibleHeight = 20): void {
 	const content = getPreviewContent(world, previewEid);
 	const contentLength = content?.content.length ?? 0;
-	const maxOffset = Math.max(0, contentLength - visibleHeight);
+	// Add buffer so last lines can scroll above the footer
+	const maxOffset = Math.max(0, contentLength - visibleHeight + PREVIEW_BOTTOM_BUFFER);
 	scrollPreview(world, previewEid, lines, maxOffset);
 }
 

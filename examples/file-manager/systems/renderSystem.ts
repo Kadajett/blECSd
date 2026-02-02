@@ -421,6 +421,34 @@ function renderFileList(
 }
 
 /**
+ * Sanitizes a character for safe terminal output.
+ * Replaces control characters with safe alternatives.
+ */
+function sanitizeChar(char: string): string {
+	const code = char.charCodeAt(0);
+	// Replace control characters (0x00-0x1F except tab) and DEL (0x7F) with placeholder
+	if ((code < 0x20 && code !== 0x09) || code === 0x7f) {
+		return '·'; // Middle dot as placeholder for control chars
+	}
+	// Replace tab with space (tabs can cause alignment issues)
+	if (code === 0x09) {
+		return ' ';
+	}
+	return char;
+}
+
+/**
+ * Sanitizes a string for safe terminal output.
+ */
+function sanitizeText(text: string): string {
+	let result = '';
+	for (const char of text) {
+		result += sanitizeChar(char);
+	}
+	return result;
+}
+
+/**
  * Renders the preview panel.
  */
 function renderPreviewPanel(
@@ -483,7 +511,9 @@ function renderPreviewPanel(
 			for (const segment of highlightedLine.segments) {
 				for (const char of segment.text) {
 					if (charX >= maxX) break;
-					buffer.setCell(charX, contentStartY + i, char, segment.fg, COLORS.previewBg);
+					// Sanitize control characters to prevent terminal escape sequence injection
+					const safeChar = sanitizeChar(char);
+					buffer.setCell(charX, contentStartY + i, safeChar, segment.fg, COLORS.previewBg);
 					charX++;
 				}
 				if (charX >= maxX) break;
@@ -496,11 +526,13 @@ function renderPreviewPanel(
 		for (let i = 0; i < visibleContent.length; i++) {
 			if (contentStartY + i >= y + height) break;
 			const line = visibleContent[i] ?? '';
+			// Sanitize control characters to prevent terminal escape sequence injection
+			const safeLine = sanitizeText(line.slice(0, width - 2));
 			renderText(
 				buffer,
 				x + 1,
 				contentStartY + i,
-				line.slice(0, width - 2),
+				safeLine,
 				contentFg,
 				COLORS.previewBg,
 			);
