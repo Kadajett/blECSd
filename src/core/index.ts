@@ -62,6 +62,15 @@ export {
 	sortByZIndex,
 } from './queries';
 export { createScheduler, getDeltaTime, Scheduler } from './scheduler';
+// Shrink-to-content
+export type { ShrinkBox } from './shrinkToContent';
+export {
+	applyShrink,
+	calculateShrinkSize,
+	getShrinkBox,
+	getShrinkHeight,
+	getShrinkWidth,
+} from './shrinkToContent';
 export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
 export { createWorld, resetWorld } from './world';
