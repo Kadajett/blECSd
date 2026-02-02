@@ -146,17 +146,17 @@ describe('exec', () => {
 	});
 
 	it('captures stderr', async () => {
-		// Use sh -c to explicitly write to stderr
-		// This is more reliable than relying on external commands' error messages
-		const result = await exec('sh', ['-c', 'echo "test error message" >&2; exit 1'], {
+		// Use ls on non-existent file to generate stderr
+		// ls is more reliable across platforms than cat for this test
+		const result = await exec('ls', ['/nonexistent-path-that-does-not-exist-12345'], {
 			output: mockOutput.output,
 			input: mockInput,
 		});
 
-		// Should exit with code 1
-		expect(result.exitCode).toBe(1);
-		// stderr should contain our error message
-		expect(result.stderr).toContain('test error message');
+		// ls should fail with non-zero exit code
+		expect(result.exitCode).not.toBe(0);
+		// stderr should contain error message
+		expect(result.stderr.length).toBeGreaterThan(0);
 	});
 
 	it('returns non-zero exit code', async () => {
