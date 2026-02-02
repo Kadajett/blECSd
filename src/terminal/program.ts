@@ -118,6 +118,7 @@ export interface ProgramEvents {
 	resize: [event: ResizeEvent];
 	focus: [];
 	blur: [];
+	[key: string]: unknown[];
 }
 
 // =============================================================================
@@ -505,9 +506,10 @@ export class Program extends TypedEventEmitter<ProgramEvents> {
 			return;
 		}
 
+		const outputTTY = this._output as tty.WriteStream;
 		if (this.isTTY(this._output)) {
-			this._cols = this._output.columns ?? 80;
-			this._rows = this._output.rows ?? 24;
+			this._cols = outputTTY.columns ?? 80;
+			this._rows = outputTTY.rows ?? 24;
 		}
 	}
 

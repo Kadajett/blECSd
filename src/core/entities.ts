@@ -515,10 +515,7 @@ function applyStyleConfig(
 	if (config.fg !== undefined) styleOptions.fg = config.fg;
 	if (config.bg !== undefined) styleOptions.bg = config.bg;
 	if (config.bold !== undefined) styleOptions.bold = config.bold;
-	if (config.italic !== undefined) styleOptions.italic = config.italic;
 	if (config.underline !== undefined) styleOptions.underline = config.underline;
-	if (config.strikethrough !== undefined) styleOptions.strikethrough = config.strikethrough;
-	if (config.dim !== undefined) styleOptions.dim = config.dim;
 	if (config.inverse !== undefined) styleOptions.inverse = config.inverse;
 	if (config.blink !== undefined) styleOptions.blink = config.blink;
 

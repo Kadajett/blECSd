@@ -326,12 +326,7 @@ export function getContentData(world: World, eid: Entity): ContentData | undefin
  * console.log(getText(world, entity)); // 'Red Text'
  * ```
  */
-export function setText(
-	world: World,
-	eid: Entity,
-	text: string,
-	options?: ContentOptions,
-): Entity {
+export function setText(world: World, eid: Entity, text: string, options?: ContentOptions): Entity {
 	const plainText = stripAnsi(text);
 	return setContent(world, eid, plainText, options);
 }

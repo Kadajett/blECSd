@@ -409,7 +409,15 @@ export {
 // =============================================================================
 // UTILS - Utility Functions
 // =============================================================================
-export type { BoxChars, Cell, CellBuffer, RenderBoxOptions, StyleAttr, StyleInput, WrapOptions } from './utils';
+export type {
+	BoxChars,
+	Cell,
+	CellBuffer,
+	RenderBoxOptions,
+	StyleAttr,
+	StyleInput,
+	WrapOptions,
+} from './utils';
 export {
 	AttrFlags,
 	alignLine,

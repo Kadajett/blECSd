@@ -251,7 +251,7 @@ function parseExtendedColor(
 		const g = codes[index + 3];
 		const b = codes[index + 4];
 		if (isValidRgb(r, g, b)) {
-			const packed = (r << 16) | (g << 8) | b;
+			const packed = (r << 16) | ((g ?? 0) << 8) | (b ?? 0);
 			attr[target] = { type: ColorType.RGB, value: packed };
 		}
 		return 5;

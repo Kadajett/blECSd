@@ -224,7 +224,7 @@ export function setLabel(
 	}
 
 	// Update or create label text
-	const existingId = Label.labelId[eid];
+	const existingId = Label.labelId[eid] ?? 0;
 	if (existingId > 0) {
 		labelStore.update(existingId, text);
 	} else {
@@ -268,7 +268,7 @@ export function getLabelText(world: World, eid: Entity): string {
 	if (!hasComponent(world, eid, Label)) {
 		return '';
 	}
-	const labelId = Label.labelId[eid];
+	const labelId = Label.labelId[eid] ?? 0;
 	return labelStore.get(labelId);
 }
 
@@ -301,10 +301,10 @@ export function getLabel(world: World, eid: Entity): LabelData | null {
 	}
 
 	return {
-		text: labelStore.get(Label.labelId[eid]),
-		position: Label.position[eid] as LabelPosition,
-		offsetX: Label.offsetX[eid],
-		offsetY: Label.offsetY[eid],
+		text: labelStore.get(Label.labelId[eid] ?? 0),
+		position: (Label.position[eid] ?? LabelPosition.TopLeft) as LabelPosition,
+		offsetX: Label.offsetX[eid] ?? 0,
+		offsetY: Label.offsetY[eid] ?? 0,
 	};
 }
 
@@ -421,7 +421,7 @@ export function removeLabel(world: World, eid: Entity): Entity {
 	}
 
 	// Clean up label text from store
-	const labelId = Label.labelId[eid];
+	const labelId = Label.labelId[eid] ?? 0;
 	if (labelId > 0) {
 		labelStore.delete(labelId);
 	}
@@ -455,6 +455,6 @@ export function hasLabelText(world: World, eid: Entity): boolean {
 	if (!hasComponent(world, eid, Label)) {
 		return false;
 	}
-	const labelId = Label.labelId[eid];
+	const labelId = Label.labelId[eid] ?? 0;
 	return labelId > 0 && labelStore.get(labelId).length > 0;
 }

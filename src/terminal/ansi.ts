@@ -1674,8 +1674,9 @@ export const tmux = {
 		}
 
 		// Restore doubled ESC characters to single
+		const content = match[1] ?? '';
 		// biome-ignore lint/suspicious/noControlCharactersInRegex: ESC character is intentional
-		return match[1].replace(/\x1b\x1b/g, '\x1b');
+		return content.replace(/\x1b\x1b/g, '\x1b');
 	},
 
 	/**

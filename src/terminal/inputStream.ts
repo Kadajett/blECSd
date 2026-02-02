@@ -316,7 +316,7 @@ export class InputHandler {
 
 		// Check for complete 3-byte sequences: ESC [ <letter>
 		if (this.buffer.length >= 3 && this.buffer[1] === 0x5b) {
-			const thirdByte = this.buffer[2];
+			const thirdByte = this.buffer[2] ?? 0;
 			// Single letter terminators (A-Z, a-z) for arrows, focus, etc.
 			if ((thirdByte >= 0x41 && thirdByte <= 0x5a) || (thirdByte >= 0x61 && thirdByte <= 0x7a)) {
 				return false; // Complete sequence
@@ -325,7 +325,8 @@ export class InputHandler {
 			if (thirdByte === 0x3c) {
 				// SGR mouse sequence - look for M or m terminator
 				for (let i = 3; i < this.buffer.length; i++) {
-					if (this.buffer[i] === 0x4d || this.buffer[i] === 0x6d) {
+					const byte = this.buffer[i] ?? 0;
+					if (byte === 0x4d || byte === 0x6d) {
 						return false; // Found terminator
 					}
 				}
@@ -335,7 +336,7 @@ export class InputHandler {
 			if (thirdByte >= 0x30 && thirdByte <= 0x39) {
 				// Numeric sequence - look for terminator
 				for (let i = 3; i < this.buffer.length; i++) {
-					const b = this.buffer[i];
+					const b = this.buffer[i] ?? 0;
 					// Terminators: ~ for function keys, letters for modifiers
 					if (b === 0x7e || (b >= 0x41 && b <= 0x5a) || (b >= 0x61 && b <= 0x7a)) {
 						return false; // Complete

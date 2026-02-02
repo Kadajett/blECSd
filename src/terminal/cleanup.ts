@@ -206,7 +206,7 @@ export class CleanupManager {
 		}
 		this.cleanupRun = true;
 
-		const exitInfo: ExitInfo = { reason, error };
+		const exitInfo: ExitInfo = error !== undefined ? { reason, error } : { reason };
 
 		// Run exit handlers first
 		for (const handler of this.exitHandlers) {
@@ -240,7 +240,7 @@ export class CleanupManager {
 		}
 		this.cleanupRun = true;
 
-		const exitInfo: ExitInfo = { reason, error };
+		const exitInfo: ExitInfo = error !== undefined ? { reason, error } : { reason };
 
 		// Run exit handlers (synchronously)
 		for (const handler of this.exitHandlers) {

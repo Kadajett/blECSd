@@ -158,8 +158,8 @@ function prepareTerminalForSpawn(options: {
 function restoreTerminalAfterSpawn(
 	state: SavedTerminalState,
 	options: {
-		output?: Writable;
-		input?: NodeJS.ReadStream;
+		output?: Writable | undefined;
+		input?: NodeJS.ReadStream | undefined;
 	},
 ): void {
 	const output = options.output ?? process.stdout;
@@ -428,7 +428,7 @@ export function execSync(
  * @returns The editor command
  */
 export function getDefaultEditor(): string {
-	return process.env.EDITOR || process.env.VISUAL || 'vi';
+	return process.env['EDITOR'] || process.env['VISUAL'] || 'vi';
 }
 
 /**
@@ -517,7 +517,7 @@ export function readEditor(options: EditorOptions = {}): Promise<string> {
 
 		// Parse editor command (may include arguments like "code --wait")
 		const editorParts = editor.split(/\s+/);
-		const editorCommand = editorParts[0];
+		const editorCommand = editorParts[0] ?? editor;
 		const editorArgs = [...editorParts.slice(1), tempFile];
 
 		// Prepare terminal
@@ -528,7 +528,7 @@ export function readEditor(options: EditorOptions = {}): Promise<string> {
 			stdio: 'inherit',
 		});
 
-		child.on('exit', (_code, signal) => {
+		child.on('exit', (_code: number | null, signal: NodeJS.Signals | null) => {
 			// Restore terminal
 			restoreTerminalAfterSpawn(state, {
 				output: options.output,
@@ -555,7 +555,7 @@ export function readEditor(options: EditorOptions = {}): Promise<string> {
 			resolve(editedContent);
 		});
 
-		child.on('error', (error) => {
+		child.on('error', (error: Error) => {
 			// Restore terminal
 			restoreTerminalAfterSpawn(state, {
 				output: options.output,
@@ -613,12 +613,12 @@ export const processUtils = {
 	getShell(): { shell: string; args: string[] } {
 		if (process.platform === 'win32') {
 			// Use cmd.exe on Windows
-			const comspec = process.env.COMSPEC || 'cmd.exe';
+			const comspec = process.env['COMSPEC'] || 'cmd.exe';
 			return { shell: comspec, args: ['/c'] };
 		}
 
 		// Use SHELL env var or default to sh
-		const shell = process.env.SHELL || '/bin/sh';
+		const shell = process.env['SHELL'] || '/bin/sh';
 		return { shell, args: ['-c'] };
 	},
 

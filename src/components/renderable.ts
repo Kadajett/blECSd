@@ -5,7 +5,7 @@
 
 import { addComponent, hasComponent } from 'bitecs';
 import type { Entity, World } from '../core/types';
-import { getAncestors, hasHierarchy, isRoot, NULL_ENTITY } from './hierarchy';
+import { getAncestors, hasHierarchy, isRoot } from './hierarchy';
 
 /** Default entity capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;

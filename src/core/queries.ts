@@ -515,7 +515,7 @@ export function filterClickable(_world: World, entities: readonly Entity[]): Ent
  * ```
  */
 export function sortByZIndex(_world: World, entities: readonly Entity[]): Entity[] {
-	return [...entities].sort((a, b) => Position.z[a] - Position.z[b]);
+	return [...entities].sort((a, b) => (Position.z[a] ?? 0) - (Position.z[b] ?? 0));
 }
 
 /**
@@ -544,8 +544,8 @@ export function sortByZIndex(_world: World, entities: readonly Entity[]): Entity
  */
 export function sortByTabIndex(_world: World, entities: readonly Entity[]): Entity[] {
 	return [...entities].sort((a, b) => {
-		const tabA = Focusable.tabIndex[a];
-		const tabB = Focusable.tabIndex[b];
+		const tabA = Focusable.tabIndex[a] ?? 0;
+		const tabB = Focusable.tabIndex[b] ?? 0;
 
 		// Entities with tabIndex 0 go after positive tabIndices
 		if (tabA === 0 && tabB !== 0) return 1;
@@ -580,5 +580,5 @@ export function sortByTabIndex(_world: World, entities: readonly Entity[]): Enti
  * ```
  */
 export function sortByDepth(_world: World, entities: readonly Entity[]): Entity[] {
-	return [...entities].sort((a, b) => Hierarchy.depth[a] - Hierarchy.depth[b]);
+	return [...entities].sort((a, b) => (Hierarchy.depth[a] ?? 0) - (Hierarchy.depth[b] ?? 0));
 }

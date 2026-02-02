@@ -249,7 +249,7 @@ export class OutputBuffer {
 	private updateCursorPosition(data: string): void {
 		let i = 0;
 		while (i < data.length) {
-			const char = data[i];
+			const char = data[i] ?? '';
 
 			// Check for escape sequence
 			if (char === '\x1b' && data[i + 1] === '[') {
@@ -307,7 +307,7 @@ export class OutputBuffer {
 		let currentParam = '';
 
 		while (i < data.length) {
-			const char = data[i];
+			const char = data[i] ?? '';
 			const parsed = this.parseEscapeChar(char, currentParam, params);
 
 			if (parsed.done) {

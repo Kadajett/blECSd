@@ -4,7 +4,7 @@
  * @module systems/inputSystem
  */
 
-import { hasComponent, query, registerComponent, withStore } from 'bitecs';
+import { hasComponent, query } from 'bitecs';
 import { Dimensions } from '../components/dimensions';
 import {
 	Focusable,
@@ -14,17 +14,13 @@ import {
 	getFocusedEntity,
 	isFocusable,
 } from '../components/focusable';
-import { getChildren, getParent, Hierarchy } from '../components/hierarchy';
+// hierarchy utilities reserved for future hit-testing through component tree
 import {
 	clearKeyboardInput,
 	clearMouseInput,
 	hasKeyboardInput,
 	hasMouseInput,
-	KeyboardInput,
-	ModifierFlags,
 	MouseButtons,
-	MouseInput,
-	packModifiers,
 	recordClick,
 	setKeyboardInput,
 	setMouseInput,
@@ -103,47 +99,8 @@ export interface InputSystemState {
 	eventBus: EventBus<UIEventMap>;
 }
 
-// Default capacity for component arrays
-const DEFAULT_CAPACITY = 10000;
-
-/**
- * Store for input system tracking component.
- * Entities with this component are processed by the input system.
- */
-interface InputReceiverStore {
-	/** Whether entity should receive input events (0=no, 1=yes) */
-	active: Uint8Array;
-}
-
-function createInputReceiverStore(capacity = DEFAULT_CAPACITY): InputReceiverStore {
-	return {
-		active: new Uint8Array(capacity),
-	};
-}
-
-// Global store for input receivers
-const inputReceiverStore = createInputReceiverStore();
-
-// Track registered worlds
-const REGISTERED_WORLDS = new WeakSet<World>();
-
-// Component reference
-// biome-ignore lint/suspicious/noExplicitAny: Component type varies by world
-let InputReceiverComponentRef: any = null;
-
-/**
- * Get or register the InputReceiver component.
- */
-function getInputReceiverComponent(world: World): unknown {
-	if (!REGISTERED_WORLDS.has(world)) {
-		InputReceiverComponentRef = registerComponent(
-			world,
-			withStore(() => inputReceiverStore),
-		);
-		REGISTERED_WORLDS.add(world);
-	}
-	return InputReceiverComponentRef;
-}
+// Note: InputReceiver component registration reserved for future use
+// when entities need explicit opt-in to receive input events
 
 /**
  * Global input system state.
