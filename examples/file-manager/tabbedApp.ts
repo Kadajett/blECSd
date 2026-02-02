@@ -7,7 +7,7 @@
 
 import { pathToFileURL } from 'node:url';
 import { addEntity } from 'bitecs';
-import type { Entity, World, KeyEvent, ParsedMouseEvent, CellBuffer, ListItem } from 'blecsd';
+import type { Entity, World, KeyEvent, ParsedMouseEvent, CellBuffer } from 'blecsd';
 import {
 	createWorld,
 	parseKeyBuffer,
@@ -21,21 +21,17 @@ import {
 	getListSelectedIndex,
 	setListSelectedIndex,
 	attachListBehavior,
-	getVisibleItems,
 	setTotalCount,
 	setVisibleCount,
 	setFirstVisible,
-	setLazyLoadCallback,
-	checkNeedsLoad,
-	loadItems,
 	ensureVisible,
-	clearItems,
 	getScrollInfo,
 	selectPrev,
 	selectNext,
 	selectFirst,
 	selectLast,
 	scrollPage,
+	listStore,
 	// Tabs and listbar widgets
 	createTabs,
 	type TabsWidget,
@@ -294,22 +290,14 @@ function getActiveTab(state: AppState): TabState | undefined {
 }
 
 function resetListForTab(world: World, tab: TabState, visibleCount: number): void {
-	clearItems(world, tab.listEid);
-	setTotalCount(world, tab.listEid, tab.fileStore.count);
+	const count = tab.fileStore.count;
+	// Set both itemCount and totalCount so selection functions work correctly
+	listStore.itemCount[tab.listEid] = count;
+	setTotalCount(world, tab.listEid, count);
 	setVisibleCount(world, tab.listEid, visibleCount);
 	setFirstVisible(world, tab.listEid, 0);
-	setListSelectedIndex(world, tab.listEid, tab.fileStore.count > 0 ? 0 : -1);
+	setListSelectedIndex(world, tab.listEid, count > 0 ? 0 : -1);
 	tab.selection.clear();
-}
-
-function buildListItems(fileStore: FileStore, start: number, count: number): ListItem[] {
-	const items: ListItem[] = [];
-	for (let i = 0; i < count; i++) {
-		const entry = fileStore.getEntryAt(start + i);
-		if (!entry) break;
-		items.push({ text: entry.name, value: entry.path });
-	}
-	return items;
 }
 
 function updateTabTitle(tab: TabState): void {
@@ -362,8 +350,10 @@ async function createTab(
 		selectedIndex: fileStore.count > 0 ? 0 : -1,
 	});
 
+	// Set both itemCount and totalCount so selection functions work correctly
+	// (we render directly from FileStore, not from ECS items)
+	listStore.itemCount[listEid] = fileStore.count;
 	setTotalCount(world, listEid, fileStore.count);
-	setLazyLoadCallback(listEid, async (start, count) => buildListItems(fileStore, start, count));
 
 	const preview = createPreviewState();
 	buildPreviewScrollback(preview, EMPTY_PREVIEW);
@@ -527,6 +517,13 @@ async function handleKeyInput(state: AppState, event: KeyEvent): Promise<void> {
 		for (let i = 0; i < total; i++) {
 			tab.selection.add(i);
 		}
+		state.needsRedraw = true;
+		return;
+	}
+
+	if (key === 'escape') {
+		// Clear multi-selection
+		tab.selection.clear();
 		state.needsRedraw = true;
 		return;
 	}
@@ -702,12 +699,14 @@ function handleMouseInput(state: AppState, event: ParsedMouseEvent): void {
 
 	if (event.action === 'press' && event.button === 'left') {
 		if (event.y >= listStartY && event.y <= listEndY && event.x <= listEndX) {
-			const index = getVisibleIndexAtRow(tab.listEid, event.y - listStartY);
+			const index = getVisibleIndexAtRow(tab.listEid, event.y - listStartY, tab.fileStore.count);
 			if (index !== null) {
 				const now = Date.now();
 				const isDoubleClick =
 					state.clickState.lastClickIndex === index &&
-					now - state.clickState.lastClickTime < 400;
+					now - state.clickState.lastClickTime < 400 &&
+					Math.abs(event.x - state.clickState.lastClickX) <= 2 &&
+					Math.abs(event.y - state.clickState.lastClickY) <= 2;
 
 				// Update click state
 				state.clickState.lastClickTime = now;
@@ -719,8 +718,26 @@ function handleMouseInput(state: AppState, event: ParsedMouseEvent): void {
 					// Double-click: open the item
 					setListSelectedIndex(state.world, tab.listEid, index);
 					openSelection(state, tab).catch(() => undefined);
+				} else if (event.ctrl) {
+					// Ctrl+click: toggle selection on this item
+					toggleSelection(tab, index);
+					setListSelectedIndex(state.world, tab.listEid, index);
+					state.focusedPane = 'list';
+					state.needsRedraw = true;
+				} else if (event.shift) {
+					// Shift+click: range select from current to clicked
+					const currentIndex = getListSelectedIndex(tab.listEid);
+					const start = Math.min(currentIndex >= 0 ? currentIndex : index, index);
+					const end = Math.max(currentIndex >= 0 ? currentIndex : index, index);
+					for (let i = start; i <= end; i++) {
+						tab.selection.add(i);
+					}
+					setListSelectedIndex(state.world, tab.listEid, index);
+					state.focusedPane = 'list';
+					state.needsRedraw = true;
 				} else {
-					// Single-click: select the item
+					// Single-click: select the item and clear multi-selection
+					tab.selection.clear();
 					setListSelectedIndex(state.world, tab.listEid, index);
 					ensureVisible(state.world, tab.listEid, index);
 					state.focusedPane = 'list';
@@ -748,10 +765,11 @@ function scrollListBy(world: World, listEid: Entity, delta: number): void {
 	setFirstVisible(world, listEid, newFirst);
 }
 
-function getVisibleIndexAtRow(listEid: Entity, row: number): number | null {
-	const visible = getVisibleItems(listEid);
-	const item = visible[row];
-	return item ? item.index : null;
+function getVisibleIndexAtRow(listEid: Entity, row: number, totalCount: number): number | null {
+	const info = getScrollInfo(listEid);
+	const firstVisible = info.firstVisible ?? 0;
+	const index = firstVisible + row;
+	return index < totalCount ? index : null;
 }
 
 function toggleSelection(tab: TabState, index: number): void {
@@ -1049,7 +1067,6 @@ function renderList(
 	y: number,
 ): void {
 	const buffer = state.renderState.buffer;
-	const visibleItems = getVisibleItems(tab.listEid);
 	const selectedIndex = getListSelectedIndex(tab.listEid);
 	const scrollInfo = getScrollInfo(tab.listEid);
 	const totalCount = scrollInfo.totalCount ?? 0;
@@ -1063,9 +1080,9 @@ function renderList(
 	const nameWidth = Math.max(8, contentWidth - sizeWidth - dateWidth - typeWidth - 6);
 
 	for (let row = 0; row < height; row++) {
-		const item = visibleItems[row];
-		const index = item?.index ?? -1;
-		const entry = index >= 0 ? tab.fileStore.getEntryAt(index) : undefined;
+		// Calculate data index directly from scroll position, not from ECS items
+		const index = firstVisible + row;
+		const entry = index < totalCount ? tab.fileStore.getEntryAt(index) : undefined;
 		const isSelected = tab.selection.has(index);
 		const isCurrent = index === selectedIndex;
 
@@ -1422,14 +1439,6 @@ function startRenderLoop(state: AppState): void {
 		if (!state.running) {
 			clearInterval(interval);
 			return;
-		}
-
-		const tab = getActiveTab(state);
-		if (tab) {
-			const loadInfo = checkNeedsLoad(tab.listEid);
-			if (loadInfo.needsLoad) {
-				void loadItems(state.world, tab.listEid, loadInfo.startIndex, loadInfo.count);
-			}
 		}
 
 		if (state.needsRedraw) {
