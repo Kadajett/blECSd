@@ -187,6 +187,50 @@ export {
 // Output buffering (internal)
 export type { CursorPosition, OutputBufferOptions } from './outputBuffer';
 export { OutputBuffer } from './outputBuffer';
+// Optimized output buffering (public)
+export type {
+	ColorState,
+	OutputBufferData,
+	OutputBufferOptions as OptimizedOutputBufferOptions,
+	OutputStats,
+} from './optimizedOutput';
+export {
+	ATTR_BLINK,
+	ATTR_BOLD,
+	ATTR_DIM,
+	ATTR_HIDDEN,
+	ATTR_INVERSE,
+	ATTR_ITALIC,
+	ATTR_STRIKETHROUGH,
+	ATTR_UNDERLINE,
+	beginFrame,
+	clearBuffer as clearOutputBuffer,
+	clearLine,
+	clearScreen as clearOutputScreen,
+	clearToEnd,
+	createOutputBuffer,
+	DEFAULT_COLOR,
+	endFrame,
+	estimateBytesSaved,
+	flushToStream,
+	getBufferLength,
+	getContents,
+	getOutputStats,
+	hideCursor,
+	moveCursor,
+	resetBuffer,
+	resetColorState,
+	resetStats as resetOutputStats,
+	setAttributes,
+	setBackground,
+	setForeground,
+	setScreenSize,
+	showCursor,
+	writeCellAt,
+	writeChar,
+	writeRaw,
+	writeStringAt,
+} from './optimizedOutput';
 // Process utilities (internal)
 export type { EditorOptions, ExecOptions, ExecResult, SpawnOptions } from './process';
 export { exec, execSync, getDefaultEditor, processUtils, readEditor, spawn } from './process';

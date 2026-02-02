@@ -1,11 +1,39 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { KeyEvent } from '../terminal/keyParser';
 import type { MouseEvent } from '../terminal/mouseParser';
-import { createInputEventBuffer, globalInputBuffer, InputEventBuffer } from './inputEventBuffer';
+import {
+	beginFrame,
+	clearBuffer,
+	createInputEventBuffer,
+	drainAllEvents,
+	drainKeys,
+	drainMouse,
+	endFrame,
+	getLatencyStats,
+	getPendingCount,
+	getPendingKeyCount,
+	getPendingMouseCount,
+	getStats,
+	globalInputBuffer,
+	hasPendingEvents,
+	type InputEventBufferData,
+	isLatencyAcceptable,
+	isProcessingTimeAcceptable,
+	peekEvents,
+	peekKeys,
+	peekMouse,
+	pushKeyEvent,
+	pushMouseEvent,
+	recordLatency,
+	recordLatencyBatch,
+	resetLatencyStats,
+	resetStats,
+} from './inputEventBuffer';
 
 // Mock key event factory
 function createKeyEvent(name: string, modifiers = {}): KeyEvent {
 	return {
+		raw: new Uint8Array([name.charCodeAt(0)]),
 		name: name as KeyEvent['name'],
 		sequence: name,
 		ctrl: false,
@@ -34,100 +62,101 @@ function createMouseEvent(
 }
 
 describe('InputEventBuffer', () => {
-	let buffer: InputEventBuffer;
+	let buffer: InputEventBufferData;
 
 	beforeEach(() => {
-		buffer = new InputEventBuffer();
+		buffer = createInputEventBuffer();
 	});
 
 	describe('createInputEventBuffer', () => {
 		it('should create a buffer with default options', () => {
 			const buf = createInputEventBuffer();
-			expect(buf).toBeInstanceOf(InputEventBuffer);
-			expect(buf.getMaxBufferSize()).toBe(1000);
+			expect(buf.config.maxBufferSize).toBe(1000);
+			expect(buf.keyEvents).toEqual([]);
+			expect(buf.mouseEvents).toEqual([]);
 		});
 
 		it('should create a buffer with custom options', () => {
 			const buf = createInputEventBuffer({ maxBufferSize: 500 });
-			expect(buf.getMaxBufferSize()).toBe(500);
+			expect(buf.config.maxBufferSize).toBe(500);
 		});
 	});
 
-	describe('pushKey', () => {
+	describe('pushKeyEvent', () => {
 		it('should add key events to the buffer', () => {
-			buffer.pushKey(createKeyEvent('a'));
+			pushKeyEvent(buffer, createKeyEvent('a'));
 
-			expect(buffer.pendingKeyCount).toBe(1);
+			expect(getPendingKeyCount(buffer)).toBe(1);
 		});
 
 		it('should preserve event data', () => {
 			const event = createKeyEvent('a', { ctrl: true, shift: true });
-			buffer.pushKey(event);
+			pushKeyEvent(buffer, event);
 
-			const drained = buffer.drainKeys();
+			const drained = drainKeys(buffer);
 			expect(drained[0]?.event).toEqual(event);
 		});
 
 		it('should add timestamp to events', () => {
-			buffer.pushKey(createKeyEvent('a'));
+			pushKeyEvent(buffer, createKeyEvent('a'));
 
-			const drained = buffer.drainKeys();
+			const drained = drainKeys(buffer);
 			expect(drained[0]?.timestamp).toBeGreaterThan(0);
 		});
 
 		it('should accept custom timestamp', () => {
-			buffer.pushKey(createKeyEvent('a'), 12345);
+			pushKeyEvent(buffer, createKeyEvent('a'), 12345);
 
-			const drained = buffer.drainKeys();
+			const drained = drainKeys(buffer);
 			expect(drained[0]?.timestamp).toBe(12345);
 		});
 
 		it('should track total key events', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.pushKey(createKeyEvent('b'));
-			buffer.pushKey(createKeyEvent('c'));
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			pushKeyEvent(buffer, createKeyEvent('b'));
+			pushKeyEvent(buffer, createKeyEvent('c'));
 
-			expect(buffer.getStats().totalKeyEvents).toBe(3);
+			expect(getStats(buffer).totalKeyEvents).toBe(3);
 		});
 	});
 
-	describe('pushMouse', () => {
+	describe('pushMouseEvent', () => {
 		it('should add mouse events to the buffer', () => {
-			buffer.pushMouse(createMouseEvent(10, 20));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
 
-			expect(buffer.pendingMouseCount).toBe(1);
+			expect(getPendingMouseCount(buffer)).toBe(1);
 		});
 
 		it('should preserve event data', () => {
 			const event = createMouseEvent(10, 20, 'mouseup');
-			buffer.pushMouse(event);
+			pushMouseEvent(buffer, event);
 
-			const drained = buffer.drainMouse();
+			const drained = drainMouse(buffer);
 			expect(drained[0]?.event).toEqual(event);
 		});
 
 		it('should add timestamp to events', () => {
-			buffer.pushMouse(createMouseEvent(10, 20));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
 
-			const drained = buffer.drainMouse();
+			const drained = drainMouse(buffer);
 			expect(drained[0]?.timestamp).toBeGreaterThan(0);
 		});
 
 		it('should track total mouse events', () => {
-			buffer.pushMouse(createMouseEvent(10, 20));
-			buffer.pushMouse(createMouseEvent(20, 30));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
+			pushMouseEvent(buffer, createMouseEvent(20, 30));
 
-			expect(buffer.getStats().totalMouseEvents).toBe(2);
+			expect(getStats(buffer).totalMouseEvents).toBe(2);
 		});
 	});
 
 	describe('drainKeys', () => {
 		it('should return all key events', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.pushKey(createKeyEvent('b'));
-			buffer.pushKey(createKeyEvent('c'));
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			pushKeyEvent(buffer, createKeyEvent('b'));
+			pushKeyEvent(buffer, createKeyEvent('c'));
 
-			const drained = buffer.drainKeys();
+			const drained = drainKeys(buffer);
 
 			expect(drained).toHaveLength(3);
 			expect(drained[0]?.event.name).toBe('a');
@@ -136,33 +165,33 @@ describe('InputEventBuffer', () => {
 		});
 
 		it('should clear key events after drain', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.drainKeys();
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			drainKeys(buffer);
 
-			expect(buffer.pendingKeyCount).toBe(0);
+			expect(getPendingKeyCount(buffer)).toBe(0);
 		});
 
 		it('should return empty array when no events', () => {
-			const drained = buffer.drainKeys();
+			const drained = drainKeys(buffer);
 
 			expect(drained).toEqual([]);
 		});
 
 		it('should not affect mouse events', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.pushMouse(createMouseEvent(10, 20));
-			buffer.drainKeys();
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
+			drainKeys(buffer);
 
-			expect(buffer.pendingMouseCount).toBe(1);
+			expect(getPendingMouseCount(buffer)).toBe(1);
 		});
 	});
 
 	describe('drainMouse', () => {
 		it('should return all mouse events', () => {
-			buffer.pushMouse(createMouseEvent(10, 20));
-			buffer.pushMouse(createMouseEvent(30, 40));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
+			pushMouseEvent(buffer, createMouseEvent(30, 40));
 
-			const drained = buffer.drainMouse();
+			const drained = drainMouse(buffer);
 
 			expect(drained).toHaveLength(2);
 			expect(drained[0]?.event.x).toBe(10);
@@ -170,28 +199,28 @@ describe('InputEventBuffer', () => {
 		});
 
 		it('should clear mouse events after drain', () => {
-			buffer.pushMouse(createMouseEvent(10, 20));
-			buffer.drainMouse();
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
+			drainMouse(buffer);
 
-			expect(buffer.pendingMouseCount).toBe(0);
+			expect(getPendingMouseCount(buffer)).toBe(0);
 		});
 
 		it('should not affect key events', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.pushMouse(createMouseEvent(10, 20));
-			buffer.drainMouse();
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
+			drainMouse(buffer);
 
-			expect(buffer.pendingKeyCount).toBe(1);
+			expect(getPendingKeyCount(buffer)).toBe(1);
 		});
 	});
 
-	describe('drainAll', () => {
+	describe('drainAllEvents', () => {
 		it('should return all events sorted by timestamp', () => {
-			buffer.pushKey(createKeyEvent('a'), 100);
-			buffer.pushMouse(createMouseEvent(10, 20), 50);
-			buffer.pushKey(createKeyEvent('b'), 150);
+			pushKeyEvent(buffer, createKeyEvent('a'), 100);
+			pushMouseEvent(buffer, createMouseEvent(10, 20), 50);
+			pushKeyEvent(buffer, createKeyEvent('b'), 150);
 
-			const drained = buffer.drainAll();
+			const drained = drainAllEvents(buffer);
 
 			expect(drained).toHaveLength(3);
 			expect(drained[0]?.type).toBe('mouse');
@@ -200,40 +229,40 @@ describe('InputEventBuffer', () => {
 		});
 
 		it('should clear all events after drain', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.pushMouse(createMouseEvent(10, 20));
-			buffer.drainAll();
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
+			drainAllEvents(buffer);
 
-			expect(buffer.pendingCount).toBe(0);
+			expect(getPendingCount(buffer)).toBe(0);
 		});
 
 		it('should preserve type information', () => {
-			buffer.pushKey(createKeyEvent('a'), 100);
-			buffer.pushMouse(createMouseEvent(10, 20), 200);
+			pushKeyEvent(buffer, createKeyEvent('a'), 100);
+			pushMouseEvent(buffer, createMouseEvent(10, 20), 200);
 
-			const drained = buffer.drainAll();
+			const drained = drainAllEvents(buffer);
 
 			expect(drained[0]?.type).toBe('key');
 			expect(drained[1]?.type).toBe('mouse');
 		});
 	});
 
-	describe('peek', () => {
+	describe('peekEvents', () => {
 		it('should return all events without removing them', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.pushMouse(createMouseEvent(10, 20));
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
 
-			const peeked = buffer.peek();
+			const peeked = peekEvents(buffer);
 
 			expect(peeked).toHaveLength(2);
-			expect(buffer.pendingCount).toBe(2);
+			expect(getPendingCount(buffer)).toBe(2);
 		});
 
 		it('should return events sorted by timestamp', () => {
-			buffer.pushKey(createKeyEvent('a'), 200);
-			buffer.pushMouse(createMouseEvent(10, 20), 100);
+			pushKeyEvent(buffer, createKeyEvent('a'), 200);
+			pushMouseEvent(buffer, createMouseEvent(10, 20), 100);
 
-			const peeked = buffer.peek();
+			const peeked = peekEvents(buffer);
 
 			expect(peeked[0]?.type).toBe('mouse');
 			expect(peeked[1]?.type).toBe('key');
@@ -242,101 +271,101 @@ describe('InputEventBuffer', () => {
 
 	describe('peekKeys', () => {
 		it('should return key events without removing', () => {
-			buffer.pushKey(createKeyEvent('a'));
+			pushKeyEvent(buffer, createKeyEvent('a'));
 
-			const peeked = buffer.peekKeys();
+			const peeked = peekKeys(buffer);
 
 			expect(peeked).toHaveLength(1);
-			expect(buffer.pendingKeyCount).toBe(1);
+			expect(getPendingKeyCount(buffer)).toBe(1);
 		});
 	});
 
 	describe('peekMouse', () => {
 		it('should return mouse events without removing', () => {
-			buffer.pushMouse(createMouseEvent(10, 20));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
 
-			const peeked = buffer.peekMouse();
+			const peeked = peekMouse(buffer);
 
 			expect(peeked).toHaveLength(1);
-			expect(buffer.pendingMouseCount).toBe(1);
+			expect(getPendingMouseCount(buffer)).toBe(1);
 		});
 	});
 
-	describe('clear', () => {
+	describe('clearBuffer', () => {
 		it('should remove all pending events', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.pushMouse(createMouseEvent(10, 20));
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
 
-			buffer.clear();
+			clearBuffer(buffer);
 
-			expect(buffer.pendingCount).toBe(0);
+			expect(getPendingCount(buffer)).toBe(0);
 		});
 	});
 
-	describe('pendingCount', () => {
+	describe('getPendingCount', () => {
 		it('should return total pending events', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.pushKey(createKeyEvent('b'));
-			buffer.pushMouse(createMouseEvent(10, 20));
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			pushKeyEvent(buffer, createKeyEvent('b'));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
 
-			expect(buffer.pendingCount).toBe(3);
+			expect(getPendingCount(buffer)).toBe(3);
 		});
 	});
 
-	describe('hasPending', () => {
+	describe('hasPendingEvents', () => {
 		it('should return true when events exist', () => {
-			buffer.pushKey(createKeyEvent('a'));
+			pushKeyEvent(buffer, createKeyEvent('a'));
 
-			expect(buffer.hasPending).toBe(true);
+			expect(hasPendingEvents(buffer)).toBe(true);
 		});
 
 		it('should return false when empty', () => {
-			expect(buffer.hasPending).toBe(false);
+			expect(hasPendingEvents(buffer)).toBe(false);
 		});
 	});
 
 	describe('overflow handling', () => {
 		it('should drop oldest events when buffer overflows', () => {
-			const smallBuffer = new InputEventBuffer({ maxBufferSize: 3 });
+			const smallBuffer = createInputEventBuffer({ maxBufferSize: 3 });
 
-			smallBuffer.pushKey(createKeyEvent('a'), 1);
-			smallBuffer.pushKey(createKeyEvent('b'), 2);
-			smallBuffer.pushKey(createKeyEvent('c'), 3);
-			smallBuffer.pushKey(createKeyEvent('d'), 4); // Overflow
+			pushKeyEvent(smallBuffer, createKeyEvent('a'), 1);
+			pushKeyEvent(smallBuffer, createKeyEvent('b'), 2);
+			pushKeyEvent(smallBuffer, createKeyEvent('c'), 3);
+			pushKeyEvent(smallBuffer, createKeyEvent('d'), 4); // Overflow
 
-			const drained = smallBuffer.drainKeys();
+			const drained = drainKeys(smallBuffer);
 
 			expect(drained).toHaveLength(3);
 			expect(drained[0]?.event.name).toBe('b'); // 'a' was dropped
 		});
 
 		it('should track dropped events', () => {
-			const smallBuffer = new InputEventBuffer({ maxBufferSize: 2 });
+			const smallBuffer = createInputEventBuffer({ maxBufferSize: 2 });
 
-			smallBuffer.pushKey(createKeyEvent('a'));
-			smallBuffer.pushKey(createKeyEvent('b'));
-			smallBuffer.pushKey(createKeyEvent('c')); // 1 dropped
-			smallBuffer.pushKey(createKeyEvent('d')); // 1 dropped
+			pushKeyEvent(smallBuffer, createKeyEvent('a'));
+			pushKeyEvent(smallBuffer, createKeyEvent('b'));
+			pushKeyEvent(smallBuffer, createKeyEvent('c')); // 1 dropped
+			pushKeyEvent(smallBuffer, createKeyEvent('d')); // 1 dropped
 
-			expect(smallBuffer.getStats().droppedEvents).toBe(2);
+			expect(getStats(smallBuffer).droppedEvents).toBe(2);
 		});
 
 		it('should call overflow handler', () => {
 			const onOverflow = vi.fn();
-			const smallBuffer = new InputEventBuffer({ maxBufferSize: 1, onOverflow });
+			const smallBuffer = createInputEventBuffer({ maxBufferSize: 1, onOverflow });
 
-			smallBuffer.pushKey(createKeyEvent('a'));
-			smallBuffer.pushKey(createKeyEvent('b'));
+			pushKeyEvent(smallBuffer, createKeyEvent('a'));
+			pushKeyEvent(smallBuffer, createKeyEvent('b'));
 
 			expect(onOverflow).toHaveBeenCalledWith(1);
 		});
 
 		it('should log warning by default', () => {
 			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-			const smallBuffer = new InputEventBuffer({ maxBufferSize: 1 });
+			const smallBuffer = createInputEventBuffer({ maxBufferSize: 1 });
 
-			smallBuffer.pushKey(createKeyEvent('a'));
-			smallBuffer.pushKey(createKeyEvent('b'));
+			pushKeyEvent(smallBuffer, createKeyEvent('a'));
+			pushKeyEvent(smallBuffer, createKeyEvent('b'));
 
 			expect(warnSpy).toHaveBeenCalled();
 			warnSpy.mockRestore();
@@ -344,34 +373,34 @@ describe('InputEventBuffer', () => {
 
 		it('should respect warnOnOverflow option', () => {
 			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-			const smallBuffer = new InputEventBuffer({ maxBufferSize: 1, warnOnOverflow: false });
+			const smallBuffer = createInputEventBuffer({ maxBufferSize: 1, warnOnOverflow: false });
 
-			smallBuffer.pushKey(createKeyEvent('a'));
-			smallBuffer.pushKey(createKeyEvent('b'));
+			pushKeyEvent(smallBuffer, createKeyEvent('a'));
+			pushKeyEvent(smallBuffer, createKeyEvent('b'));
 
 			expect(warnSpy).not.toHaveBeenCalled();
 			warnSpy.mockRestore();
 		});
 
 		it('should allow unlimited buffer with maxBufferSize 0', () => {
-			const unlimitedBuffer = new InputEventBuffer({ maxBufferSize: 0 });
+			const unlimitedBuffer = createInputEventBuffer({ maxBufferSize: 0 });
 
 			for (let i = 0; i < 5000; i++) {
-				unlimitedBuffer.pushKey(createKeyEvent('a'));
+				pushKeyEvent(unlimitedBuffer, createKeyEvent('a'));
 			}
 
-			expect(unlimitedBuffer.pendingKeyCount).toBe(5000);
-			expect(unlimitedBuffer.getStats().droppedEvents).toBe(0);
+			expect(getPendingKeyCount(unlimitedBuffer)).toBe(5000);
+			expect(getStats(unlimitedBuffer).droppedEvents).toBe(0);
 		});
 	});
 
 	describe('getStats', () => {
 		it('should return accurate statistics', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.pushKey(createKeyEvent('b'));
-			buffer.pushMouse(createMouseEvent(10, 20));
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			pushKeyEvent(buffer, createKeyEvent('b'));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
 
-			const stats = buffer.getStats();
+			const stats = getStats(buffer);
 
 			expect(stats.totalKeyEvents).toBe(2);
 			expect(stats.totalMouseEvents).toBe(1);
@@ -382,10 +411,10 @@ describe('InputEventBuffer', () => {
 		});
 
 		it('should update after drain', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.drainKeys();
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			drainKeys(buffer);
 
-			const stats = buffer.getStats();
+			const stats = getStats(buffer);
 
 			expect(stats.totalKeyEvents).toBe(1);
 			expect(stats.pendingKeyEvents).toBe(0);
@@ -394,11 +423,11 @@ describe('InputEventBuffer', () => {
 
 	describe('resetStats', () => {
 		it('should reset all statistics', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.pushMouse(createMouseEvent(10, 20));
-			buffer.resetStats();
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			pushMouseEvent(buffer, createMouseEvent(10, 20));
+			resetStats(buffer);
 
-			const stats = buffer.getStats();
+			const stats = getStats(buffer);
 
 			expect(stats.totalKeyEvents).toBe(0);
 			expect(stats.totalMouseEvents).toBe(0);
@@ -406,18 +435,10 @@ describe('InputEventBuffer', () => {
 		});
 
 		it('should not clear pending events', () => {
-			buffer.pushKey(createKeyEvent('a'));
-			buffer.resetStats();
+			pushKeyEvent(buffer, createKeyEvent('a'));
+			resetStats(buffer);
 
-			expect(buffer.pendingKeyCount).toBe(1);
-		});
-	});
-
-	describe('setMaxBufferSize', () => {
-		it('should update max buffer size', () => {
-			buffer.setMaxBufferSize(500);
-
-			expect(buffer.getMaxBufferSize()).toBe(500);
+			expect(getPendingKeyCount(buffer)).toBe(1);
 		});
 	});
 
@@ -426,10 +447,10 @@ describe('InputEventBuffer', () => {
 			const events: string[] = [];
 
 			for (let i = 0; i < 100; i++) {
-				buffer.pushKey(createKeyEvent(`key${i}` as unknown as KeyEvent['name']), i);
+				pushKeyEvent(buffer, createKeyEvent(`key${i}` as unknown as KeyEvent['name']), i);
 			}
 
-			const drained = buffer.drainKeys();
+			const drained = drainKeys(buffer);
 
 			for (let i = 0; i < 100; i++) {
 				events.push(drained[i]?.event.name ?? '');
@@ -442,13 +463,13 @@ describe('InputEventBuffer', () => {
 		});
 
 		it('should handle interleaved key and mouse events', () => {
-			buffer.pushKey(createKeyEvent('a'), 10);
-			buffer.pushMouse(createMouseEvent(1, 1), 20);
-			buffer.pushKey(createKeyEvent('b'), 30);
-			buffer.pushMouse(createMouseEvent(2, 2), 40);
-			buffer.pushKey(createKeyEvent('c'), 50);
+			pushKeyEvent(buffer, createKeyEvent('a'), 10);
+			pushMouseEvent(buffer, createMouseEvent(1, 1), 20);
+			pushKeyEvent(buffer, createKeyEvent('b'), 30);
+			pushMouseEvent(buffer, createMouseEvent(2, 2), 40);
+			pushKeyEvent(buffer, createKeyEvent('c'), 50);
 
-			const all = buffer.drainAll();
+			const all = drainAllEvents(buffer);
 
 			expect(all).toHaveLength(5);
 			expect(all[0]?.timestamp).toBe(10);
@@ -461,140 +482,128 @@ describe('InputEventBuffer', () => {
 
 	describe('globalInputBuffer', () => {
 		beforeEach(() => {
-			globalInputBuffer.clear();
-			globalInputBuffer.resetStats();
+			clearBuffer(globalInputBuffer);
+			resetStats(globalInputBuffer);
 		});
 
-		it('should be a singleton instance', () => {
-			expect(globalInputBuffer).toBeInstanceOf(InputEventBuffer);
+		it('should be a valid buffer data structure', () => {
+			expect(globalInputBuffer.keyEvents).toBeDefined();
+			expect(globalInputBuffer.mouseEvents).toBeDefined();
+			expect(globalInputBuffer.config.maxBufferSize).toBe(1000);
 		});
 
 		it('should be usable like any buffer', () => {
-			globalInputBuffer.pushKey(createKeyEvent('a'));
+			pushKeyEvent(globalInputBuffer, createKeyEvent('a'));
 
-			expect(globalInputBuffer.pendingKeyCount).toBe(1);
+			expect(getPendingKeyCount(globalInputBuffer)).toBe(1);
 
-			const drained = globalInputBuffer.drainKeys();
+			const drained = drainKeys(globalInputBuffer);
 			expect(drained).toHaveLength(1);
 		});
 	});
 
 	describe('latency tracking', () => {
 		beforeEach(() => {
-			buffer = new InputEventBuffer({ maxLatencySamples: 100, maxFrameSamples: 10 });
+			buffer = createInputEventBuffer({ maxLatencySamples: 100, maxFrameSamples: 10 });
 		});
 
 		describe('recordLatency', () => {
 			it('should record latency for an event', () => {
-				const timestamp = performance.now() - 5; // 5ms ago
-				const latency = buffer.recordLatency(timestamp);
+				// Record a 5ms latency directly
+				recordLatency(buffer, 5);
 
-				expect(latency).toBeGreaterThanOrEqual(5);
-				expect(latency).toBeLessThan(100); // reasonable upper bound
+				const stats = getLatencyStats(buffer);
+				expect(stats.sampleCount).toBe(1);
+				expect(stats.avg).toBeGreaterThanOrEqual(5);
 			});
 
 			it('should track latency samples', () => {
-				const timestamp = performance.now() - 10;
-				buffer.recordLatency(timestamp);
+				recordLatency(buffer, 10);
 
-				const stats = buffer.getLatencyStats();
+				const stats = getLatencyStats(buffer);
 				expect(stats.sampleCount).toBe(1);
 			});
 
 			it('should respect max latency samples', () => {
-				const smallBuffer = new InputEventBuffer({ maxLatencySamples: 3 });
+				const smallBuffer = createInputEventBuffer({ maxLatencySamples: 3 });
 
 				for (let i = 0; i < 5; i++) {
-					smallBuffer.recordLatency(performance.now() - i);
+					recordLatency(smallBuffer, i);
 				}
 
-				const stats = smallBuffer.getLatencyStats();
+				const stats = getLatencyStats(smallBuffer);
 				expect(stats.sampleCount).toBe(3);
 			});
 		});
 
 		describe('recordLatencyBatch', () => {
 			it('should record latency for multiple events', () => {
-				const now = performance.now();
-				const events = [
-					{ type: 'key' as const, event: createKeyEvent('a'), timestamp: now - 10 },
-					{ type: 'key' as const, event: createKeyEvent('b'), timestamp: now - 5 },
-					{ type: 'key' as const, event: createKeyEvent('c'), timestamp: now - 2 },
-				];
+				recordLatencyBatch(buffer, 5.0, 3);
 
-				const latencies = buffer.recordLatencyBatch(events);
-
-				expect(latencies).toHaveLength(3);
-				expect(latencies[0]).toBeGreaterThanOrEqual(10);
-				expect(latencies[1]).toBeGreaterThanOrEqual(5);
-				expect(latencies[2]).toBeGreaterThanOrEqual(2);
+				const stats = getLatencyStats(buffer);
+				// Records up to 10 samples per batch
+				expect(stats.sampleCount).toBe(3);
 			});
 
 			it('should update sample count', () => {
-				const now = performance.now();
-				const events = [
-					{ type: 'key' as const, event: createKeyEvent('a'), timestamp: now - 5 },
-					{ type: 'key' as const, event: createKeyEvent('b'), timestamp: now - 3 },
-				];
+				recordLatencyBatch(buffer, 5.0, 2);
 
-				buffer.recordLatencyBatch(events);
-
-				const stats = buffer.getLatencyStats();
+				const stats = getLatencyStats(buffer);
 				expect(stats.sampleCount).toBe(2);
 			});
 		});
 
 		describe('frame timing', () => {
 			it('should track frame processing time', async () => {
-				buffer.beginFrame();
+				beginFrame(buffer);
 
 				// Simulate some processing
 				await new Promise((resolve) => setTimeout(resolve, 5));
 
-				const processingTime = buffer.endFrame();
+				const processingTime = endFrame(buffer);
 
 				expect(processingTime).toBeGreaterThanOrEqual(4); // Allow some tolerance
 				expect(processingTime).toBeLessThan(50); // reasonable upper bound
 			});
 
 			it('should include frame time in stats', async () => {
-				buffer.beginFrame();
+				beginFrame(buffer);
 				await new Promise((resolve) => setTimeout(resolve, 2));
-				buffer.endFrame();
+				endFrame(buffer);
 
-				const stats = buffer.getLatencyStats();
+				const stats = getLatencyStats(buffer);
 				expect(stats.lastFrameProcessingTime).toBeGreaterThanOrEqual(1);
 			});
 
 			it('should calculate average frame processing time', async () => {
 				for (let i = 0; i < 3; i++) {
-					buffer.beginFrame();
+					beginFrame(buffer);
 					await new Promise((resolve) => setTimeout(resolve, 2));
-					buffer.endFrame();
+					endFrame(buffer);
 				}
 
-				const stats = buffer.getLatencyStats();
+				const stats = getLatencyStats(buffer);
 				expect(stats.avgFrameProcessingTime).toBeGreaterThanOrEqual(1);
 				expect(stats.avgFrameProcessingTime).toBeLessThan(50);
 			});
 
 			it('should respect max frame samples', async () => {
-				const smallBuffer = new InputEventBuffer({ maxFrameSamples: 3 });
+				const smallBuffer = createInputEventBuffer({ maxFrameSamples: 3 });
 
 				for (let i = 0; i < 5; i++) {
-					smallBuffer.beginFrame();
-					smallBuffer.endFrame();
+					beginFrame(smallBuffer);
+					endFrame(smallBuffer);
 				}
 
 				// We don't expose frame sample count, but it shouldn't throw
-				const stats = smallBuffer.getLatencyStats();
+				const stats = getLatencyStats(smallBuffer);
 				expect(stats.avgFrameProcessingTime).toBeGreaterThanOrEqual(0);
 			});
 		});
 
 		describe('getLatencyStats', () => {
 			it('should return zeros when no samples', () => {
-				const stats = buffer.getLatencyStats();
+				const stats = getLatencyStats(buffer);
 
 				expect(stats.min).toBe(0);
 				expect(stats.max).toBe(0);
@@ -605,145 +614,125 @@ describe('InputEventBuffer', () => {
 			});
 
 			it('should calculate min/max correctly', () => {
-				const now = performance.now();
+				recordLatency(buffer, 10);
+				recordLatency(buffer, 5);
+				recordLatency(buffer, 15);
 
-				// Push events with known latencies
-				buffer.recordLatency(now - 10); // 10ms latency
-				buffer.recordLatency(now - 5); // 5ms latency
-				buffer.recordLatency(now - 15); // 15ms latency
+				const stats = getLatencyStats(buffer);
 
-				const stats = buffer.getLatencyStats();
-
-				expect(stats.min).toBeGreaterThanOrEqual(5);
-				expect(stats.min).toBeLessThan(7);
-				expect(stats.max).toBeGreaterThanOrEqual(15);
-				expect(stats.max).toBeLessThan(20);
+				expect(stats.min).toBe(5);
+				expect(stats.max).toBe(15);
 			});
 
 			it('should calculate average correctly', () => {
-				const now = performance.now();
+				recordLatency(buffer, 10);
+				recordLatency(buffer, 10);
+				recordLatency(buffer, 10);
 
-				buffer.recordLatency(now - 10);
-				buffer.recordLatency(now - 10);
-				buffer.recordLatency(now - 10);
+				const stats = getLatencyStats(buffer);
 
-				const stats = buffer.getLatencyStats();
-
-				expect(stats.avg).toBeGreaterThanOrEqual(10);
-				expect(stats.avg).toBeLessThan(12);
+				expect(stats.avg).toBe(10);
 			});
 
 			it('should calculate p95 correctly', () => {
-				const now = performance.now();
-
 				// Add 100 samples
 				for (let i = 1; i <= 100; i++) {
-					buffer.recordLatency(now - i);
+					recordLatency(buffer, i);
 				}
 
-				const stats = buffer.getLatencyStats();
+				const stats = getLatencyStats(buffer);
 
-				// P95 should be around 95ms latency
+				// P95 should be around 95
 				expect(stats.p95).toBeGreaterThanOrEqual(94);
-				expect(stats.p95).toBeLessThan(100);
+				expect(stats.p95).toBeLessThanOrEqual(96);
 			});
 
 			it('should calculate p99 correctly', () => {
-				const now = performance.now();
-
 				// Add 100 samples
 				for (let i = 1; i <= 100; i++) {
-					buffer.recordLatency(now - i);
+					recordLatency(buffer, i);
 				}
 
-				const stats = buffer.getLatencyStats();
+				const stats = getLatencyStats(buffer);
 
-				// P99 should be around 99ms latency (with tolerance for timing variations)
-				expect(stats.p99).toBeGreaterThanOrEqual(95);
-				expect(stats.p99).toBeLessThan(110);
+				// P99 should be around 99
+				expect(stats.p99).toBeGreaterThanOrEqual(98);
+				expect(stats.p99).toBeLessThanOrEqual(100);
 			});
 		});
 
 		describe('isLatencyAcceptable', () => {
 			it('should return true when latency is under threshold', () => {
-				const now = performance.now();
+				recordLatency(buffer, 5);
+				recordLatency(buffer, 8);
+				recordLatency(buffer, 10);
 
-				buffer.recordLatency(now - 5); // 5ms latency
-				buffer.recordLatency(now - 8); // 8ms latency
-				buffer.recordLatency(now - 10); // 10ms latency
-
-				expect(buffer.isLatencyAcceptable(16)).toBe(true);
+				expect(isLatencyAcceptable(buffer, 16)).toBe(true);
 			});
 
 			it('should return false when latency exceeds threshold', () => {
-				const now = performance.now();
+				recordLatency(buffer, 20);
+				recordLatency(buffer, 25);
+				recordLatency(buffer, 30);
 
-				buffer.recordLatency(now - 20); // 20ms latency
-				buffer.recordLatency(now - 25); // 25ms latency
-				buffer.recordLatency(now - 30); // 30ms latency
-
-				expect(buffer.isLatencyAcceptable(16)).toBe(false);
+				expect(isLatencyAcceptable(buffer, 16)).toBe(false);
 			});
 
 			it('should use custom threshold', () => {
-				const now = performance.now();
+				recordLatency(buffer, 5);
 
-				buffer.recordLatency(now - 5);
-
-				expect(buffer.isLatencyAcceptable(3)).toBe(false);
-				expect(buffer.isLatencyAcceptable(10)).toBe(true);
+				expect(isLatencyAcceptable(buffer, 3)).toBe(false);
+				expect(isLatencyAcceptable(buffer, 10)).toBe(true);
 			});
 		});
 
 		describe('isProcessingTimeAcceptable', () => {
 			it('should return true when processing time is under threshold', async () => {
-				buffer.beginFrame();
+				beginFrame(buffer);
 				// Very fast processing
-				buffer.endFrame();
+				endFrame(buffer);
 
-				expect(buffer.isProcessingTimeAcceptable(1)).toBe(true);
+				expect(isProcessingTimeAcceptable(buffer, 1)).toBe(true);
 			});
 
 			it('should return false when processing time exceeds threshold', async () => {
-				buffer.beginFrame();
+				beginFrame(buffer);
 				await new Promise((resolve) => setTimeout(resolve, 5));
-				buffer.endFrame();
+				endFrame(buffer);
 
-				expect(buffer.isProcessingTimeAcceptable(1)).toBe(false);
+				expect(isProcessingTimeAcceptable(buffer, 1)).toBe(false);
 			});
 		});
 
 		describe('resetLatencyStats', () => {
 			it('should clear latency samples', () => {
-				const now = performance.now();
-				buffer.recordLatency(now - 5);
-				buffer.recordLatency(now - 10);
+				recordLatency(buffer, 5);
+				recordLatency(buffer, 10);
 
-				buffer.resetLatencyStats();
+				resetLatencyStats(buffer);
 
-				const stats = buffer.getLatencyStats();
+				const stats = getLatencyStats(buffer);
 				expect(stats.sampleCount).toBe(0);
 			});
 
 			it('should clear frame processing times', () => {
-				buffer.beginFrame();
-				buffer.endFrame();
+				beginFrame(buffer);
+				endFrame(buffer);
 
-				buffer.resetLatencyStats();
+				resetLatencyStats(buffer);
 
-				const stats = buffer.getLatencyStats();
+				const stats = getLatencyStats(buffer);
 				expect(stats.lastFrameProcessingTime).toBe(0);
 			});
 
 			it('should not affect event counts', () => {
-				buffer.pushKey(createKeyEvent('a'));
-				const now = performance.now();
-				buffer.recordLatency(now - 5);
+				pushKeyEvent(buffer, createKeyEvent('a'));
+				recordLatency(buffer, 5);
 
-				buffer.resetLatencyStats();
+				resetLatencyStats(buffer);
 
-				expect(buffer.pendingKeyCount).toBe(1);
-				expect(buffer.getStats().totalKeyEvents).toBe(1);
+				expect(getPendingKeyCount(buffer)).toBe(1);
+				expect(getStats(buffer).totalKeyEvents).toBe(1);
 			});
 		});
 	});
