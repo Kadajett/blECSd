@@ -636,6 +636,28 @@ export function stripTags(text: string): string {
 }
 
 /**
+ * Strips tags from text and trims whitespace.
+ * Combines stripTags() with string trimming for clean output.
+ *
+ * @param text - Text with blessed-style tags
+ * @returns Plain text without tags, trimmed of leading/trailing whitespace
+ *
+ * @example
+ * ```typescript
+ * import { cleanTags } from 'blecsd';
+ *
+ * const clean = cleanTags('  {bold}Hello{/bold}  ');
+ * // clean = 'Hello'
+ *
+ * const messy = cleanTags('\n{red-fg}  World  {/red-fg}\n');
+ * // messy = 'World'
+ * ```
+ */
+export function cleanTags(text: string): string {
+	return stripTags(text).trim();
+}
+
+/**
  * Escapes braces in text to prevent tag interpretation.
  *
  * @param text - Text with literal braces

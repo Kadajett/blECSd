@@ -7,6 +7,7 @@ import { AttrFlags } from './sattr';
 import {
 	attrsToTags,
 	attrToTag,
+	cleanTags,
 	colorToTag,
 	createTaggedText,
 	escapeTags,
@@ -380,6 +381,56 @@ describe('tags', () => {
 			const result = stripTags('{bold}{italic}{red-fg}Text{/red-fg}{/italic}{/bold}');
 
 			expect(result).toBe('Text');
+		});
+	});
+
+	describe('cleanTags', () => {
+		it('should strip tags and trim whitespace', () => {
+			const result = cleanTags('  {bold}Hello{/bold}  ');
+
+			expect(result).toBe('Hello');
+		});
+
+		it('should handle leading/trailing newlines', () => {
+			const result = cleanTags('\n{red-fg}World{/red-fg}\n');
+
+			expect(result).toBe('World');
+		});
+
+		it('should handle mixed whitespace', () => {
+			const result = cleanTags('\t  {bold}Text{/bold}  \t\n');
+
+			expect(result).toBe('Text');
+		});
+
+		it('should preserve internal whitespace', () => {
+			const result = cleanTags('  {bold}Hello   World{/bold}  ');
+
+			expect(result).toBe('Hello   World');
+		});
+
+		it('should handle text without tags', () => {
+			const result = cleanTags('  Hello World  ');
+
+			expect(result).toBe('Hello World');
+		});
+
+		it('should handle empty string', () => {
+			const result = cleanTags('');
+
+			expect(result).toBe('');
+		});
+
+		it('should handle whitespace-only string', () => {
+			const result = cleanTags('   \n\t  ');
+
+			expect(result).toBe('');
+		});
+
+		it('should unescape braces after trimming', () => {
+			const result = cleanTags('  Use {{bold}} for bold  ');
+
+			expect(result).toBe('Use {bold} for bold');
 		});
 	});
 
