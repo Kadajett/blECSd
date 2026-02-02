@@ -17,7 +17,6 @@ import {
 	GRAMMAR_GO,
 	GRAMMAR_JAVASCRIPT,
 	GRAMMAR_JSON,
-	GRAMMAR_PLAINTEXT,
 	GRAMMAR_PYTHON,
 	GRAMMAR_RUST,
 	GRAMMAR_SHELL,
@@ -28,7 +27,6 @@ import {
 	invalidateLines,
 	setGrammar,
 	tokenizeLine,
-	type LineEntry,
 	type Token,
 } from './syntaxHighlight';
 
@@ -689,7 +687,7 @@ describe('edge cases', () => {
 	});
 
 	it('handles escape sequences in strings', () => {
-		const cache = createHighlightCache(GRAMMAR_JAVASCRIPT);
+		createHighlightCache(GRAMMAR_JAVASCRIPT);
 		const entry = tokenizeLine(GRAMMAR_JAVASCRIPT, '"hello\\nworld"', EMPTY_STATE);
 
 		const strings = entry.tokens.filter((t) => t.type === 'string');
@@ -706,7 +704,7 @@ describe('edge cases', () => {
 	});
 
 	it('handles unicode identifiers', () => {
-		const cache = createHighlightCache(GRAMMAR_JAVASCRIPT);
+		createHighlightCache(GRAMMAR_JAVASCRIPT);
 		const entry = tokenizeLine(GRAMMAR_JAVASCRIPT, 'const $var = _value;', EMPTY_STATE);
 
 		const identifiers = entry.tokens.filter((t) => t.type === 'identifier');

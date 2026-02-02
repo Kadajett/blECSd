@@ -323,7 +323,7 @@ describe('searchWithCache', () => {
 		updateSearchQuery(cache, text, 'abc');
 
 		// First batch searches 0-100, finds some matches
-		const result1 = searchWithCache(cache, text, 100);
+		searchWithCache(cache, text, 100);
 		expect(cache.complete).toBe(false);
 
 		// Continue searching, should find more
@@ -391,7 +391,7 @@ describe('getPreviousMatch', () => {
 		searchWithCache(cache, 'aa');
 		cache.currentIndex = 0;
 
-		const match = getPreviousMatch(cache);
+		getPreviousMatch(cache);
 
 		expect(cache.currentIndex).toBe(1);
 	});

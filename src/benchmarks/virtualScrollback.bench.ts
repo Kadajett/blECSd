@@ -432,8 +432,8 @@ describe('ACCEPTANCE CRITERIA VALIDATION', () => {
 	bench(
 		'ACCEPTANCE: 1M lines memory check',
 		() => {
-			const stats = getScrollbackStats(buffer1m);
-			// Note: Memory is estimated, may need calibration
+			// Just call the function to verify it doesn't throw
+			getScrollbackStats(buffer1m);
 		},
 		{
 			setup() {

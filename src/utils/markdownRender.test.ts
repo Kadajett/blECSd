@@ -17,7 +17,6 @@ import {
 	parseMarkdownCached,
 	renderBlock,
 	renderMarkdown,
-	type MarkdownBlock,
 } from './markdownRender';
 
 // =============================================================================

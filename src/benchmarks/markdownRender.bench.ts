@@ -343,15 +343,16 @@ describe('Code Blocks (ACCEPTANCE: Highlight correctly)', () => {
 describe('Tables (ACCEPTANCE: No scroll slowdown)', () => {
 	let cache: MarkdownCache;
 	let result: MarkdownParseResult;
+	let tableDoc: string;
 
 	bench(
 		'parse document with 20 tables',
 		() => {
-			parseMarkdown(doc);
+			parseMarkdown(tableDoc);
 		},
 		{
 			setup() {
-				// Inline doc creation since it's needed in the bench function
+				tableDoc = createMarkdownDoc({ paragraphs: 20, tables: 20 });
 			},
 		},
 	);
@@ -373,9 +374,6 @@ describe('Tables (ACCEPTANCE: No scroll slowdown)', () => {
 		},
 	);
 });
-
-// Variable for table parsing benchmark
-let doc: string;
 
 // =============================================================================
 // STATISTICS BENCHMARKS

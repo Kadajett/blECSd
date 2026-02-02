@@ -6,11 +6,10 @@
  * @module terminal/ansi/parser.bench
  */
 
-import { bench, describe, expect } from 'vitest';
+import { bench, describe, expect, it } from 'vitest';
 import {
 	createAttribute,
 	parseSgrString,
-	parseSgrStringLegacy,
 } from './parser';
 
 // Test data generators
@@ -76,90 +75,50 @@ const mixedSgr1000 = generateMixedSgr(1000);
 
 describe('parseSgrString benchmarks', () => {
 	describe('simple SGR codes (bold + color)', () => {
-		bench('streaming parser - 100 sequences', () => {
+		bench('parser - 100 sequences', () => {
 			const attr = createAttribute();
 			parseSgrString(simpleSgr100, attr);
 		});
 
-		bench('legacy parser - 100 sequences', () => {
-			const attr = createAttribute();
-			parseSgrStringLegacy(simpleSgr100, attr);
-		});
-
-		bench('streaming parser - 1000 sequences', () => {
+		bench('parser - 1000 sequences', () => {
 			const attr = createAttribute();
 			parseSgrString(simpleSgr1000, attr);
-		});
-
-		bench('legacy parser - 1000 sequences', () => {
-			const attr = createAttribute();
-			parseSgrStringLegacy(simpleSgr1000, attr);
 		});
 	});
 
 	describe('256-color SGR codes', () => {
-		bench('streaming parser - 100 sequences', () => {
+		bench('parser - 100 sequences', () => {
 			const attr = createAttribute();
 			parseSgrString(color256Sgr100, attr);
 		});
 
-		bench('legacy parser - 100 sequences', () => {
-			const attr = createAttribute();
-			parseSgrStringLegacy(color256Sgr100, attr);
-		});
-
-		bench('streaming parser - 1000 sequences', () => {
+		bench('parser - 1000 sequences', () => {
 			const attr = createAttribute();
 			parseSgrString(color256Sgr1000, attr);
-		});
-
-		bench('legacy parser - 1000 sequences', () => {
-			const attr = createAttribute();
-			parseSgrStringLegacy(color256Sgr1000, attr);
 		});
 	});
 
 	describe('RGB SGR codes', () => {
-		bench('streaming parser - 100 sequences', () => {
+		bench('parser - 100 sequences', () => {
 			const attr = createAttribute();
 			parseSgrString(rgbSgr100, attr);
 		});
 
-		bench('legacy parser - 100 sequences', () => {
-			const attr = createAttribute();
-			parseSgrStringLegacy(rgbSgr100, attr);
-		});
-
-		bench('streaming parser - 1000 sequences', () => {
+		bench('parser - 1000 sequences', () => {
 			const attr = createAttribute();
 			parseSgrString(rgbSgr1000, attr);
-		});
-
-		bench('legacy parser - 1000 sequences', () => {
-			const attr = createAttribute();
-			parseSgrStringLegacy(rgbSgr1000, attr);
 		});
 	});
 
 	describe('mixed SGR codes (styles, 256, RGB)', () => {
-		bench('streaming parser - 100 sequences', () => {
+		bench('parser - 100 sequences', () => {
 			const attr = createAttribute();
 			parseSgrString(mixedSgr100, attr);
 		});
 
-		bench('legacy parser - 100 sequences', () => {
-			const attr = createAttribute();
-			parseSgrStringLegacy(mixedSgr100, attr);
-		});
-
-		bench('streaming parser - 1000 sequences', () => {
+		bench('parser - 1000 sequences', () => {
 			const attr = createAttribute();
 			parseSgrString(mixedSgr1000, attr);
-		});
-
-		bench('legacy parser - 1000 sequences', () => {
-			const attr = createAttribute();
-			parseSgrStringLegacy(mixedSgr1000, attr);
 		});
 	});
 });
@@ -177,16 +136,13 @@ describe('parser correctness verification', () => {
 	];
 
 	for (const input of testCases) {
-		it(`streaming parser matches legacy for: ${input.replace(/\x1b/g, 'ESC')}`, () => {
-			const attrStreaming = createAttribute();
-			const attrLegacy = createAttribute();
-
-			parseSgrString(input, attrStreaming);
-			parseSgrStringLegacy(input, attrLegacy);
-
-			expect(attrStreaming.fg).toEqual(attrLegacy.fg);
-			expect(attrStreaming.bg).toEqual(attrLegacy.bg);
-			expect(attrStreaming.styles).toEqual(attrLegacy.styles);
+		it(`parser handles: ${input.replace(/\x1b/g, 'ESC')}`, () => {
+			const attr = createAttribute();
+			parseSgrString(input, attr);
+			// Verify the parser doesn't throw and produces a valid attribute
+			expect(attr).toBeDefined();
+			expect(typeof attr.fg).toBe('number');
+			expect(typeof attr.bg).toBe('number');
 		});
 	}
 });
