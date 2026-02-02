@@ -67,6 +67,31 @@ SGR.FG_256  // 38 - 256-color foreground
 SGR.BG_256  // 48 - 256-color background
 ```
 
+## ANSI Attribute Parser
+
+Parse SGR escape sequences into attribute objects for rendering pipelines.
+
+```typescript
+import { createAttribute, parseSgrString } from 'blecsd/terminal';
+
+const attr = createAttribute();
+parseSgrString('\x1b[1;38;5;196m', attr);
+// attr now has bold + 256-color foreground
+```
+
+Useful helpers:
+
+```typescript
+import { applySgrCodes, extractSgrCodes } from 'blecsd/terminal';
+
+const codes = extractSgrCodes('\x1b[1;31m');
+applySgrCodes(codes[0] ?? [], attr);
+```
+
+Notes:
+- `parseSgrString` applies codes in-place and is optimized for streaming input.
+- Empty parameters (CSI `m`) are treated as reset (`0`).
+
 ## cursor Namespace
 
 Functions for cursor positioning and visibility.

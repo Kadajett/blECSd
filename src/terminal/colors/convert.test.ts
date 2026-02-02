@@ -332,7 +332,8 @@ describe('convert', () => {
 		});
 
 		it('throws for invalid input', () => {
-			expect(() => parseColor({} as unknown)).toThrow();
+			// @ts-expect-error: Testing invalid input
+			expect(() => parseColor({})).toThrow();
 		});
 	});
 
