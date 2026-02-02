@@ -181,6 +181,7 @@ export {
 	resetLabelStore,
 	Scrollable,
 	ScrollbarVisibility,
+	StateMachineStore,
 	scrollBy,
 	scrollTo,
 	scrollToBottom,
@@ -223,7 +224,6 @@ export {
 	setZIndex,
 	shouldShrink,
 	show,
-	StateMachineStore,
 	TextAlign,
 	TextVAlign,
 	unpackColor,
@@ -234,10 +234,14 @@ export {
 // =============================================================================
 export type {
 	BoxConfig,
+	BubbleableEvent,
+	BubbleableEventOptions,
+	BubbleResult,
 	ButtonConfig,
 	Entity,
 	EventHandler,
 	EventMap,
+	GetEntityEventBus,
 	InputConfig,
 	ListConfig,
 	ScreenConfig,
@@ -251,8 +255,11 @@ export type {
 export {
 	BoxConfigSchema,
 	ButtonConfigSchema,
+	bubbleEvent,
 	createBoxEntity,
+	createBubbleableEvent,
 	createButtonEntity,
+	createEntityEventBusStore,
 	createEventBus,
 	createInputEntity,
 	createListEntity,
@@ -309,6 +316,20 @@ export {
 	PositionValueSchema,
 	PositiveIntSchema,
 } from './schemas';
+
+// =============================================================================
+// SYSTEMS - ECS Systems
+// =============================================================================
+export {
+	createStateMachineSystem,
+	getStateAgeStore,
+	getSystemStateAge,
+	queryStateMachine,
+	registerStateMachineSystem,
+	resetStateAge,
+	stateMachineSystem,
+	updateStateAges,
+} from './systems';
 
 // =============================================================================
 // TERMINAL - Input Parsing

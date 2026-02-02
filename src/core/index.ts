@@ -25,6 +25,18 @@ export {
 	ScreenConfigSchema,
 	TextConfigSchema,
 } from './entities';
+// Event bubbling
+export type {
+	BubbleableEvent,
+	BubbleableEventOptions,
+	BubbleResult,
+	GetEntityEventBus,
+} from './eventBubbling';
+export {
+	bubbleEvent,
+	createBubbleableEvent,
+	createEntityEventBusStore,
+} from './eventBubbling';
 // Event system
 export type { EventHandler, EventMap, ScreenEventMap, UIEventMap } from './events';
 export { createEventBus, EventBus } from './events';
