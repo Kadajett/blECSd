@@ -186,3 +186,31 @@ export {
 	WIDE_RANGES,
 	ZERO_WIDTH_RANGES,
 } from './unicode';
+// Rope data structure for large text buffers
+export type { LineInfo, Rope, RopeLeaf, RopeNode, RopeStats } from './rope';
+export {
+	append,
+	charAt,
+	createEmptyRope,
+	createRope,
+	deleteRange,
+	getLength,
+	getLine,
+	getLineCount,
+	getLineEnd,
+	getLineForIndex,
+	getLines,
+	getLineStart,
+	getNewlineCount,
+	getStats,
+	getText,
+	insert,
+	isEmpty,
+	LEAF_MAX_SIZE,
+	LEAF_MIN_SIZE,
+	MAX_DEPTH,
+	prepend,
+	replaceRange,
+	substring,
+	verify,
+} from './rope';
