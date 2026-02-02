@@ -405,8 +405,9 @@ export {
 // =============================================================================
 // UTILS - Utility Functions
 // =============================================================================
-export type { BoxChars, Cell, CellBuffer, RenderBoxOptions, TextAlign, WrapOptions } from './utils';
+export type { BoxChars, Cell, CellBuffer, RenderBoxOptions, StyleAttr, StyleInput, TextAlign, WrapOptions } from './utils';
 export {
+	AttrFlags,
 	BOX_ASCII,
 	BOX_BOLD,
 	BOX_DASHED,
@@ -414,9 +415,12 @@ export {
 	BOX_ROUNDED,
 	BOX_SINGLE,
 	alignLine,
+	attrsToStyle,
 	bufferToString,
 	charsetToBoxChars,
 	createCellBuffer,
+	decodeStyleAttr,
+	encodeStyleAttr,
 	fillRect,
 	getVisibleWidth,
 	padHeight,
@@ -424,7 +428,18 @@ export {
 	renderHLine,
 	renderText,
 	renderVLine,
+	sattr,
+	sattrAddFlag,
+	sattrCopy,
+	sattrEmpty,
+	sattrEqual,
+	sattrFromStyleData,
+	sattrHasFlag,
+	sattrInvert,
+	sattrMerge,
+	sattrRemoveFlag,
 	stripAnsi,
+	styleToAttrs,
 	truncate,
 	wordWrap,
 	wrapText,

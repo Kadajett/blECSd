@@ -21,7 +21,25 @@ export {
 	renderText,
 	renderVLine,
 } from './box';
-
+// Style attribute encoding
+export type { StyleAttr, StyleInput } from './sattr';
+export {
+	AttrFlags,
+	attrsToStyle,
+	decodeStyleAttr,
+	encodeStyleAttr,
+	sattr,
+	sattrAddFlag,
+	sattrCopy,
+	sattrEmpty,
+	sattrEqual,
+	sattrFromStyleData,
+	sattrHasFlag,
+	sattrInvert,
+	sattrMerge,
+	sattrRemoveFlag,
+	styleToAttrs,
+} from './sattr';
 // Text wrapping utilities
 export type { TextAlign, WrapOptions } from './textWrap';
 export {
