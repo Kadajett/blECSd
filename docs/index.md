@@ -38,6 +38,22 @@ blECSd is designed for:
 2. [Concepts](./getting-started/concepts.md) - Understand the architecture
 3. [Hello World](./getting-started/hello-world.md) - Your first blECSd application
 
+## Tutorials
+
+Step-by-step guides for building applications:
+
+- [Todo List](./tutorials/todo-list.md) - Forms, state management, keyboard navigation (beginner)
+- [File Browser](./tutorials/file-browser.md) - Virtualized lists, file system operations (intermediate)
+- [System Dashboard](./tutorials/dashboard.md) - Layouts, progress bars, auto-refresh (intermediate)
+- [Simple Game](./tutorials/simple-game.md) - Animation, collision, state machines (advanced)
+
+## Examples
+
+Working applications demonstrating blECSd patterns:
+
+- [Examples Gallery](./examples/index.md) - Overview of all examples
+- [File Manager](./examples/file-manager.md) - Full-featured file manager with tabs, preview, virtualization
+
 ## Guides
 
 - [Physics-Based Animations](./guides/animations.md) - Momentum, springs, and smooth transitions
