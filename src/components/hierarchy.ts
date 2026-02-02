@@ -485,3 +485,377 @@ export function getPrevSibling(world: World, eid: Entity): Entity {
 	}
 	return Hierarchy.prevSibling[eid] as Entity;
 }
+
+/**
+ * Prepends a child to a parent entity (inserts at the beginning).
+ *
+ * @param world - The ECS world
+ * @param parent - The parent entity
+ * @param child - The child entity to prepend
+ * @returns The parent entity for chaining
+ *
+ * @example
+ * ```typescript
+ * import { prepend, getChildren } from 'blecsd';
+ *
+ * appendChild(world, parent, child2);
+ * prepend(world, parent, child1);
+ * getChildren(world, parent); // [child1, child2]
+ * ```
+ */
+export function prepend(world: World, parent: Entity, child: Entity): Entity {
+	ensureHierarchy(world, child);
+	ensureHierarchy(world, parent);
+
+	const currentParent = Hierarchy.parent[child] as Entity;
+
+	// Remove from current parent if any
+	if (currentParent !== NULL_ENTITY) {
+		removeFromParent(child, currentParent);
+	}
+
+	// Insert at beginning
+	const firstChild = Hierarchy.firstChild[parent] as Entity;
+	Hierarchy.parent[child] = parent;
+	Hierarchy.firstChild[parent] = child;
+	Hierarchy.prevSibling[child] = NULL_ENTITY;
+	Hierarchy.nextSibling[child] = firstChild;
+
+	if (firstChild !== NULL_ENTITY) {
+		Hierarchy.prevSibling[firstChild] = child;
+	}
+
+	// Increment child count
+	Hierarchy.childCount[parent] = (Hierarchy.childCount[parent] as number) + 1;
+
+	// Update depth
+	const parentDepth = Hierarchy.depth[parent] as number;
+	updateDepths(child, parentDepth + 1);
+
+	return parent;
+}
+
+/**
+ * Inserts a child at a specific index in the parent's children list.
+ *
+ * @param world - The ECS world
+ * @param parent - The parent entity
+ * @param child - The child entity to insert
+ * @param index - The index to insert at (0 = first, negative counts from end)
+ * @returns The parent entity for chaining
+ *
+ * @example
+ * ```typescript
+ * import { insertAt, getChildren } from 'blecsd';
+ *
+ * appendChild(world, parent, child1);
+ * appendChild(world, parent, child3);
+ * insertAt(world, parent, child2, 1);
+ * getChildren(world, parent); // [child1, child2, child3]
+ * ```
+ */
+export function insertAt(world: World, parent: Entity, child: Entity, index: number): Entity {
+	ensureHierarchy(world, parent);
+	const childCount = Hierarchy.childCount[parent] as number;
+
+	// Handle negative indices (count from end, -1 = before last)
+	let targetIndex = index;
+	if (targetIndex < 0) {
+		targetIndex = Math.max(0, childCount + targetIndex);
+	}
+
+	// If index >= childCount, append at end
+	if (targetIndex >= childCount) {
+		return appendChild(world, parent, child);
+	}
+
+	// If index === 0, prepend
+	if (targetIndex === 0) {
+		return prepend(world, parent, child);
+	}
+
+	// Find the sibling at the target index
+	let sibling = Hierarchy.firstChild[parent] as Entity;
+	for (let i = 0; i < targetIndex; i++) {
+		sibling = Hierarchy.nextSibling[sibling] as Entity;
+	}
+
+	// Insert before the sibling at the target index
+	return insertBefore(world, child, sibling);
+}
+
+/**
+ * Inserts a child before a sibling entity.
+ *
+ * @param world - The ECS world
+ * @param child - The child entity to insert
+ * @param sibling - The sibling to insert before
+ * @returns The child entity for chaining
+ *
+ * @example
+ * ```typescript
+ * import { insertBefore, getChildren } from 'blecsd';
+ *
+ * appendChild(world, parent, child1);
+ * appendChild(world, parent, child3);
+ * insertBefore(world, child2, child3);
+ * getChildren(world, parent); // [child1, child2, child3]
+ * ```
+ */
+export function insertBefore(world: World, child: Entity, sibling: Entity): Entity {
+	if (!hasComponent(world, sibling, Hierarchy)) {
+		return child;
+	}
+
+	const parent = Hierarchy.parent[sibling] as Entity;
+	if (parent === NULL_ENTITY) {
+		return child;
+	}
+
+	ensureHierarchy(world, child);
+
+	// Remove from current parent if any
+	const currentParent = Hierarchy.parent[child] as Entity;
+	if (currentParent !== NULL_ENTITY) {
+		removeFromParent(child, currentParent);
+	}
+
+	// Get sibling's prev
+	const prevSibling = Hierarchy.prevSibling[sibling] as Entity;
+
+	// Insert between prevSibling and sibling
+	Hierarchy.parent[child] = parent;
+	Hierarchy.prevSibling[child] = prevSibling;
+	Hierarchy.nextSibling[child] = sibling;
+	Hierarchy.prevSibling[sibling] = child;
+
+	if (prevSibling !== NULL_ENTITY) {
+		Hierarchy.nextSibling[prevSibling] = child;
+	} else {
+		// child becomes first child
+		Hierarchy.firstChild[parent] = child;
+	}
+
+	// Increment child count
+	Hierarchy.childCount[parent] = (Hierarchy.childCount[parent] as number) + 1;
+
+	// Update depth
+	const parentDepth = Hierarchy.depth[parent] as number;
+	updateDepths(child, parentDepth + 1);
+
+	return child;
+}
+
+/**
+ * Inserts a child after a sibling entity.
+ *
+ * @param world - The ECS world
+ * @param child - The child entity to insert
+ * @param sibling - The sibling to insert after
+ * @returns The child entity for chaining
+ *
+ * @example
+ * ```typescript
+ * import { insertAfter, getChildren } from 'blecsd';
+ *
+ * appendChild(world, parent, child1);
+ * appendChild(world, parent, child3);
+ * insertAfter(world, child2, child1);
+ * getChildren(world, parent); // [child1, child2, child3]
+ * ```
+ */
+export function insertAfter(world: World, child: Entity, sibling: Entity): Entity {
+	if (!hasComponent(world, sibling, Hierarchy)) {
+		return child;
+	}
+
+	const parent = Hierarchy.parent[sibling] as Entity;
+	if (parent === NULL_ENTITY) {
+		return child;
+	}
+
+	ensureHierarchy(world, child);
+
+	// Remove from current parent if any
+	const currentParent = Hierarchy.parent[child] as Entity;
+	if (currentParent !== NULL_ENTITY) {
+		removeFromParent(child, currentParent);
+	}
+
+	// Get sibling's next
+	const nextSibling = Hierarchy.nextSibling[sibling] as Entity;
+
+	// Insert between sibling and nextSibling
+	Hierarchy.parent[child] = parent;
+	Hierarchy.prevSibling[child] = sibling;
+	Hierarchy.nextSibling[child] = nextSibling;
+	Hierarchy.nextSibling[sibling] = child;
+
+	if (nextSibling !== NULL_ENTITY) {
+		Hierarchy.prevSibling[nextSibling] = child;
+	}
+
+	// Increment child count
+	Hierarchy.childCount[parent] = (Hierarchy.childCount[parent] as number) + 1;
+
+	// Update depth
+	const parentDepth = Hierarchy.depth[parent] as number;
+	updateDepths(child, parentDepth + 1);
+
+	return child;
+}
+
+/**
+ * Detaches an entity from its parent.
+ * Convenience method equivalent to setParent(world, eid, NULL_ENTITY).
+ *
+ * @param world - The ECS world
+ * @param eid - The entity to detach
+ * @returns The entity for chaining
+ *
+ * @example
+ * ```typescript
+ * import { detach, getParent, NULL_ENTITY } from 'blecsd';
+ *
+ * appendChild(world, parent, child);
+ * detach(world, child);
+ * getParent(world, child); // NULL_ENTITY
+ * ```
+ */
+export function detach(world: World, eid: Entity): Entity {
+	return setParent(world, eid, NULL_ENTITY as Entity);
+}
+
+/**
+ * Gets the last child of an entity.
+ *
+ * @param world - The ECS world
+ * @param parent - The parent entity
+ * @returns Last child entity or NULL_ENTITY
+ *
+ * @example
+ * ```typescript
+ * import { getLastChild, NULL_ENTITY } from 'blecsd';
+ *
+ * const lastChild = getLastChild(world, parent);
+ * if (lastChild !== NULL_ENTITY) {
+ *   // Process last child
+ * }
+ * ```
+ */
+export function getLastChild(world: World, parent: Entity): Entity {
+	if (!hasComponent(world, parent, Hierarchy)) {
+		return NULL_ENTITY as Entity;
+	}
+
+	let child = Hierarchy.firstChild[parent] as Entity;
+	if (child === NULL_ENTITY) {
+		return NULL_ENTITY as Entity;
+	}
+
+	while (Hierarchy.nextSibling[child] !== NULL_ENTITY) {
+		child = Hierarchy.nextSibling[child] as Entity;
+	}
+
+	return child;
+}
+
+/**
+ * Gets the first child of an entity.
+ *
+ * @param world - The ECS world
+ * @param parent - The parent entity
+ * @returns First child entity or NULL_ENTITY
+ *
+ * @example
+ * ```typescript
+ * import { getFirstChild, NULL_ENTITY } from 'blecsd';
+ *
+ * const firstChild = getFirstChild(world, parent);
+ * if (firstChild !== NULL_ENTITY) {
+ *   // Process first child
+ * }
+ * ```
+ */
+export function getFirstChild(world: World, parent: Entity): Entity {
+	if (!hasComponent(world, parent, Hierarchy)) {
+		return NULL_ENTITY as Entity;
+	}
+	return Hierarchy.firstChild[parent] as Entity;
+}
+
+/**
+ * Gets the index of a child within its parent's children list.
+ *
+ * @param world - The ECS world
+ * @param child - The child entity
+ * @returns Index (0-based) or -1 if not a child
+ *
+ * @example
+ * ```typescript
+ * import { getChildIndex } from 'blecsd';
+ *
+ * appendChild(world, parent, child1);
+ * appendChild(world, parent, child2);
+ * getChildIndex(world, child1); // 0
+ * getChildIndex(world, child2); // 1
+ * ```
+ */
+export function getChildIndex(world: World, child: Entity): number {
+	if (!hasComponent(world, child, Hierarchy)) {
+		return -1;
+	}
+
+	const parent = Hierarchy.parent[child] as Entity;
+	if (parent === NULL_ENTITY) {
+		return -1;
+	}
+
+	let index = 0;
+	let sibling = Hierarchy.firstChild[parent] as Entity;
+	while (sibling !== NULL_ENTITY) {
+		if (sibling === child) {
+			return index;
+		}
+		index++;
+		sibling = Hierarchy.nextSibling[sibling] as Entity;
+	}
+
+	return -1;
+}
+
+/**
+ * Gets a child at a specific index.
+ *
+ * @param world - The ECS world
+ * @param parent - The parent entity
+ * @param index - The index (0-based)
+ * @returns Child entity or NULL_ENTITY if out of bounds
+ *
+ * @example
+ * ```typescript
+ * import { getChildAt, NULL_ENTITY } from 'blecsd';
+ *
+ * appendChild(world, parent, child1);
+ * appendChild(world, parent, child2);
+ * getChildAt(world, parent, 0); // child1
+ * getChildAt(world, parent, 1); // child2
+ * getChildAt(world, parent, 5); // NULL_ENTITY
+ * ```
+ */
+export function getChildAt(world: World, parent: Entity, index: number): Entity {
+	if (!hasComponent(world, parent, Hierarchy)) {
+		return NULL_ENTITY as Entity;
+	}
+
+	if (index < 0) {
+		return NULL_ENTITY as Entity;
+	}
+
+	let child = Hierarchy.firstChild[parent] as Entity;
+	for (let i = 0; i < index && child !== NULL_ENTITY; i++) {
+		child = Hierarchy.nextSibling[child] as Entity;
+	}
+
+	return child;
+}

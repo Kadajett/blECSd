@@ -71,6 +71,72 @@ import { removeChild } from 'blecsd';
 removeChild(world, parent, child);
 ```
 
+### prepend
+
+Add an entity as the first child of a parent.
+
+```typescript
+import { prepend, getChildren } from 'blecsd';
+
+appendChild(world, parent, child2);
+prepend(world, parent, child1);
+getChildren(world, parent); // [child1, child2]
+```
+
+### insertAt
+
+Insert an entity at a specific index in the parent's children.
+
+```typescript
+import { insertAt, getChildren } from 'blecsd';
+
+appendChild(world, parent, child1);
+appendChild(world, parent, child3);
+insertAt(world, parent, child2, 1);
+getChildren(world, parent); // [child1, child2, child3]
+
+// Negative indices count from end
+insertAt(world, parent, child, -1); // Insert before last
+```
+
+### insertBefore
+
+Insert an entity before a sibling.
+
+```typescript
+import { insertBefore, getChildren } from 'blecsd';
+
+appendChild(world, parent, child1);
+appendChild(world, parent, child3);
+insertBefore(world, child2, child3);
+getChildren(world, parent); // [child1, child2, child3]
+```
+
+### insertAfter
+
+Insert an entity after a sibling.
+
+```typescript
+import { insertAfter, getChildren } from 'blecsd';
+
+appendChild(world, parent, child1);
+appendChild(world, parent, child3);
+insertAfter(world, child2, child1);
+getChildren(world, parent); // [child1, child2, child3]
+```
+
+### detach
+
+Remove an entity from its parent (convenience for setParent to NULL_ENTITY).
+
+```typescript
+import { detach, getParent, NULL_ENTITY } from 'blecsd';
+
+appendChild(world, parent, child);
+detach(world, child);
+getParent(world, child); // NULL_ENTITY
+```
+
 ### getParent
 
 Get an entity's parent ID.
@@ -115,6 +181,56 @@ const ancestors = getAncestors(world, entity);
 // [parent, grandparent, ...] nearest first
 ```
 
+### getFirstChild
+
+Get the first child of an entity.
+
+```typescript
+import { getFirstChild, NULL_ENTITY } from 'blecsd';
+
+const first = getFirstChild(world, parent);
+// Entity ID or NULL_ENTITY if no children
+```
+
+### getLastChild
+
+Get the last child of an entity.
+
+```typescript
+import { getLastChild, NULL_ENTITY } from 'blecsd';
+
+const last = getLastChild(world, parent);
+// Entity ID or NULL_ENTITY if no children
+```
+
+### getChildAt
+
+Get a child at a specific index.
+
+```typescript
+import { getChildAt, NULL_ENTITY } from 'blecsd';
+
+appendChild(world, parent, child1);
+appendChild(world, parent, child2);
+getChildAt(world, parent, 0); // child1
+getChildAt(world, parent, 1); // child2
+getChildAt(world, parent, 5); // NULL_ENTITY (out of bounds)
+```
+
+### getChildIndex
+
+Get the index of a child within its parent's children.
+
+```typescript
+import { getChildIndex } from 'blecsd';
+
+appendChild(world, parent, child1);
+appendChild(world, parent, child2);
+getChildIndex(world, child1); // 0
+getChildIndex(world, child2); // 1
+getChildIndex(world, orphan); // -1 (not a child)
+```
+
 ### getNextSibling
 
 Get the next sibling entity.
@@ -123,7 +239,7 @@ Get the next sibling entity.
 import { getNextSibling } from 'blecsd';
 
 const next = getNextSibling(world, entity);
-// Entity ID or undefined
+// Entity ID or NULL_ENTITY
 ```
 
 ### getPrevSibling
@@ -131,10 +247,10 @@ const next = getNextSibling(world, entity);
 Get the previous sibling entity.
 
 ```typescript
-import { getPrevSibling } from 'blecsd';
+import { getPrevSibling, NULL_ENTITY } from 'blecsd';
 
 const prev = getPrevSibling(world, entity);
-// Entity ID or undefined
+// Entity ID or NULL_ENTITY
 ```
 
 ### getDepth
@@ -191,11 +307,12 @@ const data = getHierarchy(world, entity);
 
 ```typescript
 interface HierarchyData {
-  readonly parent: number | null;
-  readonly firstChild: number | null;
-  readonly nextSibling: number | null;
-  readonly prevSibling: number | null;
-  readonly depth: number;
+  readonly parent: Entity;        // NULL_ENTITY if no parent
+  readonly firstChild: Entity;    // NULL_ENTITY if no children
+  readonly nextSibling: Entity;   // NULL_ENTITY if last sibling
+  readonly prevSibling: Entity;   // NULL_ENTITY if first sibling
+  readonly childCount: number;    // Number of direct children
+  readonly depth: number;         // Depth in hierarchy (0 = root)
 }
 ```
 
@@ -252,4 +369,41 @@ function getRoot(world, entity) {
   const ancestors = getAncestors(world, entity);
   return ancestors[ancestors.length - 1];
 }
+```
+
+### Reordering Children
+
+```typescript
+import {
+  appendChild,
+  insertBefore,
+  insertAfter,
+  getFirstChild,
+  getLastChild
+} from 'blecsd';
+
+// Build initial list
+appendChild(world, list, item1);
+appendChild(world, list, item2);
+appendChild(world, list, item3);
+
+// Move item3 to beginning
+const first = getFirstChild(world, list);
+insertBefore(world, item3, first);
+// Now: [item3, item1, item2]
+
+// Move item1 to end
+const last = getLastChild(world, list);
+insertAfter(world, item1, last);
+// Now: [item3, item2, item1]
+```
+
+### Moving Between Parents
+
+```typescript
+import { detach, appendChild } from 'blecsd';
+
+// Move child from parent1 to parent2
+detach(world, child);
+appendChild(world, parent2, child);
 ```
