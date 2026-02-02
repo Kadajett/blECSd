@@ -50,12 +50,18 @@ export const Scrollable = {
 	scrollWidth: new Float32Array(DEFAULT_CAPACITY),
 	/** Total scrollable height */
 	scrollHeight: new Float32Array(DEFAULT_CAPACITY),
+	/** Viewport width (visible area) - used for clamping */
+	viewportWidth: new Float32Array(DEFAULT_CAPACITY),
+	/** Viewport height (visible area) - used for clamping */
+	viewportHeight: new Float32Array(DEFAULT_CAPACITY),
 	/** Scrollbar visibility mode (0=hidden, 1=visible, 2=auto) */
 	scrollbarVisible: new Uint8Array(DEFAULT_CAPACITY),
 	/** Whether scroll track is visible */
 	trackVisible: new Uint8Array(DEFAULT_CAPACITY),
 	/** Always show scrollbar (0=no, 1=yes) */
 	alwaysScroll: new Uint8Array(DEFAULT_CAPACITY),
+	/** Whether clamping is enabled (0=no, 1=yes) - default yes */
+	clampEnabled: new Uint8Array(DEFAULT_CAPACITY),
 };
 
 /**
@@ -70,12 +76,18 @@ export interface ScrollableOptions {
 	scrollWidth?: number;
 	/** Total scrollable height */
 	scrollHeight?: number;
+	/** Viewport width (visible area) */
+	viewportWidth?: number;
+	/** Viewport height (visible area) */
+	viewportHeight?: number;
 	/** Scrollbar visibility mode */
 	scrollbarVisible?: ScrollbarVisibility;
 	/** Whether scroll track is visible */
 	trackVisible?: boolean;
 	/** Always show scrollbar */
 	alwaysScroll?: boolean;
+	/** Whether scroll clamping is enabled (default: true) */
+	clampEnabled?: boolean;
 }
 
 /**
@@ -102,9 +114,12 @@ export interface ScrollableData {
 	readonly scrollY: number;
 	readonly scrollWidth: number;
 	readonly scrollHeight: number;
+	readonly viewportWidth: number;
+	readonly viewportHeight: number;
 	readonly scrollbarVisible: ScrollbarVisibility;
 	readonly trackVisible: boolean;
 	readonly alwaysScroll: boolean;
+	readonly clampEnabled: boolean;
 }
 
 /**
@@ -115,9 +130,12 @@ function initScrollable(eid: Entity): void {
 	Scrollable.scrollY[eid] = 0;
 	Scrollable.scrollWidth[eid] = 0;
 	Scrollable.scrollHeight[eid] = 0;
+	Scrollable.viewportWidth[eid] = 0;
+	Scrollable.viewportHeight[eid] = 0;
 	Scrollable.scrollbarVisible[eid] = ScrollbarVisibility.Auto;
 	Scrollable.trackVisible[eid] = 1;
 	Scrollable.alwaysScroll[eid] = 0;
+	Scrollable.clampEnabled[eid] = 1;
 }
 
 /**
@@ -131,21 +149,83 @@ function ensureScrollable(world: World, eid: Entity): void {
 }
 
 /**
+ * Clamps scroll position to valid bounds based on viewport and content size.
+ * Only clamps when viewport dimensions are set and clamping is enabled.
+ * @internal
+ */
+function clampScrollToBounds(eid: Entity): void {
+	const clampEnabled = Scrollable.clampEnabled[eid] === 1;
+	if (!clampEnabled) {
+		return;
+	}
+
+	const viewportWidth = Scrollable.viewportWidth[eid] as number;
+	const viewportHeight = Scrollable.viewportHeight[eid] as number;
+	const scrollWidth = Scrollable.scrollWidth[eid] as number;
+	const scrollHeight = Scrollable.scrollHeight[eid] as number;
+
+	// Only clamp X if viewport width is set
+	if (viewportWidth > 0) {
+		const maxScrollX = Math.max(0, scrollWidth - viewportWidth);
+		Scrollable.scrollX[eid] = Math.max(0, Math.min(maxScrollX, Scrollable.scrollX[eid] as number));
+	} else {
+		// Still clamp to minimum 0 even without viewport
+		Scrollable.scrollX[eid] = Math.max(0, Scrollable.scrollX[eid] as number);
+	}
+
+	// Only clamp Y if viewport height is set
+	if (viewportHeight > 0) {
+		const maxScrollY = Math.max(0, scrollHeight - viewportHeight);
+		Scrollable.scrollY[eid] = Math.max(0, Math.min(maxScrollY, Scrollable.scrollY[eid] as number));
+	} else {
+		// Still clamp to minimum 0 even without viewport
+		Scrollable.scrollY[eid] = Math.max(0, Scrollable.scrollY[eid] as number);
+	}
+}
+
+/**
+ * Applies numeric options to scrollable arrays.
+ * @internal
+ */
+function applyNumericOptions(eid: Entity, options: ScrollableOptions): void {
+	Scrollable.scrollWidth[eid] = options.scrollWidth ?? Scrollable.scrollWidth[eid];
+	Scrollable.scrollHeight[eid] = options.scrollHeight ?? Scrollable.scrollHeight[eid];
+	Scrollable.viewportWidth[eid] = options.viewportWidth ?? Scrollable.viewportWidth[eid];
+	Scrollable.viewportHeight[eid] = options.viewportHeight ?? Scrollable.viewportHeight[eid];
+	Scrollable.scrollbarVisible[eid] =
+		options.scrollbarVisible ?? Scrollable.scrollbarVisible[eid];
+}
+
+/**
+ * Applies boolean options to scrollable arrays.
+ * @internal
+ */
+function applyBooleanOptions(eid: Entity, options: ScrollableOptions): void {
+	if (options.trackVisible !== undefined) {
+		Scrollable.trackVisible[eid] = options.trackVisible ? 1 : 0;
+	}
+	if (options.alwaysScroll !== undefined) {
+		Scrollable.alwaysScroll[eid] = options.alwaysScroll ? 1 : 0;
+	}
+	if (options.clampEnabled !== undefined) {
+		Scrollable.clampEnabled[eid] = options.clampEnabled ? 1 : 0;
+	}
+}
+
+/**
  * Applies scrollable options to an entity.
  * @internal
  */
 function applyScrollableOptions(eid: Entity, options: ScrollableOptions): void {
-	if (options.scrollX !== undefined) Scrollable.scrollX[eid] = options.scrollX;
-	if (options.scrollY !== undefined) Scrollable.scrollY[eid] = options.scrollY;
-	if (options.scrollWidth !== undefined) Scrollable.scrollWidth[eid] = options.scrollWidth;
-	if (options.scrollHeight !== undefined) Scrollable.scrollHeight[eid] = options.scrollHeight;
-	if (options.scrollbarVisible !== undefined) {
-		Scrollable.scrollbarVisible[eid] = options.scrollbarVisible;
-	}
-	if (options.trackVisible !== undefined)
-		Scrollable.trackVisible[eid] = options.trackVisible ? 1 : 0;
-	if (options.alwaysScroll !== undefined)
-		Scrollable.alwaysScroll[eid] = options.alwaysScroll ? 1 : 0;
+	applyNumericOptions(eid, options);
+	applyBooleanOptions(eid, options);
+
+	// Apply scroll positions last so they get clamped if viewport is set
+	Scrollable.scrollX[eid] = options.scrollX ?? Scrollable.scrollX[eid];
+	Scrollable.scrollY[eid] = options.scrollY ?? Scrollable.scrollY[eid];
+
+	// Clamp scroll after all options are applied
+	clampScrollToBounds(eid);
 }
 
 /**
@@ -198,6 +278,7 @@ export function setScroll(world: World, eid: Entity, x: number, y: number): Enti
 	ensureScrollable(world, eid);
 	Scrollable.scrollX[eid] = x;
 	Scrollable.scrollY[eid] = y;
+	clampScrollToBounds(eid);
 	return eid;
 }
 
@@ -252,6 +333,7 @@ export function scrollBy(world: World, eid: Entity, dx: number, dy: number): Ent
 	ensureScrollable(world, eid);
 	Scrollable.scrollX[eid] = (Scrollable.scrollX[eid] as number) + dx;
 	Scrollable.scrollY[eid] = (Scrollable.scrollY[eid] as number) + dy;
+	clampScrollToBounds(eid);
 	return eid;
 }
 
@@ -278,7 +360,9 @@ export function scrollTo(world: World, eid: Entity, x: number, y: number): Entit
 
 /**
  * Gets the scroll percentage of an entity.
- * Returns { x: 0, y: 0 } if no scrollable area.
+ * Takes viewport size into account: percentage is based on scrollable range
+ * (scrollSize - viewportSize), not total content size.
+ * Returns { x: 0, y: 0 } if no scrollable area or content fits in viewport.
  *
  * @param world - The ECS world
  * @param eid - The entity ID
@@ -301,11 +385,68 @@ export function getScrollPercentage(world: World, eid: Entity): ScrollPercentage
 	const scrollY = Scrollable.scrollY[eid] as number;
 	const scrollWidth = Scrollable.scrollWidth[eid] as number;
 	const scrollHeight = Scrollable.scrollHeight[eid] as number;
+	const viewportWidth = Scrollable.viewportWidth[eid] as number;
+	const viewportHeight = Scrollable.viewportHeight[eid] as number;
 
-	const percentX = scrollWidth > 0 ? (scrollX / scrollWidth) * 100 : 0;
-	const percentY = scrollHeight > 0 ? (scrollY / scrollHeight) * 100 : 0;
+	// Scrollable range is content size minus viewport size
+	const maxScrollX = scrollWidth - viewportWidth;
+	const maxScrollY = scrollHeight - viewportHeight;
 
-	return { x: percentX, y: percentY };
+	const percentX = maxScrollX > 0 ? (scrollX / maxScrollX) * 100 : 0;
+	const percentY = maxScrollY > 0 ? (scrollY / maxScrollY) * 100 : 0;
+
+	return {
+		x: Math.min(100, Math.max(0, percentX)),
+		y: Math.min(100, Math.max(0, percentY)),
+	};
+}
+
+/**
+ * Sets the scroll position by percentage.
+ * Takes viewport size into account when calculating target scroll position.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param percentX - Horizontal scroll percentage (0-100)
+ * @param percentY - Vertical scroll percentage (0-100)
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { setScrollPercentage } from 'blecsd';
+ *
+ * // Scroll to 50% vertically
+ * setScrollPercentage(world, entity, 0, 50);
+ *
+ * // Scroll to bottom
+ * setScrollPercentage(world, entity, 0, 100);
+ * ```
+ */
+export function setScrollPercentage(
+	world: World,
+	eid: Entity,
+	percentX: number,
+	percentY: number,
+): Entity {
+	ensureScrollable(world, eid);
+
+	const scrollWidth = Scrollable.scrollWidth[eid] as number;
+	const scrollHeight = Scrollable.scrollHeight[eid] as number;
+	const viewportWidth = Scrollable.viewportWidth[eid] as number;
+	const viewportHeight = Scrollable.viewportHeight[eid] as number;
+
+	// Clamp percentages to 0-100
+	const clampedX = Math.min(100, Math.max(0, percentX));
+	const clampedY = Math.min(100, Math.max(0, percentY));
+
+	// Scrollable range is content size minus viewport size
+	const maxScrollX = Math.max(0, scrollWidth - viewportWidth);
+	const maxScrollY = Math.max(0, scrollHeight - viewportHeight);
+
+	Scrollable.scrollX[eid] = (clampedX / 100) * maxScrollX;
+	Scrollable.scrollY[eid] = (clampedY / 100) * maxScrollY;
+
+	return eid;
 }
 
 /**
@@ -325,9 +466,12 @@ export function getScrollable(world: World, eid: Entity): ScrollableData | undef
 		scrollY: Scrollable.scrollY[eid] as number,
 		scrollWidth: Scrollable.scrollWidth[eid] as number,
 		scrollHeight: Scrollable.scrollHeight[eid] as number,
+		viewportWidth: Scrollable.viewportWidth[eid] as number,
+		viewportHeight: Scrollable.viewportHeight[eid] as number,
 		scrollbarVisible: Scrollable.scrollbarVisible[eid] as ScrollbarVisibility,
 		trackVisible: Scrollable.trackVisible[eid] === 1,
 		alwaysScroll: Scrollable.alwaysScroll[eid] === 1,
+		clampEnabled: Scrollable.clampEnabled[eid] === 1,
 	};
 }
 
@@ -355,6 +499,54 @@ export function setScrollSize(world: World, eid: Entity, width: number, height: 
 	ensureScrollable(world, eid);
 	Scrollable.scrollWidth[eid] = width;
 	Scrollable.scrollHeight[eid] = height;
+	clampScrollToBounds(eid);
+	return eid;
+}
+
+/**
+ * Sets the viewport size (visible area).
+ * This enables proper scroll clamping based on content vs viewport size.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param width - Viewport width
+ * @param height - Viewport height
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { setViewport, setScrollSize, scrollBy } from 'blecsd';
+ *
+ * // Set content size and viewport
+ * setScrollSize(world, entity, 100, 1000);  // Content is 100x1000
+ * setViewport(world, entity, 80, 20);       // Viewport is 80x20
+ *
+ * // Scroll is now clamped: maxScrollY = 1000 - 20 = 980
+ * scrollBy(world, entity, 0, 2000);  // Will clamp to 980
+ * ```
+ */
+export function setViewport(world: World, eid: Entity, width: number, height: number): Entity {
+	ensureScrollable(world, eid);
+	Scrollable.viewportWidth[eid] = width;
+	Scrollable.viewportHeight[eid] = height;
+	clampScrollToBounds(eid);
+	return eid;
+}
+
+/**
+ * Enables or disables scroll clamping.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param enabled - Whether clamping is enabled
+ * @returns The entity ID for chaining
+ */
+export function setClampEnabled(world: World, eid: Entity, enabled: boolean): Entity {
+	ensureScrollable(world, eid);
+	Scrollable.clampEnabled[eid] = enabled ? 1 : 0;
+	if (enabled) {
+		clampScrollToBounds(eid);
+	}
 	return eid;
 }
 
@@ -391,6 +583,7 @@ export function scrollToTop(world: World, eid: Entity): Entity {
 
 /**
  * Scrolls an entity to the bottom.
+ * Takes viewport height into account: scrollY = scrollHeight - viewportHeight.
  *
  * @param world - The ECS world
  * @param eid - The entity ID
@@ -398,12 +591,44 @@ export function scrollToTop(world: World, eid: Entity): Entity {
  */
 export function scrollToBottom(world: World, eid: Entity): Entity {
 	ensureScrollable(world, eid);
-	Scrollable.scrollY[eid] = Scrollable.scrollHeight[eid] as number;
+	const scrollHeight = Scrollable.scrollHeight[eid] as number;
+	const viewportHeight = Scrollable.viewportHeight[eid] as number;
+	Scrollable.scrollY[eid] = Math.max(0, scrollHeight - viewportHeight);
+	return eid;
+}
+
+/**
+ * Scrolls an entity to the left edge.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ */
+export function scrollToLeft(world: World, eid: Entity): Entity {
+	ensureScrollable(world, eid);
+	Scrollable.scrollX[eid] = 0;
+	return eid;
+}
+
+/**
+ * Scrolls an entity to the right edge.
+ * Takes viewport width into account: scrollX = scrollWidth - viewportWidth.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ */
+export function scrollToRight(world: World, eid: Entity): Entity {
+	ensureScrollable(world, eid);
+	const scrollWidth = Scrollable.scrollWidth[eid] as number;
+	const viewportWidth = Scrollable.viewportWidth[eid] as number;
+	Scrollable.scrollX[eid] = Math.max(0, scrollWidth - viewportWidth);
 	return eid;
 }
 
 /**
  * Checks if an entity can scroll (has content larger than visible area).
+ * If viewport is set, checks if content exceeds viewport size.
  *
  * @param world - The ECS world
  * @param eid - The entity ID
@@ -413,9 +638,51 @@ export function canScroll(world: World, eid: Entity): boolean {
 	if (!hasComponent(world, eid, Scrollable)) {
 		return false;
 	}
-	return (
-		(Scrollable.scrollWidth[eid] as number) > 0 || (Scrollable.scrollHeight[eid] as number) > 0
-	);
+
+	const scrollWidth = Scrollable.scrollWidth[eid] as number;
+	const scrollHeight = Scrollable.scrollHeight[eid] as number;
+	const viewportWidth = Scrollable.viewportWidth[eid] as number;
+	const viewportHeight = Scrollable.viewportHeight[eid] as number;
+
+	// If viewport is set, check if content exceeds viewport
+	if (viewportWidth > 0 || viewportHeight > 0) {
+		return scrollWidth > viewportWidth || scrollHeight > viewportHeight;
+	}
+
+	// Without viewport, any positive scroll size means scrollable
+	return scrollWidth > 0 || scrollHeight > 0;
+}
+
+/**
+ * Checks if an entity can scroll horizontally.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if entity has horizontally scrollable content
+ */
+export function canScrollX(world: World, eid: Entity): boolean {
+	if (!hasComponent(world, eid, Scrollable)) {
+		return false;
+	}
+	const scrollWidth = Scrollable.scrollWidth[eid] as number;
+	const viewportWidth = Scrollable.viewportWidth[eid] as number;
+	return scrollWidth > viewportWidth;
+}
+
+/**
+ * Checks if an entity can scroll vertically.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if entity has vertically scrollable content
+ */
+export function canScrollY(world: World, eid: Entity): boolean {
+	if (!hasComponent(world, eid, Scrollable)) {
+		return false;
+	}
+	const scrollHeight = Scrollable.scrollHeight[eid] as number;
+	const viewportHeight = Scrollable.viewportHeight[eid] as number;
+	return scrollHeight > viewportHeight;
 }
 
 /**
@@ -434,6 +701,7 @@ export function isAtTop(world: World, eid: Entity): boolean {
 
 /**
  * Checks if an entity is scrolled to the bottom.
+ * Takes viewport height into account: true when scrollY >= scrollHeight - viewportHeight.
  *
  * @param world - The ECS world
  * @param eid - The entity ID
@@ -443,5 +711,42 @@ export function isAtBottom(world: World, eid: Entity): boolean {
 	if (!hasComponent(world, eid, Scrollable)) {
 		return true;
 	}
-	return (Scrollable.scrollY[eid] as number) >= (Scrollable.scrollHeight[eid] as number);
+	const scrollY = Scrollable.scrollY[eid] as number;
+	const scrollHeight = Scrollable.scrollHeight[eid] as number;
+	const viewportHeight = Scrollable.viewportHeight[eid] as number;
+	const maxScrollY = Math.max(0, scrollHeight - viewportHeight);
+	return scrollY >= maxScrollY;
+}
+
+/**
+ * Checks if an entity is scrolled to the left edge.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if scrolled to left
+ */
+export function isAtLeft(world: World, eid: Entity): boolean {
+	if (!hasComponent(world, eid, Scrollable)) {
+		return true;
+	}
+	return (Scrollable.scrollX[eid] as number) <= 0;
+}
+
+/**
+ * Checks if an entity is scrolled to the right edge.
+ * Takes viewport width into account: true when scrollX >= scrollWidth - viewportWidth.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if scrolled to right
+ */
+export function isAtRight(world: World, eid: Entity): boolean {
+	if (!hasComponent(world, eid, Scrollable)) {
+		return true;
+	}
+	const scrollX = Scrollable.scrollX[eid] as number;
+	const scrollWidth = Scrollable.scrollWidth[eid] as number;
+	const viewportWidth = Scrollable.viewportWidth[eid] as number;
+	const maxScrollX = Math.max(0, scrollWidth - viewportWidth);
+	return scrollX >= maxScrollX;
 }
