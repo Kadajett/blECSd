@@ -44,6 +44,22 @@ export {
 	resolveEffectConfig,
 	syncEffects,
 } from './effects';
+// Entity data storage
+export type { DataValue, EntityDataMap } from './entityData';
+export {
+	clearAllEntityData,
+	clearEntityData,
+	deleteEntityData,
+	getAllEntityData,
+	getEntityData,
+	getEntityDataCount,
+	getEntityDataKeys,
+	hasAnyEntityData,
+	hasEntityData,
+	setEntityData,
+	setEntityDataBulk,
+	updateEntityData,
+} from './entityData';
 export type {
 	BoxConfig,
 	ButtonConfig,
