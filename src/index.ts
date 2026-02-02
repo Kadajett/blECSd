@@ -320,17 +320,45 @@ export {
 // =============================================================================
 // SYSTEMS - ECS Systems
 // =============================================================================
+export type {
+	HitTestResult,
+	InputEventType,
+	InputSystemState,
+	QueuedInputEvent,
+	QueuedKeyEvent,
+	QueuedMouseEvent,
+} from './systems';
 export {
+	// Input system
+	captureMouseTo,
+	clearEntityInput,
+	clearEventQueue,
+	createInputSystem,
+	// State machine system
 	createStateMachineSystem,
+	getEventQueue,
+	getInputEventBus,
+	getInteractiveEntityAt,
+	getMouseCaptureEntity,
 	getStateAgeStore,
 	getSystemStateAge,
+	hitTest,
+	inputState,
+	inputSystem,
+	isMouseCaptured,
+	pointInEntity,
+	queryInputReceivers,
 	queryStateMachine,
+	queueKeyEvent,
+	queueMouseEvent,
+	registerInputSystem,
 	registerStateMachineSystem,
+	releaseMouse,
+	resetInputState,
 	resetStateAge,
 	stateMachineSystem,
 	updateStateAges,
 } from './systems';
-
 // =============================================================================
 // TERMINAL - Input Parsing
 // =============================================================================
@@ -354,3 +382,23 @@ export {
 	parseKeySequence,
 	parseMouseSequence,
 } from './terminal';
+// =============================================================================
+// UTILS - Utility Functions
+// =============================================================================
+export type { BoxChars, Cell, CellBuffer, RenderBoxOptions } from './utils';
+export {
+	BOX_ASCII,
+	BOX_BOLD,
+	BOX_DASHED,
+	BOX_DOUBLE,
+	BOX_ROUNDED,
+	BOX_SINGLE,
+	bufferToString,
+	charsetToBoxChars,
+	createCellBuffer,
+	fillRect,
+	renderBox,
+	renderHLine,
+	renderText,
+	renderVLine,
+} from './utils';

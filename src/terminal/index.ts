@@ -130,6 +130,15 @@ export {
 	isWindowsTerminal,
 	isXterm,
 } from './detection';
+// Input stream handler
+export type {
+	FocusHandler,
+	InputHandlerConfig,
+	KeyHandler,
+	MouseHandler,
+	Unsubscribe,
+} from './inputStream';
+export { createInputHandler, InputHandler, InputHandlerConfigSchema } from './inputStream';
 // Key parsing
 export type { KeyEvent as ParsedKeyEvent, KeyName } from './keyParser';
 export { isMouseSequence, KeyEventSchema, parseKeyBuffer, parseKeySequence } from './keyParser';
@@ -218,12 +227,3 @@ export { SuspendManager, suspend, suspendSequences } from './suspend';
 // Synchronized output (internal)
 export type { SyncOutputOptions } from './syncOutput';
 export { isSyncOutputSupported, SynchronizedOutput } from './syncOutput';
-// Input stream handler
-export type {
-	FocusHandler,
-	InputHandlerConfig,
-	KeyHandler,
-	MouseHandler,
-	Unsubscribe,
-} from './inputStream';
-export { createInputHandler, InputHandler, InputHandlerConfigSchema } from './inputStream';

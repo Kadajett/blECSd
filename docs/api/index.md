@@ -226,6 +226,27 @@ PositionValueSchema.parse('center');     // Valid
 PositiveIntSchema.parse(10);             // Valid
 ```
 
+## Utilities
+
+### Box Rendering
+
+Low-level utilities for drawing boxes, borders, and text to cell buffers.
+
+| Function | Purpose |
+|----------|---------|
+| `createCellBuffer` | Create an in-memory cell buffer |
+| `renderBox` | Draw a box with borders |
+| `renderHLine` | Draw a horizontal line |
+| `renderVLine` | Draw a vertical line |
+| `fillRect` | Fill a rectangular region |
+| `renderText` | Render text at a position |
+| `bufferToString` | Convert buffer to string |
+| `charsetToBoxChars` | Convert BorderCharset to BoxChars |
+
+**Box Presets:** `BOX_SINGLE`, `BOX_DOUBLE`, `BOX_ROUNDED`, `BOX_BOLD`, `BOX_ASCII`, `BOX_DASHED`
+
+See [Box Utilities](./utils/box.md) for the full API.
+
 ## Types
 
 ### World and Entity

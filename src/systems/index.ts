@@ -3,18 +3,6 @@
  * @module systems
  */
 
-// State machine system
-export {
-	createStateMachineSystem,
-	getStateAgeStore,
-	getSystemStateAge,
-	queryStateMachine,
-	registerStateMachineSystem,
-	resetStateAge,
-	stateMachineSystem,
-	updateStateAges,
-} from './stateMachineSystem';
-
 // Input system
 export type {
 	HitTestResult,
@@ -45,3 +33,14 @@ export {
 	releaseMouse,
 	resetInputState,
 } from './inputSystem';
+// State machine system
+export {
+	createStateMachineSystem,
+	getStateAgeStore,
+	getSystemStateAge,
+	queryStateMachine,
+	registerStateMachineSystem,
+	resetStateAge,
+	stateMachineSystem,
+	updateStateAges,
+} from './stateMachineSystem';

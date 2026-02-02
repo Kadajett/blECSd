@@ -107,6 +107,43 @@ export {
 	removeChild,
 	setParent,
 } from './hierarchy';
+// Input components
+export type {
+	InputBufferData,
+	KeyboardInputData,
+	KeyboardInputOptions,
+	MouseInputData,
+	MouseInputOptions,
+} from './input';
+export {
+	clearInputBufferSelection,
+	clearKeyboardInput,
+	clearMouseInput,
+	getInputBuffer,
+	getInputBufferText,
+	getKeyboardInput,
+	getMouseInput,
+	hasInputBuffer,
+	hasKeyboardInput,
+	hasMouseInput,
+	InputBuffer,
+	inputBufferStore,
+	KeyboardInput,
+	ModifierFlags,
+	MouseButtons,
+	MouseInput,
+	packModifiers,
+	recordClick,
+	removeInputBuffer,
+	removeKeyboardInput,
+	removeMouseInput,
+	setInputBuffer,
+	setInputBufferSelection,
+	setInputBufferText,
+	setKeyboardInput,
+	setMouseInput,
+	unpackModifiers,
+} from './input';
 // Interactive component
 export type { InteractiveData, InteractiveOptions } from './interactive';
 export {
@@ -234,40 +271,3 @@ export {
 	sendEvent,
 	updateStateAge,
 } from './stateMachine';
-// Input components
-export type {
-	InputBufferData,
-	KeyboardInputData,
-	KeyboardInputOptions,
-	MouseInputData,
-	MouseInputOptions,
-} from './input';
-export {
-	clearInputBufferSelection,
-	clearKeyboardInput,
-	clearMouseInput,
-	getInputBuffer,
-	getInputBufferText,
-	getKeyboardInput,
-	getMouseInput,
-	hasInputBuffer,
-	hasKeyboardInput,
-	hasMouseInput,
-	InputBuffer,
-	inputBufferStore,
-	KeyboardInput,
-	ModifierFlags,
-	MouseButtons,
-	MouseInput,
-	packModifiers,
-	recordClick,
-	removeInputBuffer,
-	removeKeyboardInput,
-	removeMouseInput,
-	setInputBuffer,
-	setInputBufferSelection,
-	setInputBufferText,
-	setKeyboardInput,
-	setMouseInput,
-	unpackModifiers,
-} from './input';

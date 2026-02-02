@@ -1,9 +1,28 @@
 import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Dimensions, setDimensions } from '../components/dimensions';
-import { focus, getFocusedEntity, makeFocusable, resetFocusState, setFocusable } from '../components/focusable';
-import { hasKeyboardInput, hasMouseInput, KeyboardInput, MouseInput, setKeyboardInput, setMouseInput } from '../components/input';
-import { isHovered, isPressed, setClickable, setHoverable, setInteractive } from '../components/interactive';
+import {
+	focus,
+	getFocusedEntity,
+	makeFocusable,
+	resetFocusState,
+	setFocusable,
+} from '../components/focusable';
+import {
+	hasKeyboardInput,
+	hasMouseInput,
+	KeyboardInput,
+	MouseInput,
+	setKeyboardInput,
+	setMouseInput,
+} from '../components/input';
+import {
+	isHovered,
+	isPressed,
+	setClickable,
+	setHoverable,
+	setInteractive,
+} from '../components/interactive';
 import { Position, setPosition } from '../components/position';
 import type { KeyEvent } from '../terminal/keyParser';
 import type { MouseEvent } from '../terminal/mouseParser';
@@ -20,9 +39,9 @@ import {
 	inputSystem,
 	isMouseCaptured,
 	pointInEntity,
+	queryInputReceivers,
 	queueKeyEvent,
 	queueMouseEvent,
-	queryInputReceivers,
 	releaseMouse,
 	resetInputState,
 } from './inputSystem';

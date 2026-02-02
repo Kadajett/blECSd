@@ -363,7 +363,11 @@ export function packModifiers(ctrl: boolean, meta: boolean, shift: boolean): num
  * console.log(shift); // true
  * ```
  */
-export function unpackModifiers(modifiers: number): { ctrl: boolean; meta: boolean; shift: boolean } {
+export function unpackModifiers(modifiers: number): {
+	ctrl: boolean;
+	meta: boolean;
+	shift: boolean;
+} {
 	return {
 		ctrl: !!(modifiers & ModifierFlags.CTRL),
 		meta: !!(modifiers & ModifierFlags.META),
@@ -414,7 +418,11 @@ export function setKeyboardInput(world: World, eid: Entity, options: KeyboardInp
 	// Handle modifiers
 	if (options.modifiers !== undefined) {
 		KeyboardInput.modifiers[eid] = options.modifiers;
-	} else if (options.ctrl !== undefined || options.meta !== undefined || options.shift !== undefined) {
+	} else if (
+		options.ctrl !== undefined ||
+		options.meta !== undefined ||
+		options.shift !== undefined
+	) {
 		const current = unpackModifiers(KeyboardInput.modifiers[eid] ?? 0);
 		KeyboardInput.modifiers[eid] = packModifiers(
 			options.ctrl ?? current.ctrl,
@@ -844,7 +852,12 @@ export function clearInputBufferSelection(world: World, eid: Entity): void {
  * @param start - Selection start position
  * @param end - Selection end position
  */
-export function setInputBufferSelection(world: World, eid: Entity, start: number, end: number): void {
+export function setInputBufferSelection(
+	world: World,
+	eid: Entity,
+	start: number,
+	end: number,
+): void {
 	if (hasComponent(world, eid, InputBuffer)) {
 		InputBuffer.selectionStart[eid] = start;
 		InputBuffer.selectionEnd[eid] = end;

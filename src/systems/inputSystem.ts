@@ -6,7 +6,14 @@
 
 import { hasComponent, query, registerComponent, withStore } from 'bitecs';
 import { Dimensions } from '../components/dimensions';
-import { Focusable, focus, focusNext, focusPrev, getFocusedEntity, isFocusable } from '../components/focusable';
+import {
+	Focusable,
+	focus,
+	focusNext,
+	focusPrev,
+	getFocusedEntity,
+	isFocusable,
+} from '../components/focusable';
 import { getChildren, getParent, Hierarchy } from '../components/hierarchy';
 import {
 	clearKeyboardInput,
@@ -22,7 +29,14 @@ import {
 	setKeyboardInput,
 	setMouseInput,
 } from '../components/input';
-import { hasInteractive, Interactive, isClickable, isHoverable, setHovered, setPressed } from '../components/interactive';
+import {
+	hasInteractive,
+	Interactive,
+	isClickable,
+	isHoverable,
+	setHovered,
+	setPressed,
+} from '../components/interactive';
 import { Position } from '../components/position';
 import { EventBus, type UIEventMap } from '../core/events';
 import type { Scheduler } from '../core/scheduler';
@@ -482,7 +496,11 @@ function processMouseEvent(world: World, event: ParsedMouseEvent): void {
 		}
 
 		// Mouse entered new entity
-		if (currentHovered !== null && hasInteractive(world, currentHovered) && isHoverable(world, currentHovered)) {
+		if (
+			currentHovered !== null &&
+			hasInteractive(world, currentHovered) &&
+			isHoverable(world, currentHovered)
+		) {
 			setHovered(world, currentHovered, true);
 			inputState.eventBus.emit('mouseenter', { x, y });
 		}
