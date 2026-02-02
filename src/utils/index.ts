@@ -32,6 +32,21 @@ export {
 	fuzzyTest,
 	highlightMatch,
 } from './fuzzySearch';
+// Helper utilities
+export {
+	findAllFiles,
+	findFile,
+	groupBy,
+	merge,
+	partition,
+	shallowMerge,
+	sortBy,
+	sortByIndex,
+	sortByName,
+	sortByPriority,
+	unique,
+	uniqueBy,
+} from './helpers';
 // Style attribute encoding
 export type { StyleAttr, StyleInput } from './sattr';
 export {
