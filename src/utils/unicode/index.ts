@@ -4,6 +4,29 @@
  */
 
 export {
+	charAtCodePoint,
+	characters,
+	codePointAt,
+	codePointLength,
+	codePoints,
+	codePointToSurrogatePair,
+	fromCodePoint,
+	HIGH_SURROGATE_END,
+	HIGH_SURROGATE_START,
+	isAstral,
+	isBMP,
+	isHighSurrogate,
+	isLowSurrogate,
+	isSurrogate,
+	isSurrogateCode,
+	isValidCodePoint,
+	LOW_SURROGATE_END,
+	LOW_SURROGATE_START,
+	sliceCodePoints,
+	surrogatePairToCodePoint,
+	toCodePoints,
+} from './codePoint';
+export {
 	COMBINING_RANGES,
 	COMBINING_SET,
 	getCombiningCharCount,

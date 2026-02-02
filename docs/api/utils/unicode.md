@@ -301,6 +301,131 @@ console.log(padEnd('日本語', 10) + '| Japanese');
 
 ---
 
+## Code Point Utilities
+
+Low-level utilities for working with Unicode code points and surrogate pairs.
+
+### Surrogate Detection
+
+```typescript
+function isHighSurrogate(code: number): boolean
+function isLowSurrogate(code: number): boolean
+function isSurrogateCode(code: number): boolean
+function isSurrogate(str: string, index: number): boolean
+```
+
+**Example:**
+```typescript
+import { isHighSurrogate, isLowSurrogate, isSurrogate } from 'blecsd';
+
+const emoji = '😀';
+isHighSurrogate(emoji.charCodeAt(0));  // true (0xD83D)
+isLowSurrogate(emoji.charCodeAt(1));   // true (0xDE00)
+isSurrogate(emoji, 0);                  // true
+isSurrogate('A', 0);                    // false
+```
+
+### Surrogate Pair Conversion
+
+```typescript
+function surrogatePairToCodePoint(high: number, low: number): number
+function codePointToSurrogatePair(codePoint: number): [number, number]
+```
+
+**Example:**
+```typescript
+import { surrogatePairToCodePoint, codePointToSurrogatePair } from 'blecsd';
+
+// 😀 is U+1F600, encoded as D83D DE00
+surrogatePairToCodePoint(0xD83D, 0xDE00);  // 0x1F600
+
+codePointToSurrogatePair(0x1F600);  // [0xD83D, 0xDE00]
+```
+
+### Code Point Access
+
+```typescript
+function codePointAt(str: string, index: number): number  // -1 if out of bounds
+function fromCodePoint(...codePoints: number[]): string
+```
+
+**Example:**
+```typescript
+import { codePointAt, fromCodePoint } from 'blecsd';
+
+codePointAt('😀', 0);         // 0x1F600
+fromCodePoint(0x1F600);       // '😀'
+fromCodePoint(65, 66, 67);    // 'ABC'
+```
+
+### Iterators
+
+```typescript
+function* codePoints(str: string): Generator<number>
+function* characters(str: string): Generator<string>
+function toCodePoints(str: string): number[]
+```
+
+**Example:**
+```typescript
+import { codePoints, characters, toCodePoints } from 'blecsd';
+
+for (const cp of codePoints('A😀B')) {
+  console.log(cp.toString(16));  // '41', '1f600', '42'
+}
+
+for (const char of characters('A😀B')) {
+  console.log(char);  // 'A', '😀', 'B'
+}
+
+toCodePoints('ABC');  // [65, 66, 67]
+```
+
+### Length and Access by Code Point Index
+
+```typescript
+function codePointLength(str: string): number
+function charAtCodePoint(str: string, index: number): string
+function sliceCodePoints(str: string, start: number, end?: number): string
+```
+
+**Example:**
+```typescript
+import { codePointLength, charAtCodePoint, sliceCodePoints } from 'blecsd';
+
+const str = 'A😀B';
+str.length;              // 4 (code units)
+codePointLength(str);    // 3 (code points)
+
+charAtCodePoint(str, 1); // '😀'
+sliceCodePoints(str, 1, 2); // '😀'
+```
+
+### Validation
+
+```typescript
+function isValidCodePoint(codePoint: number): boolean
+function isBMP(codePoint: number): boolean
+function isAstral(codePoint: number): boolean
+```
+
+**Example:**
+```typescript
+import { isValidCodePoint, isBMP, isAstral } from 'blecsd';
+
+isValidCodePoint(0x1F600);  // true
+isValidCodePoint(0xD800);   // false (surrogate)
+isValidCodePoint(0x110000); // false (too high)
+
+isBMP(0x0041);    // true (A)
+isBMP(0x1F600);   // false (emoji)
+
+isAstral(0x1F600); // true (emoji)
+isAstral(0x0041);  // false (A)
+```
+
+---
+
 ## Combining Characters
 
 Combining characters are marks that attach to the preceding base character. They include accents, diacritics, vowel signs, and tone marks.
