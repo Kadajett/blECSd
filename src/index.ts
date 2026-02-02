@@ -717,7 +717,20 @@ export {
 	TextboxConfigSchema,
 	TextConfigSchema,
 } from './core';
-
+// =============================================================================
+// GAME - High-level Game API
+// =============================================================================
+export type {
+	FixedUpdateCallback,
+	Game,
+	GameConfig,
+	KeyHandler,
+	MouseHandler,
+	RenderCallback,
+	ResolvedGameConfig,
+	UpdateCallback,
+} from './game';
+export { createGame, GameConfigSchema } from './game';
 // =============================================================================
 // SCHEMAS - Zod Validation
 // =============================================================================
@@ -729,7 +742,6 @@ export {
 	PercentageSchema,
 	PositiveIntSchema,
 } from './schemas';
-
 // =============================================================================
 // SYSTEMS - ECS Systems
 // =============================================================================
@@ -795,6 +807,23 @@ export {
 	parseKeySequence,
 	parseMouseSequence,
 } from './terminal';
+
+// =============================================================================
+// TYPES - TypeScript Utility Types and Re-exports
+// =============================================================================
+export type {
+	// Utility types
+	DeepPartial,
+	DeepReadonly,
+	InferInput,
+	InferSchema,
+	KeysOfType,
+	MaybeThunk,
+	OptionalKeys,
+	PackedColor,
+	RequiredKeys,
+	Subscription,
+} from './types';
 // =============================================================================
 // UTILS - Utility Functions
 // =============================================================================
@@ -834,10 +863,10 @@ export {
 	decodeStyleAttr,
 	encodeStyleAttr,
 	escapeTags,
+	FuzzyOptionsSchema,
 	fillRect,
 	fuzzyFilter,
 	fuzzyMatch,
-	FuzzyOptionsSchema,
 	fuzzySearch,
 	fuzzySearchBy,
 	fuzzyTest,
@@ -847,8 +876,8 @@ export {
 	hasTags,
 	highlightMatch,
 	mergeSegments,
-	padHeight,
 	ParsedContentSchema,
+	padHeight,
 	parsedToTaggedText,
 	parseTags,
 	renderBox,
@@ -869,27 +898,10 @@ export {
 	stripAnsi,
 	stripTags,
 	styleToAttrs,
-	taggedLength,
 	TextSegmentSchema,
+	taggedLength,
 	truncate,
 	wordWrap,
 	wrapText,
 	wrapWithTags,
 } from './utils';
-
-// =============================================================================
-// TYPES - TypeScript Utility Types and Re-exports
-// =============================================================================
-export type {
-	// Utility types
-	DeepPartial,
-	DeepReadonly,
-	InferInput,
-	InferSchema,
-	KeysOfType,
-	MaybeThunk,
-	OptionalKeys,
-	PackedColor,
-	RequiredKeys,
-	Subscription,
-} from './types';
