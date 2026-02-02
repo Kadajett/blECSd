@@ -4,16 +4,9 @@
 
 import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { setPosition, Position } from '../components/position';
-import { Renderable, setStyle, setVisible } from '../components/renderable';
-import {
-	Interactive,
-	setInteractive,
-	setFocusable,
-	isFocused,
-	setTabIndex,
-} from '../components/interactive';
-import { appendChild, setParent } from '../components/hierarchy';
+import { setPosition } from '../components/position';
+import { setStyle, setVisible } from '../components/renderable';
+import { setInteractive, setFocusable, isFocused } from '../components/interactive';
 import { createScreenEntity } from '../core/entities';
 import { resetScreenSingleton } from '../components/screen';
 import type { World } from '../core/types';
@@ -43,13 +36,12 @@ import {
 
 describe('focusSystem', () => {
 	let world: World;
-	let screen: number;
 
 	beforeEach(() => {
 		world = createWorld() as World;
 		resetScreenSingleton(world);
 		resetFocusEventBus();
-		screen = createScreenEntity(world, { width: 80, height: 24 });
+		createScreenEntity(world, { width: 80, height: 24 });
 	});
 
 	describe('getFocusableEntities', () => {

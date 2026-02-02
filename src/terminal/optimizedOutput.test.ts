@@ -8,7 +8,6 @@ import { describe, expect, it } from 'vitest';
 import {
 	ATTR_BOLD,
 	ATTR_ITALIC,
-	ATTR_UNDERLINE,
 	clearBuffer,
 	clearLine,
 	clearScreen,

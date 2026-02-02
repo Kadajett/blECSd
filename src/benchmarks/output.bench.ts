@@ -13,11 +13,9 @@ import {
 	beginFrame,
 	clearBuffer,
 	createOutputBuffer,
-	DEFAULT_COLOR,
 	endFrame,
 	getBufferLength,
 	getContents,
-	getOutputStats,
 	moveCursor,
 	type OutputBufferData,
 	resetBuffer,
@@ -46,9 +44,6 @@ function createTestBuffer(trackStats = false): OutputBufferData {
 /**
  * Generates random RGB color.
  */
-function randomColor(): number {
-	return Math.floor(Math.random() * 0xffffff);
-}
 
 // =============================================================================
 // BUFFER CREATION BENCHMARKS

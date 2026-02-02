@@ -70,27 +70,27 @@ describe('Slider Component', () => {
 
 		it('should have correct state transitions from idle', () => {
 			const idleTransitions = SLIDER_STATE_MACHINE_CONFIG.states.idle.on;
-			expect(idleTransitions.focus).toBe('focused');
-			expect(idleTransitions.disable).toBe('disabled');
+			expect(idleTransitions!.focus).toBe('focused');
+			expect(idleTransitions!.disable).toBe('disabled');
 		});
 
 		it('should have correct state transitions from focused', () => {
 			const focusedTransitions = SLIDER_STATE_MACHINE_CONFIG.states.focused.on;
-			expect(focusedTransitions.blur).toBe('idle');
-			expect(focusedTransitions.dragStart).toBe('dragging');
-			expect(focusedTransitions.disable).toBe('disabled');
+			expect(focusedTransitions!.blur).toBe('idle');
+			expect(focusedTransitions!.dragStart).toBe('dragging');
+			expect(focusedTransitions!.disable).toBe('disabled');
 		});
 
 		it('should have correct state transitions from dragging', () => {
 			const draggingTransitions = SLIDER_STATE_MACHINE_CONFIG.states.dragging.on;
-			expect(draggingTransitions.dragEnd).toBe('focused');
-			expect(draggingTransitions.blur).toBe('idle');
-			expect(draggingTransitions.disable).toBe('disabled');
+			expect(draggingTransitions!.dragEnd).toBe('focused');
+			expect(draggingTransitions!.blur).toBe('idle');
+			expect(draggingTransitions!.disable).toBe('disabled');
 		});
 
 		it('should have correct state transitions from disabled', () => {
 			const disabledTransitions = SLIDER_STATE_MACHINE_CONFIG.states.disabled.on;
-			expect(disabledTransitions.enable).toBe('idle');
+			expect(disabledTransitions!.enable).toBe('idle');
 		});
 	});
 

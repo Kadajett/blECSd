@@ -4,7 +4,7 @@
 
 import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { setClickable, setHoverable, setInteractive } from '../components/interactive';
+import { setInteractive } from '../components/interactive';
 import { setPosition } from '../components/position';
 import { setDimensions } from '../components/dimensions';
 import { setPositionCache } from './positionCache';
@@ -56,8 +56,7 @@ describe('hitTest', () => {
 			yi: y,
 			xl: x + width,
 			yl: y + height,
-			aleft: x,
-			atop: y,
+			base: 0,
 		});
 		return eid;
 	}
@@ -82,8 +81,7 @@ describe('hitTest', () => {
 			yi: y,
 			xl: x + width,
 			yl: y + height,
-			aleft: x,
-			atop: y,
+			base: 0,
 		});
 		return eid;
 	}
@@ -198,7 +196,7 @@ describe('hitTest', () => {
 
 	describe('hitTest', () => {
 		it('returns topmost entity at point', () => {
-			const e1 = createClickableEntity(0, 0, 20, 20, 0);
+			createClickableEntity(0, 0, 20, 20, 0);
 			const e2 = createClickableEntity(5, 5, 10, 10, 10); // overlapping, higher z
 			const cache = createClickableCache();
 
@@ -234,7 +232,7 @@ describe('hitTest', () => {
 		});
 
 		it('works without cache', () => {
-			const e1 = createClickableEntity(0, 0, 20, 20, 0);
+			createClickableEntity(0, 0, 20, 20, 0);
 			const e2 = createClickableEntity(5, 5, 10, 10, 10);
 
 			const result = hitTest(world, 8, 8, undefined);
@@ -326,7 +324,7 @@ describe('hitTest', () => {
 
 	describe('getClickableAt', () => {
 		it('returns topmost clickable at point', () => {
-			const e1 = createClickableEntity(0, 0, 20, 20, 0);
+			createClickableEntity(0, 0, 20, 20, 0);
 			const e2 = createClickableEntity(5, 5, 10, 10, 10);
 			const cache = createClickableCache();
 
@@ -338,7 +336,7 @@ describe('hitTest', () => {
 
 	describe('getHoverableAt', () => {
 		it('returns topmost hoverable at point', () => {
-			const e1 = createHoverableEntity(0, 0, 20, 20, 0);
+			createHoverableEntity(0, 0, 20, 20, 0);
 			const e2 = createHoverableEntity(5, 5, 10, 10, 10);
 			const cache = createClickableCache();
 

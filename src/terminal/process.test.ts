@@ -36,11 +36,21 @@ function createMockOutput(): { output: Writable; getOutput: () => string; clear:
 	};
 }
 
+// Mock input interface for typed this access
+interface MockInputData {
+	_rawMode: boolean;
+	isRaw: boolean;
+	setRawMode(mode: boolean): this;
+	on: ReturnType<typeof vi.fn>;
+	once: ReturnType<typeof vi.fn>;
+	removeListener: ReturnType<typeof vi.fn>;
+}
+
 // Create a mock input stream with raw mode support
 function createMockInput(): NodeJS.ReadStream & {
 	_rawMode: boolean;
 } {
-	const mock = {
+	const mock: MockInputData = {
 		_rawMode: false,
 		isRaw: false,
 		setRawMode(mode: boolean) {
@@ -51,8 +61,8 @@ function createMockInput(): NodeJS.ReadStream & {
 		on: vi.fn().mockReturnThis(),
 		once: vi.fn().mockReturnThis(),
 		removeListener: vi.fn().mockReturnThis(),
-	} as unknown as NodeJS.ReadStream & { _rawMode: boolean };
-	return mock;
+	};
+	return mock as unknown as NodeJS.ReadStream & { _rawMode: boolean };
 }
 
 describe('spawn', () => {
@@ -279,20 +289,20 @@ describe('getDefaultEditor', () => {
 	});
 
 	it('returns EDITOR if set', () => {
-		process.env.EDITOR = 'nano';
-		process.env.VISUAL = 'code';
+		process.env['EDITOR'] = 'nano';
+		process.env['VISUAL'] = 'code';
 		expect(getDefaultEditor()).toBe('nano');
 	});
 
 	it('returns VISUAL if EDITOR not set', () => {
-		process.env.EDITOR = '';
-		process.env.VISUAL = 'code';
+		process.env['EDITOR'] = '';
+		process.env['VISUAL'] = 'code';
 		expect(getDefaultEditor()).toBe('code');
 	});
 
 	it('returns vi as fallback', () => {
-		process.env.EDITOR = '';
-		process.env.VISUAL = '';
+		process.env['EDITOR'] = '';
+		process.env['VISUAL'] = '';
 		expect(getDefaultEditor()).toBe('vi');
 	});
 });

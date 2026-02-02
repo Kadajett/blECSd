@@ -782,7 +782,7 @@ describe('TextInput Component', () => {
 				const newBlink = textInputStore.cursorBlinkStart[eid];
 
 				// New blink time should be >= initial (reset to current time)
-				expect(newBlink).toBeGreaterThanOrEqual(initialBlink);
+				expect(newBlink!).toBeGreaterThanOrEqual(initialBlink!);
 			});
 		});
 	});

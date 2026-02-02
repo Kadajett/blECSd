@@ -4,7 +4,7 @@
 
 import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Dimensions, setDimensions } from '../components/dimensions';
+import { setDimensions } from '../components/dimensions';
 import { setParent } from '../components/hierarchy';
 import { setDraggable } from '../components/interactive';
 import { getPosition, getZIndex, setPosition, setZIndex } from '../components/position';
@@ -112,8 +112,8 @@ describe('dragSystem', () => {
 			dragSystem.updateDrag(world, 25, 35);
 
 			const pos = getPosition(world, entity);
-			expect(pos.x).toBe(20); // 25 - (15 - 10) = 20
-			expect(pos.y).toBe(30); // 35 - (25 - 20) = 30
+			expect(pos!.x).toBe(20); // 25 - (15 - 10) = 20
+			expect(pos!.y).toBe(30); // 35 - (25 - 20) = 30
 		});
 
 		it('should emit drag event', () => {
@@ -215,8 +215,8 @@ describe('dragSystem', () => {
 			dragSystem.cancelDrag(world);
 
 			const pos = getPosition(world, entity);
-			expect(pos.x).toBe(10); // Original position
-			expect(pos.y).toBe(20);
+			expect(pos!.x).toBe(10); // Original position
+			expect(pos!.y).toBe(20);
 		});
 
 		it('should emit dragend with cancelled=true', () => {
@@ -258,8 +258,8 @@ describe('dragSystem', () => {
 				dragSystem.updateDrag(world, 25, 50); // Try to move both X and Y
 
 				const pos = getPosition(world, entity);
-				expect(pos.x).toBe(20); // X should change
-				expect(pos.y).toBe(20); // Y should stay original
+				expect(pos!.x).toBe(20); // X should change
+				expect(pos!.y).toBe(20); // Y should stay original
 			});
 
 			it('should lock to Y axis', () => {
@@ -269,8 +269,8 @@ describe('dragSystem', () => {
 				dragSystem.updateDrag(world, 50, 35);
 
 				const pos = getPosition(world, entity);
-				expect(pos.x).toBe(10); // X should stay original
-				expect(pos.y).toBe(30); // Y should change
+				expect(pos!.x).toBe(10); // X should stay original
+				expect(pos!.y).toBe(30); // Y should change
 			});
 		});
 
@@ -304,14 +304,14 @@ describe('dragSystem', () => {
 				// Try to go below min
 				dragSystem.updateDrag(world, -10, -10);
 				let pos = getPosition(world, entity);
-				expect(pos.x).toBe(5);
-				expect(pos.y).toBe(5);
+				expect(pos!.x).toBe(5);
+				expect(pos!.y).toBe(5);
 
 				// Try to go above max
 				dragSystem.updateDrag(world, 100, 100);
 				pos = getPosition(world, entity);
-				expect(pos.x).toBe(50);
-				expect(pos.y).toBe(50);
+				expect(pos!.x).toBe(50);
+				expect(pos!.y).toBe(50);
 			});
 		});
 
@@ -391,8 +391,8 @@ describe('dragSystem', () => {
 
 			expect(result).toBe(false);
 			const pos = getPosition(world, entity);
-			expect(pos.x).toBe(10); // Unchanged
-			expect(pos.y).toBe(20);
+			expect(pos!.x).toBe(10); // Unchanged
+			expect(pos!.y).toBe(20);
 		});
 
 		it('should allow move if callback returns true', () => {
@@ -402,8 +402,8 @@ describe('dragSystem', () => {
 			dragSystem.updateDrag(world, 25, 35);
 
 			const pos = getPosition(world, entity);
-			expect(pos.x).toBe(20);
-			expect(pos.y).toBe(30);
+			expect(pos!.x).toBe(20);
+			expect(pos!.y).toBe(30);
 		});
 
 		describe('getDragVerifyCallback', () => {

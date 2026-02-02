@@ -18,7 +18,7 @@ describe('tput', () => {
 			const tput = createTput();
 
 			expect(tput).toBeDefined();
-			expect(tput.terminal).toBe(process.env.TERM ?? 'xterm-256color');
+			expect(tput.terminal).toBe(process.env['TERM'] ?? 'xterm-256color');
 			expect(tput.data).toBeDefined();
 		});
 
@@ -309,8 +309,8 @@ describe('tput', () => {
 			const data = getDefaultXtermData();
 
 			expect(data.name).toBe('xterm-256color');
-			expect(data.numbers.max_colors).toBe(256);
-			expect(data.strings.clear_screen).toBeDefined();
+			expect(data.numbers['max_colors']).toBe(256);
+			expect(data.strings['clear_screen']).toBeDefined();
 		});
 	});
 

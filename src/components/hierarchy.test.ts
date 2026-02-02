@@ -1001,6 +1001,7 @@ describe('Hierarchy component', () => {
 			const visited: number[] = [];
 			forDescendants(world, root, (entity) => {
 				visited.push(entity);
+				return undefined;
 			});
 
 			expect(visited).toEqual([child1, grandchild1, grandchild2, child2]);
@@ -1018,6 +1019,7 @@ describe('Hierarchy component', () => {
 			const depths: number[] = [];
 			forDescendants(world, root, (_, depth) => {
 				depths.push(depth);
+				return undefined;
 			});
 
 			expect(depths).toEqual([1, 2]);
@@ -1038,6 +1040,7 @@ describe('Hierarchy component', () => {
 			const result = forDescendants(world, root, (entity) => {
 				visited.push(entity);
 				if (entity === child2) return false;
+				return undefined;
 			});
 
 			expect(result).toBe(false);
@@ -1048,7 +1051,7 @@ describe('Hierarchy component', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			const result = forDescendants(world, entity, () => {});
+			const result = forDescendants(world, entity, () => undefined);
 			expect(result).toBe(true);
 		});
 	});
@@ -1066,6 +1069,7 @@ describe('Hierarchy component', () => {
 			const visited: number[] = [];
 			forAncestors(world, grandchild, (entity) => {
 				visited.push(entity);
+				return undefined;
 			});
 
 			expect(visited).toEqual([child, root]);
@@ -1083,6 +1087,7 @@ describe('Hierarchy component', () => {
 			const levels: number[] = [];
 			forAncestors(world, grandchild, (_, level) => {
 				levels.push(level);
+				return undefined;
 			});
 
 			expect(levels).toEqual([1, 2]);

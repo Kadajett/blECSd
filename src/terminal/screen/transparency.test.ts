@@ -391,7 +391,7 @@ describe('transparency', () => {
 				const bg = toPremultiplied(packColor(0, 0, 255, 255));
 
 				const result = blendPremultiplied(fg, bg);
-				const { r, g, b } = unpackColor(result);
+				const { r, b } = unpackColor(result);
 
 				// Should have some red and blue
 				expect(r).toBeGreaterThan(0);

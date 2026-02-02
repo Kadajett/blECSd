@@ -305,16 +305,16 @@ describe('terminfo capabilities', () => {
 
 	describe('consistency', () => {
 		it('all aliases resolve to valid capabilities', () => {
-			for (const [alias, name] of Object.entries(CAPABILITY_ALIASES)) {
+			for (const [, name] of Object.entries(CAPABILITY_ALIASES)) {
 				const type = getCapabilityType(name);
 				expect(type).not.toBeNull();
 			}
 		});
 
 		it('no overlap between capability types', () => {
-			const boolSet = new Set(BOOLEAN_CAPS);
-			const numSet = new Set(NUMBER_CAPS);
-			const strSet = new Set(STRING_CAPS);
+			const boolSet = new Set<string>(BOOLEAN_CAPS);
+			const numSet = new Set<string>(NUMBER_CAPS);
+			const strSet = new Set<string>(STRING_CAPS);
 
 			for (const cap of BOOLEAN_CAPS) {
 				expect(numSet.has(cap)).toBe(false);

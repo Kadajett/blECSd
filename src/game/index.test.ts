@@ -97,7 +97,7 @@ describe('createGame', () => {
 			const button = game.createButton({
 				x: 5,
 				y: 10,
-				text: 'Click Me',
+				label: 'Click Me',
 			});
 
 			expect(button).toBeGreaterThan(0);

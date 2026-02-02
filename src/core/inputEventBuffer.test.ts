@@ -33,13 +33,12 @@ import {
 // Mock key event factory
 function createKeyEvent(name: string, modifiers = {}): KeyEvent {
 	return {
-		raw: new Uint8Array([name.charCodeAt(0)]),
 		name: name as KeyEvent['name'],
 		sequence: name,
 		ctrl: false,
 		meta: false,
 		shift: false,
-		raw: new Uint8Array([]),
+		raw: new Uint8Array([name.charCodeAt(0)]),
 		...modifiers,
 	};
 }

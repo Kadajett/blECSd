@@ -2,7 +2,7 @@
  * Capability Negotiation Tests
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	capabilityQuery,
 	createCapabilityNegotiator,
@@ -16,7 +16,6 @@ import {
 	MIN_QUERY_TIMEOUT,
 	NegotiationTiming,
 	resetDefaultNegotiator,
-	type TerminalCapabilities,
 } from './negotiation';
 
 describe('negotiation', () => {
@@ -244,7 +243,7 @@ describe('negotiation', () => {
 	describe('environment detection', () => {
 		describe('truecolor', () => {
 			it('should detect COLORTERM=truecolor', async () => {
-				process.env.COLORTERM = 'truecolor';
+				process.env['COLORTERM'] = 'truecolor';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -255,7 +254,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect COLORTERM=24bit', async () => {
-				process.env.COLORTERM = '24bit';
+				process.env['COLORTERM'] = '24bit';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -266,7 +265,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect Kitty terminal', async () => {
-				process.env.KITTY_WINDOW_ID = '1';
+				process.env['KITTY_WINDOW_ID'] = '1';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -277,7 +276,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect Windows Terminal', async () => {
-				process.env.WT_SESSION = 'session-id';
+				process.env['WT_SESSION'] = 'session-id';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -288,7 +287,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect Alacritty', async () => {
-				process.env.TERM = 'alacritty';
+				process.env['TERM'] = 'alacritty';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -299,7 +298,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect iTerm2', async () => {
-				process.env.TERM_PROGRAM = 'iTerm.app';
+				process.env['TERM_PROGRAM'] = 'iTerm.app';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -310,7 +309,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect VTE 3600+', async () => {
-				process.env.VTE_VERSION = '5000';
+				process.env['VTE_VERSION'] = '5000';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -323,7 +322,7 @@ describe('negotiation', () => {
 
 		describe('kittyKeyboard', () => {
 			it('should detect Kitty terminal', async () => {
-				process.env.KITTY_WINDOW_ID = '1';
+				process.env['KITTY_WINDOW_ID'] = '1';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -334,7 +333,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect WezTerm', async () => {
-				process.env.TERM_PROGRAM = 'WezTerm';
+				process.env['TERM_PROGRAM'] = 'WezTerm';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -345,7 +344,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect foot terminal', async () => {
-				process.env.TERM = 'foot';
+				process.env['TERM'] = 'foot';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -356,9 +355,9 @@ describe('negotiation', () => {
 			});
 
 			it('should return false for unknown terminals', async () => {
-				process.env.TERM = 'xterm';
-				delete process.env.KITTY_WINDOW_ID;
-				delete process.env.TERM_PROGRAM;
+				process.env['TERM'] = 'xterm';
+				delete process.env['KITTY_WINDOW_ID'];
+				delete process.env['TERM_PROGRAM'];
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -371,7 +370,7 @@ describe('negotiation', () => {
 
 		describe('graphics', () => {
 			it('should detect Kitty graphics', async () => {
-				process.env.KITTY_WINDOW_ID = '1';
+				process.env['KITTY_WINDOW_ID'] = '1';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -382,7 +381,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect iTerm2 graphics', async () => {
-				process.env.TERM_PROGRAM = 'iTerm.app';
+				process.env['TERM_PROGRAM'] = 'iTerm.app';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -393,9 +392,9 @@ describe('negotiation', () => {
 			});
 
 			it('should return false for unknown terminals', async () => {
-				process.env.TERM = 'xterm';
-				delete process.env.KITTY_WINDOW_ID;
-				delete process.env.TERM_PROGRAM;
+				process.env['TERM'] = 'xterm';
+				delete process.env['KITTY_WINDOW_ID'];
+				delete process.env['TERM_PROGRAM'];
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -408,7 +407,7 @@ describe('negotiation', () => {
 
 		describe('synchronizedOutput', () => {
 			it('should detect Kitty', async () => {
-				process.env.KITTY_WINDOW_ID = '1';
+				process.env['KITTY_WINDOW_ID'] = '1';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -419,7 +418,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect Windows Terminal', async () => {
-				process.env.WT_SESSION = 'session';
+				process.env['WT_SESSION'] = 'session';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -432,7 +431,7 @@ describe('negotiation', () => {
 
 		describe('hyperlinks', () => {
 			it('should detect Kitty', async () => {
-				process.env.KITTY_WINDOW_ID = '1';
+				process.env['KITTY_WINDOW_ID'] = '1';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -443,7 +442,7 @@ describe('negotiation', () => {
 			});
 
 			it('should detect VTE 5000+', async () => {
-				process.env.VTE_VERSION = '5500';
+				process.env['VTE_VERSION'] = '5500';
 
 				const negotiator = createCapabilityNegotiator({ timing: 'skip' });
 				const caps = await negotiator.getCapabilities();
@@ -479,9 +478,6 @@ describe('negotiation', () => {
 				timing: 'skip',
 				forceCapabilities: { truecolor: true },
 			});
-
-			// Replace default negotiator temporarily
-			const origGetDefault = getDefaultNegotiator;
 
 			// Can't easily mock, so just verify the function exists
 			const caps = await getTerminalCapabilities();

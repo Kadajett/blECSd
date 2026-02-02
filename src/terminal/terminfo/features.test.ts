@@ -4,7 +4,7 @@
  * @module terminal/terminfo/features.test
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	detect256Color,
 	detectAlternateScreen,
@@ -31,6 +31,7 @@ function createTerminfo(overrides: Partial<TerminfoData> = {}): TerminfoData {
 	return {
 		name: 'xterm-256color',
 		names: ['xterm-256color', 'xterm'],
+		description: 'X11 terminal emulator',
 		booleans: {},
 		numbers: { max_colors: 256 },
 		strings: {},

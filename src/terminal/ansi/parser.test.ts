@@ -5,7 +5,6 @@
 import { describe, expect, it } from 'vitest';
 import {
 	type Attribute,
-	type OutputColorDepth,
 	applySgrCodes,
 	attrCode,
 	attrToSgrCodes,

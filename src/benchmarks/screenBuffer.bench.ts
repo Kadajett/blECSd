@@ -9,7 +9,7 @@
  */
 
 import { bench, describe } from 'vitest';
-import { createCell, fillRect, setCell, type Cell, type ScreenBufferData } from '../terminal/screen/cell';
+import { createCell, fillRect, setCell } from '../terminal/screen/cell';
 import {
 	clearDirtyRegions,
 	createDoubleBuffer,
@@ -24,7 +24,6 @@ import {
 // SETUP HELPERS
 // =============================================================================
 
-const WHITE_ON_BLACK = createCell(' ', 0xffffffff, 0x000000ff);
 const RED_ON_BLACK = createCell('X', 0xff0000ff, 0x000000ff);
 const GREEN_ON_BLACK = createCell('O', 0x00ff00ff, 0x000000ff);
 
@@ -443,11 +442,10 @@ describe('Full Render Cycle', () => {
 					markDirtyRegion(db, x, y, 10, 3);
 				}
 				// Get updates
-				const updates = getMinimalUpdates(db);
+				getMinimalUpdates(db);
 				// Swap
 				swapBuffers(db);
 				clearDirtyRegions(db);
-				// (updates would be sent to terminal here)
 			},
 			{
 				setup() {
@@ -465,7 +463,7 @@ describe('Full Render Cycle', () => {
 					fillRect(db.backBuffer, x, y, 8, 2, e % 2 === 0 ? RED_ON_BLACK : GREEN_ON_BLACK);
 					markDirtyRegion(db, x, y, 8, 2);
 				}
-				const updates = getMinimalUpdates(db);
+				getMinimalUpdates(db);
 				swapBuffers(db);
 				clearDirtyRegions(db);
 			},

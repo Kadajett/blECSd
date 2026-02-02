@@ -215,8 +215,8 @@ describe('layoutSystem', () => {
 
 			expect(parentLayout).toBeDefined();
 			expect(childLayout).toBeDefined();
-			expect(childLayout?.x).toBe(parentLayout?.x + 5);
-			expect(childLayout?.y).toBe(parentLayout?.y + 5);
+			expect(childLayout?.x).toBe(parentLayout!.x + 5);
+			expect(childLayout?.y).toBe(parentLayout!.y + 5);
 		});
 	});
 

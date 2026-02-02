@@ -5,7 +5,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	bg,
-	type Color,
 	ColorDepthLevel,
 	color,
 	createTruecolorSupport,
@@ -17,7 +16,6 @@ import {
 	resetDefaultTruecolor,
 	rgb,
 	rgba,
-	type TruecolorSupport,
 } from './truecolor';
 
 describe('truecolor', () => {
@@ -439,7 +437,7 @@ describe('truecolor', () => {
 
 	describe('environment detection', () => {
 		it('should detect truecolor from COLORTERM', () => {
-			process.env.COLORTERM = 'truecolor';
+			process.env['COLORTERM'] = 'truecolor';
 
 			const support = createTruecolorSupport();
 
@@ -447,7 +445,7 @@ describe('truecolor', () => {
 		});
 
 		it('should detect truecolor from COLORTERM=24bit', () => {
-			process.env.COLORTERM = '24bit';
+			process.env['COLORTERM'] = '24bit';
 
 			const support = createTruecolorSupport();
 
@@ -455,8 +453,8 @@ describe('truecolor', () => {
 		});
 
 		it('should detect 256 colors from TERM', () => {
-			delete process.env.COLORTERM;
-			process.env.TERM = 'xterm-256color';
+			delete process.env['COLORTERM'];
+			process.env['TERM'] = 'xterm-256color';
 
 			const support = createTruecolorSupport();
 
@@ -464,8 +462,8 @@ describe('truecolor', () => {
 		});
 
 		it('should detect 16 colors from xterm', () => {
-			delete process.env.COLORTERM;
-			process.env.TERM = 'xterm';
+			delete process.env['COLORTERM'];
+			process.env['TERM'] = 'xterm';
 
 			const support = createTruecolorSupport();
 
@@ -473,8 +471,8 @@ describe('truecolor', () => {
 		});
 
 		it('should detect mono from dumb terminal', () => {
-			delete process.env.COLORTERM;
-			process.env.TERM = 'dumb';
+			delete process.env['COLORTERM'];
+			process.env['TERM'] = 'dumb';
 
 			const support = createTruecolorSupport();
 
@@ -543,7 +541,7 @@ describe('truecolor', () => {
 
 		describe('fg / bg', () => {
 			it('should generate SGR sequences using default instance', () => {
-				process.env.COLORTERM = 'truecolor';
+				process.env['COLORTERM'] = 'truecolor';
 				resetDefaultTruecolor();
 
 				const red = rgb(255, 0, 0);
@@ -558,7 +556,7 @@ describe('truecolor', () => {
 
 		describe('isTruecolor', () => {
 			it('should check truecolor support using default instance', () => {
-				process.env.COLORTERM = 'truecolor';
+				process.env['COLORTERM'] = 'truecolor';
 				resetDefaultTruecolor();
 
 				expect(isTruecolor()).toBe(true);
@@ -567,7 +565,7 @@ describe('truecolor', () => {
 
 		describe('getColorDepthLevel', () => {
 			it('should get depth using default instance', () => {
-				process.env.COLORTERM = 'truecolor';
+				process.env['COLORTERM'] = 'truecolor';
 				resetDefaultTruecolor();
 
 				expect(getColorDepthLevel()).toBe(ColorDepthLevel.TRUECOLOR);

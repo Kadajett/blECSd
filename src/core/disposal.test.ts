@@ -4,7 +4,7 @@
 
 import { addEntity, createWorld, entityExists } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { appendChild, getChildren, Hierarchy } from '../components/hierarchy';
+import { appendChild, getChildren } from '../components/hierarchy';
 import { createEventBus } from './events';
 import { getLifecycleEventBus, type LifecycleEventMap } from './lifecycleEvents';
 import type { World } from './types';

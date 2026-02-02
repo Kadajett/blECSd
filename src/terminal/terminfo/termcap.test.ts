@@ -189,7 +189,7 @@ derived:tc=base:li#24:`;
 
 			expect(terminfo.name).toBe('vt100');
 			expect(terminfo.names).toContain('vt100');
-			expect(terminfo.booleans.am).toBe(true);
+			expect(terminfo.booleans['am']).toBe(true);
 			expect(terminfo.numbers['co']).toBe(80);
 			expect(terminfo.strings['cl']).toBe('\x1b[H');
 		});

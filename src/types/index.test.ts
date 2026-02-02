@@ -71,6 +71,7 @@ describe('types', () => {
 			const frozen: Immutable = { a: { b: 42 } };
 
 			// Type assertion: the readonly modifier is present
+			// @ts-expect-error TS6196: Type alias used for compile-time assertion only
 			type _TestA = Assert<IsEqual<typeof frozen.a, DeepReadonly<{ b: number }>>>;
 
 			expect(frozen.a.b).toBe(42);
@@ -119,6 +120,7 @@ describe('types', () => {
 			expect(typeof input).toBe('string');
 
 			// Type assertion: DateOutput should be Date
+			// @ts-expect-error TS6196: Type alias used for compile-time assertion only
 			type _TestOutput = Assert<IsEqual<DateOutput, Date>>;
 		});
 	});
@@ -274,23 +276,25 @@ describe('types', () => {
 // These don't run at runtime but verify types are correctly defined
 // =============================================================================
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // DeepPartial should handle primitives
-type _TestDeepPartialPrimitive = Assert<IsEqual<DeepPartial<number>, number>>;
-type _TestDeepPartialString = Assert<IsEqual<DeepPartial<string>, string>>;
+export type _TestDeepPartialPrimitive = Assert<IsEqual<DeepPartial<number>, number>>;
+export type _TestDeepPartialString = Assert<IsEqual<DeepPartial<string>, string>>;
 
 // DeepReadonly should handle primitives
-type _TestDeepReadonlyPrimitive = Assert<IsEqual<DeepReadonly<number>, number>>;
+export type _TestDeepReadonlyPrimitive = Assert<IsEqual<DeepReadonly<number>, number>>;
 
 // RequiredKeys should preserve existing required keys
 interface _TestInterface {
 	req: number;
 	opt?: string;
 }
-type _TestRequiredKeysPreserve = Assert<
+export type _TestRequiredKeysPreserve = Assert<
 	IsEqual<RequiredKeys<_TestInterface, 'opt'>['req'], number>
 >;
 
 // OptionalKeys should preserve existing optional keys
-type _TestOptionalKeysPreserve = Assert<
+export type _TestOptionalKeysPreserve = Assert<
 	undefined extends OptionalKeys<_TestInterface, 'req'>['opt'] ? true : false
 >;
+/* eslint-enable @typescript-eslint/no-unused-vars */

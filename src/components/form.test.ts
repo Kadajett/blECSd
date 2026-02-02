@@ -203,8 +203,8 @@ describe('Form Component', () => {
 
 			const values = getFormValues(world, form);
 
-			expect(values.username).toBe('john');
-			expect(values.agree).toBe(true);
+			expect(values['username']).toBe('john');
+			expect(values['agree']).toBe(true);
 		});
 
 		it('returns empty object for form with no fields', () => {
@@ -230,7 +230,7 @@ describe('Form Component', () => {
 
 			const values = submitForm(world, form);
 
-			expect(values.input).toBe('test');
+			expect(values['input']).toBe('test');
 		});
 
 		it('calls submit callbacks', () => {

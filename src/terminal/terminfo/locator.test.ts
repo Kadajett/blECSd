@@ -344,29 +344,29 @@ describe('terminfo locator', () => {
 
 	describe('getCurrentTerminal', () => {
 		it('returns TERM environment variable', () => {
-			const originalTerm = process.env.TERM;
-			process.env.TERM = 'test-terminal';
+			const originalTerm = process.env['TERM'];
+			process.env['TERM'] = 'test-terminal';
 
 			try {
 				expect(getCurrentTerminal()).toBe('test-terminal');
 			} finally {
 				if (originalTerm) {
-					process.env.TERM = originalTerm;
+					process.env['TERM'] = originalTerm;
 				} else {
-					delete process.env.TERM;
+					delete process.env['TERM'];
 				}
 			}
 		});
 
 		it('returns dumb when TERM not set', () => {
-			const originalTerm = process.env.TERM;
-			delete process.env.TERM;
+			const originalTerm = process.env['TERM'];
+			delete process.env['TERM'];
 
 			try {
 				expect(getCurrentTerminal()).toBe('dumb');
 			} finally {
 				if (originalTerm) {
-					process.env.TERM = originalTerm;
+					process.env['TERM'] = originalTerm;
 				}
 			}
 		});

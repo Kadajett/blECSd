@@ -5,7 +5,7 @@
 import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createScreenEntity } from '../core/entities';
-import { resetScreenSingleton, getScreen, getScreenSize } from '../components/screen';
+import { resetScreenSingleton, getScreenSize } from '../components/screen';
 import { createDoubleBuffer } from './screen/doubleBuffer';
 import { setOutputBuffer, getOutputBuffer, clearOutputBuffer } from '../systems/outputSystem';
 import type { World } from '../core/types';
@@ -154,7 +154,7 @@ describe('resize', () => {
 
 	describe('triggerResize', () => {
 		it('updates screen dimensions', () => {
-			const state = createResizeHandler(world);
+			createResizeHandler(world);
 
 			triggerResize(world, 100, 30);
 
@@ -173,7 +173,7 @@ describe('resize', () => {
 		});
 
 		it('emits resize event', () => {
-			const state = createResizeHandler(world);
+			createResizeHandler(world);
 			const handler = vi.fn();
 			getResizeEventBus().on('resize', handler);
 
@@ -188,7 +188,7 @@ describe('resize', () => {
 		});
 
 		it('does not emit when dimensions unchanged', () => {
-			const state = createResizeHandler(world);
+			createResizeHandler(world);
 			const handler = vi.fn();
 			getResizeEventBus().on('resize', handler);
 
@@ -200,7 +200,7 @@ describe('resize', () => {
 		it('resizes double buffer', () => {
 			const db = createDoubleBuffer(80, 24);
 			setOutputBuffer(db);
-			const state = createResizeHandler(world);
+			createResizeHandler(world);
 
 			triggerResize(world, 100, 30);
 
