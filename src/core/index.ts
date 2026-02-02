@@ -3,6 +3,27 @@
  * @module core
  */
 
+// Computed position
+export type {
+	AbsolutePosition,
+	ComputedPositionData,
+	InnerDimensions,
+	InnerPosition,
+	RelativePosition,
+	TotalPadding,
+} from './computedPosition';
+export {
+	getAbsolutePosition,
+	getComputedPosition,
+	getInnerDimensions,
+	getInnerPosition,
+	getRelativePosition,
+	getTotalPadding,
+	isPointInEntity,
+	isPointInInnerBounds,
+	setAbsolutePosition,
+	setRelativePosition,
+} from './computedPosition';
 export type {
 	BoxConfig,
 	ButtonConfig,
