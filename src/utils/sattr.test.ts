@@ -141,6 +141,7 @@ describe('sattr', () => {
 				blink: true,
 				inverse: false,
 				transparent: false,
+				opacity: 255,
 			};
 			const attr = sattrFromStyleData(styleData);
 			expect(attr.fg).toBe(0xffff0000);

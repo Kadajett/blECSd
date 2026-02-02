@@ -63,12 +63,14 @@ export {
 	windowOps,
 } from './ansi';
 // ANSI attribute parser (internal)
-export type { Attribute, InternalColor } from './ansi/parser';
+export type { Attribute, CodeAttrOptions, InternalColor, OutputColorDepth } from './ansi/parser';
 export {
 	AttributeSchema,
 	applySgrCodes,
 	attrCode,
+	attrToSgrCodes,
 	attributesEqual,
+	codeAttr,
 	ColorType,
 	cloneAttribute,
 	createAttribute,
@@ -77,11 +79,36 @@ export {
 	hasStyle,
 	packRgb,
 	parseSgrString,
+	sgrReset,
 	stripAnsi,
 	TextStyle,
 	unpackRgb,
 	visibleLength,
 } from './ansi/parser';
+// Capability negotiation (internal)
+export type {
+	CapabilityNegotiator,
+	GraphicsProtocolValue,
+	KittyKeyboardLevelValue,
+	NegotiationTimingValue,
+	NegotiatorConfig,
+	TerminalCapabilities,
+} from './capabilities';
+export {
+	capabilityQuery,
+	createCapabilityNegotiator,
+	DEFAULT_QUERY_TIMEOUT,
+	GraphicsProtocol,
+	getDefaultNegotiator,
+	getTerminalCapabilities,
+	hasCapability,
+	KittyKeyboardLevel,
+	MAX_QUERY_TIMEOUT,
+	MIN_QUERY_TIMEOUT,
+	NegotiationTiming,
+	NegotiatorConfigSchema,
+	resetDefaultNegotiator,
+} from './capabilities';
 // Cleanup and signal handling (internal)
 export type { CleanupHandler, ExitHandler, ExitInfo, ExitReason } from './cleanup';
 export {
@@ -160,6 +187,50 @@ export {
 // Output buffering (internal)
 export type { CursorPosition, OutputBufferOptions } from './outputBuffer';
 export { OutputBuffer } from './outputBuffer';
+// Optimized output buffering (public)
+export type {
+	ColorState,
+	OutputBufferData,
+	OutputBufferOptions as OptimizedOutputBufferOptions,
+	OutputStats,
+} from './optimizedOutput';
+export {
+	ATTR_BLINK,
+	ATTR_BOLD,
+	ATTR_DIM,
+	ATTR_HIDDEN,
+	ATTR_INVERSE,
+	ATTR_ITALIC,
+	ATTR_STRIKETHROUGH,
+	ATTR_UNDERLINE,
+	beginFrame,
+	clearBuffer as clearOutputBuffer,
+	clearLine,
+	clearScreen as clearOutputScreen,
+	clearToEnd,
+	createOutputBuffer,
+	DEFAULT_COLOR,
+	endFrame,
+	estimateBytesSaved,
+	flushToStream,
+	getBufferLength,
+	getContents,
+	getOutputStats,
+	hideCursor,
+	moveCursor,
+	resetBuffer,
+	resetColorState,
+	resetStats as resetOutputStats,
+	setAttributes,
+	setBackground,
+	setForeground,
+	setScreenSize,
+	showCursor,
+	writeCellAt,
+	writeChar,
+	writeRaw,
+	writeStringAt,
+} from './optimizedOutput';
 // Process utilities (internal)
 export type { EditorOptions, ExecOptions, ExecResult, SpawnOptions } from './process';
 export { exec, execSync, getDefaultEditor, processUtils, readEditor, spawn } from './process';
@@ -206,6 +277,32 @@ export {
 	query,
 	ResponseType,
 } from './responseParser';
+// Screen buffer and cell management
+export type { AttrFlags, Cell, CellChange, ScreenBufferData } from './screen';
+export {
+	Attr,
+	cellIndex,
+	cellsEqual,
+	clearBuffer,
+	cloneCell,
+	copyRegion,
+	createCell,
+	createScreenBuffer,
+	DEFAULT_BG as CELL_DEFAULT_BG,
+	DEFAULT_CHAR,
+	DEFAULT_FG as CELL_DEFAULT_FG,
+	diffBuffers,
+	fillRect,
+	getCell,
+	hasAttr,
+	isInBounds,
+	resizeBuffer,
+	setCell,
+	setChar,
+	withAttr,
+	withoutAttr,
+	writeString,
+} from './screen';
 // Screen buffer management (internal)
 export type { CleanupCallback } from './screenBuffer';
 export { ScreenBuffer } from './screenBuffer';
@@ -227,3 +324,100 @@ export { SuspendManager, suspend, suspendSequences } from './suspend';
 // Synchronized output (internal)
 export type { SyncOutputOptions } from './syncOutput';
 export { isSyncOutputSupported, SynchronizedOutput } from './syncOutput';
+// Terminfo (internal)
+export type {
+	BooleanCapability,
+	NumberCapability,
+	StringCapability,
+	TerminfoData,
+	Tput,
+	TputConfig,
+} from './terminfo';
+export { createTput, getDefaultTput, getDefaultXtermData, resetDefaultTput } from './terminfo';
+// Resize handling
+export type {
+	ResizeEventData,
+	ResizeEventMap,
+	ResizeHandler,
+	ResizeHandlerState,
+} from './resize';
+export {
+	createResizeHandler,
+	disableResizeHandling,
+	enableResizeHandling,
+	getResizeEventBus,
+	getResizeHandler,
+	resetResizeEventBus,
+	setupSigwinchHandler,
+	triggerResize,
+} from './resize';
+// Input control
+export type {
+	InputControlEventData,
+	InputControlEventMap,
+	InputControlOptions,
+	InputControlState,
+	MouseModeValue,
+} from './inputControl';
+export {
+	areKeysEnabled,
+	createInputControl,
+	destroyInputControl,
+	disableInput,
+	disableKeys,
+	disableMouse,
+	disableWorldInput,
+	disableWorldKeys,
+	disableWorldMouse,
+	enableInput,
+	enableKeys,
+	enableMouse,
+	enableWorldInput,
+	enableWorldKeys,
+	enableWorldMouse,
+	getInputControl,
+	getInputControlEventBus,
+	getMouseMode,
+	isInputEnabled,
+	isMouseEnabled,
+	MouseTrackingMode,
+	resetInputControlEventBus,
+	setMouseMode,
+} from './inputControl';
+// Artificial cursor
+export type {
+	ArtificialCursor,
+	ArtificialCursorOptions,
+	CursorManager,
+	CursorShape as ArtificialCursorShapeType,
+	RenderedCursor,
+} from './cursor';
+export {
+	addCursor,
+	BAR_CURSOR_CHAR,
+	BLOCK_CURSOR_CHAR,
+	createArtificialCursor,
+	createCursorCell,
+	createCursorManager,
+	getCursorAt,
+	getPrimaryCursor,
+	getVisibleCursors,
+	HIDE_TERMINAL_CURSOR,
+	hideTerminalCursor,
+	isCursorVisible,
+	moveCursorTo,
+	moveCursorBy,
+	removeCursor,
+	renderCursor,
+	resetCursorBlink,
+	setCursorBlink,
+	setCursorColors,
+	setCursorShape,
+	setCursorVisible,
+	SHOW_TERMINAL_CURSOR,
+	showTerminalCursor,
+	UNDERLINE_CURSOR_CHAR,
+	updateAllCursorBlinks,
+	updateCursorBlink,
+	updateCursorInManager,
+} from './cursor';

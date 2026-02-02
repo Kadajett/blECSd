@@ -468,4 +468,349 @@ describe('GameLoop', () => {
 			expect(callOrder[0]).toBe(1); // Input always first
 		});
 	});
+
+	describe('fixed timestep mode', () => {
+		it('should create loop with fixed timestep mode', () => {
+			const loop = createGameLoop(world, {
+				fixedTimestepMode: {
+					tickRate: 60,
+					maxUpdatesPerFrame: 5,
+					interpolate: true,
+				},
+			});
+
+			expect(loop.isFixedTimestepMode()).toBe(true);
+			expect(loop.getFixedTimestepConfig()).toEqual({
+				tickRate: 60,
+				maxUpdatesPerFrame: 5,
+				interpolate: true,
+			});
+		});
+
+		it('should not be in fixed timestep mode by default', () => {
+			const loop = createGameLoop(world);
+
+			expect(loop.isFixedTimestepMode()).toBe(false);
+			expect(loop.getFixedTimestepConfig()).toBeUndefined();
+		});
+
+		it('should run fixed updates at consistent rate', () => {
+			const updateCounts: number[] = [];
+			const loop = createGameLoop(world, {
+				fixedTimestepMode: {
+					tickRate: 60, // 1/60 second per tick
+					maxUpdatesPerFrame: 10,
+					interpolate: false,
+				},
+			});
+
+			loop.registerSystem(LoopPhase.UPDATE, () => {
+				updateCounts.push(1);
+				return world;
+			});
+
+			// Step with exactly one tick's worth of time
+			loop.step(1 / 60);
+			expect(updateCounts.length).toBe(1);
+
+			// Step with two ticks' worth of time
+			loop.step(2 / 60);
+			expect(updateCounts.length).toBe(3); // 1 + 2
+
+			// Step with half a tick - should not trigger update
+			loop.step(0.5 / 60);
+			expect(updateCounts.length).toBe(3); // Still 3
+
+			// Another half tick - should trigger update (accumulated)
+			loop.step(0.5 / 60);
+			expect(updateCounts.length).toBe(4);
+		});
+
+		it('should always process input every frame in fixed timestep mode', () => {
+			const callOrder: string[] = [];
+			const loop = createGameLoop(world, {
+				fixedTimestepMode: {
+					tickRate: 60,
+					maxUpdatesPerFrame: 5,
+					interpolate: false,
+				},
+			});
+
+			loop.registerInputSystem(() => {
+				callOrder.push('input');
+				return world;
+			});
+			loop.registerSystem(LoopPhase.UPDATE, () => {
+				callOrder.push('update');
+				return world;
+			});
+			loop.registerSystem(LoopPhase.RENDER, () => {
+				callOrder.push('render');
+				return world;
+			});
+
+			// Step with less than one tick - input and render run, but not update
+			loop.step(0.5 / 60);
+
+			expect(callOrder).toContain('input');
+			expect(callOrder).toContain('render');
+			expect(callOrder).not.toContain('update');
+		});
+
+		it('should cap updates per frame to prevent spiral of death', () => {
+			let updateCount = 0;
+			const loop = createGameLoop(world, {
+				maxDeltaTime: 1, // Allow larger delta time for this test
+				fixedTimestepMode: {
+					tickRate: 60,
+					maxUpdatesPerFrame: 3,
+					interpolate: false,
+				},
+			});
+
+			loop.registerSystem(LoopPhase.UPDATE, () => {
+				updateCount++;
+				return world;
+			});
+
+			// Step with 10 ticks' worth of time
+			loop.step(10 / 60);
+
+			// Should be capped at 3
+			expect(updateCount).toBe(3);
+			expect(loop.getStats().skippedUpdates).toBe(7);
+		});
+
+		it('should calculate interpolation alpha', () => {
+			const loop = createGameLoop(world, {
+				fixedTimestepMode: {
+					tickRate: 60,
+					maxUpdatesPerFrame: 5,
+					interpolate: true,
+				},
+			});
+
+			// Step with 1.5 ticks' worth of time
+			loop.step(1.5 / 60);
+
+			// Alpha should be 0.5 (halfway to next tick)
+			expect(loop.getInterpolationAlpha()).toBeCloseTo(0.5, 1);
+		});
+
+		it('should call fixed update hooks', () => {
+			const beforeFixed = vi.fn();
+			const afterFixed = vi.fn();
+
+			const loop = createGameLoop(
+				world,
+				{
+					fixedTimestepMode: {
+						tickRate: 60,
+						maxUpdatesPerFrame: 5,
+						interpolate: false,
+					},
+				},
+				{
+					onBeforeFixedUpdate: beforeFixed,
+					onAfterFixedUpdate: afterFixed,
+				},
+			);
+
+			loop.step(2 / 60); // Two fixed updates
+
+			expect(beforeFixed).toHaveBeenCalledTimes(2);
+			expect(afterFixed).toHaveBeenCalledTimes(2);
+
+			// Verify parameters
+			expect(beforeFixed).toHaveBeenCalledWith(world, 1 / 60, expect.any(Number));
+			expect(afterFixed).toHaveBeenCalledWith(world, 1 / 60, expect.any(Number));
+		});
+
+		it('should call interpolate hook when enabled', () => {
+			const onInterpolate = vi.fn();
+
+			const loop = createGameLoop(
+				world,
+				{
+					fixedTimestepMode: {
+						tickRate: 60,
+						maxUpdatesPerFrame: 5,
+						interpolate: true,
+					},
+				},
+				{
+					onInterpolate,
+				},
+			);
+
+			loop.step(1.25 / 60);
+
+			expect(onInterpolate).toHaveBeenCalledWith(world, expect.closeTo(0.25, 1));
+		});
+
+		it('should not call interpolate hook when disabled', () => {
+			const onInterpolate = vi.fn();
+
+			const loop = createGameLoop(
+				world,
+				{
+					fixedTimestepMode: {
+						tickRate: 60,
+						maxUpdatesPerFrame: 5,
+						interpolate: false,
+					},
+				},
+				{
+					onInterpolate,
+				},
+			);
+
+			loop.step(1.25 / 60);
+
+			expect(onInterpolate).not.toHaveBeenCalled();
+		});
+
+		it('should track tick count', () => {
+			const loop = createGameLoop(world, {
+				fixedTimestepMode: {
+					tickRate: 60,
+					maxUpdatesPerFrame: 5,
+					interpolate: false,
+				},
+			});
+
+			expect(loop.getStats().tickCount).toBe(0);
+
+			loop.step(1 / 60);
+			expect(loop.getStats().tickCount).toBe(1);
+
+			loop.step(2 / 60);
+			expect(loop.getStats().tickCount).toBe(3);
+		});
+
+		it('should reset tick count on start', () => {
+			const loop = createGameLoop(world, {
+				fixedTimestepMode: {
+					tickRate: 60,
+					maxUpdatesPerFrame: 5,
+					interpolate: false,
+				},
+			});
+
+			loop.step(3 / 60);
+			expect(loop.getStats().tickCount).toBe(3);
+
+			loop.start();
+			expect(loop.getStats().tickCount).toBe(0);
+			loop.stop();
+		});
+
+		describe('stepFixed', () => {
+			it('should run exactly one fixed update', () => {
+				let updateCount = 0;
+				const loop = createGameLoop(world, {
+					fixedTimestepMode: {
+						tickRate: 60,
+						maxUpdatesPerFrame: 5,
+						interpolate: false,
+					},
+				});
+
+				loop.registerSystem(LoopPhase.UPDATE, () => {
+					updateCount++;
+					return world;
+				});
+
+				loop.stepFixed();
+				expect(updateCount).toBe(1);
+
+				loop.stepFixed();
+				expect(updateCount).toBe(2);
+			});
+
+			it('should throw if not in fixed timestep mode', () => {
+				const loop = createGameLoop(world);
+
+				expect(() => loop.stepFixed()).toThrow('fixedTimestepMode');
+			});
+
+			it('should call fixed update hooks', () => {
+				const beforeFixed = vi.fn();
+				const afterFixed = vi.fn();
+
+				const loop = createGameLoop(
+					world,
+					{
+						fixedTimestepMode: {
+							tickRate: 60,
+							maxUpdatesPerFrame: 5,
+							interpolate: false,
+						},
+					},
+					{
+						onBeforeFixedUpdate: beforeFixed,
+						onAfterFixedUpdate: afterFixed,
+					},
+				);
+
+				loop.stepFixed();
+
+				expect(beforeFixed).toHaveBeenCalledTimes(1);
+				expect(afterFixed).toHaveBeenCalledTimes(1);
+			});
+
+			it('should increment tick count', () => {
+				const loop = createGameLoop(world, {
+					fixedTimestepMode: {
+						tickRate: 60,
+						maxUpdatesPerFrame: 5,
+						interpolate: false,
+					},
+				});
+
+				expect(loop.getStats().tickCount).toBe(0);
+				loop.stepFixed();
+				expect(loop.getStats().tickCount).toBe(1);
+				loop.stepFixed();
+				expect(loop.getStats().tickCount).toBe(2);
+			});
+		});
+
+		describe('input responsiveness', () => {
+			it('should process input every frame regardless of tick rate', () => {
+				let inputCalls = 0;
+				let updateCalls = 0;
+
+				const loop = createGameLoop(world, {
+					fixedTimestepMode: {
+						tickRate: 10, // Very slow tick rate (100ms per tick)
+						maxUpdatesPerFrame: 5,
+						interpolate: false,
+					},
+				});
+
+				loop.registerInputSystem(() => {
+					inputCalls++;
+					return world;
+				});
+				loop.registerSystem(LoopPhase.UPDATE, () => {
+					updateCalls++;
+					return world;
+				});
+
+				// Run 10 frames at 60fps (16.67ms each)
+				for (let i = 0; i < 10; i++) {
+					loop.step(1 / 60);
+				}
+
+				// Input should have been called every frame
+				expect(inputCalls).toBe(10);
+
+				// Update runs at 10 ticks/sec, so ~1.67 updates expected
+				// (10 frames * 16.67ms = 166.7ms, at 100ms per tick = ~1.67 ticks)
+				expect(updateCalls).toBeGreaterThanOrEqual(1);
+				expect(updateCalls).toBeLessThanOrEqual(2);
+			});
+		});
+	});
 });
