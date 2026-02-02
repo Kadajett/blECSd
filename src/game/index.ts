@@ -76,7 +76,7 @@ import {
 	type LoopStats,
 } from '../core/gameLoop';
 import { type ActionBinding, createInputActionManager } from '../core/inputActions';
-import { createInputEventBuffer, type InputEventBuffer } from '../core/inputEventBuffer';
+import { createInputEventBuffer, drainKeys, drainMouse, type InputEventBufferData } from '../core/inputEventBuffer';
 import { createInputState, type InputState as InputStateTracker } from '../core/inputState';
 import type { Entity, System, Unsubscribe, World } from '../core/types';
 import { LoopPhase } from '../core/types';
@@ -220,7 +220,7 @@ export interface Game {
 	/**
 	 * The input buffer for raw input events.
 	 */
-	readonly inputBuffer: InputEventBuffer;
+	readonly inputBuffer: InputEventBufferData;
 
 	/**
 	 * The input state tracker.
@@ -614,7 +614,7 @@ interface GameState {
 	config: ResolvedGameConfig;
 	screen: Entity;
 	loop: GameLoop;
-	inputBuffer: InputEventBuffer;
+	inputBuffer: InputEventBufferData;
 	inputState: InputStateTracker;
 	actionManager: ReturnType<typeof createInputActionManager>;
 	keyHandlers: Map<string, Set<KeyHandler>>;
@@ -774,8 +774,8 @@ function createGameInstance(state: GameState): Game {
 
 	// Update input state with batched events (called per frame)
 	function updateInputState(deltaTime: number): void {
-		const keyEvents = inputBuffer.drainKeys();
-		const mouseEvents = inputBuffer.drainMouse();
+		const keyEvents = drainKeys(inputBuffer);
+		const mouseEvents = drainMouse(inputBuffer);
 
 		// Process events for handlers
 		for (const event of keyEvents) {

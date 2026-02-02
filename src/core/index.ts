@@ -245,6 +245,7 @@ export {
 // Input event buffer
 export type {
 	InputBufferStats,
+	InputEventBufferData,
 	InputEventBufferOptions,
 	InputLatencyStats,
 	TimestampedInputEvent,
@@ -252,9 +253,31 @@ export type {
 	TimestampedMouseEvent,
 } from './inputEventBuffer';
 export {
+	beginFrame,
+	clearBuffer,
 	createInputEventBuffer,
+	drainAllEvents,
+	drainKeys,
+	drainMouse,
+	endFrame,
+	getLatencyStats,
+	getPendingCount,
+	getPendingKeyCount,
+	getPendingMouseCount,
+	getStats,
 	globalInputBuffer,
-	InputEventBuffer,
+	hasPendingEvents,
+	isLatencyAcceptable,
+	isProcessingTimeAcceptable,
+	peekEvents,
+	peekKeys,
+	peekMouse,
+	pushKeyEvent,
+	pushMouseEvent,
+	recordLatency,
+	recordLatencyBatch,
+	resetLatencyStats,
+	resetStats,
 } from './inputEventBuffer';
 // Input state tracking
 export type {
