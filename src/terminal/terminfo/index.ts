@@ -162,3 +162,10 @@ export {
 	termcapFileExists,
 	termcapToTerminfo,
 } from './termcap';
+
+// =============================================================================
+// CAPTOINFO - Termcap to terminfo string converter
+// =============================================================================
+
+export type { CaptoInfoOptions } from './captoinfo';
+export { captoinfo, convertTermcapStrings, needsConversion } from './captoinfo';
