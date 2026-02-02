@@ -247,3 +247,13 @@ export type {
 	TreeWidgetConfig,
 } from './tree';
 export { createTree, isTreeWidget, resetTreeStore, TreeWidgetConfigSchema } from './tree';
+// Widget Registry
+export type { WidgetFactory, WidgetRegistration, WidgetRegistry } from './registry';
+export {
+	createWidgetRegistry,
+	defaultRegistry,
+	getWidgetsByTag,
+	getWidgetTypes,
+	isWidgetType,
+	registerBuiltinWidgets,
+} from './registry';
