@@ -219,7 +219,7 @@ describe('Entity Tracking', () => {
 			'update 100 entity bounds',
 			() => {
 				for (const eid of entities) {
-					updateEntityBounds(tracker, world, eid);
+					updateEntityBounds(tracker, world, eid, true);
 				}
 			},
 			{
@@ -235,7 +235,7 @@ describe('Entity Tracking', () => {
 			'update 1,000 entity bounds',
 			() => {
 				for (const eid of entities) {
-					updateEntityBounds(tracker, world, eid);
+					updateEntityBounds(tracker, world, eid, true);
 				}
 			},
 			{
@@ -263,7 +263,7 @@ describe('Entity Tracking', () => {
 					entities = createEntityGrid(world, 10, 10, 10, 5);
 					// Pre-cache bounds
 					for (const eid of entities) {
-						updateEntityBounds(tracker, world, eid);
+						updateEntityBounds(tracker, world, eid, true);
 					}
 					clearDirtyTracking(tracker);
 				},
@@ -284,7 +284,7 @@ describe('Entity Tracking', () => {
 					entities = createEntityGrid(world, 25, 40, 10, 4);
 					// Pre-cache bounds
 					for (const eid of entities) {
-						updateEntityBounds(tracker, world, eid);
+						updateEntityBounds(tracker, world, eid, true);
 					}
 					clearDirtyTracking(tracker);
 				},
@@ -321,7 +321,7 @@ describe('Entity Tracking', () => {
 					tracker = createDirtyTracker(200, 60);
 					entities = createEntityGrid(world, 10, 10, 10, 5);
 					for (const eid of entities) {
-						updateEntityBounds(tracker, world, eid);
+						updateEntityBounds(tracker, world, eid, true);
 					}
 				},
 			},
@@ -432,7 +432,7 @@ describe('Frame Simulation', () => {
 					entities = createEntityGrid(world, 25, 40, 5, 4);
 					// Initial render - mark all dirty, then clear
 					for (const eid of entities) {
-						updateEntityBounds(tracker, world, eid);
+						updateEntityBounds(tracker, world, eid, true);
 					}
 					clearDirtyTracking(tracker);
 				},
@@ -447,8 +447,11 @@ describe('Frame Simulation', () => {
 				// Move entity
 				const movingEntity = entities[0];
 				if (movingEntity !== undefined) {
-					ComputedLayout.x[movingEntity] += 1;
-					updateEntityBounds(tracker, world, movingEntity);
+					const currentX = ComputedLayout.x[movingEntity];
+					if (currentX !== undefined) {
+						ComputedLayout.x[movingEntity] = currentX + 1;
+					}
+					updateEntityBounds(tracker, world, movingEntity, true);
 				}
 				// Get dirty regions
 				getDirtyRegions(tracker);
@@ -461,7 +464,7 @@ describe('Frame Simulation', () => {
 					tracker = createDirtyTracker(200, 100);
 					entities = createEntityGrid(world, 25, 40, 5, 4);
 					for (const eid of entities) {
-						updateEntityBounds(tracker, world, eid);
+						updateEntityBounds(tracker, world, eid, true);
 					}
 					clearDirtyTracking(tracker);
 				},
@@ -491,7 +494,7 @@ describe('Frame Simulation', () => {
 					tracker = createDirtyTracker(200, 100);
 					entities = createEntityGrid(world, 25, 40, 5, 4);
 					for (const eid of entities) {
-						updateEntityBounds(tracker, world, eid);
+						updateEntityBounds(tracker, world, eid, true);
 					}
 					clearDirtyTracking(tracker);
 				},
@@ -513,7 +516,7 @@ describe('Frame Simulation', () => {
 					tracker = createDirtyTracker(200, 100);
 					entities = createEntityGrid(world, 25, 40, 5, 4);
 					for (const eid of entities) {
-						updateEntityBounds(tracker, world, eid);
+						updateEntityBounds(tracker, world, eid, true);
 					}
 				},
 			},
@@ -586,7 +589,7 @@ describe('Acceptance Criteria', () => {
 				tracker = createDirtyTracker(200, 100);
 				entities = createEntityGrid(world, 25, 40, 5, 4);
 				for (const eid of entities) {
-					updateEntityBounds(tracker, world, eid);
+					updateEntityBounds(tracker, world, eid, true);
 				}
 				clearDirtyTracking(tracker);
 			},
@@ -600,7 +603,7 @@ describe('Acceptance Criteria', () => {
 			const movingEntity = entities[0];
 			if (movingEntity !== undefined) {
 				ComputedLayout.x[movingEntity] = (ComputedLayout.x[movingEntity] ?? 0) + 1;
-				updateEntityBounds(tracker, world, movingEntity);
+				updateEntityBounds(tracker, world, movingEntity, true);
 			}
 
 			// Get what needs to be redrawn
@@ -621,7 +624,7 @@ describe('Acceptance Criteria', () => {
 				tracker = createDirtyTracker(200, 100);
 				entities = createEntityGrid(world, 25, 40, 5, 4);
 				for (const eid of entities) {
-					updateEntityBounds(tracker, world, eid);
+					updateEntityBounds(tracker, world, eid, true);
 				}
 				clearDirtyTracking(tracker);
 			},
