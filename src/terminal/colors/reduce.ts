@@ -63,6 +63,7 @@ export function reduceTo16(color: Color256): Color256 {
 
 	// Get the RGB value and find nearest in 16-color palette
 	const rgb = PALETTE_RGB[color];
+	if (!rgb) return 0 as Color256;
 	return matchColor(rgb, {
 		palette: ANSI_16_PALETTE,
 		indices: Array.from({ length: 16 }, (_, i) => i),
@@ -119,6 +120,7 @@ export function reduceTo8(color: Color256): Color256 {
 
 	// Get the RGB value and find nearest in 8-color palette
 	const rgb = PALETTE_RGB[color];
+	if (!rgb) return 0 as Color256;
 	return matchColor(rgb, {
 		palette: ANSI_8_PALETTE,
 		indices: Array.from({ length: 8 }, (_, i) => i),
@@ -145,7 +147,9 @@ export function rgbTo8(rgb: RGB): Color256 {
 /**
  * Monochrome palette (black and white only).
  */
-const MONO_PALETTE: readonly RGB[] = [PALETTE_RGB[0], PALETTE_RGB[15]] as const;
+const MONO_BLACK: RGB = PALETTE_RGB[0] ?? { r: 0, g: 0, b: 0 };
+const MONO_WHITE: RGB = PALETTE_RGB[15] ?? { r: 255, g: 255, b: 255 };
+const MONO_PALETTE: readonly RGB[] = [MONO_BLACK, MONO_WHITE] as const;
 
 /**
  * Reduces a Color256 to monochrome (black or white).
@@ -164,6 +168,7 @@ const MONO_PALETTE: readonly RGB[] = [PALETTE_RGB[0], PALETTE_RGB[15]] as const;
  */
 export function reduceTo2(color: Color256): Color256 {
 	const rgb = PALETTE_RGB[color];
+	if (!rgb) return 0 as Color256;
 	const luminance = rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114;
 	return luminance > 127 ? (15 as Color256) : (0 as Color256);
 }

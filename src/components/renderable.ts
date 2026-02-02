@@ -26,7 +26,8 @@ const DEFAULT_CAPACITY = 10000;
  * ```
  */
 export function packColor(r: number, g: number, b: number, a = 255): number {
-	return ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+	// Use >>> 0 to ensure unsigned 32-bit result (JavaScript bitwise ops return signed)
+	return (((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff)) >>> 0;
 }
 
 /**
@@ -169,6 +170,8 @@ export const Renderable = {
 	inverse: new Uint8Array(DEFAULT_CAPACITY),
 	/** Transparent background */
 	transparent: new Uint8Array(DEFAULT_CAPACITY),
+	/** Opacity for alpha blending (0-255, where 255 = fully opaque) */
+	opacity: new Uint8Array(DEFAULT_CAPACITY),
 };
 
 /**
@@ -189,6 +192,8 @@ export interface StyleOptions {
 	inverse?: boolean;
 	/** Transparent background */
 	transparent?: boolean;
+	/** Opacity for alpha blending (0-1, where 1 = fully opaque) */
+	opacity?: number;
 }
 
 /**
@@ -202,6 +207,8 @@ export interface StyleData {
 	readonly blink: boolean;
 	readonly inverse: boolean;
 	readonly transparent: boolean;
+	/** Opacity value (0-1, where 1 = fully opaque) */
+	readonly opacity: number;
 }
 
 /**
@@ -235,6 +242,7 @@ function initRenderable(eid: Entity): void {
 	Renderable.blink[eid] = 0;
 	Renderable.inverse[eid] = 0;
 	Renderable.transparent[eid] = 0;
+	Renderable.opacity[eid] = 255; // Fully opaque by default
 }
 
 /**
@@ -301,6 +309,11 @@ function applyDecorationOptions(eid: Entity, style: StyleOptions): void {
 	if (style.blink !== undefined) Renderable.blink[eid] = style.blink ? 1 : 0;
 	if (style.inverse !== undefined) Renderable.inverse[eid] = style.inverse ? 1 : 0;
 	if (style.transparent !== undefined) Renderable.transparent[eid] = style.transparent ? 1 : 0;
+	if (style.opacity !== undefined) {
+		// Convert 0-1 range to 0-255
+		const opacityValue = Math.max(0, Math.min(1, style.opacity));
+		Renderable.opacity[eid] = Math.round(opacityValue * 255);
+	}
 }
 
 /**
@@ -342,6 +355,7 @@ export function getStyle(world: World, eid: Entity): StyleData | undefined {
 		blink: Renderable.blink[eid] === 1,
 		inverse: Renderable.inverse[eid] === 1,
 		transparent: Renderable.transparent[eid] === 1,
+		opacity: (Renderable.opacity[eid] as number) / 255,
 	};
 }
 
@@ -367,6 +381,7 @@ export function getRenderable(world: World, eid: Entity): RenderableData | undef
 		blink: Renderable.blink[eid] === 1,
 		inverse: Renderable.inverse[eid] === 1,
 		transparent: Renderable.transparent[eid] === 1,
+		opacity: (Renderable.opacity[eid] as number) / 255,
 	};
 }
 
