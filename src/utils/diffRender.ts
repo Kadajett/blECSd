@@ -156,18 +156,161 @@ function computeHash(text: string): number {
 	return hash;
 }
 
+// =============================================================================
+// MYERS' DIFF ALGORITHM - O((N+M)D) complexity
+// =============================================================================
+
+/**
+ * Myers' diff algorithm implementation.
+ * Much faster than LCS for similar files (common case).
+ * Complexity: O((N+M)D) where D is the edit distance.
+ */
+function myersDiff(
+	oldLines: readonly string[],
+	newLines: readonly string[],
+): DiffLine[] {
+	const n = oldLines.length;
+	const m = newLines.length;
+	const max = n + m;
+
+	// Handle edge cases
+	if (n === 0 && m === 0) return [];
+	if (n === 0) {
+		return newLines.map((line, i) => ({
+			type: 'add' as DiffType,
+			content: line,
+			newLineNo: i + 1,
+		}));
+	}
+	if (m === 0) {
+		return oldLines.map((line, i) => ({
+			type: 'remove' as DiffType,
+			content: line,
+			oldLineNo: i + 1,
+		}));
+	}
+
+	// V array stores the furthest reaching path for each diagonal
+	// We use offset to handle negative indices
+	const vSize = 2 * max + 1;
+	const v: number[] = new Array(vSize).fill(0);
+	const offset = max;
+
+	// Store the path for backtracking
+	const trace: number[][] = [];
+
+	// Find the shortest edit script
+	outer: for (let d = 0; d <= max; d++) {
+		// Save current v for backtracking
+		trace.push(v.slice());
+
+		for (let k = -d; k <= d; k += 2) {
+			// Decide whether to go down or right
+			let x: number;
+			if (k === -d || (k !== d && (v[k - 1 + offset] ?? 0) < (v[k + 1 + offset] ?? 0))) {
+				x = v[k + 1 + offset] ?? 0; // Move down (insert)
+			} else {
+				x = (v[k - 1 + offset] ?? 0) + 1; // Move right (delete)
+			}
+
+			let y = x - k;
+
+			// Follow diagonal (matching lines)
+			while (x < n && y < m && oldLines[x] === newLines[y]) {
+				x++;
+				y++;
+			}
+
+			v[k + offset] = x;
+
+			// Check if we've reached the end
+			if (x >= n && y >= m) {
+				break outer;
+			}
+		}
+	}
+
+	// Backtrack to build the diff
+	return backtrackMyers(trace, oldLines, newLines, offset);
+}
+
+/**
+ * Backtracks through Myers trace to build diff lines.
+ */
+function backtrackMyers(
+	trace: number[][],
+	oldLines: readonly string[],
+	newLines: readonly string[],
+	offset: number,
+): DiffLine[] {
+	const result: DiffLine[] = [];
+	let x = oldLines.length;
+	let y = newLines.length;
+
+	// Work backwards through the trace
+	for (let d = trace.length - 1; d >= 0; d--) {
+		const v = trace[d]!;
+		const k = x - y;
+
+		// Determine previous k
+		let prevK: number;
+		if (k === -d || (k !== d && (v[k - 1 + offset] ?? 0) < (v[k + 1 + offset] ?? 0))) {
+			prevK = k + 1;
+		} else {
+			prevK = k - 1;
+		}
+
+		const prevX = v[prevK + offset] ?? 0;
+		const prevY = prevX - prevK;
+
+		// Add diagonal moves (context lines) - in reverse
+		while (x > prevX && y > prevY) {
+			x--;
+			y--;
+			result.unshift({
+				type: 'context',
+				content: oldLines[x]!,
+				oldLineNo: x + 1,
+				newLineNo: y + 1,
+			});
+		}
+
+		// Add the edit
+		if (d > 0) {
+			if (x === prevX) {
+				// Insert
+				y--;
+				result.unshift({
+					type: 'add',
+					content: newLines[y]!,
+					newLineNo: y + 1,
+				});
+			} else {
+				// Delete
+				x--;
+				result.unshift({
+					type: 'remove',
+					content: oldLines[x]!,
+					oldLineNo: x + 1,
+				});
+			}
+		}
+	}
+
+	return result;
+}
+
+// =============================================================================
+// LCS ALGORITHM - Fallback for edge cases
+// =============================================================================
+
 /**
  * Computes the Longest Common Subsequence length table.
- * Uses optimized O(N*D) algorithm for typical diff cases.
+ * Used as fallback for small inputs or when Myers fails.
  */
 function computeLCS(oldLines: readonly string[], newLines: readonly string[]): number[][] {
 	const m = oldLines.length;
 	const n = newLines.length;
-
-	// For very large inputs, use space-optimized version
-	if (m > 10000 || n > 10000) {
-		return computeLCSOptimized(oldLines, newLines);
-	}
 
 	// Standard dynamic programming approach
 	const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0) as number[]);
@@ -186,38 +329,9 @@ function computeLCS(oldLines: readonly string[], newLines: readonly string[]): n
 }
 
 /**
- * Space-optimized LCS for large inputs.
- */
-function computeLCSOptimized(oldLines: readonly string[], newLines: readonly string[]): number[][] {
-	const m = oldLines.length;
-	const n = newLines.length;
-
-	// Only keep current and previous rows
-	let prev = Array(n + 1).fill(0) as number[];
-	let curr = Array(n + 1).fill(0) as number[];
-
-	const dp: number[][] = [prev.slice()];
-
-	for (let i = 1; i <= m; i++) {
-		for (let j = 1; j <= n; j++) {
-			if (oldLines[i - 1] === newLines[j - 1]) {
-				curr[j] = (prev[j - 1] ?? 0) + 1;
-			} else {
-				curr[j] = Math.max(prev[j] ?? 0, curr[j - 1] ?? 0);
-			}
-		}
-		dp.push(curr.slice());
-		[prev, curr] = [curr, prev];
-		curr.fill(0);
-	}
-
-	return dp;
-}
-
-/**
  * Backtracks through LCS to build diff.
  */
-function backtrackDiff(
+function backtrackLCS(
 	dp: number[][],
 	oldLines: readonly string[],
 	newLines: readonly string[],
@@ -266,6 +380,28 @@ function backtrackDiff(
 	}
 
 	return result;
+}
+
+/**
+ * Computes diff lines using the best algorithm for the input size.
+ * Uses Myers for large inputs, LCS for small inputs.
+ */
+function computeDiffLines(
+	oldLines: readonly string[],
+	newLines: readonly string[],
+): DiffLine[] {
+	const m = oldLines.length;
+	const n = newLines.length;
+
+	// Use Myers for larger inputs (faster for typical diffs)
+	// Use LCS for very small inputs (simpler, fast enough)
+	if (m > 100 || n > 100) {
+		return myersDiff(oldLines, newLines);
+	}
+
+	// Fall back to LCS for small inputs
+	const dp = computeLCS(oldLines, newLines);
+	return backtrackLCS(dp, oldLines, newLines);
 }
 
 /**
@@ -368,11 +504,9 @@ export function computeDiff(
 	const oldLines = oldText === '' ? [] : oldText.split('\n');
 	const newLines = newText === '' ? [] : newText.split('\n');
 
-	// Compute LCS
-	const dp = computeLCS(oldLines, newLines);
-
-	// Backtrack to get diff
-	const diffLines = backtrackDiff(dp, oldLines, newLines);
+	// Compute diff using best algorithm for input size
+	// Myers' algorithm is O((N+M)D) - much faster for similar files
+	const diffLines = computeDiffLines(oldLines, newLines);
 
 	// Group into chunks
 	const chunks = groupIntoChunks(diffLines, contextLines, collapseThreshold);
@@ -420,8 +554,8 @@ export function computeDiffLazy(
 	newText: string,
 	_batchSize: number = 10000,
 ): DiffResult {
-	// For now, just compute full diff
-	// See blessed-v45 for chunked computation implementation
+	// Myers' algorithm is already fast enough for most use cases.
+	// For truly massive diffs (100K+ lines), consider web workers.
 	return computeDiff(oldText, newText);
 }
 
