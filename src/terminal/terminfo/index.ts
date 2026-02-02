@@ -76,3 +76,17 @@ export {
 	resolveCapabilityName,
 	STRING_CAPS,
 } from './capabilities';
+
+// =============================================================================
+// COMPILER - Parameterized string compilation
+// =============================================================================
+
+export type { CompiledCapability } from './compiler';
+export {
+	clearCapabilityCache,
+	compileCapability,
+	getCapabilityCacheSize,
+	hasParameters,
+	precompileCapabilities,
+	tparm,
+} from './compiler';
