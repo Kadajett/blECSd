@@ -57,6 +57,33 @@ export {
 	setBorder,
 	setBorderChars,
 } from './border';
+// Camera component
+export type { CameraBounds, CameraData, CameraOptions } from './camera';
+export {
+	Camera,
+	centerCameraOn,
+	clearCameraBounds,
+	DEFAULT_VIEWPORT_HEIGHT,
+	DEFAULT_VIEWPORT_WIDTH,
+	getCamera,
+	getCameraPosition,
+	getCameraTarget,
+	hasCamera,
+	isAreaInView,
+	isCameraBounded,
+	isFollowingTarget,
+	isInView,
+	moveCameraBy,
+	removeCamera,
+	screenToWorld,
+	setCamera,
+	setCameraBounds,
+	setCameraDeadZone,
+	setCameraPosition,
+	setCameraTarget,
+	updateCameraFollow,
+	worldToScreen,
+} from './camera';
 // Collision component
 export type { AABB, ColliderData, ColliderOptions, CollisionPair } from './collision';
 export {

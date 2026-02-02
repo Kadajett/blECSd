@@ -12,6 +12,14 @@ export {
 	registerAnimationSystem,
 	updateAnimations,
 } from './animationSystem';
+// Camera system
+export {
+	cameraSystem,
+	createCameraSystem,
+	queryCameras,
+	registerCameraSystem,
+	updateCameras,
+} from './cameraSystem';
 // Collision system
 export type {
 	CollisionEventData,
