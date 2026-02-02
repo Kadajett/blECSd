@@ -1,0 +1,1216 @@
+/**
+ * List Component
+ *
+ * Provides list/item selection functionality with keyboard and mouse support.
+ *
+ * @module components/list
+ */
+
+import type { StateMachineConfig } from '../core/stateMachine';
+import type { Entity, World } from '../core/types';
+import { markDirty } from './renderable';
+import {
+	attachStateMachine,
+	getState,
+	hasStateMachine,
+	sendEvent,
+} from './stateMachine';
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+/**
+ * List state type.
+ */
+export type ListState = 'idle' | 'focused' | 'selecting' | 'disabled';
+
+/**
+ * List event type.
+ */
+export type ListEvent = 'focus' | 'blur' | 'startSelect' | 'endSelect' | 'disable' | 'enable';
+
+/**
+ * List item data.
+ */
+export interface ListItem {
+	/** Display text */
+	readonly text: string;
+	/** Optional value associated with the item */
+	readonly value?: string;
+	/** Whether the item is disabled */
+	readonly disabled?: boolean;
+}
+
+/**
+ * List store for managing list-specific data.
+ */
+export interface ListStore {
+	/** Whether entity is a list */
+	isList: Uint8Array;
+	/** Currently selected index (-1 if none) */
+	selectedIndex: Int32Array;
+	/** Number of items in the list */
+	itemCount: Uint32Array;
+	/** First visible item index (for virtualization) */
+	firstVisible: Uint32Array;
+	/** Number of visible items */
+	visibleCount: Uint32Array;
+	/** Whether list is interactive */
+	interactive: Uint8Array;
+	/** Whether list responds to mouse */
+	mouse: Uint8Array;
+	/** Whether list responds to keyboard */
+	keys: Uint8Array;
+}
+
+/**
+ * List display configuration.
+ */
+export interface ListDisplay {
+	/** Character shown before selected item */
+	readonly selectedPrefix: string;
+	/** Character shown before unselected items */
+	readonly unselectedPrefix: string;
+	/** Selected item foreground color */
+	readonly selectedFg: number;
+	/** Selected item background color */
+	readonly selectedBg: number;
+	/** Item foreground color */
+	readonly itemFg: number;
+	/** Item background color */
+	readonly itemBg: number;
+	/** Disabled item foreground color */
+	readonly disabledFg: number;
+}
+
+/**
+ * List display options for configuration.
+ */
+export interface ListDisplayOptions {
+	selectedPrefix?: string;
+	unselectedPrefix?: string;
+	selectedFg?: number;
+	selectedBg?: number;
+	itemFg?: number;
+	itemBg?: number;
+	disabledFg?: number;
+}
+
+/**
+ * List selection callback function type.
+ */
+export type ListSelectCallback = (index: number, item: ListItem) => void;
+
+/**
+ * List action returned from key press handling.
+ */
+export type ListAction =
+	| { type: 'selectPrev' }
+	| { type: 'selectNext' }
+	| { type: 'selectFirst' }
+	| { type: 'selectLast' }
+	| { type: 'pageUp' }
+	| { type: 'pageDown' }
+	| { type: 'confirm' };
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+/** Default selected prefix character */
+export const DEFAULT_SELECTED_PREFIX = '> ';
+
+/** Default unselected prefix character */
+export const DEFAULT_UNSELECTED_PREFIX = '  ';
+
+/** Default selected foreground color */
+export const DEFAULT_SELECTED_FG = 0xffffffff;
+
+/** Default selected background color */
+export const DEFAULT_SELECTED_BG = 0x0066ffff;
+
+/** Default item foreground color */
+export const DEFAULT_ITEM_FG = 0xccccccff;
+
+/** Default item background color */
+export const DEFAULT_ITEM_BG = 0x000000ff;
+
+/** Default disabled foreground color */
+export const DEFAULT_DISABLED_FG = 0x666666ff;
+
+/** Maximum entities supported */
+const MAX_ENTITIES = 10000;
+
+// =============================================================================
+// STORES
+// =============================================================================
+
+/**
+ * Store for list component data.
+ */
+export const listStore: ListStore = {
+	isList: new Uint8Array(MAX_ENTITIES),
+	selectedIndex: new Int32Array(MAX_ENTITIES).fill(-1),
+	itemCount: new Uint32Array(MAX_ENTITIES),
+	firstVisible: new Uint32Array(MAX_ENTITIES),
+	visibleCount: new Uint32Array(MAX_ENTITIES),
+	interactive: new Uint8Array(MAX_ENTITIES),
+	mouse: new Uint8Array(MAX_ENTITIES),
+	keys: new Uint8Array(MAX_ENTITIES),
+};
+
+/** Store for list items */
+const itemsStore = new Map<Entity, ListItem[]>();
+
+/** Store for list display configuration */
+const displayStore = new Map<Entity, ListDisplay>();
+
+/** Store for list select callbacks */
+const selectCallbacks = new Map<Entity, ListSelectCallback[]>();
+
+/** Store for list item activate callbacks */
+const activateCallbacks = new Map<Entity, ListSelectCallback[]>();
+
+// =============================================================================
+// STATE MACHINE CONFIG
+// =============================================================================
+
+/**
+ * State machine configuration for list widgets.
+ */
+export const LIST_STATE_MACHINE_CONFIG: StateMachineConfig<ListState, ListEvent> = {
+	initial: 'idle',
+	states: {
+		idle: {
+			on: {
+				focus: 'focused',
+				disable: 'disabled',
+			},
+		},
+		focused: {
+			on: {
+				blur: 'idle',
+				startSelect: 'selecting',
+				disable: 'disabled',
+			},
+		},
+		selecting: {
+			on: {
+				endSelect: 'focused',
+				blur: 'idle',
+				disable: 'disabled',
+			},
+		},
+		disabled: {
+			on: {
+				enable: 'idle',
+			},
+		},
+	},
+};
+
+// =============================================================================
+// COMPONENT FUNCTIONS
+// =============================================================================
+
+/**
+ * Attaches list behavior to an entity.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param items - Initial items
+ * @param options - List options
+ *
+ * @example
+ * ```typescript
+ * import { attachListBehavior } from 'blecsd';
+ *
+ * attachListBehavior(world, eid, [
+ *   { text: 'Option 1', value: 'opt1' },
+ *   { text: 'Option 2', value: 'opt2' },
+ * ], { interactive: true, keys: true });
+ * ```
+ */
+export function attachListBehavior(
+	world: World,
+	eid: Entity,
+	items: ListItem[] = [],
+	options: {
+		interactive?: boolean;
+		mouse?: boolean;
+		keys?: boolean;
+		selectedIndex?: number;
+		visibleCount?: number;
+	} = {},
+): void {
+	listStore.isList[eid] = 1;
+	listStore.selectedIndex[eid] = options.selectedIndex ?? -1;
+	listStore.itemCount[eid] = items.length;
+	listStore.firstVisible[eid] = 0;
+	listStore.visibleCount[eid] = options.visibleCount ?? items.length;
+	listStore.interactive[eid] = options.interactive !== false ? 1 : 0;
+	listStore.mouse[eid] = options.mouse !== false ? 1 : 0;
+	listStore.keys[eid] = options.keys !== false ? 1 : 0;
+
+	itemsStore.set(eid, [...items]);
+	attachStateMachine(world, eid, LIST_STATE_MACHINE_CONFIG);
+}
+
+/**
+ * Checks if an entity is a list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if entity is a list
+ */
+export function isList(world: World, eid: Entity): boolean {
+	return listStore.isList[eid] === 1 && hasStateMachine(world, eid);
+}
+
+/**
+ * Gets the current state of a list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The current state
+ */
+export function getListState(world: World, eid: Entity): ListState {
+	return (getState(world, eid) as ListState) ?? 'idle';
+}
+
+/**
+ * Checks if list is in a specific state.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param state - The state to check
+ * @returns true if list is in the specified state
+ */
+export function isListInState(world: World, eid: Entity, state: ListState): boolean {
+	return getListState(world, eid) === state;
+}
+
+/**
+ * Checks if list is focused.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if list is focused
+ */
+export function isListFocused(world: World, eid: Entity): boolean {
+	const state = getListState(world, eid);
+	return state === 'focused' || state === 'selecting';
+}
+
+/**
+ * Checks if list is disabled.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if list is disabled
+ */
+export function isListDisabled(world: World, eid: Entity): boolean {
+	return isListInState(world, eid, 'disabled');
+}
+
+/**
+ * Sends an event to the list state machine.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param event - The event to send
+ * @returns true if transition occurred
+ */
+export function sendListEvent(world: World, eid: Entity, event: ListEvent): boolean {
+	if (!isList(world, eid)) {
+		return false;
+	}
+
+	const result = sendEvent(world, eid, event);
+	if (result) {
+		markDirty(world, eid);
+	}
+	return result;
+}
+
+/**
+ * Focuses the list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if focused successfully
+ */
+export function focusList(world: World, eid: Entity): boolean {
+	return sendListEvent(world, eid, 'focus');
+}
+
+/**
+ * Blurs the list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if blurred successfully
+ */
+export function blurList(world: World, eid: Entity): boolean {
+	return sendListEvent(world, eid, 'blur');
+}
+
+/**
+ * Disables the list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if disabled successfully
+ */
+export function disableList(world: World, eid: Entity): boolean {
+	return sendListEvent(world, eid, 'disable');
+}
+
+/**
+ * Enables the list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if enabled successfully
+ */
+export function enableList(world: World, eid: Entity): boolean {
+	return sendListEvent(world, eid, 'enable');
+}
+
+// =============================================================================
+// ITEM MANAGEMENT
+// =============================================================================
+
+/**
+ * Gets all items from a list.
+ *
+ * @param eid - The entity ID
+ * @returns Array of list items
+ */
+export function getItems(eid: Entity): readonly ListItem[] {
+	return itemsStore.get(eid) ?? [];
+}
+
+/**
+ * Sets all items in a list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param items - The items to set
+ */
+export function setItems(world: World, eid: Entity, items: ListItem[]): void {
+	itemsStore.set(eid, [...items]);
+	listStore.itemCount[eid] = items.length;
+
+	// Reset selection if out of bounds
+	const selectedIndex = listStore.selectedIndex[eid] ?? -1;
+	if (selectedIndex >= items.length) {
+		listStore.selectedIndex[eid] = items.length > 0 ? items.length - 1 : -1;
+	}
+
+	// Reset first visible if out of bounds
+	const firstVisible = listStore.firstVisible[eid] ?? 0;
+	if (firstVisible >= items.length) {
+		listStore.firstVisible[eid] = Math.max(0, items.length - 1);
+	}
+
+	markDirty(world, eid);
+}
+
+/**
+ * Adds an item to the list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param item - The item to add
+ * @param index - Optional index to insert at (defaults to end)
+ */
+export function addItem(world: World, eid: Entity, item: ListItem, index?: number): void {
+	const items = itemsStore.get(eid) ?? [];
+	const insertIndex = index ?? items.length;
+
+	items.splice(insertIndex, 0, item);
+	itemsStore.set(eid, items);
+	listStore.itemCount[eid] = items.length;
+
+	// Adjust selection if inserting before it
+	const selectedIndex = listStore.selectedIndex[eid] ?? -1;
+	if (selectedIndex >= 0 && insertIndex <= selectedIndex) {
+		listStore.selectedIndex[eid] = selectedIndex + 1;
+	}
+
+	markDirty(world, eid);
+}
+
+/**
+ * Removes an item from the list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param index - The index to remove
+ * @returns The removed item or undefined
+ */
+export function removeItem(world: World, eid: Entity, index: number): ListItem | undefined {
+	const items = itemsStore.get(eid) ?? [];
+	if (index < 0 || index >= items.length) {
+		return undefined;
+	}
+
+	const removed = items.splice(index, 1)[0];
+	listStore.itemCount[eid] = items.length;
+
+	// Adjust selection
+	const selectedIndex = listStore.selectedIndex[eid] ?? -1;
+	if (selectedIndex >= 0) {
+		if (index < selectedIndex) {
+			listStore.selectedIndex[eid] = selectedIndex - 1;
+		} else if (index === selectedIndex) {
+			// Selection was removed
+			listStore.selectedIndex[eid] = items.length > 0 ? Math.min(index, items.length - 1) : -1;
+		}
+	}
+
+	markDirty(world, eid);
+	return removed;
+}
+
+/**
+ * Gets an item by index.
+ *
+ * @param eid - The entity ID
+ * @param index - The item index
+ * @returns The item or undefined
+ */
+export function getItem(eid: Entity, index: number): ListItem | undefined {
+	const items = itemsStore.get(eid);
+	return items?.[index];
+}
+
+/**
+ * Updates an item at a specific index.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param index - The item index
+ * @param item - The new item data
+ * @returns true if updated successfully
+ */
+export function updateItem(world: World, eid: Entity, index: number, item: ListItem): boolean {
+	const items = itemsStore.get(eid);
+	if (!items || index < 0 || index >= items.length) {
+		return false;
+	}
+
+	items[index] = item;
+	markDirty(world, eid);
+	return true;
+}
+
+/**
+ * Gets the number of items in the list.
+ *
+ * @param eid - The entity ID
+ * @returns Number of items
+ */
+export function getItemCount(eid: Entity): number {
+	return listStore.itemCount[eid] ?? 0;
+}
+
+/**
+ * Clears all items from the list.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ */
+export function clearItems(world: World, eid: Entity): void {
+	itemsStore.set(eid, []);
+	listStore.itemCount[eid] = 0;
+	listStore.selectedIndex[eid] = -1;
+	listStore.firstVisible[eid] = 0;
+	markDirty(world, eid);
+}
+
+// =============================================================================
+// SELECTION MANAGEMENT
+// =============================================================================
+
+/**
+ * Gets the selected index.
+ *
+ * @param eid - The entity ID
+ * @returns Selected index or -1 if none
+ */
+export function getSelectedIndex(eid: Entity): number {
+	return listStore.selectedIndex[eid] ?? -1;
+}
+
+/**
+ * Gets the selected item.
+ *
+ * @param eid - The entity ID
+ * @returns Selected item or undefined
+ */
+export function getSelectedItem(eid: Entity): ListItem | undefined {
+	const index = listStore.selectedIndex[eid] ?? -1;
+	if (index < 0) {
+		return undefined;
+	}
+	return getItem(eid, index);
+}
+
+/**
+ * Sets the selected index.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param index - The index to select (-1 to clear)
+ * @returns true if selection changed
+ */
+export function setSelectedIndex(world: World, eid: Entity, index: number): boolean {
+	const itemCount = listStore.itemCount[eid] ?? 0;
+	const currentIndex = listStore.selectedIndex[eid] ?? -1;
+
+	// Validate index
+	if (index < -1 || index >= itemCount) {
+		return false;
+	}
+
+	// Skip disabled items
+	if (index >= 0) {
+		const item = getItem(eid, index);
+		if (item?.disabled) {
+			return false;
+		}
+	}
+
+	if (currentIndex === index) {
+		return false;
+	}
+
+	listStore.selectedIndex[eid] = index;
+	markDirty(world, eid);
+
+	// Fire select callbacks
+	if (index >= 0) {
+		const item = getItem(eid, index);
+		if (item) {
+			const callbacks = selectCallbacks.get(eid);
+			if (callbacks) {
+				for (const cb of callbacks) {
+					cb(index, item);
+				}
+			}
+		}
+	}
+
+	// Ensure selection is visible
+	ensureVisible(world, eid, index);
+
+	return true;
+}
+
+/**
+ * Selects the previous item.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param wrap - Whether to wrap around (default: true)
+ * @returns true if selection changed
+ */
+export function selectPrev(world: World, eid: Entity, wrap = true): boolean {
+	const itemCount = listStore.itemCount[eid] ?? 0;
+	if (itemCount === 0) {
+		return false;
+	}
+
+	let index = listStore.selectedIndex[eid] ?? -1;
+	const startIndex = index;
+
+	// Find previous non-disabled item
+	do {
+		index--;
+		if (index < 0) {
+			if (wrap) {
+				index = itemCount - 1;
+			} else {
+				return false;
+			}
+		}
+		const item = getItem(eid, index);
+		if (!item?.disabled) {
+			return setSelectedIndex(world, eid, index);
+		}
+	} while (index !== startIndex);
+
+	return false;
+}
+
+/**
+ * Selects the next item.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param wrap - Whether to wrap around (default: true)
+ * @returns true if selection changed
+ */
+export function selectNext(world: World, eid: Entity, wrap = true): boolean {
+	const itemCount = listStore.itemCount[eid] ?? 0;
+	if (itemCount === 0) {
+		return false;
+	}
+
+	let index = listStore.selectedIndex[eid] ?? -1;
+	const startIndex = index;
+
+	// Find next non-disabled item
+	do {
+		index++;
+		if (index >= itemCount) {
+			if (wrap) {
+				index = 0;
+			} else {
+				return false;
+			}
+		}
+		const item = getItem(eid, index);
+		if (!item?.disabled) {
+			return setSelectedIndex(world, eid, index);
+		}
+	} while (index !== startIndex);
+
+	return false;
+}
+
+/**
+ * Selects the first item.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if selection changed
+ */
+export function selectFirst(world: World, eid: Entity): boolean {
+	const itemCount = listStore.itemCount[eid] ?? 0;
+	for (let i = 0; i < itemCount; i++) {
+		const item = getItem(eid, i);
+		if (!item?.disabled) {
+			return setSelectedIndex(world, eid, i);
+		}
+	}
+	return false;
+}
+
+/**
+ * Selects the last item.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if selection changed
+ */
+export function selectLast(world: World, eid: Entity): boolean {
+	const itemCount = listStore.itemCount[eid] ?? 0;
+	for (let i = itemCount - 1; i >= 0; i--) {
+		const item = getItem(eid, i);
+		if (!item?.disabled) {
+			return setSelectedIndex(world, eid, i);
+		}
+	}
+	return false;
+}
+
+/**
+ * Selects an item by value.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param value - The value to select
+ * @returns true if selection changed
+ */
+export function selectByValue(world: World, eid: Entity, value: string): boolean {
+	const items = itemsStore.get(eid) ?? [];
+	const index = items.findIndex((item) => item.value === value);
+	if (index >= 0) {
+		return setSelectedIndex(world, eid, index);
+	}
+	return false;
+}
+
+/**
+ * Clears the selection.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ */
+export function clearSelection(world: World, eid: Entity): void {
+	setSelectedIndex(world, eid, -1);
+}
+
+/**
+ * Activates (confirms) the currently selected item.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if an item was activated
+ */
+export function activateSelected(world: World, eid: Entity): boolean {
+	const index = listStore.selectedIndex[eid] ?? -1;
+	if (index < 0) {
+		return false;
+	}
+
+	const item = getItem(eid, index);
+	if (!item || item.disabled) {
+		return false;
+	}
+
+	// Fire activate callbacks
+	const callbacks = activateCallbacks.get(eid);
+	if (callbacks) {
+		for (const cb of callbacks) {
+			cb(index, item);
+		}
+	}
+
+	return true;
+}
+
+// =============================================================================
+// VIRTUALIZATION
+// =============================================================================
+
+/**
+ * Gets the first visible item index.
+ *
+ * @param eid - The entity ID
+ * @returns First visible index
+ */
+export function getFirstVisible(eid: Entity): number {
+	return listStore.firstVisible[eid] ?? 0;
+}
+
+/**
+ * Sets the first visible item index.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param index - The first visible index
+ */
+export function setFirstVisible(world: World, eid: Entity, index: number): void {
+	const itemCount = listStore.itemCount[eid] ?? 0;
+	const clamped = Math.max(0, Math.min(index, Math.max(0, itemCount - 1)));
+	listStore.firstVisible[eid] = clamped;
+	markDirty(world, eid);
+}
+
+/**
+ * Gets the number of visible items.
+ *
+ * @param eid - The entity ID
+ * @returns Number of visible items
+ */
+export function getVisibleCount(eid: Entity): number {
+	return listStore.visibleCount[eid] ?? 0;
+}
+
+/**
+ * Sets the number of visible items.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param count - The number of visible items
+ */
+export function setVisibleCount(world: World, eid: Entity, count: number): void {
+	listStore.visibleCount[eid] = Math.max(1, count);
+	markDirty(world, eid);
+}
+
+/**
+ * Ensures an index is visible by scrolling if necessary.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param index - The index to make visible
+ */
+export function ensureVisible(world: World, eid: Entity, index: number): void {
+	if (index < 0) {
+		return;
+	}
+
+	const firstVisible = listStore.firstVisible[eid] ?? 0;
+	const visibleCount = listStore.visibleCount[eid] ?? 0;
+	const lastVisible = firstVisible + visibleCount - 1;
+
+	if (index < firstVisible) {
+		setFirstVisible(world, eid, index);
+	} else if (index > lastVisible) {
+		setFirstVisible(world, eid, index - visibleCount + 1);
+	}
+}
+
+/**
+ * Scrolls the list by a page (visibleCount items).
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param direction - 1 for down, -1 for up
+ * @returns true if scrolled
+ */
+export function scrollPage(world: World, eid: Entity, direction: 1 | -1): boolean {
+	const firstVisible = listStore.firstVisible[eid] ?? 0;
+	const visibleCount = listStore.visibleCount[eid] ?? 0;
+	const itemCount = listStore.itemCount[eid] ?? 0;
+
+	const newFirst = firstVisible + direction * visibleCount;
+	if (newFirst < 0 || newFirst >= itemCount) {
+		return false;
+	}
+
+	setFirstVisible(world, eid, newFirst);
+
+	// Also move selection
+	const selectedIndex = listStore.selectedIndex[eid] ?? -1;
+	if (selectedIndex >= 0) {
+		const newSelected = selectedIndex + direction * visibleCount;
+		setSelectedIndex(world, eid, Math.max(0, Math.min(newSelected, itemCount - 1)));
+	}
+
+	return true;
+}
+
+/**
+ * Gets the visible items for rendering.
+ *
+ * @param eid - The entity ID
+ * @returns Array of visible items with their indices
+ */
+export function getVisibleItems(eid: Entity): Array<{ index: number; item: ListItem }> {
+	const items = itemsStore.get(eid) ?? [];
+	const firstVisible = listStore.firstVisible[eid] ?? 0;
+	const visibleCount = listStore.visibleCount[eid] ?? items.length;
+
+	const result: Array<{ index: number; item: ListItem }> = [];
+	for (let i = 0; i < visibleCount && firstVisible + i < items.length; i++) {
+		const index = firstVisible + i;
+		const item = items[index];
+		if (item) {
+			result.push({ index, item });
+		}
+	}
+	return result;
+}
+
+// =============================================================================
+// DISPLAY CONFIGURATION
+// =============================================================================
+
+/**
+ * Sets the list display configuration.
+ *
+ * @param eid - The entity ID
+ * @param options - Display options
+ */
+export function setListDisplay(eid: Entity, options: ListDisplayOptions): void {
+	const existing = displayStore.get(eid);
+	displayStore.set(eid, {
+		selectedPrefix: options.selectedPrefix ?? existing?.selectedPrefix ?? DEFAULT_SELECTED_PREFIX,
+		unselectedPrefix:
+			options.unselectedPrefix ?? existing?.unselectedPrefix ?? DEFAULT_UNSELECTED_PREFIX,
+		selectedFg: options.selectedFg ?? existing?.selectedFg ?? DEFAULT_SELECTED_FG,
+		selectedBg: options.selectedBg ?? existing?.selectedBg ?? DEFAULT_SELECTED_BG,
+		itemFg: options.itemFg ?? existing?.itemFg ?? DEFAULT_ITEM_FG,
+		itemBg: options.itemBg ?? existing?.itemBg ?? DEFAULT_ITEM_BG,
+		disabledFg: options.disabledFg ?? existing?.disabledFg ?? DEFAULT_DISABLED_FG,
+	});
+}
+
+/**
+ * Gets the list display configuration.
+ *
+ * @param eid - The entity ID
+ * @returns Display configuration
+ */
+export function getListDisplay(eid: Entity): ListDisplay {
+	return (
+		displayStore.get(eid) ?? {
+			selectedPrefix: DEFAULT_SELECTED_PREFIX,
+			unselectedPrefix: DEFAULT_UNSELECTED_PREFIX,
+			selectedFg: DEFAULT_SELECTED_FG,
+			selectedBg: DEFAULT_SELECTED_BG,
+			itemFg: DEFAULT_ITEM_FG,
+			itemBg: DEFAULT_ITEM_BG,
+			disabledFg: DEFAULT_DISABLED_FG,
+		}
+	);
+}
+
+/**
+ * Clears the list display configuration.
+ *
+ * @param eid - The entity ID
+ */
+export function clearListDisplay(eid: Entity): void {
+	displayStore.delete(eid);
+}
+
+// =============================================================================
+// OPTIONS
+// =============================================================================
+
+/**
+ * Checks if list is interactive.
+ *
+ * @param eid - The entity ID
+ * @returns true if interactive
+ */
+export function isListInteractive(eid: Entity): boolean {
+	return listStore.interactive[eid] === 1;
+}
+
+/**
+ * Sets list interactive mode.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param interactive - Whether list is interactive
+ */
+export function setListInteractive(world: World, eid: Entity, interactive: boolean): void {
+	listStore.interactive[eid] = interactive ? 1 : 0;
+	markDirty(world, eid);
+}
+
+/**
+ * Checks if list responds to mouse.
+ *
+ * @param eid - The entity ID
+ * @returns true if mouse enabled
+ */
+export function isListMouseEnabled(eid: Entity): boolean {
+	return listStore.mouse[eid] === 1;
+}
+
+/**
+ * Sets list mouse mode.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param mouse - Whether mouse is enabled
+ */
+export function setListMouse(world: World, eid: Entity, mouse: boolean): void {
+	listStore.mouse[eid] = mouse ? 1 : 0;
+	markDirty(world, eid);
+}
+
+/**
+ * Checks if list responds to keyboard.
+ *
+ * @param eid - The entity ID
+ * @returns true if keys enabled
+ */
+export function isListKeysEnabled(eid: Entity): boolean {
+	return listStore.keys[eid] === 1;
+}
+
+/**
+ * Sets list keys mode.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param keys - Whether keys are enabled
+ */
+export function setListKeys(world: World, eid: Entity, keys: boolean): void {
+	listStore.keys[eid] = keys ? 1 : 0;
+	markDirty(world, eid);
+}
+
+// =============================================================================
+// CALLBACKS
+// =============================================================================
+
+/**
+ * Registers a callback for when selection changes.
+ *
+ * @param eid - The entity ID
+ * @param callback - The callback function
+ * @returns Unsubscribe function
+ *
+ * @example
+ * ```typescript
+ * const unsubscribe = onListSelect(eid, (index, item) => {
+ *   console.log(`Selected: ${item.text}`);
+ * });
+ * ```
+ */
+export function onListSelect(eid: Entity, callback: ListSelectCallback): () => void {
+	const callbacks = selectCallbacks.get(eid) ?? [];
+	callbacks.push(callback);
+	selectCallbacks.set(eid, callbacks);
+
+	return () => {
+		const cbs = selectCallbacks.get(eid);
+		if (cbs) {
+			const idx = cbs.indexOf(callback);
+			if (idx !== -1) {
+				cbs.splice(idx, 1);
+			}
+		}
+	};
+}
+
+/**
+ * Registers a callback for when an item is activated (confirmed).
+ *
+ * @param eid - The entity ID
+ * @param callback - The callback function
+ * @returns Unsubscribe function
+ *
+ * @example
+ * ```typescript
+ * const unsubscribe = onListActivate(eid, (index, item) => {
+ *   console.log(`Activated: ${item.text}`);
+ * });
+ * ```
+ */
+export function onListActivate(eid: Entity, callback: ListSelectCallback): () => void {
+	const callbacks = activateCallbacks.get(eid) ?? [];
+	callbacks.push(callback);
+	activateCallbacks.set(eid, callbacks);
+
+	return () => {
+		const cbs = activateCallbacks.get(eid);
+		if (cbs) {
+			const idx = cbs.indexOf(callback);
+			if (idx !== -1) {
+				cbs.splice(idx, 1);
+			}
+		}
+	};
+}
+
+/**
+ * Clears all callbacks for a list.
+ *
+ * @param eid - The entity ID
+ */
+export function clearListCallbacks(eid: Entity): void {
+	selectCallbacks.delete(eid);
+	activateCallbacks.delete(eid);
+}
+
+// =============================================================================
+// KEY HANDLING
+// =============================================================================
+
+/**
+ * Handles key press for list widget.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param key - The key name
+ * @returns Action to perform or null
+ *
+ * @example
+ * ```typescript
+ * const action = handleListKeyPress(world, eid, 'down');
+ * if (action?.type === 'selectNext') {
+ *   selectNext(world, eid);
+ * }
+ * ```
+ */
+export function handleListKeyPress(world: World, eid: Entity, key: string): ListAction | null {
+	if (!isList(world, eid)) {
+		return null;
+	}
+
+	if (isListDisabled(world, eid)) {
+		return null;
+	}
+
+	if (!isListKeysEnabled(eid)) {
+		return null;
+	}
+
+	switch (key) {
+		case 'up':
+		case 'k':
+			return { type: 'selectPrev' };
+
+		case 'down':
+		case 'j':
+			return { type: 'selectNext' };
+
+		case 'home':
+		case 'g':
+			return { type: 'selectFirst' };
+
+		case 'end':
+		case 'G':
+			return { type: 'selectLast' };
+
+		case 'pageup':
+			return { type: 'pageUp' };
+
+		case 'pagedown':
+			return { type: 'pageDown' };
+
+		case 'enter':
+		case 'space':
+			return { type: 'confirm' };
+
+		default:
+			return null;
+	}
+}
+
+// =============================================================================
+// RENDERING HELPERS
+// =============================================================================
+
+/**
+ * Renders list items as strings for display.
+ *
+ * @param eid - The entity ID
+ * @param width - Available width
+ * @returns Array of rendered line strings
+ */
+export function renderListItems(eid: Entity, width: number): string[] {
+	const display = getListDisplay(eid);
+	const visibleItems = getVisibleItems(eid);
+	const selectedIndex = listStore.selectedIndex[eid] ?? -1;
+	const lines: string[] = [];
+
+	for (const { index, item } of visibleItems) {
+		const isSelected = index === selectedIndex;
+		const prefix = isSelected ? display.selectedPrefix : display.unselectedPrefix;
+		const text = item.text;
+
+		// Truncate if needed
+		const maxTextWidth = width - prefix.length;
+		const truncatedText = text.length > maxTextWidth ? text.slice(0, maxTextWidth - 1) + '…' : text;
+
+		lines.push(prefix + truncatedText);
+	}
+
+	return lines;
+}
+
+// =============================================================================
+// STORE RESET
+// =============================================================================
+
+/**
+ * Resets the list store. Used for testing.
+ */
+export function resetListStore(): void {
+	listStore.isList.fill(0);
+	listStore.selectedIndex.fill(-1);
+	listStore.itemCount.fill(0);
+	listStore.firstVisible.fill(0);
+	listStore.visibleCount.fill(0);
+	listStore.interactive.fill(0);
+	listStore.mouse.fill(0);
+	listStore.keys.fill(0);
+	itemsStore.clear();
+	displayStore.clear();
+	selectCallbacks.clear();
+	activateCallbacks.clear();
+}
