@@ -57,6 +57,28 @@ export {
 	setBorder,
 	setBorderChars,
 } from './border';
+// Button component
+export type { ButtonEvent, ButtonState, ButtonStore } from './button';
+export {
+	attachButtonBehavior,
+	BUTTON_STATE_MACHINE_CONFIG,
+	buttonStore,
+	clearButtonCallbacks,
+	disableButton,
+	enableButton,
+	getButtonState,
+	handleButtonKeyPress,
+	isButton,
+	isButtonDisabled,
+	isButtonFocused,
+	isButtonHovered,
+	isButtonInState,
+	isButtonPressed,
+	onButtonPress,
+	pressButton,
+	resetButtonStore,
+	sendButtonEvent,
+} from './button';
 // Camera component
 export type { CameraBounds, CameraData, CameraOptions } from './camera';
 export {

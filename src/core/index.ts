@@ -42,6 +42,13 @@ export type { EventHandler, EventMap, ScreenEventMap, UIEventMap } from './event
 export { createEventBus, EventBus } from './events';
 // Game loop
 export type { GameLoopHooks, GameLoopOptions, LoopHook, LoopStats } from './gameLoop';
+export {
+	createGameLoop,
+	GameLoop,
+	isLoopPaused,
+	isLoopRunning,
+	LoopState,
+} from './gameLoop';
 // Input event buffer
 export type {
 	InputBufferStats,
@@ -64,13 +71,6 @@ export {
 	isBuiltinPhase,
 	PhaseManager,
 } from './phaseManager';
-export {
-	createGameLoop,
-	GameLoop,
-	isLoopPaused,
-	isLoopRunning,
-	LoopState,
-} from './gameLoop';
 // Positioning
 export type { PositionValue } from './positioning';
 export {
@@ -78,11 +78,11 @@ export {
 	clampPosition,
 	isKeywordPosition,
 	isPercentagePosition,
+	PositionValueSchema,
 	parsePosition,
 	parsePositionWithNegative,
 	percentOffsetPosition,
 	percentPosition,
-	PositionValueSchema,
 	resolvePosition,
 	resolvePositionClamped,
 } from './positioning';

@@ -1,14 +1,8 @@
 import { createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-	createGameLoop,
-	GameLoop,
-	isLoopPaused,
-	isLoopRunning,
-	LoopState,
-} from './gameLoop';
-import { LoopPhase } from './types';
+import { createGameLoop, GameLoop, isLoopPaused, isLoopRunning, LoopState } from './gameLoop';
 import type { System, World } from './types';
+import { LoopPhase } from './types';
 
 describe('GameLoop', () => {
 	let world: World;

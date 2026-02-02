@@ -114,11 +114,10 @@ export interface SuspendManagerOptions {
 export class SuspendManager {
 	private output: Writable;
 	private input: NodeJS.ReadStream;
-	private onSuspendCallback?: () => unknown;
-	private onResumeCallback?: (state: SuspendState) => void;
+	private onSuspendCallback?: (() => unknown) | undefined;
+	private onResumeCallback?: ((state: SuspendState) => void) | undefined;
 	private sigtstpHandler: (() => void) | null = null;
 	private sigcontHandler: (() => void) | null = null;
-	private pendingState: SuspendState | null = null;
 	private _enabled = false;
 
 	/** Whether the terminal is in alternate buffer mode */

@@ -356,7 +356,7 @@ export function parseResponse(response: string): TerminalResponse {
  */
 function parsePrimaryDA(response: string): PrimaryDAResponse | null {
 	const match = response.match(PRIMARY_DA_PATTERN);
-	if (!match) {
+	if (!match?.[1]) {
 		return null;
 	}
 
@@ -377,7 +377,7 @@ function parsePrimaryDA(response: string): PrimaryDAResponse | null {
  */
 function parseSecondaryDA(response: string): SecondaryDAResponse | null {
 	const match = response.match(SECONDARY_DA_PATTERN);
-	if (!match) {
+	if (!match?.[1]) {
 		return null;
 	}
 
@@ -397,7 +397,7 @@ function parseSecondaryDA(response: string): SecondaryDAResponse | null {
  */
 function parseCursorPosition(response: string): CursorPositionResponse | null {
 	const match = response.match(CPR_PATTERN);
-	if (!match) {
+	if (!match?.[1] || !match[2]) {
 		return null;
 	}
 
@@ -414,7 +414,7 @@ function parseCursorPosition(response: string): CursorPositionResponse | null {
  */
 function parseDeviceStatus(response: string): DeviceStatusResponse | null {
 	const match = response.match(DSR_PATTERN);
-	if (!match) {
+	if (!match?.[1]) {
 		return null;
 	}
 
@@ -442,7 +442,7 @@ function parseWindowManipulation(
 	| CharCellSizeResponse
 	| null {
 	const match = response.match(WINDOW_MANIP_PATTERN);
-	if (!match) {
+	if (!match?.[1]) {
 		return null;
 	}
 
@@ -510,12 +510,12 @@ function parseWindowManipulation(
  */
 function parseOSCResponse(response: string): WindowTitleResponse | IconLabelResponse | null {
 	const match = response.match(OSC_RESPONSE_PATTERN);
-	if (!match) {
+	if (!match?.[1]) {
 		return null;
 	}
 
 	const code = Number.parseInt(match[1], 10);
-	const text = match[2];
+	const text = match[2] ?? '';
 
 	// OSC L ; Pt ST = Report window title
 	if (code === 76 || response.startsWith('\x1b]L;')) {
@@ -545,7 +545,7 @@ function parseOSCResponse(response: string): WindowTitleResponse | IconLabelResp
  */
 function parseLocatorPosition(response: string): LocatorPositionResponse | null {
 	const match = response.match(LOCATOR_PATTERN);
-	if (!match) {
+	if (!match?.[1] || !match[2] || !match[3] || !match[4] || !match[5]) {
 		return null;
 	}
 

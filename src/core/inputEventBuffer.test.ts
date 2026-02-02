@@ -1,11 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { KeyEvent } from '../terminal/keyParser';
 import type { MouseEvent } from '../terminal/mouseParser';
-import {
-	createInputEventBuffer,
-	globalInputBuffer,
-	InputEventBuffer,
-} from './inputEventBuffer';
+import { createInputEventBuffer, globalInputBuffer, InputEventBuffer } from './inputEventBuffer';
 
 // Mock key event factory
 function createKeyEvent(name: string, modifiers = {}): KeyEvent {

@@ -54,7 +54,7 @@ describe('inputSystem', () => {
 				ctrl: false,
 				meta: false,
 				shift: false,
-				raw: 'a',
+				raw: new Uint8Array([97]),
 			};
 
 			queueKeyEvent(event);
@@ -81,7 +81,13 @@ describe('inputSystem', () => {
 		});
 
 		it('clears event queue', () => {
-			queueKeyEvent({ name: 'a', ctrl: false, meta: false, shift: false, raw: 'a' });
+			queueKeyEvent({
+				name: 'a',
+				ctrl: false,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([97]),
+			});
 			queueMouseEvent({ x: 0, y: 0, button: 'left', action: 'press', raw: '' });
 
 			clearEventQueue();
@@ -104,7 +110,13 @@ describe('inputSystem', () => {
 			setDimensions(world, eid, 100, 100);
 			focus(world, eid);
 
-			queueKeyEvent({ name: 'a', ctrl: false, meta: false, shift: false, raw: 'a' });
+			queueKeyEvent({
+				name: 'a',
+				ctrl: false,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([97]),
+			});
 			queueMouseEvent({ x: 10, y: 5, button: 'left', action: 'press', raw: '' });
 			queueMouseEvent({ x: 10, y: 5, button: 'left', action: 'release', raw: '' });
 
@@ -374,7 +386,13 @@ describe('inputSystem', () => {
 			focus(world, eid1);
 			expect(getFocusedEntity()).toBe(eid1);
 
-			queueKeyEvent({ name: 'tab', ctrl: false, meta: false, shift: false, raw: '\t' });
+			queueKeyEvent({
+				name: 'tab',
+				ctrl: false,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([9]),
+			});
 			inputSystem(world);
 
 			expect(getFocusedEntity()).toBe(eid2);
@@ -390,7 +408,13 @@ describe('inputSystem', () => {
 			focus(world, eid2);
 			expect(getFocusedEntity()).toBe(eid2);
 
-			queueKeyEvent({ name: 'tab', ctrl: false, meta: false, shift: true, raw: '\t' });
+			queueKeyEvent({
+				name: 'tab',
+				ctrl: false,
+				meta: false,
+				shift: true,
+				raw: new Uint8Array([9]),
+			});
 			inputSystem(world);
 
 			expect(getFocusedEntity()).toBe(eid1);
@@ -404,7 +428,13 @@ describe('inputSystem', () => {
 			setKeyboardInput(world, eid, {});
 			focus(world, eid);
 
-			queueKeyEvent({ name: 'a', ctrl: true, meta: false, shift: false, raw: 'a' });
+			queueKeyEvent({
+				name: 'a',
+				ctrl: true,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([97]),
+			});
 			inputSystem(world);
 
 			expect(KeyboardInput.lastKeyCode[eid]).toBe(97); // 'a' char code
@@ -511,7 +541,13 @@ describe('inputSystem', () => {
 
 	describe('resetInputState', () => {
 		it('clears all state', () => {
-			queueKeyEvent({ name: 'a', ctrl: false, meta: false, shift: false, raw: 'a' });
+			queueKeyEvent({
+				name: 'a',
+				ctrl: false,
+				meta: false,
+				shift: false,
+				raw: new Uint8Array([97]),
+			});
 			captureMouseTo(1);
 			inputState.lastMouseX = 100;
 			inputState.lastMouseY = 100;
