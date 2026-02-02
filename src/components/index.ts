@@ -220,7 +220,9 @@ export {
 	hasRenderable,
 	hexToColor,
 	hide,
+	isDetached,
 	isDirty,
+	isEffectivelyVisible,
 	isVisible,
 	markClean,
 	markDirty,
@@ -229,6 +231,7 @@ export {
 	setStyle,
 	setVisible,
 	show,
+	toggle,
 	unpackColor,
 } from './renderable';
 // Scrollable component

@@ -5,6 +5,7 @@
 
 import { addComponent, hasComponent } from 'bitecs';
 import type { Entity, World } from '../core/types';
+import { getAncestors, hasHierarchy, isRoot, NULL_ENTITY } from './hierarchy';
 
 /** Default entity capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;
@@ -498,4 +499,109 @@ export function show(world: World, eid: Entity): Entity {
  */
 export function hide(world: World, eid: Entity): Entity {
 	return setVisible(world, eid, false);
+}
+
+/**
+ * Toggles an entity's visibility.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { toggle } from 'blecsd';
+ *
+ * // Toggle visibility on key press
+ * toggle(world, menuEntity);
+ * ```
+ */
+export function toggle(world: World, eid: Entity): Entity {
+	const currentlyVisible = isVisible(world, eid);
+	return setVisible(world, eid, !currentlyVisible);
+}
+
+/**
+ * Checks if an entity is effectively visible.
+ * An entity is effectively visible only if it and all its ancestors are visible.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if entity and all ancestors are visible
+ *
+ * @example
+ * ```typescript
+ * import { isEffectivelyVisible, hide, show } from 'blecsd';
+ *
+ * // Parent is hidden, so child is not effectively visible
+ * hide(world, parentEntity);
+ * show(world, childEntity);
+ * console.log(isEffectivelyVisible(world, childEntity)); // false
+ * ```
+ */
+export function isEffectivelyVisible(world: World, eid: Entity): boolean {
+	// Check if entity itself is visible
+	if (!isVisible(world, eid)) {
+		return false;
+	}
+
+	// If entity has no hierarchy, just return its own visibility
+	if (!hasHierarchy(world, eid)) {
+		return true;
+	}
+
+	// Check all ancestors
+	const ancestors = getAncestors(world, eid);
+	for (const ancestor of ancestors) {
+		if (!isVisible(world, ancestor)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Checks if an entity is detached from the root.
+ * An entity is detached if it has a hierarchy but no path to a root entity.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if entity is detached from root
+ *
+ * @example
+ * ```typescript
+ * import { isDetached, removeChild } from 'blecsd';
+ *
+ * // After removing from parent, entity may be detached
+ * removeChild(world, parentEntity, childEntity);
+ * console.log(isDetached(world, childEntity)); // true (if no other parent)
+ * ```
+ */
+export function isDetached(world: World, eid: Entity): boolean {
+	// Entity without hierarchy is considered attached (standalone root)
+	if (!hasHierarchy(world, eid)) {
+		return false;
+	}
+
+	// If this entity is a root, it's not detached
+	if (isRoot(world, eid)) {
+		return false;
+	}
+
+	// Get ancestors and check if chain leads to a root
+	const ancestors = getAncestors(world, eid);
+	if (ancestors.length === 0) {
+		// Has hierarchy but no ancestors and not a root - might be detached
+		// Check if parent is NULL_ENTITY
+		return true;
+	}
+
+	// Check if the last ancestor (topmost) is a root
+	const topmostAncestor = ancestors[ancestors.length - 1];
+	if (topmostAncestor === undefined) {
+		return true;
+	}
+
+	return !isRoot(world, topmostAncestor);
 }

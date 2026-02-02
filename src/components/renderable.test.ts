@@ -1,5 +1,6 @@
 import { addEntity, createWorld } from 'bitecs';
 import { describe, expect, it } from 'vitest';
+import { setParent } from './hierarchy';
 import {
 	colorToHex,
 	DEFAULT_BG,
@@ -9,7 +10,9 @@ import {
 	hasRenderable,
 	hexToColor,
 	hide,
+	isDetached,
 	isDirty,
+	isEffectivelyVisible,
 	isVisible,
 	markClean,
 	markDirty,
@@ -18,6 +21,7 @@ import {
 	setStyle,
 	setVisible,
 	show,
+	toggle,
 	unpackColor,
 } from './renderable';
 
@@ -444,6 +448,145 @@ describe('Renderable component', () => {
 			expect(g).toBe(0);
 			expect(b).toBe(0);
 			expect(a).toBe(0);
+		});
+	});
+
+	describe('toggle', () => {
+		it('toggles from visible to hidden', () => {
+			const world = createWorld();
+			const eid = addEntity(world);
+			setStyle(world, eid, { fg: '#ff0000' });
+			show(world, eid);
+
+			toggle(world, eid);
+
+			expect(isVisible(world, eid)).toBe(false);
+		});
+
+		it('toggles from hidden to visible', () => {
+			const world = createWorld();
+			const eid = addEntity(world);
+			setStyle(world, eid, { fg: '#ff0000' });
+			hide(world, eid);
+
+			toggle(world, eid);
+
+			expect(isVisible(world, eid)).toBe(true);
+		});
+
+		it('returns entity ID for chaining', () => {
+			const world = createWorld();
+			const eid = addEntity(world);
+			setStyle(world, eid, { fg: '#ff0000' });
+
+			const result = toggle(world, eid);
+
+			expect(result).toBe(eid);
+		});
+	});
+
+	describe('isEffectivelyVisible', () => {
+		it('returns true for visible entity without hierarchy', () => {
+			const world = createWorld();
+			const eid = addEntity(world);
+			setStyle(world, eid, { fg: '#ff0000' });
+			show(world, eid);
+
+			expect(isEffectivelyVisible(world, eid)).toBe(true);
+		});
+
+		it('returns false for hidden entity', () => {
+			const world = createWorld();
+			const eid = addEntity(world);
+			setStyle(world, eid, { fg: '#ff0000' });
+			hide(world, eid);
+
+			expect(isEffectivelyVisible(world, eid)).toBe(false);
+		});
+
+		it('returns false when parent is hidden', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setStyle(world, parent, { fg: '#ff0000' });
+			setStyle(world, child, { fg: '#00ff00' });
+			setParent(world, child, parent);
+
+			show(world, child);
+			hide(world, parent);
+
+			expect(isEffectivelyVisible(world, child)).toBe(false);
+		});
+
+		it('returns true when entity and parent are visible', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setStyle(world, parent, { fg: '#ff0000' });
+			setStyle(world, child, { fg: '#00ff00' });
+			setParent(world, child, parent);
+
+			show(world, parent);
+			show(world, child);
+
+			expect(isEffectivelyVisible(world, child)).toBe(true);
+		});
+
+		it('returns false when grandparent is hidden', () => {
+			const world = createWorld();
+			const grandparent = addEntity(world);
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setStyle(world, grandparent, { fg: '#ff0000' });
+			setStyle(world, parent, { fg: '#00ff00' });
+			setStyle(world, child, { fg: '#0000ff' });
+
+			setParent(world, parent, grandparent);
+			setParent(world, child, parent);
+
+			hide(world, grandparent);
+			show(world, parent);
+			show(world, child);
+
+			expect(isEffectivelyVisible(world, child)).toBe(false);
+		});
+	});
+
+	describe('isDetached', () => {
+		it('returns false for entity without hierarchy', () => {
+			const world = createWorld();
+			const eid = addEntity(world);
+			setStyle(world, eid, { fg: '#ff0000' });
+
+			expect(isDetached(world, eid)).toBe(false);
+		});
+
+		it('returns false for root entity', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child = addEntity(world);
+
+			setStyle(world, root, { fg: '#ff0000' });
+			setStyle(world, child, { fg: '#00ff00' });
+			setParent(world, child, root);
+
+			// Root has hierarchy but is a root
+			expect(isDetached(world, root)).toBe(false);
+		});
+
+		it('returns false for attached child', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child = addEntity(world);
+
+			setStyle(world, root, { fg: '#ff0000' });
+			setStyle(world, child, { fg: '#00ff00' });
+			setParent(world, child, root);
+
+			expect(isDetached(world, child)).toBe(false);
 		});
 	});
 });

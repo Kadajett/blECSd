@@ -146,8 +146,10 @@ export {
 	isAtBottom,
 	isAtTop,
 	isClickable,
+	isDetached,
 	isDirty,
 	isDraggable,
+	isEffectivelyVisible,
 	isFocusable,
 	isFocused,
 	isHoverable,
@@ -226,6 +228,7 @@ export {
 	show,
 	TextAlign,
 	TextVAlign,
+	toggle,
 	unpackColor,
 	updateStateAge,
 } from './components';

@@ -438,6 +438,88 @@ isVisible(world, eid); // false
 
 ---
 
+### toggle
+
+Toggles visibility of an entity.
+
+```typescript
+import { createWorld, setStyle, toggle, isVisible } from 'blecsd';
+
+const world = createWorld();
+const eid = 1;
+
+setStyle(world, eid, { fg: '#ff0000' });
+isVisible(world, eid); // true
+
+toggle(world, eid);
+isVisible(world, eid); // false
+
+toggle(world, eid);
+isVisible(world, eid); // true
+
+// Returns entity ID for chaining
+```
+
+---
+
+### isEffectivelyVisible
+
+Checks if an entity is effectively visible. An entity is effectively visible only if it and all its ancestors are visible.
+
+```typescript
+import { createWorld, addEntity } from 'bitecs';
+import { setStyle, setParent, show, hide, isEffectivelyVisible } from 'blecsd';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child = addEntity(world);
+
+setStyle(world, parent, { fg: '#ff0000' });
+setStyle(world, child, { fg: '#00ff00' });
+setParent(world, child, parent);
+
+// When parent is hidden, child is not effectively visible
+show(world, child);
+hide(world, parent);
+isEffectivelyVisible(world, child); // false
+
+// When both are visible, child is effectively visible
+show(world, parent);
+isEffectivelyVisible(world, child); // true
+```
+
+**Returns:** `true` if entity and all ancestors are visible
+
+---
+
+### isDetached
+
+Checks if an entity is detached from the root. An entity is detached if it has a hierarchy but no path to a root entity.
+
+```typescript
+import { createWorld, addEntity } from 'bitecs';
+import { setStyle, setParent, removeChild, isDetached } from 'blecsd';
+
+const world = createWorld();
+const root = addEntity(world);
+const child = addEntity(world);
+
+setStyle(world, root, { fg: '#ff0000' });
+setStyle(world, child, { fg: '#00ff00' });
+setParent(world, child, root);
+
+// Child is attached to root
+isDetached(world, child); // false
+
+// After removal, child may be detached
+removeChild(world, root, child);
+isDetached(world, child); // true (if no other parent)
+```
+
+**Returns:** `true` if entity is detached from root
+
+---
+
 ## Types
 
 ### StyleOptions
