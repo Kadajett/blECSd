@@ -329,8 +329,9 @@ export function exec(
 			}
 		});
 
-		// Handle exit
-		child.on('exit', (exitCode, signal) => {
+		// Handle close (fires after all stdio streams are closed)
+		// Note: Using 'close' instead of 'exit' ensures all stdout/stderr data is collected
+		child.on('close', (exitCode, signal) => {
 			// Clear timeout
 			if (timeoutId) {
 				clearTimeout(timeoutId);
