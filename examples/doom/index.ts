@@ -40,6 +40,7 @@ import { setupInput, pollInput, cleanupInput } from './game/input.js';
 import { loadSprites } from './wad/spriteData.js';
 import { spawnMapThings } from './game/spawn.js';
 import { renderSprites } from './render/sprites.js';
+import { createHudState, drawHud, updateHud } from './render/hud.js';
 
 // ─── Configuration ─────────────────────────────────────────────────
 
@@ -130,6 +131,9 @@ function main(): void {
 		`angle: ${Math.round(((player.angle >>> 0) / 0x100000000) * 360)}`,
 	);
 
+	// Create HUD state
+	const hudState = createHudState();
+
 	// Enter alt screen, hide cursor
 	process.stdout.write('\x1b[?1049h'); // alt screen
 	process.stdout.write('\x1b[?25l');   // hide cursor
@@ -160,8 +164,9 @@ function main(): void {
 			return;
 		}
 
-		// Update player
+		// Update player and HUD
 		updatePlayer(player, input, map);
+		updateHud(hudState, input);
 
 		// Set up render state
 		const rs = createRenderState(fb, map, textures, palette, colormap);
@@ -190,6 +195,9 @@ function main(): void {
 
 		// Render sprites
 		renderSprites(rs, mobjs, spriteStore);
+
+		// Draw HUD
+		drawHud(rs, player, hudState, map);
 
 		// Encode and output
 		const encoded = backend.encode(fb, 0, 0);

@@ -33,7 +33,8 @@ import {
 } from '../math/tables.js';
 import type { RenderState, Visplane } from './defs.js';
 import { VP_UNUSED } from './defs.js';
-import { getFlat } from './textures.js';
+import { drawColumn } from './drawColumn.js';
+import { getFlat, getWallTexture } from './textures.js';
 
 // ─── Visplane Management ───────────────────────────────────────────
 
@@ -269,9 +270,46 @@ function drawFloorCeilingPlane(rs: RenderState, plane: Visplane): void {
 }
 
 /**
- * Draw a sky visplane (vertical gradient or solid color).
+ * Draw a sky visplane using the SKY1 wall texture.
+ * Matches Doom's R_DrawSkyColumn: the texture column is derived from
+ * the view angle so the sky appears as a 360-degree panorama.
  */
 function drawSkyPlane(rs: RenderState, plane: Visplane): void {
+	const skyTex = getWallTexture(rs.textures, 'SKY1');
+	if (!skyTex) {
+		drawSkyGradient(rs, plane);
+		return;
+	}
+
+	for (let x = plane.minx; x <= plane.maxx; x++) {
+		const top = plane.top[x];
+		const bottom = plane.bottom[x];
+		if (top === undefined || bottom === undefined || top === VP_UNUSED) continue;
+
+		// Compute sky texture column from view angle + screen column angle
+		// The sky wraps every 256 pixels (standard sky texture width)
+		const viewAngle = xtoviewangle[x] ?? 0;
+		const skyAngle = ((rs.viewangle + viewAngle) >>> 0);
+		// Map the full 360 degrees to the sky texture width
+		const texCol = ((skyAngle >>> 0) >> ANGLETOFINESHIFT) * skyTex.width / 8192;
+		const col = ((Math.floor(texCol) % skyTex.width) + skyTex.width) % skyTex.width;
+		const column = skyTex.columns[col];
+		if (!column) continue;
+
+		for (let y = top; y <= bottom; y++) {
+			if (y < 0 || y >= rs.screenHeight) continue;
+			// Map screen Y to texture Y (sky is drawn without perspective)
+			const texY = y % skyTex.height;
+			const paletteIdx = column[texY] ?? 0;
+			drawColumn(rs, x, y, paletteIdx, 0); // colormap 0 = fullbright
+		}
+	}
+}
+
+/**
+ * Fallback sky gradient when SKY1 texture is not found.
+ */
+function drawSkyGradient(rs: RenderState, plane: Visplane): void {
 	for (let x = plane.minx; x <= plane.maxx; x++) {
 		const top = plane.top[x];
 		const bottom = plane.bottom[x];
@@ -279,7 +317,6 @@ function drawSkyPlane(rs: RenderState, plane: Visplane): void {
 
 		for (let y = top; y <= bottom; y++) {
 			if (y < 0 || y >= rs.screenHeight) continue;
-			// Simple sky gradient: dark blue at top, lighter toward horizon
 			const t = y / rs.screenHeight;
 			const r = Math.round(20 + t * 40);
 			const g = Math.round(30 + t * 50);
