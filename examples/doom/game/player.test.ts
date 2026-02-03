@@ -126,9 +126,9 @@ describe('createPlayer', () => {
 		const map = createMapWithPlayerStart(0, 0, 0);
 		const player = createPlayer(map);
 
-		expect(player.forwardSpeed).toBe(12 * FRACUNIT);
-		expect(player.sideSpeed).toBe(10 * FRACUNIT);
-		expect(player.turnSpeed).toBe(ANG90 / 16);
+		expect(player.forwardSpeed).toBe(25 * 2048);
+		expect(player.sideSpeed).toBe(24 * 2048);
+		expect(player.turnSpeed).toBe(1280 << 16);
 	});
 });
 

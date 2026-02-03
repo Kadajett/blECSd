@@ -136,13 +136,19 @@ function createMockMobj(x: number, y: number, alive: boolean): Mobj {
 		momz: 0,
 		sectorIndex: 0,
 		alive,
+		stateIndex: 0,
+		target: null,
+		movecount: 0,
+		reactiontime: 8,
+		movedir: 8,
+		threshold: 0,
 	};
 }
 
 function createMockSpriteStore(): SpriteStore {
 	const pic = createMockPicture();
 	const frame: SpriteFrame = {
-		rotations: [pic, null, null, null, null, null, null, null],
+		rotations: [pic, pic, pic, pic, pic, pic, pic, pic],
 		flipped: [false, false, false, false, false, false, false, false],
 		fullBright: false,
 	};
