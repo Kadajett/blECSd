@@ -17,8 +17,9 @@ const DEFAULT_CAPACITY = 10000;
 const BACKEND_AUTO = 0;
 const BACKEND_BRAILLE = 1;
 const BACKEND_HALFBLOCK = 2;
-const BACKEND_SIXEL = 3;
-const BACKEND_KITTY = 4;
+const BACKEND_SEXTANT = 3;
+const BACKEND_SIXEL = 4;
+const BACKEND_KITTY = 5;
 
 /**
  * Structure-of-Arrays viewport component.
@@ -37,7 +38,7 @@ export const Viewport3D = {
 	height: new Uint16Array(DEFAULT_CAPACITY),
 	/** Entity ID of the camera to render from */
 	cameraEntity: new Uint32Array(DEFAULT_CAPACITY),
-	/** Backend type: 0=auto, 1=braille, 2=halfblock, 3=sixel, 4=kitty */
+	/** Backend type: 0=auto, 1=braille, 2=halfblock, 3=sextant, 4=sixel, 5=kitty */
 	backendType: new Uint8Array(DEFAULT_CAPACITY),
 	/** Computed pixel width (depends on backend cell size) */
 	pixelWidth: new Uint16Array(DEFAULT_CAPACITY),
@@ -54,7 +55,7 @@ export interface Viewport3DData {
 	readonly width: number;
 	readonly height: number;
 	readonly cameraEntity: number;
-	readonly backendType: 'auto' | 'braille' | 'halfblock' | 'sixel' | 'kitty';
+	readonly backendType: 'auto' | 'braille' | 'halfblock' | 'sextant' | 'sixel' | 'kitty';
 	readonly pixelWidth: number;
 	readonly pixelHeight: number;
 }
@@ -63,14 +64,16 @@ const backendTypeMap: Record<string, number> = {
 	auto: BACKEND_AUTO,
 	braille: BACKEND_BRAILLE,
 	halfblock: BACKEND_HALFBLOCK,
+	sextant: BACKEND_SEXTANT,
 	sixel: BACKEND_SIXEL,
 	kitty: BACKEND_KITTY,
 };
 
-const backendTypeReverse: Record<number, 'auto' | 'braille' | 'halfblock' | 'sixel' | 'kitty'> = {
+const backendTypeReverse: Record<number, 'auto' | 'braille' | 'halfblock' | 'sextant' | 'sixel' | 'kitty'> = {
 	[BACKEND_AUTO]: 'auto',
 	[BACKEND_BRAILLE]: 'braille',
 	[BACKEND_HALFBLOCK]: 'halfblock',
+	[BACKEND_SEXTANT]: 'sextant',
 	[BACKEND_SIXEL]: 'sixel',
 	[BACKEND_KITTY]: 'kitty',
 };

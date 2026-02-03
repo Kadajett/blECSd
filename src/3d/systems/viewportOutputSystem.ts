@@ -24,8 +24,9 @@ const BACKEND_TYPE_NAMES: ReadonlyArray<'braille' | 'halfblock' | 'sextant' | 's
 	'braille',   // 0 = auto -> default to braille
 	'braille',   // 1
 	'halfblock', // 2
-	'sixel',     // 3
-	'kitty',     // 4
+	'sextant',   // 3
+	'sixel',     // 4
+	'kitty',     // 5
 ];
 
 /**

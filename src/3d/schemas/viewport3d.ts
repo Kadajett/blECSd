@@ -42,7 +42,7 @@ export const Viewport3DWidgetConfigSchema = z.object({
 	projectionMode: z.enum(['perspective', 'orthographic']).default('perspective'),
 
 	/** Rendering backend. */
-	backend: z.enum(['auto', 'braille', 'halfblock', 'sixel', 'kitty']).default('auto'),
+	backend: z.enum(['auto', 'braille', 'halfblock', 'sextant', 'sixel', 'kitty']).default('auto'),
 
 	/** Label text displayed on the viewport border. */
 	label: z.string().optional(),

@@ -43,7 +43,7 @@ describe('Viewport3D component', () => {
 
 	it('supports all backend types', () => {
 		const { world, eid } = setup();
-		const types = ['auto', 'braille', 'halfblock', 'sixel', 'kitty'] as const;
+		const types = ['auto', 'braille', 'halfblock', 'sextant', 'sixel', 'kitty'] as const;
 
 		for (const type of types) {
 			setViewport3D(world, eid, { cameraEntity: 1, backendType: type });

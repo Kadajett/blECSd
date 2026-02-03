@@ -79,7 +79,7 @@ export const Viewport3DConfigSchema = z.object({
 	width: z.number().int().positive().default(80),
 	height: z.number().int().positive().default(24),
 	cameraEntity: z.number().int().min(0),
-	backendType: z.enum(['auto', 'braille', 'halfblock', 'sixel', 'kitty']).default('auto'),
+	backendType: z.enum(['auto', 'braille', 'halfblock', 'sextant', 'sixel', 'kitty']).default('auto'),
 }).describe('3D viewport configuration');
 export type Viewport3DConfig = z.input<typeof Viewport3DConfigSchema>;
 

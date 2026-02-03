@@ -20,7 +20,10 @@ import { Transform3D, setTransform3D } from '../3d/components/transform3d';
 import { Viewport3D, setViewport3D } from '../3d/components/viewport3d';
 import type { Material3DConfig, Transform3DConfig } from '../3d/schemas/components';
 import { type Viewport3DWidgetConfig, Viewport3DWidgetConfigSchema } from '../3d/schemas/viewport3d';
+import { createBackendByType } from '../3d/backends/detection';
 import { framebufferStore } from '../3d/systems/rasterSystem';
+
+import type { BackendType } from '../3d/schemas/backends';
 
 const DEFAULT_CAPACITY = 10000;
 
@@ -140,11 +143,11 @@ export function createViewport3D(
 	});
 
 	// Compute pixel dimensions based on backend
-	// Default braille: 2x4 pixels per cell
-	const pxPerCellX = 2;
-	const pxPerCellY = 4;
-	Viewport3D.pixelWidth[eid] = validated.width * pxPerCellX;
-	Viewport3D.pixelHeight[eid] = validated.height * pxPerCellY;
+	const resolvedBackend: BackendType = validated.backend === 'auto' ? 'braille' : validated.backend;
+	const backend = createBackendByType(resolvedBackend);
+	const pixelDims = backend.getPixelDimensions(validated.width, validated.height);
+	Viewport3D.pixelWidth[eid] = pixelDims.width;
+	Viewport3D.pixelHeight[eid] = pixelDims.height;
 
 	// Set up position and dimensions for the UI layout system
 	setPosition(world, eid, validated.left, validated.top);
@@ -206,8 +209,9 @@ export function createViewport3D(
 		resize(width: number, height: number): Viewport3DWidget {
 			Viewport3D.width[eid] = width;
 			Viewport3D.height[eid] = height;
-			Viewport3D.pixelWidth[eid] = width * pxPerCellX;
-			Viewport3D.pixelHeight[eid] = height * pxPerCellY;
+			const resizeDims = backend.getPixelDimensions(width, height);
+			Viewport3D.pixelWidth[eid] = resizeDims.width;
+			Viewport3D.pixelHeight[eid] = resizeDims.height;
 			Camera3D.aspect[cameraEid] = width / height;
 			setDimensions(world, eid, width, height);
 			markDirty(world, eid);
