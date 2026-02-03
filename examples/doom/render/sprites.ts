@@ -112,8 +112,11 @@ export function collectVisSprites(
 		// Add half a rotation for proper rounding
 		const rotationIndex = ((relAngle + 0x10000000) >>> 29) & 7;
 
-		const picture = getSpriteRotation(spriteFrame, rotationIndex);
-		if (!picture) continue;
+		const rotResult = getSpriteRotation(spriteFrame, rotationIndex);
+		if (!rotResult) continue;
+
+		const picture = rotResult.picture;
+		const flip = rotResult.flip;
 
 		// Compute screen position
 		const screenX = Math.floor(viewwidth / 2) + fixedMul(tx, scale) / FRACUNIT;
@@ -152,7 +155,7 @@ export function collectVisSprites(
 			startFrac,
 			stepFrac,
 			textureMid,
-			flip: false,
+			flip,
 			picture,
 		});
 	}
@@ -194,8 +197,11 @@ export function renderSprites(
  * Draw a single projected sprite to the framebuffer.
  */
 function drawSprite(rs: RenderState, vis: Vissprite): void {
-	// Compute light level based on distance
-	const lightIdx = Math.max(0, Math.min(LIGHTLEVELS - 1, rs.extralight));
+	// Compute light level from the mobj's containing sector (matching R_DrawVisSprite)
+	const sector = rs.map.sectors[vis.mobj.sectorIndex];
+	const sectorLight = sector ? sector.lightLevel : 0;
+	const lightIdx = Math.max(0, Math.min(LIGHTLEVELS - 1,
+		(sectorLight >> LIGHTSEGSHIFT) + rs.extralight));
 	const lightTable = scalelight[lightIdx];
 	const scaleIdx = Math.max(0, Math.min(MAXLIGHTSCALE - 1, vis.scale >> 12));
 	const colormapIdx = rs.fixedcolormap ?? (lightTable?.[scaleIdx] ?? 0);

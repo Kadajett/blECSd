@@ -14,7 +14,6 @@ import {
 	FINEMASK,
 	finecosine,
 	finesine,
-	pointToAngle2,
 } from '../math/angles.js';
 import { FRACBITS, FRACUNIT, fixedMul } from '../math/fixed.js';
 import {
@@ -95,38 +94,55 @@ export function checkPlane(
 	start: number,
 	stop: number,
 ): Visplane {
-	// If this range doesn't overlap with existing data, reuse the plane
+	// Compute intersection and union ranges (matching R_CheckPlane from r_bsp.c)
+	let intrl: number;
+	let unionl: number;
 	if (start < plane.minx) {
-		// No overlap on the left side
-		if (stop < plane.minx) return plane;
+		intrl = plane.minx;
+		unionl = start;
+	} else {
+		unionl = plane.minx;
+		intrl = start;
 	}
+
+	let intrh: number;
+	let unionh: number;
 	if (stop > plane.maxx) {
-		// No overlap on the right side
-		if (start > plane.maxx) return plane;
+		intrh = plane.maxx;
+		unionh = stop;
+	} else {
+		unionh = plane.maxx;
+		intrh = stop;
 	}
 
 	// Check for actual column overlap in the intersection range
-	const overlapStart = Math.max(start, plane.minx);
-	const overlapEnd = Math.min(stop, plane.maxx);
-
-	for (let x = overlapStart; x <= overlapEnd; x++) {
+	let hasOverlap = false;
+	for (let x = intrl; x <= intrh; x++) {
 		if (plane.top[x] !== VP_UNUSED) {
-			// Overlap found: create a new visplane with same properties
-			const newPlane: Visplane = {
-				height: plane.height,
-				picnum: plane.picnum,
-				lightLevel: plane.lightLevel,
-				minx: rs.screenWidth,
-				maxx: -1,
-				top: new Uint16Array(rs.screenWidth).fill(VP_UNUSED),
-				bottom: new Uint16Array(rs.screenWidth).fill(0),
-			};
-			rs.visplanes.push(newPlane);
-			return newPlane;
+			hasOverlap = true;
+			break;
 		}
 	}
 
-	return plane;
+	if (!hasOverlap) {
+		// No overlap: extend the visplane to cover the union range and reuse it
+		plane.minx = unionl;
+		plane.maxx = unionh;
+		return plane;
+	}
+
+	// Overlap found: create a new visplane with same properties
+	const newPlane: Visplane = {
+		height: plane.height,
+		picnum: plane.picnum,
+		lightLevel: plane.lightLevel,
+		minx: start,
+		maxx: stop,
+		top: new Uint16Array(rs.screenWidth).fill(VP_UNUSED),
+		bottom: new Uint16Array(rs.screenWidth).fill(0),
+	};
+	rs.visplanes.push(newPlane);
+	return newPlane;
 }
 
 /**
@@ -286,13 +302,14 @@ function drawSkyPlane(rs: RenderState, plane: Visplane): void {
 		const bottom = plane.bottom[x];
 		if (top === undefined || bottom === undefined || top === VP_UNUSED) continue;
 
-		// Compute sky texture column from view angle + screen column angle
-		// The sky wraps every 256 pixels (standard sky texture width)
+		// Compute sky texture column from view angle + screen column angle.
+		// Matches original Doom: the fine angle index is used directly as the
+		// texture column, which tiles the sky texture every 256 fine angles
+		// for a 256-wide sky texture (~11 degrees per repetition).
 		const viewAngle = xtoviewangle[x] ?? 0;
 		const skyAngle = ((rs.viewangle + viewAngle) >>> 0);
-		// Map the full 360 degrees to the sky texture width
-		const texCol = ((skyAngle >>> 0) >> ANGLETOFINESHIFT) * skyTex.width / 8192;
-		const col = ((Math.floor(texCol) % skyTex.width) + skyTex.width) % skyTex.width;
+		const fineAngle = (skyAngle >> ANGLETOFINESHIFT) & FINEMASK;
+		const col = ((fineAngle % skyTex.width) + skyTex.width) % skyTex.width;
 		const column = skyTex.columns[col];
 		if (!column) continue;
 

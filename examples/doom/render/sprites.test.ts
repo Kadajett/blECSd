@@ -28,7 +28,7 @@ function createMockMapData(): MapData {
 		segs: [],
 		subsectors: [],
 		nodes: [],
-		sectors: [],
+		sectors: [{ floorHeight: 0, ceilingHeight: 128, floorFlat: 'FLOOR4_8', ceilingFlat: 'CEIL3_5', lightLevel: 160, special: 0, tag: 0 }],
 		blockmap: {
 			header: { originX: 0, originY: 0, columns: 0, rows: 0 },
 			offsets: [],
@@ -143,6 +143,7 @@ function createMockSpriteStore(): SpriteStore {
 	const pic = createMockPicture();
 	const frame: SpriteFrame = {
 		rotations: [pic, null, null, null, null, null, null, null],
+		flipped: [false, false, false, false, false, false, false, false],
 		fullBright: false,
 	};
 	const def: SpriteDef = {

@@ -18,6 +18,8 @@ import { parsePicture } from './pictureFormat.js';
 export interface SpriteFrame {
 	/** Pictures for each rotation (0-7). Rotation 0 means single rotation for all angles. */
 	readonly rotations: (Picture | null)[];
+	/** Whether each rotation is horizontally flipped (mirrored). */
+	readonly flipped: boolean[];
 	/** Whether this frame is full-bright (ignore light level). */
 	readonly fullBright: boolean;
 }
@@ -59,7 +61,7 @@ export function loadSprites(wad: WadFile): SpriteStore {
 	const spriteLumps = getLumpsBetween(wad, 'S_START', 'S_END');
 
 	// Intermediate storage: name -> frame index -> rotation index -> Picture
-	const spriteMap = new Map<string, Map<number, { rotations: (Picture | null)[]; fullBright: boolean }>>();
+	const spriteMap = new Map<string, Map<number, { rotations: (Picture | null)[]; flipped: boolean[]; fullBright: boolean }>>();
 
 	for (const lump of spriteLumps) {
 		const name = lump.name;
@@ -90,16 +92,17 @@ export function loadSprites(wad: WadFile): SpriteStore {
 			spriteMap.set(spriteName, frameMap);
 		}
 
-		// Set frame/rotation for the primary entry
-		setFrameRotation(frameMap, frameChar, rotationChar, picture);
+		// Set frame/rotation for the primary entry (not flipped)
+		setFrameRotation(frameMap, frameChar, rotationChar, picture, false);
 
 		// Handle mirrored frame (8-char lump names): chars 7-8 are mirror frame+rotation
+		// The mirrored entry uses the same picture but is drawn flipped horizontally
 		if (name.length >= 8) {
 			const mirrorFrameChar = name.charCodeAt(6) - 65;
 			const mirrorRotChar = name.charCodeAt(7) - 48;
 
 			if (mirrorFrameChar >= 0 && mirrorFrameChar <= 28 && mirrorRotChar >= 0 && mirrorRotChar <= 8) {
-				setFrameRotation(frameMap, mirrorFrameChar, mirrorRotChar, picture);
+				setFrameRotation(frameMap, mirrorFrameChar, mirrorRotChar, picture, true);
 			}
 		}
 	}
@@ -120,11 +123,13 @@ export function loadSprites(wad: WadFile): SpriteStore {
 			if (entry) {
 				frames.push({
 					rotations: entry.rotations,
+					flipped: entry.flipped,
 					fullBright: entry.fullBright,
 				});
 			} else {
 				frames.push({
 					rotations: [null, null, null, null, null, null, null, null],
+					flipped: [false, false, false, false, false, false, false, false],
 					fullBright: false,
 				});
 			}
@@ -140,15 +145,17 @@ export function loadSprites(wad: WadFile): SpriteStore {
  * Set a picture into a frame's rotation slot.
  */
 function setFrameRotation(
-	frameMap: Map<number, { rotations: (Picture | null)[]; fullBright: boolean }>,
+	frameMap: Map<number, { rotations: (Picture | null)[]; flipped: boolean[]; fullBright: boolean }>,
 	frameIdx: number,
 	rotation: number,
 	picture: Picture,
+	flip: boolean,
 ): void {
 	let entry = frameMap.get(frameIdx);
 	if (!entry) {
 		entry = {
 			rotations: [null, null, null, null, null, null, null, null],
+			flipped: [false, false, false, false, false, false, false, false],
 			fullBright: false,
 		};
 		frameMap.set(frameIdx, entry);
@@ -157,9 +164,11 @@ function setFrameRotation(
 	if (rotation === 0) {
 		// Rotation 0 = use this picture for all angles
 		entry.rotations[0] = picture;
+		entry.flipped[0] = flip;
 	} else {
 		// Rotations 1-8 map to indices 0-7
 		entry.rotations[rotation - 1] = picture;
+		entry.flipped[rotation - 1] = flip;
 	}
 }
 
@@ -191,6 +200,12 @@ export function getSpriteFrame(store: SpriteStore, name: string, frame: number):
 	return spriteFrame;
 }
 
+/** Result of a sprite rotation lookup, including the flip flag. */
+export interface SpriteRotationResult {
+	readonly picture: Picture;
+	readonly flip: boolean;
+}
+
 /**
  * Get the picture for a specific rotation from a sprite frame.
  *
@@ -200,17 +215,17 @@ export function getSpriteFrame(store: SpriteStore, name: string, frame: number):
  *
  * @param frame - Sprite frame to look up
  * @param angle - Rotation index (0-7)
- * @returns The picture for the rotation, or null if not available
+ * @returns The picture and flip flag for the rotation, or null if not available
  *
  * @example
  * ```typescript
- * const pic = getSpriteRotation(frame, 0);
- * if (pic) {
- *   console.log(`Sprite: ${pic.width}x${pic.height}`);
+ * const result = getSpriteRotation(frame, 0);
+ * if (result) {
+ *   console.log(`Sprite: ${result.picture.width}x${result.picture.height}, flip: ${result.flip}`);
  * }
  * ```
  */
-export function getSpriteRotation(frame: SpriteFrame, angle: number): Picture | null {
+export function getSpriteRotation(frame: SpriteFrame, angle: number): SpriteRotationResult | null {
 	// Check if this is a single-rotation sprite (rotation 0 set, others null)
 	const rot0 = frame.rotations[0];
 	if (rot0 !== null && rot0 !== undefined) {
@@ -225,11 +240,13 @@ export function getSpriteRotation(frame: SpriteFrame, angle: number): Picture | 
 
 		if (!hasOtherRotations) {
 			// Single rotation: use rotation 0 for all angles
-			return rot0;
+			return { picture: rot0, flip: frame.flipped[0] ?? false };
 		}
 	}
 
 	// Multi-rotation: return the specific angle
 	const idx = angle & 7;
-	return frame.rotations[idx] ?? null;
+	const pic = frame.rotations[idx];
+	if (!pic) return null;
+	return { picture: pic, flip: frame.flipped[idx] ?? false };
 }

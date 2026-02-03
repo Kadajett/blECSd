@@ -271,13 +271,13 @@ describe('getSpriteRotation', () => {
 		const frame = getSpriteFrame(store, 'TROD', 0)!;
 
 		// Should return the same picture for any angle
-		const pic0 = getSpriteRotation(frame, 0);
-		const pic3 = getSpriteRotation(frame, 3);
-		const pic7 = getSpriteRotation(frame, 7);
+		const result0 = getSpriteRotation(frame, 0);
+		const result3 = getSpriteRotation(frame, 3);
+		const result7 = getSpriteRotation(frame, 7);
 
-		expect(pic0).not.toBeNull();
-		expect(pic0).toBe(pic3);
-		expect(pic0).toBe(pic7);
+		expect(result0).not.toBeNull();
+		expect(result0!.picture).toBe(result3!.picture);
+		expect(result0!.picture).toBe(result7!.picture);
 	});
 
 	it('returns specific rotation when multiple rotations exist', () => {
@@ -301,14 +301,14 @@ describe('getSpriteRotation', () => {
 		const frame = getSpriteFrame(store, 'POSS', 0)!;
 
 		// Rotation 1 (index 0) should be 4x4
-		const pic0 = getSpriteRotation(frame, 0);
-		expect(pic0).not.toBeNull();
-		expect(pic0!.width).toBe(4);
+		const result0 = getSpriteRotation(frame, 0);
+		expect(result0).not.toBeNull();
+		expect(result0!.picture.width).toBe(4);
 
 		// Rotation 2 (index 1) should be 8x8
-		const pic1 = getSpriteRotation(frame, 1);
-		expect(pic1).not.toBeNull();
-		expect(pic1!.width).toBe(8);
+		const result1 = getSpriteRotation(frame, 1);
+		expect(result1).not.toBeNull();
+		expect(result1!.picture.width).toBe(8);
 	});
 
 	it('returns null for missing rotation in multi-rotation frame', () => {
@@ -331,6 +331,32 @@ describe('getSpriteRotation', () => {
 
 		// Rotation 3 (index 2) should exist
 		expect(getSpriteRotation(frame, 2)).not.toBeNull();
+	});
+
+	it('tracks flip flag for mirrored rotations', () => {
+		const spriteData = buildMinimalPicture(4, 4);
+		// POSSA1A5 means: frame A rot 1 (normal), frame A rot 5 (flipped)
+		const wad = parseWad(buildTestWad('IWAD', [
+			{ name: 'S_START', data: new Uint8Array([]) },
+			{ name: 'POSSA1A5', data: spriteData },
+			{ name: 'S_END', data: new Uint8Array([]) },
+		]));
+
+		const store = loadSprites(wad);
+		const frame = getSpriteFrame(store, 'POSS', 0)!;
+
+		// Rotation 1 (index 0) should NOT be flipped
+		const result0 = getSpriteRotation(frame, 0);
+		expect(result0).not.toBeNull();
+		expect(result0!.flip).toBe(false);
+
+		// Rotation 5 (index 4) should be flipped
+		const result4 = getSpriteRotation(frame, 4);
+		expect(result4).not.toBeNull();
+		expect(result4!.flip).toBe(true);
+
+		// Same picture for both
+		expect(result0!.picture).toBe(result4!.picture);
 	});
 });
 
@@ -380,7 +406,9 @@ describe('sprite name parsing', () => {
 		// Rotation 0 is set
 		expect(frame.rotations[0]).not.toBeNull();
 
-		// Single-rotation: getSpriteRotation should return it for any angle
-		expect(getSpriteRotation(frame, 5)).not.toBeNull();
+		// Single-rotation: getSpriteRotation should return a result for any angle
+		const result = getSpriteRotation(frame, 5);
+		expect(result).not.toBeNull();
+		expect(result!.picture).toBeDefined();
 	});
 });
