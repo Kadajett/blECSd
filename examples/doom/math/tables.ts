@@ -264,14 +264,28 @@ function initYSlope(width: number, height: number): void {
 }
 
 /**
- * Compute base X/Y scales for flat texture mapping.
+ * Initialize flat scales to defaults (called once during table init).
  */
 function initFlatScales(): void {
-	// basexscale = cos(viewangle) / centerx, baseyscale = -sin(viewangle) / centerx
-	// At startup with viewangle=0 (east): cos=1, sin=0
-	// These are recalculated per-frame in the actual renderer
-	basexscale = fixedDiv(FRACUNIT, projection);
-	baseyscale = fixedDiv(-FRACUNIT, projection);
+	updateFlatScales(0);
+}
+
+/**
+ * Recalculate basexscale/baseyscale for the current view angle.
+ * Must be called each frame before rendering floors/ceilings.
+ * Matches R_ClearPlanes from r_plane.c:
+ *   angle = (viewangle - ANG90) >> ANGLETOFINESHIFT;
+ *   basexscale = FixedDiv(finecosine[angle], centerxfrac);
+ *   baseyscale = -FixedDiv(finesine[angle], centerxfrac);
+ *
+ * @param viewangle - Current view direction (BAM)
+ */
+export function updateFlatScales(viewangle: number): void {
+	const angle = (((viewangle - ANG90) >>> 0) >> ANGLETOFINESHIFT) & FINEMASK;
+	const cos = finecosine[angle] ?? FRACUNIT;
+	const sin = finesine[angle] ?? 0;
+	basexscale = fixedDiv(cos, centerxfrac);
+	baseyscale = -fixedDiv(sin, centerxfrac);
 }
 
 /**

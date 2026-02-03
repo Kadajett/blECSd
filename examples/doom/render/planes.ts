@@ -77,6 +77,58 @@ export function findPlane(
 }
 
 /**
+ * Check a visplane for column overlap and split if necessary.
+ * Matches R_CheckPlane from r_bsp.c: if the visplane already has
+ * column data in the range [start, stop], create a new visplane
+ * for the non-overlapping portion.
+ *
+ * @param rs - Render state
+ * @param plane - Visplane to check
+ * @param start - Start screen X
+ * @param stop - End screen X
+ * @returns The visplane to use (may be a new one)
+ */
+export function checkPlane(
+	rs: RenderState,
+	plane: Visplane,
+	start: number,
+	stop: number,
+): Visplane {
+	// If this range doesn't overlap with existing data, reuse the plane
+	if (start < plane.minx) {
+		// No overlap on the left side
+		if (stop < plane.minx) return plane;
+	}
+	if (stop > plane.maxx) {
+		// No overlap on the right side
+		if (start > plane.maxx) return plane;
+	}
+
+	// Check for actual column overlap in the intersection range
+	const overlapStart = Math.max(start, plane.minx);
+	const overlapEnd = Math.min(stop, plane.maxx);
+
+	for (let x = overlapStart; x <= overlapEnd; x++) {
+		if (plane.top[x] !== VP_UNUSED) {
+			// Overlap found: create a new visplane with same properties
+			const newPlane: Visplane = {
+				height: plane.height,
+				picnum: plane.picnum,
+				lightLevel: plane.lightLevel,
+				minx: rs.screenWidth,
+				maxx: -1,
+				top: new Uint16Array(rs.screenWidth).fill(VP_UNUSED),
+				bottom: new Uint16Array(rs.screenWidth).fill(0),
+			};
+			rs.visplanes.push(newPlane);
+			return newPlane;
+		}
+	}
+
+	return plane;
+}
+
+/**
  * Set the column extent for a visplane at a given screen X.
  *
  * @param plane - Target visplane

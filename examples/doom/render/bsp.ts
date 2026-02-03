@@ -21,7 +21,7 @@ import { clipangle, viewangletox, viewwidth } from '../math/tables.js';
 import { NF_SUBSECTOR } from '../wad/types.js';
 import type { BBox, MapNode } from '../wad/types.js';
 import type { RenderState, Visplane } from './defs.js';
-import { findPlane } from './planes.js';
+import { checkPlane, findPlane } from './planes.js';
 import { addLine } from './segs.js';
 
 // ─── BSP Traversal ─────────────────────────────────────────────────

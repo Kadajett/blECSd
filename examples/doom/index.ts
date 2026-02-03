@@ -27,7 +27,7 @@ import { three } from 'blecsd';
 
 import { ANGLETOFINESHIFT, FINEMASK, finecosine, finesine, generateTables } from './math/angles.js';
 import { FRACBITS, FRACUNIT } from './math/fixed.js';
-import { initRenderTables } from './math/tables.js';
+import { initRenderTables, updateFlatScales } from './math/tables.js';
 import { loadWad } from './wad/wad.js';
 import { loadMap } from './wad/mapData.js';
 import { parsePlaypal, parseColormap } from './render/palette.js';
@@ -161,6 +161,9 @@ function main(): void {
 		const fineAngle = (player.angle >> ANGLETOFINESHIFT) & FINEMASK;
 		rs.viewcos = finecosine[fineAngle] ?? FRACUNIT;
 		rs.viewsin = finesine[fineAngle] ?? 0;
+
+		// Recalculate flat scales for current view angle (matching R_ClearPlanes)
+		updateFlatScales(player.angle);
 
 		// Clear framebuffer
 		three.clearFramebuffer(fb, { r: 0, g: 0, b: 0, a: 255 });

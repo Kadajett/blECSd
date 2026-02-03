@@ -37,7 +37,7 @@ import {
 import { LinedefFlags, type MapSeg } from '../wad/types.js';
 import type { RenderState, Visplane } from './defs.js';
 import { drawColumn } from './drawColumn.js';
-import { findPlane, setPlaneColumn } from './planes.js';
+import { checkPlane, findPlane, setPlaneColumn } from './planes.js';
 import { getWallTexture, type CompositeTexture } from './textures.js';
 
 // ─── Seg Processing Entry Point ────────────────────────────────────
@@ -140,8 +140,8 @@ export function addLine(
 	// ─── Compute rw_normalangle and rw_distance (matching R_StoreWallRange) ───
 
 	// rw_normalangle = curline->angle + ANG90
-	// seg.angle is stored in the WAD as a BAM-like value (0-65535 mapped to 0-360)
-	const segAngleBam = ((seg.angle / 65536) * 0x100000000) >>> 0;
+	// seg.angle in WAD is 16-bit, shifted left by 16 to become 32-bit BAM
+	const segAngleBam = (seg.angle << 16) >>> 0;
 	const rw_normalangle = ((segAngleBam + ANG90) >>> 0);
 
 	// Compute perpendicular distance to the seg line
@@ -248,6 +248,15 @@ export function addLine(
 			&& sidedef.midTexture === '-') {
 			return;
 		}
+	}
+
+	// ─── Check visplane overlap (matching R_StoreWallRange -> R_CheckPlane) ───
+
+	if (floorPlane && markFloor) {
+		floorPlane = checkPlane(rs, floorPlane, x1, x2);
+	}
+	if (ceilingPlane && markCeiling) {
+		ceilingPlane = checkPlane(rs, ceilingPlane, x1, x2);
 	}
 
 	// ─── Build wall rendering context ───
@@ -462,8 +471,10 @@ function renderSegLoop(ctx: WallContext): void {
 		}
 	}
 	if (bottomTex) {
-		bottomTextureMid = ctx.frontFloor - rs.viewz + (ctx.rowOffset << FRACBITS);
+		// Default (non-pegged): align to back sector floor (worldlow)
+		bottomTextureMid = ctx.backFloor - rs.viewz + (ctx.rowOffset << FRACBITS);
 		if (ctx.lineFlags & LinedefFlags.DONT_PEG_BOTTOM) {
+			// Pegged to bottom: align to front sector ceiling (worldtop)
 			bottomTextureMid = ctx.frontCeiling - rs.viewz + (ctx.rowOffset << FRACBITS);
 		}
 	}
@@ -516,19 +527,27 @@ function renderSegLoop(ctx: WallContext): void {
 			texturecolumn >>= FRACBITS;
 		}
 
-		// ─── Mark ceiling visplane ───
+		// ─── Mark ceiling visplane (matching R_RenderSegLoop) ───
 		if (ctx.markCeiling && ctx.ceilingPlane) {
 			const ceilTop = clipTop;
-			const ceilBottom = yl > 0 ? yl - 1 : -1;
+			let ceilBottom = yl > 0 ? yl - 1 : -1;
+			// Clip ceiling bottom against floorclip (matching original Doom)
+			if (ceilBottom >= (rs.floorclip[x] ?? rs.screenHeight)) {
+				ceilBottom = (rs.floorclip[x] ?? rs.screenHeight) - 1;
+			}
 			if (ceilTop <= ceilBottom) {
 				setPlaneColumn(ctx.ceilingPlane, x, ceilTop, ceilBottom);
 			}
 		}
 
-		// ─── Mark floor visplane ───
+		// ─── Mark floor visplane (matching R_RenderSegLoop) ───
 		if (ctx.markFloor && ctx.floorPlane) {
-			const floorTop = yh < rs.screenHeight - 1 ? yh + 1 : rs.screenHeight;
+			let floorTop = yh < rs.screenHeight - 1 ? yh + 1 : rs.screenHeight;
 			const floorBottom = clipBot;
+			// Clip floor top against ceilingclip (matching original Doom)
+			if (floorTop <= (rs.ceilingclip[x] ?? -1)) {
+				floorTop = (rs.ceilingclip[x] ?? -1) + 1;
+			}
 			if (floorTop <= floorBottom) {
 				setPlaneColumn(ctx.floorPlane, x, floorTop, floorBottom);
 			}
