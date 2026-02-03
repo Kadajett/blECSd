@@ -205,9 +205,7 @@ export function createWidgetRegistry(): WidgetRegistry {
 
 			// Verify target exists
 			if (!registrations.has(normalizedTarget) && !aliases.has(normalizedTarget)) {
-				throw new Error(
-					`Cannot create alias '${alias}' for non-existent widget type '${target}'`,
-				);
+				throw new Error(`Cannot create alias '${alias}' for non-existent widget type '${target}'`);
 			}
 
 			aliases.set(normalizedAlias, normalizedTarget);
@@ -239,9 +237,7 @@ export function createWidgetRegistry(): WidgetRegistry {
 			const registration = registry.get(name);
 			if (!registration) {
 				const available = registry.list().join(', ');
-				throw new Error(
-					`Unknown widget type '${name}'. Available types: ${available || 'none'}`,
-				);
+				throw new Error(`Unknown widget type '${name}'. Available types: ${available || 'none'}`);
 			}
 
 			return registration.factory(world, entity, config) as TWidget;
@@ -301,6 +297,7 @@ import { createTable } from './table';
 import { createTabs } from './tabs';
 import { createText } from './text';
 import { createTree } from './tree';
+import { createViewport3D } from './viewport3d';
 
 /**
  * Builtin widget definitions.
@@ -408,6 +405,13 @@ const BUILTIN_WIDGETS: ReadonlyArray<{
 		description: 'Tooltip/hover text manager',
 		tags: ['feedback', 'tooltip'],
 		aliases: ['tooltip'],
+	},
+	{
+		name: 'viewport3d',
+		factory: createViewport3D as WidgetFactory,
+		description: '3D rendering viewport with camera and mesh management',
+		tags: ['display', '3d', 'rendering'],
+		aliases: ['3d', 'viewport'],
 	},
 ];
 

@@ -33,3 +33,4 @@ export {
 	outputStore,
 	viewportOutputSystem,
 } from './viewportOutputSystem';
+export { mouseInteraction3DSystem } from './mouseInteraction3dSystem';

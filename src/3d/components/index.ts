@@ -14,6 +14,18 @@ export {
 	setAnimation3D,
 } from './animation3d';
 
+export type { MouseInteraction3DData, MouseDragInput } from './mouseInteraction3d';
+export {
+	MouseInteraction3D,
+	clearMouseInputStore,
+	disableMouseInteraction,
+	enableMouseInteraction,
+	feedMouseDrag,
+	feedMouseScroll,
+	getMouseInteraction3D,
+	mouseInputStore,
+} from './mouseInteraction3d';
+
 export type { Transform3DData } from './transform3d';
 export {
 	Transform3D,

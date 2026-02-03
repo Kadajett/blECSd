@@ -41,6 +41,7 @@ export type {
 	Animation3DConfig,
 	Camera3DConfig,
 	Material3DConfig,
+	MouseInteraction3DConfig,
 	Transform3DConfig,
 	Viewport3DConfig,
 } from './components';
@@ -48,6 +49,7 @@ export {
 	Animation3DConfigSchema,
 	Camera3DConfigSchema,
 	Material3DConfigSchema,
+	MouseInteraction3DConfigSchema,
 	Transform3DConfigSchema,
 	Viewport3DConfigSchema,
 } from './components';
@@ -91,3 +93,5 @@ export {
 	SextantConfigSchema,
 	SixelConfigSchema,
 } from './backends';
+export type { Viewport3DWidgetConfig } from './viewport3d';
+export { Viewport3DWidgetConfigSchema } from './viewport3d';

@@ -104,3 +104,25 @@ export const Animation3DConfigSchema = z.object({
 	orbitRadius: z.number().positive().optional().describe('Distance from orbit center'),
 }).describe('3D animation configuration');
 export type Animation3DConfig = z.input<typeof Animation3DConfigSchema>;
+
+/**
+ * Configuration for mouse-based 3D camera interaction.
+ *
+ * @example
+ * ```typescript
+ * const config = MouseInteraction3DConfigSchema.parse({
+ *   rotationSensitivity: 0.01,
+ *   zoomSensitivity: 0.5,
+ * });
+ * ```
+ */
+export const MouseInteraction3DConfigSchema = z.object({
+	rotationSensitivity: z.number().positive().default(0.01)
+		.describe('Radians per pixel of mouse movement'),
+	zoomSensitivity: z.number().positive().default(0.5)
+		.describe('Units per scroll tick'),
+	zoomMin: z.number().positive().default(1),
+	zoomMax: z.number().positive().default(100),
+	invertY: z.boolean().default(false),
+}).describe('Mouse-based 3D camera interaction');
+export type MouseInteraction3DConfig = z.input<typeof MouseInteraction3DConfigSchema>;
