@@ -358,10 +358,7 @@ export function setCursorColors(
  * }
  * ```
  */
-export function updateCursorBlink(
-	cursor: ArtificialCursor,
-	currentTime: number,
-): ArtificialCursor {
+export function updateCursorBlink(cursor: ArtificialCursor, currentTime: number): ArtificialCursor {
 	if (!cursor.blink) {
 		return cursor;
 	}
@@ -396,10 +393,7 @@ export function updateCursorBlink(
  * cursor = resetCursorBlink(cursor, performance.now());
  * ```
  */
-export function resetCursorBlink(
-	cursor: ArtificialCursor,
-	currentTime: number,
-): ArtificialCursor {
+export function resetCursorBlink(cursor: ArtificialCursor, currentTime: number): ArtificialCursor {
 	return {
 		...cursor,
 		blinkOn: true,
@@ -710,10 +704,7 @@ export function getVisibleCursors(manager: CursorManager): ArtificialCursor[] {
  * @param currentTime - Current timestamp
  * @returns Updated manager
  */
-export function updateAllCursorBlinks(
-	manager: CursorManager,
-	currentTime: number,
-): CursorManager {
+export function updateAllCursorBlinks(manager: CursorManager, currentTime: number): CursorManager {
 	const newCursors = new Map<string, ArtificialCursor>();
 
 	for (const [id, cursor] of manager.cursors) {

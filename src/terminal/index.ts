@@ -68,11 +68,11 @@ export {
 	AttributeSchema,
 	applySgrCodes,
 	attrCode,
-	attrToSgrCodes,
 	attributesEqual,
-	codeAttr,
+	attrToSgrCodes,
 	ColorType,
 	cloneAttribute,
+	codeAttr,
 	createAttribute,
 	DEFAULT_ATTRIBUTE,
 	extractSgrCodes,
@@ -117,6 +117,43 @@ export {
 	registerForCleanup,
 	unregisterFromCleanup,
 } from './cleanup';
+// Artificial cursor
+export type {
+	ArtificialCursor,
+	ArtificialCursorOptions,
+	CursorManager,
+	CursorShape as ArtificialCursorShapeType,
+	RenderedCursor,
+} from './cursor';
+export {
+	addCursor,
+	BAR_CURSOR_CHAR,
+	BLOCK_CURSOR_CHAR,
+	createArtificialCursor,
+	createCursorCell,
+	createCursorManager,
+	getCursorAt,
+	getPrimaryCursor,
+	getVisibleCursors,
+	HIDE_TERMINAL_CURSOR,
+	hideTerminalCursor,
+	isCursorVisible,
+	moveCursorBy,
+	moveCursorTo,
+	removeCursor,
+	renderCursor,
+	resetCursorBlink,
+	SHOW_TERMINAL_CURSOR,
+	setCursorBlink,
+	setCursorColors,
+	setCursorShape,
+	setCursorVisible,
+	showTerminalCursor,
+	UNDERLINE_CURSOR_CHAR,
+	updateAllCursorBlinks,
+	updateCursorBlink,
+	updateCursorInManager,
+} from './cursor';
 // Debug logging (internal)
 export type {
 	DebugLogger,
@@ -157,6 +194,39 @@ export {
 	isWindowsTerminal,
 	isXterm,
 } from './detection';
+// Input control
+export type {
+	InputControlEventData,
+	InputControlEventMap,
+	InputControlOptions,
+	InputControlState,
+	MouseModeValue,
+} from './inputControl';
+export {
+	areKeysEnabled,
+	createInputControl,
+	destroyInputControl,
+	disableInput,
+	disableKeys,
+	disableMouse,
+	disableWorldInput,
+	disableWorldKeys,
+	disableWorldMouse,
+	enableInput,
+	enableKeys,
+	enableMouse,
+	enableWorldInput,
+	enableWorldKeys,
+	enableWorldMouse,
+	getInputControl,
+	getInputControlEventBus,
+	getMouseMode,
+	isInputEnabled,
+	isMouseEnabled,
+	MouseTrackingMode,
+	resetInputControlEventBus,
+	setMouseMode,
+} from './inputControl';
 // Input stream handler
 export type {
 	FocusHandler,
@@ -184,9 +254,6 @@ export {
 	MouseEventSchema,
 	parseMouseSequence,
 } from './mouseParser';
-// Output buffering (internal)
-export type { CursorPosition, OutputBufferOptions } from './outputBuffer';
-export { OutputBuffer } from './outputBuffer';
 // Optimized output buffering (public)
 export type {
 	ColorState,
@@ -231,12 +298,32 @@ export {
 	writeRaw,
 	writeStringAt,
 } from './optimizedOutput';
+// Output buffering (internal)
+export type { CursorPosition, OutputBufferOptions } from './outputBuffer';
+export { OutputBuffer } from './outputBuffer';
 // Process utilities (internal)
 export type { EditorOptions, ExecOptions, ExecResult, SpawnOptions } from './process';
 export { exec, execSync, getDefaultEditor, processUtils, readEditor, spawn } from './process';
 // Program (internal)
 export type { KeyEvent, MouseEvent, ProgramConfig, ResizeEvent } from './program';
 export { Program, ProgramConfigSchema } from './program';
+// Resize handling
+export type {
+	ResizeEventData,
+	ResizeEventMap,
+	ResizeHandler,
+	ResizeHandlerState,
+} from './resize';
+export {
+	createResizeHandler,
+	disableResizeHandling,
+	enableResizeHandling,
+	getResizeEventBus,
+	getResizeHandler,
+	resetResizeEventBus,
+	setupSigwinchHandler,
+	triggerResize,
+} from './resize';
 // Response parser (internal)
 export type {
 	CharCellSizeResponse,
@@ -334,90 +421,3 @@ export type {
 	TputConfig,
 } from './terminfo';
 export { createTput, getDefaultTput, getDefaultXtermData, resetDefaultTput } from './terminfo';
-// Resize handling
-export type {
-	ResizeEventData,
-	ResizeEventMap,
-	ResizeHandler,
-	ResizeHandlerState,
-} from './resize';
-export {
-	createResizeHandler,
-	disableResizeHandling,
-	enableResizeHandling,
-	getResizeEventBus,
-	getResizeHandler,
-	resetResizeEventBus,
-	setupSigwinchHandler,
-	triggerResize,
-} from './resize';
-// Input control
-export type {
-	InputControlEventData,
-	InputControlEventMap,
-	InputControlOptions,
-	InputControlState,
-	MouseModeValue,
-} from './inputControl';
-export {
-	areKeysEnabled,
-	createInputControl,
-	destroyInputControl,
-	disableInput,
-	disableKeys,
-	disableMouse,
-	disableWorldInput,
-	disableWorldKeys,
-	disableWorldMouse,
-	enableInput,
-	enableKeys,
-	enableMouse,
-	enableWorldInput,
-	enableWorldKeys,
-	enableWorldMouse,
-	getInputControl,
-	getInputControlEventBus,
-	getMouseMode,
-	isInputEnabled,
-	isMouseEnabled,
-	MouseTrackingMode,
-	resetInputControlEventBus,
-	setMouseMode,
-} from './inputControl';
-// Artificial cursor
-export type {
-	ArtificialCursor,
-	ArtificialCursorOptions,
-	CursorManager,
-	CursorShape as ArtificialCursorShapeType,
-	RenderedCursor,
-} from './cursor';
-export {
-	addCursor,
-	BAR_CURSOR_CHAR,
-	BLOCK_CURSOR_CHAR,
-	createArtificialCursor,
-	createCursorCell,
-	createCursorManager,
-	getCursorAt,
-	getPrimaryCursor,
-	getVisibleCursors,
-	HIDE_TERMINAL_CURSOR,
-	hideTerminalCursor,
-	isCursorVisible,
-	moveCursorTo,
-	moveCursorBy,
-	removeCursor,
-	renderCursor,
-	resetCursorBlink,
-	setCursorBlink,
-	setCursorColors,
-	setCursorShape,
-	setCursorVisible,
-	SHOW_TERMINAL_CURSOR,
-	showTerminalCursor,
-	UNDERLINE_CURSOR_CHAR,
-	updateAllCursorBlinks,
-	updateCursorBlink,
-	updateCursorInManager,
-} from './cursor';

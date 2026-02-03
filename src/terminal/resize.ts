@@ -35,17 +35,14 @@
  * ```
  */
 
-import type { World } from '../core/types';
+import { getScreen, getScreenSize, resizeScreen } from '../components/screen';
 import { createEventBus, type EventBus } from '../core/events';
-import { getScreen, resizeScreen, getScreenSize } from '../components/screen';
-import { markAllDirty } from '../systems/renderSystem';
+import type { World } from '../core/types';
 import { invalidateAllLayouts } from '../systems/layoutSystem';
-import {
-	getOutputBuffer,
-	setOutputBuffer,
-} from '../systems/outputSystem';
-import { resizeDoubleBuffer } from './screen/doubleBuffer';
+import { getOutputBuffer, setOutputBuffer } from '../systems/outputSystem';
+import { markAllDirty } from '../systems/renderSystem';
 import type { Program, ResizeEvent } from './program';
+import { resizeDoubleBuffer } from './screen/doubleBuffer';
 
 // =============================================================================
 // TYPES

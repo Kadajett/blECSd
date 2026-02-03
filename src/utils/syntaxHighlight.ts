@@ -281,7 +281,8 @@ export const GRAMMAR_JAVASCRIPT: Grammar = {
 	stringDelimiters: ["'", '"'],
 	templateLiteralStart: '`',
 	templateLiteralEnd: '`',
-	numberPattern: /\b(?:0[xX][0-9a-fA-F_]+|0[oO][0-7_]+|0[bB][01_]+|(?:\d[\d_]*)?\.?\d[\d_]*(?:[eE][+-]?\d[\d_]*)?n?)\b/,
+	numberPattern:
+		/\b(?:0[xX][0-9a-fA-F_]+|0[oO][0-7_]+|0[bB][01_]+|(?:\d[\d_]*)?\.?\d[\d_]*(?:[eE][+-]?\d[\d_]*)?n?)\b/,
 	identifierPattern: /[a-zA-Z_$][a-zA-Z0-9_$]*/,
 	nestedComments: false,
 };
@@ -408,7 +409,8 @@ export const GRAMMAR_PYTHON: Grammar = {
 	stringDelimiters: ["'", '"', "'''", '"""'],
 	templateLiteralStart: null,
 	templateLiteralEnd: null,
-	numberPattern: /\b(?:0[xX][0-9a-fA-F_]+|0[oO][0-7_]+|0[bB][01_]+|(?:\d[\d_]*)?\.?\d[\d_]*(?:[eE][+-]?\d[\d_]*)?[jJ]?)\b/,
+	numberPattern:
+		/\b(?:0[xX][0-9a-fA-F_]+|0[oO][0-7_]+|0[bB][01_]+|(?:\d[\d_]*)?\.?\d[\d_]*(?:[eE][+-]?\d[\d_]*)?[jJ]?)\b/,
 	identifierPattern: /[a-zA-Z_][a-zA-Z0-9_]*/,
 	nestedComments: false,
 };
@@ -523,7 +525,8 @@ export const GRAMMAR_RUST: Grammar = {
 	stringDelimiters: ['"'],
 	templateLiteralStart: null,
 	templateLiteralEnd: null,
-	numberPattern: /\b(?:0[xX][0-9a-fA-F_]+|0[oO][0-7_]+|0[bB][01_]+|(?:\d[\d_]*)?\.?\d[\d_]*(?:[eE][+-]?\d[\d_]*)?(?:_?(?:u8|u16|u32|u64|u128|usize|i8|i16|i32|i64|i128|isize|f32|f64))?)\b/,
+	numberPattern:
+		/\b(?:0[xX][0-9a-fA-F_]+|0[oO][0-7_]+|0[bB][01_]+|(?:\d[\d_]*)?\.?\d[\d_]*(?:[eE][+-]?\d[\d_]*)?(?:_?(?:u8|u16|u32|u64|u128|usize|i8|i16|i32|i64|i128|isize|f32|f64))?)\b/,
 	identifierPattern: /[a-zA-Z_][a-zA-Z0-9_]*/,
 	nestedComments: true,
 };
@@ -608,7 +611,8 @@ export const GRAMMAR_GO: Grammar = {
 	stringDelimiters: ['"', "'", '`'],
 	templateLiteralStart: null,
 	templateLiteralEnd: null,
-	numberPattern: /\b(?:0[xX][0-9a-fA-F_]+|0[oO][0-7_]+|0[bB][01_]+|(?:\d[\d_]*)?\.?\d[\d_]*(?:[eE][+-]?\d[\d_]*)?i?)\b/,
+	numberPattern:
+		/\b(?:0[xX][0-9a-fA-F_]+|0[oO][0-7_]+|0[bB][01_]+|(?:\d[\d_]*)?\.?\d[\d_]*(?:[eE][+-]?\d[\d_]*)?i?)\b/,
 	identifierPattern: /[a-zA-Z_][a-zA-Z0-9_]*/,
 	nestedComments: false,
 };
@@ -939,7 +943,11 @@ export function tokenizeLine(grammar: Grammar, line: string, startState: LineSta
 
 			while (pos < line.length) {
 				// Check for nested comment start (if supported)
-				if (grammar.nestedComments && grammar.blockCommentStart && startsWithAt(grammar.blockCommentStart, pos)) {
+				if (
+					grammar.nestedComments &&
+					grammar.blockCommentStart &&
+					startsWithAt(grammar.blockCommentStart, pos)
+				) {
 					state = { ...state, commentDepth: state.commentDepth + 1 };
 					pos += grammar.blockCommentStart.length;
 				} else if (startsWithAt(grammar.blockCommentEnd, pos)) {
@@ -1201,7 +1209,12 @@ export function highlightWithCache(cache: HighlightCache, text: string): readonl
 		const cached = cache.entries.get(i);
 
 		// Check if cached entry is still valid
-		if (cached && cached.text === line && statesEqual(cached.startState, currentState) && !cache.dirty.has(i)) {
+		if (
+			cached &&
+			cached.text === line &&
+			statesEqual(cached.startState, currentState) &&
+			!cache.dirty.has(i)
+		) {
 			result.push(cached);
 			currentState = cached.endState;
 		} else {
@@ -1261,7 +1274,12 @@ export function highlightVisibleFirst(
 		const line = lines[i] ?? '';
 		const cached = cache.entries.get(i);
 
-		if (cached && cached.text === line && statesEqual(cached.startState, currentState) && !cache.dirty.has(i)) {
+		if (
+			cached &&
+			cached.text === line &&
+			statesEqual(cached.startState, currentState) &&
+			!cache.dirty.has(i)
+		) {
 			currentState = cached.endState;
 		} else {
 			const entry = tokenizeLine(cache.grammar, line, currentState);
@@ -1278,7 +1296,12 @@ export function highlightVisibleFirst(
 		const line = lines[i] ?? '';
 		const cached = cache.entries.get(i);
 
-		if (cached && cached.text === line && statesEqual(cached.startState, currentState) && !cache.dirty.has(i)) {
+		if (
+			cached &&
+			cached.text === line &&
+			statesEqual(cached.startState, currentState) &&
+			!cache.dirty.has(i)
+		) {
 			result.push(cached);
 			currentState = cached.endState;
 		} else {

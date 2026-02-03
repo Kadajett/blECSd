@@ -397,9 +397,7 @@ describe('getWrapCacheStats', () => {
 describe('performance scenarios', () => {
 	it('handles 1000 paragraphs', () => {
 		const cache = createWrapCache(80);
-		const text = Array.from({ length: 1000 }, (_, i) => `Paragraph ${i} with some text`).join(
-			'\n',
-		);
+		const text = Array.from({ length: 1000 }, (_, i) => `Paragraph ${i} with some text`).join('\n');
 
 		const lines = wrapWithCache(cache, text);
 

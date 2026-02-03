@@ -11,6 +11,7 @@ import { getPosition } from '../components/position';
 import { getRenderable, hexToColor } from '../components/renderable';
 import type { World } from '../core/types';
 import {
+	type ChildLayoutData,
 	calculateFlexLayout,
 	calculateGridLayout,
 	calculateInlineLayout,
@@ -20,7 +21,6 @@ import {
 	Layout,
 	LayoutConfigSchema,
 	resetLayoutStore,
-	type ChildLayoutData,
 } from './layout';
 
 describe('Layout widget', () => {

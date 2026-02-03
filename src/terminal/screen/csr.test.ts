@@ -427,9 +427,9 @@ import {
 	createSmartCSRContext,
 	DEFAULT_SMART_CSR_CONFIG,
 	isSmartCSREnabled,
-	smartScroll,
 	type SmartCSRBuffer,
 	type SmartCSRCell,
+	smartScroll,
 	updateSmartCSRConfig,
 } from './csr';
 
@@ -515,17 +515,13 @@ describe('Smart CSR', () => {
 
 	describe('checkEdges', () => {
 		it('detects clean edges', () => {
-			const buffer = createMockBuffer(
-				10,
-				5,
-				[
-					'  hello   ',
-					'  world   ',
-					'  test    ',
-					'  lines   ',
-					'  here    ',
-				],
-			);
+			const buffer = createMockBuffer(10, 5, [
+				'  hello   ',
+				'  world   ',
+				'  test    ',
+				'  lines   ',
+				'  here    ',
+			]);
 
 			const edges = checkEdges(buffer, 0, 5);
 			expect(edges.leftClean).toBe(true);
@@ -533,17 +529,13 @@ describe('Smart CSR', () => {
 		});
 
 		it('detects dirty left edge', () => {
-			const buffer = createMockBuffer(
-				10,
-				5,
-				[
-					'X hello   ',
-					'  world   ',
-					'  test    ',
-					'  lines   ',
-					'  here    ',
-				],
-			);
+			const buffer = createMockBuffer(10, 5, [
+				'X hello   ',
+				'  world   ',
+				'  test    ',
+				'  lines   ',
+				'  here    ',
+			]);
 
 			const edges = checkEdges(buffer, 0, 5);
 			expect(edges.leftClean).toBe(false);
@@ -551,17 +543,13 @@ describe('Smart CSR', () => {
 		});
 
 		it('detects dirty right edge', () => {
-			const buffer = createMockBuffer(
-				10,
-				5,
-				[
-					'  hello   ',
-					'  world  X',
-					'  test    ',
-					'  lines   ',
-					'  here    ',
-				],
-			);
+			const buffer = createMockBuffer(10, 5, [
+				'  hello   ',
+				'  world  X',
+				'  test    ',
+				'  lines   ',
+				'  here    ',
+			]);
 
 			const edges = checkEdges(buffer, 0, 5);
 			expect(edges.leftClean).toBe(true);
@@ -569,17 +557,13 @@ describe('Smart CSR', () => {
 		});
 
 		it('checks only specified region', () => {
-			const buffer = createMockBuffer(
-				10,
-				5,
-				[
-					'X         ', // Outside region
-					'  hello   ',
-					'  world   ',
-					'  test    ',
-					'         X', // Outside region
-				],
-			);
+			const buffer = createMockBuffer(10, 5, [
+				'X         ', // Outside region
+				'  hello   ',
+				'  world   ',
+				'  test    ',
+				'         X', // Outside region
+			]);
 
 			// Check only rows 1-4 (exclusive)
 			const edges = checkEdges(buffer, 1, 4);

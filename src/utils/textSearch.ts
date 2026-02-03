@@ -235,7 +235,10 @@ function computeTextHash(text: string): number {
  * // line = 1, column = 1 (the 'o' in 'world')
  * ```
  */
-export function positionToLineColumn(text: string, position: number): { line: number; column: number } {
+export function positionToLineColumn(
+	text: string,
+	position: number,
+): { line: number; column: number } {
 	let line = 0;
 	let lineStart = 0;
 
@@ -296,7 +299,11 @@ function findLineFromPosition(lineStarts: number[], position: number): number {
  * @param options - Search options
  * @returns Search result with matches
  */
-export function searchLiteral(text: string, query: string, options: SearchOptions = {}): SearchResult {
+export function searchLiteral(
+	text: string,
+	query: string,
+	options: SearchOptions = {},
+): SearchResult {
 	const startTime = performance.now();
 	const caseSensitive = options.caseSensitive ?? false;
 	const wholeWord = options.wholeWord ?? false;
@@ -370,7 +377,11 @@ export function searchLiteral(text: string, query: string, options: SearchOption
  * @param options - Search options
  * @returns Search result with matches
  */
-export function searchRegex(text: string, pattern: string, options: SearchOptions = {}): SearchResult {
+export function searchRegex(
+	text: string,
+	pattern: string,
+	options: SearchOptions = {},
+): SearchResult {
 	const startTime = performance.now();
 	const caseSensitive = options.caseSensitive ?? false;
 	const maxMatches = options.maxMatches;
@@ -517,7 +528,9 @@ export function searchBatch(
 	});
 
 	// Filter matches to only include those starting in the batch range
-	const batchMatches = result.matches.filter((m) => m.start >= startPosition && m.start < endPosition);
+	const batchMatches = result.matches.filter(
+		(m) => m.start >= startPosition && m.start < endPosition,
+	);
 
 	const hasMore = endPosition < text.length;
 
@@ -574,7 +587,12 @@ export function clearSearchCache(cache: SearchCache): void {
  * @param options - Search options
  * @returns Whether the cache was invalidated
  */
-export function updateSearchQuery(cache: SearchCache, text: string, query: string, options: SearchOptions = {}): boolean {
+export function updateSearchQuery(
+	cache: SearchCache,
+	text: string,
+	query: string,
+	options: SearchOptions = {},
+): boolean {
 	const textHash = computeTextHash(text);
 
 	// Check if cache is still valid
@@ -777,7 +795,11 @@ export function findNearestMatch(
  * @param endLine - End line (exclusive)
  * @returns Matches in the visible range
  */
-export function getVisibleMatches(cache: SearchCache, startLine: number, endLine: number): readonly SearchMatch[] {
+export function getVisibleMatches(
+	cache: SearchCache,
+	startLine: number,
+	endLine: number,
+): readonly SearchMatch[] {
 	return cache.matches.filter((m) => m.line >= startLine && m.line < endLine);
 }
 
@@ -787,7 +809,11 @@ export function getVisibleMatches(cache: SearchCache, startLine: number, endLine
  * @param cache - The search cache
  * @returns Current position and total count
  */
-export function getMatchStatus(cache: SearchCache): { current: number; total: number; complete: boolean } {
+export function getMatchStatus(cache: SearchCache): {
+	current: number;
+	total: number;
+	complete: boolean;
+} {
 	return {
 		current: cache.currentIndex + 1,
 		total: cache.matches.length,
@@ -807,7 +833,11 @@ export function getMatchStatus(cache: SearchCache): { current: number; total: nu
  * @param options - Search options
  * @returns Matches in reverse order
  */
-export function searchReverse(text: string, query: string, options: SearchOptions = {}): SearchResult {
+export function searchReverse(
+	text: string,
+	query: string,
+	options: SearchOptions = {},
+): SearchResult {
 	// Search normally, then reverse the results
 	const result = search(text, query, options);
 

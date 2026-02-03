@@ -7,7 +7,6 @@
 import { addComponent, addEntity, createWorld } from 'bitecs';
 import { describe, expect, it } from 'vitest';
 import { ComputedLayout } from '../systems/layoutSystem';
-import type { Entity, World } from './types';
 import {
 	clearDirtyTracking,
 	createDirtyTracker,
@@ -28,6 +27,7 @@ import {
 	resizeDirtyTracker,
 	updateEntityBounds,
 } from './dirtyRects';
+import type { Entity, World } from './types';
 
 // =============================================================================
 // HELPERS

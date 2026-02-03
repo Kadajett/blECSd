@@ -9,10 +9,10 @@
 
 import { removeEntity } from 'bitecs';
 import { z } from 'zod';
-import { setDimensions, getDimensions } from '../components/dimensions';
+import { getDimensions, setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
-import { moveBy, setPosition, getPosition } from '../components/position';
+import { getPosition, moveBy, setPosition } from '../components/position';
 import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
 import type { Entity, World } from '../core/types';
 
@@ -620,7 +620,11 @@ export function calculateFlexLayout(
  * layout.recalculate();
  * ```
  */
-export function createLayout(world: World, entity: Entity, config: LayoutConfig = {}): LayoutWidget {
+export function createLayout(
+	world: World,
+	entity: Entity,
+	config: LayoutConfig = {},
+): LayoutWidget {
 	const validated = LayoutConfigSchema.parse(config) as ValidatedLayoutConfig;
 	const eid = entity;
 
@@ -686,12 +690,11 @@ export function createLayout(world: World, entity: Entity, config: LayoutConfig 
 			}
 			case 'flex': {
 				const direction = Layout.direction[eid] === 0 ? 'row' : 'column';
-				const justify = (['start', 'center', 'end', 'space-between'] as const)[
-					Layout.justify[eid] as number
-				] ?? 'start';
-				const alignVal = (['start', 'center', 'end'] as const)[
-					Layout.align[eid] as number
-				] ?? 'start';
+				const justify =
+					(['start', 'center', 'end', 'space-between'] as const)[Layout.justify[eid] as number] ??
+					'start';
+				const alignVal =
+					(['start', 'center', 'end'] as const)[Layout.align[eid] as number] ?? 'start';
 				const containerSize = direction === 'row' ? containerWidth : containerHeight;
 				positions = calculateFlexLayout(
 					childData,

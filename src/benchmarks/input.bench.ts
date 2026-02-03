@@ -54,7 +54,9 @@ function createMouseEvent(x: number, y: number): MouseEvent {
 
 // Pre-create events to avoid allocation overhead in benchmarks
 const keyEvents = 'abcdefghijklmnopqrstuvwxyz'.split('').map(createKeyEvent);
-const mouseEvents = Array.from({ length: 100 }, (_, i) => createMouseEvent(i % 80, Math.floor(i / 80) % 24));
+const mouseEvents = Array.from({ length: 100 }, (_, i) =>
+	createMouseEvent(i % 80, Math.floor(i / 80) % 24),
+);
 
 // =============================================================================
 // EVENT PUSH BENCHMARKS

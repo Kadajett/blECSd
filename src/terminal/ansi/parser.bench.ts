@@ -7,10 +7,7 @@
  */
 
 import { bench, describe, expect, it } from 'vitest';
-import {
-	createAttribute,
-	parseSgrString,
-} from './parser';
+import { createAttribute, parseSgrString } from './parser';
 
 // Test data generators
 function generateSimpleSgr(count: number): string {

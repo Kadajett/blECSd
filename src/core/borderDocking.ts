@@ -479,7 +479,11 @@ export function registerRectBorder(
  * @param y - Y position
  * @returns Connection flags
  */
-export function getConnectionFlags(ctx: BorderDockingContext, x: number, y: number): ConnectionFlags {
+export function getConnectionFlags(
+	ctx: BorderDockingContext,
+	x: number,
+	y: number,
+): ConnectionFlags {
 	const leftEdges = ctx.edges.get(posKey(x - 1, y));
 	const rightEdges = ctx.edges.get(posKey(x + 1, y));
 	const topEdges = ctx.edges.get(posKey(x, y - 1));
@@ -500,7 +504,10 @@ export function getConnectionFlags(ctx: BorderDockingContext, x: number, y: numb
  * @param charset - Junction charset to use
  * @returns Junction character or null if no junction needed
  */
-export function getJunctionChar(connections: ConnectionFlags, charset: JunctionCharset): number | null {
+export function getJunctionChar(
+	connections: ConnectionFlags,
+	charset: JunctionCharset,
+): number | null {
 	const { left, top, right, bottom } = connections;
 	const count = (left ? 1 : 0) + (top ? 1 : 0) + (right ? 1 : 0) + (bottom ? 1 : 0);
 
@@ -688,7 +695,12 @@ export interface DockingBuffer {
  */
 export function applyJunctions(buffer: DockingBuffer, junctions: readonly Junction[]): void {
 	for (const junction of junctions) {
-		if (junction.x >= 0 && junction.x < buffer.width && junction.y >= 0 && junction.y < buffer.height) {
+		if (
+			junction.x >= 0 &&
+			junction.x < buffer.width &&
+			junction.y >= 0 &&
+			junction.y < buffer.height
+		) {
 			buffer.setCell(junction.x, junction.y, {
 				char: String.fromCodePoint(junction.char),
 				fg: junction.fg,

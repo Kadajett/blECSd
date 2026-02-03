@@ -9,7 +9,7 @@
 
 import { removeEntity } from 'bitecs';
 import { z } from 'zod';
-import { setBorder, BorderType, type BorderCharset } from '../components/border';
+import { type BorderCharset, BorderType, setBorder } from '../components/border';
 import { setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
@@ -381,7 +381,6 @@ function parseDimension(value: string | number | undefined): number | `${number}
 	}
 	return value;
 }
-
 
 /**
  * Validated config type.

@@ -32,13 +32,14 @@
 
 import { addEntity, removeEntity } from 'bitecs';
 import { z } from 'zod';
-import { BorderType, setBorder, type BorderOptions } from '../components/border';
+import { type BorderOptions, BorderType, setBorder } from '../components/border';
 import { setDimensions } from '../components/dimensions';
 import { setPosition } from '../components/position';
-import { markDirty, setStyle, setVisible, type StyleOptions } from '../components/renderable';
+import { markDirty, type StyleOptions, setStyle, setVisible } from '../components/renderable';
 import {
 	getScrollInfo,
 	moveCursor,
+	type ScrollInfo,
 	scrollByLines,
 	scrollByPages,
 	scrollToBottom,
@@ -49,9 +50,16 @@ import {
 	setVirtualViewport,
 	setVisibleLineCount,
 	VirtualViewport,
-	type ScrollInfo,
 } from '../components/virtualViewport';
 import type { Entity, World } from '../core/types';
+import { ComputedLayout } from '../systems/layoutSystem';
+import {
+	cleanupEntityResources,
+	type LineRenderConfig,
+	registerLineStore,
+	setLineRenderConfig,
+	updateLineStore,
+} from '../systems/virtualizedRenderSystem';
 import {
 	appendLines as appendLinesToStore,
 	appendToStore,
@@ -62,14 +70,6 @@ import {
 	trimToLineCount,
 	type VirtualizedLineStore,
 } from '../utils/virtualizedLineStore';
-import {
-	cleanupEntityResources,
-	registerLineStore,
-	setLineRenderConfig,
-	updateLineStore,
-	type LineRenderConfig,
-} from '../systems/virtualizedRenderSystem';
-import { ComputedLayout } from '../systems/layoutSystem';
 
 // =============================================================================
 // SCHEMAS
@@ -342,7 +342,10 @@ function calculateVisibleLines(height: number, hasBorder: boolean): number {
  * list.follow(true);
  * ```
  */
-export function createVirtualizedList(world: World, config: VirtualizedListConfig): VirtualizedList {
+export function createVirtualizedList(
+	world: World,
+	config: VirtualizedListConfig,
+): VirtualizedList {
 	// Validate config
 	const validated = VirtualizedListConfigSchema.parse(config);
 
@@ -399,12 +402,16 @@ export function createVirtualizedList(world: World, config: VirtualizedListConfi
 	const renderConfig: Record<string, number | boolean> = {};
 	if (validated.style?.fg !== undefined) renderConfig['fg'] = validated.style.fg;
 	if (validated.style?.bg !== undefined) renderConfig['bg'] = validated.style.bg;
-	if (validated.style?.selectedFg !== undefined) renderConfig['selectedFg'] = validated.style.selectedFg;
-	if (validated.style?.selectedBg !== undefined) renderConfig['selectedBg'] = validated.style.selectedBg;
+	if (validated.style?.selectedFg !== undefined)
+		renderConfig['selectedFg'] = validated.style.selectedFg;
+	if (validated.style?.selectedBg !== undefined)
+		renderConfig['selectedBg'] = validated.style.selectedBg;
 	if (validated.style?.cursorFg !== undefined) renderConfig['cursorFg'] = validated.style.cursorFg;
 	if (validated.style?.cursorBg !== undefined) renderConfig['cursorBg'] = validated.style.cursorBg;
-	if (validated.style?.showLineNumbers !== undefined) renderConfig['showLineNumbers'] = validated.style.showLineNumbers;
-	if (validated.style?.lineNumberWidth !== undefined) renderConfig['lineNumberWidth'] = validated.style.lineNumberWidth;
+	if (validated.style?.showLineNumbers !== undefined)
+		renderConfig['showLineNumbers'] = validated.style.showLineNumbers;
+	if (validated.style?.lineNumberWidth !== undefined)
+		renderConfig['lineNumberWidth'] = validated.style.lineNumberWidth;
 	setLineRenderConfig(eid, renderConfig as Partial<LineRenderConfig>);
 
 	// Apply border
@@ -468,9 +475,7 @@ export function createVirtualizedList(world: World, config: VirtualizedListConfi
 
 		// Content
 		setLines(lines: readonly string[]) {
-			const newStore = lines.length > 0
-				? createLineStoreFromLines(lines)
-				: createEmptyLineStore();
+			const newStore = lines.length > 0 ? createLineStoreFromLines(lines) : createEmptyLineStore();
 			updateStore(state, newStore);
 			return widget;
 		},
@@ -738,6 +743,8 @@ export function handleVirtualizedListWheel(
  * @returns true if the entity has VirtualViewport component
  */
 export function isVirtualizedList(_world: World, eid: Entity): boolean {
-	return VirtualViewport.totalLineCount[eid] !== undefined &&
-		   VirtualViewport.visibleLineCount[eid] !== undefined;
+	return (
+		VirtualViewport.totalLineCount[eid] !== undefined &&
+		VirtualViewport.visibleLineCount[eid] !== undefined
+	);
 }

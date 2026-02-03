@@ -80,9 +80,7 @@ describe('computeDiff', () => {
 	it('includes line numbers', () => {
 		const result = computeDiff('a\nb\nc', 'a\nB\nc');
 
-		const addLine = result.chunks
-			.flatMap((c) => c.lines)
-			.find((l) => l.type === 'add');
+		const addLine = result.chunks.flatMap((c) => c.lines).find((l) => l.type === 'add');
 
 		expect(addLine?.newLineNo).toBeDefined();
 	});
@@ -274,9 +272,7 @@ describe('getSideBySideView', () => {
 		const pairs = getSideBySideView(result, 0, 10);
 
 		// Find the changed pair
-		const changedPair = pairs.find(
-			(p) => p.left?.type === 'remove' || p.right?.type === 'add',
-		);
+		const changedPair = pairs.find((p) => p.left?.type === 'remove' || p.right?.type === 'add');
 
 		expect(changedPair).toBeDefined();
 	});

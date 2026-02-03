@@ -25,8 +25,8 @@
  */
 
 import { addComponent, hasComponent } from 'bitecs';
-import type { Entity, World } from './types';
 import { getChildren, getParent, Hierarchy, NULL_ENTITY } from '../components/hierarchy';
+import type { Entity, World } from './types';
 
 // =============================================================================
 // CONSTANTS
@@ -380,8 +380,12 @@ export function moveDown(world: World, entity: Entity): boolean {
  */
 export function sortByZIndex(world: World, entities: readonly Entity[]): Entity[] {
 	return [...entities].sort((a, b) => {
-		const zA = hasComponent(world, a, ZOrder) ? (ZOrder.zIndex[a] ?? DEFAULT_Z_INDEX) : DEFAULT_Z_INDEX;
-		const zB = hasComponent(world, b, ZOrder) ? (ZOrder.zIndex[b] ?? DEFAULT_Z_INDEX) : DEFAULT_Z_INDEX;
+		const zA = hasComponent(world, a, ZOrder)
+			? (ZOrder.zIndex[a] ?? DEFAULT_Z_INDEX)
+			: DEFAULT_Z_INDEX;
+		const zB = hasComponent(world, b, ZOrder)
+			? (ZOrder.zIndex[b] ?? DEFAULT_Z_INDEX)
+			: DEFAULT_Z_INDEX;
 		return zA - zB;
 	});
 }

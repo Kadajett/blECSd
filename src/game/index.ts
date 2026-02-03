@@ -76,7 +76,12 @@ import {
 	type LoopStats,
 } from '../core/gameLoop';
 import { type ActionBinding, createInputActionManager } from '../core/inputActions';
-import { createInputEventBuffer, drainKeys, drainMouse, type InputEventBufferData } from '../core/inputEventBuffer';
+import {
+	createInputEventBuffer,
+	drainKeys,
+	drainMouse,
+	type InputEventBufferData,
+} from '../core/inputEventBuffer';
 import { createInputState, type InputState as InputStateTracker } from '../core/inputState';
 import type { Entity, System, Unsubscribe, World } from '../core/types';
 import { LoopPhase } from '../core/types';

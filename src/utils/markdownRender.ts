@@ -14,9 +14,9 @@ import {
 	createHighlightCache,
 	detectLanguage,
 	getGrammarByName,
+	type HighlightCache,
 	highlightWithCache,
 	setGrammar,
-	type HighlightCache,
 	type Token,
 } from './syntaxHighlight';
 
@@ -40,14 +40,7 @@ export type BlockType =
 /**
  * Inline element types.
  */
-export type InlineType =
-	| 'text'
-	| 'bold'
-	| 'italic'
-	| 'code'
-	| 'link'
-	| 'image'
-	| 'strikethrough';
+export type InlineType = 'text' | 'bold' | 'italic' | 'code' | 'link' | 'image' | 'strikethrough';
 
 /**
  * An inline element within a block.
@@ -584,9 +577,7 @@ export function parseMarkdown(source: string): MarkdownParseResult {
 					// Empty line might end the list
 					if (i + 1 < lines.length) {
 						const nextLine = lines[i + 1]!;
-						const nextMatch = ordered
-							? nextLine.match(OL_PATTERN)
-							: nextLine.match(UL_PATTERN);
+						const nextMatch = ordered ? nextLine.match(OL_PATTERN) : nextLine.match(UL_PATTERN);
 						if (!nextMatch) break;
 					} else {
 						break;
@@ -605,9 +596,7 @@ export function parseMarkdown(source: string): MarkdownParseResult {
 					content: taskMatch ? taskMatch[2]! : content,
 					inline: parseInline(taskMatch ? taskMatch[2]! : content),
 					indent,
-					checked: taskMatch
-						? taskMatch[1]!.toLowerCase() === 'x'
-						: undefined,
+					checked: taskMatch ? taskMatch[1]!.toLowerCase() === 'x' : undefined,
 				});
 				i++;
 			}
@@ -700,10 +689,7 @@ export function clearMarkdownCache(cache: MarkdownCache): void {
 /**
  * Parses markdown with caching.
  */
-export function parseMarkdownCached(
-	cache: MarkdownCache,
-	source: string,
-): MarkdownParseResult {
+export function parseMarkdownCached(cache: MarkdownCache, source: string): MarkdownParseResult {
 	const newHash = hashString(source);
 
 	// Full cache hit
@@ -732,11 +718,7 @@ export function parseMarkdownCached(
 /**
  * Invalidates cache for a line range.
  */
-export function invalidateLines(
-	cache: MarkdownCache,
-	startLine: number,
-	endLine: number,
-): void {
+export function invalidateLines(cache: MarkdownCache, startLine: number, endLine: number): void {
 	for (const [key, block] of cache.blocks) {
 		if (block.lineStart < endLine && block.lineEnd > startLine) {
 			cache.blocks.delete(key);
@@ -752,10 +734,7 @@ export function invalidateLines(
 /**
  * Renders a block to lines.
  */
-export function renderBlock(
-	block: MarkdownBlock,
-	cache: MarkdownCache,
-): readonly RenderedLine[] {
+export function renderBlock(block: MarkdownBlock, cache: MarkdownCache): readonly RenderedLine[] {
 	const lines: RenderedLine[] = [];
 	const baseStyle: LineStyle = {};
 
@@ -819,8 +798,7 @@ export function renderBlock(
 				const prefix = data.ordered
 					? `${(data.start || 1) + i}. `
 					: '  '.repeat(item.indent / 2) + '- ';
-				const checkbox =
-					item.checked !== undefined ? (item.checked ? '[x] ' : '[ ] ') : '';
+				const checkbox = item.checked !== undefined ? (item.checked ? '[x] ' : '[ ] ') : '';
 				lines.push({
 					content: prefix + checkbox + item.content,
 					style: baseStyle,
@@ -991,10 +969,7 @@ export function getVisibleMarkdown(
 /**
  * Gets total rendered line count.
  */
-export function getTotalLineCount(
-	result: MarkdownParseResult,
-	cache: MarkdownCache,
-): number {
+export function getTotalLineCount(result: MarkdownParseResult, cache: MarkdownCache): number {
 	const allLines = renderMarkdown(result, cache);
 	return allLines.length;
 }

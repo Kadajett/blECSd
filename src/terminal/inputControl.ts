@@ -33,14 +33,14 @@
  * ```
  */
 
-import type { Program, KeyEvent, MouseEvent } from './program';
 import { createEventBus, type EventBus } from '../core/events';
-import { queueKeyEvent, queueMouseEvent } from '../systems/inputSystem';
-import type { World } from '../core/types';
 import { shouldBlockKeyEvent } from '../core/keyLock';
+import type { World } from '../core/types';
+import { queueKeyEvent, queueMouseEvent } from '../systems/inputSystem';
 import { mouse } from './ansi';
 import type { KeyName } from './keyParser';
-import type { MouseButton, MouseAction, MouseProtocol } from './mouseParser';
+import type { MouseAction, MouseButton, MouseProtocol } from './mouseParser';
+import type { KeyEvent, MouseEvent, Program } from './program';
 
 // =============================================================================
 // CONVERSION HELPERS

@@ -30,12 +30,12 @@
  */
 
 import { hasComponent } from 'bitecs';
-import { isPointInCachedBounds } from './positionCache';
+import { Interactive } from '../components/interactive';
 import { isPointInEntity } from './computedPosition';
+import { isPointInCachedBounds } from './positionCache';
 import { queryInteractive } from './queries';
 import type { Entity, World } from './types';
 import { getZIndex, hasZOrder, ZOrder } from './zOrder';
-import { Interactive } from '../components/interactive';
 
 // =============================================================================
 // TYPES
@@ -249,7 +249,13 @@ function matchesFilter(world: World, eid: Entity, options: HitTestOptions): bool
 /**
  * Checks if a point is inside an entity.
  */
-function isPointInside(world: World, eid: Entity, x: number, y: number, useCached: boolean): boolean {
+function isPointInside(
+	world: World,
+	eid: Entity,
+	x: number,
+	y: number,
+	useCached: boolean,
+): boolean {
 	if (useCached) {
 		return isPointInCachedBounds(world, eid, x, y);
 	}
@@ -490,7 +496,12 @@ export function hitTestDetailed(
  * @param cache - Optional clickable cache
  * @returns true if any clickable entity is under the point
  */
-export function hasClickableAt(world: World, x: number, y: number, cache?: ClickableCache): boolean {
+export function hasClickableAt(
+	world: World,
+	x: number,
+	y: number,
+	cache?: ClickableCache,
+): boolean {
 	return hitTest(world, x, y, cache, { clickableOnly: true, useCachedPositions: true }) !== null;
 }
 
@@ -503,7 +514,12 @@ export function hasClickableAt(world: World, x: number, y: number, cache?: Click
  * @param cache - Optional clickable cache
  * @returns true if any hoverable entity is under the point
  */
-export function hasHoverableAt(world: World, x: number, y: number, cache?: ClickableCache): boolean {
+export function hasHoverableAt(
+	world: World,
+	x: number,
+	y: number,
+	cache?: ClickableCache,
+): boolean {
 	return (
 		hitTest(world, x, y, cache, {
 			hoverableOnly: true,
@@ -524,7 +540,12 @@ export function hasHoverableAt(world: World, x: number, y: number, cache?: Click
  * @param cache - Optional clickable cache
  * @returns Topmost clickable entity or null
  */
-export function getClickableAt(world: World, x: number, y: number, cache?: ClickableCache): Entity | null {
+export function getClickableAt(
+	world: World,
+	x: number,
+	y: number,
+	cache?: ClickableCache,
+): Entity | null {
 	return hitTest(world, x, y, cache, { clickableOnly: true, useCachedPositions: true });
 }
 
@@ -539,7 +560,12 @@ export function getClickableAt(world: World, x: number, y: number, cache?: Click
  * @param cache - Optional clickable cache
  * @returns Topmost hoverable entity or null
  */
-export function getHoverableAt(world: World, x: number, y: number, cache?: ClickableCache): Entity | null {
+export function getHoverableAt(
+	world: World,
+	x: number,
+	y: number,
+	cache?: ClickableCache,
+): Entity | null {
 	return hitTest(world, x, y, cache, {
 		hoverableOnly: true,
 		clickableOnly: false,
@@ -556,7 +582,12 @@ export function getHoverableAt(world: World, x: number, y: number, cache?: Click
  * @param cache - Optional clickable cache
  * @returns Array of clickable entities (highest z-index first)
  */
-export function getAllClickablesAt(world: World, x: number, y: number, cache?: ClickableCache): Entity[] {
+export function getAllClickablesAt(
+	world: World,
+	x: number,
+	y: number,
+	cache?: ClickableCache,
+): Entity[] {
 	return hitTestAll(world, x, y, cache, { clickableOnly: true, useCachedPositions: true });
 }
 
@@ -569,7 +600,12 @@ export function getAllClickablesAt(world: World, x: number, y: number, cache?: C
  * @param cache - Optional clickable cache
  * @returns Array of hoverable entities (highest z-index first)
  */
-export function getAllHoverablesAt(world: World, x: number, y: number, cache?: ClickableCache): Entity[] {
+export function getAllHoverablesAt(
+	world: World,
+	x: number,
+	y: number,
+	cache?: ClickableCache,
+): Entity[] {
 	return hitTestAll(world, x, y, cache, {
 		hoverableOnly: true,
 		clickableOnly: false,

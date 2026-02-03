@@ -27,8 +27,8 @@
  */
 
 import { hasComponent } from 'bitecs';
-import { Renderable, unpackColor, packColor } from '../../components/renderable';
 import { getParent, NULL_ENTITY } from '../../components/hierarchy';
+import { packColor, Renderable, unpackColor } from '../../components/renderable';
 import type { Entity, World } from '../../core/types';
 
 // =============================================================================
@@ -245,9 +245,15 @@ export function blendColors(fg: number, bg: number, opacity: number = 1): number
 		return 0;
 	}
 
-	const r = Math.round((fgUnpacked.r * fgAlpha + bgUnpacked.r * bgAlpha * (1 - fgAlpha)) / outAlpha);
-	const g = Math.round((fgUnpacked.g * fgAlpha + bgUnpacked.g * bgAlpha * (1 - fgAlpha)) / outAlpha);
-	const b = Math.round((fgUnpacked.b * fgAlpha + bgUnpacked.b * bgAlpha * (1 - fgAlpha)) / outAlpha);
+	const r = Math.round(
+		(fgUnpacked.r * fgAlpha + bgUnpacked.r * bgAlpha * (1 - fgAlpha)) / outAlpha,
+	);
+	const g = Math.round(
+		(fgUnpacked.g * fgAlpha + bgUnpacked.g * bgAlpha * (1 - fgAlpha)) / outAlpha,
+	);
+	const b = Math.round(
+		(fgUnpacked.b * fgAlpha + bgUnpacked.b * bgAlpha * (1 - fgAlpha)) / outAlpha,
+	);
 	const a = Math.round(outAlpha * 255);
 
 	return packColor(r, g, b, a);
@@ -391,12 +397,7 @@ export function toPremultiplied(color: number): number {
 	const { r, g, b, a } = unpackColor(color);
 	const alpha = a / 255;
 
-	return packColor(
-		Math.round(r * alpha),
-		Math.round(g * alpha),
-		Math.round(b * alpha),
-		a,
-	);
+	return packColor(Math.round(r * alpha), Math.round(g * alpha), Math.round(b * alpha), a);
 }
 
 /**

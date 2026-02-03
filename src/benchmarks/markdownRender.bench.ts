@@ -20,11 +20,11 @@ import {
 	getTotalLineCount,
 	getVisibleMarkdown,
 	invalidateLines,
+	type MarkdownCache,
+	type MarkdownParseResult,
 	parseMarkdown,
 	parseMarkdownCached,
 	renderMarkdown,
-	type MarkdownCache,
-	type MarkdownParseResult,
 } from '../utils/markdownRender';
 
 // =============================================================================
@@ -44,7 +44,9 @@ function createMarkdownDoc(options: {
 	const { paragraphs = 10, codeBlocks = 5, tables = 2, lists = 5 } = options;
 
 	for (let i = 0; i < paragraphs; i++) {
-		sections.push(`## Section ${i}\n\nThis is paragraph ${i} with some **bold** and *italic* text.`);
+		sections.push(
+			`## Section ${i}\n\nThis is paragraph ${i} with some **bold** and *italic* text.`,
+		);
 
 		if (i < codeBlocks) {
 			const code = Array.from({ length: 20 }, (_, j) => `const x${j} = ${j};`).join('\n');

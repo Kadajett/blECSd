@@ -30,10 +30,10 @@
  */
 
 import { addComponent, hasComponent } from 'bitecs';
-import type { Entity, World } from './types';
+import { Border, hasBorderVisible } from '../components/border';
 import { getParent, NULL_ENTITY } from '../components/hierarchy';
 import { ComputedLayout, hasComputedLayout } from '../systems/layoutSystem';
-import { hasBorderVisible, Border } from '../components/border';
+import type { Entity, World } from './types';
 
 // =============================================================================
 // CONSTANTS
@@ -354,11 +354,7 @@ export function intersectClipRects(a: ClipRect, b: ClipRect): ClipRect {
  * @param y - Y coordinate
  * @returns Clamped coordinates
  */
-export function clampToClipRect(
-	rect: ClipRect,
-	x: number,
-	y: number,
-): { x: number; y: number } {
+export function clampToClipRect(rect: ClipRect, x: number, y: number): { x: number; y: number } {
 	return {
 		x: Math.max(rect.x1, Math.min(rect.x2 - 1, x)),
 		y: Math.max(rect.y1, Math.min(rect.y2 - 1, y)),
@@ -492,11 +488,7 @@ export function getClipRect(world: World, eid: Entity): ClipRect {
  * @param ancestor - The ancestor entity to stop at
  * @returns The clip rect up to (but not including) the ancestor
  */
-export function getClipRectToAncestor(
-	world: World,
-	eid: Entity,
-	ancestor: Entity,
-): ClipRect {
+export function getClipRectToAncestor(world: World, eid: Entity, ancestor: Entity): ClipRect {
 	let clipRect = createInfiniteClipRect();
 	let current: number = eid;
 

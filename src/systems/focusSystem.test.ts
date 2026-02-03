@@ -4,11 +4,11 @@
 
 import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { isFocused, setFocusable, setInteractive } from '../components/interactive';
 import { setPosition } from '../components/position';
 import { setStyle, setVisible } from '../components/renderable';
-import { setInteractive, setFocusable, isFocused } from '../components/interactive';
-import { createScreenEntity } from '../core/entities';
 import { resetScreenSingleton } from '../components/screen';
+import { createScreenEntity } from '../core/entities';
 import type { World } from '../core/types';
 import {
 	blurAll,
@@ -24,8 +24,8 @@ import {
 	focusPush,
 	focusSystem,
 	getFocusableEntities,
-	getFocused,
 	getFocusEventBus,
+	getFocused,
 	getFocusStackDepth,
 	peekFocusStack,
 	resetFocusEventBus,
@@ -208,17 +208,11 @@ describe('focusSystem', () => {
 			bus.on('blur', blurHandler);
 
 			focusEntity(world, entity1);
-			expect(focusHandler).toHaveBeenCalledWith(
-				expect.objectContaining({ entity: entity1 }),
-			);
+			expect(focusHandler).toHaveBeenCalledWith(expect.objectContaining({ entity: entity1 }));
 
 			focusEntity(world, entity2);
-			expect(blurHandler).toHaveBeenCalledWith(
-				expect.objectContaining({ entity: entity1 }),
-			);
-			expect(focusHandler).toHaveBeenCalledWith(
-				expect.objectContaining({ entity: entity2 }),
-			);
+			expect(blurHandler).toHaveBeenCalledWith(expect.objectContaining({ entity: entity1 }));
+			expect(focusHandler).toHaveBeenCalledWith(expect.objectContaining({ entity: entity2 }));
 		});
 	});
 

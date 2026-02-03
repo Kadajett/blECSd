@@ -5,34 +5,34 @@
 
 import { addComponent, addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { setBorder, BorderType } from '../components/border';
+import { BorderType, setBorder } from '../components/border';
 import { Position, setPosition } from '../components/position';
-import { Renderable, setStyle, markDirty, setVisible } from '../components/renderable';
+import { markDirty, Renderable, setStyle, setVisible } from '../components/renderable';
 import {
-	VirtualViewport,
-	setVirtualViewport,
 	invalidateViewport,
+	setVirtualViewport,
+	VirtualViewport,
 } from '../components/virtualViewport';
-import { createLineStore, createLineStoreFromLines } from '../utils/virtualizedLineStore';
+import { getCell } from '../terminal/screen/cell';
 import { createDoubleBuffer, getBackBuffer } from '../terminal/screen/doubleBuffer';
+import { createLineStore, createLineStoreFromLines } from '../utils/virtualizedLineStore';
 import { ComputedLayout } from './layoutSystem';
 import {
-	virtualizedRenderSystem,
-	setVirtualizedRenderBuffer,
+	cleanupEntityResources,
+	cleanupVirtualizedRenderSystem,
+	clearLineRenderConfig,
 	clearVirtualizedRenderBuffer,
+	createVirtualizedRenderSystem,
+	getLineRenderConfig,
+	getLineStore,
 	getVirtualizedRenderBuffer,
 	registerLineStore,
-	unregisterLineStore,
-	getLineStore,
-	updateLineStore,
 	setLineRenderConfig,
-	getLineRenderConfig,
-	clearLineRenderConfig,
-	cleanupVirtualizedRenderSystem,
-	cleanupEntityResources,
-	createVirtualizedRenderSystem,
+	setVirtualizedRenderBuffer,
+	unregisterLineStore,
+	updateLineStore,
+	virtualizedRenderSystem,
 } from './virtualizedRenderSystem';
-import { getCell } from '../terminal/screen/cell';
 
 describe('virtualizedRenderSystem', () => {
 	let world: ReturnType<typeof createWorld>;
@@ -624,7 +624,10 @@ describe('virtualizedRenderSystem', () => {
 			markDirty(world, eid);
 
 			// Create 10000 lines
-			const lines = Array.from({ length: 10000 }, (_, i) => `Line ${i.toString().padStart(5, '0')}`);
+			const lines = Array.from(
+				{ length: 10000 },
+				(_, i) => `Line ${i.toString().padStart(5, '0')}`,
+			);
 			const store = createLineStoreFromLines(lines);
 			registerLineStore(eid, store);
 

@@ -232,7 +232,9 @@ function compressChunk(chunk: Chunk): string {
  * Decompresses chunk data.
  */
 function decompressChunk(data: string): ScrollbackLine[] {
-	const decompressed = data.replace(/(.)\x00(\d+)\x00/g, (_, char, count) => char.repeat(parseInt(count)));
+	const decompressed = data.replace(/(.)\x00(\d+)\x00/g, (_, char, count) =>
+		char.repeat(parseInt(count)),
+	);
 	return JSON.parse(decompressed) as ScrollbackLine[];
 }
 
@@ -294,7 +296,7 @@ function compressChunkInPlace(buffer: ScrollbackBuffer, chunk: Chunk): void {
 	chunk.compressed = true;
 	chunk.lines.length = 0; // Clear uncompressed data
 
-	chunk.memorySize = (chunk.compressedData.length * BYTES_PER_CHAR) + 100;
+	chunk.memorySize = chunk.compressedData.length * BYTES_PER_CHAR + 100;
 	buffer.memoryBytes += chunk.memorySize - oldSize;
 }
 
@@ -465,7 +467,11 @@ export function getLine(buffer: ScrollbackBuffer, lineIndex: number): Scrollback
  * @param endLine - End line index (exclusive)
  * @returns Line range result
  */
-export function getLineRange(buffer: ScrollbackBuffer, startLine: number, endLine: number): LineRange {
+export function getLineRange(
+	buffer: ScrollbackBuffer,
+	startLine: number,
+	endLine: number,
+): LineRange {
 	const loadStart = performance.now();
 
 	// Clamp to valid range
@@ -675,7 +681,11 @@ export function loadFromText(buffer: ScrollbackBuffer, text: string): void {
  * @param endLine - End line (default: all)
  * @returns Exported text
  */
-export function exportToText(buffer: ScrollbackBuffer, startLine: number = 0, endLine?: number): string {
+export function exportToText(
+	buffer: ScrollbackBuffer,
+	startLine: number = 0,
+	endLine?: number,
+): string {
 	const end = endLine ?? buffer.totalLines;
 	const range = getLineRange(buffer, startLine, end);
 	return range.lines.map((l) => l.text).join('\n');

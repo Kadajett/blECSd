@@ -4,12 +4,11 @@
 
 import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { World } from '../core/types';
-import { createScreenEntity } from '../core/entities';
 import { resetScreenSingleton } from '../components/screen';
+import { createScreenEntity } from '../core/entities';
+import { lockAllKeys, resetKeyLockState, setIgnoredKeys } from '../core/keyLock';
+import type { World } from '../core/types';
 import { getEventQueue, resetInputState } from '../systems/inputSystem';
-import { resetKeyLockState, lockAllKeys, setIgnoredKeys } from '../core/keyLock';
-import type { KeyEvent, MouseEvent } from './program';
 import {
 	areKeysEnabled,
 	createInputControl,
@@ -35,6 +34,7 @@ import {
 	resetInputControlEventBus,
 	setMouseMode,
 } from './inputControl';
+import type { KeyEvent, MouseEvent } from './program';
 
 // Mock Program
 function createMockProgram() {
@@ -85,7 +85,11 @@ function createKeyEvent(name: string): KeyEvent {
 	};
 }
 
-function createMouseEvent(x: number, y: number, action: MouseEvent['action'] = 'mousedown'): MouseEvent {
+function createMouseEvent(
+	x: number,
+	y: number,
+	action: MouseEvent['action'] = 'mousedown',
+): MouseEvent {
 	return {
 		x,
 		y,

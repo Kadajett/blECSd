@@ -10,16 +10,16 @@
 import { bench, describe } from 'vitest';
 import { addComponent, addEntity, createWorld } from 'bitecs';
 import type { Entity, World } from '../core/types';
-import { Camera3D, setCamera3D } from '../3d/components/camera3d';
+import { setCamera3D } from '../3d/components/camera3d';
 import { setMaterial3D } from '../3d/components/material';
-import { Mesh, registerMesh } from '../3d/components/mesh';
-import { Transform3D, setTransform3D } from '../3d/components/transform3d';
+import { Mesh } from '../3d/components/mesh';
+import { setTransform3D } from '../3d/components/transform3d';
 import { Viewport3D, setViewport3D } from '../3d/components/viewport3d';
 import { createSphereMesh } from '../3d/stores/primitives';
 import { sceneGraphSystem } from '../3d/systems/sceneGraphSystem';
-import { projectionSystem, clearProjectionStore } from '../3d/systems/projectionSystem';
-import { rasterSystem, clearFramebufferStore } from '../3d/systems/rasterSystem';
-import { viewportOutputSystem, clearBackendStore, clearOutputStore } from '../3d/systems/viewportOutputSystem';
+import { projectionSystem } from '../3d/systems/projectionSystem';
+import { rasterSystem } from '../3d/systems/rasterSystem';
+import { viewportOutputSystem } from '../3d/systems/viewportOutputSystem';
 
 function setupStressWorld(meshCount: number, verticesPerMesh: number): { world: World; vpEid: Entity } {
 	const world = createWorld() as World;

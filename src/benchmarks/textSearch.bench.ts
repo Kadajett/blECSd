@@ -17,11 +17,11 @@ import {
 	boyerMooreHorspool,
 	createSearchCache,
 	getVisibleMatches,
+	type SearchCache,
 	search,
 	searchBatch,
 	searchLiteral,
 	searchRegex,
-	type SearchCache,
 	searchWithCache,
 	updateSearchQuery,
 } from '../utils/textSearch';

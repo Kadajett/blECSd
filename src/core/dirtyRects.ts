@@ -32,8 +32,8 @@
  * ```
  */
 
-import type { Entity, World } from './types';
 import { ComputedLayout, hasComputedLayout } from '../systems/layoutSystem';
+import type { Entity, World } from './types';
 
 // =============================================================================
 // TYPES

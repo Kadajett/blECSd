@@ -26,14 +26,6 @@
  */
 
 import { hasComponent, removeEntity } from 'bitecs';
-import { createEventBus } from './events';
-import {
-	emitDestroy,
-	getLifecycleEventBus,
-	removeLifecycleEventBus,
-	type LifecycleEventMap,
-} from './lifecycleEvents';
-import type { Entity, World } from './types';
 import {
 	getChildren,
 	getParent,
@@ -41,6 +33,14 @@ import {
 	NULL_ENTITY,
 	removeChild,
 } from '../components/hierarchy';
+import { createEventBus } from './events';
+import {
+	emitDestroy,
+	getLifecycleEventBus,
+	type LifecycleEventMap,
+	removeLifecycleEventBus,
+} from './lifecycleEvents';
+import type { Entity, World } from './types';
 
 // =============================================================================
 // TYPES
@@ -208,7 +208,11 @@ export function destroyEntity(world: World, entity: Entity, options: DestroyOpti
  * destroyAllChildren(world, container);
  * ```
  */
-export function destroyAllChildren(world: World, parent: Entity, options: DestroyOptions = {}): void {
+export function destroyAllChildren(
+	world: World,
+	parent: Entity,
+	options: DestroyOptions = {},
+): void {
 	if (!hasComponent(world, parent, Hierarchy)) {
 		return;
 	}

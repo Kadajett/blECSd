@@ -3,17 +3,61 @@
  * @module core
  */
 
+// Auto-padding
+export type { AutoPaddingData, EffectivePaddingData } from './autoPadding';
+export {
+	getAutoPadding,
+	getEffectivePadding,
+	getTotalEffectivePadding,
+	hasAutoPadding,
+	hasEntityAutoPadding,
+} from './autoPadding';
+// Border docking
+export type {
+	BorderDockingContext,
+	BorderDockingOptions,
+	BorderEdge,
+	BorderStyleType,
+	ConnectionFlags,
+	DockingBuffer,
+	DockingCell,
+	Junction,
+	JunctionCharset,
+} from './borderDocking';
+export {
+	applyJunctions,
+	clearDockingContext,
+	createBorderDockingContext,
+	detectAllJunctions,
+	detectBorderStyle,
+	detectJunctions,
+	getConnectionFlags,
+	getEdgeCount,
+	getEdgesAt,
+	getJunctionChar,
+	getJunctionCharset,
+	getJunctionRenderData,
+	isBorderChar,
+	isJunctionChar,
+	JUNCTION_ASCII,
+	JUNCTION_BOLD,
+	JUNCTION_DOUBLE,
+	JUNCTION_SINGLE,
+	registerEdge,
+	registerRectBorder,
+	resizeDockingContext,
+} from './borderDocking';
 // Clipping system
 export type {
-	ClipRect,
 	ClippingData,
 	ClippingOptions,
+	ClipRect,
 	ClipStack,
 	OverflowValue,
 } from './clipping';
 export {
-	clampToClipRect,
 	Clipping,
+	clampToClipRect,
 	createClipRect,
 	createClipStack,
 	createInfiniteClipRect,
@@ -35,15 +79,6 @@ export {
 	setOverflow,
 	shouldClipContent,
 } from './clipping';
-// Auto-padding
-export type { AutoPaddingData, EffectivePaddingData } from './autoPadding';
-export {
-	getAutoPadding,
-	getEffectivePadding,
-	getTotalEffectivePadding,
-	hasAutoPadding,
-	hasEntityAutoPadding,
-} from './autoPadding';
 // Computed position
 export type {
 	AbsolutePosition,
@@ -65,6 +100,47 @@ export {
 	setAbsolutePosition,
 	setRelativePosition,
 } from './computedPosition';
+// Dirty rectangle tracking
+export type {
+	DirtyRect,
+	DirtyStats,
+	DirtyTrackerData,
+} from './dirtyRects';
+export {
+	clearDirtyTracking,
+	createDirtyTracker,
+	forceFullRedrawFlag,
+	getDirtyEntities,
+	getDirtyRegions,
+	getDirtyRegionsInViewport,
+	getDirtyStats,
+	hasDirtyEntities,
+	isCellDirty,
+	isEntityDirty,
+	markAllEntitiesDirty,
+	markCellDirty,
+	markEntityDirty,
+	markRegionDirty,
+	needsFullRedraw,
+	regionIntersectsDirty,
+	removeEntityFromTracking,
+	resizeDirtyTracker,
+	updateEntityBounds,
+} from './dirtyRects';
+// Disposal and cleanup
+export type { CleanupCallback, DestroyOptions } from './disposal';
+export {
+	clearCleanupCallbacks,
+	clearDestroyQueue,
+	destroyAllChildren,
+	destroyEntity,
+	destroyWorld,
+	flushDestroyQueue,
+	getDestroyQueueSize,
+	isMarkedForDestruction,
+	registerCleanupCallback,
+	resetDisposalState,
+} from './disposal';
 // Effects system
 export type { DynamicValue, EffectConfig, EffectsConfig, ResolvedEffect } from './effects';
 export {
@@ -75,12 +151,12 @@ export {
 	applyPressEffect,
 	clearAllEffectConfigs,
 	clearAllStoredStyles,
-	clearEffects,
 	clearEffectState,
+	clearEffects,
 	clearStoredStyle,
 	getComputedEffectStyle,
-	getEffects,
 	getEffectState,
+	getEffects,
 	getOriginalStyle,
 	getStoredStyle,
 	hasAnyEffectApplied,
@@ -163,39 +239,6 @@ export {
 	setEntityDataBulk,
 	updateEntityData,
 } from './entityData';
-// Disposal and cleanup
-export type { CleanupCallback, DestroyOptions } from './disposal';
-export {
-	clearCleanupCallbacks,
-	clearDestroyQueue,
-	destroyAllChildren,
-	destroyEntity,
-	destroyWorld,
-	flushDestroyQueue,
-	getDestroyQueueSize,
-	isMarkedForDestruction,
-	registerCleanupCallback,
-	resetDisposalState,
-} from './disposal';
-// Hit testing
-export type { ClickableCache, HitTestOptions, HitTestResult } from './hitTest';
-export {
-	createClickableCache,
-	getAllClickablesAt,
-	getAllHoverablesAt,
-	getClickableAt,
-	getClickableCount,
-	getClickableEntities,
-	getHoverableAt,
-	hasClickableAt,
-	hasHoverableAt,
-	hitTest,
-	hitTestAll,
-	hitTestDetailed,
-	invalidateClickableCache,
-	isCacheDirty,
-	updateClickableCache,
-} from './hitTest';
 // Event bubbling
 export type {
 	BubbleableEvent,
@@ -228,6 +271,25 @@ export {
 	isLoopRunning,
 	LoopState,
 } from './gameLoop';
+// Hit testing
+export type { ClickableCache, HitTestOptions, HitTestResult } from './hitTest';
+export {
+	createClickableCache,
+	getAllClickablesAt,
+	getAllHoverablesAt,
+	getClickableAt,
+	getClickableCount,
+	getClickableEntities,
+	getHoverableAt,
+	hasClickableAt,
+	hasHoverableAt,
+	hitTest,
+	hitTestAll,
+	hitTestDetailed,
+	invalidateClickableCache,
+	isCacheDirty,
+	updateClickableCache,
+} from './hitTest';
 // Input action mapping
 export type {
 	ActionBinding,
@@ -303,6 +365,25 @@ export type {
 	KeyBindingRegistry,
 	ParsedKey,
 } from './keyBindings';
+export {
+	createKeyBindingRegistry,
+	DEFAULT_NAV_BINDINGS,
+	DEFAULT_TEXT_BINDINGS,
+	evaluateCondition,
+	formatKey,
+	formatKeyEvent,
+	getBindingForAction,
+	getBindingsForKey,
+	KeyBindingSchema,
+	KeyBindingsArraySchema,
+	listBindings,
+	matchEvent,
+	matchesKey,
+	parseKeyString,
+	registerBinding,
+	registerBindings,
+	unregisterBinding,
+} from './keyBindings';
 // Key lock and grab
 export type { KeyLockFilter, KeyLockOptions, KeyLockState } from './keyLock';
 export {
@@ -330,25 +411,6 @@ export {
 	shouldBlockKeyEvent,
 	unlockAllKeys,
 } from './keyLock';
-export {
-	createKeyBindingRegistry,
-	DEFAULT_NAV_BINDINGS,
-	DEFAULT_TEXT_BINDINGS,
-	evaluateCondition,
-	formatKey,
-	formatKeyEvent,
-	getBindingForAction,
-	getBindingsForKey,
-	KeyBindingSchema,
-	KeyBindingsArraySchema,
-	listBindings,
-	matchEvent,
-	matchesKey,
-	parseKeyString,
-	registerBinding,
-	registerBindings,
-	unregisterBinding,
-} from './keyBindings';
 // Lifecycle events
 export type {
 	AdoptEvent,
@@ -469,6 +531,9 @@ export {
 	precomputeStyles,
 	resolveStyle,
 } from './styleInheritance';
+export type { Entity, System, Unsubscribe, World } from './types';
+export { LoopPhase } from './types';
+export { createWorld, resetWorld } from './world';
 // Z-order management
 export {
 	DEFAULT_Z_INDEX,
@@ -489,68 +554,3 @@ export {
 	sortByZIndex,
 	ZOrder,
 } from './zOrder';
-// Border docking
-export type {
-	BorderDockingContext,
-	BorderDockingOptions,
-	BorderEdge,
-	BorderStyleType,
-	ConnectionFlags,
-	DockingBuffer,
-	DockingCell,
-	Junction,
-	JunctionCharset,
-} from './borderDocking';
-export {
-	applyJunctions,
-	clearDockingContext,
-	createBorderDockingContext,
-	detectAllJunctions,
-	detectBorderStyle,
-	detectJunctions,
-	getConnectionFlags,
-	getEdgeCount,
-	getEdgesAt,
-	getJunctionChar,
-	getJunctionCharset,
-	getJunctionRenderData,
-	isBorderChar,
-	isJunctionChar,
-	JUNCTION_ASCII,
-	JUNCTION_BOLD,
-	JUNCTION_DOUBLE,
-	JUNCTION_SINGLE,
-	registerEdge,
-	registerRectBorder,
-	resizeDockingContext,
-} from './borderDocking';
-// Dirty rectangle tracking
-export type {
-	DirtyRect,
-	DirtyStats,
-	DirtyTrackerData,
-} from './dirtyRects';
-export {
-	clearDirtyTracking,
-	createDirtyTracker,
-	forceFullRedrawFlag,
-	getDirtyEntities,
-	getDirtyRegions,
-	getDirtyRegionsInViewport,
-	getDirtyStats,
-	hasDirtyEntities,
-	isCellDirty,
-	isEntityDirty,
-	markAllEntitiesDirty,
-	markCellDirty,
-	markEntityDirty,
-	markRegionDirty,
-	needsFullRedraw,
-	regionIntersectsDirty,
-	removeEntityFromTracking,
-	resizeDirtyTracker,
-	updateEntityBounds,
-} from './dirtyRects';
-export type { Entity, System, Unsubscribe, World } from './types';
-export { LoopPhase } from './types';
-export { createWorld, resetWorld } from './world';

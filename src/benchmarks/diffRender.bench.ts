@@ -18,6 +18,8 @@ import {
 	computeDiff,
 	computeDiffCached,
 	createDiffCache,
+	type DiffCache,
+	type DiffResult,
 	expandAll,
 	expandChunk,
 	getDiffStats,
@@ -27,8 +29,6 @@ import {
 	parseUnifiedDiff,
 	toggleChunk,
 	toUnifiedDiff,
-	type DiffCache,
-	type DiffResult,
 } from '../utils/diffRender';
 
 // =============================================================================

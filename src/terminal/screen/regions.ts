@@ -225,7 +225,10 @@ export function copyRegionInBuffer(
 
 	// Check for overlap - if regions overlap, use temp buffer
 	const overlaps =
-		finalSrcX < dstX2 && dstX1 < finalSrcX + finalW && finalSrcY < dstY2 && dstY1 < finalSrcY + finalH;
+		finalSrcX < dstX2 &&
+		dstX1 < finalSrcX + finalW &&
+		finalSrcY < dstY2 &&
+		dstY1 < finalSrcY + finalH;
 
 	if (overlaps) {
 		// Copy to temp buffer first
@@ -544,7 +547,8 @@ export function insertLines(
 ): void {
 	const insertY = Math.floor(y);
 	const insertCount = Math.floor(count);
-	const bottom = regionBottom !== undefined ? Math.min(buffer.height, Math.floor(regionBottom)) : buffer.height;
+	const bottom =
+		regionBottom !== undefined ? Math.min(buffer.height, Math.floor(regionBottom)) : buffer.height;
 
 	if (insertY < 0 || insertY >= bottom || insertCount <= 0) {
 		return;
@@ -586,7 +590,8 @@ export function deleteLines(
 ): void {
 	const deleteY = Math.floor(y);
 	const deleteCount = Math.floor(count);
-	const bottom = regionBottom !== undefined ? Math.min(buffer.height, Math.floor(regionBottom)) : buffer.height;
+	const bottom =
+		regionBottom !== undefined ? Math.min(buffer.height, Math.floor(regionBottom)) : buffer.height;
 
 	if (deleteY < 0 || deleteY >= bottom || deleteCount <= 0) {
 		return;
@@ -672,7 +677,9 @@ export function unionRegions(a: RegionBounds, b: RegionBounds): RegionBounds {
  * ```
  */
 export function isPointInRegion(region: RegionBounds, x: number, y: number): boolean {
-	return x >= region.x && x < region.x + region.width && y >= region.y && y < region.y + region.height;
+	return (
+		x >= region.x && x < region.x + region.width && y >= region.y && y < region.y + region.height
+	);
 }
 
 /**

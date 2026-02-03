@@ -213,7 +213,10 @@ describe('Tabs widget', () => {
 		it('stores closable flag for tabs', () => {
 			const eid = addEntity(world);
 			const tabs = createTabs(world, eid, {
-				tabs: [{ label: 'Tab 1', closable: true }, { label: 'Tab 2', closable: false }],
+				tabs: [
+					{ label: 'Tab 1', closable: true },
+					{ label: 'Tab 2', closable: false },
+				],
 			});
 
 			expect(tabs.getTab(0)?.closable).toBe(true);

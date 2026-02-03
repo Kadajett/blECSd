@@ -483,9 +483,7 @@ interface ValidatedPanelConfig {
 /**
  * Converts border charset name to actual charset.
  */
-function getBorderCharset(
-	ch: string | object | undefined,
-): BorderCharset {
+function getBorderCharset(ch: string | object | undefined): BorderCharset {
 	if (ch === undefined || ch === 'single') return BORDER_SINGLE;
 	if (typeof ch === 'object') return ch as BorderCharset;
 	// Import other charsets as needed

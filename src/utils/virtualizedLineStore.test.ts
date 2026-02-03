@@ -356,7 +356,10 @@ describe('virtualizedLineStore', () => {
 
 	describe('large content', () => {
 		it('handles 100K lines', () => {
-			const lines = Array.from({ length: 100000 }, (_, i) => `Line ${i.toString().padStart(6, '0')}`);
+			const lines = Array.from(
+				{ length: 100000 },
+				(_, i) => `Line ${i.toString().padStart(6, '0')}`,
+			);
 			const store = createLineStoreFromLines(lines);
 
 			expect(store.lineCount).toBe(100000);

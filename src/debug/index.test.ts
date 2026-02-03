@@ -6,11 +6,11 @@ import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setDimensions } from '../components/dimensions';
-import { makeFocusable, focus } from '../components/focusable';
+import { focus, makeFocusable } from '../components/focusable';
 import { setParent } from '../components/hierarchy';
 import { setPosition } from '../components/position';
-import type { World } from '../core/types';
 import { setEntityData } from '../core/entityData';
+import type { World } from '../core/types';
 import {
 	enableDebugBounds,
 	enableSystemTiming,

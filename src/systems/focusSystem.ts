@@ -34,18 +34,13 @@
  */
 
 import { query } from 'bitecs';
-import type { Entity, System, World } from '../core/types';
-import { getScreen, Screen, setScreenFocus } from '../components/screen';
-import { Position } from '../components/position';
-import { Renderable, markDirty } from '../components/renderable';
-import {
-	Interactive,
-	isFocusable,
-	setFocusedState,
-} from '../components/interactive';
 import { NULL_ENTITY } from '../components/hierarchy';
-import { isEffectivelyVisible } from '../components/renderable';
+import { Interactive, isFocusable, setFocusedState } from '../components/interactive';
+import { Position } from '../components/position';
+import { isEffectivelyVisible, markDirty, Renderable } from '../components/renderable';
+import { getScreen, Screen, setScreenFocus } from '../components/screen';
 import { createEventBus, type EventBus } from '../core/events';
+import type { Entity, System, World } from '../core/types';
 
 // =============================================================================
 // TYPES
@@ -150,8 +145,7 @@ export function resetFocusEventBus(): void {
 /**
  * Query for focusable entities.
  */
-const focusableQuery = (world: World) =>
-	query(world, [Position, Renderable, Interactive]);
+const focusableQuery = (world: World) => query(world, [Position, Renderable, Interactive]);
 
 /**
  * Gets all focusable entities sorted by tab order.
@@ -305,7 +299,7 @@ export function focusEntity(world: World, eid: Entity): boolean {
 	}
 
 	// Get current focus
-		const currentFocus = Screen.focused[screen] as number;
+	const currentFocus = Screen.focused[screen] as number;
 	const previousEntity = currentFocus === 0 ? null : (currentFocus as Entity);
 
 	// Already focused
@@ -333,7 +327,7 @@ export function blurAll(world: World): void {
 		return;
 	}
 
-		const currentFocus = Screen.focused[screen] as number;
+	const currentFocus = Screen.focused[screen] as number;
 	const previousEntity = currentFocus === 0 ? null : (currentFocus as Entity);
 
 	if (previousEntity !== null) {
@@ -366,7 +360,7 @@ export function focusNext(world: World): Entity | null {
 		return null;
 	}
 
-		const currentFocus = Screen.focused[screen] as number;
+	const currentFocus = Screen.focused[screen] as number;
 	const previousEntity = currentFocus === 0 ? null : (currentFocus as Entity);
 
 	let nextIndex = 0;
@@ -411,7 +405,7 @@ export function focusPrev(world: World): Entity | null {
 		return null;
 	}
 
-		const currentFocus = Screen.focused[screen] as number;
+	const currentFocus = Screen.focused[screen] as number;
 	const previousEntity = currentFocus === 0 ? null : (currentFocus as Entity);
 
 	let prevIndex = focusable.length - 1;
@@ -694,7 +688,7 @@ export function focusOffset(world: World, offset: number): Entity | null {
 		newIndex = offset > 0 ? 0 : focusable.length - 1;
 	} else {
 		// Wrap around using modulo
-		newIndex = ((currentIndex + offset) % focusable.length + focusable.length) % focusable.length;
+		newIndex = (((currentIndex + offset) % focusable.length) + focusable.length) % focusable.length;
 	}
 
 	const newEntity = focusable[newIndex];
@@ -774,7 +768,7 @@ export const focusSystem: System = (world: World): World => {
 	}
 
 	// Validate current focus
-		const currentFocus = Screen.focused[screen] as number;
+	const currentFocus = Screen.focused[screen] as number;
 
 	if (currentFocus !== 0) {
 		const focusedEntity = currentFocus as Entity;

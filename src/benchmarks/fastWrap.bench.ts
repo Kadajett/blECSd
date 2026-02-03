@@ -54,16 +54,7 @@ function createTextLines(lineCount: number, avgLineLength: number = 60): string 
  */
 function createWrappingText(paragraphCount: number, paragraphLength: number = 500): string {
 	const paragraphs: string[] = [];
-	const words = [
-		'Lorem',
-		'ipsum',
-		'dolor',
-		'sit',
-		'amet',
-		'consectetur',
-		'adipiscing',
-		'elit',
-	];
+	const words = ['Lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit'];
 
 	for (let i = 0; i < paragraphCount; i++) {
 		let para = '';
@@ -456,7 +447,7 @@ describe('ACCEPTANCE CRITERIA VALIDATION', () => {
 	);
 
 	bench(
-		'ACCEPTANCE: Resize doesn\'t block (visible first)',
+		"ACCEPTANCE: Resize doesn't block (visible first)",
 		() => {
 			resizeWrapCache(cache, 120);
 			const result = wrapVisibleFirst(cache, text10k, 0, 50);

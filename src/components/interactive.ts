@@ -484,10 +484,7 @@ export function setTabIndex(world: World, eid: Entity, tabIndex: number): Entity
  * @param eid - The entity ID
  * @returns Focus effect colors or undefined
  */
-export function getFocusEffect(
-	world: World,
-	eid: Entity,
-): { fg: number; bg: number } | undefined {
+export function getFocusEffect(world: World, eid: Entity): { fg: number; bg: number } | undefined {
 	if (!hasComponent(world, eid, Interactive)) {
 		return undefined;
 	}

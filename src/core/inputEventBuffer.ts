@@ -210,7 +210,9 @@ function defaultOnOverflow(count: number, warnOnOverflow: boolean): void {
  * const keys = drainKeys(buffer);
  * ```
  */
-export function createInputEventBuffer(options: InputEventBufferOptions = {}): InputEventBufferData {
+export function createInputEventBuffer(
+	options: InputEventBufferOptions = {},
+): InputEventBufferData {
 	const warnOnOverflow = options.warnOnOverflow ?? true;
 	return {
 		keyEvents: [],
@@ -264,7 +266,11 @@ function checkOverflow<T>(buffer: InputEventBufferData, events: T[]): number {
  * pushKeyEvent(buffer, { name: 'a', ctrl: false, meta: false, shift: false, sequence: 'a' });
  * ```
  */
-export function pushKeyEvent(buffer: InputEventBufferData, event: KeyEvent, timestamp?: number): void {
+export function pushKeyEvent(
+	buffer: InputEventBufferData,
+	event: KeyEvent,
+	timestamp?: number,
+): void {
 	buffer.totalKeyEvents++;
 
 	const timestampedEvent: TimestampedKeyEvent = {
@@ -289,7 +295,11 @@ export function pushKeyEvent(buffer: InputEventBufferData, event: KeyEvent, time
  * pushMouseEvent(buffer, { x: 10, y: 20, button: 'left', action: 'mousedown', ctrl: false, meta: false, shift: false });
  * ```
  */
-export function pushMouseEvent(buffer: InputEventBufferData, event: MouseEvent, timestamp?: number): void {
+export function pushMouseEvent(
+	buffer: InputEventBufferData,
+	event: MouseEvent,
+	timestamp?: number,
+): void {
 	buffer.totalMouseEvents++;
 
 	const timestampedEvent: TimestampedMouseEvent = {
@@ -575,7 +585,11 @@ export function recordLatency(buffer: InputEventBufferData, latencyMs: number): 
  * @param avgLatencyMs - Average latency for all events
  * @param eventCount - Number of events processed
  */
-export function recordLatencyBatch(buffer: InputEventBufferData, avgLatencyMs: number, eventCount: number): void {
+export function recordLatencyBatch(
+	buffer: InputEventBufferData,
+	avgLatencyMs: number,
+	eventCount: number,
+): void {
 	// Record a representative sample for the batch
 	for (let i = 0; i < Math.min(eventCount, 10); i++) {
 		buffer.latencySamples.push(avgLatencyMs);
@@ -667,7 +681,10 @@ export function isLatencyAcceptable(buffer: InputEventBufferData, maxLatencyMs =
  * @param maxProcessingTimeMs - Maximum acceptable processing time in milliseconds
  * @returns True if processing time is acceptable
  */
-export function isProcessingTimeAcceptable(buffer: InputEventBufferData, maxProcessingTimeMs = 1): boolean {
+export function isProcessingTimeAcceptable(
+	buffer: InputEventBufferData,
+	maxProcessingTimeMs = 1,
+): boolean {
 	const stats = getLatencyStats(buffer);
 	return stats.avgFrameProcessingTime <= maxProcessingTimeMs;
 }

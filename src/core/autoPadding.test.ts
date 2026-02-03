@@ -4,11 +4,9 @@
 
 import { addEntity, createWorld, type World } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { setBorder, BorderType } from '../components/border';
+import { BorderType, setBorder } from '../components/border';
 import { setPadding } from '../components/padding';
 import { setAutoPadding } from '../components/screen';
-import { createScreenEntity } from './entities';
-import type { Entity } from './types';
 import {
 	getAutoPadding,
 	getEffectivePadding,
@@ -16,6 +14,8 @@ import {
 	hasAutoPadding,
 	hasEntityAutoPadding,
 } from './autoPadding';
+import { createScreenEntity } from './entities';
+import type { Entity } from './types';
 
 describe('autoPadding', () => {
 	let world: World;

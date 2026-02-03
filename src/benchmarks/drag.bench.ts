@@ -93,44 +93,38 @@ describe('Drag System Creation', () => {
 
 describe('Drag Start/End', () => {
 	describe('start drag', () => {
-		bench(
-			'start drag - no constraints',
-			() => {
-				const { world, panels } = createPanelWorld(1);
-				const eventBus = createEventBus<DragEventMap>();
-				const dragSystem = createDragSystem(eventBus);
-				const panel = panels[0]!;
+		bench('start drag - no constraints', () => {
+			const { world, panels } = createPanelWorld(1);
+			const eventBus = createEventBus<DragEventMap>();
+			const dragSystem = createDragSystem(eventBus);
+			const panel = panels[0]!;
 
-				dragSystem.startDrag(world, panel, 10, 5);
-				dragSystem.endDrag(world);
+			dragSystem.startDrag(world, panel, 10, 5);
+			dragSystem.endDrag(world);
 
-				cleanup();
-			},
-		);
+			cleanup();
+		});
 
-		bench(
-			'start drag - with constraints',
-			() => {
-				const { world, panels } = createPanelWorld(1);
-				const eventBus = createEventBus<DragEventMap>();
-				const dragSystem = createDragSystem(eventBus);
-				const panel = panels[0]!;
+		bench('start drag - with constraints', () => {
+			const { world, panels } = createPanelWorld(1);
+			const eventBus = createEventBus<DragEventMap>();
+			const dragSystem = createDragSystem(eventBus);
+			const panel = panels[0]!;
 
-				setDragConstraints(panel, {
-					constrainToParent: true,
-					snapToGrid: { x: 5, y: 5 },
-					minX: 0,
-					maxX: 180,
-					bringToFront: true,
-				});
+			setDragConstraints(panel, {
+				constrainToParent: true,
+				snapToGrid: { x: 5, y: 5 },
+				minX: 0,
+				maxX: 180,
+				bringToFront: true,
+			});
 
-				dragSystem.startDrag(world, panel, 10, 5);
-				dragSystem.endDrag(world);
+			dragSystem.startDrag(world, panel, 10, 5);
+			dragSystem.endDrag(world);
 
-				clearDragConstraints(panel);
-				cleanup();
-			},
-		);
+			clearDragConstraints(panel);
+			cleanup();
+		});
 	});
 
 	describe('start/end cycle', () => {

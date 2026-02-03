@@ -191,7 +191,10 @@ describe('getLineRange', () => {
 describe('getVisibleLines', () => {
 	it('gets visible viewport', () => {
 		const buffer = createScrollbackBuffer();
-		appendLines(buffer, Array.from({ length: 100 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 100 }, (_, i) => `line ${i}`),
+		);
 
 		const visible = getVisibleLines(buffer, 10, 20);
 
@@ -207,7 +210,10 @@ describe('getVisibleLines', () => {
 describe('jumpToLine', () => {
 	it('jumps to specific line', () => {
 		const buffer = createScrollbackBuffer();
-		appendLines(buffer, Array.from({ length: 1000 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 1000 }, (_, i) => `line ${i}`),
+		);
 
 		const range = jumpToLine(buffer, 500, 10);
 
@@ -217,7 +223,10 @@ describe('jumpToLine', () => {
 
 	it('clamps at boundaries', () => {
 		const buffer = createScrollbackBuffer();
-		appendLines(buffer, Array.from({ length: 100 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 100 }, (_, i) => `line ${i}`),
+		);
 
 		const rangeStart = jumpToLine(buffer, 0, 10);
 		const rangeEnd = jumpToLine(buffer, 99, 10);
@@ -230,7 +239,10 @@ describe('jumpToLine', () => {
 describe('scrollBy', () => {
 	it('scrolls down', () => {
 		const buffer = createScrollbackBuffer();
-		appendLines(buffer, Array.from({ length: 100 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 100 }, (_, i) => `line ${i}`),
+		);
 
 		const range = scrollBy(buffer, 0, 10, 20);
 
@@ -240,7 +252,10 @@ describe('scrollBy', () => {
 
 	it('scrolls up', () => {
 		const buffer = createScrollbackBuffer();
-		appendLines(buffer, Array.from({ length: 100 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 100 }, (_, i) => `line ${i}`),
+		);
 
 		const range = scrollBy(buffer, 50, -10, 20);
 
@@ -249,7 +264,10 @@ describe('scrollBy', () => {
 
 	it('clamps at top', () => {
 		const buffer = createScrollbackBuffer();
-		appendLines(buffer, Array.from({ length: 100 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 100 }, (_, i) => `line ${i}`),
+		);
 
 		const range = scrollBy(buffer, 5, -100, 20);
 
@@ -258,7 +276,10 @@ describe('scrollBy', () => {
 
 	it('clamps at bottom', () => {
 		const buffer = createScrollbackBuffer();
-		appendLines(buffer, Array.from({ length: 100 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 100 }, (_, i) => `line ${i}`),
+		);
 
 		const range = scrollBy(buffer, 50, 100, 20);
 
@@ -269,7 +290,10 @@ describe('scrollBy', () => {
 describe('scrollToTop', () => {
 	it('scrolls to top', () => {
 		const buffer = createScrollbackBuffer();
-		appendLines(buffer, Array.from({ length: 100 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 100 }, (_, i) => `line ${i}`),
+		);
 
 		const range = scrollToTop(buffer, 20);
 
@@ -281,7 +305,10 @@ describe('scrollToTop', () => {
 describe('scrollToBottom', () => {
 	it('scrolls to bottom', () => {
 		const buffer = createScrollbackBuffer();
-		appendLines(buffer, Array.from({ length: 100 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 100 }, (_, i) => `line ${i}`),
+		);
 
 		const range = scrollToBottom(buffer, 20);
 
@@ -297,7 +324,10 @@ describe('scrollToBottom', () => {
 describe('chunking', () => {
 	it('creates chunks when exceeding chunk size', () => {
 		const buffer = createScrollbackBuffer({ chunkSize: 100 });
-		appendLines(buffer, Array.from({ length: 250 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 250 }, (_, i) => `line ${i}`),
+		);
 
 		const stats = getScrollbackStats(buffer);
 
@@ -307,7 +337,10 @@ describe('chunking', () => {
 
 	it('retrieves lines across chunks', () => {
 		const buffer = createScrollbackBuffer({ chunkSize: 100 });
-		appendLines(buffer, Array.from({ length: 250 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 250 }, (_, i) => `line ${i}`),
+		);
 
 		expect(getLine(buffer, 0)?.text).toBe('line 0');
 		expect(getLine(buffer, 99)?.text).toBe('line 99');
@@ -317,7 +350,10 @@ describe('chunking', () => {
 
 	it('gets range spanning multiple chunks', () => {
 		const buffer = createScrollbackBuffer({ chunkSize: 100 });
-		appendLines(buffer, Array.from({ length: 250 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 250 }, (_, i) => `line ${i}`),
+		);
 
 		const range = getLineRange(buffer, 50, 150);
 
@@ -334,7 +370,10 @@ describe('chunking', () => {
 describe('compression', () => {
 	it('compresses old chunks', () => {
 		const buffer = createScrollbackBuffer({ chunkSize: 100 });
-		appendLines(buffer, Array.from({ length: 500 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 500 }, (_, i) => `line ${i}`),
+		);
 
 		compressOldChunks(buffer, 1);
 
@@ -344,7 +383,10 @@ describe('compression', () => {
 
 	it('decompresses on access', () => {
 		const buffer = createScrollbackBuffer({ chunkSize: 100 });
-		appendLines(buffer, Array.from({ length: 300 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 300 }, (_, i) => `line ${i}`),
+		);
 		compressOldChunks(buffer, 1);
 
 		// Access old line should decompress
@@ -355,7 +397,10 @@ describe('compression', () => {
 
 	it('decompresses all', () => {
 		const buffer = createScrollbackBuffer({ chunkSize: 100 });
-		appendLines(buffer, Array.from({ length: 300 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 300 }, (_, i) => `line ${i}`),
+		);
 		compressOldChunks(buffer, 1);
 
 		decompressAll(buffer);
@@ -374,7 +419,10 @@ describe('memory management', () => {
 		const buffer = createScrollbackBuffer();
 		const initialMemory = getMemoryUsage(buffer);
 
-		appendLines(buffer, Array.from({ length: 100 }, () => 'x'.repeat(100)));
+		appendLines(
+			buffer,
+			Array.from({ length: 100 }, () => 'x'.repeat(100)),
+		);
 
 		const finalMemory = getMemoryUsage(buffer);
 		expect(finalMemory).toBeGreaterThan(initialMemory);
@@ -387,7 +435,10 @@ describe('memory management', () => {
 		});
 
 		// Add many lines
-		appendLines(buffer, Array.from({ length: 1000 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 1000 }, (_, i) => `line ${i}`),
+		);
 
 		// Should have evicted some chunks
 		expect(buffer.chunks.size).toBeLessThan(10);
@@ -432,7 +483,10 @@ describe('exportToText', () => {
 describe('trimToLineCount', () => {
 	it('trims old lines', () => {
 		const buffer = createScrollbackBuffer({ chunkSize: 100 });
-		appendLines(buffer, Array.from({ length: 500 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 500 }, (_, i) => `line ${i}`),
+		);
 
 		trimToLineCount(buffer, 200);
 
@@ -458,7 +512,10 @@ describe('trimToLineCount', () => {
 describe('getScrollbackStats', () => {
 	it('returns correct stats', () => {
 		const buffer = createScrollbackBuffer({ chunkSize: 100 });
-		appendLines(buffer, Array.from({ length: 250 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 250 }, (_, i) => `line ${i}`),
+		);
 
 		const stats = getScrollbackStats(buffer);
 
@@ -486,7 +543,10 @@ describe('performance scenarios', () => {
 
 	it('random access is fast', () => {
 		const buffer = createScrollbackBuffer({ chunkSize: 1000 });
-		appendLines(buffer, Array.from({ length: 10000 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 10000 }, (_, i) => `line ${i}`),
+		);
 
 		const start = performance.now();
 
@@ -502,7 +562,10 @@ describe('performance scenarios', () => {
 
 	it('range retrieval is fast', () => {
 		const buffer = createScrollbackBuffer({ chunkSize: 1000 });
-		appendLines(buffer, Array.from({ length: 10000 }, (_, i) => `line ${i}`));
+		appendLines(
+			buffer,
+			Array.from({ length: 10000 }, (_, i) => `line ${i}`),
+		);
 
 		const start = performance.now();
 		const range = getLineRange(buffer, 5000, 5100);

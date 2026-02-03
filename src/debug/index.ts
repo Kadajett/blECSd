@@ -18,17 +18,16 @@ import { Collider } from '../components/collision';
 import { Content } from '../components/content';
 import { Dimensions } from '../components/dimensions';
 import { Focusable, isFocused } from '../components/focusable';
-import { Hierarchy, getChildren, getParent } from '../components/hierarchy';
+import { getChildren, getParent, Hierarchy } from '../components/hierarchy';
 import { Interactive, isHovered, isPressed } from '../components/interactive';
 import { Padding } from '../components/padding';
 import { Position } from '../components/position';
-import { Renderable } from '../components/renderable';
+import { Renderable, unpackColor } from '../components/renderable';
 import { Scrollable } from '../components/scrollable';
 import { Shadow } from '../components/shadow';
 import { Velocity } from '../components/velocity';
-import type { Entity, World } from '../core/types';
 import { getEntityData, hasEntityData } from '../core/entityData';
-import { unpackColor } from '../components/renderable';
+import type { Entity, World } from '../core/types';
 
 // =============================================================================
 // TYPES
@@ -528,7 +527,9 @@ export function resetPerformanceStatsCache(): void {
  */
 export function getPerformanceStats(
 	world: World,
-	loop?: { getStats(): { fps: number; frameTime: number; frameCount: number; runningTime: number } },
+	loop?: {
+		getStats(): { fps: number; frameTime: number; frameCount: number; runningTime: number };
+	},
 ): PerformanceStats {
 	const now = performance.now();
 

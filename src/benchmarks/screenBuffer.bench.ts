@@ -13,11 +13,11 @@ import { createCell, fillRect, setCell } from '../terminal/screen/cell';
 import {
 	clearDirtyRegions,
 	createDoubleBuffer,
+	type DoubleBufferData,
 	getMinimalUpdates,
 	markDirtyRegion,
 	markFullRedraw,
 	swapBuffers,
-	type DoubleBufferData,
 } from '../terminal/screen/doubleBuffer';
 
 // =============================================================================

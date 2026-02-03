@@ -16,10 +16,10 @@ import { addEntity, removeEntity } from 'bitecs';
 import { setContent } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { setPosition } from '../components/position';
-import { setStyle, show as showEntity, hide as hideEntity } from '../components/renderable';
+import { hide as hideEntity, setStyle, show as showEntity } from '../components/renderable';
+import { setEntityData } from '../core/entityData';
 import type { GameLoop } from '../core/gameLoop';
 import type { Entity, World } from '../core/types';
-import { setEntityData } from '../core/entityData';
 import {
 	enableSystemTiming,
 	getPerformanceStats,
@@ -135,10 +135,7 @@ const DEFAULT_CONFIG: Required<DebugOverlayConfig> = {
  * game.onKey('F12', () => overlay.toggle());
  * ```
  */
-export function createDebugOverlay(
-	world: World,
-	config: DebugOverlayConfig = {},
-): DebugOverlay {
+export function createDebugOverlay(world: World, config: DebugOverlayConfig = {}): DebugOverlay {
 	const cfg: Required<DebugOverlayConfig> = { ...DEFAULT_CONFIG, ...config };
 
 	let visible = cfg.visibleOnStart;
@@ -178,7 +175,9 @@ export function createDebugOverlay(
 
 		if (cfg.showFPS) {
 			const fpsColor = stats.fps >= 55 ? '32' : stats.fps >= 30 ? '33' : '31';
-			lines.push(`│ FPS: \x1b[${fpsColor}m${stats.fps.toString().padStart(3)}\x1b[0m (${stats.frameTime.toFixed(1)}ms)`);
+			lines.push(
+				`│ FPS: \x1b[${fpsColor}m${stats.fps.toString().padStart(3)}\x1b[0m (${stats.frameTime.toFixed(1)}ms)`,
+			);
 		}
 
 		if (cfg.showEntityCount) {
@@ -406,10 +405,7 @@ export interface MiniProfiler {
  */
 export function createMiniProfiler(): MiniProfiler {
 	const starts = new Map<string, number>();
-	const timings = new Map<
-		string,
-		{ total: number; min: number; max: number; count: number }
-	>();
+	const timings = new Map<string, { total: number; min: number; max: number; count: number }>();
 
 	return {
 		start(name: string) {

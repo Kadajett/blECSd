@@ -5,8 +5,9 @@
 
 import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { VirtualViewport } from '../components/virtualViewport';
 import { Renderable } from '../components/renderable';
+import { VirtualViewport } from '../components/virtualViewport';
+import { cleanupVirtualizedRenderSystem, getLineStore } from '../systems/virtualizedRenderSystem';
 import {
 	createVirtualizedList,
 	handleVirtualizedListKey,
@@ -14,10 +15,6 @@ import {
 	isVirtualizedList,
 	VirtualizedListConfigSchema,
 } from './virtualizedList';
-import {
-	cleanupVirtualizedRenderSystem,
-	getLineStore,
-} from '../systems/virtualizedRenderSystem';
 
 describe('VirtualizedList', () => {
 	let world: ReturnType<typeof createWorld>;

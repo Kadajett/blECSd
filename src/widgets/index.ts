@@ -181,6 +181,16 @@ export {
 	resetPanelStore,
 	setPanelTitle,
 } from './panel';
+// Widget Registry
+export type { WidgetFactory, WidgetRegistration, WidgetRegistry } from './registry';
+export {
+	createWidgetRegistry,
+	defaultRegistry,
+	getWidgetsByTag,
+	getWidgetTypes,
+	isWidgetType,
+	registerBuiltinWidgets,
+} from './registry';
 // ScrollableBox widget
 export type {
 	ScrollableBoxConfig,
@@ -265,13 +275,3 @@ export {
 	VirtualizedListConfigSchema,
 	VirtualizedListStyleSchema,
 } from './virtualizedList';
-// Widget Registry
-export type { WidgetFactory, WidgetRegistration, WidgetRegistry } from './registry';
-export {
-	createWidgetRegistry,
-	defaultRegistry,
-	getWidgetsByTag,
-	getWidgetTypes,
-	isWidgetType,
-	registerBuiltinWidgets,
-} from './registry';

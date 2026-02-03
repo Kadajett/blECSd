@@ -165,10 +165,7 @@ function computeHash(text: string): number {
  * Much faster than LCS for similar files (common case).
  * Complexity: O((N+M)D) where D is the edit distance.
  */
-function myersDiff(
-	oldLines: readonly string[],
-	newLines: readonly string[],
-): DiffLine[] {
+function myersDiff(oldLines: readonly string[], newLines: readonly string[]): DiffLine[] {
 	const n = oldLines.length;
 	const m = newLines.length;
 	const max = n + m;
@@ -386,10 +383,7 @@ function backtrackLCS(
  * Computes diff lines using the best algorithm for the input size.
  * Uses Myers for large inputs, LCS for small inputs.
  */
-function computeDiffLines(
-	oldLines: readonly string[],
-	newLines: readonly string[],
-): DiffLine[] {
+function computeDiffLines(oldLines: readonly string[], newLines: readonly string[]): DiffLine[] {
 	const m = oldLines.length;
 	const n = newLines.length;
 

@@ -4,23 +4,23 @@
 
 import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { setDimensions } from '../components/dimensions';
+import { appendChild } from '../components/hierarchy';
 import { setPosition } from '../components/position';
 import { setStyle } from '../components/renderable';
-import { appendChild } from '../components/hierarchy';
-import { setDimensions } from '../components/dimensions';
-import { createScreenEntity } from './entities';
 import { resetScreenSingleton } from '../components/screen';
 import { layoutSystem } from '../systems/layoutSystem';
-import type { World } from './types';
 import type { ClipRect } from './clipping';
 import {
+	clampToClipRect,
 	createClipRect,
 	createClipStack,
 	createInfiniteClipRect,
+	getClipping,
 	getClipRect,
 	getClipRectHeight,
 	getClipRectWidth,
-	getClipping,
+	getCurrentClip,
 	getOverflow,
 	hasClipping,
 	intersectClipRects,
@@ -32,9 +32,9 @@ import {
 	pushClipRect,
 	setOverflow,
 	shouldClipContent,
-	clampToClipRect,
-	getCurrentClip,
 } from './clipping';
+import { createScreenEntity } from './entities';
+import type { World } from './types';
 
 describe('clipping', () => {
 	let world: World;

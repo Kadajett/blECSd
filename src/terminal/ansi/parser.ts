@@ -751,7 +751,7 @@ function rgbToColor256(r: number, g: number, b: number): number {
  */
 function rgbToBasic16(r: number, g: number, b: number): number {
 	// Simple threshold-based conversion
-	const bright = (r + g + b) > 384;
+	const bright = r + g + b > 384;
 
 	const rBit = r > 127 ? 1 : 0;
 	const gBit = g > 127 ? 1 : 0;

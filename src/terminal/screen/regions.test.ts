@@ -3,7 +3,7 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createCell, createScreenBuffer, getCell, setCell, type ScreenBufferData } from './cell';
+import { createCell, createScreenBuffer, getCell, type ScreenBufferData, setCell } from './cell';
 import {
 	blankLine,
 	blankLines,

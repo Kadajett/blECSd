@@ -4,11 +4,10 @@
 
 import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getScreenSize, resetScreenSingleton } from '../components/screen';
 import { createScreenEntity } from '../core/entities';
-import { resetScreenSingleton, getScreenSize } from '../components/screen';
-import { createDoubleBuffer } from './screen/doubleBuffer';
-import { setOutputBuffer, getOutputBuffer, clearOutputBuffer } from '../systems/outputSystem';
 import type { World } from '../core/types';
+import { clearOutputBuffer, getOutputBuffer, setOutputBuffer } from '../systems/outputSystem';
 import {
 	createResizeHandler,
 	disableResizeHandling,
@@ -19,6 +18,7 @@ import {
 	setupSigwinchHandler,
 	triggerResize,
 } from './resize';
+import { createDoubleBuffer } from './screen/doubleBuffer';
 
 // Mock Program class
 function createMockProgram() {

@@ -1108,7 +1108,14 @@ export function analyzeBufferForCSR(
 	}
 
 	// Analyze whether to use CSR
-	return analyzeCSR(ctx, adjustedOp.top, adjustedOp.bottom, adjustedOp.lines, adjustedOp.direction, edgesClean);
+	return analyzeCSR(
+		ctx,
+		adjustedOp.top,
+		adjustedOp.bottom,
+		adjustedOp.lines,
+		adjustedOp.direction,
+		edgesClean,
+	);
 }
 
 /**
@@ -1181,7 +1188,10 @@ export function isSmartCSREnabled(ctx: SmartCSRContext): boolean {
  * ctx = updateSmartCSRConfig(ctx, { minRegionHeight: 6 });
  * ```
  */
-export function updateSmartCSRConfig(ctx: SmartCSRContext, config: SmartCSRConfig): SmartCSRContext {
+export function updateSmartCSRConfig(
+	ctx: SmartCSRContext,
+	config: SmartCSRConfig,
+): SmartCSRContext {
 	return {
 		...ctx,
 		config: {
@@ -1209,7 +1219,11 @@ export function updateSmartCSRConfig(ctx: SmartCSRContext, config: SmartCSRConfi
  * // efficiency > 1.0 means CSR is more efficient
  * ```
  */
-export function calculateCSREfficiency(ctx: SmartCSRContext, regionHeight: number, scrollLines: number): number {
+export function calculateCSREfficiency(
+	ctx: SmartCSRContext,
+	regionHeight: number,
+	scrollLines: number,
+): number {
 	const { config } = ctx;
 	const linesPreserved = Math.max(0, regionHeight - scrollLines);
 	const redrawCost = linesPreserved * ctx.width * config.bytesPerCell;

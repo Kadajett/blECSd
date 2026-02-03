@@ -8,12 +8,12 @@ import { describe, expect, it } from 'vitest';
 import {
 	ATTR_BOLD,
 	ATTR_ITALIC,
+	beginFrame,
 	clearBuffer,
 	clearLine,
 	clearScreen,
 	createOutputBuffer,
 	DEFAULT_COLOR,
-	beginFrame,
 	endFrame,
 	flushToStream,
 	getBufferLength,

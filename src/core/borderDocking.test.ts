@@ -5,8 +5,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	applyJunctions,
+	type BorderDockingContext,
 	clearDockingContext,
 	createBorderDockingContext,
+	type DockingBuffer,
+	type DockingCell,
 	detectAllJunctions,
 	detectBorderStyle,
 	detectJunctions,
@@ -25,9 +28,6 @@ import {
 	registerEdge,
 	registerRectBorder,
 	resizeDockingContext,
-	type BorderDockingContext,
-	type DockingBuffer,
-	type DockingCell,
 } from './borderDocking';
 
 describe('Border Docking', () => {

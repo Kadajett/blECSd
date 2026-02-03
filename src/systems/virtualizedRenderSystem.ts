@@ -29,12 +29,7 @@ import { hasComponent, query } from 'bitecs';
 import { z } from 'zod';
 import { Border, hasBorderVisible } from '../components/border';
 import { Position } from '../components/position';
-import {
-	getStyle,
-	isEffectivelyVisible,
-	markClean,
-	Renderable,
-} from '../components/renderable';
+import { getStyle, isEffectivelyVisible, markClean, Renderable } from '../components/renderable';
 import {
 	clearViewportDirty,
 	getVisibleRange,
@@ -47,9 +42,9 @@ import type { ScreenBufferData } from '../terminal/screen/cell';
 import { Attr, createCell, fillRect, setCell, writeString } from '../terminal/screen/cell';
 import type { DoubleBufferData } from '../terminal/screen/doubleBuffer';
 import { getBackBuffer, markDirtyRegion } from '../terminal/screen/doubleBuffer';
-import { ComputedLayout, hasComputedLayout } from './layoutSystem';
 import type { VirtualizedLineStore } from '../utils/virtualizedLineStore';
 import { getLineRange } from '../utils/virtualizedLineStore';
+import { ComputedLayout, hasComputedLayout } from './layoutSystem';
 
 // =============================================================================
 // ZOD SCHEMAS
@@ -494,9 +489,7 @@ function renderVisibleLines(
 
 	// Calculate content area (accounting for line numbers)
 	const contentX = config.showLineNumbers ? x + config.lineNumberWidth : x;
-	const contentWidth = config.showLineNumbers
-		? Math.max(0, width - config.lineNumberWidth)
-		: width;
+	const contentWidth = config.showLineNumbers ? Math.max(0, width - config.lineNumberWidth) : width;
 
 	// Get selection/cursor state
 	const selectedLine = VirtualViewport.selectedLine[eid] as number;
@@ -599,11 +592,7 @@ function renderScrollbar(
 /**
  * Renders background for the entity.
  */
-function renderBackground(
-	ctx: VirtualizedRenderContext,
-	eid: Entity,
-	bounds: EntityBounds,
-): void {
+function renderBackground(ctx: VirtualizedRenderContext, eid: Entity, bounds: EntityBounds): void {
 	const { world, buffer } = ctx;
 
 	const style = getStyle(world, eid);

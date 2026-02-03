@@ -207,7 +207,11 @@ export function captureRegion(
  * const row = captureRow(buffer, 5);
  * ```
  */
-export function captureRow(buffer: ScreenBufferData, row: number, options: CaptureOptions = {}): Screenshot {
+export function captureRow(
+	buffer: ScreenBufferData,
+	row: number,
+	options: CaptureOptions = {},
+): Screenshot {
 	return captureRegion(buffer, 0, row, buffer.width, 1, options);
 }
 
@@ -268,7 +272,11 @@ function fgColorSequence(packed: number, use256: boolean): string {
 	const { r, g, b } = unpackColor(packed);
 	if (use256) {
 		// Approximate to 256-color palette
-		const color = 16 + 36 * Math.round((r * 5) / 255) + 6 * Math.round((g * 5) / 255) + Math.round((b * 5) / 255);
+		const color =
+			16 +
+			36 * Math.round((r * 5) / 255) +
+			6 * Math.round((g * 5) / 255) +
+			Math.round((b * 5) / 255);
 		return `${CSI}38;5;${color}m`;
 	}
 	return `${CSI}38;2;${r};${g};${b}m`;
@@ -280,7 +288,11 @@ function fgColorSequence(packed: number, use256: boolean): string {
 function bgColorSequence(packed: number, use256: boolean): string {
 	const { r, g, b } = unpackColor(packed);
 	if (use256) {
-		const color = 16 + 36 * Math.round((r * 5) / 255) + 6 * Math.round((g * 5) / 255) + Math.round((b * 5) / 255);
+		const color =
+			16 +
+			36 * Math.round((r * 5) / 255) +
+			6 * Math.round((g * 5) / 255) +
+			Math.round((b * 5) / 255);
 		return `${CSI}48;5;${color}m`;
 	}
 	return `${CSI}48;2;${r};${g};${b}m`;
@@ -545,7 +557,12 @@ export function screenshotsEqual(a: Screenshot, b: Screenshot): boolean {
 				continue;
 			}
 
-			if (cellA.char !== cellB.char || cellA.fg !== cellB.fg || cellA.bg !== cellB.bg || cellA.attrs !== cellB.attrs) {
+			if (
+				cellA.char !== cellB.char ||
+				cellA.fg !== cellB.fg ||
+				cellA.bg !== cellB.bg ||
+				cellA.attrs !== cellB.attrs
+			) {
 				return false;
 			}
 		}

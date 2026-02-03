@@ -23,10 +23,10 @@ import {
 	getScrollbackStats,
 	getVisibleLines,
 	jumpToLine,
+	type ScrollbackBuffer,
 	scrollBy,
 	scrollToBottom,
 	scrollToTop,
-	type ScrollbackBuffer,
 } from '../utils/virtualScrollback';
 
 // =============================================================================
@@ -38,7 +38,10 @@ import {
  */
 function createFilledBuffer(lineCount: number, chunkSize: number = 1000): ScrollbackBuffer {
 	const buffer = createScrollbackBuffer({ chunkSize });
-	const lines = Array.from({ length: lineCount }, (_, i) => `Line ${i}: This is sample content for testing scrollback performance.`);
+	const lines = Array.from(
+		{ length: lineCount },
+		(_, i) => `Line ${i}: This is sample content for testing scrollback performance.`,
+	);
 	appendLines(buffer, lines);
 	return buffer;
 }

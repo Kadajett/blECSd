@@ -4,12 +4,9 @@
 
 import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { setDimensions } from '../components/dimensions';
 import { setInteractive } from '../components/interactive';
 import { setPosition } from '../components/position';
-import { setDimensions } from '../components/dimensions';
-import { setPositionCache } from './positionCache';
-import { setZIndex } from './zOrder';
-import type { World } from './types';
 import {
 	createClickableCache,
 	getAllClickablesAt,
@@ -27,6 +24,9 @@ import {
 	isCacheDirty,
 	updateClickableCache,
 } from './hitTest';
+import { setPositionCache } from './positionCache';
+import type { World } from './types';
+import { setZIndex } from './zOrder';
 
 describe('hitTest', () => {
 	let world: World;

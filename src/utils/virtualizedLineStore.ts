@@ -491,10 +491,7 @@ export function getVisibleLines(
  * console.log(store.lineCount); // 3
  * ```
  */
-export function appendToStore(
-	store: VirtualizedLineStore,
-	content: string,
-): VirtualizedLineStore {
+export function appendToStore(store: VirtualizedLineStore, content: string): VirtualizedLineStore {
 	if (content.length === 0) {
 		return store;
 	}

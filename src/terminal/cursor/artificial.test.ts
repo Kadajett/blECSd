@@ -454,17 +454,9 @@ describe('CursorManager', () => {
 
 	describe('getVisibleCursors', () => {
 		it('returns only visible cursors', () => {
-			let manager = createCursorManager(
-				createArtificialCursor({ id: 'visible1', visible: true }),
-			);
-			manager = addCursor(
-				manager,
-				createArtificialCursor({ id: 'hidden', visible: false }),
-			);
-			manager = addCursor(
-				manager,
-				createArtificialCursor({ id: 'visible2', visible: true }),
-			);
+			let manager = createCursorManager(createArtificialCursor({ id: 'visible1', visible: true }));
+			manager = addCursor(manager, createArtificialCursor({ id: 'hidden', visible: false }));
+			manager = addCursor(manager, createArtificialCursor({ id: 'visible2', visible: true }));
 
 			const visible = getVisibleCursors(manager);
 
@@ -475,13 +467,8 @@ describe('CursorManager', () => {
 
 	describe('updateAllCursorBlinks', () => {
 		it('updates blink state for all cursors', () => {
-			let manager = createCursorManager(
-				createArtificialCursor({ blink: true, blinkRate: 100 }),
-			);
-			manager = addCursor(
-				manager,
-				createArtificialCursor({ blink: true, blinkRate: 100 }),
-			);
+			let manager = createCursorManager(createArtificialCursor({ blink: true, blinkRate: 100 }));
+			manager = addCursor(manager, createArtificialCursor({ blink: true, blinkRate: 100 }));
 
 			// After 50ms, both should toggle
 			const updated = updateAllCursorBlinks(manager, 50);
@@ -494,13 +481,8 @@ describe('CursorManager', () => {
 
 	describe('getCursorAt', () => {
 		it('returns cursor at position', () => {
-			let manager = createCursorManager(
-				createArtificialCursor({ id: 'a', x: 10, y: 5 }),
-			);
-			manager = addCursor(
-				manager,
-				createArtificialCursor({ id: 'b', x: 20, y: 10 }),
-			);
+			let manager = createCursorManager(createArtificialCursor({ id: 'a', x: 10, y: 5 }));
+			manager = addCursor(manager, createArtificialCursor({ id: 'b', x: 20, y: 10 }));
 
 			const cursorA = getCursorAt(manager, 10, 5);
 			expect(cursorA?.id).toBe('a');
@@ -510,18 +492,14 @@ describe('CursorManager', () => {
 		});
 
 		it('returns undefined when no cursor at position', () => {
-			const manager = createCursorManager(
-				createArtificialCursor({ x: 10, y: 5 }),
-			);
+			const manager = createCursorManager(createArtificialCursor({ x: 10, y: 5 }));
 
 			const cursor = getCursorAt(manager, 99, 99);
 			expect(cursor).toBeUndefined();
 		});
 
 		it('ignores hidden cursors', () => {
-			const manager = createCursorManager(
-				createArtificialCursor({ x: 10, y: 5, visible: false }),
-			);
+			const manager = createCursorManager(createArtificialCursor({ x: 10, y: 5, visible: false }));
 
 			const cursor = getCursorAt(manager, 10, 5);
 			expect(cursor).toBeUndefined();

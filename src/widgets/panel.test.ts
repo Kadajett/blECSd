@@ -11,8 +11,11 @@ import { getPosition } from '../components/position';
 import { getRenderable, hexToColor } from '../components/renderable';
 import type { World } from '../core/types';
 import {
+	CLOSE_BUTTON_CHAR,
+	COLLAPSE_CHAR,
 	createPanel,
 	DEFAULT_PANEL_TITLE,
+	EXPAND_CHAR,
 	getPanelTitle,
 	getPanelTitleAlign,
 	isPanel,
@@ -22,9 +25,6 @@ import {
 	renderPanelTitleBar,
 	resetPanelStore,
 	setPanelTitle,
-	CLOSE_BUTTON_CHAR,
-	COLLAPSE_CHAR,
-	EXPAND_CHAR,
 } from './panel';
 
 describe('Panel widget', () => {
