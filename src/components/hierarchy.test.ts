@@ -3,10 +3,13 @@ import { describe, expect, it } from 'vitest';
 import {
 	appendChild,
 	detach,
+	forAncestors,
+	forDescendants,
 	getAncestors,
 	getChildAt,
 	getChildIndex,
 	getChildren,
+	getCommonAncestor,
 	getDepth,
 	getDescendants,
 	getFirstChild,
@@ -15,7 +18,11 @@ import {
 	getNextSibling,
 	getParent,
 	getPrevSibling,
+	getRoot,
+	getSiblings,
 	Hierarchy,
+	hasAncestor,
+	hasDescendant,
 	hasHierarchy,
 	insertAfter,
 	insertAt,
@@ -974,6 +981,339 @@ describe('Hierarchy component', () => {
 			const entity = addEntity(world);
 
 			expect(getChildAt(world, entity, 0)).toBe(NULL_ENTITY);
+		});
+	});
+
+	describe('forDescendants', () => {
+		it('iterates over all descendants in depth-first order', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child1 = addEntity(world);
+			const child2 = addEntity(world);
+			const grandchild1 = addEntity(world);
+			const grandchild2 = addEntity(world);
+
+			appendChild(world, root, child1);
+			appendChild(world, root, child2);
+			appendChild(world, child1, grandchild1);
+			appendChild(world, child1, grandchild2);
+
+			const visited: number[] = [];
+			forDescendants(world, root, (entity) => {
+				visited.push(entity);
+				return undefined;
+			});
+
+			expect(visited).toEqual([child1, grandchild1, grandchild2, child2]);
+		});
+
+		it('provides relative depth in callback', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child = addEntity(world);
+			const grandchild = addEntity(world);
+
+			appendChild(world, root, child);
+			appendChild(world, child, grandchild);
+
+			const depths: number[] = [];
+			forDescendants(world, root, (_, depth) => {
+				depths.push(depth);
+				return undefined;
+			});
+
+			expect(depths).toEqual([1, 2]);
+		});
+
+		it('stops early when callback returns false', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child1 = addEntity(world);
+			const child2 = addEntity(world);
+			const child3 = addEntity(world);
+
+			appendChild(world, root, child1);
+			appendChild(world, root, child2);
+			appendChild(world, root, child3);
+
+			const visited: number[] = [];
+			const result = forDescendants(world, root, (entity) => {
+				visited.push(entity);
+				if (entity === child2) return false;
+				return undefined;
+			});
+
+			expect(result).toBe(false);
+			expect(visited).toEqual([child1, child2]);
+		});
+
+		it('returns true when entity has no Hierarchy', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			const result = forDescendants(world, entity, () => undefined);
+			expect(result).toBe(true);
+		});
+	});
+
+	describe('forAncestors', () => {
+		it('iterates over all ancestors from parent to root', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child = addEntity(world);
+			const grandchild = addEntity(world);
+
+			appendChild(world, root, child);
+			appendChild(world, child, grandchild);
+
+			const visited: number[] = [];
+			forAncestors(world, grandchild, (entity) => {
+				visited.push(entity);
+				return undefined;
+			});
+
+			expect(visited).toEqual([child, root]);
+		});
+
+		it('provides level (distance from starting entity) in callback', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child = addEntity(world);
+			const grandchild = addEntity(world);
+
+			appendChild(world, root, child);
+			appendChild(world, child, grandchild);
+
+			const levels: number[] = [];
+			forAncestors(world, grandchild, (_, level) => {
+				levels.push(level);
+				return undefined;
+			});
+
+			expect(levels).toEqual([1, 2]);
+		});
+
+		it('stops early when callback returns false', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child = addEntity(world);
+			const grandchild = addEntity(world);
+
+			appendChild(world, root, child);
+			appendChild(world, child, grandchild);
+
+			const visited: number[] = [];
+			const result = forAncestors(world, grandchild, (entity) => {
+				visited.push(entity);
+				return false; // Stop at first ancestor
+			});
+
+			expect(result).toBe(false);
+			expect(visited).toEqual([child]);
+		});
+	});
+
+	describe('hasDescendant', () => {
+		it('returns true when target is a direct child', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			appendChild(world, parent, child);
+
+			expect(hasDescendant(world, parent, child)).toBe(true);
+		});
+
+		it('returns true when target is a grandchild', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child = addEntity(world);
+			const grandchild = addEntity(world);
+
+			appendChild(world, root, child);
+			appendChild(world, child, grandchild);
+
+			expect(hasDescendant(world, root, grandchild)).toBe(true);
+		});
+
+		it('returns false when target is not a descendant', () => {
+			const world = createWorld();
+			const a = addEntity(world);
+			const b = addEntity(world);
+
+			setParent(world, a, NULL_ENTITY);
+			setParent(world, b, NULL_ENTITY);
+
+			expect(hasDescendant(world, a, b)).toBe(false);
+		});
+
+		it('returns false when checking entity against itself', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+			setParent(world, entity, NULL_ENTITY);
+
+			expect(hasDescendant(world, entity, entity)).toBe(false);
+		});
+	});
+
+	describe('hasAncestor', () => {
+		it('returns true when target is the parent', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			appendChild(world, parent, child);
+
+			expect(hasAncestor(world, child, parent)).toBe(true);
+		});
+
+		it('returns true when target is a grandparent', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child = addEntity(world);
+			const grandchild = addEntity(world);
+
+			appendChild(world, root, child);
+			appendChild(world, child, grandchild);
+
+			expect(hasAncestor(world, grandchild, root)).toBe(true);
+		});
+
+		it('returns false when target is not an ancestor', () => {
+			const world = createWorld();
+			const a = addEntity(world);
+			const b = addEntity(world);
+
+			setParent(world, a, NULL_ENTITY);
+			setParent(world, b, NULL_ENTITY);
+
+			expect(hasAncestor(world, a, b)).toBe(false);
+		});
+	});
+
+	describe('getRoot', () => {
+		it('returns root ancestor', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			const child = addEntity(world);
+			const grandchild = addEntity(world);
+
+			appendChild(world, root, child);
+			appendChild(world, child, grandchild);
+
+			expect(getRoot(world, grandchild)).toBe(root);
+		});
+
+		it('returns entity itself if it has no parent', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+			setParent(world, entity, NULL_ENTITY);
+
+			expect(getRoot(world, entity)).toBe(entity);
+		});
+
+		it('returns entity if it has no Hierarchy component', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			expect(getRoot(world, entity)).toBe(entity);
+		});
+	});
+
+	describe('getCommonAncestor', () => {
+		it('returns common ancestor of two siblings', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child1 = addEntity(world);
+			const child2 = addEntity(world);
+
+			appendChild(world, parent, child1);
+			appendChild(world, parent, child2);
+
+			expect(getCommonAncestor(world, child1, child2)).toBe(parent);
+		});
+
+		it('returns common ancestor of cousins', () => {
+			const world = createWorld();
+			const grandparent = addEntity(world);
+			const parent1 = addEntity(world);
+			const parent2 = addEntity(world);
+			const cousin1 = addEntity(world);
+			const cousin2 = addEntity(world);
+
+			appendChild(world, grandparent, parent1);
+			appendChild(world, grandparent, parent2);
+			appendChild(world, parent1, cousin1);
+			appendChild(world, parent2, cousin2);
+
+			expect(getCommonAncestor(world, cousin1, cousin2)).toBe(grandparent);
+		});
+
+		it('returns ancestor when one is ancestor of the other', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			appendChild(world, parent, child);
+
+			expect(getCommonAncestor(world, parent, child)).toBe(parent);
+			expect(getCommonAncestor(world, child, parent)).toBe(parent);
+		});
+
+		it('returns NULL_ENTITY when entities have no common ancestor', () => {
+			const world = createWorld();
+			const a = addEntity(world);
+			const b = addEntity(world);
+
+			setParent(world, a, NULL_ENTITY);
+			setParent(world, b, NULL_ENTITY);
+
+			expect(getCommonAncestor(world, a, b)).toBe(NULL_ENTITY);
+		});
+	});
+
+	describe('getSiblings', () => {
+		it('returns all siblings of an entity', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child1 = addEntity(world);
+			const child2 = addEntity(world);
+			const child3 = addEntity(world);
+
+			appendChild(world, parent, child1);
+			appendChild(world, parent, child2);
+			appendChild(world, parent, child3);
+
+			const siblings = getSiblings(world, child2);
+			expect(siblings).toContain(child1);
+			expect(siblings).toContain(child3);
+			expect(siblings).not.toContain(child2);
+			expect(siblings.length).toBe(2);
+		});
+
+		it('returns empty array for root entity', () => {
+			const world = createWorld();
+			const root = addEntity(world);
+			setParent(world, root, NULL_ENTITY);
+
+			expect(getSiblings(world, root)).toEqual([]);
+		});
+
+		it('returns empty array for only child', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			appendChild(world, parent, child);
+
+			expect(getSiblings(world, child)).toEqual([]);
+		});
+
+		it('returns empty array for entity without Hierarchy', () => {
+			const world = createWorld();
+			const entity = addEntity(world);
+
+			expect(getSiblings(world, entity)).toEqual([]);
 		});
 	});
 });

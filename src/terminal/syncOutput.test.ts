@@ -248,11 +248,11 @@ describe('isSyncOutputSupported', () => {
 
 	beforeEach(() => {
 		process.env = { ...originalEnv };
-		process.env.TERM = undefined;
-		process.env.TERM_PROGRAM = undefined;
-		process.env.TERM_PROGRAM_VERSION = undefined;
-		process.env.KITTY_WINDOW_ID = undefined;
-		process.env.TERMINAL_VERSION_STRING = undefined;
+		process.env['TERM'] = undefined;
+		process.env['TERM_PROGRAM'] = undefined;
+		process.env['TERM_PROGRAM_VERSION'] = undefined;
+		process.env['KITTY_WINDOW_ID'] = undefined;
+		process.env['TERMINAL_VERSION_STRING'] = undefined;
 	});
 
 	afterEach(() => {
@@ -260,44 +260,44 @@ describe('isSyncOutputSupported', () => {
 	});
 
 	it('returns true for kitty', () => {
-		process.env.TERM = 'xterm-kitty';
+		process.env['TERM'] = 'xterm-kitty';
 		expect(isSyncOutputSupported()).toBe(true);
 	});
 
 	it('returns true for kitty via KITTY_WINDOW_ID', () => {
-		process.env.KITTY_WINDOW_ID = '1';
+		process.env['KITTY_WINDOW_ID'] = '1';
 		expect(isSyncOutputSupported()).toBe(true);
 	});
 
 	it('returns true for foot', () => {
-		process.env.TERM = 'foot';
+		process.env['TERM'] = 'foot';
 		expect(isSyncOutputSupported()).toBe(true);
 	});
 
 	it('returns true for WezTerm', () => {
-		process.env.TERM_PROGRAM = 'WezTerm';
+		process.env['TERM_PROGRAM'] = 'WezTerm';
 		expect(isSyncOutputSupported()).toBe(true);
 	});
 
 	it('returns true for iTerm2 3.5+', () => {
-		process.env.TERM_PROGRAM = 'iTerm.app';
-		process.env.TERM_PROGRAM_VERSION = '3.5.0';
+		process.env['TERM_PROGRAM'] = 'iTerm.app';
+		process.env['TERM_PROGRAM_VERSION'] = '3.5.0';
 		expect(isSyncOutputSupported()).toBe(true);
 	});
 
 	it('returns false for iTerm2 < 3.5', () => {
-		process.env.TERM_PROGRAM = 'iTerm.app';
-		process.env.TERM_PROGRAM_VERSION = '3.4.19';
+		process.env['TERM_PROGRAM'] = 'iTerm.app';
+		process.env['TERM_PROGRAM_VERSION'] = '3.4.19';
 		expect(isSyncOutputSupported()).toBe(false);
 	});
 
 	it('returns true for mintty', () => {
-		process.env.TERM_PROGRAM = 'mintty';
+		process.env['TERM_PROGRAM'] = 'mintty';
 		expect(isSyncOutputSupported()).toBe(true);
 	});
 
 	it('returns false by default', () => {
-		process.env.TERM = 'xterm-256color';
+		process.env['TERM'] = 'xterm-256color';
 		expect(isSyncOutputSupported()).toBe(false);
 	});
 });
