@@ -25,6 +25,16 @@ import {
 	createWorld,
 } from 'blecsd';
 import type { WriteStream, ReadStream } from 'node:tty';
+import { resolve } from 'node:path';
+
+// Debug logging (blecsd terminal debug system)
+import {
+	configureDebugLogger,
+	createDebugLogger,
+	clearLog,
+	dumpRaw,
+	LogLevel,
+} from '../../src/terminal/debug';
 
 // Core
 import type { FrameContext, GamePhase } from './core';
@@ -173,6 +183,34 @@ import {
 import type { TerminalState } from './terminal/init';
 
 // =============================================================================
+// DEBUG LOGGING SETUP
+// =============================================================================
+
+const LOG_FILE = resolve(import.meta.dirname ?? '.', 'balatro-debug.log');
+
+configureDebugLogger({
+	enabled: true,
+	logFile: LOG_FILE,
+	level: LogLevel.TRACE,
+	namespaceFilter: 'balatro:*',
+	timestamps: true,
+	includeLevel: true,
+});
+clearLog();
+
+const logMain = createDebugLogger('balatro:main');
+const logInput = createDebugLogger('balatro:input');
+const logScreen = createDebugLogger('balatro:screen');
+const logGame = createDebugLogger('balatro:game');
+const logAnim = createDebugLogger('balatro:animation');
+const logRender = createDebugLogger('balatro:render');
+const logEcs = createDebugLogger('balatro:ecs');
+const logShop = createDebugLogger('balatro:shop');
+
+logMain.info('=== BALATRO DEBUG SESSION STARTED ===');
+logMain.info('Log file:', LOG_FILE);
+
+// =============================================================================
 // TYPES
 // =============================================================================
 
@@ -309,14 +347,17 @@ function syncCardEntities(
 ): void {
 	// Remove entities for cards no longer in hand
 	const handIds = new Set(hand.map(c => c.id));
+	let removed = 0;
 	for (const [cardId, eid] of entityMap) {
 		if (!handIds.has(cardId)) {
 			removeEntity(world, eid);
 			entityMap.delete(cardId);
+			removed++;
 		}
 	}
 
 	// Create entities for new cards
+	let created = 0;
 	for (let i = 0; i < hand.length; i++) {
 		const card = hand[i];
 		if (!card) continue;
@@ -335,7 +376,12 @@ function syncCardEntities(
 				setPosition(world, eid, pos.x, pos.y, i);
 			}
 			setVelocity(world, eid, 0, 0);
+			created++;
 		}
+	}
+
+	if (removed > 0 || created > 0) {
+		logEcs.info(`syncCardEntities: removed=${removed} created=${created} total=${entityMap.size} dealFromDeck=${dealFromDeck}`);
 	}
 }
 
@@ -442,8 +488,10 @@ function updateCardSpringPhysics(
 // =============================================================================
 
 function transitionToPlaying(state: AppState): AppState {
+	logScreen.info('>>> transitionToPlaying() called from screen:', state.screen);
 	const gameState = createGameState();
 	const { newState } = startRound(gameState);
+	logGame.info(`New game: ante=${newState.currentAnte} blind=${newState.currentBlind.name} hand=${newState.hand.length} cards deck=${newState.deck.length}`);
 	const layout = calculateLayout(state.width, state.height);
 	const positions = getHandCardPositions(layout, newState.hand.length);
 
@@ -482,6 +530,7 @@ function transitionToPlaying(state: AppState): AppState {
 }
 
 function transitionToShop(state: AppState): AppState {
+	logScreen.info('>>> transitionToShop() called, score:', state.gameState.score, 'target:', state.gameState.currentBlind.chipTarget);
 	const roundResult = endRound(state.gameState);
 	const shopInventory = generateShopInventory(
 		roundResult.newState.currentAnte,
@@ -498,6 +547,7 @@ function transitionToShop(state: AppState): AppState {
 }
 
 function transitionToNextRound(state: AppState): AppState {
+	logScreen.info('>>> transitionToNextRound() called');
 	// Advance to next blind
 	let gs = state.gameState;
 	const isBoss = isCurrentBossBlind(gs);
@@ -538,6 +588,7 @@ function transitionToNextRound(state: AppState): AppState {
 }
 
 function transitionToEndScreen(state: AppState, type: 'victory' | 'game_over'): AppState {
+	logScreen.warn(`>>> transitionToEndScreen() type=${type} ante=${state.gameState.currentAnte} score=${state.gameState.score} hands=${state.gameState.handsRemaining}`);
 	const stats = createRunStatistics(
 		state.gameState,
 		state.handsPlayed,
@@ -553,6 +604,7 @@ function transitionToEndScreen(state: AppState, type: 'victory' | 'game_over'): 
 }
 
 function transitionToPackOpening(state: AppState, packIndex: number): AppState {
+	logScreen.info('>>> transitionToPackOpening() packIndex:', packIndex);
 	if (!state.shopState) return state;
 
 	const packResult = buyPack(state.shopState, packIndex, state.gameState.money);
@@ -604,22 +656,32 @@ function handleMenuInput(state: AppState, key: string): AppState {
 	// Ignore unknown/unrecognized keys entirely
 	if (key === 'unknown') return state;
 
+	logInput.debug(`handleMenuInput key="${key}" menuScreen=${state.menuState.screen} selectedIndex=${state.menuState.selectedIndex}`);
+
 	// Quit on q from title
 	if (key === 'q' && isOnTitleScreen(state.menuState)) {
+		logMain.warn('Menu: quit via q key');
 		return { ...state, running: false };
 	}
 
 	const menuInput = keyToMenuInput(key);
-	if (!menuInput) return state;
+	if (!menuInput) {
+		logInput.debug(`No menu input mapping for key="${key}"`);
+		return state;
+	}
 
+	logInput.debug('Menu input:', menuInput.type);
 	const [newMenuState, action] = processMenuInput(state.menuState, menuInput);
+	logInput.info(`Menu action: ${action.type} (was: screen=${state.menuState.screen} idx=${state.menuState.selectedIndex})`);
 
 	const newState = { ...state, menuState: newMenuState };
 
 	switch (action.type) {
 		case 'start_game':
+			logScreen.info('Menu action: START GAME');
 			return transitionToPlaying(newState);
 		case 'quit':
+			logMain.warn('Menu action: QUIT');
 			return { ...newState, running: false };
 		default:
 			return newState;
@@ -627,13 +689,19 @@ function handleMenuInput(state: AppState, key: string): AppState {
 }
 
 function handlePlayingInput(state: AppState, key: string, action: KeyAction | null): AppState {
+	logInput.debug(`handlePlayingInput key="${key}" action=${action ?? 'null'} dealing=${state.dealingPhase} scoring=${state.scoringPhase} helpVisible=${isHelpVisible(state.helpOverlay)}`);
+
 	// Help overlay intercepts all input when visible
 	if (isHelpVisible(state.helpOverlay)) {
+		logInput.debug('Dismissing help overlay');
 		return { ...state, helpOverlay: hideHelpOverlay(state.helpOverlay) };
 	}
 
 	// Block input during scoring/dealing
-	if (state.scoringPhase || state.dealingPhase) return state;
+	if (state.scoringPhase || state.dealingPhase) {
+		logInput.debug(`Input blocked: scoring=${state.scoringPhase} dealing=${state.dealingPhase}`);
+		return state;
+	}
 
 	// Help toggle
 	if (key === '?') {
@@ -704,9 +772,12 @@ function handlePlayingInput(state: AppState, key: string, action: KeyAction | nu
 
 	// Handle play action
 	if (action === 'PLAY_CARDS' && newInputState.selectedCards.length > 0) {
+		logGame.info(`PLAY_CARDS: selected=${JSON.stringify(newInputState.selectedCards)} handSize=${state.gameState.hand.length}`);
 		const result = playAndDraw(state.gameState, newInputState.selectedCards);
+		logGame.info(`playAndDraw result: success=${result.success}`);
 		if (result.success) {
 			const { newState: gs, handResult, scoreResult, blindBeaten } = result.data;
+			logGame.info(`Hand: ${getHandName(handResult.type)} score=${scoreResult.total} blindBeaten=${blindBeaten} newScore=${gs.score}/${gs.currentBlind.chipTarget} handsLeft=${gs.handsRemaining}`);
 
 			// Score popup
 			const center = getPlayAreaCenter(state.layout);
@@ -759,7 +830,9 @@ function handlePlayingInput(state: AppState, key: string, action: KeyAction | nu
 
 	// Handle discard action
 	if (action === 'DISCARD_CARDS' && newInputState.selectedCards.length > 0) {
+		logGame.info(`DISCARD_CARDS: selected=${JSON.stringify(newInputState.selectedCards)} discardsLeft=${state.gameState.discardsRemaining}`);
 		const result = discardAndDraw(state.gameState, newInputState.selectedCards);
+		logGame.info(`discardAndDraw result: success=${result.success}`);
 		if (result.success) {
 			const gs = result.data.newState;
 
@@ -793,7 +866,12 @@ function handlePlayingInput(state: AppState, key: string, action: KeyAction | nu
 function handleShopInput(state: AppState, key: string): AppState {
 	if (!state.shopState) return state;
 
-	if (key === 'q') return { ...state, running: false };
+	logInput.debug(`handleShopInput key="${key}" money=$${state.gameState.money}`);
+
+	if (key === 'q') {
+		logMain.warn('Shop: quit via q key');
+		return { ...state, running: false };
+	}
 
 	if (key === '?') {
 		return {
@@ -874,6 +952,8 @@ function handleShopInput(state: AppState, key: string): AppState {
 function handlePackOpeningInput(state: AppState, key: string): AppState {
 	if (!state.packOpeningState) return state;
 
+	logInput.debug(`handlePackOpeningInput key="${key}"`);
+
 	const packInput = keyToPackInput(key);
 	if (!packInput) return state;
 
@@ -897,17 +977,22 @@ function handlePackOpeningInput(state: AppState, key: string): AppState {
 function handleEndScreenInput(state: AppState, key: string): AppState {
 	if (!state.endScreenState) return state;
 
+	logInput.debug(`handleEndScreenInput key="${key}"`);
+
 	const endInput = keyToEndScreenInput(key);
 	if (!endInput) return state;
 
 	const [newEndState, endAction] = processEndScreenInput(state.endScreenState, endInput);
-	let newState: AppState = { ...state, endScreenState: newEndState };
+	logInput.info(`End screen action: ${endAction.type}`);
+	const newState: AppState = { ...state, endScreenState: newEndState };
 
 	switch (endAction.type) {
 		case 'new_run':
 		case 'retry':
+			logScreen.info(`End screen: ${endAction.type} -> transitionToPlaying`);
 			return transitionToPlaying(newState);
 		case 'main_menu':
+			logScreen.info('End screen: main_menu -> menu');
 			return { ...newState, screen: 'menu', menuState: createMenuState() };
 	}
 
@@ -1332,20 +1417,31 @@ function createInputProcessingSystem() {
 
 		// Drain all queued input
 		const inputs = rawInputQueue.splice(0, rawInputQueue.length);
+		logInput.debug(`Processing ${inputs.length} queued input(s), screen=${state.screen}`);
 		let currentState = state;
 
 		for (const raw of inputs) {
 			const event = parseKeyEvent(raw);
 
 			// Skip completely unrecognized input (garbage bytes, partial sequences)
-			if (event.key === 'unknown') continue;
+			if (event.key === 'unknown') {
+				logInput.debug('Skipping unknown key event, raw:', JSON.stringify(raw));
+				continue;
+			}
+
+			logInput.info(`Key: "${event.key}" ctrl=${event.ctrl} shift=${event.shift} screen=${currentState.screen} dealing=${currentState.dealingPhase} scoring=${currentState.scoringPhase}`);
 
 			// Ctrl+C always quits
 			if (event.ctrl && event.key === 'c') {
+				logInput.warn('Ctrl+C detected, quitting');
 				return { ...currentState, running: false };
 			}
 
 			const action = getActionForKey(event);
+			logInput.debug(`Action for key "${event.key}":`, action ?? 'none');
+
+			const prevScreen = currentState.screen;
+			const prevRunning = currentState.running;
 
 			switch (currentState.screen) {
 				case 'menu':
@@ -1365,7 +1461,18 @@ function createInputProcessingSystem() {
 					break;
 			}
 
-			if (!currentState.running) break;
+			// Log any state transitions
+			if (currentState.screen !== prevScreen) {
+				logScreen.warn(`SCREEN TRANSITION: ${prevScreen} -> ${currentState.screen} (triggered by key="${event.key}")`);
+			}
+			if (currentState.running !== prevRunning) {
+				logMain.warn(`RUNNING STATE CHANGED: ${prevRunning} -> ${currentState.running} (triggered by key="${event.key}" on screen=${prevScreen})`);
+			}
+
+			if (!currentState.running) {
+				logMain.warn('Game stopping, breaking input loop');
+				break;
+			}
 		}
 
 		return currentState;
@@ -1379,26 +1486,36 @@ function createGameLogicSystem() {
 		// Check if scoring phase is complete (popups done)
 		if (state.scoringPhase) {
 			const now = Date.now();
-			if (!hasActivePopups(state.popupState, now)) {
+			const popupsActive = hasActivePopups(state.popupState, now);
+
+			if (!popupsActive) {
 				// Scoring done, check game end
 				const endState = getGameEndState(state.gameState);
+				logGame.info(`Scoring complete. endState=${endState.type} score=${state.gameState.score}/${state.gameState.currentBlind.chipTarget} hands=${state.gameState.handsRemaining}`);
 
 				if (endState.type === 'victory') {
+					logGame.warn('VICTORY detected in game logic system');
 					return transitionToEndScreen(state, 'victory');
 				}
 				if (endState.type === 'lost') {
+					logGame.warn(`GAME OVER detected: hands=${state.gameState.handsRemaining} score=${state.gameState.score}/${state.gameState.currentBlind.chipTarget}`);
 					return transitionToEndScreen(state, 'game_over');
 				}
 
 				// Check if blind beaten (go to shop)
 				if (state.gameState.score >= state.gameState.currentBlind.chipTarget) {
+					const isBoss = isCurrentBossBlind(state.gameState);
+					const isFinal = isFinalAnte(state.gameState);
+					logGame.info(`Blind beaten! isBoss=${isBoss} isFinal=${isFinal}`);
 					// Check for victory condition
-					if (isCurrentBossBlind(state.gameState) && isFinalAnte(state.gameState)) {
+					if (isBoss && isFinal) {
+						logGame.warn('VICTORY: final boss beaten');
 						return transitionToEndScreen(state, 'victory');
 					}
 					return transitionToShop(state);
 				}
 
+				logGame.debug('Scoring phase ended, continuing play');
 				return { ...state, scoringPhase: false };
 			}
 		}
@@ -1432,8 +1549,13 @@ function createAnimationUpdateSystem() {
 
 		// Update dealing phase: all cards dealt and arrived at positions
 		let dealingPhase = state.dealingPhase;
-		if (dealingPhase && allArrived) {
-			dealingPhase = false;
+		if (dealingPhase) {
+			const dealtSoFar = getDealtCardCount(state.dealStartTime, state.gameState.hand.length);
+			logAnim.trace(`Dealing: ${dealtSoFar}/${state.gameState.hand.length} cards dealt, allArrived=${allArrived}`);
+			if (allArrived) {
+				logAnim.info('Dealing phase complete, all cards arrived');
+				dealingPhase = false;
+			}
 		}
 
 		// Update score popups
@@ -1449,7 +1571,13 @@ function createAnimationUpdateSystem() {
 }
 
 function createRenderingSystem() {
+	let frameCount = 0;
 	return createRenderSystem<AppState>('render', (state, _ctx) => {
+		frameCount++;
+		// Log every 60 frames (~1 second at 60fps) to show we're alive
+		if (frameCount % 60 === 0) {
+			logRender.trace(`Frame ${frameCount}, screen=${state.screen} dealing=${state.dealingPhase} scoring=${state.scoringPhase}`);
+		}
 		// Resize buffer if needed
 		let { buffer } = state;
 		if (buffer.width !== state.width || buffer.height !== state.height) {
@@ -1483,6 +1611,8 @@ function createRenderingSystem() {
 function createOutputSystem(stdout: WriteStream) {
 	return createPostRenderSystem<AppState>('output', (state, _ctx) => {
 		if (!state.running) {
+			logMain.warn('Output system: state.running=false, exiting process');
+			logMain.info('=== BALATRO DEBUG SESSION ENDED (running=false) ===');
 			if (termState) {
 				cleanupTerminal(termState);
 			}
@@ -1502,8 +1632,13 @@ async function main(): Promise<void> {
 	const stdout = process.stdout as WriteStream;
 	const stdin = process.stdin as ReadStream;
 
+	logMain.info('main() starting');
+	logMain.info(`Terminal: cols=${stdout.columns} rows=${stdout.rows} isTTY=${stdout.isTTY}`);
+	logMain.info(`Process: pid=${process.pid} argv=${JSON.stringify(process.argv.slice(2))}`);
+
 	// Parse CLI arguments
 	const args = parseArgs(process.argv.slice(2));
+	logMain.debug('Parsed args:', JSON.stringify(args));
 
 	if (args.help) {
 		console.log('Balatro Terminal Edition');
@@ -1513,23 +1648,23 @@ async function main(): Promise<void> {
 	}
 
 	const config = createConfigFromArgs(args);
+	logMain.info(`Config: mouse=${config.mouseEnabled} sound=${config.soundEnabled} seed=${config.seed}`);
 
 	// Initialize terminal
 	termState = initializeTerminal(stdout, stdin, config);
 	const { width, height } = termState;
+	logMain.info(`Terminal initialized: ${width}x${height}`);
 
 	// Set up signal handlers
 	setupSignalHandlers(() => {
+		logMain.warn('Signal handler triggered, cleaning up');
+		logMain.info('=== BALATRO DEBUG SESSION ENDED (signal) ===');
 		if (termState) cleanupTerminal(termState);
 	});
 
 	// Set up resize handler
 	setupResizeHandler(stdout, (newWidth, newHeight) => {
-		const current = gameLoop.getGameState();
-		if (current) {
-			// Can't mutate state from here, but we can queue a resize
-			// We'll handle resize in the layout by checking stdout dimensions each frame
-		}
+		logMain.info(`Terminal resize: ${newWidth}x${newHeight}`);
 	});
 
 	// Create initial state
@@ -1565,14 +1700,31 @@ async function main(): Promise<void> {
 		endScreenState: null,
 	};
 
+	// Wrap a system's run function with error logging
+	function wrapSystem<TState>(system: { name: string; phase: string; run: (s: TState, c: FrameContext) => TState }): typeof system {
+		const originalRun = system.run;
+		system.run = (s: TState, c: FrameContext): TState => {
+			try {
+				return originalRun(s, c);
+			} catch (err) {
+				logMain.error(`CRASH in system "${system.name}" (phase=${system.phase}):`, err);
+				logMain.error('Stack:', err instanceof Error ? err.stack ?? 'no stack' : String(err));
+				throw err; // re-throw so the game still crashes visibly
+			}
+		};
+		return system;
+	}
+
 	// Create systems
 	const systems = [
-		createInputProcessingSystem(),
-		createGameLogicSystem(),
-		createAnimationUpdateSystem(),
-		createRenderingSystem(),
-		createOutputSystem(stdout),
+		wrapSystem(createInputProcessingSystem()),
+		wrapSystem(createGameLogicSystem()),
+		wrapSystem(createAnimationUpdateSystem()),
+		wrapSystem(createRenderingSystem()),
+		wrapSystem(createOutputSystem(stdout)),
 	];
+
+	logMain.info(`Systems registered: ${systems.map(s => s.name).join(', ')}`);
 
 	// Create and start the game loop
 	const gameLoop = createGameLoop(systems, {
@@ -1580,6 +1732,7 @@ async function main(): Promise<void> {
 		maxDeltaTime: 0.1,
 		fixedTimestep: 0,
 	});
+	logMain.info('Game loop created, targetFps=60');
 
 	// Set up stdin listener (pushes raw bytes to queue, filters mouse events)
 	stdin.on('data', (data: Buffer) => {
@@ -1587,22 +1740,34 @@ async function main(): Promise<void> {
 
 		// Filter out SGR mouse events (\x1b[<...M or \x1b[<...m)
 		// These flood the queue when mouse tracking is enabled
-		if (str.startsWith('\x1b[<')) return;
+		if (str.startsWith('\x1b[<')) {
+			logInput.trace('Filtered SGR mouse event');
+			return;
+		}
 		// Filter out legacy mouse events (\x1b[M...)
-		if (str.startsWith('\x1b[M')) return;
+		if (str.startsWith('\x1b[M')) {
+			logInput.trace('Filtered legacy mouse event');
+			return;
+		}
 
+		logInput.debug('stdin data received, length:', str.length);
+		dumpRaw(str, 'stdin');
 		rawInputQueue.push(str);
 	});
 
 	// Start the loop
+	logMain.info('Starting game loop...');
 	await gameLoop.start({
 		...initialState,
 		width: stdout.columns ?? width,
 		height: stdout.rows ?? height,
 	});
+	logMain.info('Game loop start() returned (loop running via setTimeout)');
 }
 
 main().catch((err) => {
+	logMain.error('UNCAUGHT ERROR in main():', err);
+	logMain.info('=== BALATRO DEBUG SESSION ENDED (error) ===');
 	if (termState) {
 		cleanupTerminal(termState);
 	} else {
