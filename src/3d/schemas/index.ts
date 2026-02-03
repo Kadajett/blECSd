@@ -63,3 +63,29 @@ export {
 	PlaneMeshOptionsSchema,
 	SphereMeshOptionsSchema,
 } from './model';
+export type {
+	BackendCapabilities,
+	BackendPreference,
+	BackendSelection,
+	BackendType,
+	BrailleConfig,
+	EncodedCell,
+	EncodedOutput,
+	HalfBlockConfig,
+	KittyConfig,
+	SextantConfig,
+	SixelConfig,
+} from './backends';
+export {
+	BackendCapabilitiesSchema,
+	BackendPreferenceSchema,
+	BackendSelectionSchema,
+	BackendTypeSchema,
+	BrailleConfigSchema,
+	EncodedCellSchema,
+	EncodedOutputSchema,
+	HalfBlockConfigSchema,
+	KittyConfigSchema,
+	SextantConfigSchema,
+	SixelConfigSchema,
+} from './backends';
