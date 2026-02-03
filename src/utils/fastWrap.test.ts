@@ -408,18 +408,18 @@ describe('performance scenarios', () => {
 		const cache = createWrapCache(80);
 		const text = Array.from({ length: 100 }, (_, i) => `Line ${i}`).join('\n');
 
-		// First wrap
-		const start1 = performance.now();
-		wrapWithCache(cache, text);
-		const time1 = performance.now() - start1;
+		// First wrap populates the cache
+		const lines1 = wrapWithCache(cache, text);
+		const stats1 = getWrapCacheStats(cache);
 
-		// Second wrap (should use cache)
-		const start2 = performance.now();
-		wrapWithCache(cache, text);
-		const time2 = performance.now() - start2;
+		// Second wrap should reuse cache (no dirty paragraphs, same entry count)
+		const lines2 = wrapWithCache(cache, text);
+		const stats2 = getWrapCacheStats(cache);
 
-		// Cached should be faster (or at least not slower)
-		expect(time2).toBeLessThanOrEqual(time1 * 2);
+		expect(lines1).toEqual(lines2);
+		expect(stats2.cachedParagraphs).toBe(stats1.cachedParagraphs);
+		expect(stats2.dirtyParagraphs).toBe(0);
+		expect(stats2.fullInvalidate).toBe(false);
 	});
 
 	it('handles width change efficiently', () => {
