@@ -29,8 +29,17 @@ export let viewangletox: Int32Array = new Int32Array(FINEANGLES / 2);
 /**
  * Maps screen X coordinates to view-relative angles.
  * Size: screenWidth + 1 entries.
+ * xtoviewangle[centerx] ~= 0 (straight ahead).
+ * xtoviewangle[0] = clipangle (leftmost visible angle).
  */
 export let xtoviewangle: Uint32Array = new Uint32Array(0);
+
+/**
+ * Half-FOV clipping angle: the view-relative angle of the leftmost screen column.
+ * Used for FOV clipping in addLine and checkBBox.
+ * For a 90-degree FOV this is approximately ANG45.
+ */
+export let clipangle: number = 0;
 
 /**
  * Distance scale per screen column (for flat rendering).
@@ -129,8 +138,8 @@ export let zlight: Int32Array[] = [];
 export function initRenderTables(width: number, height: number): void {
 	viewwidth = width;
 	viewheight = height;
-	centerx = width / 2;
-	centery = height / 2;
+	centerx = Math.floor(width / 2);
+	centery = Math.floor(height / 2);
 	centerxfrac = centerx * FRACUNIT;
 	centeryfrac = centery * FRACUNIT;
 
@@ -148,9 +157,18 @@ export function initRenderTables(width: number, height: number): void {
 
 /**
  * Build viewangletox: maps fine angle index to screen X column.
+ * Matches R_InitTextureMapping from r_main.c.
+ *
+ * The finetangent table is indexed 0..FINEANGLES/2-1 and maps angles
+ * from the right edge of the FOV through center to the left edge.
+ * We compute which screen column each angle projects to.
  */
 function initViewAngleToX(): void {
 	viewangletox = new Int32Array(FINEANGLES / 2);
+
+	// focallength = centerx / tan(FOV/2)
+	// For 90-degree FOV: tan(45) = FRACUNIT, so focallength = centerxfrac
+	const focallength = centerxfrac;
 
 	for (let i = 0; i < FINEANGLES / 2; i++) {
 		const t = finetangent[i];
@@ -162,80 +180,86 @@ function initViewAngleToX(): void {
 		} else if (t < -FRACUNIT * 2) {
 			x = viewwidth + 1;
 		} else {
-			x = centerx - fixedMul(t, projection) / FRACUNIT;
-			if (x < -1) x = -1;
-			if (x > viewwidth + 1) x = viewwidth + 1;
-		}
-		viewangletox[i] = Math.round(x);
-	}
+			// Ceiling division matching original Doom:
+			// t = FixedMul(finetangent[i], focallength);
+			// t = (centerxfrac - t + FRACUNIT - 1) >> FRACBITS;
+			const tx = fixedMul(t, focallength);
+			x = (centerxfrac - tx + FRACUNIT - 1) >> FRACBITS;
 
-	// Pad the table to avoid out-of-bounds during rendering
-	for (let i = 0; i < FINEANGLES / 2; i++) {
-		const val = viewangletox[i];
-		if (val !== undefined && val === -1) viewangletox[i] = 0;
-		if (val !== undefined && val === viewwidth + 1) viewangletox[i] = viewwidth;
+			if (x < -1) x = -1;
+			else if (x > viewwidth + 1) x = viewwidth + 1;
+		}
+		viewangletox[i] = x;
 	}
 }
 
 /**
  * Build xtoviewangle: maps screen X to view-relative BAM angle.
+ * Matches R_InitTextureMapping from r_main.c.
+ *
+ * Scans viewangletox to find the smallest view angle that maps to each X.
+ * Formula: xtoviewangle[x] = (i << ANGLETOFINESHIFT) - ANG90
+ * This gives 0 for the center column, positive angles going left,
+ * negative angles going right.
  */
 function initXToViewAngle(width: number): void {
 	xtoviewangle = new Uint32Array(width + 1);
 
 	for (let x = 0; x <= width; x++) {
-		let bestAngle = 0;
-		let bestDist = width + 1;
-
-		// Find the angle that maps closest to this X
-		for (let i = 0; i < FINEANGLES / 2; i++) {
-			const mappedX = viewangletox[i];
-			if (mappedX === undefined) continue;
-			const dist = Math.abs(mappedX - x);
-			if (dist < bestDist) {
-				bestDist = dist;
-				bestAngle = i;
-			}
+		// Find first i where viewangletox[i] <= x
+		let i = 0;
+		while (i < FINEANGLES / 2 && (viewangletox[i] ?? 0) > x) {
+			i++;
 		}
+		// Convert fine angle index to view-relative BAM
+		xtoviewangle[x] = (((i << ANGLETOFINESHIFT) - ANG90) >>> 0);
+	}
 
-		// Convert fine angle index back to BAM
-		// Fine angles in the first quadrant map to positive view angles
-		// The tangent table is indexed from ANG270+ANG90 (= 0) through the view
-		const angle = ((bestAngle << ANGLETOFINESHIFT) >>> 0);
-		// Adjust so that center of screen = 0
-		xtoviewangle[x] = ((ANG90 + (FINEANGLES / 4 - bestAngle) * (1 << ANGLETOFINESHIFT)) >>> 0);
+	// Set clipangle from the leftmost visible column angle
+	clipangle = xtoviewangle[0] ?? 0;
+
+	// Now do fencepost clamping on viewangletox (must happen AFTER xtoviewangle)
+	for (let i = 0; i < FINEANGLES / 2; i++) {
+		if (viewangletox[i] === -1) viewangletox[i] = 0;
+		else if (viewangletox[i] === viewwidth + 1) viewangletox[i] = viewwidth;
 	}
 }
 
 /**
  * Build distscale: cosine-based distance correction per column.
+ * Matches R_InitTextureMapping from r_main.c:
+ *   cosadj = abs(finecosine[xtoviewangle[i] >> ANGLETOFINESHIFT]);
+ *   distscale[i] = FixedDiv(FRACUNIT, cosadj);
  */
 function initDistScale(width: number): void {
 	distscale = new Int32Array(width);
 
 	for (let x = 0; x < width; x++) {
-		const angle = xtoviewangle[x];
-		if (angle === undefined) continue;
-		const fineIdx = (angle >> ANGLETOFINESHIFT) & FINEMASK;
-		const cos = finecosine[fineIdx];
-		if (cos === undefined || cos === 0) {
+		const angle = xtoviewangle[x] ?? 0;
+		const cosadj = Math.abs(finecosine[(angle >> ANGLETOFINESHIFT) & FINEMASK] ?? FRACUNIT);
+		if (cosadj === 0) {
 			distscale[x] = FRACUNIT;
 			continue;
 		}
-		distscale[x] = fixedDiv(FRACUNIT, Math.abs(cos));
+		distscale[x] = fixedDiv(FRACUNIT, cosadj);
 	}
 }
 
 /**
  * Build yslope: maps screen Y to distance factor for flats.
+ * Matches r_main.c:
+ *   dy = ((i - viewheight/2) << FRACBITS) + FRACUNIT/2;
+ *   dy = abs(dy);
+ *   yslope[i] = FixedDiv((viewwidth << detailshift)/2 * FRACUNIT, dy);
  */
 function initYSlope(width: number, height: number): void {
 	yslope = new Int32Array(height);
 
 	for (let y = 0; y < height; y++) {
-		const dy = Math.abs(y - centery) + 1;
-		// yslope[y] = (viewwidth / 2) / dy in fixed-point
-		yslope[y] = fixedDiv((width / 2) * FRACUNIT, dy * FRACUNIT);
+		let dy = ((y - Math.floor(height / 2)) << FRACBITS) + (FRACUNIT >> 1);
+		dy = Math.abs(dy);
+		if (dy === 0) dy = 1;
+		yslope[y] = fixedDiv((width / 2) * FRACUNIT, dy);
 	}
 }
 

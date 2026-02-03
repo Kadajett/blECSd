@@ -20,7 +20,8 @@ import { FRACBITS, fixedMul } from '../math/fixed.js';
 import { viewangletox, viewwidth } from '../math/tables.js';
 import { NF_SUBSECTOR } from '../wad/types.js';
 import type { BBox, MapNode } from '../wad/types.js';
-import type { RenderState } from './defs.js';
+import type { RenderState, Visplane } from './defs.js';
+import { findPlane } from './planes.js';
 import { addLine } from './segs.js';
 
 // ─── BSP Traversal ─────────────────────────────────────────────────
@@ -65,6 +66,8 @@ export function renderBspNode(rs: RenderState, nodeId: number): void {
 
 /**
  * Process all segs in a subsector (BSP leaf).
+ * Matches R_Subsector from r_bsp.c: creates floor/ceiling visplanes
+ * for the subsector's sector, then processes each seg.
  *
  * @param rs - Render state
  * @param subsectorIndex - Index into the subsectors array
@@ -73,13 +76,48 @@ function renderSubsector(rs: RenderState, subsectorIndex: number): void {
 	const subsector = rs.map.subsectors[subsectorIndex];
 	if (!subsector) return;
 
+	// Find the front sector for this subsector
+	const firstSeg = rs.map.segs[subsector.firstSeg];
+	if (!firstSeg) return;
+
+	const linedef = rs.map.linedefs[firstSeg.linedef];
+	if (!linedef) return;
+
+	const sidedefIndex = firstSeg.side === 0 ? linedef.frontSidedef : linedef.backSidedef;
+	const sidedef = rs.map.sidedefs[sidedefIndex];
+	if (!sidedef) return;
+
+	const frontsector = rs.map.sectors[sidedef.sector];
+	if (!frontsector) return;
+
+	// Create floor visplane if floor is below viewz
+	let floorPlane: Visplane | null = null;
+	if ((frontsector.floorHeight << FRACBITS) < rs.viewz) {
+		floorPlane = findPlane(rs,
+			frontsector.floorHeight << FRACBITS,
+			frontsector.floorFlat,
+			frontsector.lightLevel,
+		);
+	}
+
+	// Create ceiling visplane if ceiling is above viewz (or sky)
+	let ceilingPlane: Visplane | null = null;
+	if ((frontsector.ceilingHeight << FRACBITS) > rs.viewz
+		|| frontsector.ceilingFlat === 'F_SKY1') {
+		ceilingPlane = findPlane(rs,
+			frontsector.ceilingHeight << FRACBITS,
+			frontsector.ceilingFlat,
+			frontsector.lightLevel,
+		);
+	}
+
 	// Process each seg in this subsector
 	for (let i = 0; i < subsector.numSegs; i++) {
 		const segIndex = subsector.firstSeg + i;
 		const seg = rs.map.segs[segIndex];
 		if (!seg) continue;
 
-		addLine(rs, seg, subsectorIndex);
+		addLine(rs, seg, subsectorIndex, floorPlane, ceilingPlane);
 	}
 }
 

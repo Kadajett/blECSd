@@ -3,7 +3,7 @@
  *
  * This is the core of Doom's wall renderer. Each seg is projected to screen
  * columns, clipped against the solidsegs occlusion list, and rendered via
- * R_DrawColumn.
+ * R_DrawColumn. Matches the original Doom r_segs.c and r_bsp.c logic.
  *
  * @module render/segs
  */
@@ -12,10 +12,10 @@ import {
 	ANG90,
 	ANG180,
 	ANGLETOFINESHIFT,
-	FINEANGLES,
 	FINEMASK,
 	finecosine,
 	finesine,
+	finetangent,
 	pointToAngle2,
 } from '../math/angles.js';
 import { FRACBITS, FRACUNIT, fixedDiv, fixedMul } from '../math/fixed.js';
@@ -23,30 +23,42 @@ import {
 	LIGHTSEGSHIFT,
 	LIGHTLEVELS,
 	MAXLIGHTSCALE,
-	NUMCOLORMAPS,
 	centerx,
+	centerxfrac,
 	centery,
+	centeryfrac,
+	clipangle,
 	projection,
 	scalelight,
 	viewangletox,
 	viewwidth,
+	xtoviewangle,
 } from '../math/tables.js';
 import { LinedefFlags, type MapSeg } from '../wad/types.js';
-import type { ClipRange, RenderState } from './defs.js';
+import type { RenderState, Visplane } from './defs.js';
 import { drawColumn } from './drawColumn.js';
-import { findPlane } from './planes.js';
+import { findPlane, setPlaneColumn } from './planes.js';
 import { getWallTexture, type CompositeTexture } from './textures.js';
 
 // ─── Seg Processing Entry Point ────────────────────────────────────
 
 /**
  * Process a single seg: project to screen, clip, and render.
+ * Matches R_AddLine from r_bsp.c.
  *
  * @param rs - Render state
  * @param seg - Map segment to render
  * @param subsectorIndex - Index of the containing subsector
+ * @param floorPlane - Current subsector's floor visplane (or null)
+ * @param ceilingPlane - Current subsector's ceiling visplane (or null)
  */
-export function addLine(rs: RenderState, seg: MapSeg, subsectorIndex: number): void {
+export function addLine(
+	rs: RenderState,
+	seg: MapSeg,
+	subsectorIndex: number,
+	floorPlane: Visplane | null,
+	ceilingPlane: Visplane | null,
+): void {
 	const v1 = rs.map.vertexes[seg.v1];
 	const v2 = rs.map.vertexes[seg.v2];
 	if (!v1 || !v2) return;
@@ -58,39 +70,46 @@ export function addLine(rs: RenderState, seg: MapSeg, subsectorIndex: number): v
 	const v2y = v2.y << FRACBITS;
 
 	// Compute angles from viewer to seg endpoints
-	const angle1 = pointToAngle2(rs.viewx, rs.viewy, v1x, v1y);
-	const angle2 = pointToAngle2(rs.viewx, rs.viewy, v2x, v2y);
+	const angle1global = pointToAngle2(rs.viewx, rs.viewy, v1x, v1y);
+	const angle2global = pointToAngle2(rs.viewx, rs.viewy, v2x, v2y);
 
 	// Check if the seg faces the viewer (backface culling)
-	const span = ((angle1 - angle2) >>> 0);
+	const span = ((angle1global - angle2global) >>> 0);
 	if (span >= ANG180) return; // seg faces away
 
-	// Transform angles to view-relative
-	const rw_angle1 = angle1;
-	let tspan1 = ((angle1 - rs.viewangle + ANG90) >>> 0);
-	let tspan2 = ((angle2 - rs.viewangle + ANG90) >>> 0);
+	// Save global angle for later use
+	const rw_angle1 = angle1global;
 
-	// Clip to FOV
-	if (tspan1 > ANG180) {
-		// Left endpoint is behind viewer or in left peripheral
-		tspan1 = 0;
+	// Make view-relative
+	let angle1 = ((angle1global - rs.viewangle) >>> 0);
+	let angle2 = ((angle2global - rs.viewangle) >>> 0);
+
+	// Clip to FOV using clipangle (matching R_AddLine from r_bsp.c)
+	let tspan = ((angle1 + clipangle) >>> 0);
+	if (tspan > ((2 * clipangle) >>> 0)) {
+		tspan = ((tspan - ((2 * clipangle) >>> 0)) >>> 0);
+		// Entirely outside left side of FOV?
+		if (tspan >= span) return;
+		angle1 = clipangle;
 	}
-	if (tspan2 > ANG180) {
-		tspan2 = ANG180;
+	tspan = ((clipangle - angle2) >>> 0);
+	if (tspan > ((2 * clipangle) >>> 0)) {
+		tspan = ((tspan - ((2 * clipangle) >>> 0)) >>> 0);
+		// Entirely outside right side of FOV?
+		if (tspan >= span) return;
+		angle2 = ((-clipangle) >>> 0);
 	}
 
-	// Convert to screen X using the viewangletox table
-	const fineIdx1 = (tspan1 >> ANGLETOFINESHIFT) & 0xfff;
-	const fineIdx2 = (tspan2 >> ANGLETOFINESHIFT) & 0xfff;
+	// Convert clipped view-relative angles to screen X
+	const fineIdx1 = ((angle1 + ANG90) >>> 0) >> ANGLETOFINESHIFT;
+	const fineIdx2 = ((angle2 + ANG90) >>> 0) >> ANGLETOFINESHIFT;
 
-	let x1 = viewangletox[fineIdx1] ?? 0;
-	let x2 = (viewangletox[fineIdx2] ?? viewwidth) - 1;
+	const x1 = viewangletox[fineIdx1 & 0xfff] ?? 0;
+	let x2 = (viewangletox[fineIdx2 & 0xfff] ?? viewwidth) - 1;
 
+	// Does not cross a pixel?
 	if (x1 > x2) return;
 	if (x2 < 0 || x1 >= rs.screenWidth) return;
-
-	// Clamp to screen
-	if (x1 < 0) x1 = 0;
 	if (x2 >= rs.screenWidth) x2 = rs.screenWidth - 1;
 
 	// Get linedef and sidedefs
@@ -118,41 +137,66 @@ export function addLine(rs: RenderState, seg: MapSeg, subsectorIndex: number): v
 		}
 	}
 
-	// Compute wall distance for scale calculation
-	const dx = v2x - v1x;
-	const dy = v2y - v1y;
+	// ─── Compute rw_normalangle and rw_distance (matching R_StoreWallRange) ───
 
-	// Use simplified distance calculation: perpendicular distance from viewer to seg
-	const segAngle = pointToAngle2(v1x, v1y, v2x, v2y);
-	const normalAngle = ((segAngle + ANG90) >>> 0);
-	const offsetAngle = ((normalAngle - rw_angle1) >>> 0);
+	// rw_normalangle = curline->angle + ANG90
+	// seg.angle is stored in the WAD as a BAM-like value (0-65535 mapped to 0-360)
+	const segAngleBam = ((seg.angle / 65536) * 0x100000000) >>> 0;
+	const rw_normalangle = ((segAngleBam + ANG90) >>> 0);
 
-	const sinIdx = (offsetAngle >> ANGLETOFINESHIFT) & FINEMASK;
-	const segLen = Math.sqrt(
-		((v2x - v1x) / FRACUNIT) ** 2 + ((v2y - v1y) / FRACUNIT) ** 2,
-	) * FRACUNIT;
+	// Compute perpendicular distance to the seg line
+	// offsetangle = abs(rw_normalangle - rw_angle1), clamped to ANG90
+	let offsetangle = ((rw_normalangle - rw_angle1) >>> 0);
+	if (offsetangle > ANG180) offsetangle = ((-offsetangle) >>> 0);
+	if (offsetangle > ANG90) offsetangle = ANG90;
 
-	const hyp = Math.sqrt(
-		((v1x - rs.viewx) / FRACUNIT) ** 2 + ((v1y - rs.viewy) / FRACUNIT) ** 2,
-	) * FRACUNIT;
+	const distangle = ((ANG90 - offsetangle) >>> 0);
+	const distFineIdx = (distangle >> ANGLETOFINESHIFT) & FINEMASK;
+	const sineval = finesine[distFineIdx] ?? 0;
 
-	const sinVal = finesine[sinIdx] ?? 0;
-	let rw_distance = Math.abs(fixedMul(Math.round(hyp), sinVal));
+	// hyp = distance from viewer to v1
+	const hyp = pointToDist(rs.viewx, rs.viewy, v1x, v1y);
+
+	let rw_distance = fixedMul(hyp, sineval);
 	if (rw_distance < FRACUNIT) rw_distance = FRACUNIT;
 
-	// Compute scale at the left edge (x1)
-	const rw_scale = scaleFromGlobalAngle(rs.viewangle, rw_angle1, normalAngle, rw_distance);
+	// ─── Compute scale at endpoints (matching R_StoreWallRange) ───
 
-	// Compute scale at the right edge if needed
+	const rw_scale = scaleFromGlobalAngle(
+		rs.viewangle, ((rs.viewangle + (xtoviewangle[x1] ?? 0)) >>> 0),
+		rw_normalangle, rw_distance,
+	);
+
 	let rw_scalestep = 0;
-	let scale2 = rw_scale;
 	if (x2 > x1) {
-		const angle2view = ((rs.viewangle + ANG90 - ((x2 - centerx) << ANGLETOFINESHIFT)) >>> 0);
-		scale2 = scaleFromGlobalAngle(rs.viewangle, angle2view, normalAngle, rw_distance);
+		const scale2 = scaleFromGlobalAngle(
+			rs.viewangle, ((rs.viewangle + (xtoviewangle[x2] ?? 0)) >>> 0),
+			rw_normalangle, rw_distance,
+		);
 		rw_scalestep = Math.round((scale2 - rw_scale) / (x2 - x1));
 	}
 
-	// Determine what to draw
+	// ─── Compute rw_offset for texture column mapping ───
+
+	// offsetangle for texture offset (different from distance offsetangle)
+	let texOffsetAngle = ((rw_normalangle - rw_angle1) >>> 0);
+	if (texOffsetAngle > ANG180) texOffsetAngle = ((-texOffsetAngle) >>> 0);
+	if (texOffsetAngle > ANG90) texOffsetAngle = ANG90;
+
+	const texSineval = finesine[(texOffsetAngle >> ANGLETOFINESHIFT) & FINEMASK] ?? 0;
+	let rw_offset = fixedMul(hyp, texSineval);
+
+	if (((rw_normalangle - rw_angle1) >>> 0) < ANG180) {
+		rw_offset = -rw_offset;
+	}
+
+	rw_offset += (sidedef.textureOffset << FRACBITS) + (seg.offset << FRACBITS);
+
+	// rw_centerangle = ANG90 + viewangle - rw_normalangle
+	const rw_centerangle = ((ANG90 + rs.viewangle - rw_normalangle) >>> 0);
+
+	// ─── Determine what to draw ───
+
 	const frontFloor = frontSector.floorHeight << FRACBITS;
 	const frontCeiling = frontSector.ceilingHeight << FRACBITS;
 
@@ -174,55 +218,131 @@ export function addLine(rs: RenderState, seg: MapSeg, subsectorIndex: number): v
 		backFloor = backSector.floorHeight << FRACBITS;
 		backCeiling = backSector.ceilingHeight << FRACBITS;
 
-		if (frontCeiling !== backCeiling) {
-			drawUpperWall = true;
-			markCeiling = true;
-		}
-		if (frontFloor !== backFloor) {
-			drawLowerWall = true;
-			markFloor = true;
-		}
-		if (backCeiling === backFloor) {
-			// Closed door: treat as solid
+		// Closed door
+		if (backCeiling <= frontFloor || backFloor >= frontCeiling) {
 			drawMidWall = true;
 			markFloor = true;
 			markCeiling = true;
+		} else {
+			if (frontCeiling !== backCeiling) {
+				drawUpperWall = true;
+				markCeiling = true;
+			}
+			if (frontFloor !== backFloor) {
+				drawLowerWall = true;
+				markFloor = true;
+			}
+			if (frontSector.floorFlat !== backSector.floorFlat) markFloor = true;
+			if (frontSector.ceilingFlat !== backSector.ceilingFlat) markCeiling = true;
+			if (frontSector.lightLevel !== backSector.lightLevel) {
+				markFloor = true;
+				markCeiling = true;
+			}
 		}
-		if (frontSector.floorFlat !== backSector?.floorFlat) markFloor = true;
-		if (frontSector.ceilingFlat !== backSector?.ceilingFlat) markCeiling = true;
-		if (frontSector.lightLevel !== backSector?.lightLevel) {
-			markFloor = true;
-			markCeiling = true;
+
+		// Reject empty lines
+		if (!drawUpperWall && !drawLowerWall && !drawMidWall
+			&& frontSector.ceilingFlat === backSector.ceilingFlat
+			&& frontSector.floorFlat === backSector.floorFlat
+			&& frontSector.lightLevel === backSector.lightLevel
+			&& sidedef.midTexture === '-') {
+			return;
 		}
 	}
+
+	// ─── Build wall rendering context ───
+
+	const wallCtx: WallContext = {
+		rs,
+		x1, x2,
+		rw_scale, rw_scalestep,
+		rw_distance,
+		rw_normalangle,
+		rw_offset,
+		rw_centerangle,
+		lightLevel: frontSector.lightLevel,
+		frontFloor, frontCeiling,
+		backFloor, backCeiling,
+		midTex: sidedef.midTexture,
+		topTex: sidedef.topTexture,
+		bottomTex: sidedef.bottomTexture,
+		drawMid: drawMidWall,
+		drawUpper: drawUpperWall,
+		drawLower: drawLowerWall,
+		markFloor, markCeiling,
+		floorPlane, ceilingPlane,
+		lineFlags: linedef.flags,
+		rowOffset: sidedef.rowOffset,
+	};
 
 	// Clip against solidsegs and render
-	const isSolid = !backSector || (!drawUpperWall && !drawLowerWall && drawMidWall);
+	const isSolid = !backSector || (backCeiling <= frontFloor || backFloor >= frontCeiling);
 
 	if (isSolid) {
-		clipSolidWall(rs, x1, x2, rw_scale, rw_scalestep,
-			frontSector.lightLevel, frontFloor, frontCeiling,
-			backFloor, backCeiling,
-			sidedef.midTexture, sidedef.topTexture, sidedef.bottomTexture,
-			drawMidWall, drawUpperWall, drawLowerWall,
-			markFloor, markCeiling,
-			frontSector, linedef.flags, sidedef.textureOffset, sidedef.rowOffset);
+		clipSolidWall(wallCtx);
 	} else {
-		clipPassWall(rs, x1, x2, rw_scale, rw_scalestep,
-			frontSector.lightLevel, frontFloor, frontCeiling,
-			backFloor, backCeiling,
-			sidedef.midTexture, sidedef.topTexture, sidedef.bottomTexture,
-			drawMidWall, drawUpperWall, drawLowerWall,
-			markFloor, markCeiling,
-			frontSector, linedef.flags, sidedef.textureOffset, sidedef.rowOffset);
+		clipPassWall(wallCtx);
 	}
+}
+
+// ─── Wall Context ─────────────────────────────────────────────────
+
+/** All parameters needed to render a wall segment. */
+interface WallContext {
+	readonly rs: RenderState;
+	readonly x1: number;
+	readonly x2: number;
+	readonly rw_scale: number;
+	readonly rw_scalestep: number;
+	readonly rw_distance: number;
+	readonly rw_normalangle: number;
+	readonly rw_offset: number;
+	readonly rw_centerangle: number;
+	readonly lightLevel: number;
+	readonly frontFloor: number;
+	readonly frontCeiling: number;
+	readonly backFloor: number;
+	readonly backCeiling: number;
+	readonly midTex: string;
+	readonly topTex: string;
+	readonly bottomTex: string;
+	readonly drawMid: boolean;
+	readonly drawUpper: boolean;
+	readonly drawLower: boolean;
+	readonly markFloor: boolean;
+	readonly markCeiling: boolean;
+	readonly floorPlane: Visplane | null;
+	readonly ceilingPlane: Visplane | null;
+	readonly lineFlags: number;
+	readonly rowOffset: number;
+}
+
+// ─── Distance Calculation ─────────────────────────────────────────
+
+/**
+ * Compute distance from a point to the viewer.
+ * Simplified version of R_PointToDist using Euclidean distance.
+ */
+function pointToDist(viewx: number, viewy: number, x: number, y: number): number {
+	const dx = Math.abs(x - viewx);
+	const dy = Math.abs(y - viewy);
+	// Use floating-point sqrt then convert back to fixed
+	const dist = Math.sqrt(
+		(dx / FRACUNIT) * (dx / FRACUNIT) + (dy / FRACUNIT) * (dy / FRACUNIT),
+	);
+	return Math.round(dist * FRACUNIT);
 }
 
 // ─── Scale Calculation ─────────────────────────────────────────────
 
 /**
  * Compute projection scale for a wall at a given angle and distance.
- * Larger scale = closer to camera = taller on screen.
+ * Matches R_ScaleFromGlobalAngle from r_main.c.
+ *
+ * @param viewangle - Player's facing direction (BAM)
+ * @param visangle - Global angle to the wall point being projected
+ * @param normalangle - The wall segment's perpendicular angle
+ * @param distance - Perpendicular distance from viewer to wall line
  */
 function scaleFromGlobalAngle(
 	viewangle: number,
@@ -230,27 +350,23 @@ function scaleFromGlobalAngle(
 	normalangle: number,
 	distance: number,
 ): number {
-	const anglea = ((ANG90 + visangle - viewangle) >>> 0);
-	const angleb = ((ANG90 + visangle - normalangle) >>> 0);
+	const anglea = ((ANG90 + (visangle - viewangle)) >>> 0);
+	const angleb = ((ANG90 + (visangle - normalangle)) >>> 0);
 
-	const sinIdxA = (anglea >> ANGLETOFINESHIFT) & FINEMASK;
-	const sinIdxB = (angleb >> ANGLETOFINESHIFT) & FINEMASK;
-
-	const sinea = finesine[sinIdxA] ?? FRACUNIT;
-	const sineb = finesine[sinIdxB] ?? FRACUNIT;
+	const sinea = finesine[(anglea >> ANGLETOFINESHIFT) & FINEMASK] ?? FRACUNIT;
+	const sineb = finesine[(angleb >> ANGLETOFINESHIFT) & FINEMASK] ?? FRACUNIT;
 
 	const num = fixedMul(projection, sineb);
 	const den = fixedMul(distance, sinea);
 
-	if (den === 0) return FRACUNIT * 64;
+	if (den > (num >> 16)) {
+		let scale = fixedDiv(num, den);
+		if (scale > 64 * FRACUNIT) scale = 64 * FRACUNIT;
+		else if (scale < 256) scale = 256;
+		return scale;
+	}
 
-	let scale = fixedDiv(num, den);
-
-	// Clamp scale
-	if (scale < 256) scale = 256;
-	if (scale > 64 * FRACUNIT) scale = 64 * FRACUNIT;
-
-	return scale;
+	return 64 * FRACUNIT;
 }
 
 // ─── Wall Clipping and Rendering ───────────────────────────────────
@@ -259,186 +375,225 @@ function scaleFromGlobalAngle(
  * Clip and render a solid (one-sided) wall segment.
  * Also adds the column range to solidsegs.
  */
-function clipSolidWall(
-	rs: RenderState,
-	x1: number, x2: number,
-	scale: number, scalestep: number,
-	lightLevel: number,
-	frontFloor: number, frontCeiling: number,
-	backFloor: number, backCeiling: number,
-	midTex: string, topTex: string, bottomTex: string,
-	drawMid: boolean, drawUpper: boolean, drawLower: boolean,
-	markFloor: boolean, markCeiling: boolean,
-	sector: { readonly floorFlat: string; readonly ceilingFlat: string; readonly lightLevel: number; readonly floorHeight: number; readonly ceilingHeight: number },
-	lineFlags: number, texOffset: number, rowOffset: number,
-): void {
-	// Find visible portions not covered by solidsegs
-	let curScale = scale;
-
-	for (let x = x1; x <= x2; x++) {
-		if (!isColumnOccluded(rs, x)) {
-			renderWallColumn(rs, x, curScale, lightLevel,
-				frontFloor, frontCeiling, backFloor, backCeiling,
-				midTex, topTex, bottomTex,
-				drawMid, drawUpper, drawLower,
-				markFloor, markCeiling,
-				sector, lineFlags, texOffset, rowOffset);
-		}
-		curScale += scalestep;
-	}
-
-	// Add to solidsegs (merge with adjacent ranges)
-	addSolidSeg(rs, x1, x2);
+function clipSolidWall(ctx: WallContext): void {
+	renderSegLoop(ctx);
+	addSolidSeg(ctx.rs, ctx.x1, ctx.x2);
 }
 
 /**
  * Clip and render a pass-through (two-sided) wall segment.
  * Does NOT add to solidsegs.
  */
-function clipPassWall(
-	rs: RenderState,
-	x1: number, x2: number,
-	scale: number, scalestep: number,
-	lightLevel: number,
-	frontFloor: number, frontCeiling: number,
-	backFloor: number, backCeiling: number,
-	midTex: string, topTex: string, bottomTex: string,
-	drawMid: boolean, drawUpper: boolean, drawLower: boolean,
-	markFloor: boolean, markCeiling: boolean,
-	sector: { readonly floorFlat: string; readonly ceilingFlat: string; readonly lightLevel: number; readonly floorHeight: number; readonly ceilingHeight: number },
-	lineFlags: number, texOffset: number, rowOffset: number,
-): void {
-	let curScale = scale;
-
-	for (let x = x1; x <= x2; x++) {
-		if (!isColumnOccluded(rs, x)) {
-			renderWallColumn(rs, x, curScale, lightLevel,
-				frontFloor, frontCeiling, backFloor, backCeiling,
-				midTex, topTex, bottomTex,
-				drawMid, drawUpper, drawLower,
-				markFloor, markCeiling,
-				sector, lineFlags, texOffset, rowOffset);
-		}
-		curScale += scalestep;
-	}
+function clipPassWall(ctx: WallContext): void {
+	renderSegLoop(ctx);
 }
 
-// ─── Per-Column Wall Rendering ─────────────────────────────────────
+// ─── Render Seg Loop ──────────────────────────────────────────────
+
+/** HEIGHTBITS for sub-pixel Y precision (matching Doom's 12-bit shift). */
+const HEIGHTBITS = 12;
+const HEIGHTUNIT = 1 << HEIGHTBITS;
 
 /**
- * Render a single column of wall (upper, middle, and/or lower textures).
+ * Render all columns in the seg range.
+ * Matches R_RenderSegLoop from r_segs.c.
+ *
+ * Uses incremental Y stepping for precision.
  */
-function renderWallColumn(
-	rs: RenderState,
-	x: number,
-	scale: number,
-	lightLevel: number,
-	frontFloor: number, frontCeiling: number,
-	backFloor: number, backCeiling: number,
-	midTex: string, topTex: string, bottomTex: string,
-	drawMid: boolean, drawUpper: boolean, drawLower: boolean,
-	markFloor: boolean, markCeiling: boolean,
-	sector: { readonly floorFlat: string; readonly ceilingFlat: string; readonly lightLevel: number; readonly floorHeight: number; readonly ceilingHeight: number },
-	lineFlags: number, texOffset: number, rowOffset: number,
-): void {
-	if (x < 0 || x >= rs.screenWidth) return;
+function renderSegLoop(ctx: WallContext): void {
+	const { rs, x1, x2 } = ctx;
 
-	const ch = centery;
+	// World-space heights relative to viewz, shifted for HEIGHTBITS precision
+	const worldtop = (ctx.frontCeiling - rs.viewz) >> 4;
+	const worldbottom = (ctx.frontFloor - rs.viewz) >> 4;
 
-	// Compute screen Y for floor and ceiling
-	const topY = ch - fixedMul(frontCeiling - rs.viewz, scale) / FRACUNIT;
-	const botY = ch - fixedMul(frontFloor - rs.viewz, scale) / FRACUNIT;
+	let worldhigh = 0;
+	let worldlow = 0;
+	if (ctx.drawUpper || ctx.drawLower) {
+		worldhigh = (ctx.backCeiling - rs.viewz) >> 4;
+		worldlow = (ctx.backFloor - rs.viewz) >> 4;
+	}
 
-	// Clamp to clip arrays
-	const clipTop = (rs.ceilingclip[x] ?? -1) + 1;
-	const clipBot = (rs.floorclip[x] ?? rs.screenHeight) - 1;
+	// Initialize incremental stepping
+	let topfrac = (centeryfrac >> 4) - fixedMul(worldtop, ctx.rw_scale);
+	const topstep = -fixedMul(ctx.rw_scalestep, worldtop);
 
-	let yl = Math.max(Math.ceil(topY), clipTop);
-	let yh = Math.min(Math.floor(botY), clipBot);
+	let bottomfrac = (centeryfrac >> 4) - fixedMul(worldbottom, ctx.rw_scale);
+	const bottomstep = -fixedMul(ctx.rw_scalestep, worldbottom);
 
-	// Compute light level
-	const lightIdx = Math.max(0, Math.min(LIGHTLEVELS - 1,
-		(lightLevel >> LIGHTSEGSHIFT) + rs.extralight));
-	const lightTable = scalelight[lightIdx];
-	const scaleIdx = Math.max(0, Math.min(MAXLIGHTSCALE - 1, scale >> 12));
-	const colormapIdx = rs.fixedcolormap ?? (lightTable?.[scaleIdx] ?? 0);
+	let pixhigh = 0;
+	let pixhighstep = 0;
+	let pixlow = 0;
+	let pixlowstep = 0;
 
-	if (drawMid && midTex !== '-') {
-		// One-sided wall: draw middle texture
-		const tex = getWallTexture(rs.textures, midTex);
-		if (tex) {
-			const texColumn = (texOffset + x) % tex.width;
-			const invScale = fixedDiv(FRACUNIT, scale);
+	if (ctx.drawUpper) {
+		pixhigh = (centeryfrac >> 4) - fixedMul(worldhigh, ctx.rw_scale);
+		pixhighstep = -fixedMul(ctx.rw_scalestep, worldhigh);
+	}
+	if (ctx.drawLower) {
+		pixlow = (centeryfrac >> 4) - fixedMul(worldlow, ctx.rw_scale);
+		pixlowstep = -fixedMul(ctx.rw_scalestep, worldlow);
+	}
 
-			// Texture mid point
-			let textureMid = frontCeiling - rs.viewz + (rowOffset << FRACBITS);
-			if (lineFlags & 16) { // ML_DONTPEGBOTTOM
-				textureMid = frontFloor - rs.viewz + (tex.height << FRACBITS) + (rowOffset << FRACBITS);
+	// Texture lookup info
+	const segtextured = ctx.drawMid || ctx.drawUpper || ctx.drawLower;
+	const midTex = ctx.drawMid && ctx.midTex !== '-' ? getWallTexture(rs.textures, ctx.midTex) : null;
+	const topTex = ctx.drawUpper && ctx.topTex !== '-' ? getWallTexture(rs.textures, ctx.topTex) : null;
+	const bottomTex = ctx.drawLower && ctx.bottomTex !== '-' ? getWallTexture(rs.textures, ctx.bottomTex) : null;
+
+	// Texture mid (vertical offset) for pegging
+	let midTextureMid = 0;
+	let topTextureMid = 0;
+	let bottomTextureMid = 0;
+
+	if (midTex) {
+		midTextureMid = ctx.frontCeiling - rs.viewz + (ctx.rowOffset << FRACBITS);
+		if (ctx.lineFlags & LinedefFlags.DONT_PEG_BOTTOM) {
+			midTextureMid = ctx.frontFloor - rs.viewz + (midTex.height << FRACBITS) + (ctx.rowOffset << FRACBITS);
+		}
+	}
+	if (topTex) {
+		// ML_DONTPEGTOP: peg to top of upper texture at ceiling
+		topTextureMid = ctx.frontCeiling - rs.viewz + (ctx.rowOffset << FRACBITS);
+		if (!(ctx.lineFlags & LinedefFlags.DONT_PEG_TOP)) {
+			// Not pegged to top: align to lower of the two ceilings
+			topTextureMid = ctx.backCeiling - rs.viewz + (topTex.height << FRACBITS) + (ctx.rowOffset << FRACBITS);
+		}
+	}
+	if (bottomTex) {
+		bottomTextureMid = ctx.frontFloor - rs.viewz + (ctx.rowOffset << FRACBITS);
+		if (ctx.lineFlags & LinedefFlags.DONT_PEG_BOTTOM) {
+			bottomTextureMid = ctx.frontCeiling - rs.viewz + (ctx.rowOffset << FRACBITS);
+		}
+	}
+
+	let curScale = ctx.rw_scale;
+
+	for (let x = x1; x <= x2; x++) {
+		if (x < 0 || x >= rs.screenWidth) {
+			topfrac += topstep;
+			bottomfrac += bottomstep;
+			if (ctx.drawUpper) pixhigh += pixhighstep;
+			if (ctx.drawLower) pixlow += pixlowstep;
+			curScale += ctx.rw_scalestep;
+			continue;
+		}
+
+		// Skip occluded columns
+		if (isColumnOccluded(rs, x)) {
+			topfrac += topstep;
+			bottomfrac += bottomstep;
+			if (ctx.drawUpper) pixhigh += pixhighstep;
+			if (ctx.drawLower) pixlow += pixlowstep;
+			curScale += ctx.rw_scalestep;
+			continue;
+		}
+
+		// Clip bounds
+		const clipTop = (rs.ceilingclip[x] ?? -1) + 1;
+		const clipBot = (rs.floorclip[x] ?? rs.screenHeight) - 1;
+
+		// Compute screen Y coordinates from incremental fracs
+		let yl = (topfrac + HEIGHTUNIT - 1) >> HEIGHTBITS;
+		if (yl < clipTop) yl = clipTop;
+
+		let yh = bottomfrac >> HEIGHTBITS;
+		if (yh > clipBot) yh = clipBot;
+
+		// Compute light level
+		const lightIdx = Math.max(0, Math.min(LIGHTLEVELS - 1,
+			(ctx.lightLevel >> LIGHTSEGSHIFT) + rs.extralight));
+		const lightTable = scalelight[lightIdx];
+		const scaleIdx = Math.max(0, Math.min(MAXLIGHTSCALE - 1, curScale >> 12));
+		const colormapIdx = rs.fixedcolormap ?? (lightTable?.[scaleIdx] ?? 0);
+
+		// Compute texture column (if textured)
+		let texturecolumn = 0;
+		if (segtextured) {
+			const angle = ((ctx.rw_centerangle + (xtoviewangle[x] ?? 0)) >>> 0) >> ANGLETOFINESHIFT;
+			texturecolumn = ctx.rw_offset - fixedMul(finetangent[angle & (4095)] ?? 0, ctx.rw_distance);
+			texturecolumn >>= FRACBITS;
+		}
+
+		// ─── Mark ceiling visplane ───
+		if (ctx.markCeiling && ctx.ceilingPlane) {
+			const ceilTop = clipTop;
+			const ceilBottom = yl > 0 ? yl - 1 : -1;
+			if (ceilTop <= ceilBottom) {
+				setPlaneColumn(ctx.ceilingPlane, x, ceilTop, ceilBottom);
 			}
+		}
 
-			drawWallSlice(rs, x, yl, yh, tex, texColumn, textureMid, invScale, colormapIdx);
+		// ─── Mark floor visplane ───
+		if (ctx.markFloor && ctx.floorPlane) {
+			const floorTop = yh < rs.screenHeight - 1 ? yh + 1 : rs.screenHeight;
+			const floorBottom = clipBot;
+			if (floorTop <= floorBottom) {
+				setPlaneColumn(ctx.floorPlane, x, floorTop, floorBottom);
+			}
+		}
+
+		// ─── Draw wall columns ───
+
+		if (ctx.drawMid) {
+			// One-sided wall: middle texture fills from yl to yh
+			if (yl <= yh) {
+				if (midTex) {
+					const invScale = fixedDiv(FRACUNIT, curScale);
+					drawWallSlice(rs, x, yl, yh, midTex, texturecolumn, midTextureMid, invScale, colormapIdx);
+				} else {
+					drawSolidColumn(rs, x, yl, yh, colormapIdx);
+				}
+			}
+			// Solid wall: close off both clip regions
+			rs.ceilingclip[x] = rs.screenHeight;
+			rs.floorclip[x] = -1;
 		} else {
-			// No texture: draw solid color
-			drawSolidColumn(rs, x, yl, yh, colormapIdx);
-		}
+			// Two-sided: draw upper texture
+			if (ctx.drawUpper) {
+				let mid = pixhigh >> HEIGHTBITS;
+				if (mid > clipBot) mid = clipBot;
 
-		// Update clip arrays
-		if (markCeiling && yl > clipTop) {
-			rs.ceilingclip[x] = yl - 1;
-		}
-		if (markFloor && yh < clipBot) {
-			rs.floorclip[x] = yh + 1;
-		}
-		return;
-	}
-
-	// Two-sided wall: draw upper and lower textures
-	if (drawUpper && topTex !== '-') {
-		const backCeilY = ch - fixedMul(backCeiling - rs.viewz, scale) / FRACUNIT;
-		const upperYh = Math.min(Math.floor(backCeilY), clipBot);
-
-		if (yl <= upperYh) {
-			const tex = getWallTexture(rs.textures, topTex);
-			if (tex) {
-				let textureMid = frontCeiling - rs.viewz + (rowOffset << FRACBITS);
-				if (!(lineFlags & 8)) { // not ML_DONTPEGTOP: peg to lower ceiling
-					textureMid = backCeiling - rs.viewz + (tex.height << FRACBITS) + (rowOffset << FRACBITS);
+				if (yl <= mid) {
+					if (topTex) {
+						const invScale = fixedDiv(FRACUNIT, curScale);
+						drawWallSlice(rs, x, yl, mid, topTex, texturecolumn, topTextureMid, invScale, colormapIdx);
+					}
 				}
-				const invScale = fixedDiv(FRACUNIT, scale);
-				const texColumn = (texOffset + x) % tex.width;
-				drawWallSlice(rs, x, yl, Math.min(upperYh, yh), tex, texColumn, textureMid, invScale, colormapIdx);
+
+				if (ctx.markCeiling) {
+					rs.ceilingclip[x] = mid;
+				}
+			} else if (ctx.markCeiling) {
+				rs.ceilingclip[x] = yl - 1;
+			}
+
+			// Two-sided: draw lower texture
+			if (ctx.drawLower) {
+				let mid = (pixlow + HEIGHTUNIT - 1) >> HEIGHTBITS;
+				if (mid < clipTop) mid = clipTop;
+
+				if (mid <= yh) {
+					if (bottomTex) {
+						const invScale = fixedDiv(FRACUNIT, curScale);
+						drawWallSlice(rs, x, mid, yh, bottomTex, texturecolumn, bottomTextureMid, invScale, colormapIdx);
+					}
+				}
+
+				if (ctx.markFloor) {
+					rs.floorclip[x] = mid;
+				}
+			} else if (ctx.markFloor) {
+				rs.floorclip[x] = yh + 1;
 			}
 		}
 
-		if (markCeiling) {
-			rs.ceilingclip[x] = Math.max(yl - 1, Math.floor(backCeilY));
-		}
-	} else if (markCeiling) {
-		rs.ceilingclip[x] = yl - 1;
-	}
-
-	if (drawLower && bottomTex !== '-') {
-		const backFloorY = ch - fixedMul(backFloor - rs.viewz, scale) / FRACUNIT;
-		const lowerYl = Math.max(Math.ceil(backFloorY), clipTop);
-
-		if (lowerYl <= yh) {
-			const tex = getWallTexture(rs.textures, bottomTex);
-			if (tex) {
-				let textureMid = frontFloor - rs.viewz + (rowOffset << FRACBITS);
-				if (lineFlags & 16) { // ML_DONTPEGBOTTOM
-					textureMid = frontCeiling - rs.viewz + (rowOffset << FRACBITS);
-				}
-				const invScale = fixedDiv(FRACUNIT, scale);
-				const texColumn = (texOffset + x) % tex.width;
-				drawWallSlice(rs, x, Math.max(lowerYl, yl), yh, tex, texColumn, textureMid, invScale, colormapIdx);
-			}
-		}
-
-		if (markFloor) {
-			rs.floorclip[x] = Math.min(yh + 1, Math.ceil(backFloorY));
-		}
-	} else if (markFloor) {
-		rs.floorclip[x] = yh + 1;
+		// Step
+		topfrac += topstep;
+		bottomfrac += bottomstep;
+		if (ctx.drawUpper) pixhigh += pixhighstep;
+		if (ctx.drawLower) pixlow += pixlowstep;
+		curScale += ctx.rw_scalestep;
 	}
 }
 
@@ -451,12 +606,12 @@ function drawWallSlice(
 	rs: RenderState,
 	x: number, yl: number, yh: number,
 	tex: CompositeTexture,
-	texColumn: number,
+	texturecolumn: number,
 	textureMid: number,
 	invScale: number,
 	colormapIdx: number,
 ): void {
-	const colIdx = ((texColumn % tex.width) + tex.width) % tex.width;
+	const colIdx = ((texturecolumn % tex.width) + tex.width) % tex.width;
 	const column = tex.columns[colIdx];
 	if (!column) return;
 
