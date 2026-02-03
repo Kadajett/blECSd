@@ -340,15 +340,18 @@ function scaleFromGlobalAngle(
 	normalangle: number,
 	distance: number,
 ): number {
-	// Unsigned BAM subtraction to handle angle wrapping
-	const anglea = ((ANG90 + ((visangle - viewangle) >>> 0)) >>> 0);
-	const angleb = ((ANG90 + ((visangle - normalangle) >>> 0)) >>> 0);
+	// Signed 32-bit angles matching Doom's int type for anglea/angleb
+	const anglea = (ANG90 + ((visangle - viewangle) >>> 0)) | 0;
+	const angleb = (ANG90 + ((visangle - normalangle) >>> 0)) | 0;
 
-	const sinea = finesine[(anglea >> ANGLETOFINESHIFT) & FINEMASK] ?? FRACUNIT;
-	const sineb = finesine[(angleb >> ANGLETOFINESHIFT) & FINEMASK] ?? FRACUNIT;
+	// Both sines are always positive for visible wall segments.
+	// Use unsigned shift for the finesine index (angles are in 0..ANG180 range).
+	const sinea = finesine[(anglea >>> ANGLETOFINESHIFT) & FINEMASK]!;
+	const sineb = finesine[(angleb >>> ANGLETOFINESHIFT) & FINEMASK]!;
 
-	const num = fixedMul(projection, sineb);
-	const den = fixedMul(distance, sinea);
+	// Clamp to 32-bit signed for overflow check matching Doom's int arithmetic
+	const num = fixedMul(projection, sineb) | 0;
+	const den = fixedMul(distance, sinea) | 0;
 
 	if (den > (num >> 16)) {
 		let scale = fixedDiv(num, den);
