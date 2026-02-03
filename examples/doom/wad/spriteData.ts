@@ -162,9 +162,11 @@ function setFrameRotation(
 	}
 
 	if (rotation === 0) {
-		// Rotation 0 = use this picture for all angles
-		entry.rotations[0] = picture;
-		entry.flipped[0] = flip;
+		// Rotation 0 = use this picture for all angles (fill all 8 slots)
+		for (let r = 0; r < 8; r++) {
+			entry.rotations[r] = picture;
+			entry.flipped[r] = flip;
+		}
 	} else {
 		// Rotations 1-8 map to indices 0-7
 		entry.rotations[rotation - 1] = picture;
@@ -226,25 +228,8 @@ export interface SpriteRotationResult {
  * ```
  */
 export function getSpriteRotation(frame: SpriteFrame, angle: number): SpriteRotationResult | null {
-	// Check if this is a single-rotation sprite (rotation 0 set, others null)
-	const rot0 = frame.rotations[0];
-	if (rot0 !== null && rot0 !== undefined) {
-		// Check if any other rotations are set
-		let hasOtherRotations = false;
-		for (let i = 1; i < 8; i++) {
-			if (frame.rotations[i] !== null && frame.rotations[i] !== undefined) {
-				hasOtherRotations = true;
-				break;
-			}
-		}
-
-		if (!hasOtherRotations) {
-			// Single rotation: use rotation 0 for all angles
-			return { picture: rot0, flip: frame.flipped[0] ?? false };
-		}
-	}
-
-	// Multi-rotation: return the specific angle
+	// Rotation 0 sprites have all 8 slots filled with the same picture,
+	// so this lookup works for both single-rotation and multi-rotation sprites.
 	const idx = angle & 7;
 	const pic = frame.rotations[idx];
 	if (!pic) return null;
