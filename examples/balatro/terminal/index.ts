@@ -29,3 +29,29 @@ export {
 	clearScreen,
 	createDefaultConfig,
 } from './init';
+
+export type {
+	SoundType,
+	SoundMode,
+	SoundConfig,
+	SoundEvent,
+	SoundQueueState,
+} from './sound';
+
+export {
+	createSoundConfig,
+	setSoundEnabled,
+	setSoundMode,
+	createSoundQueue,
+	enqueueSound,
+	enqueueSounds,
+	dequeueSound,
+	clearSoundQueue,
+	getBellString,
+	getSoundBells,
+	isSoundEnabled,
+	getSoundDefinition,
+	hasPendingSounds,
+	getPendingCount,
+	getAllSoundTypes,
+} from './sound';
