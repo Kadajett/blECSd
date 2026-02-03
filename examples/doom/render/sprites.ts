@@ -295,7 +295,7 @@ function drawSpriteColumn(
 
 			// Compute texture Y from screen Y
 			const frac = textureMid + (y - centery) * invScale;
-			const texY = (-frac >> FRACBITS);
+			const texY = frac >> FRACBITS;
 
 			// Look up the pixel within the post
 			const postPixelIdx = texY - post.topDelta;
