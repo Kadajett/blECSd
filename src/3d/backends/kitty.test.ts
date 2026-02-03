@@ -47,24 +47,42 @@ describe('Kitty backend', () => {
 			expect(output.escape).toContain('v=20');
 		});
 
-		it('contains image ID', () => {
+		it('contains image ID from configured base', () => {
 			const backend = createKittyBackend({ imageId: 42 });
 			const fb = createPixelFramebuffer({ width: 2, height: 2 });
 			setPixel(fb, 0, 0, RED);
 			const output = backend.encode(fb, 0, 0);
 
-			expect(output.escape).toContain('i=42');
+			// Double buffer uses baseId and baseId+1; first frame uses slot 1
+			expect(output.escape).toContain('i=43');
 		});
 
-		it('contains delete command before transmit', () => {
+		it('deletes old frame after placing new one (double buffer)', () => {
 			const backend = createKittyBackend();
 			const fb = createPixelFramebuffer({ width: 2, height: 2 });
 			const output = backend.encode(fb, 0, 0);
 
+			const placeIdx = output.escape?.indexOf('a=p') ?? -1;
 			const deleteIdx = output.escape?.indexOf('a=d') ?? -1;
-			const transmitIdx = output.escape?.indexOf('a=t') ?? -1;
-			expect(deleteIdx).toBeLessThan(transmitIdx);
-			expect(deleteIdx).toBeGreaterThanOrEqual(0);
+			// Place must come before delete to avoid flicker
+			expect(placeIdx).toBeGreaterThanOrEqual(0);
+			expect(deleteIdx).toBeGreaterThan(placeIdx);
+		});
+
+		it('alternates image IDs between frames', () => {
+			const backend = createKittyBackend({ imageId: 10 });
+			const fb = createPixelFramebuffer({ width: 2, height: 2 });
+
+			const output1 = backend.encode(fb, 0, 0);
+			const output2 = backend.encode(fb, 0, 0);
+
+			// Frame 1 uses slot 1 (id=11), frame 2 uses slot 0 (id=10)
+			expect(output1.escape).toContain('i=11');
+			expect(output2.escape).toContain('i=10');
+
+			// Frame 1 deletes slot 0 (id=10), frame 2 deletes slot 1 (id=11)
+			expect(output1.escape).toMatch(/a=d.*i=10/);
+			expect(output2.escape).toMatch(/a=d.*i=11/);
 		});
 
 		it('contains placement command', () => {

@@ -83,7 +83,7 @@ function chunkBase64(base64: string, chunkSize: number): ReadonlyArray<string> {
  */
 export function createKittyBackend(config?: KittyConfig): RendererBackend {
 	const validated = KittyConfigSchema.parse(config ?? {});
-	const imageId = validated.imageId;
+	const baseImageId = validated.imageId;
 	const chunkSize = validated.chunkSize;
 
 	const capabilities: BackendCapabilities = {
@@ -95,6 +95,11 @@ export function createKittyBackend(config?: KittyConfig): RendererBackend {
 		requiresEscapeSequences: true,
 	};
 
+	// Double-buffer: alternate between two image IDs to avoid flicker.
+	// The old frame stays visible until the new frame is fully placed.
+	let currentSlot = 0;
+	const slots = [baseImageId, baseImageId + 1];
+
 	return {
 		type: 'kitty',
 		capabilities,
@@ -105,27 +110,31 @@ export function createKittyBackend(config?: KittyConfig): RendererBackend {
 			const base64Data = toBase64(framebuffer.colorBuffer);
 			const chunks = chunkBase64(base64Data, chunkSize);
 
+			// Swap to the next slot
+			const prevSlot = currentSlot;
+			currentSlot = currentSlot === 0 ? 1 : 0;
+			const newId = slots[currentSlot]!;
+			const oldId = slots[prevSlot]!;
+
 			let escape = '';
 
-			// Delete previous image with this ID
-			escape += `${APC_START}a=d,d=i,i=${imageId};${ST}`;
-
-			// Transmit image data in chunks
+			// Transmit new image data in chunks (upload only, no display)
 			for (let c = 0; c < chunks.length; c++) {
 				const isLast = c === chunks.length - 1;
 				const isFirst = c === 0;
 
 				if (isFirst) {
-					// First chunk includes image metadata (a=t: transmit only, no display)
-					escape += `${APC_START}a=t,f=32,s=${w},v=${h},i=${imageId},m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
+					escape += `${APC_START}a=t,f=32,s=${w},v=${h},i=${newId},m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
 				} else {
-					// Subsequent chunks only have continuation flag
 					escape += `${APC_START}m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
 				}
 			}
 
-			// Place image at screen position
-			escape += `${APC_START}a=p,i=${imageId},p=1,C=1;${ST}`;
+			// Place new image (old frame still visible until this point)
+			escape += `${APC_START}a=p,i=${newId},p=1,C=1;${ST}`;
+
+			// Now delete the old frame
+			escape += `${APC_START}a=d,d=i,i=${oldId};${ST}`;
 
 			return { escape, cursorX: screenX, cursorY: screenY };
 		},
