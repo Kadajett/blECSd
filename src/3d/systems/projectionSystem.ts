@@ -18,8 +18,10 @@ import { Transform3D } from '../components/transform3d';
 import { Viewport3D } from '../components/viewport3d';
 import type { Mat4 } from '../math/mat4';
 import { mat4Invert, mat4Multiply } from '../math/mat4';
-import { type ScreenCoord, orthographicMatrix, perspectiveMatrix, projectVertex, viewportTransform } from '../math/projection';
-import { vec3 } from '../math/vec3';
+import { type ScreenCoord, orthographicMatrix, perspectiveMatrix, viewportTransform } from '../math/projection';
+
+// Pre-allocated scratch buffer for viewport transform to avoid per-vertex allocations
+const _scratchNdc = new Float32Array(3);
 
 /**
  * A single projected vertex in screen space.
@@ -150,31 +152,49 @@ export const projectionSystem: System = (world: World): World => {
 			const modelMatrix = Transform3D.worldMatrix.subarray(modelOffset, modelOffset + 16) as Mat4;
 			const mvpMatrix = mat4Multiply(vpMatrix, modelMatrix);
 
-			const projectedVertices: ProjectedVertex[] = [];
+			const vertCount = meshData.vertexCount;
+			const projectedVertices: ProjectedVertex[] = new Array(vertCount);
+			const verts = meshData.vertices;
 
-			for (let i = 0; i < meshData.vertexCount; i++) {
-				const vx = meshData.vertices[i * 3] as number;
-				const vy = meshData.vertices[i * 3 + 1] as number;
-				const vz = meshData.vertices[i * 3 + 2] as number;
+			// Inline MVP transform to avoid per-vertex allocations (no vec3() or projectVertex() calls)
+			const m = mvpMatrix;
+			const m0 = m[0] as number; const m1 = m[1] as number; const m2 = m[2] as number; const m3 = m[3] as number;
+			const m4 = m[4] as number; const m5 = m[5] as number; const m6 = m[6] as number; const m7 = m[7] as number;
+			const m8 = m[8] as number; const m9 = m[9] as number; const m10 = m[10] as number; const m11 = m[11] as number;
+			const m12 = m[12] as number; const m13 = m[13] as number; const m14 = m[14] as number; const m15 = m[15] as number;
 
-				const ndc = projectVertex(mvpMatrix, vec3(vx, vy, vz));
-				const ndcX = ndc[0] as number;
-				const ndcY = ndc[1] as number;
-				const ndcZ = ndc[2] as number;
+			for (let i = 0; i < vertCount; i++) {
+				const i3 = i * 3;
+				const vx = verts[i3] as number;
+				const vy = verts[i3 + 1] as number;
+				const vz = verts[i3 + 2] as number;
 
-				// Visible if within NDC range
+				// Inline mat4 * vec4 (w=1) and perspective divide
+				const cx = m0 * vx + m4 * vy + m8 * vz + m12;
+				const cy = m1 * vx + m5 * vy + m9 * vz + m13;
+				const cz = m2 * vx + m6 * vy + m10 * vz + m14;
+				const cw = m3 * vx + m7 * vy + m11 * vz + m15;
+
+				const invW = cw !== 0 ? 1 / cw : 0;
+				const ndcX = cx * invW;
+				const ndcY = cy * invW;
+				const ndcZ = cz * invW;
+
 				const visible = ndcX >= -1 && ndcX <= 1 &&
 					ndcY >= -1 && ndcY <= 1 &&
 					ndcZ >= -1 && ndcZ <= 1;
 
-				const screen: ScreenCoord = toScreen(ndc);
+				// Inline viewport transform
+				const screen: ScreenCoord = toScreen(
+					(_scratchNdc[0] = ndcX, _scratchNdc[1] = ndcY, _scratchNdc[2] = ndcZ, _scratchNdc),
+				);
 
-				projectedVertices.push({
+				projectedVertices[i] = {
 					x: screen.x,
 					y: screen.y,
 					depth: screen.depth,
 					visible,
-				});
+				};
 			}
 
 			meshProjections.push({

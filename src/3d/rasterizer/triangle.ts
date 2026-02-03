@@ -118,41 +118,48 @@ export function fillTriangle(
 	const a1 = v1.a ?? 255;
 	const a2 = v2.a ?? 255;
 
-	// Barycentric edge function approach
-	for (let py = minY; py <= maxY; py++) {
-		for (let px = minX; px <= maxX; px++) {
-			// Sample at pixel center
-			const cx = px + 0.5;
-			const cy = py + 0.5;
+	// Pre-compute edge function coefficients for incremental evaluation
+	const A01 = (v1.y - v2.y) * invArea;
+	const B01 = (v2.x - v1.x) * invArea;
+	const A12 = (v2.y - v0.y) * invArea;
+	const B12 = (v0.x - v2.x) * invArea;
 
-			// Barycentric coordinates
-			const w0 = ((v1.y - v2.y) * (cx - v2.x) + (v2.x - v1.x) * (cy - v2.y)) * invArea;
-			const w1 = ((v2.y - v0.y) * (cx - v2.x) + (v0.x - v2.x) * (cy - v2.y)) * invArea;
+	const hasDepth = fb.depthBuffer !== null && fb.depthBuffer !== undefined;
+
+	// Evaluate at first pixel center
+	const startCx = minX + 0.5;
+	const startCy = minY + 0.5;
+	let rowW0 = ((v1.y - v2.y) * (startCx - v2.x) + (v2.x - v1.x) * (startCy - v2.y)) * invArea;
+	let rowW1 = ((v2.y - v0.y) * (startCx - v2.x) + (v0.x - v2.x) * (startCy - v2.y)) * invArea;
+
+	for (let py = minY; py <= maxY; py++) {
+		let w0 = rowW0;
+		let w1 = rowW1;
+
+		for (let px = minX; px <= maxX; px++) {
 			const w2 = 1 - w0 - w1;
 
-			// Top-left fill rule: skip pixels outside the triangle
-			if (w0 < 0 || w1 < 0 || w2 < 0) {
-				continue;
-			}
+			if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+				const depth = v0.depth * w0 + v1.depth * w1 + v2.depth * w2;
 
-			// Interpolate depth
-			const depth = v0.depth * w0 + v1.depth * w1 + v2.depth * w2;
+				if (!hasDepth || testAndSetDepth(fb, px, py, depth)) {
+					const r = (v0.r * w0 + v1.r * w1 + v2.r * w2 + 0.5) | 0;
+					const g = (v0.g * w0 + v1.g * w1 + v2.g * w2 + 0.5) | 0;
+					const b = (v0.b * w0 + v1.b * w1 + v2.b * w2 + 0.5) | 0;
+					const a = (a0 * w0 + a1 * w1 + a2 * w2 + 0.5) | 0;
 
-			// Depth test
-			if (fb.depthBuffer) {
-				if (!testAndSetDepth(fb, px, py, depth)) {
-					continue;
+					setPixelUnsafe(fb, px, py, r, g, b, a);
 				}
 			}
 
-			// Interpolate color
-			const r = Math.round(v0.r * w0 + v1.r * w1 + v2.r * w2);
-			const g = Math.round(v0.g * w0 + v1.g * w1 + v2.g * w2);
-			const b = Math.round(v0.b * w0 + v1.b * w1 + v2.b * w2);
-			const a = Math.round(a0 * w0 + a1 * w1 + a2 * w2);
-
-			setPixelUnsafe(fb, px, py, r, g, b, a);
+			// Increment edge functions along X
+			w0 += A01;
+			w1 += A12;
 		}
+
+		// Increment edge functions along Y
+		rowW0 += B01;
+		rowW1 += B12;
 	}
 }
 
@@ -205,28 +212,39 @@ export function fillTriangleFlat(
 	const cb = color.b;
 	const ca = color.a;
 
-	for (let py = minY; py <= maxY; py++) {
-		for (let px = minX; px <= maxX; px++) {
-			const cx = px + 0.5;
-			const cy = py + 0.5;
+	// Pre-compute edge function coefficients for incremental evaluation
+	const A01 = (v1.y - v2.y) * invArea;
+	const B01 = (v2.x - v1.x) * invArea;
+	const A12 = (v2.y - v0.y) * invArea;
+	const B12 = (v0.x - v2.x) * invArea;
 
-			const w0 = ((v1.y - v2.y) * (cx - v2.x) + (v2.x - v1.x) * (cy - v2.y)) * invArea;
-			const w1 = ((v2.y - v0.y) * (cx - v2.x) + (v0.x - v2.x) * (cy - v2.y)) * invArea;
+	const hasDepth = fb.depthBuffer !== null && fb.depthBuffer !== undefined;
+
+	const startCx = minX + 0.5;
+	const startCy = minY + 0.5;
+	let rowW0 = ((v1.y - v2.y) * (startCx - v2.x) + (v2.x - v1.x) * (startCy - v2.y)) * invArea;
+	let rowW1 = ((v2.y - v0.y) * (startCx - v2.x) + (v0.x - v2.x) * (startCy - v2.y)) * invArea;
+
+	for (let py = minY; py <= maxY; py++) {
+		let w0 = rowW0;
+		let w1 = rowW1;
+
+		for (let px = minX; px <= maxX; px++) {
 			const w2 = 1 - w0 - w1;
 
-			if (w0 < 0 || w1 < 0 || w2 < 0) {
-				continue;
-			}
+			if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+				const depth = v0.depth * w0 + v1.depth * w1 + v2.depth * w2;
 
-			const depth = v0.depth * w0 + v1.depth * w1 + v2.depth * w2;
-
-			if (fb.depthBuffer) {
-				if (!testAndSetDepth(fb, px, py, depth)) {
-					continue;
+				if (!hasDepth || testAndSetDepth(fb, px, py, depth)) {
+					setPixelUnsafe(fb, px, py, cr, cg, cb, ca);
 				}
 			}
 
-			setPixelUnsafe(fb, px, py, cr, cg, cb, ca);
+			w0 += A01;
+			w1 += A12;
 		}
+
+		rowW0 += B01;
+		rowW1 += B12;
 	}
 }

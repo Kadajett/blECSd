@@ -30,15 +30,18 @@ const ST = '\x1b\\';
 
 /**
  * Quantize framebuffer colors to a limited palette using popularity-based selection.
+ * Uses pre-allocated buffers to minimize GC pressure.
  *
  * @param fb - Source framebuffer
  * @param maxColors - Maximum palette size
- * @returns Array of palette colors as [r, g, b] tuples and a pixel-to-palette index map
+ * @param reusableIndexMap - Optional pre-allocated index map to reuse
+ * @returns Array of palette colors as flat [r,g,b,...] Uint8Array and a pixel-to-palette index map
  */
 function quantizePalette(
 	fb: PixelFramebuffer,
 	maxColors: number,
-): { palette: ReadonlyArray<readonly [number, number, number]>; indexMap: Uint8Array } {
+	reusableIndexMap: Uint8Array | null,
+): { paletteFlat: Uint8Array; paletteCount: number; indexMap: Uint8Array } {
 	const buf = fb.colorBuffer;
 	const pixelCount = fb.width * fb.height;
 	const colorCounts = new Map<number, number>();
@@ -52,76 +55,90 @@ function quantizePalette(
 		colorCounts.set(key, (colorCounts.get(key) ?? 0) + 1);
 	}
 
-	// Sort by popularity, take top N
-	const sorted = [...colorCounts.entries()].sort((a, b) => b[1] - a[1]);
-	const palette: Array<readonly [number, number, number]> = [];
-	for (let i = 0; i < Math.min(sorted.length, maxColors); i++) {
-		const key = sorted[i]![0];
-		palette.push([(key >> 16) & 0xff, (key >> 8) & 0xff, key & 0xff] as const);
+	// Sort by popularity, take top N. Use typed array for palette storage.
+	const entries: Array<[number, number]> = [];
+	for (const entry of colorCounts) {
+		entries.push(entry);
+	}
+	entries.sort((a, b) => b[1] - a[1]);
+	const paletteCount = Math.min(entries.length, maxColors) || 1;
+	const paletteFlat = new Uint8Array(paletteCount * 3);
+
+	for (let i = 0; i < paletteCount; i++) {
+		if (i < entries.length) {
+			const key = entries[i]![0];
+			paletteFlat[i * 3] = (key >> 16) & 0xff;
+			paletteFlat[i * 3 + 1] = (key >> 8) & 0xff;
+			paletteFlat[i * 3 + 2] = key & 0xff;
+		}
 	}
 
-	// If no colors, add black as default
-	if (palette.length === 0) {
-		palette.push([0, 0, 0] as const);
-	}
+	// Reuse index map buffer when size matches
+	const indexMap = (reusableIndexMap && reusableIndexMap.length === pixelCount)
+		? reusableIndexMap
+		: new Uint8Array(pixelCount);
 
 	// Map each pixel to nearest palette index
-	const indexMap = new Uint8Array(pixelCount);
 	for (let i = 0; i < pixelCount; i++) {
 		const idx = i * 4;
 		const a = buf[idx + 3] as number;
 		if (a === 0) {
-			indexMap[i] = 0; // transparent maps to first palette entry
+			indexMap[i] = 0;
 			continue;
 		}
 		const r = buf[idx] as number;
 		const g = buf[idx + 1] as number;
 		const b = buf[idx + 2] as number;
 
-		let bestDist = Number.POSITIVE_INFINITY;
+		let bestDist = 0x7fffffff;
 		let bestIdx = 0;
-		for (let p = 0; p < palette.length; p++) {
-			const [pr, pg, pb] = palette[p]!;
-			const dr = r - pr;
-			const dg = g - pg;
-			const db = b - pb;
+		for (let p = 0; p < paletteCount; p++) {
+			const p3 = p * 3;
+			const dr = r - (paletteFlat[p3] as number);
+			const dg = g - (paletteFlat[p3 + 1] as number);
+			const db = b - (paletteFlat[p3 + 2] as number);
 			const dist = dr * dr + dg * dg + db * db;
 			if (dist < bestDist) {
 				bestDist = dist;
 				bestIdx = p;
+				if (dist === 0) break; // Exact match, no need to check further
 			}
 		}
 		indexMap[i] = bestIdx;
 	}
 
-	return { palette, indexMap };
+	return { paletteFlat, paletteCount, indexMap };
 }
 
 /**
- * Run-length encode a sixel data string.
- * Repeated characters are compressed as `!<count><char>`.
+ * Run-length encode sixel band data from a Uint8Array of sixel values.
+ * Writes encoded result to output parts array. Uses `!<count><char>` for runs >= 3.
  */
-function rleEncode(data: string): string {
-	if (data.length === 0) return '';
-
-	let result = '';
+function rleEncodeBand(
+	sixelValues: Uint8Array,
+	width: number,
+	parts: string[],
+): boolean {
+	let hasPixels = false;
 	let i = 0;
-	while (i < data.length) {
-		const ch = data[i]!;
+	while (i < width) {
+		const val = sixelValues[i] as number;
 		let count = 1;
-		while (i + count < data.length && data[i + count] === ch) {
+		while (i + count < width && sixelValues[i + count] === val) {
 			count++;
 		}
+		const ch = String.fromCharCode(63 + val);
+		if (val > 0) hasPixels = true;
 		if (count >= 3) {
-			result += `!${count}${ch}`;
+			parts.push('!', String(count), ch);
 		} else {
 			for (let j = 0; j < count; j++) {
-				result += ch;
+				parts.push(ch);
 			}
 		}
 		i += count;
 	}
-	return result;
+	return hasPixels;
 }
 
 /**
@@ -151,65 +168,95 @@ export function createSixelBackend(config?: SixelConfig): RendererBackend {
 		requiresEscapeSequences: true,
 	};
 
+	// Pre-allocate reusable buffers
+	let cachedIndexMap: Uint8Array | null = null;
+	let cachedSixelRow: Uint8Array | null = null;
+
 	return {
 		type: 'sixel',
 		capabilities,
 
 		encode(framebuffer: PixelFramebuffer, screenX: number, screenY: number): EncodedOutput {
-			const { palette, indexMap } = quantizePalette(framebuffer, maxColors);
+			const { paletteFlat, paletteCount, indexMap } = quantizePalette(framebuffer, maxColors, cachedIndexMap);
+			cachedIndexMap = indexMap;
 			const w = framebuffer.width;
 			const h = framebuffer.height;
 
+			// Collect all output in an array, join once at the end
+			const parts: string[] = [DCS_START];
+
 			// Build palette header
-			let escape = DCS_START;
-			for (let i = 0; i < palette.length; i++) {
-				const [r, g, b] = palette[i]!;
-				// Sixel palette uses percentages 0-100
-				const rp = Math.round((r / 255) * 100);
-				const gp = Math.round((g / 255) * 100);
-				const bp = Math.round((b / 255) * 100);
-				escape += `#${i};2;${rp};${gp};${bp}`;
+			for (let i = 0; i < paletteCount; i++) {
+				const i3 = i * 3;
+				const rp = Math.round(((paletteFlat[i3] as number) / 255) * 100);
+				const gp = Math.round(((paletteFlat[i3 + 1] as number) / 255) * 100);
+				const bp = Math.round(((paletteFlat[i3 + 2] as number) / 255) * 100);
+				parts.push('#', String(i), ';2;', String(rp), ';', String(gp), ';', String(bp));
 			}
+
+			// Pre-allocate sixel row buffer
+			if (!cachedSixelRow || cachedSixelRow.length < w) {
+				cachedSixelRow = new Uint8Array(w);
+			}
+			const sixelRow = cachedSixelRow;
 
 			// Encode bands (6 rows each)
 			const bandCount = Math.ceil(h / 6);
 			for (let band = 0; band < bandCount; band++) {
 				const bandY = band * 6;
+				const maxRow = Math.min(6, h - bandY);
 
-				// For each color in the palette that has pixels in this band
-				for (let colorIdx = 0; colorIdx < palette.length; colorIdx++) {
-					let bandData = '';
-					let hasPixels = false;
-
+				// For each color in the palette
+				for (let colorIdx = 0; colorIdx < paletteCount; colorIdx++) {
+					// Build sixel values for this color in this band
 					for (let x = 0; x < w; x++) {
 						let sixelBits = 0;
-						for (let row = 0; row < 6; row++) {
-							const y = bandY + row;
-							if (y >= h) continue;
-							const pixelIdx = y * w + x;
+						for (let row = 0; row < maxRow; row++) {
+							const pixelIdx = (bandY + row) * w + x;
 							if (indexMap[pixelIdx] === colorIdx) {
 								sixelBits |= (1 << row);
 							}
 						}
-						bandData += String.fromCharCode(63 + sixelBits);
-						if (sixelBits > 0) hasPixels = true;
+						sixelRow[x] = sixelBits;
 					}
 
-					if (hasPixels) {
-						const encoded = rleEnabled ? rleEncode(bandData) : bandData;
-						escape += `#${colorIdx}${encoded}$`;
+					// RLE encode or raw output
+					if (rleEnabled) {
+						const bandParts: string[] = [];
+						const hasPixels = rleEncodeBand(sixelRow, w, bandParts);
+						if (hasPixels) {
+							parts.push('#', String(colorIdx));
+							for (let p = 0; p < bandParts.length; p++) {
+								parts.push(bandParts[p]!);
+							}
+							parts.push('$');
+						}
+					} else {
+						let hasPixels = false;
+						const bandChars: string[] = [];
+						for (let x = 0; x < w; x++) {
+							const val = sixelRow[x] as number;
+							if (val > 0) hasPixels = true;
+							bandChars.push(String.fromCharCode(63 + val));
+						}
+						if (hasPixels) {
+							parts.push('#', String(colorIdx));
+							for (let c = 0; c < bandChars.length; c++) {
+								parts.push(bandChars[c]!);
+							}
+							parts.push('$');
+						}
 					}
 				}
 
-				// Band separator (newline) except for last band
 				if (band < bandCount - 1) {
-					escape += '-';
+					parts.push('-');
 				}
 			}
 
-			escape += ST;
+			parts.push(ST);
 
-			return { escape, cursorX: screenX, cursorY: screenY };
+			return { escape: parts.join(''), cursorX: screenX, cursorY: screenY };
 		},
 
 		getPixelDimensions(cellWidth: number, cellHeight: number): { width: number; height: number } {
