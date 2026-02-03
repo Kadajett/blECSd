@@ -690,6 +690,70 @@ function renderSegRange(ctx: WallContext, start: number, stop: number): void {
 		if (ctx.drawLower) pixlow += pixlowstep;
 		curScale += rw_scalestep;
 	}
+
+	// ─── Store DrawSeg for sprite clipping (matching R_StoreWallRange) ───
+
+	// Determine silhouette flags
+	const SIL_BOTTOM = 1;
+	const SIL_TOP = 2;
+	let silhouette = 0;
+	let bsilheight = 0;
+	let tsilheight = 0;
+
+	if (ctx.drawMid) {
+		// One-sided wall: fully occludes both top and bottom
+		silhouette = SIL_BOTTOM | SIL_TOP;
+		bsilheight = 0x7fffffff; // MAXINT
+		tsilheight = -0x80000000; // MININT
+	} else {
+		// Two-sided wall: silhouette depends on sector height relationships
+		if (ctx.backFloor > ctx.frontFloor) {
+			silhouette |= SIL_BOTTOM;
+			bsilheight = ctx.backFloor;
+		}
+		if (ctx.backCeiling < ctx.frontCeiling) {
+			silhouette |= SIL_TOP;
+			tsilheight = ctx.backCeiling;
+		}
+	}
+
+	// Copy ceilingclip/floorclip for sprite clipping if needed
+	let sprtopclip: Int16Array | null = null;
+	let sprbottomclip: Int16Array | null = null;
+	const rangeLen = stop - start + 1;
+
+	if (silhouette & SIL_TOP) {
+		sprtopclip = new Int16Array(rangeLen);
+		for (let i = 0; i < rangeLen; i++) {
+			sprtopclip[i] = rs.ceilingclip[start + i] ?? -1;
+		}
+	}
+	if (silhouette & SIL_BOTTOM) {
+		sprbottomclip = new Int16Array(rangeLen);
+		for (let i = 0; i < rangeLen; i++) {
+			sprbottomclip[i] = rs.floorclip[start + i] ?? rs.screenHeight;
+		}
+	}
+
+	const scale2 = stop > start
+		? scaleFromGlobalAngle(
+			rs.viewangle, ((rs.viewangle + (xtoviewangle[stop] ?? 0)) >>> 0),
+			ctx.rw_normalangle, ctx.rw_distance,
+		)
+		: rw_scale;
+
+	rs.drawsegs.push({
+		x1: start,
+		x2: stop,
+		scale1: rw_scale,
+		scale2,
+		scalestep: rw_scalestep,
+		silhouette,
+		bsilheight,
+		tsilheight,
+		sprtopclip,
+		sprbottomclip,
+	});
 }
 
 // ─── Column Drawing Helpers ────────────────────────────────────────
