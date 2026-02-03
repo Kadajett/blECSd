@@ -17,7 +17,7 @@ import {
 	pointToAngle2,
 } from '../math/angles.js';
 import { FRACBITS, fixedMul } from '../math/fixed.js';
-import { viewangletox, viewwidth } from '../math/tables.js';
+import { clipangle, viewangletox, viewwidth } from '../math/tables.js';
 import { NF_SUBSECTOR } from '../wad/types.js';
 import type { BBox, MapNode } from '../wad/types.js';
 import type { RenderState, Visplane } from './defs.js';
@@ -161,58 +161,127 @@ export function pointOnSide(x: number, y: number, node: MapNode): number {
 // ─── Bounding Box Visibility ───────────────────────────────────────
 
 /**
+ * Lookup table for R_CheckBBox: given the viewer's position relative to
+ * the bbox (one of 9 regions in a 3x3 grid), which two corners define
+ * the widest angular span.
+ *
+ * Each entry is [x1, y1, x2, y2] as indices into the bbox coordinate array:
+ *   0=top, 1=bottom, 2=left, 3=right
+ *
+ * Region numbering (boxx * 4 + boxy):
+ *   0=above-left  1=above   2=above-right
+ *   4=left         5=inside  8=right
+ *   8=below-left   9=below  10=below-right
+ *
+ * Matching original Doom's checkcoord table from r_bsp.c.
+ */
+const CHECKCOORD: ReadonlyArray<readonly [number, number, number, number] | null> = [
+	// boxx=0 (viewer left of bbox)
+	[3, 0, 2, 1], // boxy=0: above-left  -> right-top to left-bottom
+	[3, 0, 2, 0], // boxy=1: left        -> right-top to left-top
+	[3, 1, 2, 0], // boxy=2: below-left  -> right-bottom to left-top
+	null,         // padding
+	// boxx=1 (viewer horizontally within bbox)
+	[2, 0, 2, 1], // boxy=0: above       -> left-top to left-bottom (wide span)
+	null,         // boxy=1: INSIDE bbox  -> always visible
+	[3, 1, 3, 0], // boxy=2: below       -> right-bottom to right-top
+	null,         // padding
+	// boxx=2 (viewer right of bbox)
+	[2, 0, 3, 1], // boxy=0: above-right -> left-top to right-bottom
+	[2, 1, 3, 1], // boxy=1: right       -> left-bottom to right-bottom
+	[2, 1, 3, 0], // boxy=2: below-right -> left-bottom to right-top
+	null,         // padding
+];
+
+/**
  * Check if a bounding box is potentially visible on screen.
- * Tests against the current solidsegs occlusion state.
+ * Matches R_CheckBBox from r_bsp.c: classifies viewer position into
+ * a 3x3 grid relative to the bbox, selects the two corners that define
+ * the widest angular span, clips against the FOV, and tests solidsegs.
  *
  * @param rs - Render state
  * @param bbox - Bounding box to test
  * @returns true if the box may be visible
  */
 function checkBBox(rs: RenderState, bbox: BBox): boolean {
-	// Compute angles to the four corners of the bounding box
-	const bx = bbox.left << FRACBITS;
-	const by = bbox.bottom << FRACBITS;
-	const bx2 = bbox.right << FRACBITS;
-	const by2 = bbox.top << FRACBITS;
+	const bboxCoords = [
+		bbox.top << FRACBITS,    // 0: top (max y)
+		bbox.bottom << FRACBITS, // 1: bottom (min y)
+		bbox.left << FRACBITS,   // 2: left (min x)
+		bbox.right << FRACBITS,  // 3: right (max x)
+	];
 
-	// Find the angle span of the bounding box from the viewer
-	let angle1 = pointToAngle2(rs.viewx, rs.viewy, bx2, by2);
-	let angle2 = pointToAngle2(rs.viewx, rs.viewy, bx, by);
-
-	// Get all four corner angles and find the widest span
-	const a1 = pointToAngle2(rs.viewx, rs.viewy, bx, by2);
-	const a2 = pointToAngle2(rs.viewx, rs.viewy, bx2, by);
-
-	// Use the widest visible span
-	const angles = [angle1, angle2, a1, a2];
-	let minAngle = angle1;
-	let maxAngle = angle1;
-
-	for (const a of angles) {
-		const rel = ((a - rs.viewangle) >>> 0);
-		const relMin = ((minAngle - rs.viewangle) >>> 0);
-		const relMax = ((maxAngle - rs.viewangle) >>> 0);
-
-		if (rel < relMin) minAngle = a;
-		if (rel > relMax) maxAngle = a;
+	// Classify viewer position relative to bbox (3x3 grid)
+	let boxx: number;
+	if (rs.viewx <= bboxCoords[2]!) {
+		boxx = 0; // left of bbox
+	} else if (rs.viewx < bboxCoords[3]!) {
+		boxx = 1; // horizontally inside bbox
+	} else {
+		boxx = 2; // right of bbox
 	}
 
-	// Convert to screen column range
-	const span1 = ((minAngle - rs.viewangle + ANG90) >>> 0);
-	const span2 = ((maxAngle - rs.viewangle + ANG90) >>> 0);
+	let boxy: number;
+	if (rs.viewy >= bboxCoords[0]!) {
+		boxy = 0; // above bbox
+	} else if (rs.viewy > bboxCoords[1]!) {
+		boxy = 1; // vertically inside bbox
+	} else {
+		boxy = 2; // below bbox
+	}
 
-	const x1fineIdx = (span1 >> ANGLETOFINESHIFT) & 0xfff;
-	const x2fineIdx = (span2 >> ANGLETOFINESHIFT) & 0xfff;
+	const boxpos = boxx * 4 + boxy;
 
-	const sx1 = viewangletox[x1fineIdx] ?? 0;
-	const sx2 = viewangletox[x2fineIdx] ?? viewwidth;
+	// If viewer is inside the bbox, it's always visible
+	if (boxpos === 5) return true;
+
+	const coords = CHECKCOORD[boxpos];
+	if (!coords) return true;
+
+	// Compute angles to the two selected corners
+	let angle1 = pointToAngle2(
+		rs.viewx, rs.viewy,
+		bboxCoords[coords[0]]!, bboxCoords[coords[1]]!,
+	);
+	let angle2 = pointToAngle2(
+		rs.viewx, rs.viewy,
+		bboxCoords[coords[2]]!, bboxCoords[coords[3]]!,
+	);
+
+	// Make view-relative
+	const span = ((angle1 - angle2) >>> 0);
+	if (span >= ANG180) return true; // bbox wraps around behind us
+
+	angle1 = ((angle1 - rs.viewangle) >>> 0);
+	angle2 = ((angle2 - rs.viewangle) >>> 0);
+
+	// Clip against FOV using clipangle (same logic as R_AddLine)
+	let tspan = ((angle1 + clipangle) >>> 0);
+	if (tspan > ((2 * clipangle) >>> 0)) {
+		tspan = ((tspan - ((2 * clipangle) >>> 0)) >>> 0);
+		if (tspan >= span) return false;
+		angle1 = clipangle;
+	}
+	tspan = ((clipangle - angle2) >>> 0);
+	if (tspan > ((2 * clipangle) >>> 0)) {
+		tspan = ((tspan - ((2 * clipangle) >>> 0)) >>> 0);
+		if (tspan >= span) return false;
+		angle2 = ((-clipangle) >>> 0);
+	}
+
+	// Convert to screen X coordinates
+	const fineIdx1 = ((angle1 + ANG90) >>> 0) >> ANGLETOFINESHIFT;
+	const fineIdx2 = ((angle2 + ANG90) >>> 0) >> ANGLETOFINESHIFT;
+
+	const sx1 = viewangletox[fineIdx1 & 0xfff] ?? 0;
+	const sx2 = viewangletox[fineIdx2 & 0xfff] ?? viewwidth;
 
 	if (sx1 >= sx2) return false;
 
 	// Check if the column range is fully occluded by solidsegs
 	for (const seg of rs.solidsegs) {
 		if (seg.first <= sx1 && seg.last >= sx2 - 1) {
-			return false; // fully occluded
+			return false;
 		}
 	}
 
