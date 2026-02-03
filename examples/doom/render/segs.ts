@@ -13,10 +13,12 @@ import {
 	ANG180,
 	ANGLETOFINESHIFT,
 	FINEMASK,
+	SLOPERANGE,
 	finecosine,
 	finesine,
 	finetangent,
 	pointToAngle2,
+	tantoangle,
 } from '../math/angles.js';
 import { FRACBITS, FRACUNIT, fixedDiv, fixedMul } from '../math/fixed.js';
 import {
@@ -314,13 +316,27 @@ interface WallContext {
  * Simplified version of R_PointToDist using Euclidean distance.
  */
 function pointToDist(viewx: number, viewy: number, x: number, y: number): number {
-	const dx = Math.abs(x - viewx);
-	const dy = Math.abs(y - viewy);
-	// Use floating-point sqrt then convert back to fixed
-	const dist = Math.sqrt(
-		(dx / FRACUNIT) * (dx / FRACUNIT) + (dy / FRACUNIT) * (dy / FRACUNIT),
-	);
-	return Math.round(dist * FRACUNIT);
+	let dx = Math.abs(x - viewx);
+	let dy = Math.abs(y - viewy);
+
+	if (dx === 0 && dy === 0) return 0;
+
+	// Ensure dx >= dy (swap so we work in the first octant)
+	if (dy > dx) {
+		const temp = dx;
+		dx = dy;
+		dy = temp;
+	}
+
+	// DBITS = FRACBITS - SLOPEBITS, where SLOPEBITS = log2(SLOPERANGE) = 11
+	const DBITS = 5;
+	const ratio = fixedDiv(dy, dx);
+	const idx = Math.min(ratio >> DBITS, SLOPERANGE);
+	const angle = ((tantoangle[idx]! + ANG90) >>> 0) >> ANGLETOFINESHIFT;
+	const sinVal = finesine[angle & FINEMASK];
+	if (!sinVal) return dx;
+
+	return fixedDiv(dx, sinVal);
 }
 
 // ─── Scale Calculation ─────────────────────────────────────────────
