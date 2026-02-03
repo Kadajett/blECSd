@@ -502,23 +502,28 @@ function renderSegRange(ctx: WallContext, start: number, stop: number): void {
 		rw_scalestep = Math.trunc((scale2 - rw_scale) / (stop - start));
 	}
 
-	// World-space heights relative to viewz, shifted for HEIGHTBITS precision
-	const worldtop = (ctx.frontCeiling - rs.viewz) >> 4;
-	const worldbottom = (ctx.frontFloor - rs.viewz) >> 4;
+	// World-space heights relative to viewz (full 16.16 fixed-point)
+	const worldtop = ctx.frontCeiling - rs.viewz;
+	const worldbottom = ctx.frontFloor - rs.viewz;
 
 	let worldhigh = 0;
 	let worldlow = 0;
 	if (ctx.drawUpper || ctx.drawLower) {
-		worldhigh = (ctx.backCeiling - rs.viewz) >> 4;
-		worldlow = (ctx.backFloor - rs.viewz) >> 4;
+		worldhigh = ctx.backCeiling - rs.viewz;
+		worldlow = ctx.backFloor - rs.viewz;
 	}
 
-	// Initialize incremental stepping from sub-range start
-	let topfrac = (centeryfrac >> 4) - fixedMul(worldtop, rw_scale);
-	const topstep = -fixedMul(rw_scalestep, worldtop);
+	// Convert from FRACBITS to HEIGHTBITS precision after fixedMul
+	// to preserve full precision through the multiplication.
+	// Shift amount = FRACBITS - HEIGHTBITS = 4.
+	const HEIGHTSHIFT = FRACBITS - HEIGHTBITS;
 
-	let bottomfrac = (centeryfrac >> 4) - fixedMul(worldbottom, rw_scale);
-	const bottomstep = -fixedMul(rw_scalestep, worldbottom);
+	// Initialize incremental stepping from sub-range start
+	let topfrac = (centeryfrac >> HEIGHTSHIFT) - (fixedMul(worldtop, rw_scale) >> HEIGHTSHIFT);
+	const topstep = -(fixedMul(rw_scalestep, worldtop) >> HEIGHTSHIFT);
+
+	let bottomfrac = (centeryfrac >> HEIGHTSHIFT) - (fixedMul(worldbottom, rw_scale) >> HEIGHTSHIFT);
+	const bottomstep = -(fixedMul(rw_scalestep, worldbottom) >> HEIGHTSHIFT);
 
 	let pixhigh = 0;
 	let pixhighstep = 0;
@@ -526,12 +531,12 @@ function renderSegRange(ctx: WallContext, start: number, stop: number): void {
 	let pixlowstep = 0;
 
 	if (ctx.drawUpper) {
-		pixhigh = (centeryfrac >> 4) - fixedMul(worldhigh, rw_scale);
-		pixhighstep = -fixedMul(rw_scalestep, worldhigh);
+		pixhigh = (centeryfrac >> HEIGHTSHIFT) - (fixedMul(worldhigh, rw_scale) >> HEIGHTSHIFT);
+		pixhighstep = -(fixedMul(rw_scalestep, worldhigh) >> HEIGHTSHIFT);
 	}
 	if (ctx.drawLower) {
-		pixlow = (centeryfrac >> 4) - fixedMul(worldlow, rw_scale);
-		pixlowstep = -fixedMul(rw_scalestep, worldlow);
+		pixlow = (centeryfrac >> HEIGHTSHIFT) - (fixedMul(worldlow, rw_scale) >> HEIGHTSHIFT);
+		pixlowstep = -(fixedMul(rw_scalestep, worldlow) >> HEIGHTSHIFT);
 	}
 
 	// Texture lookup info
