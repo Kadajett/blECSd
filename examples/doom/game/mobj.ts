@@ -329,6 +329,18 @@ export interface Mobj {
 	sectorIndex: number;
 	/** Whether the mobj is still alive. */
 	alive: boolean;
+	/** Current state index in the state table. */
+	stateIndex: number;
+	/** Target mobj (for AI chasing/attacking), or null. */
+	target: Mobj | null;
+	/** Moves remaining before changing direction. */
+	movecount: number;
+	/** Tics before first attack after seeing player. */
+	reactiontime: number;
+	/** Current movement direction (0-7 cardinal/diagonal, 8 = none). */
+	movedir: number;
+	/** Attack cooldown threshold. */
+	threshold: number;
 }
 
 /**
@@ -378,6 +390,12 @@ export function createMobj(
 		momz: 0,
 		sectorIndex: 0,
 		alive: true,
+		stateIndex: 0,
+		target: null,
+		movecount: 0,
+		reactiontime: 8,
+		movedir: 8,
+		threshold: 0,
 	};
 }
 

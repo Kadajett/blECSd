@@ -41,6 +41,8 @@ import { loadSprites } from './wad/spriteData.js';
 import { spawnMapThings } from './game/spawn.js';
 import { renderSprites } from './render/sprites.js';
 import { createHudState, drawHud, updateHud } from './render/hud.js';
+import { registerActions, initThinkers, runThinkers } from './game/thinkers.js';
+import { ACTION_FUNCTIONS } from './game/enemyAI.js';
 
 // ─── Configuration ─────────────────────────────────────────────────
 
@@ -116,6 +118,11 @@ function main(): void {
 	const mobjs = spawnMapThings(map, 2);
 	console.log(`Spawned ${mobjs.length} things`);
 
+	// Initialize enemy AI
+	registerActions(ACTION_FUNCTIONS);
+	initThinkers(mobjs);
+	console.log('Enemy AI initialized');
+
 	// Create framebuffer and backend
 	const fb = three.createPixelFramebuffer({
 		width: SCREEN_WIDTH,
@@ -167,6 +174,9 @@ function main(): void {
 		// Update player and HUD
 		updatePlayer(player, input, map);
 		updateHud(hudState, input);
+
+		// Run enemy AI thinkers
+		runThinkers(mobjs, player, map);
 
 		// Set up render state
 		const rs = createRenderState(fb, map, textures, palette, colormap);
