@@ -350,8 +350,9 @@ function scaleFromGlobalAngle(
 	normalangle: number,
 	distance: number,
 ): number {
-	const anglea = ((ANG90 + (visangle - viewangle)) >>> 0);
-	const angleb = ((ANG90 + (visangle - normalangle)) >>> 0);
+	// Unsigned BAM subtraction to handle angle wrapping
+	const anglea = ((ANG90 + ((visangle - viewangle) >>> 0)) >>> 0);
+	const angleb = ((ANG90 + ((visangle - normalangle) >>> 0)) >>> 0);
 
 	const sinea = finesine[(anglea >> ANGLETOFINESHIFT) & FINEMASK] ?? FRACUNIT;
 	const sineb = finesine[(angleb >> ANGLETOFINESHIFT) & FINEMASK] ?? FRACUNIT;

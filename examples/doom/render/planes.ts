@@ -27,6 +27,7 @@ import {
 	distscale,
 	viewheight,
 	viewwidth,
+	xtoviewangle,
 	yslope,
 	zlight,
 } from '../math/tables.js';
@@ -122,6 +123,8 @@ export function drawPlanes(rs: RenderState): void {
 
 /**
  * Draw a floor or ceiling visplane with texture mapping.
+ * Matches Doom's R_MapPlane / R_DrawSpan approach:
+ * for each row, compute distance and texture step, then draw the span.
  */
 function drawFloorCeilingPlane(rs: RenderState, plane: Visplane): void {
 	const flat = getFlat(rs.textures, plane.picnum);
@@ -137,57 +140,78 @@ function drawFloorCeilingPlane(rs: RenderState, plane: Visplane): void {
 		(plane.lightLevel >> 4) + rs.extralight));
 	const lightTable = zlight[lightIdx];
 
-	// Compute base texture mapping scales based on current view angle
+	// Per-frame view angle trig
 	const viewAngleFine = (rs.viewangle >> ANGLETOFINESHIFT) & FINEMASK;
 	const viewcos = finecosine[viewAngleFine] ?? FRACUNIT;
 	const viewsin = finesine[viewAngleFine] ?? 0;
 
-	// Process each column, converting to horizontal spans
-	for (let x = plane.minx; x <= plane.maxx; x++) {
-		const top = plane.top[x];
-		const bottom = plane.bottom[x];
-		if (top === undefined || bottom === undefined || top === VP_UNUSED) continue;
+	// Process row by row: gather horizontal spans from the visplane columns
+	for (let y = 0; y < rs.screenHeight; y++) {
+		// Find span extent for this row
+		let spanStart = -1;
+		let spanEnd = -1;
 
-		for (let y = top; y <= bottom; y++) {
-			if (y < 0 || y >= rs.screenHeight) continue;
+		for (let x = plane.minx; x <= plane.maxx; x++) {
+			const top = plane.top[x];
+			const bottom = plane.bottom[x];
+			if (top === undefined || bottom === undefined || top === VP_UNUSED) continue;
+			if (y < top || y > bottom) continue;
 
-			// Distance from camera to this floor row
-			const dy = Math.abs(y - centery);
-			if (dy === 0) continue;
+			if (spanStart === -1) spanStart = x;
+			spanEnd = x;
+		}
 
-			const ys = yslope[y];
-			if (ys === undefined) continue;
-			const distance = fixedMul(planeheight, ys);
+		if (spanStart === -1) continue;
 
-			// Texture coordinates
-			const ds = distscale[x];
-			if (ds === undefined) continue;
-			const length = fixedMul(distance, ds);
+		// Compute distance for this row (same for all pixels in the row)
+		const ys = yslope[y];
+		if (ys === undefined) continue;
+		const distance = fixedMul(planeheight, ys);
 
-			const xAng = ((rs.viewangle + (x - viewwidth / 2) * (1 << ANGLETOFINESHIFT)) >>> 0);
-			const angFine = (xAng >> ANGLETOFINESHIFT) & FINEMASK;
-			const cosA = finecosine[angFine] ?? FRACUNIT;
-			const sinA = finesine[angFine] ?? 0;
+		// Compute texture step per pixel for this row (matching R_MapPlane)
+		// ds_xstep = distance * basexscale (adjusted for view angle)
+		// ds_ystep = distance * baseyscale (adjusted for view angle)
+		const xstep = fixedMul(distance, basexscale);
+		const ystep = fixedMul(distance, baseyscale);
 
-			const xfrac = rs.viewx + fixedMul(cosA, length);
-			const yfrac = -rs.viewy - fixedMul(sinA, length);
+		// Compute starting texture position for the leftmost pixel of the span
+		// Use xtoviewangle for proper angle at each column
+		const startAngle = ((rs.viewangle + (xtoviewangle[spanStart] ?? 0)) >>> 0);
+		const startAngleFine = (startAngle >> ANGLETOFINESHIFT) & FINEMASK;
+		const startLength = fixedMul(distance, distscale[spanStart] ?? FRACUNIT);
+
+		let xfrac = rs.viewx + fixedMul(finecosine[startAngleFine] ?? FRACUNIT, startLength);
+		let yfrac = -rs.viewy - fixedMul(finesine[startAngleFine] ?? 0, startLength);
+
+		// Light level based on distance
+		const zIdx = Math.min(MAXLIGHTZ - 1, Math.max(0, distance >> LIGHTZSHIFT));
+		const colormapIdx = rs.fixedcolormap ?? (lightTable?.[zIdx] ?? 0);
+		const cmap = rs.colormap[colormapIdx];
+
+		// Draw the span pixel by pixel
+		for (let x = spanStart; x <= spanEnd; x++) {
+			// Check this column is actually part of the visplane at this row
+			const top = plane.top[x];
+			const bottom = plane.bottom[x];
+			if (top === undefined || bottom === undefined || top === VP_UNUSED || y < top || y > bottom) {
+				xfrac += xstep;
+				yfrac += ystep;
+				continue;
+			}
 
 			// Sample the flat texture (64x64)
 			const tx = ((xfrac >> FRACBITS) & 63);
 			const ty = ((yfrac >> FRACBITS) & 63);
 			const paletteIdx = flat.pixels[ty * 64 + tx] ?? 0;
 
-			// Light level based on distance
-			const zIdx = Math.min(MAXLIGHTZ - 1, Math.max(0, distance >> LIGHTZSHIFT));
-			const colormapIdx = rs.fixedcolormap ?? (lightTable?.[zIdx] ?? 0);
-
-			// Apply colormap and palette
-			const cmap = rs.colormap[colormapIdx];
 			const shadedIdx = cmap ? (cmap[paletteIdx] ?? paletteIdx) : paletteIdx;
 			const color = rs.palette[shadedIdx];
-			if (!color) continue;
+			if (color) {
+				three.setPixelUnsafe(rs.fb, x, y, color.r, color.g, color.b, 255);
+			}
 
-			three.setPixelUnsafe(rs.fb, x, y, color.r, color.g, color.b, 255);
+			xfrac += xstep;
+			yfrac += ystep;
 		}
 	}
 }

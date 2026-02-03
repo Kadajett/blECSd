@@ -40,8 +40,8 @@ import { setupInput, pollInput, cleanupInput } from './game/input.js';
 
 // ─── Configuration ─────────────────────────────────────────────────
 
-const SCREEN_WIDTH = 320;
-const SCREEN_HEIGHT = 200;
+const SCREEN_WIDTH = 640;
+const SCREEN_HEIGHT = 400;
 const TARGET_FPS = 30;
 const TICRATE = 35;
 const FRAME_TIME = 1000 / TARGET_FPS;
@@ -109,7 +109,7 @@ function main(): void {
 		height: SCREEN_HEIGHT,
 		enableDepthBuffer: true,
 	});
-	const backend = three.createKittyBackend({ imageId: 1 });
+	const backend = three.createKittyBackend({ imageId: 1, chunkSize: 1024 * 1024 });
 
 	// Create player
 	const player = createPlayer(map);
