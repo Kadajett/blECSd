@@ -494,9 +494,5 @@ import { PALETTE_RGB } from './palette';
  * Gets the RGB value for a palette color.
  */
 function getPaletteRgb(color: Color256): RGB {
-	const rgb = PALETTE_RGB[color];
-	if (!rgb) {
-		throw new Error(`Invalid Color256: ${color}`);
-	}
-	return rgb;
+	return PALETTE_RGB[color];
 }
