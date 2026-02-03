@@ -234,7 +234,7 @@ function drawFloorCeilingPlane(rs: RenderState, plane: Visplane): void {
 		const startLength = fixedMul(distance, distscale[spanStart] ?? FRACUNIT);
 
 		let xfrac = rs.viewx + fixedMul(finecosine[startAngleFine] ?? FRACUNIT, startLength);
-		let yfrac = -rs.viewy - fixedMul(finesine[startAngleFine] ?? 0, startLength);
+		let yfrac = -rs.viewy + fixedMul(finesine[startAngleFine] ?? 0, startLength);
 
 		// Light level based on distance
 		const zIdx = Math.min(MAXLIGHTZ - 1, Math.max(0, distance >> LIGHTZSHIFT));

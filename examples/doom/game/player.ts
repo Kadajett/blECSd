@@ -342,7 +342,7 @@ function lineCrossesBBox(
  * @param y - Y coordinate (map units, not fixed-point)
  * @returns Sector index, or 0 if not found
  */
-function findSectorAt(map: MapData, x: number, y: number): number {
+export function findSectorAt(map: MapData, x: number, y: number): number {
 	// Walk BSP tree to find the subsector containing the point
 	if (map.nodes.length === 0) {
 		return map.subsectors[0] ? findSubsectorSector(map, 0) : 0;

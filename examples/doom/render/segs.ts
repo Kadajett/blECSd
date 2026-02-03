@@ -496,7 +496,7 @@ function renderSegRange(ctx: WallContext, start: number, stop: number): void {
 			rs.viewangle, ((rs.viewangle + (xtoviewangle[stop] ?? 0)) >>> 0),
 			ctx.rw_normalangle, ctx.rw_distance,
 		);
-		rw_scalestep = Math.round((scale2 - rw_scale) / (stop - start));
+		rw_scalestep = Math.trunc((scale2 - rw_scale) / (stop - start));
 	}
 
 	// World-space heights relative to viewz, shifted for HEIGHTBITS precision

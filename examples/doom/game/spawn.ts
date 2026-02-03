@@ -11,6 +11,7 @@
 import type { MapData, MapThing } from '../wad/types.js';
 import { ThingFlags } from '../wad/types.js';
 import { type Mobj, DOOMED_TO_MOBJ, MOBJINFO, createMobj } from './mobj.js';
+import { findSectorAt } from './player.js';
 
 // ─── Skill Level Filtering ─────────────────────────────────────────
 
@@ -37,19 +38,17 @@ function shouldSpawnForSkill(thingFlags: number, skill: number): boolean {
 // ─── Sector Floor Lookup ───────────────────────────────────────────
 
 /**
- * Find the floor height at a map coordinate.
+ * Find the floor height at a map coordinate using BSP tree lookup.
  *
- * This is a simplified placeholder that returns 0. The full BSP-based
- * sector lookup is in player.ts; a shared utility can be extracted
- * when needed.
- *
- * @param _map - Map data (unused for now)
- * @param _x - X coordinate in map units
- * @param _y - Y coordinate in map units
+ * @param map - Map data
+ * @param x - X coordinate in map units
+ * @param y - Y coordinate in map units
  * @returns Floor height in map units
  */
-function findSectorFloor(_map: MapData, _x: number, _y: number): number {
-	return 0;
+function findSectorFloor(map: MapData, x: number, y: number): number {
+	const sectorIdx = findSectorAt(map, x, y);
+	const sector = map.sectors[sectorIdx];
+	return sector ? sector.floorHeight : 0;
 }
 
 // ─── Player and Deathmatch Start Types ─────────────────────────────
