@@ -82,3 +82,25 @@ export const Viewport3DConfigSchema = z.object({
 	backendType: z.enum(['auto', 'braille', 'halfblock', 'sixel', 'kitty']).default('auto'),
 }).describe('3D viewport configuration');
 export type Viewport3DConfig = z.input<typeof Viewport3DConfigSchema>;
+
+/**
+ * Configuration for 3D animation.
+ * Supports continuous rotation and orbital movement.
+ *
+ * @example
+ * ```typescript
+ * const config = Animation3DConfigSchema.parse({ rotateSpeed: { y: Math.PI } });
+ * ```
+ */
+export const Animation3DConfigSchema = z.object({
+	rotateSpeed: z.object({
+		x: z.number().default(0),
+		y: z.number().default(0),
+		z: z.number().default(0),
+	}).default(() => ({ x: 0, y: 0, z: 0 })).describe('Radians per second of continuous rotation'),
+	orbitCenter: z.tuple([z.number(), z.number(), z.number()]).optional()
+		.describe('Point to orbit around'),
+	orbitSpeed: z.number().default(0).describe('Radians per second of orbit'),
+	orbitRadius: z.number().positive().optional().describe('Distance from orbit center'),
+}).describe('3D animation configuration');
+export type Animation3DConfig = z.input<typeof Animation3DConfigSchema>;

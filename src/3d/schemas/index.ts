@@ -38,12 +38,14 @@ export {
 	TriangleVertexSchema,
 } from './rasterizer';
 export type {
+	Animation3DConfig,
 	Camera3DConfig,
 	Material3DConfig,
 	Transform3DConfig,
 	Viewport3DConfig,
 } from './components';
 export {
+	Animation3DConfigSchema,
 	Camera3DConfigSchema,
 	Material3DConfigSchema,
 	Transform3DConfigSchema,

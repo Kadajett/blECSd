@@ -7,6 +7,13 @@
  * @module 3d/components
  */
 
+export type { Animation3DData } from './animation3d';
+export {
+	Animation3D,
+	getAnimation3D,
+	setAnimation3D,
+} from './animation3d';
+
 export type { Transform3DData } from './transform3d';
 export {
 	Transform3D,
