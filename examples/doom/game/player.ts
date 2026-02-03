@@ -90,9 +90,9 @@ export function createPlayer(map: MapData): PlayerState {
 		armor: 0,
 		ammo: 50,
 		maxAmmo: 200,
-		forwardSpeed: 12 * FRACUNIT,
-		sideSpeed: 10 * FRACUNIT,
-		turnSpeed: ANG90 / 16, // ~5.6 degrees per tic
+		forwardSpeed: 25 * 2048, // Doom walking forwardmove * 2048
+		sideSpeed: 24 * 2048, // Doom walking sidemove * 2048
+		turnSpeed: 1280 << 16, // Doom normal angleturn << 16
 		sectorIndex,
 	};
 }
