@@ -9,14 +9,13 @@
 
 import {
 	ANG90,
-	ANG180,
 	ANGLETOFINESHIFT,
 	FINEMASK,
 	finecosine,
 	finesine,
 } from '../math/angles.js';
 import { FRACBITS, FRACUNIT, fixedMul } from '../math/fixed.js';
-import type { MapData } from '../wad/types.js';
+import { NF_SUBSECTOR, type MapData } from '../wad/types.js';
 import type { InputState } from './input.js';
 
 // ─── Player State ──────────────────────────────────────────────────
@@ -164,8 +163,11 @@ export function updatePlayer(
 
 // ─── Collision Detection ───────────────────────────────────────────
 
-/** Maximum step-up height in map units. */
+/** Maximum step-up height in map units (matches Doom's MAXSTEPHEIGHT). */
 const MAX_STEP_HEIGHT = 24;
+
+/** Player height in map units (matches Doom's VIEWHEIGHT + margin). */
+const PLAYER_HEIGHT = 56;
 
 /** Player bounding box radius in fixed-point. */
 const PLAYER_RADIUS = 16 << FRACBITS;
@@ -259,7 +261,8 @@ function checkPosition(
 					v2.x << FRACBITS, v2.y << FRACBITS,
 					x, y, PLAYER_RADIUS,
 				)) {
-					// For two-sided lines, check step height
+					// For two-sided lines, check step height and ceiling opening
+					// Matches Doom's P_CheckPosition opening checks
 					if (linedef.flags & 4) { // ML_TWOSIDED
 						const frontSide = map.sidedefs[linedef.frontSidedef];
 						const backSide = map.sidedefs[linedef.backSidedef];
@@ -267,8 +270,18 @@ function checkPosition(
 							const frontSector = map.sectors[frontSide.sector];
 							const backSector = map.sectors[backSide.sector];
 							if (frontSector && backSector) {
-								const stepUp = Math.abs(frontSector.floorHeight - backSector.floorHeight);
-								if (stepUp <= MAX_STEP_HEIGHT) continue; // can step up
+								// Opening: lowest ceiling and highest floor
+								const openTop = Math.min(frontSector.ceilingHeight, backSector.ceilingHeight);
+								const openBottom = Math.max(frontSector.floorHeight, backSector.floorHeight);
+
+								// Check ceiling gap is tall enough for player
+								if (openTop - openBottom < PLAYER_HEIGHT) {
+									return false;
+								}
+
+								// Directional step-up: only allow stepping UP by MAX_STEP_HEIGHT
+								const playerFloor = player.z >> FRACBITS;
+								if (openBottom - playerFloor <= MAX_STEP_HEIGHT) continue;
 							}
 						}
 					}
@@ -283,6 +296,11 @@ function checkPosition(
 
 /**
  * Check if a line segment crosses a bounding box centered at (cx, cy).
+ * Uses Doom's P_BoxOnLineSide approach: check which side of the line
+ * each bbox corner is on using cross products (integer arithmetic).
+ * If corners are on different sides, the line crosses the bbox.
+ *
+ * @returns true if the line crosses or touches the bbox
  */
 function lineCrossesBBox(
 	x1: number, y1: number,
@@ -290,43 +308,69 @@ function lineCrossesBBox(
 	cx: number, cy: number,
 	radius: number,
 ): boolean {
-	// Simple AABB test: does the line pass within `radius` of the center point?
 	const left = cx - radius;
 	const right = cx + radius;
 	const bottom = cy - radius;
 	const top = cy + radius;
 
-	// Check if line segment intersects the AABB
-	const dx = x2 - x1;
-	const dy = y2 - y1;
+	// Line direction vector
+	const ldx = x2 - x1;
+	const ldy = y2 - y1;
 
-	// Parametric line-box intersection
-	let tmin = 0;
-	let tmax = FRACUNIT;
+	// Cross product: (corner - lineStart) x lineDir
+	// Positive = left side, negative = right side
+	// Check the two bbox corners that are most likely to be on opposite sides
+	// based on the line direction (matching Doom's P_BoxOnLineSide).
 
-	if (dx !== 0) {
-		const invDx = FRACUNIT / (dx / FRACUNIT);
-		let t1 = ((left - x1) / FRACUNIT) * invDx;
-		let t2 = ((right - x1) / FRACUNIT) * invDx;
-		if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
-		tmin = Math.max(tmin, t1);
-		tmax = Math.min(tmax, t2);
-		if (tmin > tmax) return false;
+	let corner1x: number;
+	let corner1y: number;
+	let corner2x: number;
+	let corner2y: number;
+
+	if (ldx > 0) {
+		corner1x = left;
+		corner2x = right;
 	} else {
-		if (x1 < left || x1 > right) return false;
+		corner1x = right;
+		corner2x = left;
 	}
 
-	if (dy !== 0) {
-		const invDy = FRACUNIT / (dy / FRACUNIT);
-		let t1 = ((bottom - y1) / FRACUNIT) * invDy;
-		let t2 = ((top - y1) / FRACUNIT) * invDy;
-		if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
-		tmin = Math.max(tmin, t1);
-		tmax = Math.min(tmax, t2);
-		if (tmin > tmax) return false;
+	if (ldy > 0) {
+		corner1y = bottom;
+		corner2y = top;
 	} else {
-		if (y1 < bottom || y1 > top) return false;
+		corner1y = top;
+		corner2y = bottom;
 	}
+
+	// Use 64-bit-safe cross products by shifting down to avoid overflow.
+	// Cross = (px - x1) * ldy - (py - y1) * ldx
+	const shift = FRACBITS;
+	const ldxS = ldx >> shift;
+	const ldyS = ldy >> shift;
+
+	const d1x = (corner1x - x1) >> shift;
+	const d1y = (corner1y - y1) >> shift;
+	const cross1 = d1x * ldyS - d1y * ldxS;
+
+	const d2x = (corner2x - x1) >> shift;
+	const d2y = (corner2y - y1) >> shift;
+	const cross2 = d2x * ldyS - d2y * ldxS;
+
+	// If both corners are on the same side, the line doesn't cross the bbox
+	if (cross1 > 0 && cross2 > 0) return false;
+	if (cross1 < 0 && cross2 < 0) return false;
+
+	// Corners are on different sides (or on the line): line crosses the bbox.
+	// Also need to verify the line segment actually reaches the bbox
+	// (not just the infinite line). Check bbox overlap with line segment bbox.
+	const lineMinX = Math.min(x1, x2);
+	const lineMaxX = Math.max(x1, x2);
+	const lineMinY = Math.min(y1, y2);
+	const lineMaxY = Math.max(y1, y2);
+
+	if (lineMaxX < left || lineMinX > right) return false;
+	if (lineMaxY < bottom || lineMinY > top) return false;
 
 	return true;
 }
@@ -351,8 +395,8 @@ export function findSectorAt(map: MapData, x: number, y: number): number {
 	let nodeId = map.nodes.length - 1;
 
 	for (;;) {
-		if (nodeId & 0x8000) {
-			const ssIdx = nodeId & 0x7fff;
+		if (nodeId & NF_SUBSECTOR) {
+			const ssIdx = nodeId & ~NF_SUBSECTOR;
 			return findSubsectorSector(map, ssIdx);
 		}
 
