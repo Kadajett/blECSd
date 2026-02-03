@@ -160,22 +160,6 @@ export function addLine(
 	let rw_distance = fixedMul(hyp, sineval);
 	if (rw_distance < FRACUNIT) rw_distance = FRACUNIT;
 
-	// ─── Compute scale at endpoints (matching R_StoreWallRange) ───
-
-	const rw_scale = scaleFromGlobalAngle(
-		rs.viewangle, ((rs.viewangle + (xtoviewangle[x1] ?? 0)) >>> 0),
-		rw_normalangle, rw_distance,
-	);
-
-	let rw_scalestep = 0;
-	if (x2 > x1) {
-		const scale2 = scaleFromGlobalAngle(
-			rs.viewangle, ((rs.viewangle + (xtoviewangle[x2] ?? 0)) >>> 0),
-			rw_normalangle, rw_distance,
-		);
-		rw_scalestep = Math.round((scale2 - rw_scale) / (x2 - x1));
-	}
-
 	// ─── Compute rw_offset for texture column mapping ───
 
 	// offsetangle for texture offset (different from distance offsetangle)
@@ -264,7 +248,6 @@ export function addLine(
 	const wallCtx: WallContext = {
 		rs,
 		x1, x2,
-		rw_scale, rw_scalestep,
 		rw_distance,
 		rw_normalangle,
 		rw_offset,
@@ -301,8 +284,6 @@ interface WallContext {
 	readonly rs: RenderState;
 	readonly x1: number;
 	readonly x2: number;
-	readonly rw_scale: number;
-	readonly rw_scalestep: number;
 	readonly rw_distance: number;
 	readonly rw_normalangle: number;
 	readonly rw_offset: number;
@@ -383,19 +364,104 @@ function scaleFromGlobalAngle(
 
 /**
  * Clip and render a solid (one-sided) wall segment.
- * Also adds the column range to solidsegs.
+ * Walks solidsegs to find visible sub-ranges, renders each, then merges
+ * the wall range into solidsegs. Matches R_ClipSolidWallSegment from r_bsp.c.
  */
 function clipSolidWall(ctx: WallContext): void {
-	renderSegLoop(ctx);
-	addSolidSeg(ctx.rs, ctx.x1, ctx.x2);
+	const segs = ctx.rs.solidsegs;
+	const first = ctx.x1;
+	const last = ctx.x2;
+
+	// Find first solidsegs entry whose end is >= first - 1
+	let startIdx = 0;
+	while (startIdx < segs.length && segs[startIdx]!.last < first - 1) {
+		startIdx++;
+	}
+
+	if (first < segs[startIdx]!.first) {
+		if (last < segs[startIdx]!.first - 1) {
+			// Entirely visible: render and insert new entry
+			renderSegRange(ctx, first, last);
+			segs.splice(startIdx, 0, { first, last });
+			return;
+		}
+		// Visible fragment before the existing entry
+		renderSegRange(ctx, first, segs[startIdx]!.first - 1);
+		segs[startIdx]!.first = first;
+	}
+
+	// Bottom contained in existing entry?
+	if (last <= segs[startIdx]!.last) return;
+
+	// Walk through subsequent entries, rendering gaps
+	let nextIdx = startIdx;
+	while (nextIdx + 1 < segs.length && last >= segs[nextIdx + 1]!.first - 1) {
+		const gapFirst = segs[nextIdx]!.last + 1;
+		const gapLast = segs[nextIdx + 1]!.first - 1;
+		if (gapFirst <= gapLast) {
+			renderSegRange(ctx, gapFirst, gapLast);
+		}
+		nextIdx++;
+		if (last <= segs[nextIdx]!.last) {
+			segs[startIdx]!.last = segs[nextIdx]!.last;
+			if (nextIdx > startIdx) {
+				segs.splice(startIdx + 1, nextIdx - startIdx);
+			}
+			return;
+		}
+	}
+
+	// Visible fragment after last overlapping entry
+	const tailFirst = segs[nextIdx]!.last + 1;
+	if (tailFirst <= last) {
+		renderSegRange(ctx, tailFirst, last);
+	}
+	segs[startIdx]!.last = last;
+
+	if (nextIdx > startIdx) {
+		segs.splice(startIdx + 1, nextIdx - startIdx);
+	}
 }
 
 /**
  * Clip and render a pass-through (two-sided) wall segment.
- * Does NOT add to solidsegs.
+ * Walks solidsegs to find visible sub-ranges, renders each.
+ * Does NOT modify solidsegs. Matches R_ClipPassWallSegment from r_bsp.c.
  */
 function clipPassWall(ctx: WallContext): void {
-	renderSegLoop(ctx);
+	const segs = ctx.rs.solidsegs;
+	const first = ctx.x1;
+	const last = ctx.x2;
+
+	let startIdx = 0;
+	while (startIdx < segs.length && segs[startIdx]!.last < first - 1) {
+		startIdx++;
+	}
+
+	if (first < segs[startIdx]!.first) {
+		if (last < segs[startIdx]!.first - 1) {
+			renderSegRange(ctx, first, last);
+			return;
+		}
+		renderSegRange(ctx, first, segs[startIdx]!.first - 1);
+	}
+
+	if (last <= segs[startIdx]!.last) return;
+
+	while (startIdx + 1 < segs.length && last >= segs[startIdx + 1]!.first - 1) {
+		const gapFirst = segs[startIdx]!.last + 1;
+		const gapLast = segs[startIdx + 1]!.first - 1;
+		if (gapFirst <= gapLast) {
+			renderSegRange(ctx, gapFirst, gapLast);
+		}
+		startIdx++;
+		if (last <= segs[startIdx]!.last) return;
+	}
+
+	const tailFirst = segs[startIdx]!.last + 1;
+	if (tailFirst <= last) {
+		renderSegRange(ctx, tailFirst, last);
+	}
 }
 
 // ─── Render Seg Loop ──────────────────────────────────────────────
@@ -405,13 +471,33 @@ const HEIGHTBITS = 12;
 const HEIGHTUNIT = 1 << HEIGHTBITS;
 
 /**
- * Render all columns in the seg range.
- * Matches R_RenderSegLoop from r_segs.c.
+ * Render columns in a visible sub-range of the seg.
+ * Called by clipSolidWall/clipPassWall for each gap in the solidsegs.
+ * Recomputes scale from scratch for the sub-range to avoid drift.
+ * Combines R_StoreWallRange and R_RenderSegLoop from the original Doom.
  *
- * Uses incremental Y stepping for precision.
+ * @param ctx - Wall context with per-seg data
+ * @param start - First visible screen column
+ * @param stop - Last visible screen column
  */
-function renderSegLoop(ctx: WallContext): void {
-	const { rs, x1, x2 } = ctx;
+function renderSegRange(ctx: WallContext, start: number, stop: number): void {
+	const { rs } = ctx;
+	if (start > stop) return;
+
+	// Recompute scale for this sub-range (matching R_StoreWallRange)
+	const rw_scale = scaleFromGlobalAngle(
+		rs.viewangle, ((rs.viewangle + (xtoviewangle[start] ?? 0)) >>> 0),
+		ctx.rw_normalangle, ctx.rw_distance,
+	);
+
+	let rw_scalestep = 0;
+	if (stop > start) {
+		const scale2 = scaleFromGlobalAngle(
+			rs.viewangle, ((rs.viewangle + (xtoviewangle[stop] ?? 0)) >>> 0),
+			ctx.rw_normalangle, ctx.rw_distance,
+		);
+		rw_scalestep = Math.round((scale2 - rw_scale) / (stop - start));
+	}
 
 	// World-space heights relative to viewz, shifted for HEIGHTBITS precision
 	const worldtop = (ctx.frontCeiling - rs.viewz) >> 4;
@@ -424,12 +510,12 @@ function renderSegLoop(ctx: WallContext): void {
 		worldlow = (ctx.backFloor - rs.viewz) >> 4;
 	}
 
-	// Initialize incremental stepping
-	let topfrac = (centeryfrac >> 4) - fixedMul(worldtop, ctx.rw_scale);
-	const topstep = -fixedMul(ctx.rw_scalestep, worldtop);
+	// Initialize incremental stepping from sub-range start
+	let topfrac = (centeryfrac >> 4) - fixedMul(worldtop, rw_scale);
+	const topstep = -fixedMul(rw_scalestep, worldtop);
 
-	let bottomfrac = (centeryfrac >> 4) - fixedMul(worldbottom, ctx.rw_scale);
-	const bottomstep = -fixedMul(ctx.rw_scalestep, worldbottom);
+	let bottomfrac = (centeryfrac >> 4) - fixedMul(worldbottom, rw_scale);
+	const bottomstep = -fixedMul(rw_scalestep, worldbottom);
 
 	let pixhigh = 0;
 	let pixhighstep = 0;
@@ -437,12 +523,12 @@ function renderSegLoop(ctx: WallContext): void {
 	let pixlowstep = 0;
 
 	if (ctx.drawUpper) {
-		pixhigh = (centeryfrac >> 4) - fixedMul(worldhigh, ctx.rw_scale);
-		pixhighstep = -fixedMul(ctx.rw_scalestep, worldhigh);
+		pixhigh = (centeryfrac >> 4) - fixedMul(worldhigh, rw_scale);
+		pixhighstep = -fixedMul(rw_scalestep, worldhigh);
 	}
 	if (ctx.drawLower) {
-		pixlow = (centeryfrac >> 4) - fixedMul(worldlow, ctx.rw_scale);
-		pixlowstep = -fixedMul(ctx.rw_scalestep, worldlow);
+		pixlow = (centeryfrac >> 4) - fixedMul(worldlow, rw_scale);
+		pixlowstep = -fixedMul(rw_scalestep, worldlow);
 	}
 
 	// Texture lookup info
@@ -463,41 +549,27 @@ function renderSegLoop(ctx: WallContext): void {
 		}
 	}
 	if (topTex) {
-		// ML_DONTPEGTOP: peg to top of upper texture at ceiling
 		topTextureMid = ctx.frontCeiling - rs.viewz + (ctx.rowOffset << FRACBITS);
 		if (!(ctx.lineFlags & LinedefFlags.DONT_PEG_TOP)) {
-			// Not pegged to top: align to lower of the two ceilings
 			topTextureMid = ctx.backCeiling - rs.viewz + (topTex.height << FRACBITS) + (ctx.rowOffset << FRACBITS);
 		}
 	}
 	if (bottomTex) {
-		// Default (non-pegged): align to back sector floor (worldlow)
 		bottomTextureMid = ctx.backFloor - rs.viewz + (ctx.rowOffset << FRACBITS);
 		if (ctx.lineFlags & LinedefFlags.DONT_PEG_BOTTOM) {
-			// Pegged to bottom: align to front sector ceiling (worldtop)
 			bottomTextureMid = ctx.frontCeiling - rs.viewz + (ctx.rowOffset << FRACBITS);
 		}
 	}
 
-	let curScale = ctx.rw_scale;
+	let curScale = rw_scale;
 
-	for (let x = x1; x <= x2; x++) {
+	for (let x = start; x <= stop; x++) {
 		if (x < 0 || x >= rs.screenWidth) {
 			topfrac += topstep;
 			bottomfrac += bottomstep;
 			if (ctx.drawUpper) pixhigh += pixhighstep;
 			if (ctx.drawLower) pixlow += pixlowstep;
-			curScale += ctx.rw_scalestep;
-			continue;
-		}
-
-		// Skip occluded columns
-		if (isColumnOccluded(rs, x)) {
-			topfrac += topstep;
-			bottomfrac += bottomstep;
-			if (ctx.drawUpper) pixhigh += pixhighstep;
-			if (ctx.drawLower) pixlow += pixlowstep;
-			curScale += ctx.rw_scalestep;
+			curScale += rw_scalestep;
 			continue;
 		}
 
@@ -613,7 +685,7 @@ function renderSegLoop(ctx: WallContext): void {
 		bottomfrac += bottomstep;
 		if (ctx.drawUpper) pixhigh += pixhighstep;
 		if (ctx.drawLower) pixlow += pixlowstep;
-		curScale += ctx.rw_scalestep;
+		curScale += rw_scalestep;
 	}
 }
 
@@ -662,44 +734,3 @@ function drawSolidColumn(
 	}
 }
 
-// ─── Solidsegs Management ──────────────────────────────────────────
-
-/**
- * Check if a screen column is fully occluded.
- */
-function isColumnOccluded(rs: RenderState, x: number): boolean {
-	for (const seg of rs.solidsegs) {
-		if (x >= seg.first && x <= seg.last) return true;
-	}
-	return false;
-}
-
-/**
- * Add a solid wall range to the solidsegs list, merging overlapping ranges.
- */
-function addSolidSeg(rs: RenderState, first: number, last: number): void {
-	const segs = rs.solidsegs;
-
-	// Find insertion point and merge
-	let i = 0;
-	while (i < segs.length && (segs[i]?.last ?? 0) < first - 1) {
-		i++;
-	}
-
-	let mergedFirst = first;
-	let mergedLast = last;
-
-	// Merge with overlapping/adjacent entries
-	let j = i;
-	while (j < segs.length && (segs[j]?.first ?? 0) <= last + 1) {
-		const seg = segs[j];
-		if (seg) {
-			mergedFirst = Math.min(mergedFirst, seg.first);
-			mergedLast = Math.max(mergedLast, seg.last);
-		}
-		j++;
-	}
-
-	// Replace merged entries with single entry
-	segs.splice(i, j - i, { first: mergedFirst, last: mergedLast });
-}

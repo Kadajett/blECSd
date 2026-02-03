@@ -37,6 +37,9 @@ import { renderBspNode } from './render/bsp.js';
 import { drawPlanes } from './render/planes.js';
 import { createPlayer, updatePlayer } from './game/player.js';
 import { setupInput, pollInput, cleanupInput } from './game/input.js';
+import { loadSprites } from './wad/spriteData.js';
+import { spawnMapThings } from './game/spawn.js';
+import { renderSprites } from './render/sprites.js';
 
 // ─── Configuration ─────────────────────────────────────────────────
 
@@ -102,6 +105,15 @@ function main(): void {
 		`Textures: ${textures.textureDefs.length} wall textures, ` +
 		`${textures.flatByName.size} flats, ${textures.patchNames.length} patches`,
 	);
+
+	// Load sprites
+	console.log('Loading sprites...');
+	const spriteStore = loadSprites(wad);
+	console.log(`Sprites: ${spriteStore.sprites.size} sprite definitions`);
+
+	// Spawn map things
+	const mobjs = spawnMapThings(map, 2);
+	console.log(`Spawned ${mobjs.length} things`);
 
 	// Create framebuffer and backend
 	const fb = three.createPixelFramebuffer({
@@ -175,6 +187,9 @@ function main(): void {
 
 		// Render floors and ceilings
 		drawPlanes(rs);
+
+		// Render sprites
+		renderSprites(rs, mobjs, spriteStore);
 
 		// Encode and output
 		const encoded = backend.encode(fb, 0, 0);
