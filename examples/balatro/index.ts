@@ -1650,7 +1650,32 @@ async function main(): Promise<void> {
 	const config = createConfigFromArgs(args);
 	logMain.info(`Config: mouse=${config.mouseEnabled} sound=${config.soundEnabled} seed=${config.seed}`);
 
-	// Initialize terminal
+	// IMPORTANT: Attach stdin data listener BEFORE initializing terminal.
+	// initializeTerminal calls stdin.resume() which puts the stream into
+	// flowing mode. If no 'data' listener is attached, data is discarded
+	// and the stream may not recover.
+	stdin.on('data', (data: Buffer) => {
+		const str = data.toString();
+
+		// Filter out SGR mouse events (\x1b[<...M or \x1b[<...m)
+		// These flood the queue when mouse tracking is enabled
+		if (str.startsWith('\x1b[<')) {
+			logInput.trace('Filtered SGR mouse event');
+			return;
+		}
+		// Filter out legacy mouse events (\x1b[M...)
+		if (str.startsWith('\x1b[M')) {
+			logInput.trace('Filtered legacy mouse event');
+			return;
+		}
+
+		logInput.debug('stdin data received, length:', str.length);
+		dumpRaw(str, 'stdin');
+		rawInputQueue.push(str);
+	});
+	logMain.info('stdin data listener attached');
+
+	// Initialize terminal (enables raw mode, alternate screen, mouse tracking)
 	termState = initializeTerminal(stdout, stdin, config);
 	const { width, height } = termState;
 	logMain.info(`Terminal initialized: ${width}x${height}`);
@@ -1733,27 +1758,6 @@ async function main(): Promise<void> {
 		fixedTimestep: 0,
 	});
 	logMain.info('Game loop created, targetFps=60');
-
-	// Set up stdin listener (pushes raw bytes to queue, filters mouse events)
-	stdin.on('data', (data: Buffer) => {
-		const str = data.toString();
-
-		// Filter out SGR mouse events (\x1b[<...M or \x1b[<...m)
-		// These flood the queue when mouse tracking is enabled
-		if (str.startsWith('\x1b[<')) {
-			logInput.trace('Filtered SGR mouse event');
-			return;
-		}
-		// Filter out legacy mouse events (\x1b[M...)
-		if (str.startsWith('\x1b[M')) {
-			logInput.trace('Filtered legacy mouse event');
-			return;
-		}
-
-		logInput.debug('stdin data received, length:', str.length);
-		dumpRaw(str, 'stdin');
-		rawInputQueue.push(str);
-	});
 
 	// Start the loop
 	logMain.info('Starting game loop...');
