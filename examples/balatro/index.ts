@@ -238,8 +238,8 @@ const TITLE_COLOR = 0xff4444_ff;
 
 const SPRING_STIFFNESS = 12;
 const SPRING_DAMPING = 0.7;
-const DEAL_STAGGER_MS = 80;
-const DEAL_INITIAL_DELAY = 300;
+const DEAL_STAGGER_MS = 100;
+const DEAL_INITIAL_DELAY = 200;
 
 // =============================================================================
 // MODULE-LEVEL MUTABLE STATE
@@ -339,6 +339,19 @@ function syncCardEntities(
 	}
 }
 
+/**
+ * Returns the number of cards that should have been dealt so far
+ * based on elapsed time since dealing started.
+ */
+function getDealtCardCount(dealStartTime: number, totalCards: number): number {
+	const elapsed = Date.now() - dealStartTime;
+	if (elapsed < DEAL_INITIAL_DELAY) return 0;
+
+	const dealElapsed = elapsed - DEAL_INITIAL_DELAY;
+	const count = Math.floor(dealElapsed / DEAL_STAGGER_MS) + 1;
+	return Math.min(count, totalCards);
+}
+
 function updateCardSpringPhysics(
 	world: World,
 	hand: readonly Card[],
@@ -346,8 +359,17 @@ function updateCardSpringPhysics(
 	entityMap: Map<string, number>,
 	liftAnimation: LiftAnimationState,
 	deltaTime: number,
+	dealingPhase: boolean,
+	dealStartTime: number,
+	deckX: number,
+	deckY: number,
 ): boolean {
 	let allArrived = true;
+
+	// During dealing, only animate cards that have been "dealt" based on stagger timing
+	const dealtCount = dealingPhase
+		? getDealtCardCount(dealStartTime, hand.length)
+		: hand.length;
 
 	for (let i = 0; i < hand.length; i++) {
 		const card = hand[i];
@@ -360,6 +382,16 @@ function updateCardSpringPhysics(
 
 		const pos = getPosition(world, eid);
 		if (!pos) continue;
+
+		// Cards not yet dealt stay at the deck position
+		if (i >= dealtCount) {
+			Position.x[eid] = deckX;
+			Position.y[eid] = deckY;
+			Velocity.x[eid] = 0;
+			Velocity.y[eid] = 0;
+			allArrived = false;
+			continue;
+		}
 
 		// Get lift offset from card-lift animation
 		const liftY = getCardY(liftAnimation, card.id);
@@ -569,6 +601,9 @@ function syncLiftWithInput(
 // =============================================================================
 
 function handleMenuInput(state: AppState, key: string): AppState {
+	// Ignore unknown/unrecognized keys entirely
+	if (key === 'unknown') return state;
+
 	// Quit on q from title
 	if (key === 'q' && isOnTitleScreen(state.menuState)) {
 		return { ...state, running: false };
@@ -579,7 +614,7 @@ function handleMenuInput(state: AppState, key: string): AppState {
 
 	const [newMenuState, action] = processMenuInput(state.menuState, menuInput);
 
-	let newState = { ...state, menuState: newMenuState };
+	const newState = { ...state, menuState: newMenuState };
 
 	switch (action.type) {
 		case 'start_game':
@@ -966,9 +1001,18 @@ function renderPlayingScreen(state: AppState): void {
 	const positions = getHandCardPositions(layout, gameState.hand.length);
 	const sortedByZ: { card: Card; x: number; y: number; index: number }[] = [];
 
+	// During dealing, only show cards that have been dealt so far
+	const dealtCount = state.dealingPhase
+		? getDealtCardCount(state.dealStartTime, gameState.hand.length)
+		: gameState.hand.length;
+
 	for (let i = 0; i < gameState.hand.length; i++) {
 		const card = gameState.hand[i];
 		if (!card) continue;
+
+		// During dealing, skip cards that haven't been dealt yet
+		// (they're hidden at the deck position)
+		if (state.dealingPhase && i >= dealtCount) continue;
 
 		const eid = cardEntities.get(card.id);
 		let cx: number;
@@ -1293,6 +1337,9 @@ function createInputProcessingSystem() {
 		for (const raw of inputs) {
 			const event = parseKeyEvent(raw);
 
+			// Skip completely unrecognized input (garbage bytes, partial sequences)
+			if (event.key === 'unknown') continue;
+
 			// Ctrl+C always quits
 			if (event.ctrl && event.key === 'c') {
 				return { ...currentState, running: false };
@@ -1369,7 +1416,7 @@ function createAnimationUpdateSystem() {
 		// Update card lift animation
 		const newLiftAnim = updateLiftAnimation(state.liftAnimation, ctx.deltaTime);
 
-		// Update spring physics for card entities
+		// Update spring physics for card entities (with stagger during dealing)
 		const allArrived = updateCardSpringPhysics(
 			state.world,
 			state.gameState.hand,
@@ -1377,15 +1424,16 @@ function createAnimationUpdateSystem() {
 			state.cardEntities,
 			newLiftAnim,
 			ctx.deltaTime,
+			state.dealingPhase,
+			state.dealStartTime,
+			state.layout.deckPosition.x,
+			state.layout.deckPosition.y,
 		);
 
-		// Update dealing phase
+		// Update dealing phase: all cards dealt and arrived at positions
 		let dealingPhase = state.dealingPhase;
 		if (dealingPhase && allArrived) {
-			const elapsed = Date.now() - state.dealStartTime;
-			if (elapsed > DEAL_INITIAL_DELAY + state.gameState.hand.length * DEAL_STAGGER_MS + 200) {
-				dealingPhase = false;
-			}
+			dealingPhase = false;
 		}
 
 		// Update score popups
@@ -1533,14 +1581,18 @@ async function main(): Promise<void> {
 		fixedTimestep: 0,
 	});
 
-	// Set up stdin listener (pushes raw bytes to queue)
+	// Set up stdin listener (pushes raw bytes to queue, filters mouse events)
 	stdin.on('data', (data: Buffer) => {
-		rawInputQueue.push(data.toString());
-	});
+		const str = data.toString();
 
-	// Handle terminal resize in the render system by checking stdout each frame
-	// Override the layout system to pick up resize
-	const originalStart = gameLoop.start.bind(gameLoop);
+		// Filter out SGR mouse events (\x1b[<...M or \x1b[<...m)
+		// These flood the queue when mouse tracking is enabled
+		if (str.startsWith('\x1b[<')) return;
+		// Filter out legacy mouse events (\x1b[M...)
+		if (str.startsWith('\x1b[M')) return;
+
+		rawInputQueue.push(str);
+	});
 
 	// Start the loop
 	await gameLoop.start({
