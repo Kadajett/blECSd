@@ -43,6 +43,9 @@ import { renderSprites } from './render/sprites.js';
 import { createHudState, drawHud, updateHud } from './render/hud.js';
 import { registerActions, initThinkers, runThinkers } from './game/thinkers.js';
 import { ACTION_FUNCTIONS } from './game/enemyAI.js';
+import { createWeaponState, tickWeapon, processWeaponInput, WEAPON_INFO } from './game/weapons.js';
+import { fireHitscan, fireMelee } from './game/hitscan.js';
+import { drawWeaponSprite } from './game/psprite.js';
 
 // ─── Configuration ─────────────────────────────────────────────────
 
@@ -141,6 +144,9 @@ function main(): void {
 	// Create HUD state
 	const hudState = createHudState();
 
+	// Create weapon state
+	const weaponState = createWeaponState();
+
 	// Enter alt screen, hide cursor
 	process.stdout.write('\x1b[?1049h'); // alt screen
 	process.stdout.write('\x1b[?25l');   // hide cursor
@@ -175,6 +181,27 @@ function main(): void {
 		updatePlayer(player, input, map);
 		updateHud(hudState, input);
 
+		// Process weapon input and tick
+		const firing = processWeaponInput(weaponState, input.keys);
+		const shouldFire = tickWeapon(weaponState, player, firing);
+
+		if (shouldFire) {
+			const info = WEAPON_INFO[weaponState.current];
+			if (info) {
+				if (info.melee) {
+					fireMelee(player, mobjs, info.damage);
+				} else {
+					for (let p = 0; p < info.pellets; p++) {
+						const pelletDamage = ((Math.random() * info.damage | 0) + 1);
+						fireHitscan(player, map, mobjs, pelletDamage, info.spread);
+					}
+				}
+			}
+		}
+
+		// Apply muzzle flash extralight
+		const extralight = weaponState.flashTics > 0 ? 2 : 0;
+
 		// Run enemy AI thinkers
 		runThinkers(mobjs, player, map);
 
@@ -188,6 +215,7 @@ function main(): void {
 		const fineAngle = (player.angle >> ANGLETOFINESHIFT) & FINEMASK;
 		rs.viewcos = finecosine[fineAngle] ?? FRACUNIT;
 		rs.viewsin = finesine[fineAngle] ?? 0;
+		rs.extralight = extralight;
 
 		// Recalculate flat scales for current view angle (matching R_ClearPlanes)
 		updateFlatScales(player.angle);
@@ -205,6 +233,9 @@ function main(): void {
 
 		// Render sprites
 		renderSprites(rs, mobjs, spriteStore);
+
+		// Render weapon sprite overlay
+		drawWeaponSprite(rs, weaponState, spriteStore);
 
 		// Draw HUD
 		drawHud(rs, player, hudState, map);
