@@ -35,6 +35,24 @@ export interface Joker {
 	readonly effect: JokerEffect;
 }
 
+export type StarterDeckType = 'red' | 'blue' | 'yellow';
+
+export interface StarterDeck {
+	readonly type: StarterDeckType;
+	readonly name: string;
+	readonly description: string;
+	readonly color: number;
+	readonly bonusHands: number;
+	readonly bonusDiscards: number;
+	readonly bonusMoney: number;
+}
+
+export const STARTER_DECKS: readonly StarterDeck[] = [
+	{ type: 'red', name: 'Red Deck', description: '+1 discard each round', color: 0xcc2222, bonusHands: 0, bonusDiscards: 1, bonusMoney: 0 },
+	{ type: 'blue', name: 'Blue Deck', description: '+1 hand each round', color: 0x2255cc, bonusHands: 1, bonusDiscards: 0, bonusMoney: 0 },
+	{ type: 'yellow', name: 'Yellow Deck', description: '+$10 starting money', color: 0xccaa22, bonusHands: 0, bonusDiscards: 0, bonusMoney: 10 },
+];
+
 export interface GameState {
 	readonly deck: readonly Card[];
 	readonly hand: readonly Card[];
@@ -48,6 +66,7 @@ export interface GameState {
 	readonly discardsRemaining: number;
 	readonly jokers: readonly Joker[];
 	readonly roundPhase: 'betting' | 'playing' | 'scoring' | 'shop';
+	readonly starterDeck: StarterDeckType;
 }
 
 // =============================================================================
@@ -151,15 +170,25 @@ function generateId(): string {
 	return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+/**
+ * Gets the starter deck config for a deck type.
+ */
+function getStarterDeckConfig(deckType: StarterDeckType): StarterDeck {
+	return STARTER_DECKS.find(d => d.type === deckType) ?? STARTER_DECKS[0]!;
+}
+
 // =============================================================================
 // STATE CREATION
 // =============================================================================
 
 /**
  * Creates a fresh game state for a new game.
+ *
+ * @param deckType - Optional starter deck type (defaults to 'red')
  */
-export function createGameState(): GameState {
+export function createGameState(deckType: StarterDeckType = 'red'): GameState {
 	const deck = shuffleDeck(createDeck());
+	const config = getStarterDeckConfig(deckType);
 
 	return {
 		deck,
@@ -167,23 +196,26 @@ export function createGameState(): GameState {
 		played: [],
 		discardPile: [],
 		score: 0,
-		money: STARTING_MONEY,
+		money: STARTING_MONEY + config.bonusMoney,
 		currentBlind: getBlindInfo(1, 0),
 		currentAnte: 1,
-		handsRemaining: STARTING_HANDS,
-		discardsRemaining: STARTING_DISCARDS,
+		handsRemaining: STARTING_HANDS + config.bonusHands,
+		discardsRemaining: STARTING_DISCARDS + config.bonusDiscards,
 		jokers: [],
 		roundPhase: 'playing',
+		starterDeck: deckType,
 	};
 }
 
 /**
  * Resets the state for a new round (keeping persistent data).
+ * Applies starter deck bonuses to hands/discards.
  */
 export function resetRound(state: GameState): GameState {
 	// Combine all cards back into deck and shuffle
 	const allCards = [...state.deck, ...state.hand, ...state.played, ...state.discardPile];
 	const deck = shuffleDeck(allCards);
+	const config = getStarterDeckConfig(state.starterDeck);
 
 	return {
 		...state,
@@ -192,8 +224,8 @@ export function resetRound(state: GameState): GameState {
 		played: [],
 		discardPile: [],
 		score: 0,
-		handsRemaining: STARTING_HANDS,
-		discardsRemaining: STARTING_DISCARDS,
+		handsRemaining: STARTING_HANDS + config.bonusHands,
+		discardsRemaining: STARTING_DISCARDS + config.bonusDiscards,
 		roundPhase: 'playing',
 	};
 }

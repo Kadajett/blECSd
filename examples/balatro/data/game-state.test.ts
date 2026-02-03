@@ -19,7 +19,12 @@ import {
 	STARTING_HANDS,
 	STARTING_DISCARDS,
 	STARTING_MONEY,
+	STARTER_DECKS,
 } from './game-state';
+import type { StarterDeckType } from './game-state';
+
+// Red deck (default) adds +1 discard
+const RED_DECK = STARTER_DECKS.find(d => d.type === 'red')!;
 
 describe('createGameState', () => {
 	it('creates initial state with shuffled deck', () => {
@@ -30,12 +35,13 @@ describe('createGameState', () => {
 		expect(state.played).toHaveLength(0);
 		expect(state.discardPile).toHaveLength(0);
 		expect(state.score).toBe(0);
-		expect(state.money).toBe(STARTING_MONEY);
-		expect(state.handsRemaining).toBe(STARTING_HANDS);
-		expect(state.discardsRemaining).toBe(STARTING_DISCARDS);
+		expect(state.money).toBe(STARTING_MONEY + RED_DECK.bonusMoney);
+		expect(state.handsRemaining).toBe(STARTING_HANDS + RED_DECK.bonusHands);
+		expect(state.discardsRemaining).toBe(STARTING_DISCARDS + RED_DECK.bonusDiscards);
 		expect(state.currentAnte).toBe(1);
 		expect(state.currentBlind.name).toBe('Small Blind');
 		expect(state.jokers).toHaveLength(0);
+		expect(state.starterDeck).toBe('red');
 	});
 });
 
@@ -150,20 +156,22 @@ describe('discardCards', () => {
 		state = drawCards(state, 5);
 
 		const cardIds = state.hand.slice(0, 2).map(c => c.id);
+		const startingDiscards = state.discardsRemaining;
 		const newState = discardCards(state, cardIds);
 
 		expect(newState).not.toBeNull();
 		expect(newState!.hand).toHaveLength(3);
 		expect(newState!.discardPile).toHaveLength(2);
-		expect(newState!.discardsRemaining).toBe(STARTING_DISCARDS - 1);
+		expect(newState!.discardsRemaining).toBe(startingDiscards - 1);
 	});
 
 	it('returns null when no discards remaining', () => {
 		let state = createGameState();
 		state = drawCards(state, 8);
 
-		// Use all discards
-		for (let i = 0; i < STARTING_DISCARDS; i++) {
+		// Use all discards (including deck bonus)
+		const totalDiscards = state.discardsRemaining;
+		for (let i = 0; i < totalDiscards; i++) {
 			const cardIds = [state.hand[0]!.id];
 			const newState = discardCards(state, cardIds);
 			if (newState) {
@@ -217,8 +225,8 @@ describe('nextBlind', () => {
 		state = nextBlind(state);
 
 		expect(state.hand).toHaveLength(0);
-		expect(state.handsRemaining).toBe(STARTING_HANDS);
-		expect(state.discardsRemaining).toBe(STARTING_DISCARDS);
+		expect(state.handsRemaining).toBe(STARTING_HANDS + RED_DECK.bonusHands);
+		expect(state.discardsRemaining).toBe(STARTING_DISCARDS + RED_DECK.bonusDiscards);
 		expect(state.score).toBe(0);
 	});
 });

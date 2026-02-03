@@ -143,12 +143,12 @@ describe('getSelectedItem', () => {
 });
 
 describe('selectMenuItem', () => {
-	it('starts game on new_run', () => {
+	it('opens deck select on new_run', () => {
 		const state = createMenuState(); // new_run selected
 		const [newState, action] = selectMenuItem(state);
 
-		expect(action.type).toBe('start_game');
-		expect(newState.screen).toBe('starting_run');
+		expect(action.type).toBe('open_deck_select');
+		expect(newState.screen).toBe('deck_select');
 	});
 
 	it('opens options', () => {
@@ -330,12 +330,12 @@ describe('processMenuInput', () => {
 		expect(action.type).toBe('none');
 	});
 
-	it('handles select input', () => {
+	it('handles select input (goes to deck select)', () => {
 		const state = createMenuState();
 		const [newState, action] = processMenuInput(state, { type: 'select' });
 
-		expect(action.type).toBe('start_game');
-		expect(newState.screen).toBe('starting_run');
+		expect(action.type).toBe('open_deck_select');
+		expect(newState.screen).toBe('deck_select');
 	});
 
 	it('handles back input', () => {

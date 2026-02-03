@@ -50,7 +50,7 @@ export interface Layout {
 	/** Deck position */
 	readonly deckPosition: Position;
 
-	/** Card overlap amount in hand */
+	/** Card spacing in hand (distance between card left edges) */
 	readonly cardOverlap: number;
 
 	/** Spacing between played cards */
@@ -88,11 +88,11 @@ export const DEFAULT_LAYOUT_CONFIG: LayoutConfig = {
 	handAreaHeight: CARD_HEIGHT + 3, // Card height + selection lift + margin
 };
 
-/** Card overlap in hand (pixels between card left edges) */
-const BASE_CARD_OVERLAP = 5;
+/** Card spacing in hand (distance between card left edges) */
+const BASE_CARD_SPACING = CARD_WIDTH + 1; // 8: full card width + 1-cell gap
 
-/** Minimum overlap to keep cards readable */
-const MIN_CARD_OVERLAP = 3;
+/** Minimum card spacing (flush, no gap) for narrow screens */
+const MIN_CARD_SPACING = CARD_WIDTH; // 7: cards touch but don't overlap
 
 /** Spacing between played cards */
 const BASE_PLAYED_SPACING = 2;
@@ -205,14 +205,15 @@ export function calculateLayout(
 }
 
 /**
- * Calculates card overlap based on screen width.
- * Wider screens allow more overlap (cards more spread out).
+ * Calculates card spacing based on screen width.
+ * Returns the distance between card left edges.
+ * On wide screens, cards have a 1-cell gap. On narrow screens, cards are flush.
  */
 function calculateCardOverlap(screenWidth: number): number {
-	if (screenWidth >= 120) return BASE_CARD_OVERLAP + 2;
-	if (screenWidth >= 100) return BASE_CARD_OVERLAP + 1;
-	if (screenWidth >= 80) return BASE_CARD_OVERLAP;
-	return MIN_CARD_OVERLAP;
+	// 8 cards at BASE_CARD_SPACING (8) need: 7*8 + 7 = 63 cols of content + padding
+	// With padding=2 on each side, that's 67 cols total
+	if (screenWidth >= 67) return BASE_CARD_SPACING; // CARD_WIDTH + 1 gap
+	return MIN_CARD_SPACING; // flush, no gap
 }
 
 /**

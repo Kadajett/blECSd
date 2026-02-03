@@ -61,6 +61,17 @@ export function cycleSortMode(state: SortState): SortState {
 }
 
 /**
+ * Toggles between 'rank' and 'suit' sort modes.
+ *
+ * @param state - Current sort state
+ * @returns Updated state with toggled mode
+ */
+export function toggleSortMode(state: SortState): SortState {
+	const nextMode: SortMode = state.mode === 'rank' ? 'suit' : 'rank';
+	return { ...state, mode: nextMode };
+}
+
+/**
  * Sets a specific sort mode.
  *
  * @param state - Current sort state

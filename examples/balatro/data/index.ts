@@ -28,8 +28,9 @@ export {
 	compareHands,
 } from './hand';
 
-export type { GameState, Joker, JokerEffect } from './game-state';
+export type { GameState, Joker, JokerEffect, StarterDeckType, StarterDeck } from './game-state';
 export type { BlindInfo as GameBlindInfo } from './game-state';
+export { STARTER_DECKS } from './game-state';
 
 export type { BlindType, BlindConfig, BossModifierType, BossModifier, BlindInfo } from './blind';
 export {
@@ -234,6 +235,7 @@ export type { SortMode, SortState } from './card-sort';
 export {
 	createSortState,
 	cycleSortMode,
+	toggleSortMode,
 	setSortMode,
 	toggleAutoSort,
 	sortByRank,

@@ -37,11 +37,15 @@ describe('calculateLayout', () => {
 		expect(layout.screen.height).toBe(DEFAULT_LAYOUT_CONFIG.minHeight);
 	});
 
-	it('scales card overlap for wider screens', () => {
-		const narrowLayout = calculateLayout(80, 24);
-		const wideLayout = calculateLayout(120, 24);
+	it('uses full spacing with 1-cell gap between cards', () => {
+		const layout = calculateLayout(80, 24);
 
-		expect(wideLayout.cardOverlap).toBeGreaterThan(narrowLayout.cardOverlap);
+		// All screens at or above minWidth (80) use CARD_WIDTH + 1 = 8 spacing
+		expect(layout.cardOverlap).toBe(CARD_WIDTH + 1);
+
+		// Wide screens use the same spacing
+		const wideLayout = calculateLayout(120, 24);
+		expect(wideLayout.cardOverlap).toBe(CARD_WIDTH + 1);
 	});
 
 	it('positions zones without overlap', () => {

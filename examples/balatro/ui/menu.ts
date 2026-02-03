@@ -6,11 +6,14 @@
  * @module balatro/ui/menu
  */
 
+import type { StarterDeckType } from '../data/game-state';
+import { STARTER_DECKS } from '../data/game-state';
+
 // =============================================================================
 // TYPES
 // =============================================================================
 
-export type MenuScreen = 'title' | 'options' | 'collection' | 'starting_run';
+export type MenuScreen = 'title' | 'options' | 'collection' | 'deck_select' | 'starting_run';
 
 export type MenuOption = 'new_run' | 'options' | 'collection' | 'quit';
 
@@ -21,6 +24,7 @@ export interface MenuState {
 	readonly selectedIndex: number;
 	readonly soundEnabled: boolean;
 	readonly cardStyle: 'classic' | 'modern';
+	readonly selectedDeck: StarterDeckType;
 }
 
 export interface TitleScreenLayout {
@@ -74,6 +78,13 @@ const OPTIONS_MENU_ITEMS: readonly MenuItem[] = [
 	{ id: 'back', label: 'BACK', enabled: true },
 ];
 
+/** Deck selection menu items (built from STARTER_DECKS) */
+const DECK_MENU_ITEMS: readonly MenuItem[] = STARTER_DECKS.map(d => ({
+	id: d.type,
+	label: d.name.toUpperCase(),
+	enabled: true,
+}));
+
 /** Footer text */
 export const FOOTER_TEXT = 'Press Enter to select';
 
@@ -90,6 +101,7 @@ export function createMenuState(): MenuState {
 		selectedIndex: 0,
 		soundEnabled: true,
 		cardStyle: 'classic',
+		selectedDeck: 'red',
 	};
 }
 
@@ -105,6 +117,8 @@ export function getMenuItems(state: MenuState): readonly MenuItem[] {
 			return MAIN_MENU_OPTIONS;
 		case 'options':
 			return OPTIONS_MENU_ITEMS;
+		case 'deck_select':
+			return DECK_MENU_ITEMS;
 		default:
 			return [];
 	}
@@ -186,9 +200,10 @@ export function getSelectedItem(state: MenuState): MenuItem | null {
 // =============================================================================
 
 export type MenuAction =
-	| { readonly type: 'start_game' }
+	| { readonly type: 'start_game'; readonly deck: StarterDeckType }
 	| { readonly type: 'open_options' }
 	| { readonly type: 'open_collection' }
+	| { readonly type: 'open_deck_select' }
 	| { readonly type: 'quit' }
 	| { readonly type: 'toggle_sound' }
 	| { readonly type: 'cycle_card_style' }
@@ -213,6 +228,8 @@ export function selectMenuItem(state: MenuState): [MenuState, MenuAction] {
 			return handleTitleSelection(state, item.id as MenuOption);
 		case 'options':
 			return handleOptionsSelection(state, item.id as OptionsMenuItem);
+		case 'deck_select':
+			return handleDeckSelection(state, item.id as StarterDeckType);
 		default:
 			return [state, { type: 'none' }];
 	}
@@ -228,8 +245,8 @@ function handleTitleSelection(
 	switch (option) {
 		case 'new_run':
 			return [
-				{ ...state, screen: 'starting_run' },
-				{ type: 'start_game' },
+				{ ...state, screen: 'deck_select', selectedIndex: 0 },
+				{ type: 'open_deck_select' },
 			];
 		case 'options':
 			return [
@@ -279,6 +296,19 @@ function handleOptionsSelection(
 }
 
 /**
+ * Handles selection on the deck select screen.
+ */
+function handleDeckSelection(
+	state: MenuState,
+	deckType: StarterDeckType,
+): [MenuState, MenuAction] {
+	return [
+		{ ...state, screen: 'starting_run', selectedDeck: deckType },
+		{ type: 'start_game', deck: deckType },
+	];
+}
+
+/**
  * Handles the back/escape action.
  *
  * @param state - Current menu state
@@ -287,6 +317,7 @@ function handleOptionsSelection(
 export function handleBack(state: MenuState): MenuState {
 	switch (state.screen) {
 		case 'options':
+		case 'deck_select':
 			return { ...state, screen: 'title', selectedIndex: 0 };
 		default:
 			return state;
@@ -484,6 +515,63 @@ export function getOptionsRenderData(
 	return { title, items, footer };
 }
 
+export interface DeckSelectRenderData {
+	readonly title: { readonly text: string; readonly x: number; readonly y: number };
+	readonly items: readonly {
+		readonly label: string;
+		readonly description: string;
+		readonly x: number;
+		readonly y: number;
+		readonly selected: boolean;
+		readonly color: number;
+	}[];
+	readonly footer: { readonly text: string; readonly x: number; readonly y: number };
+}
+
+/**
+ * Gets the render data for the deck selection screen.
+ *
+ * @param state - Current menu state
+ * @param screenWidth - Screen width
+ * @param screenHeight - Screen height
+ * @returns Render data
+ */
+export function getDeckSelectRenderData(
+	state: MenuState,
+	screenWidth: number,
+	screenHeight: number,
+): DeckSelectRenderData {
+	const startY = Math.max(3, Math.floor((screenHeight - 10) / 2));
+	const title = {
+		text: '=== SELECT DECK ===',
+		x: centerX('=== SELECT DECK ===', screenWidth),
+		y: startY,
+	};
+
+	const items = STARTER_DECKS.map((deck, i) => {
+		const prefix = i === state.selectedIndex ? '> ' : '  ';
+		const text = `${prefix}${deck.name.toUpperCase()}`;
+
+		return {
+			label: text,
+			description: deck.description,
+			x: centerX(text, screenWidth),
+			y: startY + 2 + i * 2,
+			selected: i === state.selectedIndex,
+			color: deck.color,
+		};
+	});
+
+	const footerText = 'Enter to select, Esc to go back';
+	const footer = {
+		text: footerText,
+		x: centerX(footerText, screenWidth),
+		y: screenHeight - 2,
+	};
+
+	return { title, items, footer };
+}
+
 // =============================================================================
 // INPUT HANDLING
 // =============================================================================
@@ -567,6 +655,16 @@ export function isOnTitleScreen(state: MenuState): boolean {
  */
 export function isOnOptionsScreen(state: MenuState): boolean {
 	return state.screen === 'options';
+}
+
+/**
+ * Checks if the menu is on the deck select screen.
+ *
+ * @param state - Current menu state
+ * @returns True if on deck select screen
+ */
+export function isOnDeckSelectScreen(state: MenuState): boolean {
+	return state.screen === 'deck_select';
 }
 
 /**

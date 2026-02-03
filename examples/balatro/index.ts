@@ -61,7 +61,7 @@ import {
 } from './core';
 
 // Data
-import type { GameState } from './data';
+import type { GameState, HandResult, ScoreResult } from './data';
 import type { Card } from './data';
 import type { HandType } from './data';
 import {
@@ -71,8 +71,10 @@ import {
 	spendMoney,
 	addJoker as addJokerToState,
 	getHandName,
+	evaluateHand,
+	calculateScore,
 } from './data';
-import { sortHand, createSortState, cycleSortMode } from './data';
+import { sortHand, createSortState, toggleSortMode, getSortModeName } from './data';
 import type { SortState } from './data';
 import { createRunStats, recordHandPlayed, recordBlindComplete } from './data';
 
@@ -88,16 +90,19 @@ import {
 
 // UI
 import type { Layout } from './ui/layout';
-import { calculateLayout, getHandCardPositions, getPlayAreaCenter } from './ui/layout';
+import { calculateLayout, getHandCardPositions, getPlayedCardPositions, getPlayAreaCenter } from './ui/layout';
 import type { MenuState, MenuAction } from './ui/menu';
+import type { StarterDeckType } from './data';
 import {
 	createMenuState,
 	processMenuInput,
 	keyToMenuInput,
 	getTitleRenderData,
 	getOptionsRenderData,
+	getDeckSelectRenderData,
 	isOnTitleScreen,
 	isOnOptionsScreen,
+	isOnDeckSelectScreen,
 } from './ui/menu';
 import type { ShopState, ShopAction } from './ui/shop';
 import {
@@ -134,6 +139,8 @@ import {
 	createPreviewBox,
 	PREVIEW_COLORS,
 } from './ui/hand-preview';
+import { formatJokerEffect, getJokerRarityColor } from './ui/joker-tray';
+import { MAX_JOKER_SLOTS } from './data/joker';
 import type { HelpOverlayState } from './ui/help-overlay';
 import {
 	createHelpOverlayState,
@@ -216,6 +223,38 @@ logMain.info('Log file:', LOG_FILE);
 
 type Screen = 'menu' | 'playing' | 'shop' | 'pack_opening' | 'end_screen';
 
+type ScoringPhase =
+	| { readonly type: 'idle' }
+	| {
+		readonly type: 'cards_to_play_area';
+		readonly startTime: number;
+		readonly playedCardIds: readonly string[];
+		readonly playedCards: readonly Card[];
+		readonly handResult: HandResult;
+		readonly scoreResult: ScoreResult;
+		readonly selectedIndices: readonly number[];
+		readonly prePlayGameState: GameState;
+	}
+	| {
+		readonly type: 'card_scoring';
+		readonly startTime: number;
+		readonly cardIndex: number;
+		readonly playedCards: readonly Card[];
+		readonly handResult: HandResult;
+		readonly scoreResult: ScoreResult;
+		readonly scoringCardIds: readonly string[];
+	}
+	| {
+		readonly type: 'score_counting';
+		readonly startTime: number;
+		readonly fromScore: number;
+		readonly toScore: number;
+	}
+	| { readonly type: 'popups'; readonly startTime: number }
+	| { readonly type: 'shuffle_back'; readonly startTime: number };
+
+const SCORING_IDLE: ScoringPhase = { type: 'idle' };
+
 interface AppState {
 	readonly screen: Screen;
 	readonly running: boolean;
@@ -241,7 +280,7 @@ interface AppState {
 	readonly helpOverlay: HelpOverlayState;
 	readonly handPreview: HandPreview;
 	readonly sortState: SortState;
-	readonly scoringPhase: boolean;
+	readonly scoringPhase: ScoringPhase;
 	readonly dealingPhase: boolean;
 	readonly dealStartTime: number;
 
@@ -487,9 +526,9 @@ function updateCardSpringPhysics(
 // SCREEN TRANSITIONS
 // =============================================================================
 
-function transitionToPlaying(state: AppState): AppState {
-	logScreen.info('>>> transitionToPlaying() called from screen:', state.screen);
-	const gameState = createGameState();
+function transitionToPlaying(state: AppState, deckType?: StarterDeckType): AppState {
+	logScreen.info('>>> transitionToPlaying() called from screen:', state.screen, 'deck:', deckType);
+	const gameState = createGameState(deckType);
 	const { newState } = startRound(gameState);
 	logGame.info(`New game: ante=${newState.currentAnte} blind=${newState.currentBlind.name} hand=${newState.hand.length} cards deck=${newState.deck.length}`);
 	const layout = calculateLayout(state.width, state.height);
@@ -519,7 +558,7 @@ function transitionToPlaying(state: AppState): AppState {
 		helpOverlay: createHelpOverlayState(),
 		handPreview: createHandPreview([]),
 		sortState: createSortState(),
-		scoringPhase: false,
+		scoringPhase: SCORING_IDLE,
 		dealingPhase: true,
 		dealStartTime: Date.now(),
 		handsPlayed: 0,
@@ -578,7 +617,7 @@ function transitionToNextRound(state: AppState): AppState {
 		popupState: createPopupState(),
 		helpOverlay: createHelpOverlayState(),
 		handPreview: createHandPreview([]),
-		scoringPhase: false,
+		scoringPhase: SCORING_IDLE,
 		dealingPhase: true,
 		dealStartTime: Date.now(),
 		shopState: null,
@@ -678,8 +717,11 @@ function handleMenuInput(state: AppState, key: string): AppState {
 
 	switch (action.type) {
 		case 'start_game':
-			logScreen.info('Menu action: START GAME');
-			return transitionToPlaying(newState);
+			logScreen.info('Menu action: START GAME with deck:', action.deck);
+			return transitionToPlaying(newState, action.deck);
+		case 'open_deck_select':
+			logScreen.info('Menu action: OPEN DECK SELECT');
+			return newState;
 		case 'quit':
 			logMain.warn('Menu action: QUIT');
 			return { ...newState, running: false };
@@ -689,7 +731,8 @@ function handleMenuInput(state: AppState, key: string): AppState {
 }
 
 function handlePlayingInput(state: AppState, key: string, action: KeyAction | null): AppState {
-	logInput.debug(`handlePlayingInput key="${key}" action=${action ?? 'null'} dealing=${state.dealingPhase} scoring=${state.scoringPhase} helpVisible=${isHelpVisible(state.helpOverlay)}`);
+	const isScoring = state.scoringPhase.type !== 'idle';
+	logInput.debug(`handlePlayingInput key="${key}" action=${action ?? 'null'} dealing=${state.dealingPhase} scoring=${state.scoringPhase.type} helpVisible=${isHelpVisible(state.helpOverlay)}`);
 
 	// Help overlay intercepts all input when visible
 	if (isHelpVisible(state.helpOverlay)) {
@@ -698,8 +741,8 @@ function handlePlayingInput(state: AppState, key: string, action: KeyAction | nu
 	}
 
 	// Block input during scoring/dealing
-	if (state.scoringPhase || state.dealingPhase) {
-		logInput.debug(`Input blocked: scoring=${state.scoringPhase} dealing=${state.dealingPhase}`);
+	if (isScoring || state.dealingPhase) {
+		logInput.debug(`Input blocked: scoring=${state.scoringPhase.type} dealing=${state.dealingPhase}`);
 		return state;
 	}
 
@@ -719,9 +762,9 @@ function handlePlayingInput(state: AppState, key: string, action: KeyAction | nu
 		};
 	}
 
-	// Sort hand
+	// Sort hand (toggle between rank and suit)
 	if (key === 's' || key === 'S') {
-		const newSortState = cycleSortMode(state.sortState);
+		const newSortState = toggleSortMode(state.sortState);
 		const sortedHand = sortHand(state.gameState.hand, newSortState);
 		const newGameState: GameState = { ...state.gameState, hand: sortedHand };
 		const newInputState = clearInputSelections(state.inputState);
@@ -770,60 +813,51 @@ function handlePlayingInput(state: AppState, key: string, action: KeyAction | nu
 		liftAnimation: newLiftAnim,
 	};
 
-	// Handle play action
+	// Handle play action: start cards_to_play_area phase
 	if (action === 'PLAY_CARDS' && newInputState.selectedCards.length > 0) {
 		logGame.info(`PLAY_CARDS: selected=${JSON.stringify(newInputState.selectedCards)} handSize=${state.gameState.hand.length}`);
-		const result = playAndDraw(state.gameState, newInputState.selectedCards);
-		logGame.info(`playAndDraw result: success=${result.success}`);
-		if (result.success) {
-			const { newState: gs, handResult, scoreResult, blindBeaten } = result.data;
-			logGame.info(`Hand: ${getHandName(handResult.type)} score=${scoreResult.total} blindBeaten=${blindBeaten} newScore=${gs.score}/${gs.currentBlind.chipTarget} handsLeft=${gs.handsRemaining}`);
 
-			// Score popup
-			const center = getPlayAreaCenter(state.layout);
-			const popups = createScoreSequence(
-				state.popupState,
-				scoreResult.baseChips,
-				scoreResult.cardChips,
-				scoreResult.mult,
-				scoreResult.total,
-				getHandName(handResult.type),
-				center.x,
-				center.y,
-			);
+		// Gather the played cards and their IDs from the hand
+		const playedCards: Card[] = newInputState.selectedCards
+			.filter(i => i < state.gameState.hand.length)
+			.map(i => state.gameState.hand[i]!)
+			.filter(Boolean);
 
-			// Track stats
-			const newHandsPlayed = state.handsPlayed + 1;
-			const newBestType = !state.bestHandType || scoreResult.total > state.bestHandScore
-				? handResult.type : state.bestHandType;
-			const newBestScore = Math.max(state.bestHandScore, scoreResult.total);
+		if (playedCards.length > 0) {
+			// Pre-evaluate what the hand result will be (for display during animation)
+			const handResult = evaluateHand(playedCards);
+			const scoreResult = calculateScore(handResult);
 
-			// Sync entities for new hand
-			const positions = getHandCardPositions(state.layout, gs.hand.length);
-			let liftAnim = createLiftAnimationState();
-			for (let i = 0; i < gs.hand.length; i++) {
-				const card = gs.hand[i];
-				const pos = positions[i];
-				if (card && pos) {
-					liftAnim = addCardToLiftState(liftAnim, card.id, pos.y);
+			logGame.info(`Hand preview: ${getHandName(handResult.type)} score=${scoreResult.total}`);
+
+			// Set card entity targets to play area positions
+			const playAreaPositions = getPlayedCardPositions(state.layout, playedCards.length);
+			for (let i = 0; i < playedCards.length; i++) {
+				const card = playedCards[i];
+				const targetPos = playAreaPositions[i];
+				if (!card || !targetPos) continue;
+				const eid = state.cardEntities.get(card.id);
+				if (eid !== undefined) {
+					// Reset velocity for spring to play area
+					Velocity.x[eid] = 0;
+					Velocity.y[eid] = 0;
 				}
 			}
-			syncCardEntities(
-				state.world, gs.hand, positions, state.cardEntities,
-				true, state.layout.deckPosition.x, state.layout.deckPosition.y,
-			);
 
 			newState = {
 				...newState,
-				gameState: gs,
 				inputState: clearInputSelections(createInputState()),
-				liftAnimation: liftAnim,
-				popupState: popups,
 				handPreview: createHandPreview([]),
-				scoringPhase: true,
-				handsPlayed: newHandsPlayed,
-				bestHandType: newBestType,
-				bestHandScore: newBestScore,
+				scoringPhase: {
+					type: 'cards_to_play_area',
+					startTime: Date.now(),
+					playedCardIds: playedCards.map(c => c.id),
+					playedCards,
+					handResult,
+					scoreResult,
+					selectedIndices: [...newInputState.selectedCards],
+					prePlayGameState: state.gameState,
+				},
 			};
 		}
 	}
@@ -1028,6 +1062,22 @@ function renderMenuScreen(state: AppState): void {
 
 		// Footer
 		renderText(buffer, data.footer.x, data.footer.y, data.footer.text, 0x888888_ff, BG_COLOR);
+	} else if (isOnDeckSelectScreen(menuState)) {
+		const data = getDeckSelectRenderData(menuState, width, height);
+
+		renderText(buffer, data.title.x, data.title.y, data.title.text, HEADER_FG, BG_COLOR);
+
+		for (const item of data.items) {
+			const fg = item.selected ? 0xffffff_ff : 0xcccccc_ff;
+			const bg = item.selected ? 0x2a5a3a_ff : BG_COLOR;
+			renderText(buffer, item.x, item.y, item.label, fg, bg);
+			// Description below the label
+			const descX = Math.max(0, Math.floor((width - item.description.length) / 2));
+			const descColor = (item.color << 8) | 0xff;
+			renderText(buffer, descX, item.y + 1, item.description, descColor, BG_COLOR);
+		}
+
+		renderText(buffer, data.footer.x, data.footer.y, data.footer.text, 0x888888_ff, BG_COLOR);
 	} else if (isOnOptionsScreen(menuState)) {
 		const data = getOptionsRenderData(menuState, width, height);
 
@@ -1054,6 +1104,36 @@ function renderPlayingScreen(state: AppState): void {
 	const headerText = ` Ante ${status.ante} | ${status.blind} | Score: ${status.score}/${status.target} | $${gameState.money} `;
 	fillRect(buffer, 0, 0, width, 1, ' ', HEADER_FG, HEADER_BG);
 	renderText(buffer, 1, 0, headerText, HEADER_FG, HEADER_BG);
+
+	// Joker display (row below header)
+	{
+		let jokerX = 1;
+		const jokerY = 1;
+		for (const joker of gameState.jokers) {
+			const effect = formatJokerEffect(joker);
+			const badge = `[${joker.name} ${effect}]`;
+			const color = getJokerRarityColor(joker);
+			// Shift color into RGBA format (the helper returns 0xRRGGBB)
+			const fg = (color << 8) | 0xff;
+			renderText(buffer, jokerX, jokerY, badge, fg, BG_COLOR);
+			jokerX += badge.length + 1;
+			// Wrap to next row if too wide
+			if (jokerX + 10 > width) {
+				jokerX = 1;
+				// We only have one extra row for jokers
+				break;
+			}
+		}
+		// Show empty slot indicators for remaining slots
+		const emptySlots = MAX_JOKER_SLOTS - gameState.jokers.length;
+		for (let i = 0; i < emptySlots; i++) {
+			const emptyBadge = '[  ]';
+			if (jokerX + emptyBadge.length < width) {
+				renderText(buffer, jokerX, jokerY, emptyBadge, 0x555555_ff, BG_COLOR);
+				jokerX += emptyBadge.length + 1;
+			}
+		}
+	}
 
 	// Deck display
 	const deckX = layout.deckPosition.x;
@@ -1115,31 +1195,86 @@ function renderPlayingScreen(state: AppState): void {
 		sortedByZ.push({ card, x: cx, y: cy, index: i });
 	}
 
-	// Render cards back to front
-	for (const { card, x, y, index } of sortedByZ) {
-		const isSelected = inputState.selectedCards.includes(index);
-		renderCardShadow(buffer, x, y, 1, 1);
-		renderCard(buffer, card, x, y, isSelected);
-
-		// Cursor indicator
-		if (index === inputState.cursorPosition && !state.dealingPhase) {
-			const cursorX = Math.floor(x) + Math.floor(CARD_WIDTH / 2);
-			const cursorY = Math.floor(y) + CARD_HEIGHT;
-			renderText(buffer, cursorX, cursorY, '^', CURSOR_FG, BG_COLOR);
+	// During shuffle_back, render all cards as card backs moving to deck
+	const scoringPhaseType = state.scoringPhase.type;
+	if (scoringPhaseType === 'shuffle_back') {
+		for (const { x, y } of sortedByZ) {
+			renderCardBack(buffer, x, y);
 		}
+	} else {
+		// Render cards back to front
+		for (const { card, x, y, index } of sortedByZ) {
+			const isSelected = inputState.selectedCards.includes(index);
+			renderCardShadow(buffer, x, y, 1, 1);
+			renderCard(buffer, card, x, y, isSelected);
 
-		// Card number
-		if (!state.dealingPhase) {
-			const numX = Math.floor(x) + Math.floor(CARD_WIDTH / 2);
-			const numY = Math.floor(y) - 1;
-			if (numY >= 0) {
-				renderText(buffer, numX, numY, `${index + 1}`, 0x888888_ff, BG_COLOR);
+			// Cursor indicator
+			if (index === inputState.cursorPosition && !state.dealingPhase && scoringPhaseType === 'idle') {
+				const cursorX = Math.floor(x) + Math.floor(CARD_WIDTH / 2);
+				const cursorY = Math.floor(y) + CARD_HEIGHT;
+				renderText(buffer, cursorX, cursorY, '^', CURSOR_FG, BG_COLOR);
+			}
+
+			// Card number
+			if (!state.dealingPhase && scoringPhaseType === 'idle') {
+				const numX = Math.floor(x) + Math.floor(CARD_WIDTH / 2);
+				const numY = Math.floor(y) - 1;
+				if (numY >= 0) {
+					renderText(buffer, numX, numY, `${index + 1}`, 0x888888_ff, BG_COLOR);
+				}
+			}
+		}
+	}
+
+	// Render played cards in play area during scoring phases
+	if (scoringPhaseType === 'cards_to_play_area' || scoringPhaseType === 'card_scoring') {
+		const scoringPhase = state.scoringPhase;
+		if (scoringPhase.type === 'cards_to_play_area' || scoringPhase.type === 'card_scoring') {
+			const playedCards = scoringPhase.playedCards;
+			const playAreaPositions = getPlayedCardPositions(state.layout, playedCards.length);
+
+			for (let i = 0; i < playedCards.length; i++) {
+				const card = playedCards[i];
+				const pos = playAreaPositions[i];
+				if (!card || !pos) continue;
+
+				// During cards_to_play_area, get animated position from ECS
+				let cx = pos.x;
+				let cy = pos.y;
+				if (scoringPhase.type === 'cards_to_play_area') {
+					const eid = cardEntities.get(card.id);
+					if (eid !== undefined) {
+						const ecsPos = getPosition(world, eid);
+						if (ecsPos) {
+							cx = ecsPos.x;
+							cy = ecsPos.y;
+						}
+					}
+				}
+
+				// During card_scoring, highlight the active scoring card
+				const isActiveScoring = scoringPhase.type === 'card_scoring'
+					&& i === scoringPhase.cardIndex
+					&& scoringPhase.scoringCardIds.includes(card.id);
+
+				renderCardShadow(buffer, cx, cy, 1, 1);
+				renderCard(buffer, card, cx, cy, isActiveScoring);
+
+				// Show chip popup above active scoring card
+				if (isActiveScoring) {
+					const chipText = `+chips`;
+					const chipX = Math.floor(cx) + Math.floor(CARD_WIDTH / 2) - Math.floor(chipText.length / 2);
+					const chipY = Math.floor(cy) - 1;
+					if (chipY >= 0) {
+						renderText(buffer, chipX, chipY, chipText, MONEY_COLOR, BG_COLOR);
+					}
+				}
 			}
 		}
 	}
 
 	// Hand preview box (right side of play area)
-	if (!state.dealingPhase && !state.scoringPhase) {
+	if (!state.dealingPhase && scoringPhaseType === 'idle') {
 		const previewBox = createPreviewBox(state.handPreview);
 		const previewX = width - previewBox.width - 2;
 		const previewY = layout.playArea.y;
@@ -1162,13 +1297,15 @@ function renderPlayingScreen(state: AppState): void {
 
 	// Action bar
 	const actionY = layout.actionBar.y;
+	const isScoring = scoringPhaseType !== 'idle';
 	const dealingMsg = state.dealingPhase ? '  Dealing...' : '';
-	const scoringMsg = state.scoringPhase ? '  Scoring...' : '';
+	const scoringMsg = isScoring ? `  Scoring... (${scoringPhaseType})` : '';
+	const sortLabel = getSortModeName(state.sortState.mode);
 	const actionText = state.dealingPhase
 		? dealingMsg
-		: state.scoringPhase
+		: isScoring
 			? scoringMsg
-			: ' [Enter] Play  [D] Discard  [S] Sort  [?] Help  [Q] Quit';
+			: ` [Enter] Play  [D] Discard  [S] Sort:${sortLabel}  [?] Help  [Q] Quit`;
 	fillRect(buffer, 0, actionY, width, 1, ' ', ACTION_FG, HEADER_BG);
 	renderText(buffer, 1, actionY, actionText, ACTION_FG, HEADER_BG);
 
@@ -1429,7 +1566,7 @@ function createInputProcessingSystem() {
 				continue;
 			}
 
-			logInput.info(`Key: "${event.key}" ctrl=${event.ctrl} shift=${event.shift} screen=${currentState.screen} dealing=${currentState.dealingPhase} scoring=${currentState.scoringPhase}`);
+			logInput.info(`Key: "${event.key}" ctrl=${event.ctrl} shift=${event.shift} screen=${currentState.screen} dealing=${currentState.dealingPhase} scoring=${currentState.scoringPhase.type}`);
 
 			// Ctrl+C always quits
 			if (event.ctrl && event.key === 'c') {
@@ -1483,41 +1620,169 @@ function createGameLogicSystem() {
 	return createLogicSystem<AppState>('game-logic', (state, _ctx) => {
 		if (state.screen !== 'playing') return state;
 
-		// Check if scoring phase is complete (popups done)
-		if (state.scoringPhase) {
-			const now = Date.now();
-			const popupsActive = hasActivePopups(state.popupState, now);
+		const phase = state.scoringPhase;
+		if (phase.type === 'idle') return state;
 
+		const now = Date.now();
+		const elapsed = now - (phase.type !== 'idle' ? (phase as { startTime: number }).startTime : 0);
+
+		// Phase: cards_to_play_area -> card_scoring (after 400ms)
+		if (phase.type === 'cards_to_play_area') {
+			if (elapsed >= 400) {
+				logGame.info('cards_to_play_area complete, entering card_scoring');
+				// Now actually execute playAndDraw
+				const result = playAndDraw(phase.prePlayGameState, phase.selectedIndices);
+				if (result.success) {
+					const { newState: gs, handResult, scoreResult } = result.data;
+					logGame.info(`Hand: ${getHandName(handResult.type)} score=${scoreResult.total}`);
+
+					// Determine which cards are scoring cards
+					const scoringCardIds = handResult.scoringCards.map(c => c.id);
+
+					// Track stats
+					const newHandsPlayed = state.handsPlayed + 1;
+					const newBestType = !state.bestHandType || scoreResult.total > state.bestHandScore
+						? handResult.type : state.bestHandType;
+					const newBestScore = Math.max(state.bestHandScore, scoreResult.total);
+
+					// Sync entities for the new hand (drawn cards)
+					const positions = getHandCardPositions(state.layout, gs.hand.length);
+					let liftAnim = createLiftAnimationState();
+					for (let i = 0; i < gs.hand.length; i++) {
+						const card = gs.hand[i];
+						const pos = positions[i];
+						if (card && pos) {
+							liftAnim = addCardToLiftState(liftAnim, card.id, pos.y);
+						}
+					}
+					syncCardEntities(
+						state.world, gs.hand, positions, state.cardEntities,
+						true, state.layout.deckPosition.x, state.layout.deckPosition.y,
+					);
+
+					return {
+						...state,
+						gameState: gs,
+						inputState: clearInputSelections(createInputState()),
+						liftAnimation: liftAnim,
+						handPreview: createHandPreview([]),
+						handsPlayed: newHandsPlayed,
+						bestHandType: newBestType,
+						bestHandScore: newBestScore,
+						scoringPhase: {
+							type: 'card_scoring',
+							startTime: now,
+							cardIndex: 0,
+							playedCards: phase.playedCards,
+							handResult,
+							scoreResult,
+							scoringCardIds: scoringCardIds as readonly string[],
+						},
+					};
+				}
+				// If play failed, return to idle
+				return { ...state, scoringPhase: SCORING_IDLE };
+			}
+			return state;
+		}
+
+		// Phase: card_scoring -> score_counting (200ms per card, then done)
+		if (phase.type === 'card_scoring') {
+			const msPerCard = 200;
+			const cardElapsed = elapsed;
+			const expectedIndex = Math.floor(cardElapsed / msPerCard);
+
+			if (expectedIndex >= phase.playedCards.length) {
+				logGame.info('card_scoring complete, entering score_counting');
+				// Create score popups
+				const center = getPlayAreaCenter(state.layout);
+				const popups = createScoreSequence(
+					state.popupState,
+					phase.scoreResult.baseChips,
+					phase.scoreResult.cardChips,
+					phase.scoreResult.mult,
+					phase.scoreResult.total,
+					getHandName(phase.handResult.type),
+					center.x,
+					center.y,
+				);
+
+				return {
+					...state,
+					popupState: popups,
+					scoringPhase: {
+						type: 'score_counting',
+						startTime: now,
+						fromScore: state.gameState.score - phase.scoreResult.total,
+						toScore: state.gameState.score,
+					},
+				};
+			}
+
+			// Advance card index for highlight rendering
+			if (expectedIndex !== phase.cardIndex) {
+				return {
+					...state,
+					scoringPhase: { ...phase, cardIndex: expectedIndex },
+				};
+			}
+			return state;
+		}
+
+		// Phase: score_counting -> popups (after 500ms)
+		if (phase.type === 'score_counting') {
+			if (elapsed >= 500) {
+				logGame.info('score_counting complete, entering popups phase');
+				return {
+					...state,
+					scoringPhase: { type: 'popups', startTime: now },
+				};
+			}
+			return state;
+		}
+
+		// Phase: popups -> check win/loss or shuffle_back
+		if (phase.type === 'popups') {
+			const popupsActive = hasActivePopups(state.popupState, now);
 			if (!popupsActive) {
-				// Scoring done, check game end
 				const endState = getGameEndState(state.gameState);
-				logGame.info(`Scoring complete. endState=${endState.type} score=${state.gameState.score}/${state.gameState.currentBlind.chipTarget} hands=${state.gameState.handsRemaining}`);
+				logGame.info(`Popups complete. endState=${endState.type} score=${state.gameState.score}/${state.gameState.currentBlind.chipTarget}`);
 
 				if (endState.type === 'victory') {
-					logGame.warn('VICTORY detected in game logic system');
+					logGame.warn('VICTORY detected');
 					return transitionToEndScreen(state, 'victory');
 				}
 				if (endState.type === 'lost') {
-					logGame.warn(`GAME OVER detected: hands=${state.gameState.handsRemaining} score=${state.gameState.score}/${state.gameState.currentBlind.chipTarget}`);
+					logGame.warn('GAME OVER detected');
 					return transitionToEndScreen(state, 'game_over');
 				}
 
-				// Check if blind beaten (go to shop)
+				// Check if blind beaten
 				if (state.gameState.score >= state.gameState.currentBlind.chipTarget) {
 					const isBoss = isCurrentBossBlind(state.gameState);
 					const isFinal = isFinalAnte(state.gameState);
-					logGame.info(`Blind beaten! isBoss=${isBoss} isFinal=${isFinal}`);
-					// Check for victory condition
 					if (isBoss && isFinal) {
-						logGame.warn('VICTORY: final boss beaten');
 						return transitionToEndScreen(state, 'victory');
 					}
-					return transitionToShop(state);
+					// Enter shuffle_back phase
+					return {
+						...state,
+						scoringPhase: { type: 'shuffle_back', startTime: now },
+					};
 				}
 
-				logGame.debug('Scoring phase ended, continuing play');
-				return { ...state, scoringPhase: false };
+				logGame.debug('Scoring complete, continuing play');
+				return { ...state, scoringPhase: SCORING_IDLE };
 			}
+		}
+
+		// Phase: shuffle_back -> shop (after 500ms)
+		if (phase.type === 'shuffle_back') {
+			if (elapsed >= 500) {
+				logGame.info('shuffle_back complete, transitioning to shop');
+				return transitionToShop(state);
+			}
+			return state;
 		}
 
 		return state;
@@ -1533,23 +1798,105 @@ function createAnimationUpdateSystem() {
 		// Update card lift animation
 		const newLiftAnim = updateLiftAnimation(state.liftAnimation, ctx.deltaTime);
 
-		// Update spring physics for card entities (with stagger during dealing)
-		const allArrived = updateCardSpringPhysics(
-			state.world,
-			state.gameState.hand,
-			positions,
-			state.cardEntities,
-			newLiftAnim,
-			ctx.deltaTime,
-			state.dealingPhase,
-			state.dealStartTime,
-			state.layout.deckPosition.x,
-			state.layout.deckPosition.y,
-		);
+		// During cards_to_play_area, animate played cards to play area positions
+		const phase = state.scoringPhase;
+		if (phase.type === 'cards_to_play_area') {
+			const playAreaPositions = getPlayedCardPositions(state.layout, phase.playedCards.length);
+			// Animate played cards toward play area
+			for (let i = 0; i < phase.playedCards.length; i++) {
+				const card = phase.playedCards[i];
+				const targetPos = playAreaPositions[i];
+				if (!card || !targetPos) continue;
+				const eid = state.cardEntities.get(card.id);
+				if (eid === undefined) continue;
+				const pos = getPosition(state.world, eid);
+				if (!pos) continue;
+
+				const dx = targetPos.x - pos.x;
+				const dy = targetPos.y - pos.y;
+				let vx = Velocity.x[eid] ?? 0;
+				let vy = Velocity.y[eid] ?? 0;
+				vx += SPRING_STIFFNESS * dx * ctx.deltaTime;
+				vy += SPRING_STIFFNESS * dy * ctx.deltaTime;
+				vx *= Math.pow(SPRING_DAMPING, ctx.deltaTime * 60);
+				vy *= Math.pow(SPRING_DAMPING, ctx.deltaTime * 60);
+				const dist = Math.sqrt(dx * dx + dy * dy);
+				const speed = Math.sqrt(vx * vx + vy * vy);
+				if (dist < 0.5 && speed < 0.5) {
+					Position.x[eid] = targetPos.x;
+					Position.y[eid] = targetPos.y;
+					Velocity.x[eid] = 0;
+					Velocity.y[eid] = 0;
+				} else {
+					Position.x[eid] = pos.x + vx * ctx.deltaTime * 60;
+					Position.y[eid] = pos.y + vy * ctx.deltaTime * 60;
+					Velocity.x[eid] = vx;
+					Velocity.y[eid] = vy;
+				}
+			}
+		}
+
+		// During shuffle_back, animate all hand card entities toward deck position
+		if (phase.type === 'shuffle_back') {
+			const deckPos = state.layout.deckPosition;
+			for (const [, eid] of state.cardEntities) {
+				const pos = getPosition(state.world, eid);
+				if (!pos) continue;
+				const dx = deckPos.x - pos.x;
+				const dy = deckPos.y - pos.y;
+				let vx = Velocity.x[eid] ?? 0;
+				let vy = Velocity.y[eid] ?? 0;
+				vx += SPRING_STIFFNESS * dx * ctx.deltaTime;
+				vy += SPRING_STIFFNESS * dy * ctx.deltaTime;
+				vx *= Math.pow(SPRING_DAMPING, ctx.deltaTime * 60);
+				vy *= Math.pow(SPRING_DAMPING, ctx.deltaTime * 60);
+				const dist = Math.sqrt(dx * dx + dy * dy);
+				const speed = Math.sqrt(vx * vx + vy * vy);
+				if (dist < 0.5 && speed < 0.5) {
+					Position.x[eid] = deckPos.x;
+					Position.y[eid] = deckPos.y;
+					Velocity.x[eid] = 0;
+					Velocity.y[eid] = 0;
+				} else {
+					Position.x[eid] = pos.x + vx * ctx.deltaTime * 60;
+					Position.y[eid] = pos.y + vy * ctx.deltaTime * 60;
+					Velocity.x[eid] = vx;
+					Velocity.y[eid] = vy;
+				}
+			}
+		}
+
+		// Update spring physics for hand card entities (normal play and dealing)
+		if (phase.type === 'idle' || phase.type === 'card_scoring' || phase.type === 'score_counting' || phase.type === 'popups') {
+			updateCardSpringPhysics(
+				state.world,
+				state.gameState.hand,
+				positions,
+				state.cardEntities,
+				newLiftAnim,
+				ctx.deltaTime,
+				state.dealingPhase,
+				state.dealStartTime,
+				state.layout.deckPosition.x,
+				state.layout.deckPosition.y,
+			);
+		}
 
 		// Update dealing phase: all cards dealt and arrived at positions
 		let dealingPhase = state.dealingPhase;
 		if (dealingPhase) {
+			const allArrived = updateCardSpringPhysics(
+				state.world,
+				state.gameState.hand,
+				positions,
+				state.cardEntities,
+				newLiftAnim,
+				ctx.deltaTime,
+				true,
+				state.dealStartTime,
+				state.layout.deckPosition.x,
+				state.layout.deckPosition.y,
+			);
 			const dealtSoFar = getDealtCardCount(state.dealStartTime, state.gameState.hand.length);
 			logAnim.trace(`Dealing: ${dealtSoFar}/${state.gameState.hand.length} cards dealt, allArrived=${allArrived}`);
 			if (allArrived) {
@@ -1576,7 +1923,7 @@ function createRenderingSystem() {
 		frameCount++;
 		// Log every 60 frames (~1 second at 60fps) to show we're alive
 		if (frameCount % 60 === 0) {
-			logRender.trace(`Frame ${frameCount}, screen=${state.screen} dealing=${state.dealingPhase} scoring=${state.scoringPhase}`);
+			logRender.trace(`Frame ${frameCount}, screen=${state.screen} dealing=${state.dealingPhase} scoring=${state.scoringPhase.type}`);
 		}
 		// Resize buffer if needed
 		let { buffer } = state;
@@ -1714,7 +2061,7 @@ async function main(): Promise<void> {
 		helpOverlay: createHelpOverlayState(),
 		handPreview: createHandPreview([]),
 		sortState: createSortState(),
-		scoringPhase: false,
+		scoringPhase: SCORING_IDLE,
 		dealingPhase: false,
 		dealStartTime: 0,
 		handsPlayed: 0,
