@@ -191,6 +191,14 @@ function initViewAngleToX(): void {
 		}
 		viewangletox[i] = x;
 	}
+
+	// Fencepost clamping: must happen here (before xtoviewangle is built)
+	// so that the xtoviewangle scan sees clamped 0/viewwidth instead of
+	// -1/viewwidth+1 sentinel values at the screen edges.
+	for (let i = 0; i < FINEANGLES / 2; i++) {
+		if (viewangletox[i] === -1) viewangletox[i] = 0;
+		else if (viewangletox[i] === viewwidth + 1) viewangletox[i] = viewwidth;
+	}
 }
 
 /**
@@ -217,12 +225,6 @@ function initXToViewAngle(width: number): void {
 
 	// Set clipangle from the leftmost visible column angle
 	clipangle = xtoviewangle[0] ?? 0;
-
-	// Now do fencepost clamping on viewangletox (must happen AFTER xtoviewangle)
-	for (let i = 0; i < FINEANGLES / 2; i++) {
-		if (viewangletox[i] === -1) viewangletox[i] = 0;
-		else if (viewangletox[i] === viewwidth + 1) viewangletox[i] = viewwidth;
-	}
 }
 
 /**
