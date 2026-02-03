@@ -11,7 +11,7 @@
 import { three } from 'blecsd';
 import { ANGLETOFINESHIFT, FINEMASK, finecosine, finesine, pointToAngle2 } from '../math/angles.js';
 import { FRACBITS, FRACUNIT, fixedDiv, fixedMul } from '../math/fixed.js';
-import { centery, projection, viewwidth } from '../math/tables.js';
+import { centerxfrac, centery, projection, viewwidth } from '../math/tables.js';
 import type { RenderState } from './defs.js';
 import type { Mobj } from '../game/mobj.js';
 import type { SpriteStore } from '../wad/spriteData.js';
@@ -118,12 +118,13 @@ export function collectVisSprites(
 		const picture = rotResult.picture;
 		const flip = rotResult.flip;
 
-		// Compute screen position
-		const screenX = Math.floor(viewwidth / 2) + fixedMul(tx, scale) / FRACUNIT;
+		// Compute screen column extents by projecting world-space edges
+		// independently (matching Doom's R_ProjectSprite)
+		const txLeft = tx - (picture.leftOffset << FRACBITS);
+		const txRight = txLeft + (picture.width << FRACBITS);
 
-		// Compute screen column extents using picture offsets
-		const x1Raw = Math.floor(screenX - (picture.leftOffset * scale / FRACUNIT));
-		const x2Raw = x1Raw + Math.ceil(picture.width * scale / FRACUNIT) - 1;
+		const x1Raw = (centerxfrac + fixedMul(txLeft, scale)) >> FRACBITS;
+		const x2Raw = ((centerxfrac + fixedMul(txRight, scale)) >> FRACBITS) - 1;
 
 		// Clamp to screen bounds
 		const x1 = Math.max(0, x1Raw);
