@@ -10,7 +10,8 @@
  * ```
  *
  * Key parameters:
- * - `a=T` - transmit image data
+ * - `a=t` - transmit image data (upload only, no display)
+ * - `a=T` - transmit and display image data
  * - `a=p` - display (put) image
  * - `a=d` - delete image
  * - `f=32` - RGBA pixel format
@@ -115,8 +116,8 @@ export function createKittyBackend(config?: KittyConfig): RendererBackend {
 				const isFirst = c === 0;
 
 				if (isFirst) {
-					// First chunk includes image metadata
-					escape += `${APC_START}a=T,f=32,s=${w},v=${h},i=${imageId},m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
+					// First chunk includes image metadata (a=t: transmit only, no display)
+					escape += `${APC_START}a=t,f=32,s=${w},v=${h},i=${imageId},m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
 				} else {
 					// Subsequent chunks only have continuation flag
 					escape += `${APC_START}m=${isLast ? 0 : 1};${chunks[c]}${ST}`;

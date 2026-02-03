@@ -33,7 +33,7 @@ describe('Kitty backend', () => {
 			setPixel(fb, 0, 0, RED);
 			const output = backend.encode(fb, 0, 0);
 
-			expect(output.escape).toContain('a=T');
+			expect(output.escape).toContain('a=t');
 			expect(output.escape).toContain('f=32');
 		});
 
@@ -62,7 +62,7 @@ describe('Kitty backend', () => {
 			const output = backend.encode(fb, 0, 0);
 
 			const deleteIdx = output.escape?.indexOf('a=d') ?? -1;
-			const transmitIdx = output.escape?.indexOf('a=T') ?? -1;
+			const transmitIdx = output.escape?.indexOf('a=t') ?? -1;
 			expect(deleteIdx).toBeLessThan(transmitIdx);
 			expect(deleteIdx).toBeGreaterThanOrEqual(0);
 		});
@@ -82,7 +82,7 @@ describe('Kitty backend', () => {
 			const output = backend.encode(fb, 0, 0);
 
 			// Extract base64 data between first ';' and ST in the transmit command
-			const transmitMatch = output.escape?.match(/a=T[^;]*;([A-Za-z0-9+/=]+)/);
+			const transmitMatch = output.escape?.match(/a=t[^;]*;([A-Za-z0-9+/=]+)/);
 			expect(transmitMatch).toBeTruthy();
 			const base64Data = transmitMatch?.[1] ?? '';
 			// Verify it decodes without error
@@ -113,7 +113,7 @@ describe('Kitty backend', () => {
 			const output = backend.encode(fb, 0, 0);
 
 			// Small image fits in one chunk, so m=0 on the transmit command
-			const transmitSection = output.escape?.match(/a=T[^\\]*\\/)?.[0] ?? '';
+			const transmitSection = output.escape?.match(/a=t[^\\]*\\/)?.[0] ?? '';
 			expect(transmitSection).toContain('m=0');
 			// Should NOT have m=1 in the transmit section
 			expect(transmitSection).not.toContain('m=1');
