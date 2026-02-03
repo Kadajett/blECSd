@@ -112,8 +112,22 @@ export function generateTables(): void {
 // ─── Angle Utility Functions ───────────────────────────────────────
 
 /**
- * Compute the angle from origin to point (x, y).
- * Equivalent to Doom's R_PointToAngle2 with (0,0) as source.
+ * Integer slope division matching Doom's SlopeDiv.
+ * Divides num/den and clamps to SLOPERANGE, using only integer shifts.
+ *
+ * @param num - Numerator (unsigned)
+ * @param den - Denominator (unsigned)
+ * @returns Slope index (0..SLOPERANGE)
+ */
+function slopeDiv(num: number, den: number): number {
+	if (den < 512) return SLOPERANGE;
+	const ans = ((num << 3) >>> 0) / ((den >>> 8) || 1);
+	return ans <= SLOPERANGE ? (ans | 0) : SLOPERANGE;
+}
+
+/**
+ * Compute the angle from origin to point (x, y) using Doom's
+ * tantoangle octant lookup (integer arithmetic, no floating-point).
  *
  * @param x - X delta (fixed-point)
  * @param y - Y delta (fixed-point)
@@ -128,11 +142,44 @@ export function generateTables(): void {
 export function pointToAngle(x: number, y: number): number {
 	if (x === 0 && y === 0) return 0;
 
-	// Use atan2 and convert to BAM
-	const rad = Math.atan2(y, x);
-	// atan2 returns -PI..PI, convert to 0..2PI then to BAM
-	const normalized = rad < 0 ? rad + 2 * Math.PI : rad;
-	return (Math.round((normalized / (2 * Math.PI)) * 0x100000000) >>> 0);
+	if (x >= 0) {
+		if (y >= 0) {
+			if (x > y) {
+				// octant 0
+				return tantoangle[slopeDiv(y, x)] >>> 0;
+			}
+			// octant 1
+			return (ANG90 - 1 - tantoangle[slopeDiv(x, y)]) >>> 0;
+		}
+		// y < 0
+		const ay = -y;
+		if (x > ay) {
+			// octant 8
+			return (-tantoangle[slopeDiv(ay, x)]) >>> 0;
+		}
+		// octant 7
+		return (ANG270 + tantoangle[slopeDiv(x, ay)]) >>> 0;
+	}
+
+	// x < 0
+	const ax = -x;
+	if (y >= 0) {
+		if (ax > y) {
+			// octant 3
+			return (ANG180 - 1 - tantoangle[slopeDiv(y, ax)]) >>> 0;
+		}
+		// octant 2
+		return (ANG90 + tantoangle[slopeDiv(ax, y)]) >>> 0;
+	}
+
+	// x < 0, y < 0
+	const ay = -y;
+	if (ax > ay) {
+		// octant 4
+		return (ANG180 + tantoangle[slopeDiv(ay, ax)]) >>> 0;
+	}
+	// octant 5
+	return (ANG270 - 1 - tantoangle[slopeDiv(ax, ay)]) >>> 0;
 }
 
 /**
