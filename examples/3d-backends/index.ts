@@ -62,14 +62,6 @@ for (let i = 0; i < BACKENDS.length; i++) {
 		backend,
 	});
 
-	// For sixel and kitty, override pixel dimensions to keep framebuffer manageable.
-	// Their getPixelDimensions returns 8x16 multipliers, which would create a
-	// 176x160 framebuffer per viewport. Use braille-equivalent ratios instead.
-	if (backend === 'sixel' || backend === 'kitty') {
-		three.Viewport3D.pixelWidth[vpEntity] = VP_WIDTH * 2;
-		three.Viewport3D.pixelHeight[vpEntity] = VP_HEIGHT * 4;
-	}
-
 	// Add a cube to the scene (shared mesh ID, per-viewport entity)
 	const cubeEid = widget.addMesh(cubeId, { tz: -5 });
 	cubeEntities.push(cubeEid);
