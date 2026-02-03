@@ -1,0 +1,24 @@
+{
+	"name": "doom-example",
+	"version": "0.0.1",
+	"description": "Doom source port rendered in the terminal via Kitty graphics protocol",
+	"type": "module",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "tsup index.ts --format esm --dts",
+		"start": "node dist/index.js",
+		"dev": "tsx index.ts",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"blecsd": "workspace:*"
+	},
+	"devDependencies": {
+		"tsup": "^8.5.1",
+		"tsx": "^4.19.3",
+		"typescript": "^5.8.2",
+		"vitest": "^4.0.18"
+	}
+}
