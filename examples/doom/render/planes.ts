@@ -214,74 +214,128 @@ function drawFloorCeilingPlane(rs: RenderState, plane: Visplane): void {
 	const viewcos = finecosine[viewAngleFine] ?? FRACUNIT;
 	const viewsin = finesine[viewAngleFine] ?? 0;
 
-	// Process row by row: gather horizontal spans from the visplane columns
-	for (let y = 0; y < rs.screenHeight; y++) {
-		// Find span extent for this row
-		let spanStart = -1;
-		let spanEnd = -1;
+	// Column-based span extraction matching Doom's R_MakeSpans.
+	// Tracks previous column top/bottom and only processes delta rows.
+	// O(columns + total_span_boundary_changes) instead of O(width * height).
 
-		for (let x = plane.minx; x <= plane.maxx; x++) {
-			const top = plane.top[x];
-			const bottom = plane.bottom[x];
-			if (top === undefined || bottom === undefined || top === VP_UNUSED) continue;
-			if (y < top || y > bottom) continue;
+	// Per-row span tracking: spanStart[y] = starting x of current span (-1 if none)
+	const spanStart = new Int16Array(rs.screenHeight);
+	spanStart.fill(-1);
 
-			if (spanStart === -1) spanStart = x;
-			spanEnd = x;
+	let prevTop = rs.screenHeight;
+	let prevBottom = -1;
+
+	// Process columns left-to-right, plus one sentinel column to flush
+	for (let x = plane.minx; x <= plane.maxx + 1; x++) {
+		let curTop: number;
+		let curBottom: number;
+
+		if (x <= plane.maxx) {
+			const t = plane.top[x];
+			const b = plane.bottom[x];
+			if (t === undefined || b === undefined || t === VP_UNUSED) {
+				curTop = rs.screenHeight;
+				curBottom = -1;
+			} else {
+				curTop = t;
+				curBottom = b;
+			}
+		} else {
+			// Sentinel: force all open spans to close
+			curTop = rs.screenHeight;
+			curBottom = -1;
 		}
 
-		if (spanStart === -1) continue;
+		// Only process rows in the union of previous and current ranges.
+		// Rows that were in prev but not cur need spans closed.
+		// Rows that are in cur but not prev need spans opened.
+		// Rows in both continue unchanged.
 
-		// Compute distance for this row (same for all pixels in the row)
-		const ys = yslope[y];
-		if (ys === undefined) continue;
-		const distance = fixedMul(planeheight, ys);
-
-		// Compute texture step per pixel for this row (matching R_MapPlane)
-		// ds_xstep = distance * basexscale (adjusted for view angle)
-		// ds_ystep = distance * baseyscale (adjusted for view angle)
-		const xstep = fixedMul(distance, basexscale);
-		const ystep = fixedMul(distance, baseyscale);
-
-		// Compute starting texture position for the leftmost pixel of the span
-		// Use xtoviewangle for proper angle at each column
-		const startAngle = ((rs.viewangle + (xtoviewangle[spanStart] ?? 0)) >>> 0);
-		const startAngleFine = (startAngle >> ANGLETOFINESHIFT) & FINEMASK;
-		const startLength = fixedMul(distance, distscale[spanStart] ?? FRACUNIT);
-
-		let xfrac = rs.viewx + fixedMul(finecosine[startAngleFine] ?? FRACUNIT, startLength);
-		let yfrac = -rs.viewy + fixedMul(finesine[startAngleFine] ?? 0, startLength);
-
-		// Light level based on distance
-		const zIdx = Math.min(MAXLIGHTZ - 1, Math.max(0, distance >> LIGHTZSHIFT));
-		const colormapIdx = rs.fixedcolormap ?? (lightTable?.[zIdx] ?? 0);
-		const cmap = rs.colormap[colormapIdx];
-
-		// Draw the span pixel by pixel
-		for (let x = spanStart; x <= spanEnd; x++) {
-			// Check this column is actually part of the visplane at this row
-			const top = plane.top[x];
-			const bottom = plane.bottom[x];
-			if (top === undefined || bottom === undefined || top === VP_UNUSED || y < top || y > bottom) {
-				xfrac += xstep;
-				yfrac += ystep;
-				continue;
+		// Close spans for rows that were covered by prev but not by cur
+		// (rows in prevTop..prevBottom that are outside curTop..curBottom)
+		if (prevBottom >= prevTop) {
+			// Rows above current range
+			const closeAboveEnd = Math.min(prevBottom, curTop > 0 ? curTop - 1 : -1);
+			for (let y = prevTop; y <= closeAboveEnd; y++) {
+				if (spanStart[y] !== -1) {
+					drawFlatSpan(rs, plane, flat, planeheight, lightTable, y, spanStart[y]!, x - 1);
+					spanStart[y] = -1;
+				}
 			}
-
-			// Sample the flat texture (64x64)
-			const tx = ((xfrac >> FRACBITS) & 63);
-			const ty = ((yfrac >> FRACBITS) & 63);
-			const paletteIdx = flat.pixels[ty * 64 + tx] ?? 0;
-
-			const shadedIdx = cmap ? (cmap[paletteIdx] ?? paletteIdx) : paletteIdx;
-			const color = rs.palette[shadedIdx];
-			if (color) {
-				three.setPixelUnsafe(rs.fb, x, y, color.r, color.g, color.b, 255);
+			// Rows below current range
+			const closeBelowStart = Math.max(prevTop, curBottom < rs.screenHeight - 1 ? curBottom + 1 : rs.screenHeight);
+			for (let y = closeBelowStart; y <= prevBottom; y++) {
+				if (spanStart[y] !== -1) {
+					drawFlatSpan(rs, plane, flat, planeheight, lightTable, y, spanStart[y]!, x - 1);
+					spanStart[y] = -1;
+				}
 			}
-
-			xfrac += xstep;
-			yfrac += ystep;
 		}
+
+		// Open spans for rows that are covered by cur but not by prev
+		if (curBottom >= curTop) {
+			// Rows above previous range
+			const openAboveEnd = Math.min(curBottom, prevTop > 0 ? prevTop - 1 : -1);
+			for (let y = curTop; y <= openAboveEnd; y++) {
+				spanStart[y] = x;
+			}
+			// Rows below previous range
+			const openBelowStart = Math.max(curTop, prevBottom < rs.screenHeight - 1 ? prevBottom + 1 : rs.screenHeight);
+			for (let y = openBelowStart; y <= curBottom; y++) {
+				spanStart[y] = x;
+			}
+		}
+
+		prevTop = curTop;
+		prevBottom = curBottom;
+	}
+}
+
+/**
+ * Draw a single horizontal span of a flat texture.
+ * Computes texture mapping for the span at the given row and draws it.
+ */
+function drawFlatSpan(
+	rs: RenderState,
+	plane: Visplane,
+	flat: { pixels: Uint8Array },
+	planeheight: number,
+	lightTable: Int32Array | undefined,
+	y: number,
+	x1: number,
+	x2: number,
+): void {
+	const ys = yslope[y];
+	if (ys === undefined) return;
+	const distance = fixedMul(planeheight, ys);
+
+	const xstep = fixedMul(distance, basexscale);
+	const ystep = fixedMul(distance, baseyscale);
+
+	const startAngle = ((rs.viewangle + (xtoviewangle[x1] ?? 0)) >>> 0);
+	const startAngleFine = (startAngle >> ANGLETOFINESHIFT) & FINEMASK;
+	const startLength = fixedMul(distance, distscale[x1] ?? FRACUNIT);
+
+	let xfrac = rs.viewx + fixedMul(finecosine[startAngleFine] ?? FRACUNIT, startLength);
+	let yfrac = -rs.viewy + fixedMul(finesine[startAngleFine] ?? 0, startLength);
+
+	const zIdx = Math.min(MAXLIGHTZ - 1, Math.max(0, distance >> LIGHTZSHIFT));
+	const colormapIdx = rs.fixedcolormap ?? (lightTable?.[zIdx] ?? 0);
+	const cmap = rs.colormap[colormapIdx];
+
+	for (let x = x1; x <= x2; x++) {
+		const tx = ((xfrac >> FRACBITS) & 63);
+		const ty = ((yfrac >> FRACBITS) & 63);
+		const paletteIdx = flat.pixels[ty * 64 + tx] ?? 0;
+
+		const shadedIdx = cmap ? (cmap[paletteIdx] ?? paletteIdx) : paletteIdx;
+		const color = rs.palette[shadedIdx];
+		if (color) {
+			three.setPixelUnsafe(rs.fb, x, y, color.r, color.g, color.b, 255);
+		}
+
+		xfrac += xstep;
+		yfrac += ystep;
 	}
 }
 
