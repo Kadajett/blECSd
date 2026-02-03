@@ -94,7 +94,7 @@ export function generateTables(): void {
 
 	// Generate finetangent
 	for (let i = 0; i < FINEANGLES / 2; i++) {
-		const angle = ((i - FINEANGLES / 4 + 0.5) * Math.PI) / FINEANGLES;
+		const angle = ((i - FINEANGLES / 4) * 2 * Math.PI) / FINEANGLES;
 		const t = Math.tan(angle);
 		// Clamp to avoid infinity
 		finetangent[i] = Math.round(Math.max(-2147483647, Math.min(2147483647, t * FRACUNIT)));
