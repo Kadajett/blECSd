@@ -1,8 +1,18 @@
 # blECSd
 
-A terminal game library built on TypeScript and bitECS.
+A high-performance terminal UI library built on TypeScript and bitECS.
 
-blECSd provides ECS components, input parsing, and terminal I/O for building terminal-based games. It is a library, not a framework: you control the game loop, the world, and how components are used.
+blECSd provides a complete toolkit for building terminal applications: dashboards, file managers, system monitors, CLI tools, and games. It combines the performance of an Entity Component System with production-ready widgets and form controls.
+
+## Features
+
+- **18 Widgets**: Box, Panel, Tabs, List, Table, Tree, VirtualizedList, and more
+- **Form Controls**: TextInput, Checkbox, RadioButton, Slider, Select, ProgressBar
+- **32 Components**: Position, Renderable, Focusable, Interactive, Animation, Collision, etc.
+- **12 Systems**: Layout, Input, Render, Animation, Collision, Camera, Drag, Focus, etc.
+- **Physics-based Animations**: Velocity, acceleration, friction for smooth transitions
+- **Virtualized Rendering**: Efficiently render 1000s of items
+- **State Machines**: Built-in FSM support for complex UI state
 
 ## Install
 
@@ -10,27 +20,87 @@ blECSd provides ECS components, input parsing, and terminal I/O for building ter
 npm install blecsd
 ```
 
-## Quick Example
+## Quick Start
 
 ```typescript
 import { createWorld, addEntity } from 'bitecs';
-import { setPosition, setStyle, createEventBus } from 'blecsd';
+import {
+  setPosition,
+  setDimensions,
+  setBorder,
+  setContent,
+  createPanel,
+  createList,
+  createTextInput,
+  createEventBus
+} from 'blecsd';
 
-// Your world, your control
+// Create a world and entities
 const world = createWorld();
-const player = addEntity(world);
 
-// Add components
-setPosition(world, player, 10, 5);
-setStyle(world, player, { fg: '#00ff00', bold: true });
+// Create a panel with a title
+const panel = createPanel(world, {
+  x: 2,
+  y: 1,
+  width: 40,
+  height: 10,
+  title: 'My Application',
+  border: { type: 'rounded' }
+});
+
+// Create an interactive list
+const list = createList(world, {
+  x: 4,
+  y: 3,
+  width: 36,
+  height: 6,
+  items: [
+    { label: 'Option 1', value: 'opt1' },
+    { label: 'Option 2', value: 'opt2' },
+    { label: 'Option 3', value: 'opt3' }
+  ]
+});
 
 // Type-safe events
-interface GameEvents {
-  'player:move': { x: number; y: number };
+interface AppEvents {
+  'item:selected': { value: string };
 }
-const events = createEventBus<GameEvents>();
-events.on('player:move', (e) => console.log(`Moved to ${e.x}, ${e.y}`));
+const events = createEventBus<AppEvents>();
+events.on('item:selected', (e) => console.log(`Selected: ${e.value}`));
 ```
+
+## Widgets
+
+| Widget | Description |
+|--------|-------------|
+| Box | Base container with borders, padding, content |
+| Panel | Box with title bar, collapsible, close button |
+| Tabs | Tabbed container with keyboard navigation |
+| Text | Text display with alignment, wrapping |
+| List | Selectable list with keyboard/mouse support |
+| Table | Data table with headers, columns, sorting |
+| Tree | Hierarchical tree view with expand/collapse |
+| VirtualizedList | Efficient list for large datasets |
+| ListTable | Table-style list display |
+| Listbar | Horizontal navigation bar |
+| Line | Horizontal/vertical separator |
+| Loading | Loading indicator with spinner |
+| ScrollableBox | Container with scroll support |
+| ScrollableText | Scrollable text area |
+| HoverText | Tooltip/hover text display |
+| Layout | Flex/grid layout container |
+
+## Form Controls
+
+| Control | Description |
+|---------|-------------|
+| TextInput | Single/multi-line text entry with cursor, selection |
+| Checkbox | Boolean toggle with customizable characters |
+| RadioButton | Single selection from group |
+| Slider | Range value selection, horizontal/vertical |
+| Select | Dropdown selection menu |
+| ProgressBar | Progress indicator, horizontal/vertical |
+| Form | Form field management, validation, submit |
 
 ## Components
 
@@ -38,167 +108,98 @@ blECSd provides ECS components that work with any bitECS world:
 
 | Component | Purpose |
 |-----------|---------|
-| Position | X/Y coordinates and z-index |
-| Renderable | Colors, visibility, text styles |
-| Dimensions | Width, height, min/max constraints |
-| Hierarchy | Parent-child relationships |
-| Focusable | Keyboard focus and tab order |
+| Position | X/Y coordinates, z-index, absolute positioning |
+| Renderable | Colors, visibility, dirty tracking |
+| Dimensions | Width, height, min/max constraints, percentages |
+| Hierarchy | Parent-child relationships, traversal |
+| Focusable | Keyboard focus, tab order |
 | Interactive | Click, hover, drag states |
-| Scrollable | Scroll position and content size |
-| Border | Box borders with multiple styles |
-| Content | Text content with alignment |
+| Scrollable | Scroll position, content size, scrollbars |
+| Border | Box borders (single, double, rounded, bold, ascii) |
+| Content | Text content, alignment, wrapping, tag parsing |
 | Padding | Inner spacing |
-| Label | Text labels for elements |
+| Label | Text labels with positioning |
+| Animation | Frame-based sprite animations |
+| Velocity | Movement with speed, friction, max speed |
+| Collision | AABB/circle collision detection, layers, triggers |
+| Camera | Viewport, target following, bounds |
+| StateMachine | Finite state machine with events, transitions |
+| Sprite | Sprite sheets, frames |
+| Shadow | Drop shadows with opacity, blending |
+| VirtualViewport | Virtualized content rendering |
 
-Each component has getter/setter functions:
+See [API Reference](./docs/api/index.md) for the complete list.
 
-```typescript
-import { setPosition, getPosition, setStyle, isVisible } from 'blecsd';
+## Systems
 
-setPosition(world, entity, 10, 5);
-const pos = getPosition(world, entity); // { x: 10, y: 5, z: 0, absolute: false }
-
-setStyle(world, entity, { fg: '#ff0000', bold: true });
-isVisible(world, entity); // true
-```
-
-## Entity Factories
-
-Create pre-configured entities:
-
-```typescript
-import { createWorld, createBoxEntity, createTextEntity, BorderType } from 'blecsd';
-
-const world = createWorld();
-
-const box = createBoxEntity(world, {
-  x: 0,
-  y: 0,
-  width: 40,
-  height: 10,
-  border: { type: BorderType.Line },
-});
-
-const text = createTextEntity(world, {
-  x: 5,
-  y: 2,
-  text: 'Hello',
-  fg: 0xffffffff,
-});
-```
-
-## Event Bus
-
-Type-safe event handling:
-
-```typescript
-import { createEventBus } from 'blecsd';
-
-interface GameEvents {
-  'enemy:spawn': { type: string; x: number; y: number };
-  'game:over': { score: number };
-}
-
-const events = createEventBus<GameEvents>();
-
-const unsubscribe = events.on('enemy:spawn', (e) => {
-  console.log(`${e.type} spawned at ${e.x}, ${e.y}`);
-});
-
-events.emit('enemy:spawn', { type: 'goblin', x: 10, y: 5 });
-
-unsubscribe(); // Stop listening
-```
-
-## Scheduler
-
-Optional game loop with fixed phase ordering:
-
-```typescript
-import { createWorld, createScheduler, LoopPhase } from 'blecsd';
-
-const world = createWorld();
-const scheduler = createScheduler();
-
-scheduler.add(LoopPhase.UPDATE, (world, delta) => {
-  // Game logic runs here
-  return world;
-});
-
-scheduler.add(LoopPhase.RENDER, (world, delta) => {
-  // Rendering runs here
-  return world;
-});
-
-scheduler.start(world);
-```
-
-Phase order:
-1. INPUT (reserved, always first)
-2. EARLY_UPDATE
-3. UPDATE
-4. LATE_UPDATE
-5. PHYSICS
-6. LAYOUT
-7. RENDER
-8. POST_RENDER
-
-## Input Parsing
-
-Parse terminal input sequences:
-
-```typescript
-import { parseKeyBuffer, parseMouseSequence } from 'blecsd';
-
-// Keyboard
-const key = parseKeyBuffer(buffer);
-if (key) {
-  console.log(key.name, key.ctrl, key.shift);
-}
-
-// Mouse (SGR format)
-const mouse = parseMouseSequence(sequence);
-if (mouse) {
-  console.log(mouse.action, mouse.x, mouse.y);
-}
-```
-
-## State Machines
-
-Attach FSMs to entities:
-
-```typescript
-import { attachStateMachine, sendEvent, getState } from 'blecsd';
-
-const definition = {
-  initial: 'idle',
-  states: {
-    idle: { on: { ALERT: 'chase' } },
-    chase: { on: { LOST: 'search', CAUGHT: 'attack' } },
-    search: { on: { FOUND: 'chase', TIMEOUT: 'idle' } },
-    attack: { on: { DONE: 'idle' } },
-  },
-};
-
-attachStateMachine(world, enemy, definition);
-sendEvent(world, enemy, 'ALERT');
-getState(world, enemy); // 'chase'
-```
-
-## Documentation
-
-- [Getting Started](./docs/getting-started/installation.md)
-- [Core Concepts](./docs/getting-started/concepts.md)
-- [API Reference](./docs/api/index.md)
+| System | Purpose |
+|--------|---------|
+| inputSystem | Process keyboard/mouse input |
+| focusSystem | Manage focus, tab navigation |
+| layoutSystem | Calculate positions, dimensions |
+| renderSystem | Render entities to screen buffer |
+| virtualizedRenderSystem | Efficient rendering for large datasets |
+| animationSystem | Update sprite animations |
+| movementSystem | Apply velocity to position |
+| collisionSystem | Detect and resolve collisions |
+| cameraSystem | Update camera following target |
+| dragSystem | Handle drag and drop |
+| stateMachineSystem | Process state machine transitions |
+| outputSystem | Write buffer to terminal |
 
 ## Library Design
 
-blECSd is a library, not a framework. This means:
+blECSd is a library, not a framework:
 
-1. **Components work standalone** - Import them into any bitECS world
-2. **No required game loop** - All systems are callable functions
-3. **Mix and match** - Use our input parsing with your rendering, or vice versa
-4. **You own the world** - Functions take `world` as a parameter; we never hold global state
+1. **Components work standalone**: Import them into any bitECS world
+2. **No required update loop**: All systems are callable functions
+3. **Mix and match**: Use our input parsing with your rendering, or vice versa
+4. **You own the world**: Functions take `world` as a parameter; we never hold global state
+
+```typescript
+// Your world, your control
+import { createWorld, addEntity } from 'bitecs';
+import { setPosition, setRenderable, layoutSystem, renderSystem } from 'blecsd';
+
+const world = createWorld();
+const eid = addEntity(world);
+
+// Use components without our update loop
+setPosition(world, eid, 10, 5);
+
+// Call systems when you want
+layoutSystem(world);
+renderSystem(world);
+```
+
+## Use Cases
+
+- **Dashboards**: System monitors, log viewers, status displays
+- **File Managers**: Tree views, virtualized lists, panels
+- **CLI Tools**: Forms, menus, progress indicators
+- **Dev Tools**: Debug panels, profilers, inspectors
+- **Games**: Roguelikes, text adventures, puzzle games
+
+## Comparison
+
+| Feature | blECSd | Ink | blessed | Textual |
+|---------|--------|-----|---------|---------|
+| Architecture | ECS (data-oriented) | React (component) | Class-based | Widget classes |
+| Language | TypeScript | TypeScript/JSX | JavaScript | Python |
+| Widgets | 18 built-in | Few built-in | Many built-in | Many built-in |
+| Animation | Physics-based | Manual | Manual | CSS-like |
+| Virtualization | Built-in | Manual | Manual | Built-in |
+| Game support | First-class | Limited | Limited | Limited |
+
+Choose blECSd if you want data-oriented design, physics-based animations, or game development support. Choose Ink for React-style development. Choose Textual for Python projects.
+
+## Documentation
+
+- [Installation](./docs/getting-started/installation.md): Requirements, terminal compatibility, setup
+- [Core Concepts](./docs/getting-started/concepts.md): ECS, scheduler, events
+- [Hello World](./docs/getting-started/hello-world.md): Your first blECSd application
+- [API Reference](./docs/api/index.md): Components, widgets, systems, terminal I/O
+- [Guides](./docs/guides/): Animations, forms, layouts, and more
 
 ## Development
 

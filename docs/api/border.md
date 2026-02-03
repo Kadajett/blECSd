@@ -1,15 +1,14 @@
 # Border Component
 
-Borders define visual outlines around entities using box-drawing characters, background colors, or custom character sets. Each side (left, top, right, bottom) can be individually enabled or disabled.
+Borders draw visual outlines around entities using box-drawing characters, background colors, or custom characters. Each side (left, top, right, bottom) can be enabled or disabled independently.
 
-## BorderType Enum
+## What border types are available?
 
-Defines the type of border rendering.
+### BorderType Enum
 
 ```typescript
 import { BorderType } from 'blecsd';
 
-// Available border types
 BorderType.None       // 0 - No border (hidden)
 BorderType.Line       // 1 - Line border using box-drawing characters
 BorderType.Background // 2 - Background color border
@@ -18,58 +17,28 @@ BorderType.Custom     // 3 - Custom characters border
 
 ---
 
-## Border Charsets
+## What character sets are available?
 
-Preset character sets for common border styles. All charsets implement the `BorderCharset` interface.
+### Built-in Charsets
 
-### BORDER_SINGLE
+All charsets implement the `BorderCharset` interface.
 
-Single line border characters.
-
-```typescript
-import { BORDER_SINGLE } from 'blecsd';
-
-// Characters: ┌ ┐ └ ┘ ─ │
-```
-
-### BORDER_DOUBLE
-
-Double line border characters.
+| Charset | Style | Example |
+|---------|-------|---------|
+| `BORDER_SINGLE` | Single line | `┌ ┐ └ ┘ ─ │` |
+| `BORDER_DOUBLE` | Double line | `╔ ╗ ╚ ╝ ═ ║` |
+| `BORDER_ROUNDED` | Rounded corners | `╭ ╮ ╰ ╯ ─ │` |
+| `BORDER_BOLD` | Bold/thick | `┏ ┓ ┗ ┛ ━ ┃` |
+| `BORDER_ASCII` | ASCII-only | `+ + + + - \|` |
 
 ```typescript
-import { BORDER_DOUBLE } from 'blecsd';
-
-// Characters: ╔ ╗ ╚ ╝ ═ ║
-```
-
-### BORDER_ROUNDED
-
-Rounded corner border characters.
-
-```typescript
-import { BORDER_ROUNDED } from 'blecsd';
-
-// Characters: ╭ ╮ ╰ ╯ ─ │
-```
-
-### BORDER_BOLD
-
-Bold/thick border characters.
-
-```typescript
-import { BORDER_BOLD } from 'blecsd';
-
-// Characters: ┏ ┓ ┗ ┛ ━ ┃
-```
-
-### BORDER_ASCII
-
-ASCII-only border characters (for terminals without Unicode support).
-
-```typescript
-import { BORDER_ASCII } from 'blecsd';
-
-// Characters: + + + + - |
+import {
+  BORDER_SINGLE,
+  BORDER_DOUBLE,
+  BORDER_ROUNDED,
+  BORDER_BOLD,
+  BORDER_ASCII,
+} from 'blecsd';
 ```
 
 ---
@@ -79,20 +48,17 @@ import { BORDER_ASCII } from 'blecsd';
 ```typescript
 import { DEFAULT_BORDER_FG, DEFAULT_BORDER_BG } from 'blecsd';
 
-DEFAULT_BORDER_FG // 0xffffffff - White (fully opaque)
-DEFAULT_BORDER_BG // 0x00000000 - Transparent
+DEFAULT_BORDER_FG  // 0xFFFFFFFF - White (fully opaque)
+DEFAULT_BORDER_BG  // 0x00000000 - Transparent
 ```
 
 ---
 
-## Border Component
-
-The Border component stores border configuration using bitecs SoA (Structure of Arrays) pattern.
+## Component Structure
 
 ```typescript
 import { Border } from 'blecsd';
 
-// Component arrays
 Border.type           // Uint8Array  - Border type (BorderType enum)
 Border.left           // Uint8Array  - Left side enabled (0=no, 1=yes)
 Border.top            // Uint8Array  - Top side enabled (0=no, 1=yes)
@@ -110,11 +76,11 @@ Border.charVertical   // Uint32Array - Vertical edge (Unicode codepoint)
 
 ---
 
-## Functions
+## How do I add a border to an entity?
 
 ### setBorder
 
-Sets or updates the border configuration on an entity. Adds the Border component if not present.
+Sets or updates border configuration. Adds the Border component if not present.
 
 ```typescript
 import { createWorld, addEntity } from 'bitecs';
@@ -123,10 +89,10 @@ import { setBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
 const world = createWorld();
 const eid = addEntity(world);
 
-// Set a line border with default single-line characters
+// Basic line border with single-line characters
 setBorder(world, eid, { type: BorderType.Line });
 
-// Set a double-line border with custom color
+// Double-line border with custom color
 setBorder(world, eid, {
   type: BorderType.Line,
   chars: BORDER_DOUBLE,
@@ -140,27 +106,16 @@ setBorder(world, eid, {
   right: false,
 });
 
-// Set a background-style border
+// Background-style border
 setBorder(world, eid, {
   type: BorderType.Background,
   bg: '#333333',
 });
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `options` - Border configuration options
-  - `type` - Border type (BorderType enum)
-  - `left` - Enable left side (default: true)
-  - `top` - Enable top side (default: true)
-  - `right` - Enable right side (default: true)
-  - `bottom` - Enable bottom side (default: true)
-  - `fg` - Foreground color (hex string or packed number)
-  - `bg` - Background color (hex string or packed number)
-  - `chars` - Border character set (BorderCharset)
+**Parameters:** `world` (ECS world), `eid` (entity ID), `options` (BorderOptions)
 
-**Returns:** The entity ID for chaining
+**Returns:** Entity ID for chaining
 
 ---
 
@@ -177,7 +132,7 @@ setBorderChars(world, eid, BORDER_ROUNDED);
 // Use bold/thick lines
 setBorderChars(world, eid, BORDER_BOLD);
 
-// Custom characters
+// Custom characters (Unicode codepoints)
 setBorderChars(world, eid, {
   topLeft: 0x2554,     // ╔
   topRight: 0x2557,    // ╗
@@ -188,18 +143,15 @@ setBorderChars(world, eid, {
 });
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `chars` - Border character set (BorderCharset)
-
-**Returns:** The entity ID for chaining
+**Returns:** Entity ID for chaining
 
 ---
 
+## How do I read border data?
+
 ### getBorder
 
-Gets the full border data for an entity.
+Returns full border configuration or `undefined` if no Border component.
 
 ```typescript
 import { setBorder, getBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
@@ -215,14 +167,14 @@ setBorder(world, eid, {
 });
 
 const border = getBorder(world, eid);
-// border = {
+// {
 //   type: BorderType.Line,
 //   left: true,
 //   top: true,
 //   right: false,
 //   bottom: false,
-//   fg: 0xff00ff00,
-//   bg: 0x00000000,
+//   fg: 4278255360,
+//   bg: 0,
 //   charTopLeft: 0x2554,
 //   charTopRight: 0x2557,
 //   charBottomLeft: 0x255a,
@@ -230,101 +182,15 @@ const border = getBorder(world, eid);
 //   charHorizontal: 0x2550,
 //   charVertical: 0x2551,
 // }
-
-// Returns undefined if no Border component
-getBorder(world, entityWithoutBorder); // undefined
 ```
 
 **Returns:** `BorderData | undefined`
 
 ---
 
-### hasBorder
-
-Checks if an entity has a Border component.
-
-```typescript
-import { hasBorder, setBorder, BorderType } from 'blecsd';
-
-hasBorder(world, eid); // false
-
-setBorder(world, eid, { type: BorderType.Line });
-hasBorder(world, eid); // true
-```
-
----
-
-### hasBorderVisible
-
-Checks if an entity has a visible border (type is not None and at least one side is enabled).
-
-```typescript
-import { hasBorderVisible, setBorder, BorderType } from 'blecsd';
-
-// No border component
-hasBorderVisible(world, eid); // false
-
-// Border type is None
-setBorder(world, eid, { type: BorderType.None });
-hasBorderVisible(world, eid); // false
-
-// Border type is Line, all sides enabled (default)
-setBorder(world, eid, { type: BorderType.Line });
-hasBorderVisible(world, eid); // true
-
-// All sides disabled
-setBorder(world, eid, {
-  type: BorderType.Line,
-  left: false,
-  top: false,
-  right: false,
-  bottom: false,
-});
-hasBorderVisible(world, eid); // false
-```
-
----
-
-### enableAllBorders
-
-Enables all four border sides.
-
-```typescript
-import { setBorder, enableAllBorders, disableAllBorders, BorderType } from 'blecsd';
-
-setBorder(world, eid, {
-  type: BorderType.Line,
-  left: false,
-  top: false,
-});
-
-enableAllBorders(world, eid);
-// Now left, top, right, bottom are all enabled
-
-// Returns entity ID for chaining
-```
-
----
-
-### disableAllBorders
-
-Disables all four border sides.
-
-```typescript
-import { setBorder, disableAllBorders, BorderType } from 'blecsd';
-
-setBorder(world, eid, { type: BorderType.Line });
-disableAllBorders(world, eid);
-// Now left, top, right, bottom are all disabled
-
-// Returns entity ID for chaining
-```
-
----
-
 ### getBorderChar
 
-Gets the border character (Unicode codepoint) for a specific position.
+Gets a specific border character (Unicode codepoint).
 
 ```typescript
 import { setBorder, setBorderChars, getBorderChar, BorderType, BORDER_DOUBLE } from 'blecsd';
@@ -338,17 +204,79 @@ getBorderChar(world, eid, 'bottomLeft');  // 0x255a (╚)
 getBorderChar(world, eid, 'bottomRight'); // 0x255d (╝)
 getBorderChar(world, eid, 'horizontal');  // 0x2550 (═)
 getBorderChar(world, eid, 'vertical');    // 0x2551 (║)
-
-// Returns undefined if no Border component
-getBorderChar(world, entityWithoutBorder, 'topLeft'); // undefined
 ```
 
-**Parameters:**
-- `world` - The ECS world
-- `eid` - The entity ID
-- `position` - Position name: `'topLeft'`, `'topRight'`, `'bottomLeft'`, `'bottomRight'`, `'horizontal'`, or `'vertical'`
+**Parameters:** `world` (ECS world), `eid` (entity ID), `position` (`'topLeft'` | `'topRight'` | `'bottomLeft'` | `'bottomRight'` | `'horizontal'` | `'vertical'`)
 
 **Returns:** `number | undefined` (Unicode codepoint)
+
+---
+
+## How do I check if an entity has a border?
+
+### hasBorder
+
+```typescript
+import { hasBorder, setBorder, BorderType } from 'blecsd';
+
+hasBorder(world, eid);  // false
+
+setBorder(world, eid, { type: BorderType.Line });
+hasBorder(world, eid);  // true
+```
+
+### hasBorderVisible
+
+Checks if the entity has a visible border (type is not None and at least one side is enabled).
+
+```typescript
+import { hasBorderVisible, setBorder, BorderType } from 'blecsd';
+
+// No border component
+hasBorderVisible(world, eid);  // false
+
+// Border type is None
+setBorder(world, eid, { type: BorderType.None });
+hasBorderVisible(world, eid);  // false
+
+// Border type is Line, all sides enabled
+setBorder(world, eid, { type: BorderType.Line });
+hasBorderVisible(world, eid);  // true
+
+// All sides disabled
+setBorder(world, eid, {
+  type: BorderType.Line,
+  left: false,
+  top: false,
+  right: false,
+  bottom: false,
+});
+hasBorderVisible(world, eid);  // false
+```
+
+---
+
+## How do I enable or disable all border sides?
+
+### enableAllBorders / disableAllBorders
+
+```typescript
+import { setBorder, enableAllBorders, disableAllBorders, BorderType } from 'blecsd';
+
+setBorder(world, eid, {
+  type: BorderType.Line,
+  left: false,
+  top: false,
+});
+
+enableAllBorders(world, eid);
+// Now left, top, right, bottom are all enabled
+
+disableAllBorders(world, eid);
+// Now left, top, right, bottom are all disabled
+```
+
+**Returns:** Entity ID for chaining
 
 ---
 
@@ -356,39 +284,33 @@ getBorderChar(world, entityWithoutBorder, 'topLeft'); // undefined
 
 ### BorderCharset
 
-Interface for border character sets.
-
 ```typescript
 interface BorderCharset {
-  readonly topLeft: number;     // Unicode codepoint for top-left corner
-  readonly topRight: number;    // Unicode codepoint for top-right corner
-  readonly bottomLeft: number;  // Unicode codepoint for bottom-left corner
-  readonly bottomRight: number; // Unicode codepoint for bottom-right corner
-  readonly horizontal: number;  // Unicode codepoint for horizontal edges
-  readonly vertical: number;    // Unicode codepoint for vertical edges
+  readonly topLeft: number;     // Unicode codepoint
+  readonly topRight: number;
+  readonly bottomLeft: number;
+  readonly bottomRight: number;
+  readonly horizontal: number;
+  readonly vertical: number;
 }
 ```
 
 ### BorderOptions
 
-Options for configuring a border.
-
 ```typescript
 interface BorderOptions {
-  type?: BorderType;           // Border type
-  left?: boolean;              // Enable left side
-  top?: boolean;               // Enable top side
-  right?: boolean;             // Enable right side
-  bottom?: boolean;            // Enable bottom side
-  fg?: string | number;        // Foreground color (hex string or packed number)
-  bg?: string | number;        // Background color (hex string or packed number)
-  chars?: BorderCharset;       // Border character set
+  type?: BorderType;
+  left?: boolean;              // default: true
+  top?: boolean;               // default: true
+  right?: boolean;             // default: true
+  bottom?: boolean;            // default: true
+  fg?: string | number;        // hex string or packed color
+  bg?: string | number;
+  chars?: BorderCharset;
 }
 ```
 
 ### BorderData
-
-Data returned by getBorder.
 
 ```typescript
 interface BorderData {
@@ -397,14 +319,14 @@ interface BorderData {
   readonly top: boolean;
   readonly right: boolean;
   readonly bottom: boolean;
-  readonly fg: number;            // Packed RGBA color
-  readonly bg: number;            // Packed RGBA color
-  readonly charTopLeft: number;   // Unicode codepoint
-  readonly charTopRight: number;  // Unicode codepoint
-  readonly charBottomLeft: number;  // Unicode codepoint
-  readonly charBottomRight: number; // Unicode codepoint
-  readonly charHorizontal: number;  // Unicode codepoint
-  readonly charVertical: number;    // Unicode codepoint
+  readonly fg: number;            // packed RGBA
+  readonly bg: number;            // packed RGBA
+  readonly charTopLeft: number;
+  readonly charTopRight: number;
+  readonly charBottomLeft: number;
+  readonly charBottomRight: number;
+  readonly charHorizontal: number;
+  readonly charVertical: number;
 }
 ```
 
@@ -412,7 +334,7 @@ interface BorderData {
 
 ## Examples
 
-### Creating a Dialog Box
+### Dialog Box
 
 ```typescript
 import { createWorld, addEntity } from 'bitecs';
@@ -429,7 +351,7 @@ setBorder(world, dialog, {
 });
 ```
 
-### Creating a Menu with Rounded Corners
+### Menu with Rounded Corners
 
 ```typescript
 import { setBorder, BorderType, BORDER_ROUNDED } from 'blecsd';
@@ -441,7 +363,7 @@ setBorder(world, menu, {
 });
 ```
 
-### Creating a Horizontal Divider
+### Horizontal Divider
 
 ```typescript
 import { setBorder, BorderType } from 'blecsd';
@@ -470,8 +392,14 @@ setBorder(world, element, {
 
 ---
 
+## Limitations
+
+- **Unicode support**: Box-drawing characters require Unicode support. Use `BORDER_ASCII` for terminals that don't support Unicode.
+- **Character width**: Box-drawing characters assume single-width cells. Some terminals or fonts may render them incorrectly.
+
+---
+
 ## See Also
 
-- [Components Reference](./components.md) - All component documentation
 - [Position Component](./position.md) - Positioning entities
-- [Dimensions Component](./dimensions.md) - Sizing entities
+- [Dimensions Component](./dimensions.md) - Sizing entities (borders affect content area)
