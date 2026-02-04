@@ -377,7 +377,7 @@ export function removeEntityFromTracking(tracker: DirtyTrackerData, eid: Entity)
 	const prevBounds = tracker.entityBounds.get(eid);
 
 	// Mark previous position dirty (entity was here, now gone)
-	if (prevBounds && prevBounds.wasVisible) {
+	if (prevBounds?.wasVisible) {
 		markRegionDirty(
 			tracker,
 			prevBounds.prevX,

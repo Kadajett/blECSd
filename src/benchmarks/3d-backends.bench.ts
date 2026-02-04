@@ -1,10 +1,10 @@
 import { bench, describe } from 'vitest';
-import { createPixelFramebuffer, setPixel } from '../3d/rasterizer/pixelBuffer';
 import { createBrailleBackend } from '../3d/backends/braille';
 import { createHalfBlockBackend } from '../3d/backends/halfblock';
 import { createKittyBackend } from '../3d/backends/kitty';
 import { createSextantBackend } from '../3d/backends/sextant';
 import { createSixelBackend } from '../3d/backends/sixel';
+import { createPixelFramebuffer, setPixel } from '../3d/rasterizer/pixelBuffer';
 
 function fillFramebuffer(width: number, height: number) {
 	const fb = createPixelFramebuffer({ width, height });

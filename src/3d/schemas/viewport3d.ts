@@ -22,31 +22,37 @@ import { z } from 'zod';
  * });
  * ```
  */
-export const Viewport3DWidgetConfigSchema = z.object({
-	/** Viewport left position in terminal cells. */
-	left: z.number().int().nonnegative().default(0),
-	/** Viewport top position in terminal cells. */
-	top: z.number().int().nonnegative().default(0),
-	/** Viewport width in terminal cells. */
-	width: z.number().int().positive().default(80),
-	/** Viewport height in terminal cells. */
-	height: z.number().int().positive().default(24),
+export const Viewport3DWidgetConfigSchema = z
+	.object({
+		/** Viewport left position in terminal cells. */
+		left: z.number().int().nonnegative().default(0),
+		/** Viewport top position in terminal cells. */
+		top: z.number().int().nonnegative().default(0),
+		/** Viewport width in terminal cells. */
+		width: z.number().int().positive().default(80),
+		/** Viewport height in terminal cells. */
+		height: z.number().int().positive().default(24),
 
-	/** Camera field of view in radians (perspective mode). */
-	fov: z.number().positive().max(Math.PI).default(Math.PI / 3),
-	/** Camera near clipping plane. */
-	near: z.number().positive().default(0.1),
-	/** Camera far clipping plane. */
-	far: z.number().positive().default(1000),
-	/** Camera projection mode. */
-	projectionMode: z.enum(['perspective', 'orthographic']).default('perspective'),
+		/** Camera field of view in radians (perspective mode). */
+		fov: z
+			.number()
+			.positive()
+			.max(Math.PI)
+			.default(Math.PI / 3),
+		/** Camera near clipping plane. */
+		near: z.number().positive().default(0.1),
+		/** Camera far clipping plane. */
+		far: z.number().positive().default(1000),
+		/** Camera projection mode. */
+		projectionMode: z.enum(['perspective', 'orthographic']).default('perspective'),
 
-	/** Rendering backend. */
-	backend: z.enum(['auto', 'braille', 'halfblock', 'sextant', 'sixel', 'kitty']).default('auto'),
+		/** Rendering backend. */
+		backend: z.enum(['auto', 'braille', 'halfblock', 'sextant', 'sixel', 'kitty']).default('auto'),
 
-	/** Label text displayed on the viewport border. */
-	label: z.string().optional(),
-}).refine(data => data.near < data.far, {
-	message: 'Near plane must be less than far plane',
-});
+		/** Label text displayed on the viewport border. */
+		label: z.string().optional(),
+	})
+	.refine((data) => data.near < data.far, {
+		message: 'Near plane must be less than far plane',
+	});
 export type Viewport3DWidgetConfig = z.input<typeof Viewport3DWidgetConfigSchema>;

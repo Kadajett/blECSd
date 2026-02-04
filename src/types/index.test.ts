@@ -278,23 +278,23 @@ describe('types', () => {
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // DeepPartial should handle primitives
-export type _TestDeepPartialPrimitive = Assert<IsEqual<DeepPartial<number>, number>>;
-export type _TestDeepPartialString = Assert<IsEqual<DeepPartial<string>, string>>;
+type _TestDeepPartialPrimitive = Assert<IsEqual<DeepPartial<number>, number>>;
+type _TestDeepPartialString = Assert<IsEqual<DeepPartial<string>, string>>;
 
 // DeepReadonly should handle primitives
-export type _TestDeepReadonlyPrimitive = Assert<IsEqual<DeepReadonly<number>, number>>;
+type _TestDeepReadonlyPrimitive = Assert<IsEqual<DeepReadonly<number>, number>>;
 
 // RequiredKeys should preserve existing required keys
 interface _TestInterface {
 	req: number;
 	opt?: string;
 }
-export type _TestRequiredKeysPreserve = Assert<
+type _TestRequiredKeysPreserve = Assert<
 	IsEqual<RequiredKeys<_TestInterface, 'opt'>['req'], number>
 >;
 
 // OptionalKeys should preserve existing optional keys
-export type _TestOptionalKeysPreserve = Assert<
+type _TestOptionalKeysPreserve = Assert<
 	undefined extends OptionalKeys<_TestInterface, 'req'>['opt'] ? true : false
 >;
 /* eslint-enable @typescript-eslint/no-unused-vars */

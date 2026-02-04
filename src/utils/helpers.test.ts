@@ -260,7 +260,7 @@ describe('helpers', () => {
 				{ key: 'x', order: 2 },
 			];
 			const result = uniqueBy(items, (item) => item.key);
-			expect(result[0]!.order).toBe(1);
+			expect(result[0]?.order).toBe(1);
 		});
 
 		it('should handle empty array', () => {

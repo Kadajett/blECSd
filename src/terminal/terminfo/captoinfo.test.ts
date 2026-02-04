@@ -192,8 +192,8 @@ describe('convertTermcapStrings', () => {
 
 		const result = convertTermcapStrings(termcap);
 
-		expect(result['cm']).toBe('\\E[%i%p1%d;%p2%dH');
-		expect(result['cl']).toBe('\\E[H\\E[2J');
+		expect(result.cm).toBe('\\E[%i%p1%d;%p2%dH');
+		expect(result.cl).toBe('\\E[H\\E[2J');
 	});
 
 	it('handles empty record', () => {

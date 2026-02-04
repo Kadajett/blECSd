@@ -12,6 +12,10 @@
 export const VERSION = '0.0.1';
 
 // =============================================================================
+// 3D SUBSYSTEM
+// =============================================================================
+export * as three from './3d';
+// =============================================================================
 // COMPONENTS - ECS Components and Helpers
 // =============================================================================
 // =============================================================================
@@ -1321,16 +1325,10 @@ export {
 	ListWidgetConfigSchema,
 	TabsConfigSchema,
 } from './widgets';
-
-// =============================================================================
-// 3D SUBSYSTEM
-// =============================================================================
-export * as three from './3d';
-
+export type { Viewport3DWidget } from './widgets/viewport3d';
 // Direct exports for commonly used 3D functions
 export {
 	createViewport3D,
 	isViewport3DWidget,
 	Viewport3DTag,
 } from './widgets/viewport3d';
-export type { Viewport3DWidget } from './widgets/viewport3d';

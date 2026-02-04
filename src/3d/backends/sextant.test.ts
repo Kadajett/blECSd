@@ -100,7 +100,7 @@ describe('Sextant backend', () => {
 		it('averages color of lit pixels', () => {
 			const backend = createSextantBackend();
 			const fb = createPixelFramebuffer({ width: 2, height: 3 });
-			setPixel(fb, 0, 0, RED);   // 255, 0, 0
+			setPixel(fb, 0, 0, RED); // 255, 0, 0
 			setPixel(fb, 1, 0, WHITE); // 255, 255, 255
 			const output = backend.encode(fb, 0, 0);
 

@@ -10,7 +10,10 @@
 
 import { addComponent, hasComponent, removeComponent } from 'bitecs';
 import type { Entity, World } from '../../core/types';
-import { type MouseInteraction3DConfig, MouseInteraction3DConfigSchema } from '../schemas/components';
+import {
+	type MouseInteraction3DConfig,
+	MouseInteraction3DConfigSchema,
+} from '../schemas/components';
 
 const DEFAULT_CAPACITY = 10000;
 
@@ -71,11 +74,14 @@ export interface MouseDragInput {
  * Per-frame mouse input for the interaction system.
  * Store accumulated drag and scroll events here before running the system.
  */
-export const mouseInputStore = new Map<number, {
-	dragDx: number;
-	dragDy: number;
-	scrollDelta: number;
-}>();
+export const mouseInputStore = new Map<
+	number,
+	{
+		dragDx: number;
+		dragDy: number;
+		scrollDelta: number;
+	}
+>();
 
 /**
  * Clear accumulated mouse input. Call after the system processes input each frame.
@@ -189,7 +195,10 @@ export function disableMouseInteraction(world: World, eid: Entity): void {
  * @param eid - Entity ID
  * @returns Mouse interaction data or undefined if component missing
  */
-export function getMouseInteraction3D(world: World, eid: Entity): MouseInteraction3DData | undefined {
+export function getMouseInteraction3D(
+	world: World,
+	eid: Entity,
+): MouseInteraction3DData | undefined {
 	if (!hasComponent(world, eid, MouseInteraction3D)) {
 		return undefined;
 	}

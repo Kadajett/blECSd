@@ -87,9 +87,7 @@ export type TriangleVertex = z.input<typeof TriangleVertexSchema>;
  * ```
  */
 export const DirectionalLightSchema = z.object({
-	direction: z
-		.tuple([z.number(), z.number(), z.number()])
-		.describe('Normalized light direction'),
+	direction: z.tuple([z.number(), z.number(), z.number()]).describe('Normalized light direction'),
 	intensity: z.number().min(0).max(1).default(1.0),
 	color: RGBAColorSchema.optional(),
 });

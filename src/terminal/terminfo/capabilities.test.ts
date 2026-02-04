@@ -88,37 +88,37 @@ describe('terminfo capabilities', () => {
 
 	describe('CAPABILITY_ALIASES', () => {
 		it('maps termcap to terminfo names', () => {
-			expect(CAPABILITY_ALIASES['cm']).toBe('cursor_address');
-			expect(CAPABILITY_ALIASES['cl']).toBe('clear_screen');
-			expect(CAPABILITY_ALIASES['AF']).toBe('set_a_foreground');
-			expect(CAPABILITY_ALIASES['AB']).toBe('set_a_background');
+			expect(CAPABILITY_ALIASES.cm).toBe('cursor_address');
+			expect(CAPABILITY_ALIASES.cl).toBe('clear_screen');
+			expect(CAPABILITY_ALIASES.AF).toBe('set_a_foreground');
+			expect(CAPABILITY_ALIASES.AB).toBe('set_a_background');
 		});
 
 		it('maps common boolean aliases', () => {
-			expect(CAPABILITY_ALIASES['am']).toBe('auto_right_margin');
-			expect(CAPABILITY_ALIASES['km']).toBe('has_meta_key');
-			expect(CAPABILITY_ALIASES['ut']).toBe('back_color_erase');
+			expect(CAPABILITY_ALIASES.am).toBe('auto_right_margin');
+			expect(CAPABILITY_ALIASES.km).toBe('has_meta_key');
+			expect(CAPABILITY_ALIASES.ut).toBe('back_color_erase');
 		});
 
 		it('maps common numeric aliases', () => {
-			expect(CAPABILITY_ALIASES['co']).toBe('columns');
-			expect(CAPABILITY_ALIASES['li']).toBe('lines');
-			expect(CAPABILITY_ALIASES['Co']).toBe('max_colors');
+			expect(CAPABILITY_ALIASES.co).toBe('columns');
+			expect(CAPABILITY_ALIASES.li).toBe('lines');
+			expect(CAPABILITY_ALIASES.Co).toBe('max_colors');
 		});
 
 		it('maps key aliases', () => {
-			expect(CAPABILITY_ALIASES['ku']).toBe('key_up');
-			expect(CAPABILITY_ALIASES['kd']).toBe('key_down');
-			expect(CAPABILITY_ALIASES['kl']).toBe('key_left');
-			expect(CAPABILITY_ALIASES['kr']).toBe('key_right');
+			expect(CAPABILITY_ALIASES.ku).toBe('key_up');
+			expect(CAPABILITY_ALIASES.kd).toBe('key_down');
+			expect(CAPABILITY_ALIASES.kl).toBe('key_left');
+			expect(CAPABILITY_ALIASES.kr).toBe('key_right');
 		});
 	});
 
 	describe('CAPABILITY_REVERSE_ALIASES', () => {
 		it('maps terminfo to termcap names', () => {
-			expect(CAPABILITY_REVERSE_ALIASES['cursor_address']).toBe('cm');
-			expect(CAPABILITY_REVERSE_ALIASES['clear_screen']).toBe('cl');
-			expect(CAPABILITY_REVERSE_ALIASES['set_a_foreground']).toBe('AF');
+			expect(CAPABILITY_REVERSE_ALIASES.cursor_address).toBe('cm');
+			expect(CAPABILITY_REVERSE_ALIASES.clear_screen).toBe('cl');
+			expect(CAPABILITY_REVERSE_ALIASES.set_a_foreground).toBe('AF');
 		});
 
 		it('has same number of entries as CAPABILITY_ALIASES', () => {

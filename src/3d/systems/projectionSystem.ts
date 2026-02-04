@@ -13,12 +13,17 @@
 import { hasComponent, query } from 'bitecs';
 import type { Entity, System, World } from '../../core/types';
 import { Camera3D } from '../components/camera3d';
-import { Mesh, getMeshData } from '../components/mesh';
+import { getMeshData, Mesh } from '../components/mesh';
 import { Transform3D } from '../components/transform3d';
 import { Viewport3D } from '../components/viewport3d';
 import type { Mat4 } from '../math/mat4';
 import { mat4Invert, mat4Multiply } from '../math/mat4';
-import { type ScreenCoord, orthographicMatrix, perspectiveMatrix, viewportTransform } from '../math/projection';
+import {
+	orthographicMatrix,
+	perspectiveMatrix,
+	type ScreenCoord,
+	viewportTransform,
+} from '../math/projection';
 
 // Pre-allocated scratch buffer for viewport transform to avoid per-vertex allocations
 const _scratchNdc = new Float32Array(3);
@@ -82,7 +87,14 @@ function buildProjectionMatrix(cameraEid: Entity): Mat4 {
 		// Orthographic
 		const halfH = fov; // Reuse fov as ortho height for orthographic mode
 		const halfW = halfH * aspect;
-		return orthographicMatrix({ left: -halfW, right: halfW, bottom: -halfH, top: halfH, near, far });
+		return orthographicMatrix({
+			left: -halfW,
+			right: halfW,
+			bottom: -halfH,
+			top: halfH,
+			near,
+			far,
+		});
 	}
 
 	return perspectiveMatrix({ fov, aspect, near, far });
@@ -158,10 +170,22 @@ export const projectionSystem: System = (world: World): World => {
 
 			// Inline MVP transform to avoid per-vertex allocations (no vec3() or projectVertex() calls)
 			const m = mvpMatrix;
-			const m0 = m[0] as number; const m1 = m[1] as number; const m2 = m[2] as number; const m3 = m[3] as number;
-			const m4 = m[4] as number; const m5 = m[5] as number; const m6 = m[6] as number; const m7 = m[7] as number;
-			const m8 = m[8] as number; const m9 = m[9] as number; const m10 = m[10] as number; const m11 = m[11] as number;
-			const m12 = m[12] as number; const m13 = m[13] as number; const m14 = m[14] as number; const m15 = m[15] as number;
+			const m0 = m[0] as number;
+			const m1 = m[1] as number;
+			const m2 = m[2] as number;
+			const m3 = m[3] as number;
+			const m4 = m[4] as number;
+			const m5 = m[5] as number;
+			const m6 = m[6] as number;
+			const m7 = m[7] as number;
+			const m8 = m[8] as number;
+			const m9 = m[9] as number;
+			const m10 = m[10] as number;
+			const m11 = m[11] as number;
+			const m12 = m[12] as number;
+			const m13 = m[13] as number;
+			const m14 = m[14] as number;
+			const m15 = m[15] as number;
 
 			for (let i = 0; i < vertCount; i++) {
 				const i3 = i * 3;
@@ -180,14 +204,14 @@ export const projectionSystem: System = (world: World): World => {
 				const ndcY = cy * invW;
 				const ndcZ = cz * invW;
 
-				const visible = ndcX >= -1 && ndcX <= 1 &&
-					ndcY >= -1 && ndcY <= 1 &&
-					ndcZ >= -1 && ndcZ <= 1;
+				const visible =
+					ndcX >= -1 && ndcX <= 1 && ndcY >= -1 && ndcY <= 1 && ndcZ >= -1 && ndcZ <= 1;
 
 				// Inline viewport transform
-				const screen: ScreenCoord = toScreen(
-					(_scratchNdc[0] = ndcX, _scratchNdc[1] = ndcY, _scratchNdc[2] = ndcZ, _scratchNdc),
-				);
+				_scratchNdc[0] = ndcX;
+				_scratchNdc[1] = ndcY;
+				_scratchNdc[2] = ndcZ;
+				const screen: ScreenCoord = toScreen(_scratchNdc);
 
 				projectedVertices[i] = {
 					x: screen.x,

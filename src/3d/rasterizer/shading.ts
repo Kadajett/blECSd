@@ -7,8 +7,8 @@
  * @module 3d/rasterizer/shading
  */
 
-import type { AmbientLight, DirectionalLight, RGBAColor } from '../schemas/rasterizer';
 import { type Vec3, vec3Cross, vec3Normalize, vec3Sub } from '../math/vec3';
+import type { AmbientLight, DirectionalLight, RGBAColor } from '../schemas/rasterizer';
 
 /**
  * Compute the face normal of a triangle from its three vertices.
@@ -78,9 +78,12 @@ export function computeFlatShading(
 	const ambientColor = ambient.color ?? { r: 255, g: 255, b: 255, a: 255 };
 
 	// Mix ambient and diffuse light colors
-	const lr = (ambientColor.r * ambientIntensity + lightColor.r * diffuse) / Math.max(0.001, totalLight);
-	const lg = (ambientColor.g * ambientIntensity + lightColor.g * diffuse) / Math.max(0.001, totalLight);
-	const lb = (ambientColor.b * ambientIntensity + lightColor.b * diffuse) / Math.max(0.001, totalLight);
+	const lr =
+		(ambientColor.r * ambientIntensity + lightColor.r * diffuse) / Math.max(0.001, totalLight);
+	const lg =
+		(ambientColor.g * ambientIntensity + lightColor.g * diffuse) / Math.max(0.001, totalLight);
+	const lb =
+		(ambientColor.b * ambientIntensity + lightColor.b * diffuse) / Math.max(0.001, totalLight);
 
 	return {
 		r: Math.round(Math.min(255, (baseColor.r * totalLight * lr) / 255)),

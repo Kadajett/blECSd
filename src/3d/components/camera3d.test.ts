@@ -26,7 +26,13 @@ describe('Camera3D component', () => {
 	it('sets custom camera values', () => {
 		const { world, eid } = setup();
 
-		setCamera3D(world, eid, { fov: Math.PI / 4, near: 1, far: 500, aspect: 2, projectionMode: 'orthographic' });
+		setCamera3D(world, eid, {
+			fov: Math.PI / 4,
+			near: 1,
+			far: 500,
+			aspect: 2,
+			projectionMode: 'orthographic',
+		});
 
 		const data = getCamera3D(world, eid);
 		expect(data?.fov).toBeCloseTo(Math.PI / 4);

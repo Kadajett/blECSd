@@ -90,7 +90,7 @@ describe('inputSystem', () => {
 
 			const queue = getEventQueue();
 			expect(queue.length).toBe(1);
-			expect(queue[0]!.type).toBe('key');
+			expect(queue[0]?.type).toBe('key');
 		});
 
 		it('queues mouse events', () => {
@@ -100,7 +100,7 @@ describe('inputSystem', () => {
 
 			const queue = getEventQueue();
 			expect(queue.length).toBe(1);
-			expect(queue[0]!.type).toBe('mouse');
+			expect(queue[0]?.type).toBe('mouse');
 		});
 
 		it('clears event queue', () => {
@@ -199,10 +199,10 @@ describe('inputSystem', () => {
 			const hits = hitTest(world, 15, 15);
 
 			expect(hits.length).toBe(1);
-			expect(hits[0]!.entity).toBe(eid);
-			expect(hits[0]!.localX).toBe(5);
-			expect(hits[0]!.localY).toBe(5);
-			expect(hits[0]!.zIndex).toBe(5);
+			expect(hits[0]?.entity).toBe(eid);
+			expect(hits[0]?.localX).toBe(5);
+			expect(hits[0]?.localY).toBe(5);
+			expect(hits[0]?.zIndex).toBe(5);
 		});
 
 		it('returns multiple overlapping entities sorted by z-index', () => {
@@ -221,9 +221,9 @@ describe('inputSystem', () => {
 			const hits = hitTest(world, 25, 25);
 
 			expect(hits.length).toBe(3);
-			expect(hits[0]!.entity).toBe(eid2); // z=10 (highest)
-			expect(hits[1]!.entity).toBe(eid3); // z=5
-			expect(hits[2]!.entity).toBe(eid1); // z=1 (lowest)
+			expect(hits[0]?.entity).toBe(eid2); // z=10 (highest)
+			expect(hits[1]?.entity).toBe(eid3); // z=5
+			expect(hits[2]?.entity).toBe(eid1); // z=1 (lowest)
 		});
 	});
 

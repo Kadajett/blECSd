@@ -30,7 +30,7 @@ describe('tags', () => {
 			const result = parseTags('Hello World');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.text).toBe('Hello World');
+			expect(result.segments[0]?.text).toBe('Hello World');
 			expect(result.plainText).toBe('Hello World');
 			expect(result.alignment).toBe('left');
 		});
@@ -39,127 +39,127 @@ describe('tags', () => {
 			const result = parseTags('{bold}Hello{/bold}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.text).toBe('Hello');
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[0]?.text).toBe('Hello');
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.BOLD);
 		});
 
 		it('should parse underline tag', () => {
 			const result = parseTags('{underline}Hello{/underline}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.UNDERLINE);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.UNDERLINE);
 		});
 
 		it('should parse ul shorthand for underline', () => {
 			const result = parseTags('{ul}Hello{/ul}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.UNDERLINE);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.UNDERLINE);
 		});
 
 		it('should parse italic tag', () => {
 			const result = parseTags('{italic}Hello{/italic}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.ITALIC);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.ITALIC);
 		});
 
 		it('should parse blink tag', () => {
 			const result = parseTags('{blink}Hello{/blink}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.BLINK);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.BLINK);
 		});
 
 		it('should parse inverse tag', () => {
 			const result = parseTags('{inverse}Hello{/inverse}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.INVERSE);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.INVERSE);
 		});
 
 		it('should parse dim tag', () => {
 			const result = parseTags('{dim}Hello{/dim}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.DIM);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.DIM);
 		});
 
 		it('should parse strikethrough tag', () => {
 			const result = parseTags('{strikethrough}Hello{/strikethrough}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.STRIKETHROUGH);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.STRIKETHROUGH);
 		});
 
 		it('should parse strike shorthand for strikethrough', () => {
 			const result = parseTags('{strike}Hello{/strike}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.STRIKETHROUGH);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.STRIKETHROUGH);
 		});
 
 		it('should parse invisible tag', () => {
 			const result = parseTags('{invisible}Hello{/invisible}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.INVISIBLE);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.INVISIBLE);
 		});
 
 		it('should parse hidden shorthand for invisible', () => {
 			const result = parseTags('{hidden}Hello{/hidden}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.INVISIBLE);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.INVISIBLE);
 		});
 
 		it('should combine multiple attributes', () => {
 			const result = parseTags('{bold}{underline}Hello{/underline}{/bold}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.BOLD | AttrFlags.UNDERLINE);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.BOLD | AttrFlags.UNDERLINE);
 		});
 
 		it('should parse named foreground color', () => {
 			const result = parseTags('{red-fg}Hello{/red-fg}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.fg).toBe(0xff0000ff);
+			expect(result.segments[0]?.fg).toBe(0xff0000ff);
 		});
 
 		it('should parse named background color', () => {
 			const result = parseTags('{blue-bg}Hello{/blue-bg}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.bg).toBe(0x0000ffff);
+			expect(result.segments[0]?.bg).toBe(0x0000ffff);
 		});
 
 		it('should parse hex foreground color', () => {
 			const result = parseTags('{#ff8800-fg}Hello{/}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.fg).toBe(0xff8800ff);
+			expect(result.segments[0]?.fg).toBe(0xff8800ff);
 		});
 
 		it('should parse short hex foreground color', () => {
 			const result = parseTags('{#f80-fg}Hello{/}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.fg).toBe(0xff8800ff);
+			expect(result.segments[0]?.fg).toBe(0xff8800ff);
 		});
 
 		it('should parse hex background color', () => {
 			const result = parseTags('{#333333-bg}Hello{/}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.bg).toBe(0x333333ff);
+			expect(result.segments[0]?.bg).toBe(0x333333ff);
 		});
 
 		it('should parse simple color name as foreground', () => {
 			const result = parseTags('{green}Hello{/}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.fg).toBe(0x00ff00ff);
+			expect(result.segments[0]?.fg).toBe(0x00ff00ff);
 		});
 
 		it('should parse alignment tags', () => {
@@ -182,30 +182,30 @@ describe('tags', () => {
 			const result = parseTags('{bold}{red-fg}Hello{/} World');
 
 			expect(result.segments).toHaveLength(2);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.BOLD);
-			expect(result.segments[0]!.fg).toBe(0xff0000ff);
-			expect(result.segments[1]!.attrs).toBe(0);
-			expect(result.segments[1]!.fg).toBe(0xffffffff);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[0]?.fg).toBe(0xff0000ff);
+			expect(result.segments[1]?.attrs).toBe(0);
+			expect(result.segments[1]?.fg).toBe(0xffffffff);
 		});
 
 		it('should handle multiple segments', () => {
 			const result = parseTags('Normal {bold}Bold{/bold} Normal');
 
 			expect(result.segments).toHaveLength(3);
-			expect(result.segments[0]!.text).toBe('Normal ');
-			expect(result.segments[0]!.attrs).toBe(0);
-			expect(result.segments[1]!.text).toBe('Bold');
-			expect(result.segments[1]!.attrs).toBe(AttrFlags.BOLD);
-			expect(result.segments[2]!.text).toBe(' Normal');
-			expect(result.segments[2]!.attrs).toBe(0);
+			expect(result.segments[0]?.text).toBe('Normal ');
+			expect(result.segments[0]?.attrs).toBe(0);
+			expect(result.segments[1]?.text).toBe('Bold');
+			expect(result.segments[1]?.attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[2]?.text).toBe(' Normal');
+			expect(result.segments[2]?.attrs).toBe(0);
 		});
 
 		it('should handle escaped braces', () => {
 			const result = parseTags('Use {{bold}} for bold');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.text).toBe('Use {bold} for bold');
-			expect(result.segments[0]!.attrs).toBe(0);
+			expect(result.segments[0]?.text).toBe('Use {bold} for bold');
+			expect(result.segments[0]?.attrs).toBe(0);
 		});
 
 		it('should handle empty input', () => {
@@ -219,18 +219,18 @@ describe('tags', () => {
 			const result = parseTags('{unknown}Hello{/unknown}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.text).toBe('Hello');
-			expect(result.segments[0]!.attrs).toBe(0);
+			expect(result.segments[0]?.text).toBe('Hello');
+			expect(result.segments[0]?.attrs).toBe(0);
 		});
 
 		it('should handle nested tags correctly', () => {
 			const result = parseTags('{bold}{italic}Both{/italic} Bold{/bold}');
 
 			expect(result.segments).toHaveLength(2);
-			expect(result.segments[0]!.text).toBe('Both');
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.BOLD | AttrFlags.ITALIC);
-			expect(result.segments[1]!.text).toBe(' Bold');
-			expect(result.segments[1]!.attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[0]?.text).toBe('Both');
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.BOLD | AttrFlags.ITALIC);
+			expect(result.segments[1]?.text).toBe(' Bold');
+			expect(result.segments[1]?.attrs).toBe(AttrFlags.BOLD);
 		});
 
 		it('should handle 256-color indices', () => {
@@ -238,7 +238,7 @@ describe('tags', () => {
 
 			expect(result.segments).toHaveLength(1);
 			// 196 = bright red in 256 color palette
-			expect(result.segments[0]!.fg).not.toBe(0xffffffff);
+			expect(result.segments[0]?.fg).not.toBe(0xffffffff);
 		});
 
 		it('should extract plainText correctly', () => {
@@ -251,14 +251,14 @@ describe('tags', () => {
 			const result = parseTags('{bold}Hello World{/bold}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.text).toBe('Hello World');
+			expect(result.segments[0]?.text).toBe('Hello World');
 		});
 
 		it('should handle consecutive tags', () => {
 			const result = parseTags('{bold}{underline}{italic}Styled{/}');
 
 			expect(result.segments).toHaveLength(1);
-			expect(result.segments[0]!.attrs).toBe(
+			expect(result.segments[0]?.attrs).toBe(
 				AttrFlags.BOLD | AttrFlags.UNDERLINE | AttrFlags.ITALIC,
 			);
 		});
@@ -269,38 +269,38 @@ describe('tags', () => {
 			const result = parseTags('{red-fg}hello {blue-fg}world{/blue-fg} more{/red-fg}');
 
 			expect(result.segments).toHaveLength(3);
-			expect(result.segments[0]!.fg).toBe(0xff0000ff); // red
-			expect(result.segments[1]!.fg).toBe(0x0000ffff); // blue
-			expect(result.segments[2]!.fg).toBe(0xff0000ff); // red restored
+			expect(result.segments[0]?.fg).toBe(0xff0000ff); // red
+			expect(result.segments[1]?.fg).toBe(0x0000ffff); // blue
+			expect(result.segments[2]?.fg).toBe(0xff0000ff); // red restored
 		});
 
 		it('should restore outer bg color when inner closes', () => {
 			const result = parseTags('{red-bg}hello {blue-bg}world{/blue-bg} more{/red-bg}');
 
 			expect(result.segments).toHaveLength(3);
-			expect(result.segments[0]!.bg).toBe(0xff0000ff); // red
-			expect(result.segments[1]!.bg).toBe(0x0000ffff); // blue
-			expect(result.segments[2]!.bg).toBe(0xff0000ff); // red restored
+			expect(result.segments[0]?.bg).toBe(0xff0000ff); // red
+			expect(result.segments[1]?.bg).toBe(0x0000ffff); // blue
+			expect(result.segments[2]?.bg).toBe(0xff0000ff); // red restored
 		});
 
 		it('should handle deeply nested colors', () => {
 			const result = parseTags('{red-fg}a{green-fg}b{blue-fg}c{/blue-fg}d{/green-fg}e{/red-fg}');
 
 			expect(result.segments).toHaveLength(5);
-			expect(result.segments[0]!.fg).toBe(0xff0000ff); // red: a
-			expect(result.segments[1]!.fg).toBe(0x00ff00ff); // green: b
-			expect(result.segments[2]!.fg).toBe(0x0000ffff); // blue: c
-			expect(result.segments[3]!.fg).toBe(0x00ff00ff); // green: d
-			expect(result.segments[4]!.fg).toBe(0xff0000ff); // red: e
+			expect(result.segments[0]?.fg).toBe(0xff0000ff); // red: a
+			expect(result.segments[1]?.fg).toBe(0x00ff00ff); // green: b
+			expect(result.segments[2]?.fg).toBe(0x0000ffff); // blue: c
+			expect(result.segments[3]?.fg).toBe(0x00ff00ff); // green: d
+			expect(result.segments[4]?.fg).toBe(0xff0000ff); // red: e
 		});
 
 		it('should handle nested attributes', () => {
 			const result = parseTags('{bold}a{italic}b{/italic}c{/bold}');
 
 			expect(result.segments).toHaveLength(3);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.BOLD);
-			expect(result.segments[1]!.attrs).toBe(AttrFlags.BOLD | AttrFlags.ITALIC);
-			expect(result.segments[2]!.attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[1]?.attrs).toBe(AttrFlags.BOLD | AttrFlags.ITALIC);
+			expect(result.segments[2]?.attrs).toBe(AttrFlags.BOLD);
 		});
 
 		it('should handle mixed color and attribute nesting', () => {
@@ -308,17 +308,17 @@ describe('tags', () => {
 
 			expect(result.segments).toHaveLength(4);
 			// a: bold, red
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.BOLD);
-			expect(result.segments[0]!.fg).toBe(0xff0000ff);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[0]?.fg).toBe(0xff0000ff);
 			// b: bold, italic, red
-			expect(result.segments[1]!.attrs).toBe(AttrFlags.BOLD | AttrFlags.ITALIC);
-			expect(result.segments[1]!.fg).toBe(0xff0000ff);
+			expect(result.segments[1]?.attrs).toBe(AttrFlags.BOLD | AttrFlags.ITALIC);
+			expect(result.segments[1]?.fg).toBe(0xff0000ff);
 			// c: bold, red
-			expect(result.segments[2]!.attrs).toBe(AttrFlags.BOLD);
-			expect(result.segments[2]!.fg).toBe(0xff0000ff);
+			expect(result.segments[2]?.attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[2]?.fg).toBe(0xff0000ff);
 			// d: bold, default fg
-			expect(result.segments[3]!.attrs).toBe(AttrFlags.BOLD);
-			expect(result.segments[3]!.fg).toBe(0xffffffff);
+			expect(result.segments[3]?.attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[3]?.fg).toBe(0xffffffff);
 		});
 
 		it('should handle mismatched close tags gracefully', () => {
@@ -334,10 +334,10 @@ describe('tags', () => {
 			const result = parseTags('{bold}{red-fg}a{/}b');
 
 			expect(result.segments).toHaveLength(2);
-			expect(result.segments[0]!.attrs).toBe(AttrFlags.BOLD);
-			expect(result.segments[0]!.fg).toBe(0xff0000ff);
-			expect(result.segments[1]!.attrs).toBe(0);
-			expect(result.segments[1]!.fg).toBe(0xffffffff);
+			expect(result.segments[0]?.attrs).toBe(AttrFlags.BOLD);
+			expect(result.segments[0]?.fg).toBe(0xff0000ff);
+			expect(result.segments[1]?.attrs).toBe(0);
+			expect(result.segments[1]?.fg).toBe(0xffffffff);
 		});
 
 		it('should handle simple color name nesting', () => {
@@ -346,9 +346,9 @@ describe('tags', () => {
 			// {red} and {blue} are treated as opening fg colors
 			// {/blue-fg} should restore the previous (red) color
 			expect(result.segments).toHaveLength(3);
-			expect(result.segments[0]!.fg).toBe(0xff0000ff); // red
-			expect(result.segments[1]!.fg).toBe(0x0000ffff); // blue
-			expect(result.segments[2]!.fg).toBe(0xff0000ff); // red restored
+			expect(result.segments[0]?.fg).toBe(0xff0000ff); // red
+			expect(result.segments[1]?.fg).toBe(0x0000ffff); // blue
+			expect(result.segments[2]?.fg).toBe(0xff0000ff); // red restored
 		});
 	});
 
@@ -520,7 +520,7 @@ describe('tags', () => {
 			const result = mergeSegments(segments);
 
 			expect(result).toHaveLength(1);
-			expect(result[0]!.text).toBe('Hello World');
+			expect(result[0]?.text).toBe('Hello World');
 		});
 
 		it('should not merge segments with different styles', () => {
@@ -558,7 +558,7 @@ describe('tags', () => {
 			const result = mergeSegments(segments);
 
 			expect(result).toHaveLength(1);
-			expect(result[0]!.text).toBe('ABC');
+			expect(result[0]?.text).toBe('ABC');
 		});
 	});
 
@@ -626,20 +626,20 @@ describe('tags', () => {
 
 			for (const [color, expected] of Object.entries(colorValues)) {
 				const result = parseTags(`{${color}-fg}X{/}`);
-				expect(result.segments[0]!.fg).toBe(expected);
+				expect(result.segments[0]?.fg).toBe(expected);
 			}
 		});
 
 		it('should parse bright colors', () => {
 			const result = parseTags('{bright-red-fg}X{/}');
-			expect(result.segments[0]!.fg).toBe(0xff8080ff);
+			expect(result.segments[0]?.fg).toBe(0xff8080ff);
 		});
 
 		it('should parse gray/grey aliases', () => {
 			const gray = parseTags('{gray-fg}X{/}');
 			const grey = parseTags('{grey-fg}X{/}');
 
-			expect(gray.segments[0]!.fg).toBe(grey.segments[0]!.fg);
+			expect(gray.segments[0]?.fg).toBe(grey.segments[0]?.fg);
 		});
 
 		it('should parse additional colors', () => {
@@ -647,7 +647,7 @@ describe('tags', () => {
 
 			for (const color of colors) {
 				const result = parseTags(`{${color}-fg}X{/}`);
-				expect(result.segments[0]!.fg).not.toBe(0xffffffff);
+				expect(result.segments[0]?.fg).not.toBe(0xffffffff);
 			}
 		});
 
@@ -656,8 +656,8 @@ describe('tags', () => {
 			const upper = parseTags('{RED-fg}X{/}');
 			const mixed = parseTags('{Red-fg}X{/}');
 
-			expect(lower.segments[0]!.fg).toBe(upper.segments[0]!.fg);
-			expect(lower.segments[0]!.fg).toBe(mixed.segments[0]!.fg);
+			expect(lower.segments[0]?.fg).toBe(upper.segments[0]?.fg);
+			expect(lower.segments[0]?.fg).toBe(mixed.segments[0]?.fg);
 		});
 	});
 
@@ -866,8 +866,8 @@ describe('tags', () => {
 			const text = parsedToTaggedText(content);
 			// The reconstructed text should parse to same segments
 			const reparsed = parseTags(text);
-			expect(reparsed.segments[0]!.text).toBe('Hello');
-			expect(reparsed.segments[0]!.attrs).toBe(AttrFlags.BOLD);
+			expect(reparsed.segments[0]?.text).toBe('Hello');
+			expect(reparsed.segments[0]?.attrs).toBe(AttrFlags.BOLD);
 		});
 
 		it('should preserve alignment', () => {

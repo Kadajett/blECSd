@@ -12,9 +12,9 @@ import { hasComponent, query } from 'bitecs';
 import type { Entity, System, World } from '../../core/types';
 import { Material3D } from '../components/material';
 import { Viewport3D } from '../components/viewport3d';
+import { drawLineDepth } from '../rasterizer/line';
 import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import { clearFramebuffer, createPixelFramebuffer } from '../rasterizer/pixelBuffer';
-import { drawLineDepth } from '../rasterizer/line';
 import { fillTriangleFlat } from '../rasterizer/triangle';
 import { projectionStore } from './projectionSystem';
 
@@ -68,7 +68,11 @@ function extractUniqueEdges(indices: Uint32Array): ReadonlyArray<readonly [numbe
 		const i1 = indices[i + 1] as number;
 		const i2 = indices[i + 2] as number;
 
-		const pairs: Array<readonly [number, number]> = [[i0, i1], [i1, i2], [i2, i0]];
+		const pairs: Array<readonly [number, number]> = [
+			[i0, i1],
+			[i1, i2],
+			[i2, i0],
+		];
 		for (const [a, b] of pairs) {
 			const key = a < b ? `${a}_${b}` : `${b}_${a}`;
 			if (!edgeSet.has(key)) {
@@ -116,7 +120,7 @@ export const rasterSystem: System = (world: World): World => {
 
 			// Get material settings (defaults to wireframe if no material)
 			let renderMode = 0; // 0 = wireframe
-			let wireColor = 0xFFFFFF; // white (24-bit RGB)
+			let wireColor = 0xffffff; // white (24-bit RGB)
 			let fillColor = 0x808080; // gray (24-bit RGB)
 			let backfaceCull = true;
 
@@ -172,23 +176,27 @@ export const rasterSystem: System = (world: World): World => {
 					const vb = verts[b];
 					if (!va || !vb) continue;
 
-					drawLineDepth(fb, {
-						x: Math.round(va.x),
-						y: Math.round(va.y),
-						depth: va.depth,
-						r: color.r,
-						g: color.g,
-						b: color.b,
-						a: color.a,
-					}, {
-						x: Math.round(vb.x),
-						y: Math.round(vb.y),
-						depth: vb.depth,
-						r: color.r,
-						g: color.g,
-						b: color.b,
-						a: color.a,
-					});
+					drawLineDepth(
+						fb,
+						{
+							x: Math.round(va.x),
+							y: Math.round(va.y),
+							depth: va.depth,
+							r: color.r,
+							g: color.g,
+							b: color.b,
+							a: color.a,
+						},
+						{
+							x: Math.round(vb.x),
+							y: Math.round(vb.y),
+							depth: vb.depth,
+							r: color.r,
+							g: color.g,
+							b: color.b,
+							a: color.a,
+						},
+					);
 				}
 			}
 		}

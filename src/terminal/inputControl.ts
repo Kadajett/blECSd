@@ -148,10 +148,10 @@ export interface InputControlEventData {
 export interface InputControlEventMap {
 	key: KeyEvent;
 	mouse: MouseEvent;
-	keysEnabled: void;
-	keysDisabled: void;
+	keysEnabled: undefined;
+	keysDisabled: undefined;
 	mouseEnabled: MouseModeValue;
-	mouseDisabled: void;
+	mouseDisabled: undefined;
 }
 
 // =============================================================================

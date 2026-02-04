@@ -32,10 +32,14 @@ export function createCubeMesh(options?: CubeMeshOptions): number {
 	const s = validated.size;
 
 	const vertices = [
-		{ x: -s, y: -s, z: -s }, { x: s, y: -s, z: -s },
-		{ x: s, y: s, z: -s }, { x: -s, y: s, z: -s },
-		{ x: -s, y: -s, z: s }, { x: s, y: -s, z: s },
-		{ x: s, y: s, z: s }, { x: -s, y: s, z: s },
+		{ x: -s, y: -s, z: -s },
+		{ x: s, y: -s, z: -s },
+		{ x: s, y: s, z: -s },
+		{ x: -s, y: s, z: -s },
+		{ x: -s, y: -s, z: s },
+		{ x: s, y: -s, z: s },
+		{ x: s, y: s, z: s },
+		{ x: -s, y: s, z: s },
 	];
 
 	const faces = [

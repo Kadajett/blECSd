@@ -82,11 +82,11 @@ describe('padding', () => {
 		it('extracts multiple padding specs', () => {
 			const specs = extractPadding('$<10>\x1b[H$<20*>\x1b[J$<30/>');
 			expect(specs).toHaveLength(3);
-			expect(specs[0]!.delay).toBe(10);
-			expect(specs[1]!.delay).toBe(20);
-			expect(specs[1]!.proportional).toBe(true);
-			expect(specs[2]!.delay).toBe(30);
-			expect(specs[2]!.mandatory).toBe(true);
+			expect(specs[0]?.delay).toBe(10);
+			expect(specs[1]?.delay).toBe(20);
+			expect(specs[1]?.proportional).toBe(true);
+			expect(specs[2]?.delay).toBe(30);
+			expect(specs[2]?.mandatory).toBe(true);
 		});
 
 		it('returns empty array for no padding', () => {

@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { clearMeshStore, getMeshData } from '../components/mesh';
-import { createCubeMesh, createCylinderMesh, createPlaneMesh, createSphereMesh } from './primitives';
+import {
+	createCubeMesh,
+	createCylinderMesh,
+	createPlaneMesh,
+	createSphereMesh,
+} from './primitives';
 
 afterEach(() => {
 	clearMeshStore();

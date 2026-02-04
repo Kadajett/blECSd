@@ -53,7 +53,7 @@ describe('Half-block backend', () => {
 			const output = backend.encode(fb, 0, 0);
 
 			expect(output.cells?.[0]?.char).toBe('\u2588');
-			expect(output.cells?.[0]?.fg).toBe(0xFF0000);
+			expect(output.cells?.[0]?.fg).toBe(0xff0000);
 		});
 
 		it('top red bottom blue: upper half block', () => {
@@ -64,8 +64,8 @@ describe('Half-block backend', () => {
 			const output = backend.encode(fb, 0, 0);
 
 			expect(output.cells?.[0]?.char).toBe('\u2580');
-			expect(output.cells?.[0]?.fg).toBe(0xFF0000);
-			expect(output.cells?.[0]?.bg).toBe(0x0000FF);
+			expect(output.cells?.[0]?.fg).toBe(0xff0000);
+			expect(output.cells?.[0]?.bg).toBe(0x0000ff);
 		});
 
 		it('top only: upper half block with bg background', () => {
@@ -75,7 +75,7 @@ describe('Half-block backend', () => {
 			const output = backend.encode(fb, 0, 0);
 
 			expect(output.cells?.[0]?.char).toBe('\u2580');
-			expect(output.cells?.[0]?.fg).toBe(0xFFFFFF);
+			expect(output.cells?.[0]?.fg).toBe(0xffffff);
 			expect(output.cells?.[0]?.bg).toBe(0x000000);
 		});
 
@@ -89,7 +89,7 @@ describe('Half-block backend', () => {
 			// Uses upper half block: fg = top(bg), bg = bottom(white)
 			expect(output.cells?.[0]?.char).toBe('\u2580');
 			expect(output.cells?.[0]?.fg).toBe(0x000000);
-			expect(output.cells?.[0]?.bg).toBe(0xFFFFFF);
+			expect(output.cells?.[0]?.bg).toBe(0xffffff);
 		});
 
 		it('applies screen offset', () => {

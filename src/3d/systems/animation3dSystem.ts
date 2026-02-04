@@ -8,8 +8,8 @@
  */
 
 import { query } from 'bitecs';
-import type { Entity, System, World } from '../../core/types';
 import { getDeltaTime } from '../../core/scheduler';
+import type { Entity, System, World } from '../../core/types';
 import { Animation3D } from '../components/animation3d';
 import { Transform3D } from '../components/transform3d';
 

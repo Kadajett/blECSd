@@ -13,32 +13,6 @@ export {
 	getAnimation3D,
 	setAnimation3D,
 } from './animation3d';
-
-export type { MouseInteraction3DData, MouseDragInput } from './mouseInteraction3d';
-export {
-	MouseInteraction3D,
-	clearMouseInputStore,
-	disableMouseInteraction,
-	enableMouseInteraction,
-	feedMouseDrag,
-	feedMouseScroll,
-	getMouseInteraction3D,
-	mouseInputStore,
-} from './mouseInteraction3d';
-
-export type { Transform3DData } from './transform3d';
-export {
-	Transform3D,
-	getTransform3D,
-	getWorldMatrix,
-	isDirty,
-	markDirty,
-	setRotation,
-	setScale,
-	setTransform3D,
-	setTranslation,
-} from './transform3d';
-
 export type { Camera3DData } from './camera3d';
 export {
 	Camera3D,
@@ -47,30 +21,51 @@ export {
 	getViewMatrix,
 	setCamera3D,
 } from './camera3d';
-
 export type { Material3DData } from './material';
 export {
-	Material3D,
 	getMaterial3D,
+	Material3D,
 	setMaterial3D,
 } from './material';
-
 export type { MeshData } from './mesh';
 export {
-	Mesh,
 	clearMeshStore,
 	createMeshFromArrays,
 	getMesh,
 	getMeshCount,
 	getMeshData,
+	Mesh,
 	registerMesh,
 	setMesh,
 	unregisterMesh,
 } from './mesh';
+export type { MouseDragInput, MouseInteraction3DData } from './mouseInteraction3d';
+export {
+	clearMouseInputStore,
+	disableMouseInteraction,
+	enableMouseInteraction,
+	feedMouseDrag,
+	feedMouseScroll,
+	getMouseInteraction3D,
+	MouseInteraction3D,
+	mouseInputStore,
+} from './mouseInteraction3d';
+export type { Transform3DData } from './transform3d';
+export {
+	getTransform3D,
+	getWorldMatrix,
+	isDirty,
+	markDirty,
+	setRotation,
+	setScale,
+	setTransform3D,
+	setTranslation,
+	Transform3D,
+} from './transform3d';
 
 export type { Viewport3DData } from './viewport3d';
 export {
-	Viewport3D,
 	getViewport3D,
 	setViewport3D,
+	Viewport3D,
 } from './viewport3d';

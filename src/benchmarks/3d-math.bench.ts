@@ -9,6 +9,7 @@
  */
 
 import { bench, describe } from 'vitest';
+import { extractFrustumPlanes, isSphereInFrustum } from '../3d/math/clipping';
 import {
 	mat4FromTRS,
 	mat4Identity,
@@ -18,14 +19,7 @@ import {
 	mat4Translate,
 } from '../3d/math/mat4';
 import { buildMVP, lookAt, perspectiveMatrix, projectVertex } from '../3d/math/projection';
-import {
-	vec3,
-	vec3Add,
-	vec3Cross,
-	vec3Dot,
-	vec3Normalize,
-} from '../3d/math/vec3';
-import { extractFrustumPlanes, isSphereInFrustum } from '../3d/math/clipping';
+import { vec3, vec3Add, vec3Cross, vec3Dot, vec3Normalize } from '../3d/math/vec3';
 
 // =============================================================================
 // SETUP

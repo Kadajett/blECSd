@@ -9,8 +9,8 @@
  */
 
 import { bench, describe } from 'vitest';
-import { clearFramebuffer, createPixelFramebuffer } from '../3d/rasterizer/pixelBuffer';
 import { drawLine, drawLineDepth } from '../3d/rasterizer/line';
+import { clearFramebuffer, createPixelFramebuffer } from '../3d/rasterizer/pixelBuffer';
 import { fillTriangle, fillTriangleFlat } from '../3d/rasterizer/triangle';
 
 // =============================================================================
@@ -35,9 +35,30 @@ const lines = Array.from({ length: LINE_COUNT }, () => ({
 
 const TRI_COUNT = 1000;
 const triangles = Array.from({ length: TRI_COUNT }, () => ({
-	v0: { x: randomInt(0, 400), y: randomInt(0, 200), depth: Math.random(), r: randomInt(0, 255), g: randomInt(0, 255), b: randomInt(0, 255) },
-	v1: { x: randomInt(0, 400), y: randomInt(0, 200), depth: Math.random(), r: randomInt(0, 255), g: randomInt(0, 255), b: randomInt(0, 255) },
-	v2: { x: randomInt(0, 400), y: randomInt(0, 200), depth: Math.random(), r: randomInt(0, 255), g: randomInt(0, 255), b: randomInt(0, 255) },
+	v0: {
+		x: randomInt(0, 400),
+		y: randomInt(0, 200),
+		depth: Math.random(),
+		r: randomInt(0, 255),
+		g: randomInt(0, 255),
+		b: randomInt(0, 255),
+	},
+	v1: {
+		x: randomInt(0, 400),
+		y: randomInt(0, 200),
+		depth: Math.random(),
+		r: randomInt(0, 255),
+		g: randomInt(0, 255),
+		b: randomInt(0, 255),
+	},
+	v2: {
+		x: randomInt(0, 400),
+		y: randomInt(0, 200),
+		depth: Math.random(),
+		r: randomInt(0, 255),
+		g: randomInt(0, 255),
+		b: randomInt(0, 255),
+	},
 }));
 
 // =============================================================================

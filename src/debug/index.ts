@@ -695,8 +695,8 @@ export function getEntitySummary(world: World, eid: Entity): string {
 
 	// Position
 	if (hasComponent(world, eid, Position)) {
-		const x = Math.round(Position.x[eid]!);
-		const y = Math.round(Position.y[eid]!);
+		const x = Math.round(Position.x[eid] ?? 0);
+		const y = Math.round(Position.y[eid] ?? 0);
 		parts.push(`@ ${x},${y}`);
 	}
 

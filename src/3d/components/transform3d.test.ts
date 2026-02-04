@@ -2,7 +2,6 @@ import { addEntity, createWorld } from 'bitecs';
 import { describe, expect, it } from 'vitest';
 import type { Entity, World } from '../../core/types';
 import {
-	Transform3D,
 	getTransform3D,
 	getWorldMatrix,
 	isDirty,
@@ -11,6 +10,7 @@ import {
 	setScale,
 	setTransform3D,
 	setTranslation,
+	Transform3D,
 } from './transform3d';
 
 function setup(): { world: World; eid: Entity } {
@@ -24,7 +24,17 @@ describe('Transform3D component', () => {
 		it('sets all transform values', () => {
 			const { world, eid } = setup();
 
-			setTransform3D(world, eid, { tx: 1, ty: 2, tz: 3, rx: 0.1, ry: 0.2, rz: 0.3, sx: 2, sy: 3, sz: 4 });
+			setTransform3D(world, eid, {
+				tx: 1,
+				ty: 2,
+				tz: 3,
+				rx: 0.1,
+				ry: 0.2,
+				rz: 0.3,
+				sx: 2,
+				sy: 3,
+				sz: 4,
+			});
 
 			const data = getTransform3D(world, eid);
 			expect(data).toBeDefined();

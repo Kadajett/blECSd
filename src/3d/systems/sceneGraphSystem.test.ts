@@ -1,8 +1,8 @@
 import { addComponent, addEntity, createWorld } from 'bitecs';
 import { afterEach, describe, expect, it } from 'vitest';
-import { Hierarchy, appendChild } from '../../components/hierarchy';
+import { appendChild, Hierarchy } from '../../components/hierarchy';
 import type { Entity, World } from '../../core/types';
-import { Transform3D, setTransform3D } from '../components/transform3d';
+import { setTransform3D, Transform3D } from '../components/transform3d';
 import { mat4Identity } from '../math/mat4';
 import { sceneGraphSystem } from './sceneGraphSystem';
 

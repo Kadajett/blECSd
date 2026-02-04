@@ -7,21 +7,24 @@
  * @module benchmarks/3d-stress
  */
 
-import { bench, describe } from 'vitest';
 import { addComponent, addEntity, createWorld } from 'bitecs';
-import type { Entity, World } from '../core/types';
+import { bench, describe } from 'vitest';
 import { setCamera3D } from '../3d/components/camera3d';
 import { setMaterial3D } from '../3d/components/material';
 import { Mesh } from '../3d/components/mesh';
 import { setTransform3D } from '../3d/components/transform3d';
-import { Viewport3D, setViewport3D } from '../3d/components/viewport3d';
+import { setViewport3D, Viewport3D } from '../3d/components/viewport3d';
 import { createSphereMesh } from '../3d/stores/primitives';
-import { sceneGraphSystem } from '../3d/systems/sceneGraphSystem';
 import { projectionSystem } from '../3d/systems/projectionSystem';
 import { rasterSystem } from '../3d/systems/rasterSystem';
+import { sceneGraphSystem } from '../3d/systems/sceneGraphSystem';
 import { viewportOutputSystem } from '../3d/systems/viewportOutputSystem';
+import type { Entity, World } from '../core/types';
 
-function setupStressWorld(meshCount: number, verticesPerMesh: number): { world: World; vpEid: Entity } {
+function setupStressWorld(
+	meshCount: number,
+	verticesPerMesh: number,
+): { world: World; vpEid: Entity } {
 	const world = createWorld() as World;
 
 	// Camera
@@ -38,7 +41,11 @@ function setupStressWorld(meshCount: number, verticesPerMesh: number): { world: 
 
 	// Determine sphere segments to approximate target vertex count
 	const segs = Math.max(4, Math.round(Math.sqrt(verticesPerMesh)));
-	const meshId = createSphereMesh({ radius: 0.5, widthSegments: segs, heightSegments: Math.max(2, Math.round(segs / 2)) });
+	const meshId = createSphereMesh({
+		radius: 0.5,
+		widthSegments: segs,
+		heightSegments: Math.max(2, Math.round(segs / 2)),
+	});
 
 	for (let i = 0; i < meshCount; i++) {
 		const eid = addEntity(world) as Entity;
@@ -47,7 +54,7 @@ function setupStressWorld(meshCount: number, verticesPerMesh: number): { world: 
 			ty: Math.floor(i / 10) * 2 - 10,
 			tz: -5 - (i % 5),
 		});
-		setMaterial3D(world, eid, { renderMode: 'wireframe', wireColor: 0x00FF88 });
+		setMaterial3D(world, eid, { renderMode: 'wireframe', wireColor: 0x00ff88 });
 		addComponent(world, eid, Mesh);
 		Mesh.meshId[eid] = meshId;
 	}
@@ -109,7 +116,7 @@ describe('Stress Test - Multi-Viewport', () => {
 		for (let i = 0; i < 10; i++) {
 			const eid = addEntity(world) as Entity;
 			setTransform3D(world, eid, { tx: i * 2 - 10, tz: -5 });
-			setMaterial3D(world, eid, { renderMode: 'wireframe', wireColor: 0xFF0000 });
+			setMaterial3D(world, eid, { renderMode: 'wireframe', wireColor: 0xff0000 });
 			addComponent(world, eid, Mesh);
 			Mesh.meshId[eid] = meshId;
 		}

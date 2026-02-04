@@ -490,10 +490,10 @@ export function getConnectionFlags(
 	const bottomEdges = ctx.edges.get(posKey(x, y + 1));
 
 	return {
-		left: leftEdges !== undefined && leftEdges.some((e) => e.type === 'h' || e.type === 'c'),
-		right: rightEdges !== undefined && rightEdges.some((e) => e.type === 'h' || e.type === 'c'),
-		top: topEdges !== undefined && topEdges.some((e) => e.type === 'v' || e.type === 'c'),
-		bottom: bottomEdges !== undefined && bottomEdges.some((e) => e.type === 'v' || e.type === 'c'),
+		left: leftEdges?.some((e) => e.type === 'h' || e.type === 'c'),
+		right: rightEdges?.some((e) => e.type === 'h' || e.type === 'c'),
+		top: topEdges?.some((e) => e.type === 'v' || e.type === 'c'),
+		bottom: bottomEdges?.some((e) => e.type === 'v' || e.type === 'c'),
 	};
 }
 

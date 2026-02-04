@@ -402,7 +402,7 @@ export function parseMarkdown(source: string): MarkdownParseResult {
 				hash: hashString(line),
 				data: {
 					kind: 'heading',
-					level: headingMatch[1]!.length as 1 | 2 | 3 | 4 | 5 | 6,
+					level: headingMatch[1]?.length as 1 | 2 | 3 | 4 | 5 | 6,
 					text: headingMatch[2]!,
 					inline: parseInline(headingMatch[2]!),
 				},
@@ -596,7 +596,7 @@ export function parseMarkdown(source: string): MarkdownParseResult {
 					content: taskMatch ? taskMatch[2]! : content,
 					inline: parseInline(taskMatch ? taskMatch[2]! : content),
 					indent,
-					checked: taskMatch ? taskMatch[1]!.toLowerCase() === 'x' : undefined,
+					checked: taskMatch ? taskMatch[1]?.toLowerCase() === 'x' : undefined,
 				});
 				i++;
 			}
@@ -742,7 +742,7 @@ export function renderBlock(block: MarkdownBlock, cache: MarkdownCache): readonl
 		case 'heading': {
 			const data = block.data;
 			lines.push({
-				content: '#'.repeat(data.level) + ' ' + data.text,
+				content: `${'#'.repeat(data.level)} ${data.text}`,
 				style: { bold: true },
 				blockIndex: 0,
 				lineInBlock: 0,
@@ -797,7 +797,7 @@ export function renderBlock(block: MarkdownBlock, cache: MarkdownCache): readonl
 				const item = data.items[i]!;
 				const prefix = data.ordered
 					? `${(data.start || 1) + i}. `
-					: '  '.repeat(item.indent / 2) + '- ';
+					: `${'  '.repeat(item.indent / 2)}- `;
 				const checkbox = item.checked !== undefined ? (item.checked ? '[x] ' : '[ ] ') : '';
 				lines.push({
 					content: prefix + checkbox + item.content,
@@ -814,7 +814,7 @@ export function renderBlock(block: MarkdownBlock, cache: MarkdownCache): readonl
 			// Header row
 			const headerContent = data.headers.map((h) => h.content).join(' | ');
 			lines.push({
-				content: '| ' + headerContent + ' |',
+				content: `| ${headerContent} |`,
 				style: { bold: true },
 				blockIndex: 0,
 				lineInBlock: 0,
@@ -831,7 +831,7 @@ export function renderBlock(block: MarkdownBlock, cache: MarkdownCache): readonl
 				})
 				.join(' | ');
 			lines.push({
-				content: '| ' + sep + ' |',
+				content: `| ${sep} |`,
 				style: baseStyle,
 				blockIndex: 0,
 				lineInBlock: 1,
@@ -842,7 +842,7 @@ export function renderBlock(block: MarkdownBlock, cache: MarkdownCache): readonl
 				const row = data.rows[i]!;
 				const rowContent = row.map((c) => c.content).join(' | ');
 				lines.push({
-					content: '| ' + rowContent + ' |',
+					content: `| ${rowContent} |`,
 					style: baseStyle,
 					blockIndex: 0,
 					lineInBlock: i + 2,
@@ -858,7 +858,7 @@ export function renderBlock(block: MarkdownBlock, cache: MarkdownCache): readonl
 				for (const line of nestedLines) {
 					lines.push({
 						...line,
-						content: '> ' + line.content,
+						content: `> ${line.content}`,
 						style: { ...line.style, italic: true },
 					});
 				}
@@ -915,7 +915,7 @@ export function renderMarkdown(
 	}
 
 	const lines: RenderedLine[] = [];
-	let lineIndex = 0;
+	let _lineIndex = 0;
 
 	for (let blockIdx = 0; blockIdx < result.blocks.length; blockIdx++) {
 		const block = result.blocks[blockIdx]!;
@@ -926,7 +926,7 @@ export function renderMarkdown(
 				...line,
 				blockIndex: blockIdx,
 			});
-			lineIndex++;
+			_lineIndex++;
 		}
 
 		// Add blank line between blocks (except before first and after last)
@@ -937,7 +937,7 @@ export function renderMarkdown(
 				blockIndex: blockIdx,
 				lineInBlock: -1,
 			});
-			lineIndex++;
+			_lineIndex++;
 		}
 	}
 

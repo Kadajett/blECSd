@@ -78,19 +78,25 @@ describe('Backend schemas', () => {
 		});
 
 		it('rejects empty object with neither cells nor escape', () => {
-			expect(() => EncodedOutputSchema.parse({})).toThrow('EncodedOutput must have either cells or escape');
+			expect(() => EncodedOutputSchema.parse({})).toThrow(
+				'EncodedOutput must have either cells or escape',
+			);
 		});
 
 		it('rejects cell with empty char', () => {
-			expect(() => EncodedOutputSchema.parse({
-				cells: [{ x: 0, y: 0, char: '', fg: 0, bg: 0 }],
-			})).toThrow();
+			expect(() =>
+				EncodedOutputSchema.parse({
+					cells: [{ x: 0, y: 0, char: '', fg: 0, bg: 0 }],
+				}),
+			).toThrow();
 		});
 
 		it('rejects negative cell coordinates', () => {
-			expect(() => EncodedOutputSchema.parse({
-				cells: [{ x: -1, y: 0, char: 'x', fg: 0, bg: 0 }],
-			})).toThrow();
+			expect(() =>
+				EncodedOutputSchema.parse({
+					cells: [{ x: -1, y: 0, char: 'x', fg: 0, bg: 0 }],
+				}),
+			).toThrow();
 		});
 	});
 

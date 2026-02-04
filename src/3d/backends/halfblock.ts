@@ -14,9 +14,9 @@
  * @module 3d/backends/halfblock
  */
 
+import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { BackendCapabilities, EncodedOutput } from '../schemas/backends';
 import { type HalfBlockConfig, HalfBlockConfigSchema } from '../schemas/backends';
-import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { RendererBackend } from './types';
 
 const UPPER_HALF = '\u2580';

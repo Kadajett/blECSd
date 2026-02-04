@@ -7,11 +7,7 @@ const white = { r: 255, g: 255, b: 255, a: 255 };
 describe('Shading', () => {
 	describe('computeFaceNormal', () => {
 		it('computes normal for triangle in XY plane', () => {
-			const normal = computeFaceNormal(
-				vec3(0, 0, 0),
-				vec3(1, 0, 0),
-				vec3(0, 1, 0),
-			);
+			const normal = computeFaceNormal(vec3(0, 0, 0), vec3(1, 0, 0), vec3(0, 1, 0));
 
 			// Cross product of (1,0,0) x (0,1,0) = (0,0,1)
 			expect(normal[0]).toBeCloseTo(0, 3);
@@ -20,27 +16,17 @@ describe('Shading', () => {
 		});
 
 		it('computes normal for triangle in XZ plane', () => {
-			const normal = computeFaceNormal(
-				vec3(0, 0, 0),
-				vec3(0, 0, 1),
-				vec3(1, 0, 0),
-			);
+			const normal = computeFaceNormal(vec3(0, 0, 0), vec3(0, 0, 1), vec3(1, 0, 0));
 
 			// Should point in +Y direction
 			expect(normal[1]).toBeCloseTo(1, 3);
 		});
 
 		it('returns normalized vector', () => {
-			const normal = computeFaceNormal(
-				vec3(0, 0, 0),
-				vec3(5, 0, 0),
-				vec3(0, 5, 0),
-			);
+			const normal = computeFaceNormal(vec3(0, 0, 0), vec3(5, 0, 0), vec3(0, 5, 0));
 
 			const length = Math.sqrt(
-				(normal[0] as number) ** 2 +
-				(normal[1] as number) ** 2 +
-				(normal[2] as number) ** 2,
+				(normal[0] as number) ** 2 + (normal[1] as number) ** 2 + (normal[2] as number) ** 2,
 			);
 			expect(length).toBeCloseTo(1, 5);
 		});

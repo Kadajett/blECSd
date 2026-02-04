@@ -17,9 +17,9 @@
  * @module 3d/backends/sixel
  */
 
+import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { BackendCapabilities, EncodedOutput } from '../schemas/backends';
 import { type SixelConfig, SixelConfigSchema } from '../schemas/backends';
-import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { RendererBackend } from './types';
 
 /** DCS introducer for sixel. */
@@ -51,7 +51,8 @@ function quantizePalette(
 		const idx = i * 4;
 		const a = buf[idx + 3] as number;
 		if (a === 0) continue;
-		const key = ((buf[idx] as number) << 16) | ((buf[idx + 1] as number) << 8) | (buf[idx + 2] as number);
+		const key =
+			((buf[idx] as number) << 16) | ((buf[idx + 1] as number) << 8) | (buf[idx + 2] as number);
 		colorCounts.set(key, (colorCounts.get(key) ?? 0) + 1);
 	}
 
@@ -65,8 +66,9 @@ function quantizePalette(
 	const paletteFlat = new Uint8Array(paletteCount * 3);
 
 	for (let i = 0; i < paletteCount; i++) {
-		if (i < entries.length) {
-			const key = entries[i]![0];
+		const entry = entries[i];
+		if (entry) {
+			const key = entry[0];
 			paletteFlat[i * 3] = (key >> 16) & 0xff;
 			paletteFlat[i * 3 + 1] = (key >> 8) & 0xff;
 			paletteFlat[i * 3 + 2] = key & 0xff;
@@ -74,9 +76,10 @@ function quantizePalette(
 	}
 
 	// Reuse index map buffer when size matches
-	const indexMap = (reusableIndexMap && reusableIndexMap.length === pixelCount)
-		? reusableIndexMap
-		: new Uint8Array(pixelCount);
+	const indexMap =
+		reusableIndexMap && reusableIndexMap.length === pixelCount
+			? reusableIndexMap
+			: new Uint8Array(pixelCount);
 
 	// Map each pixel to nearest palette index
 	for (let i = 0; i < pixelCount; i++) {
@@ -114,11 +117,7 @@ function quantizePalette(
  * Run-length encode sixel band data from a Uint8Array of sixel values.
  * Writes encoded result to output parts array. Uses `!<count><char>` for runs >= 3.
  */
-function rleEncodeBand(
-	sixelValues: Uint8Array,
-	width: number,
-	parts: string[],
-): boolean {
+function rleEncodeBand(sixelValues: Uint8Array, width: number, parts: string[]): boolean {
 	let hasPixels = false;
 	let i = 0;
 	while (i < width) {
@@ -177,7 +176,11 @@ export function createSixelBackend(config?: SixelConfig): RendererBackend {
 		capabilities,
 
 		encode(framebuffer: PixelFramebuffer, screenX: number, screenY: number): EncodedOutput {
-			const { paletteFlat, paletteCount, indexMap } = quantizePalette(framebuffer, maxColors, cachedIndexMap);
+			const { paletteFlat, paletteCount, indexMap } = quantizePalette(
+				framebuffer,
+				maxColors,
+				cachedIndexMap,
+			);
 			cachedIndexMap = indexMap;
 			const w = framebuffer.width;
 			const h = framebuffer.height;
@@ -214,7 +217,7 @@ export function createSixelBackend(config?: SixelConfig): RendererBackend {
 						for (let row = 0; row < maxRow; row++) {
 							const pixelIdx = (bandY + row) * w + x;
 							if (indexMap[pixelIdx] === colorIdx) {
-								sixelBits |= (1 << row);
+								sixelBits |= 1 << row;
 							}
 						}
 						sixelRow[x] = sixelBits;
@@ -226,8 +229,8 @@ export function createSixelBackend(config?: SixelConfig): RendererBackend {
 						const hasPixels = rleEncodeBand(sixelRow, w, bandParts);
 						if (hasPixels) {
 							parts.push('#', String(colorIdx));
-							for (let p = 0; p < bandParts.length; p++) {
-								parts.push(bandParts[p]!);
+							for (const part of bandParts) {
+								parts.push(part);
 							}
 							parts.push('$');
 						}
@@ -241,8 +244,8 @@ export function createSixelBackend(config?: SixelConfig): RendererBackend {
 						}
 						if (hasPixels) {
 							parts.push('#', String(colorIdx));
-							for (let c = 0; c < bandChars.length; c++) {
-								parts.push(bandChars[c]!);
+							for (const char of bandChars) {
+								parts.push(char);
 							}
 							parts.push('$');
 						}

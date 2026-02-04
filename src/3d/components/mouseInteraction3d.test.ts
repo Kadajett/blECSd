@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 import { addEntity, createWorld } from 'bitecs';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { Entity, World } from '../../core/types';
 import {
-	MouseInteraction3D,
 	clearMouseInputStore,
 	disableMouseInteraction,
 	enableMouseInteraction,
 	feedMouseDrag,
 	feedMouseScroll,
 	getMouseInteraction3D,
+	MouseInteraction3D,
 	mouseInputStore,
 } from './mouseInteraction3d';
 
@@ -37,13 +37,18 @@ describe('MouseInteraction3D component', () => {
 		});
 
 		it('sets custom config values', () => {
-			enableMouseInteraction(world, eid, {
-				rotationSensitivity: 0.005,
-				zoomSensitivity: 1.0,
-				zoomMin: 2,
-				zoomMax: 50,
-				invertY: true,
-			}, 10);
+			enableMouseInteraction(
+				world,
+				eid,
+				{
+					rotationSensitivity: 0.005,
+					zoomSensitivity: 1.0,
+					zoomMin: 2,
+					zoomMax: 50,
+					invertY: true,
+				},
+				10,
+			);
 
 			expect(MouseInteraction3D.rotationSensitivity[eid]).toBeCloseTo(0.005);
 			expect(MouseInteraction3D.zoomSensitivity[eid]).toBeCloseTo(1.0);
@@ -67,9 +72,11 @@ describe('MouseInteraction3D component', () => {
 		});
 
 		it('rejects invalid config via Zod', () => {
-			expect(() => enableMouseInteraction(world, eid, {
-				rotationSensitivity: -1,
-			} as never)).toThrow();
+			expect(() =>
+				enableMouseInteraction(world, eid, {
+					rotationSensitivity: -1,
+				} as never),
+			).toThrow();
 		});
 	});
 
@@ -94,18 +101,23 @@ describe('MouseInteraction3D component', () => {
 		});
 
 		it('returns correct data after enable', () => {
-			enableMouseInteraction(world, eid, {
-				rotationSensitivity: 0.02,
-				invertY: true,
-			}, 8);
+			enableMouseInteraction(
+				world,
+				eid,
+				{
+					rotationSensitivity: 0.02,
+					invertY: true,
+				},
+				8,
+			);
 
 			const data = getMouseInteraction3D(world, eid);
 			expect(data).toBeDefined();
-			expect(data!.rotationSensitivity).toBeCloseTo(0.02);
-			expect(data!.invertY).toBe(true);
-			expect(data!.distance).toBeCloseTo(8);
-			expect(data!.yaw).toBeCloseTo(0);
-			expect(data!.pitch).toBeCloseTo(0);
+			expect(data?.rotationSensitivity).toBeCloseTo(0.02);
+			expect(data?.invertY).toBe(true);
+			expect(data?.distance).toBeCloseTo(8);
+			expect(data?.yaw).toBeCloseTo(0);
+			expect(data?.pitch).toBeCloseTo(0);
 		});
 	});
 
@@ -115,9 +127,9 @@ describe('MouseInteraction3D component', () => {
 
 			const input = mouseInputStore.get(eid);
 			expect(input).toBeDefined();
-			expect(input!.dragDx).toBe(10);
-			expect(input!.dragDy).toBe(-5);
-			expect(input!.scrollDelta).toBe(0);
+			expect(input?.dragDx).toBe(10);
+			expect(input?.dragDy).toBe(-5);
+			expect(input?.scrollDelta).toBe(0);
 		});
 
 		it('accumulates multiple drag events', () => {
@@ -125,8 +137,8 @@ describe('MouseInteraction3D component', () => {
 			feedMouseDrag(eid, 3, 2);
 
 			const input = mouseInputStore.get(eid);
-			expect(input!.dragDx).toBe(13);
-			expect(input!.dragDy).toBe(-3);
+			expect(input?.dragDx).toBe(13);
+			expect(input?.dragDy).toBe(-3);
 		});
 	});
 
@@ -136,8 +148,8 @@ describe('MouseInteraction3D component', () => {
 
 			const input = mouseInputStore.get(eid);
 			expect(input).toBeDefined();
-			expect(input!.scrollDelta).toBe(2);
-			expect(input!.dragDx).toBe(0);
+			expect(input?.scrollDelta).toBe(2);
+			expect(input?.dragDx).toBe(0);
 		});
 
 		it('accumulates multiple scroll events', () => {
@@ -145,7 +157,7 @@ describe('MouseInteraction3D component', () => {
 			feedMouseScroll(eid, -3);
 
 			const input = mouseInputStore.get(eid);
-			expect(input!.scrollDelta).toBe(-2);
+			expect(input?.scrollDelta).toBe(-2);
 		});
 	});
 

@@ -452,7 +452,7 @@ describe('Rope vs String Comparison', () => {
 		bench(
 			'string - insert in middle',
 			() => {
-				stringText.slice(0, 50000) + 'INSERTED' + stringText.slice(50000);
+				`${stringText.slice(0, 50000)}INSERTED${stringText.slice(50000)}`;
 			},
 			{
 				setup() {

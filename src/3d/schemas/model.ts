@@ -51,13 +51,15 @@ export type PlaneMeshOptions = z.input<typeof PlaneMeshOptionsSchema>;
 /**
  * Options for creating a cylinder mesh primitive.
  */
-export const CylinderMeshOptionsSchema = z.object({
-	radiusTop: z.number().nonnegative().default(1),
-	radiusBottom: z.number().nonnegative().default(1),
-	height: z.number().positive().default(2),
-	segments: z.number().int().min(3).max(128).default(16),
-	name: z.string().default('cylinder'),
-}).refine((d) => d.radiusTop > 0 || d.radiusBottom > 0, {
-	message: 'At least one radius must be positive',
-});
+export const CylinderMeshOptionsSchema = z
+	.object({
+		radiusTop: z.number().nonnegative().default(1),
+		radiusBottom: z.number().nonnegative().default(1),
+		height: z.number().positive().default(2),
+		segments: z.number().int().min(3).max(128).default(16),
+		name: z.string().default('cylinder'),
+	})
+	.refine((d) => d.radiusTop > 0 || d.radiusBottom > 0, {
+		message: 'At least one radius must be positive',
+	});
 export type CylinderMeshOptions = z.input<typeof CylinderMeshOptionsSchema>;

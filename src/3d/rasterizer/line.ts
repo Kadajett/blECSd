@@ -5,7 +5,7 @@
  */
 
 import type { LineEndpoint } from '../schemas/rasterizer';
-import { type PixelFramebuffer, isInBounds, setPixelUnsafe, testAndSetDepth } from './pixelBuffer';
+import { isInBounds, type PixelFramebuffer, setPixelUnsafe, testAndSetDepth } from './pixelBuffer';
 
 /**
  * Draw a solid-color line using Bresenham's algorithm.
@@ -85,11 +85,7 @@ export function drawLine(
  * );
  * ```
  */
-export function drawLineDepth(
-	fb: PixelFramebuffer,
-	p0: LineEndpoint,
-	p1: LineEndpoint,
-): void {
+export function drawLineDepth(fb: PixelFramebuffer, p0: LineEndpoint, p1: LineEndpoint): void {
 	let cx0 = Math.round(p0.x);
 	let cy0 = Math.round(p0.y);
 	const cx1 = Math.round(p1.x);
@@ -154,11 +150,7 @@ export function drawLineDepth(
  * );
  * ```
  */
-export function drawLineColor(
-	fb: PixelFramebuffer,
-	p0: LineEndpoint,
-	p1: LineEndpoint,
-): void {
+export function drawLineColor(fb: PixelFramebuffer, p0: LineEndpoint, p1: LineEndpoint): void {
 	let cx0 = Math.round(p0.x);
 	let cy0 = Math.round(p0.y);
 	const cx1 = Math.round(p1.x);

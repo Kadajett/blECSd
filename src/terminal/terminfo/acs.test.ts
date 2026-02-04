@@ -23,29 +23,29 @@ import {
 describe('ACS character maps', () => {
 	describe('ACSC_CODES', () => {
 		it('has corner characters', () => {
-			expect(ACSC_CODES['l']).toBe('┌'); // upper-left
-			expect(ACSC_CODES['m']).toBe('└'); // lower-left
-			expect(ACSC_CODES['k']).toBe('┐'); // upper-right
-			expect(ACSC_CODES['j']).toBe('┘'); // lower-right
+			expect(ACSC_CODES.l).toBe('┌'); // upper-left
+			expect(ACSC_CODES.m).toBe('└'); // lower-left
+			expect(ACSC_CODES.k).toBe('┐'); // upper-right
+			expect(ACSC_CODES.j).toBe('┘'); // lower-right
 		});
 
 		it('has tee characters', () => {
-			expect(ACSC_CODES['t']).toBe('├'); // left tee
-			expect(ACSC_CODES['u']).toBe('┤'); // right tee
-			expect(ACSC_CODES['v']).toBe('┴'); // bottom tee
-			expect(ACSC_CODES['w']).toBe('┬'); // top tee
+			expect(ACSC_CODES.t).toBe('├'); // left tee
+			expect(ACSC_CODES.u).toBe('┤'); // right tee
+			expect(ACSC_CODES.v).toBe('┴'); // bottom tee
+			expect(ACSC_CODES.w).toBe('┬'); // top tee
 		});
 
 		it('has line characters', () => {
-			expect(ACSC_CODES['q']).toBe('─'); // horizontal
-			expect(ACSC_CODES['x']).toBe('│'); // vertical
-			expect(ACSC_CODES['n']).toBe('┼'); // cross
+			expect(ACSC_CODES.q).toBe('─'); // horizontal
+			expect(ACSC_CODES.x).toBe('│'); // vertical
+			expect(ACSC_CODES.n).toBe('┼'); // cross
 		});
 
 		it('has symbol characters', () => {
 			expect(ACSC_CODES['`']).toBe('◆'); // diamond
-			expect(ACSC_CODES['a']).toBe('▒'); // checkerboard
-			expect(ACSC_CODES['f']).toBe('°'); // degree
+			expect(ACSC_CODES.a).toBe('▒'); // checkerboard
+			expect(ACSC_CODES.f).toBe('°'); // degree
 			expect(ACSC_CODES['0']).toBe('█'); // block
 		});
 	});
@@ -306,12 +306,12 @@ describe('ACS character maps', () => {
 	describe('consistency', () => {
 		it('ACS values match ACSC_CODES', () => {
 			// Verify named constants match code mappings
-			expect(ACS.ulcorner).toBe(ACSC_CODES['l']);
-			expect(ACS.llcorner).toBe(ACSC_CODES['m']);
-			expect(ACS.urcorner).toBe(ACSC_CODES['k']);
-			expect(ACS.lrcorner).toBe(ACSC_CODES['j']);
-			expect(ACS.hline).toBe(ACSC_CODES['q']);
-			expect(ACS.vline).toBe(ACSC_CODES['x']);
+			expect(ACS.ulcorner).toBe(ACSC_CODES.l);
+			expect(ACS.llcorner).toBe(ACSC_CODES.m);
+			expect(ACS.urcorner).toBe(ACSC_CODES.k);
+			expect(ACS.lrcorner).toBe(ACSC_CODES.j);
+			expect(ACS.hline).toBe(ACSC_CODES.q);
+			expect(ACS.vline).toBe(ACSC_CODES.x);
 		});
 
 		it('all ACS characters have ASCII fallbacks', () => {

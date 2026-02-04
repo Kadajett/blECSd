@@ -10,13 +10,17 @@
  */
 
 import type { BackendType } from '../schemas/backends';
-import { type BackendPreference, BackendPreferenceSchema, BackendTypeSchema } from '../schemas/backends';
-import type { RendererBackend } from './types';
+import {
+	type BackendPreference,
+	BackendPreferenceSchema,
+	BackendTypeSchema,
+} from '../schemas/backends';
 import { createBrailleBackend } from './braille';
 import { createHalfBlockBackend } from './halfblock';
 import { createKittyBackend } from './kitty';
 import { createSextantBackend } from './sextant';
 import { createSixelBackend } from './sixel';
+import type { RendererBackend } from './types';
 
 /**
  * Simplified terminal capabilities relevant to backend selection.
@@ -45,11 +49,16 @@ export function createBackendByType(type: BackendType): RendererBackend {
 	BackendTypeSchema.parse(type);
 
 	switch (type) {
-		case 'braille': return createBrailleBackend();
-		case 'halfblock': return createHalfBlockBackend();
-		case 'sextant': return createSextantBackend();
-		case 'sixel': return createSixelBackend();
-		case 'kitty': return createKittyBackend();
+		case 'braille':
+			return createBrailleBackend();
+		case 'halfblock':
+			return createHalfBlockBackend();
+		case 'sextant':
+			return createSextantBackend();
+		case 'sixel':
+			return createSixelBackend();
+		case 'kitty':
+			return createKittyBackend();
 	}
 }
 

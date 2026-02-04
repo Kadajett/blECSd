@@ -360,10 +360,10 @@ describe('terminfo parser', () => {
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data.booleans['auto_left_margin']).toBeUndefined();
-					expect(result.data.booleans['auto_right_margin']).toBe(true);
-					expect(result.data.booleans['no_esc_ctlc']).toBeUndefined();
-					expect(result.data.booleans['ceol_standout_glitch']).toBe(true);
+					expect(result.data.booleans.auto_left_margin).toBeUndefined();
+					expect(result.data.booleans.auto_right_margin).toBe(true);
+					expect(result.data.booleans.no_esc_ctlc).toBeUndefined();
+					expect(result.data.booleans.ceol_standout_glitch).toBe(true);
 				}
 			});
 
@@ -383,9 +383,9 @@ describe('terminfo parser', () => {
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data.booleans['auto_left_margin']).toBe(true);
-					expect(result.data.booleans['auto_right_margin']).toBe(true);
-					expect(result.data.booleans['no_esc_ctlc']).toBe(true);
+					expect(result.data.booleans.auto_left_margin).toBe(true);
+					expect(result.data.booleans.auto_right_margin).toBe(true);
+					expect(result.data.booleans.no_esc_ctlc).toBe(true);
 				}
 			});
 		});
@@ -398,9 +398,9 @@ describe('terminfo parser', () => {
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data.numbers['columns']).toBe(80);
-					expect(result.data.numbers['init_tabs']).toBe(8);
-					expect(result.data.numbers['lines']).toBe(24);
+					expect(result.data.numbers.columns).toBe(80);
+					expect(result.data.numbers.init_tabs).toBe(8);
+					expect(result.data.numbers.lines).toBe(24);
 				}
 			});
 
@@ -410,9 +410,9 @@ describe('terminfo parser', () => {
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data.numbers['columns']).toBe(80);
-					expect(result.data.numbers['init_tabs']).toBe(8);
-					expect(result.data.numbers['lines']).toBe(24);
+					expect(result.data.numbers.columns).toBe(80);
+					expect(result.data.numbers.init_tabs).toBe(8);
+					expect(result.data.numbers.lines).toBe(24);
 				}
 			});
 
@@ -422,9 +422,9 @@ describe('terminfo parser', () => {
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data.numbers['columns']).toBe(80);
-					expect(result.data.numbers['init_tabs']).toBeUndefined();
-					expect(result.data.numbers['lines']).toBe(24);
+					expect(result.data.numbers.columns).toBe(80);
+					expect(result.data.numbers.init_tabs).toBeUndefined();
+					expect(result.data.numbers.lines).toBe(24);
 				}
 			});
 
@@ -434,7 +434,7 @@ describe('terminfo parser', () => {
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data.numbers['columns']).toBe(16777216);
+					expect(result.data.numbers.columns).toBe(16777216);
 				}
 			});
 		});
@@ -447,9 +447,9 @@ describe('terminfo parser', () => {
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data.strings['back_tab']).toBe('\x1b[Z');
-					expect(result.data.strings['bell']).toBe('\x07');
-					expect(result.data.strings['carriage_return']).toBe('\r');
+					expect(result.data.strings.back_tab).toBe('\x1b[Z');
+					expect(result.data.strings.bell).toBe('\x07');
+					expect(result.data.strings.carriage_return).toBe('\r');
 				}
 			});
 
@@ -459,9 +459,9 @@ describe('terminfo parser', () => {
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data.strings['back_tab']).toBe('\x1b[Z');
-					expect(result.data.strings['bell']).toBeUndefined();
-					expect(result.data.strings['carriage_return']).toBe('\r');
+					expect(result.data.strings.back_tab).toBe('\x1b[Z');
+					expect(result.data.strings.bell).toBeUndefined();
+					expect(result.data.strings.carriage_return).toBe('\r');
 				}
 			});
 
@@ -472,7 +472,7 @@ describe('terminfo parser', () => {
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data.strings['clear_screen']).toBe(clearScreen);
+					expect(result.data.strings.clear_screen).toBe(clearScreen);
 				}
 			});
 
@@ -485,7 +485,7 @@ describe('terminfo parser', () => {
 
 				expect(result.success).toBe(true);
 				if (result.success) {
-					expect(result.data.strings['cursor_address']).toBe(cursorAddress);
+					expect(result.data.strings.cursor_address).toBe(cursorAddress);
 				}
 			});
 		});
@@ -517,8 +517,8 @@ describe('terminfo parser', () => {
 			if (result.success) {
 				const data = toTerminfoData(result.data);
 
-				expect(data.booleans['auto_left_margin']).toBe(true);
-				expect(data.booleans['auto_right_margin']).toBe(true);
+				expect(data.booleans.auto_left_margin).toBe(true);
+				expect(data.booleans.auto_right_margin).toBe(true);
 			}
 		});
 	});

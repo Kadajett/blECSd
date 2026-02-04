@@ -7,6 +7,8 @@
  * @module 3d/rasterizer
  */
 
+export { drawLine, drawLineColor, drawLineDepth } from './line';
+export { blendPixel, drawLineAA } from './lineAA';
 export type { PixelFramebuffer } from './pixelBuffer';
 export {
 	clearFramebuffer,
@@ -19,8 +21,6 @@ export {
 	setPixelUnsafe,
 	testAndSetDepth,
 } from './pixelBuffer';
-export { drawLine, drawLineColor, drawLineDepth } from './line';
-export { blendPixel, drawLineAA } from './lineAA';
+export { computeFaceNormal, computeFlatShading, shadeFace } from './shading';
 export type { TriangleBBox } from './triangle';
 export { fillTriangle, fillTriangleFlat, triangleArea2, triangleBoundingBox } from './triangle';
-export { computeFaceNormal, computeFlatShading, shadeFace } from './shading';

@@ -53,34 +53,34 @@ describe('feature detection', () => {
 
 	describe('detectUnicode', () => {
 		it('returns true for UTF-8 locale', () => {
-			process.env['LANG'] = 'en_US.UTF-8';
+			process.env.LANG = 'en_US.UTF-8';
 			expect(detectUnicode()).toBe(true);
 		});
 
 		it('returns true for utf8 locale (no hyphen)', () => {
-			process.env['LC_ALL'] = 'en_US.utf8';
+			process.env.LC_ALL = 'en_US.utf8';
 			expect(detectUnicode()).toBe(true);
 		});
 
 		it('returns false for non-UTF locale', () => {
-			process.env['LANG'] = 'C';
-			delete process.env['LC_ALL'];
-			delete process.env['LC_CTYPE'];
-			delete process.env['LANGUAGE'];
+			process.env.LANG = 'C';
+			process.env.LC_ALL = undefined;
+			process.env.LC_CTYPE = undefined;
+			process.env.LANGUAGE = undefined;
 			expect(detectUnicode()).toBe(false);
 		});
 
 		it('respects forceUnicode option', () => {
-			process.env['LANG'] = 'C';
+			process.env.LANG = 'C';
 			expect(detectUnicode({ forceUnicode: true })).toBe(true);
 			expect(detectUnicode({ forceUnicode: false })).toBe(false);
 		});
 
 		it('respects NCURSES_FORCE_UNICODE env', () => {
-			process.env['NCURSES_FORCE_UNICODE'] = '1';
+			process.env.NCURSES_FORCE_UNICODE = '1';
 			expect(detectUnicode()).toBe(true);
 
-			process.env['NCURSES_FORCE_UNICODE'] = '0';
+			process.env.NCURSES_FORCE_UNICODE = '0';
 			expect(detectUnicode()).toBe(false);
 		});
 	});
@@ -134,7 +134,7 @@ describe('feature detection', () => {
 
 		it('respects NCURSES_NO_UTF8_ACS env', () => {
 			const info = createTerminfo();
-			process.env['NCURSES_NO_UTF8_ACS'] = '1';
+			process.env.NCURSES_NO_UTF8_ACS = '1';
 			expect(detectBrokenACS(info)).toBe(true);
 		});
 
@@ -153,36 +153,36 @@ describe('feature detection', () => {
 
 	describe('detectMagicCookie', () => {
 		it('returns true by default', () => {
-			delete process.env['NCURSES_NO_MAGIC_COOKIE'];
+			process.env.NCURSES_NO_MAGIC_COOKIE = undefined;
 			expect(detectMagicCookie()).toBe(true);
 		});
 
 		it('returns false when disabled', () => {
-			process.env['NCURSES_NO_MAGIC_COOKIE'] = '1';
+			process.env.NCURSES_NO_MAGIC_COOKIE = '1';
 			expect(detectMagicCookie()).toBe(false);
 		});
 	});
 
 	describe('detectPadding', () => {
 		it('returns true by default', () => {
-			delete process.env['NCURSES_NO_PADDING'];
+			process.env.NCURSES_NO_PADDING = undefined;
 			expect(detectPadding()).toBe(true);
 		});
 
 		it('returns false when disabled', () => {
-			process.env['NCURSES_NO_PADDING'] = '1';
+			process.env.NCURSES_NO_PADDING = '1';
 			expect(detectPadding()).toBe(false);
 		});
 	});
 
 	describe('detectSetbuf', () => {
 		it('returns true by default', () => {
-			delete process.env['NCURSES_NO_SETBUF'];
+			process.env.NCURSES_NO_SETBUF = undefined;
 			expect(detectSetbuf()).toBe(true);
 		});
 
 		it('returns false when disabled', () => {
-			process.env['NCURSES_NO_SETBUF'] = '1';
+			process.env.NCURSES_NO_SETBUF = '1';
 			expect(detectSetbuf()).toBe(false);
 		});
 	});
@@ -201,19 +201,19 @@ describe('feature detection', () => {
 
 	describe('detectTrueColor', () => {
 		it('returns true for COLORTERM=truecolor', () => {
-			process.env['COLORTERM'] = 'truecolor';
+			process.env.COLORTERM = 'truecolor';
 			const info = createTerminfo();
 			expect(detectTrueColor(info)).toBe(true);
 		});
 
 		it('returns true for COLORTERM=24bit', () => {
-			process.env['COLORTERM'] = '24bit';
+			process.env.COLORTERM = '24bit';
 			const info = createTerminfo();
 			expect(detectTrueColor(info)).toBe(true);
 		});
 
 		it('returns true for known truecolor terminals', () => {
-			delete process.env['COLORTERM'];
+			process.env.COLORTERM = undefined;
 			const kitty = createTerminfo({ name: 'xterm-kitty' });
 			expect(detectTrueColor(kitty)).toBe(true);
 		});
@@ -304,7 +304,7 @@ describe('feature detection', () => {
 
 	describe('detectFeatures', () => {
 		it('returns all feature flags', () => {
-			process.env['LANG'] = 'en_US.UTF-8';
+			process.env.LANG = 'en_US.UTF-8';
 			const info = createTerminfo({
 				strings: {
 					enter_ca_mode: '\\E[?1049h',
@@ -332,7 +332,7 @@ describe('feature detection', () => {
 		});
 
 		it('detects iTerm2 via env', () => {
-			process.env['ITERM_SESSION_ID'] = '12345';
+			process.env.ITERM_SESSION_ID = '12345';
 			const info = createTerminfo();
 			const protocols = detectModernProtocols(info);
 

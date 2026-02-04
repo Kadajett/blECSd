@@ -69,7 +69,10 @@ const backendTypeMap: Record<string, number> = {
 	kitty: BACKEND_KITTY,
 };
 
-const backendTypeReverse: Record<number, 'auto' | 'braille' | 'halfblock' | 'sextant' | 'sixel' | 'kitty'> = {
+const backendTypeReverse: Record<
+	number,
+	'auto' | 'braille' | 'halfblock' | 'sextant' | 'sixel' | 'kitty'
+> = {
 	[BACKEND_AUTO]: 'auto',
 	[BACKEND_BRAILLE]: 'braille',
 	[BACKEND_HALFBLOCK]: 'halfblock',

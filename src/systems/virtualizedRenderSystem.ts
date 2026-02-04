@@ -455,7 +455,7 @@ function renderLineNumber(
 	fg: number,
 	bg: number,
 ): void {
-	const numStr = String(lineNumber + 1).padStart(width - 1, ' ') + ' ';
+	const numStr = `${String(lineNumber + 1).padStart(width - 1, ' ')} `;
 	writeString(buffer, x, y, numStr.slice(0, width), fg, bg, Attr.DIM);
 }
 

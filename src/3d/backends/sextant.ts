@@ -22,13 +22,13 @@
  * @module 3d/backends/sextant
  */
 
+import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { BackendCapabilities, EncodedOutput } from '../schemas/backends';
 import { type SextantConfig, SextantConfigSchema } from '../schemas/backends';
-import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { RendererBackend } from './types';
 
 /** Sextant Unicode block base offset. Pattern N maps to U+1FB00 + (N - 1). */
-const SEXTANT_BASE = 0x1FB00;
+const SEXTANT_BASE = 0x1fb00;
 
 /** Full block character for pattern 63 (all 6 pixels lit). */
 const FULL_BLOCK = '\u2588';
@@ -95,7 +95,7 @@ export function createSextantBackend(config?: SextantConfig): RendererBackend {
 
 							if (a >= threshold) {
 								const bit = row * 2 + col;
-								pattern |= (1 << bit);
+								pattern |= 1 << bit;
 								rSum += buf[idx] as number;
 								gSum += buf[idx + 1] as number;
 								bSum += buf[idx + 2] as number;

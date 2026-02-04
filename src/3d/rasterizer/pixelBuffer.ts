@@ -7,7 +7,11 @@
  * @module 3d/rasterizer/pixelBuffer
  */
 
-import { type PixelBufferConfig, PixelBufferConfigSchema, type RGBAColor } from '../schemas/rasterizer';
+import {
+	type PixelBufferConfig,
+	PixelBufferConfigSchema,
+	type RGBAColor,
+} from '../schemas/rasterizer';
 
 /**
  * An RGBA pixel framebuffer with optional depth buffer.
@@ -65,11 +69,7 @@ export function createPixelFramebuffer(config: PixelBufferConfig): PixelFramebuf
  * clearFramebuffer(fb, { r: 0, g: 0, b: 0, a: 255 });
  * ```
  */
-export function clearFramebuffer(
-	fb: PixelFramebuffer,
-	color?: RGBAColor,
-	depth?: number,
-): void {
+export function clearFramebuffer(fb: PixelFramebuffer, color?: RGBAColor, depth?: number): void {
 	const buf = fb.colorBuffer;
 
 	if (!color || (color.r === 0 && color.g === 0 && color.b === 0 && color.a === 0)) {

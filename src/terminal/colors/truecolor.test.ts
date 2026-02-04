@@ -243,6 +243,7 @@ describe('truecolor', () => {
 			const red = support.rgb(255, 0, 0);
 			const seq = support.fg(red);
 
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			expect(seq).toMatch(/^\x1b\[38;5;\d+m$/);
 		});
 
@@ -255,6 +256,7 @@ describe('truecolor', () => {
 			const seq = support.fg(red);
 
 			// Should be 3x or 9x for standard or bright colors
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			expect(seq).toMatch(/^\x1b\[[39]\dm$/);
 		});
 
@@ -266,6 +268,7 @@ describe('truecolor', () => {
 			const red = support.rgb(255, 0, 0);
 			const seq = support.fg(red);
 
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			expect(seq).toMatch(/^\x1b\[3[0-7]m$/);
 		});
 
@@ -301,6 +304,7 @@ describe('truecolor', () => {
 			const red = support.rgb(255, 0, 0);
 			const seq = support.bg(red);
 
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			expect(seq).toMatch(/^\x1b\[48;5;\d+m$/);
 		});
 
@@ -313,6 +317,7 @@ describe('truecolor', () => {
 			const seq = support.bg(red);
 
 			// Should be 4x or 10x for standard or bright colors
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			expect(seq).toMatch(/^\x1b\[(?:4|10)\dm$/);
 		});
 	});
@@ -437,7 +442,7 @@ describe('truecolor', () => {
 
 	describe('environment detection', () => {
 		it('should detect truecolor from COLORTERM', () => {
-			process.env['COLORTERM'] = 'truecolor';
+			process.env.COLORTERM = 'truecolor';
 
 			const support = createTruecolorSupport();
 
@@ -445,7 +450,7 @@ describe('truecolor', () => {
 		});
 
 		it('should detect truecolor from COLORTERM=24bit', () => {
-			process.env['COLORTERM'] = '24bit';
+			process.env.COLORTERM = '24bit';
 
 			const support = createTruecolorSupport();
 
@@ -453,8 +458,8 @@ describe('truecolor', () => {
 		});
 
 		it('should detect 256 colors from TERM', () => {
-			delete process.env['COLORTERM'];
-			process.env['TERM'] = 'xterm-256color';
+			process.env.COLORTERM = undefined;
+			process.env.TERM = 'xterm-256color';
 
 			const support = createTruecolorSupport();
 
@@ -462,8 +467,8 @@ describe('truecolor', () => {
 		});
 
 		it('should detect 16 colors from xterm', () => {
-			delete process.env['COLORTERM'];
-			process.env['TERM'] = 'xterm';
+			process.env.COLORTERM = undefined;
+			process.env.TERM = 'xterm';
 
 			const support = createTruecolorSupport();
 
@@ -471,8 +476,8 @@ describe('truecolor', () => {
 		});
 
 		it('should detect mono from dumb terminal', () => {
-			delete process.env['COLORTERM'];
-			process.env['TERM'] = 'dumb';
+			process.env.COLORTERM = undefined;
+			process.env.TERM = 'dumb';
 
 			const support = createTruecolorSupport();
 
@@ -541,7 +546,7 @@ describe('truecolor', () => {
 
 		describe('fg / bg', () => {
 			it('should generate SGR sequences using default instance', () => {
-				process.env['COLORTERM'] = 'truecolor';
+				process.env.COLORTERM = 'truecolor';
 				resetDefaultTruecolor();
 
 				const red = rgb(255, 0, 0);
@@ -556,7 +561,7 @@ describe('truecolor', () => {
 
 		describe('isTruecolor', () => {
 			it('should check truecolor support using default instance', () => {
-				process.env['COLORTERM'] = 'truecolor';
+				process.env.COLORTERM = 'truecolor';
 				resetDefaultTruecolor();
 
 				expect(isTruecolor()).toBe(true);
@@ -565,7 +570,7 @@ describe('truecolor', () => {
 
 		describe('getColorDepthLevel', () => {
 			it('should get depth using default instance', () => {
-				process.env['COLORTERM'] = 'truecolor';
+				process.env.COLORTERM = 'truecolor';
 				resetDefaultTruecolor();
 
 				expect(getColorDepthLevel()).toBe(ColorDepthLevel.TRUECOLOR);
