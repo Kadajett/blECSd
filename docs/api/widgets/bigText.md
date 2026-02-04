@@ -63,6 +63,8 @@ interface BigTextConfig {
   bg?: string | number;
   left?: number | string;
   top?: number | string;
+  right?: number | string;
+  bottom?: number | string;
   width?: number | string | 'auto';
   height?: number | string | 'auto';
   shrink?: boolean;

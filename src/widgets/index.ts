@@ -8,7 +8,14 @@
 
 // BigText widget
 export type { BigTextConfig, BigTextWidget, FontDefinition } from './bigText';
-export { BigText, BigTextConfigSchema, createBigText, isBigText, setText } from './bigText';
+export {
+	BigText,
+	BigTextConfigSchema,
+	createBigText,
+	isBigText,
+	resetBigTextStore,
+	setText,
+} from './bigText';
 // Box widget
 export type {
 	Align,

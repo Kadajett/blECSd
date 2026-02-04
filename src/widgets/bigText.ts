@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs';
 import { removeEntity } from 'bitecs';
 import { z } from 'zod';
-import { getContent, setContent } from '../components/content';
+import { setContent } from '../components/content';
 import { setDimensions, setShrink } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
@@ -188,6 +188,8 @@ export const BigText = {
 // =============================================================================
 
 const DEFAULT_FONT_NAME = 'terminus-14-bold';
+const fontPathCache = new Map<string, FontDefinition>();
+const sourceTextStore = new Map<Entity, string>();
 
 /**
  * Parses a color value to a packed 32-bit color.
@@ -300,9 +302,16 @@ function renderText(font: FontDefinition, text: string): string {
  * ```
  */
 export function loadFont(path: string): FontDefinition {
+	const cached = fontPathCache.get(path);
+	if (cached) {
+		return cached;
+	}
+
 	const raw = readFileSync(path, 'utf8');
 	const parsed = JSON.parse(raw) as unknown;
-	return BitmapFontSchema.parse(parsed);
+	const font = BitmapFontSchema.parse(parsed);
+	fontPathCache.set(path, font);
+	return font;
 }
 
 // =============================================================================
@@ -352,6 +361,7 @@ function setupStyle(world: World, eid: Entity, config: ValidatedBigTextConfig): 
 function setupContent(world: World, eid: Entity, config: ValidatedBigTextConfig): void {
 	const font = resolveFont(config.font);
 	const rendered = renderText(font, config.text);
+	sourceTextStore.set(eid, config.text);
 	setContent(world, eid, rendered);
 }
 
@@ -416,12 +426,11 @@ export function createBigText(world: World, entity: Entity, config: BigTextConfi
 
 		setText(text: string): BigTextWidget {
 			setTextContent(world, eid, text, validated.font);
-			markDirty(world, eid);
 			return widget;
 		},
 
 		getText(): string {
-			return getContent(world, eid);
+			return sourceTextStore.get(eid) ?? '';
 		},
 
 		focus(): BigTextWidget {
@@ -449,6 +458,7 @@ export function createBigText(world: World, entity: Entity, config: BigTextConfi
 
 		destroy(): void {
 			BigText.isBigText[eid] = 0;
+			sourceTextStore.delete(eid);
 			removeEntity(world, eid);
 		},
 	};
@@ -483,6 +493,7 @@ export function setText(
 ): void {
 	const resolvedFont = resolveFont(font);
 	const rendered = renderText(resolvedFont, text);
+	sourceTextStore.set(eid, text);
 	setContent(world, eid, rendered);
 	markDirty(world, eid);
 }
@@ -523,4 +534,5 @@ export function isBigText(_world: World, eid: Entity): boolean {
  */
 export function resetBigTextStore(): void {
 	BigText.isBigText.fill(0);
+	sourceTextStore.clear();
 }
