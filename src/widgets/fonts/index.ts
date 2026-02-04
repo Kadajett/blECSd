@@ -79,20 +79,39 @@ export type CharBitmap = z.infer<typeof CharBitmapSchema>;
  * });
  * ```
  */
-export const BitmapFontSchema = z.object({
-	/** Font name */
-	name: z.string(),
-	/** Font size in points */
-	size: z.number().int().positive(),
-	/** Font weight */
-	weight: z.enum(['normal', 'bold']),
-	/** Character width (monospace) */
-	charWidth: z.number().int().positive(),
-	/** Character height */
-	charHeight: z.number().int().positive(),
-	/** Map of character code to bitmap data */
-	chars: z.record(z.string(), CharBitmapSchema),
-});
+export const BitmapFontSchema = z
+	.object({
+		/** Font name */
+		name: z.string(),
+		/** Font size in points */
+		size: z.number().int().positive(),
+		/** Font weight */
+		weight: z.enum(['normal', 'bold']),
+		/** Character width (monospace) */
+		charWidth: z.number().int().positive(),
+		/** Character height */
+		charHeight: z.number().int().positive(),
+		/** Map of character code to bitmap data */
+		chars: z.record(z.string().regex(/^\d+$/), CharBitmapSchema),
+	})
+	.superRefine((value, ctx) => {
+		for (const [code, glyph] of Object.entries(value.chars)) {
+			if (glyph.width !== value.charWidth) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: `Glyph ${code} width (${glyph.width}) does not match font width (${value.charWidth}).`,
+					path: ['chars', code, 'width'],
+				});
+			}
+			if (glyph.height !== value.charHeight) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: `Glyph ${code} height (${glyph.height}) does not match font height (${value.charHeight}).`,
+					path: ['chars', code, 'height'],
+				});
+			}
+		}
+	});
 
 /**
  * A complete bitmap font.
