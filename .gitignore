@@ -7,3 +7,6 @@ coverage/
 .mcp.json
 ks8-performance/
 references/
+
+# DOOM WAD files (licensed content)
+*.wad
