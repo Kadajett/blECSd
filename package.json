@@ -9,6 +9,14 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./widgets": {
+      "import": "./dist/widgets/index.js",
+      "types": "./dist/widgets/index.d.ts"
+    },
+    "./widgets/fonts": {
+      "import": "./dist/widgets/fonts/index.js",
+      "types": "./dist/widgets/fonts/index.d.ts"
     }
   },
   "files": [
