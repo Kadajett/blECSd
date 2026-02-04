@@ -406,6 +406,40 @@ export function isEntityDirty(tracker: DirtyTrackerData, eid: Entity): boolean {
 // REGION COALESCING
 // =============================================================================
 
+/** Get byte and bit index for a cell position */
+function getCellIndices(x: number, y: number, width: number): { byteIndex: number; bitIndex: number } {
+	const cellIndex = y * width + x;
+	return { byteIndex: cellIndex >> 3, bitIndex: cellIndex & 7 };
+}
+
+/** Check if a bit is set in a bitset */
+function isBitSet(array: Uint8Array, byteIndex: number, bitIndex: number): boolean | undefined {
+	const byte = array[byteIndex];
+	if (byte === undefined) return undefined;
+	return (byte & (1 << bitIndex)) !== 0;
+}
+
+/** Set a bit in a bitset */
+function setBit(array: Uint8Array, byteIndex: number, bitIndex: number): void {
+	const byte = array[byteIndex];
+	if (byte !== undefined) {
+		array[byteIndex] = byte | (1 << bitIndex);
+	}
+}
+
+/** Check if a cell is dirty and unprocessed */
+function isUnprocessedDirtyCell(
+	dirtyCells: Uint8Array,
+	processed: Uint8Array,
+	byteIndex: number,
+	bitIndex: number,
+): boolean {
+	const isDirty = isBitSet(dirtyCells, byteIndex, bitIndex);
+	const isProcessed = isBitSet(processed, byteIndex, bitIndex);
+	if (isDirty === undefined || isProcessed === undefined) return false;
+	return isDirty && !isProcessed;
+}
+
 /**
  * Calculates coalesced dirty regions from the dirty cell bitset.
  * Uses a greedy rectangle finding algorithm.
@@ -414,51 +448,76 @@ export function isEntityDirty(tracker: DirtyTrackerData, eid: Entity): boolean {
  * @returns Array of dirty rectangles
  */
 function calculateDirtyRegions(tracker: DirtyTrackerData): DirtyRect[] {
-	const regions: DirtyRect[] = [];
-
 	if (tracker.forceFullRedraw) {
-		// Single region covering entire screen
-		regions.push({
-			x: 0,
-			y: 0,
-			width: tracker.width,
-			height: tracker.height,
-		});
-		return regions;
+		return [{ x: 0, y: 0, width: tracker.width, height: tracker.height }];
 	}
 
-	// Create a working copy of dirty state for greedy extraction
+	const regions: DirtyRect[] = [];
 	const processed = new Uint8Array(tracker.dirtyCells.length);
 
-	// Scan for dirty cells and expand into rectangles
 	for (let y = 0; y < tracker.height; y++) {
 		for (let x = 0; x < tracker.width; x++) {
-			const cellIndex = y * tracker.width + x;
-			const byteIndex = cellIndex >> 3;
-			const bitIndex = cellIndex & 7;
+			const { byteIndex, bitIndex } = getCellIndices(x, y, tracker.width);
 
-			const dirtyByte = tracker.dirtyCells[byteIndex];
-			const processedByte = processed[byteIndex];
-
-			if (dirtyByte === undefined || processedByte === undefined) {
-				continue;
-			}
-
-			const isDirty = (dirtyByte & (1 << bitIndex)) !== 0;
-			const isProcessed = (processedByte & (1 << bitIndex)) !== 0;
-
-			if (isDirty && !isProcessed) {
-				// Found an unprocessed dirty cell - expand into rectangle
+			if (isUnprocessedDirtyCell(tracker.dirtyCells, processed, byteIndex, bitIndex)) {
 				const rect = expandDirtyRect(tracker, processed, x, y);
-				if (rect.width > 0 && rect.height > 0) {
-					regions.push(rect);
-				}
+				if (rect.width > 0 && rect.height > 0) regions.push(rect);
 			}
 		}
 	}
 
-	// Coalesce adjacent/overlapping regions
 	return coalesceRegions(regions);
+}
+
+/** Expand right from start position while cells are dirty and unprocessed */
+function expandRight(
+	dirtyCells: Uint8Array,
+	processed: Uint8Array,
+	startX: number,
+	y: number,
+	width: number,
+	maxWidth: number,
+): number {
+	let endX = startX;
+	while (endX < maxWidth) {
+		const { byteIndex, bitIndex } = getCellIndices(endX, y, width);
+		if (!isUnprocessedDirtyCell(dirtyCells, processed, byteIndex, bitIndex)) break;
+		endX++;
+	}
+	return endX;
+}
+
+/** Check if entire row segment is dirty and unprocessed */
+function isRowSegmentValid(
+	dirtyCells: Uint8Array,
+	processed: Uint8Array,
+	startX: number,
+	endX: number,
+	y: number,
+	width: number,
+): boolean {
+	for (let x = startX; x < endX; x++) {
+		const { byteIndex, bitIndex } = getCellIndices(x, y, width);
+		if (!isUnprocessedDirtyCell(dirtyCells, processed, byteIndex, bitIndex)) return false;
+	}
+	return true;
+}
+
+/** Mark rectangle cells as processed */
+function markRectProcessed(
+	processed: Uint8Array,
+	startX: number,
+	startY: number,
+	endX: number,
+	endY: number,
+	width: number,
+): void {
+	for (let y = startY; y < endY; y++) {
+		for (let x = startX; x < endX; x++) {
+			const { byteIndex, bitIndex } = getCellIndices(x, y, width);
+			setBit(processed, byteIndex, bitIndex);
+		}
+	}
 }
 
 /**
@@ -471,87 +530,45 @@ function expandDirtyRect(
 	startX: number,
 	startY: number,
 ): DirtyRect {
-	// Expand right as far as possible on this row
-	let endX = startX;
-	while (endX < tracker.width) {
-		const cellIndex = startY * tracker.width + endX;
-		const byteIndex = cellIndex >> 3;
-		const bitIndex = cellIndex & 7;
+	const endX = expandRight(tracker.dirtyCells, processed, startX, startY, tracker.width, tracker.width);
+	const rectWidth = endX - startX;
+	if (rectWidth === 0) return { x: startX, y: startY, width: 0, height: 0 };
 
-		const dirtyByte = tracker.dirtyCells[byteIndex];
-		const processedByte = processed[byteIndex];
-
-		if (dirtyByte === undefined || processedByte === undefined) {
-			break;
-		}
-
-		const isDirty = (dirtyByte & (1 << bitIndex)) !== 0;
-		const isProcessed = (processedByte & (1 << bitIndex)) !== 0;
-
-		if (!isDirty || isProcessed) {
-			break;
-		}
-
-		endX++;
-	}
-
-	const width = endX - startX;
-	if (width === 0) {
-		return { x: startX, y: startY, width: 0, height: 0 };
-	}
-
-	// Expand down as far as possible while maintaining width
+	// Expand down while maintaining width
 	let endY = startY;
 	while (endY < tracker.height) {
-		let rowValid = true;
-
-		// Check if entire row segment is dirty and unprocessed
-		for (let x = startX; x < endX; x++) {
-			const cellIndex = endY * tracker.width + x;
-			const byteIndex = cellIndex >> 3;
-			const bitIndex = cellIndex & 7;
-
-			const dirtyByte = tracker.dirtyCells[byteIndex];
-			const processedByte = processed[byteIndex];
-
-			if (dirtyByte === undefined || processedByte === undefined) {
-				rowValid = false;
-				break;
-			}
-
-			const isDirty = (dirtyByte & (1 << bitIndex)) !== 0;
-			const isProcessed = (processedByte & (1 << bitIndex)) !== 0;
-
-			if (!isDirty || isProcessed) {
-				rowValid = false;
-				break;
-			}
-		}
-
-		if (!rowValid) {
-			break;
-		}
-
+		if (!isRowSegmentValid(tracker.dirtyCells, processed, startX, endX, endY, tracker.width)) break;
 		endY++;
 	}
 
-	const height = endY - startY;
+	markRectProcessed(processed, startX, startY, endX, endY, tracker.width);
 
-	// Mark all cells in rectangle as processed
-	for (let y = startY; y < endY; y++) {
-		for (let x = startX; x < endX; x++) {
-			const cellIndex = y * tracker.width + x;
-			const byteIndex = cellIndex >> 3;
-			const bitIndex = cellIndex & 7;
+	return { x: startX, y: startY, width: rectWidth, height: endY - startY };
+}
 
-			const byte = processed[byteIndex];
-			if (byte !== undefined) {
-				processed[byteIndex] = byte | (1 << bitIndex);
-			}
+/** Try to merge current rect with any unused rects */
+function tryMergeWithOthers(
+	current: DirtyRect,
+	sorted: DirtyRect[],
+	used: Set<number>,
+	startIndex: number,
+): { merged: DirtyRect; didMerge: boolean } {
+	let merged = current;
+	let didMerge = false;
+
+	for (let j = startIndex; j < sorted.length; j++) {
+		if (used.has(j)) continue;
+		const other = sorted[j];
+		if (!other) continue;
+
+		if (canMergeRects(merged, other)) {
+			merged = mergeRects(merged, other);
+			used.add(j);
+			didMerge = true;
 		}
 	}
 
-	return { x: startX, y: startY, width, height };
+	return { merged, didMerge };
 }
 
 /**
@@ -559,46 +576,25 @@ function expandDirtyRect(
  * @internal
  */
 function coalesceRegions(regions: DirtyRect[]): DirtyRect[] {
-	if (regions.length < 2) {
-		return regions;
-	}
+	if (regions.length < 2) return regions;
 
-	// Sort by area (largest first) for better coalescing
 	const sorted = [...regions].sort((a, b) => b.width * b.height - a.width * a.height);
-
 	const result: DirtyRect[] = [];
 	const used = new Set<number>();
 
 	for (let i = 0; i < sorted.length; i++) {
-		if (used.has(i)) {
-			continue;
-		}
+		if (used.has(i)) continue;
 
 		let current = sorted[i];
 		if (!current) continue;
-
 		used.add(i);
 
-		// Try to merge with other rectangles
-		let merged = true;
-		while (merged) {
-			merged = false;
-
-			for (let j = i + 1; j < sorted.length; j++) {
-				if (used.has(j)) {
-					continue;
-				}
-
-				const other = sorted[j];
-				if (!other) continue;
-
-				// Check if rectangles can be merged (overlap or adjacent)
-				if (canMergeRects(current, other)) {
-					current = mergeRects(current, other);
-					used.add(j);
-					merged = true;
-				}
-			}
+		// Keep merging until no more merges possible
+		let didMerge = true;
+		while (didMerge) {
+			const mergeResult = tryMergeWithOthers(current, sorted, used, i + 1);
+			current = mergeResult.merged;
+			didMerge = mergeResult.didMerge;
 		}
 
 		result.push(current);
