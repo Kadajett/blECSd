@@ -56,6 +56,30 @@ export function computeOutcode(x: number, y: number, rect: ClipRect): number {
 }
 
 /**
+ * Compute the intersection point for a line crossing a clip boundary.
+ */
+function computeIntersection(
+	outcodeOut: number,
+	x0: number,
+	y0: number,
+	dx: number,
+	dy: number,
+	rect: ClipRect,
+): { x: number; y: number } {
+	if (outcodeOut & TOP) {
+		return { x: x0 + (dx * (rect.yMax - y0)) / dy, y: rect.yMax };
+	}
+	if (outcodeOut & BOTTOM) {
+		return { x: x0 + (dx * (rect.yMin - y0)) / dy, y: rect.yMin };
+	}
+	if (outcodeOut & RIGHT) {
+		return { x: rect.xMax, y: y0 + (dy * (rect.xMax - x0)) / dx };
+	}
+	// LEFT
+	return { x: rect.xMin, y: y0 + (dy * (rect.xMin - x0)) / dx };
+}
+
+/**
  * Clip a 2D line segment to a rectangle using Cohen-Sutherland algorithm.
  * Returns null if the line is entirely outside.
  *
@@ -100,33 +124,17 @@ export function clipLine(
 
 		// Pick the point that is outside
 		const outcodeOut = outcode0 !== 0 ? outcode0 : outcode1;
-		let x = 0;
-		let y = 0;
-
 		const dx = cx1 - cx0;
 		const dy = cy1 - cy0;
-
-		if (outcodeOut & TOP) {
-			x = cx0 + (dx * (rect.yMax - cy0)) / dy;
-			y = rect.yMax;
-		} else if (outcodeOut & BOTTOM) {
-			x = cx0 + (dx * (rect.yMin - cy0)) / dy;
-			y = rect.yMin;
-		} else if (outcodeOut & RIGHT) {
-			y = cy0 + (dy * (rect.xMax - cx0)) / dx;
-			x = rect.xMax;
-		} else if (outcodeOut & LEFT) {
-			y = cy0 + (dy * (rect.xMin - cx0)) / dx;
-			x = rect.xMin;
-		}
+		const intersection = computeIntersection(outcodeOut, cx0, cy0, dx, dy, rect);
 
 		if (outcodeOut === outcode0) {
-			cx0 = x;
-			cy0 = y;
+			cx0 = intersection.x;
+			cy0 = intersection.y;
 			outcode0 = computeOutcode(cx0, cy0, rect);
 		} else {
-			cx1 = x;
-			cy1 = y;
+			cx1 = intersection.x;
+			cy1 = intersection.y;
 			outcode1 = computeOutcode(cx1, cy1, rect);
 		}
 	}

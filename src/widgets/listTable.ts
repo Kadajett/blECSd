@@ -373,6 +373,30 @@ function dataRowsToListItems(data: readonly (readonly string[])[], headerRows: n
 	return items;
 }
 
+function styleToTableDisplayOptions(style: ListTableStyleConfig): TableDisplayOptions {
+	const borderFg = style.border?.fg;
+	const borderBg = style.border?.bg;
+	const headerFg = style.header?.fg;
+	const headerBg = style.header?.bg;
+	const cellFg = style.cell?.fg;
+	const cellBg = style.cell?.bg;
+	const altRowBg = style.altRowBg;
+	const selectedFg = style.selected?.fg;
+	const selectedBg = style.selected?.bg;
+
+	return {
+		...(borderFg !== undefined ? { borderFg } : {}),
+		...(borderBg !== undefined ? { borderBg } : {}),
+		...(headerFg !== undefined ? { headerFg } : {}),
+		...(headerBg !== undefined ? { headerBg } : {}),
+		...(cellFg !== undefined ? { cellFg } : {}),
+		...(cellBg !== undefined ? { cellBg } : {}),
+		...(altRowBg !== undefined ? { altRowBg } : {}),
+		...(selectedFg !== undefined ? { selectedFg } : {}),
+		...(selectedBg !== undefined ? { selectedBg } : {}),
+	};
+}
+
 // =============================================================================
 // FACTORY
 // =============================================================================
@@ -472,35 +496,7 @@ export function createListTable(
 
 	// Apply display styles if provided
 	if (validated.style) {
-		const displayOptions: TableDisplayOptions = {};
-		if (validated.style.border?.fg !== undefined) {
-			displayOptions.borderFg = validated.style.border.fg;
-		}
-		if (validated.style.border?.bg !== undefined) {
-			displayOptions.borderBg = validated.style.border.bg;
-		}
-		if (validated.style.header?.fg !== undefined) {
-			displayOptions.headerFg = validated.style.header.fg;
-		}
-		if (validated.style.header?.bg !== undefined) {
-			displayOptions.headerBg = validated.style.header.bg;
-		}
-		if (validated.style.cell?.fg !== undefined) {
-			displayOptions.cellFg = validated.style.cell.fg;
-		}
-		if (validated.style.cell?.bg !== undefined) {
-			displayOptions.cellBg = validated.style.cell.bg;
-		}
-		if (validated.style.altRowBg !== undefined) {
-			displayOptions.altRowBg = validated.style.altRowBg;
-		}
-		if (validated.style.selected?.fg !== undefined) {
-			displayOptions.selectedFg = validated.style.selected.fg;
-		}
-		if (validated.style.selected?.bg !== undefined) {
-			displayOptions.selectedBg = validated.style.selected.bg;
-		}
-		setTableDisplay(eid, displayOptions);
+		setTableDisplay(eid, styleToTableDisplayOptions(validated.style));
 	}
 
 	// Convert data rows to list items for selection tracking
@@ -665,35 +661,7 @@ export function createListTable(
 		},
 
 		setStyle(style: ListTableStyleConfig): ListTableWidget {
-			const displayOptions: TableDisplayOptions = {};
-			if (style.border?.fg !== undefined) {
-				displayOptions.borderFg = style.border.fg;
-			}
-			if (style.border?.bg !== undefined) {
-				displayOptions.borderBg = style.border.bg;
-			}
-			if (style.header?.fg !== undefined) {
-				displayOptions.headerFg = style.header.fg;
-			}
-			if (style.header?.bg !== undefined) {
-				displayOptions.headerBg = style.header.bg;
-			}
-			if (style.cell?.fg !== undefined) {
-				displayOptions.cellFg = style.cell.fg;
-			}
-			if (style.cell?.bg !== undefined) {
-				displayOptions.cellBg = style.cell.bg;
-			}
-			if (style.altRowBg !== undefined) {
-				displayOptions.altRowBg = style.altRowBg;
-			}
-			if (style.selected?.fg !== undefined) {
-				displayOptions.selectedFg = style.selected.fg;
-			}
-			if (style.selected?.bg !== undefined) {
-				displayOptions.selectedBg = style.selected.bg;
-			}
-			setTableDisplay(eid, displayOptions);
+			setTableDisplay(eid, styleToTableDisplayOptions(style));
 			markDirty(world, eid);
 			return widget;
 		},

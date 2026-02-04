@@ -396,125 +396,181 @@ export function applySgrCodes(codes: readonly number[], attr: Attribute): void {
  * // attr has bold, underline, and red foreground
  * ```
  */
-export function parseSgrString(input: string, attr: Attribute): void {
-	const length = input.length;
-	let index = 0;
+interface SgrParseState {
+	readonly input: string;
+	readonly length: number;
+	index: number;
+	ended: boolean;
+	invalid: boolean;
+}
 
-	while (index < length) {
-		const escIndex = input.indexOf('\x1b', index);
+function createSgrParseState(input: string): SgrParseState {
+	return { input, length: input.length, index: 0, ended: false, invalid: false };
+}
+
+function resetSgrAttribute(attr: Attribute): void {
+	attr.fg = { type: ColorType.DEFAULT, value: 0 };
+	attr.bg = { type: ColorType.DEFAULT, value: 0 };
+	attr.styles = TextStyle.NONE;
+}
+
+function finalizeSgrParam(
+	state: SgrParseState,
+	value: number,
+	hasDigits: boolean,
+	terminator: number | null,
+): number {
+	if (terminator === 59) {
+		state.index += 1;
+		state.invalid = false;
+		return hasDigits ? value : 0;
+	}
+
+	if (terminator === 109) {
+		state.index += 1;
+		state.ended = true;
+		state.invalid = false;
+		return hasDigits ? value : 0;
+	}
+
+	state.ended = true;
+	state.invalid = true;
+	if (terminator !== null) {
+		state.index += 1;
+	}
+	return hasDigits ? value : 0;
+}
+
+function readSgrParam(state: SgrParseState): number {
+	let value = 0;
+	let hasDigits = false;
+	state.invalid = false;
+
+	while (state.index < state.length) {
+		const ch = state.input.charCodeAt(state.index);
+		if (ch >= 48 && ch <= 57) {
+			value = value * 10 + (ch - 48);
+			hasDigits = true;
+			state.index += 1;
+			continue;
+		}
+
+		return finalizeSgrParam(state, value, hasDigits, ch);
+	}
+
+	return finalizeSgrParam(state, value, hasDigits, null);
+}
+
+function applyExtendedColor(state: SgrParseState, attr: Attribute, code: number): void {
+	if (state.ended) {
+		return;
+	}
+
+	const target = code === 38 ? 'fg' : 'bg';
+	const subCode = readSgrParam(state);
+	if (state.invalid || state.ended) {
+		return;
+	}
+
+	if (subCode === 5) {
+		applyExtended256Color(state, attr, target);
+		return;
+	}
+
+	if (subCode === 2) {
+		applyExtendedRgbColor(state, attr, target);
+	}
+}
+
+function applyExtended256Color(state: SgrParseState, attr: Attribute, target: 'fg' | 'bg'): void {
+	const colorIndex = readSgrParam(state);
+	if (state.invalid) {
+		return;
+	}
+	if (colorIndex >= 0 && colorIndex <= 255) {
+		attr[target] = { type: ColorType.COLOR_256, value: colorIndex };
+	}
+}
+
+function applyExtendedRgbColor(state: SgrParseState, attr: Attribute, target: 'fg' | 'bg'): void {
+	const rgb = readRgbParams(state);
+	if (!rgb) {
+		return;
+	}
+	const [r, g, b] = rgb;
+	if (isValidRgb(r, g, b)) {
+		attr[target] = {
+			type: ColorType.RGB,
+			value: (r << 16) | (g << 8) | b,
+		};
+	}
+}
+
+function readRgbParams(state: SgrParseState): [number, number, number] | null {
+	const r = readSgrParam(state);
+	if (state.invalid || state.ended) {
+		return null;
+	}
+	const g = readSgrParam(state);
+	if (state.invalid || state.ended) {
+		return null;
+	}
+	const b = readSgrParam(state);
+	if (state.invalid) {
+		return null;
+	}
+	return [r, g, b];
+}
+
+function applySgrCode(state: SgrParseState, attr: Attribute, code: number): void {
+	if (code === 0) {
+		resetSgrAttribute(attr);
+		return;
+	}
+
+	if (code === 38 || code === 48) {
+		applyExtendedColor(state, attr, code);
+		return;
+	}
+
+	if (applyStyleOn(code, attr)) return;
+	if (applyStyleOff(code, attr)) return;
+
+	applyColorCode(code, attr);
+}
+
+function parseSgrSequence(state: SgrParseState, attr: Attribute): void {
+	state.ended = false;
+	state.invalid = false;
+
+	while (!state.ended && state.index <= state.length) {
+		const code = readSgrParam(state);
+		if (state.invalid) {
+			return;
+		}
+		applySgrCode(state, attr, code);
+		if (state.invalid) {
+			return;
+		}
+	}
+}
+
+export function parseSgrString(input: string, attr: Attribute): void {
+	const state = createSgrParseState(input);
+
+	while (state.index < state.length) {
+		const escIndex = input.indexOf('\x1b', state.index);
 		if (escIndex === -1) {
 			return;
 		}
 
-		index = escIndex + 1;
-		if (index >= length || input.charCodeAt(index) !== 91) {
+		state.index = escIndex + 1;
+		if (state.index >= state.length || input.charCodeAt(state.index) !== 91) {
 			continue;
 		}
 
-		index += 1;
-		let ended = false;
-		let invalid = false;
-
-		const readParam = (): number => {
-			let value = 0;
-			let hasDigits = false;
-			invalid = false;
-
-			for (; index < length; index++) {
-				const ch = input.charCodeAt(index);
-				if (ch >= 48 && ch <= 57) {
-					value = value * 10 + (ch - 48);
-					hasDigits = true;
-					continue;
-				}
-
-				if (ch === 59) {
-					index += 1;
-					return hasDigits ? value : 0;
-				}
-
-				if (ch === 109) {
-					ended = true;
-					index += 1;
-					return hasDigits ? value : 0;
-				}
-
-				ended = true;
-				invalid = true;
-				index += 1;
-				return hasDigits ? value : 0;
-			}
-
-			ended = true;
-			invalid = true;
-			return hasDigits ? value : 0;
-		};
-
-		while (!ended && index <= length) {
-			const code = readParam();
-			if (invalid) {
-				break;
-			}
-
-			if (code === 0) {
-				attr.fg = { type: ColorType.DEFAULT, value: 0 };
-				attr.bg = { type: ColorType.DEFAULT, value: 0 };
-				attr.styles = TextStyle.NONE;
-				continue;
-			}
-
-			if (code === 38 || code === 48) {
-				if (ended) {
-					break;
-				}
-
-				const target = code === 38 ? 'fg' : 'bg';
-				const subCode = readParam();
-				if (invalid || ended) {
-					break;
-				}
-
-				if (subCode === 5) {
-					const colorIndex = readParam();
-					if (invalid) {
-						break;
-					}
-					if (colorIndex >= 0 && colorIndex <= 255) {
-						attr[target] = { type: ColorType.COLOR_256, value: colorIndex };
-					}
-					continue;
-				}
-
-				if (subCode === 2) {
-					const r = readParam();
-					if (invalid || ended) {
-						break;
-					}
-					const g = readParam();
-					if (invalid || ended) {
-						break;
-					}
-					const b = readParam();
-					if (invalid) {
-						break;
-					}
-					if (isValidRgb(r, g, b)) {
-						attr[target] = {
-							type: ColorType.RGB,
-							value: (r << 16) | (g << 8) | b,
-						};
-					}
-					continue;
-				}
-
-				continue;
-			}
-
-			if (applyStyleOn(code, attr)) continue;
-			if (applyStyleOff(code, attr)) continue;
-
-			applyColorCode(code, attr);
-		}
+		state.index += 1;
+		parseSgrSequence(state, attr);
 	}
 }
 
@@ -576,100 +632,64 @@ export interface CodeAttrOptions {
 	includeReset?: boolean;
 }
 
+/** Color code offsets for foreground (30/90) and background (40/100) */
+interface ColorOffsets {
+	base: number;
+	bright: number;
+	extended: number;
+	defaultCode: number;
+}
+
+const FG_OFFSETS: ColorOffsets = { base: 30, bright: 90, extended: 38, defaultCode: 39 };
+const BG_OFFSETS: ColorOffsets = { base: 40, bright: 100, extended: 48, defaultCode: 49 };
+
+/** Converts basic color value to SGR codes */
+function basicColorToSgr(value: number, offsets: ColorOffsets): number[] {
+	return value < 8 ? [offsets.base + value] : [offsets.bright + (value - 8)];
+}
+
+/** Converts 256-color value to SGR codes */
+function color256ToSgr(value: number, depth: OutputColorDepth, offsets: ColorOffsets): number[] {
+	if (depth === '16') {
+		const reduced = value < 16 ? value : reduceColorTo16(value);
+		return basicColorToSgr(reduced, offsets);
+	}
+	return [offsets.extended, 5, value];
+}
+
+/** Converts RGB value to SGR codes */
+function rgbToSgr(packedRgb: number, depth: OutputColorDepth, offsets: ColorOffsets): number[] {
+	const { r, g, b } = unpackRgb(packedRgb);
+	if (depth === 'truecolor') return [offsets.extended, 2, r, g, b];
+	if (depth === '256') return [offsets.extended, 5, rgbToColor256(r, g, b)];
+	return basicColorToSgr(rgbToBasic16(r, g, b), offsets);
+}
+
+/** Generic color to SGR conversion */
+function colorToSgrCodes(
+	color: InternalColor,
+	depth: OutputColorDepth,
+	offsets: ColorOffsets,
+): number[] {
+	if (color.type === ColorType.DEFAULT || depth === 'none') return [offsets.defaultCode];
+	if (color.type === ColorType.BASIC) return basicColorToSgr(color.value, offsets);
+	if (color.type === ColorType.COLOR_256) return color256ToSgr(color.value, depth, offsets);
+	if (color.type === ColorType.RGB) return rgbToSgr(color.value, depth, offsets);
+	return [];
+}
+
 /**
  * Convert a foreground color to SGR codes.
  */
 function fgColorToSgrCodes(color: InternalColor, depth: OutputColorDepth): number[] {
-	if (color.type === ColorType.DEFAULT || depth === 'none') {
-		return [39]; // Default foreground
-	}
-
-	if (color.type === ColorType.BASIC) {
-		// 0-7 -> 30-37, 8-15 -> 90-97
-		if (color.value < 8) {
-			return [30 + color.value];
-		}
-		return [90 + (color.value - 8)];
-	}
-
-	if (color.type === ColorType.COLOR_256) {
-		if (depth === '16') {
-			// Reduce to 16-color
-			const reduced = color.value < 16 ? color.value : reduceColorTo16(color.value);
-			if (reduced < 8) {
-				return [30 + reduced];
-			}
-			return [90 + (reduced - 8)];
-		}
-		return [38, 5, color.value];
-	}
-
-	if (color.type === ColorType.RGB) {
-		const { r, g, b } = unpackRgb(color.value);
-		if (depth === 'truecolor') {
-			return [38, 2, r, g, b];
-		}
-		if (depth === '256') {
-			// Convert RGB to nearest 256-color
-			const nearest = rgbToColor256(r, g, b);
-			return [38, 5, nearest];
-		}
-		// depth === '16'
-		const reduced = rgbToBasic16(r, g, b);
-		if (reduced < 8) {
-			return [30 + reduced];
-		}
-		return [90 + (reduced - 8)];
-	}
-
-	return [];
+	return colorToSgrCodes(color, depth, FG_OFFSETS);
 }
 
 /**
  * Convert a background color to SGR codes.
  */
 function bgColorToSgrCodes(color: InternalColor, depth: OutputColorDepth): number[] {
-	if (color.type === ColorType.DEFAULT || depth === 'none') {
-		return [49]; // Default background
-	}
-
-	if (color.type === ColorType.BASIC) {
-		// 0-7 -> 40-47, 8-15 -> 100-107
-		if (color.value < 8) {
-			return [40 + color.value];
-		}
-		return [100 + (color.value - 8)];
-	}
-
-	if (color.type === ColorType.COLOR_256) {
-		if (depth === '16') {
-			const reduced = color.value < 16 ? color.value : reduceColorTo16(color.value);
-			if (reduced < 8) {
-				return [40 + reduced];
-			}
-			return [100 + (reduced - 8)];
-		}
-		return [48, 5, color.value];
-	}
-
-	if (color.type === ColorType.RGB) {
-		const { r, g, b } = unpackRgb(color.value);
-		if (depth === 'truecolor') {
-			return [48, 2, r, g, b];
-		}
-		if (depth === '256') {
-			const nearest = rgbToColor256(r, g, b);
-			return [48, 5, nearest];
-		}
-		// depth === '16'
-		const reduced = rgbToBasic16(r, g, b);
-		if (reduced < 8) {
-			return [40 + reduced];
-		}
-		return [100 + (reduced - 8)];
-	}
-
-	return [];
+	return colorToSgrCodes(color, depth, BG_OFFSETS);
 }
 
 /**
@@ -697,35 +717,37 @@ function stylesToSgrCodes(styles: number): number[] {
  * Reduce a 256-color value to basic 16.
  * Simple approximation without full color matching.
  */
+function reduceColorCubeTo16(color: number): number {
+	const idx = color - 16;
+	const r = Math.floor(idx / 36);
+	const g = Math.floor((idx % 36) / 6);
+	const b = idx % 6;
+
+	const lum = r * 0.3 + g * 0.59 + b * 0.11;
+	const bright = lum > 2.5;
+
+	const base = COLOR_CUBE_BASE[getColorCubeBits(r, g, b)] ?? 7;
+	return bright ? base + 8 : base;
+}
+
+const COLOR_CUBE_BASE = [7, 1, 2, 3, 4, 5, 6, 7] as const;
+
+function getColorCubeBits(r: number, g: number, b: number): number {
+	const max = Math.max(r, g, b);
+	return (r === max ? 1 : 0) | (g === max ? 2 : 0) | (b === max ? 4 : 0);
+}
+
+function reduceGrayscaleTo16(color: number): number {
+	const gray = (color - 232) * 10 + 8;
+	if (gray < 64) return 0;
+	if (gray < 192) return 8;
+	return 7;
+}
+
 function reduceColorTo16(color: number): number {
 	if (color < 16) return color;
-
-	// Color cube (16-231)
-	if (color < 232) {
-		const idx = color - 16;
-		const r = Math.floor(idx / 36);
-		const g = Math.floor((idx % 36) / 6);
-		const b = idx % 6;
-
-		// Simple luminance-based mapping
-		const lum = r * 0.3 + g * 0.59 + b * 0.11;
-		const bright = lum > 2.5;
-
-		// Map to basic colors based on dominant channel
-		if (r > g && r > b) return bright ? 9 : 1; // Red
-		if (g > r && g > b) return bright ? 10 : 2; // Green
-		if (b > r && b > g) return bright ? 12 : 4; // Blue
-		if (r === g && r > b) return bright ? 11 : 3; // Yellow
-		if (r === b && r > g) return bright ? 13 : 5; // Magenta
-		if (g === b && g > r) return bright ? 14 : 6; // Cyan
-		return bright ? 15 : 7; // White/Gray
-	}
-
-	// Grayscale (232-255)
-	const gray = (color - 232) * 10 + 8;
-	if (gray < 64) return 0; // Black
-	if (gray < 192) return 8; // Dark gray
-	return 7; // Light gray / white
+	if (color < 232) return reduceColorCubeTo16(color);
+	return reduceGrayscaleTo16(color);
 }
 
 /**

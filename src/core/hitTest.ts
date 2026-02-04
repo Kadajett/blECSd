@@ -289,6 +289,48 @@ function isPointInside(
  * }
  * ```
  */
+/** Find entity using cached entities */
+function hitTestWithCache(
+	world: World,
+	cache: ClickableCache,
+	x: number,
+	y: number,
+	options: HitTestOptions,
+): Entity | null {
+	const useCached = options.useCachedPositions ?? true;
+	updateClickableCache(world, cache);
+
+	for (const eid of cache.entities) {
+		if (matchesFilter(world, eid, options) && isPointInside(world, eid, x, y, useCached)) {
+			return eid;
+		}
+	}
+	return null;
+}
+
+/** Find entity without cache */
+function hitTestWithoutCache(
+	world: World,
+	x: number,
+	y: number,
+	options: HitTestOptions,
+): Entity | null {
+	const useCached = options.useCachedPositions ?? true;
+	const interactives = queryInteractive(world);
+	const candidates: Array<{ eid: Entity; z: number }> = [];
+
+	for (const eid of interactives) {
+		if (matchesFilter(world, eid, options) && isPointInside(world, eid, x, y, useCached)) {
+			candidates.push({ eid, z: getZIndex(world, eid) });
+		}
+	}
+
+	if (candidates.length === 0) return null;
+
+	candidates.sort((a, b) => b.z - a.z);
+	return candidates[0]?.eid ?? null;
+}
+
 export function hitTest(
 	world: World,
 	x: number,
@@ -296,47 +338,10 @@ export function hitTest(
 	cache?: ClickableCache,
 	options: HitTestOptions = DEFAULT_OPTIONS,
 ): Entity | null {
-	const useCached = options.useCachedPositions ?? true;
-
-	// If we have a cache, use it for efficiency
 	if (cache) {
-		updateClickableCache(world, cache);
-
-		// Iterate in z-order (highest first)
-		for (const eid of cache.entities) {
-			if (!matchesFilter(world, eid, options)) {
-				continue;
-			}
-			if (isPointInside(world, eid, x, y, useCached)) {
-				return eid;
-			}
-		}
-		return null;
+		return hitTestWithCache(world, cache, x, y, options);
 	}
-
-	// No cache - query and sort on the fly
-	const interactives = queryInteractive(world);
-	const candidates: Array<{ eid: Entity; z: number }> = [];
-
-	for (const eid of interactives) {
-		if (!matchesFilter(world, eid, options)) {
-			continue;
-		}
-		if (isPointInside(world, eid, x, y, useCached)) {
-			candidates.push({
-				eid,
-				z: getZIndex(world, eid),
-			});
-		}
-	}
-
-	if (candidates.length === 0) {
-		return null;
-	}
-
-	// Sort by z-index descending and return topmost
-	candidates.sort((a, b) => b.z - a.z);
-	return candidates[0]?.eid ?? null;
+	return hitTestWithoutCache(world, x, y, options);
 }
 
 /**

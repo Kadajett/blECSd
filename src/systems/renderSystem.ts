@@ -221,6 +221,88 @@ function renderVerticalEdge(
 	}
 }
 
+/** Border side flags for rendering. */
+interface BorderSides {
+	left: boolean;
+	top: boolean;
+	right: boolean;
+	bottom: boolean;
+}
+
+/** Renders all four corners of a border. */
+function renderBorderCorners(
+	buffer: ScreenBufferData,
+	border: ReturnType<typeof getBorder>,
+	bounds: EntityBounds,
+	sides: BorderSides,
+	fg: number,
+	bg: number,
+): void {
+	if (!border) return;
+	const { x, y, width, height } = bounds;
+	if (sides.top && sides.left) renderBorderCorner(buffer, x, y, border.charTopLeft, fg, bg);
+	if (sides.top && sides.right)
+		renderBorderCorner(buffer, x + width - 1, y, border.charTopRight, fg, bg);
+	if (sides.bottom && sides.left)
+		renderBorderCorner(buffer, x, y + height - 1, border.charBottomLeft, fg, bg);
+	if (sides.bottom && sides.right)
+		renderBorderCorner(buffer, x + width - 1, y + height - 1, border.charBottomRight, fg, bg);
+}
+
+/** Renders horizontal border edges (top and bottom). */
+function renderHorizontalEdges(
+	buffer: ScreenBufferData,
+	charCode: number,
+	bounds: EntityBounds,
+	sides: BorderSides,
+	fg: number,
+	bg: number,
+): void {
+	const hEdgeStart = sides.left ? 1 : 0;
+	const hEdgeWidth = bounds.width - hEdgeStart - (sides.right ? 1 : 0);
+	if (hEdgeWidth <= 0) return;
+
+	if (sides.top)
+		renderHorizontalEdge(buffer, bounds.x + hEdgeStart, bounds.y, hEdgeWidth, charCode, fg, bg);
+	if (sides.bottom)
+		renderHorizontalEdge(
+			buffer,
+			bounds.x + hEdgeStart,
+			bounds.y + bounds.height - 1,
+			hEdgeWidth,
+			charCode,
+			fg,
+			bg,
+		);
+}
+
+/** Renders vertical border edges (left and right). */
+function renderVerticalEdges(
+	buffer: ScreenBufferData,
+	charCode: number,
+	bounds: EntityBounds,
+	sides: BorderSides,
+	fg: number,
+	bg: number,
+): void {
+	const vEdgeStart = sides.top ? 1 : 0;
+	const vEdgeHeight = bounds.height - vEdgeStart - (sides.bottom ? 1 : 0);
+	if (vEdgeHeight <= 0) return;
+
+	if (sides.left)
+		renderVerticalEdge(buffer, bounds.x, bounds.y + vEdgeStart, vEdgeHeight, charCode, fg, bg);
+	if (sides.right)
+		renderVerticalEdge(
+			buffer,
+			bounds.x + bounds.width - 1,
+			bounds.y + vEdgeStart,
+			vEdgeHeight,
+			charCode,
+			fg,
+			bg,
+		);
+}
+
 /**
  * Renders the border for an entity.
  *
@@ -238,81 +320,23 @@ function renderVerticalEdge(
 export function renderBorder(ctx: RenderContext, eid: Entity, bounds: EntityBounds): void {
 	const { world, buffer } = ctx;
 
-	if (!hasBorderVisible(world, eid)) {
-		return;
-	}
+	if (!hasBorderVisible(world, eid)) return;
 
 	const border = getBorder(world, eid);
-	if (!border || border.type === BorderType.None) {
-		return;
-	}
+	if (!border || border.type === BorderType.None) return;
+	if (bounds.width < 1 || bounds.height < 1) return;
 
 	const { fg, bg } = border;
-	const { x, y, width, height } = bounds;
+	const sides: BorderSides = {
+		left: border.left,
+		top: border.top,
+		right: border.right,
+		bottom: border.bottom,
+	};
 
-	// Need at least 1x1 for a border
-	if (width < 1 || height < 1) {
-		return;
-	}
-
-	const hasLeft = border.left;
-	const hasTop = border.top;
-	const hasRight = border.right;
-	const hasBottom = border.bottom;
-
-	// Render corners
-	if (hasTop && hasLeft) {
-		renderBorderCorner(buffer, x, y, border.charTopLeft, fg, bg);
-	}
-	if (hasTop && hasRight) {
-		renderBorderCorner(buffer, x + width - 1, y, border.charTopRight, fg, bg);
-	}
-	if (hasBottom && hasLeft) {
-		renderBorderCorner(buffer, x, y + height - 1, border.charBottomLeft, fg, bg);
-	}
-	if (hasBottom && hasRight) {
-		renderBorderCorner(buffer, x + width - 1, y + height - 1, border.charBottomRight, fg, bg);
-	}
-
-	// Render horizontal edges
-	const hEdgeStart = hasLeft ? 1 : 0;
-	const hEdgeEnd = hasRight ? 1 : 0;
-	const hEdgeWidth = width - hEdgeStart - hEdgeEnd;
-
-	if (hasTop && hEdgeWidth > 0) {
-		renderHorizontalEdge(buffer, x + hEdgeStart, y, hEdgeWidth, border.charHorizontal, fg, bg);
-	}
-	if (hasBottom && hEdgeWidth > 0) {
-		renderHorizontalEdge(
-			buffer,
-			x + hEdgeStart,
-			y + height - 1,
-			hEdgeWidth,
-			border.charHorizontal,
-			fg,
-			bg,
-		);
-	}
-
-	// Render vertical edges
-	const vEdgeStart = hasTop ? 1 : 0;
-	const vEdgeEnd = hasBottom ? 1 : 0;
-	const vEdgeHeight = height - vEdgeStart - vEdgeEnd;
-
-	if (hasLeft && vEdgeHeight > 0) {
-		renderVerticalEdge(buffer, x, y + vEdgeStart, vEdgeHeight, border.charVertical, fg, bg);
-	}
-	if (hasRight && vEdgeHeight > 0) {
-		renderVerticalEdge(
-			buffer,
-			x + width - 1,
-			y + vEdgeStart,
-			vEdgeHeight,
-			border.charVertical,
-			fg,
-			bg,
-		);
-	}
+	renderBorderCorners(buffer, border, bounds, sides, fg, bg);
+	renderHorizontalEdges(buffer, border.charHorizontal, bounds, sides, fg, bg);
+	renderVerticalEdges(buffer, border.charVertical, bounds, sides, fg, bg);
 }
 
 /**

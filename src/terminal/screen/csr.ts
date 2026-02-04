@@ -607,61 +607,86 @@ export function detectScrollOperation(
 		return null;
 	}
 
-	// Check for scroll up: old[i+n] matches new[i]
-	for (let scrollAmount = 1; scrollAmount < regionHeight; scrollAmount++) {
-		let matchCount = 0;
-		const linesToCheck = regionHeight - scrollAmount;
-
-		for (let i = 0; i < linesToCheck; i++) {
-			const oldIdx = regionTop + i + scrollAmount;
-			const newIdx = regionTop + i;
-
-			if (oldIdx < oldLines.length && newIdx < newLines.length) {
-				if (oldLines[oldIdx] === newLines[newIdx]) {
-					matchCount++;
-				}
-			}
-		}
-
-		// If most lines match, it's likely a scroll up
-		if (matchCount >= linesToCheck * 0.8) {
-			return {
-				top: regionTop,
-				bottom: regionBottom,
-				lines: scrollAmount,
-				direction: 'up',
-			};
-		}
+	const up = detectScrollDirection(oldLines, newLines, regionTop, regionBottom, 'up');
+	if (up) {
+		return up;
 	}
 
-	// Check for scroll down: old[i] matches new[i+n]
+	return detectScrollDirection(oldLines, newLines, regionTop, regionBottom, 'down');
+}
+
+function detectScrollDirection(
+	oldLines: readonly string[],
+	newLines: readonly string[],
+	regionTop: number,
+	regionBottom: number,
+	direction: CSRScrollDirection,
+): ScrollOperation | null {
+	const regionHeight = regionBottom - regionTop;
+
 	for (let scrollAmount = 1; scrollAmount < regionHeight; scrollAmount++) {
-		let matchCount = 0;
 		const linesToCheck = regionHeight - scrollAmount;
+		const matchCount = countScrollMatches(
+			oldLines,
+			newLines,
+			regionTop,
+			linesToCheck,
+			scrollAmount,
+			direction,
+		);
 
-		for (let i = 0; i < linesToCheck; i++) {
-			const oldIdx = regionTop + i;
-			const newIdx = regionTop + i + scrollAmount;
-
-			if (oldIdx < oldLines.length && newIdx < newLines.length) {
-				if (oldLines[oldIdx] === newLines[newIdx]) {
-					matchCount++;
-				}
-			}
-		}
-
-		// If most lines match, it's likely a scroll down
 		if (matchCount >= linesToCheck * 0.8) {
 			return {
 				top: regionTop,
 				bottom: regionBottom,
 				lines: scrollAmount,
-				direction: 'down',
+				direction,
 			};
 		}
 	}
 
 	return null;
+}
+
+function countScrollMatches(
+	oldLines: readonly string[],
+	newLines: readonly string[],
+	regionTop: number,
+	linesToCheck: number,
+	scrollAmount: number,
+	direction: CSRScrollDirection,
+): number {
+	let matchCount = 0;
+
+	for (let i = 0; i < linesToCheck; i++) {
+		const { oldIdx, newIdx } = getScrollIndices(regionTop, i, scrollAmount, direction);
+		if (oldIdx < oldLines.length && newIdx < newLines.length) {
+			if (oldLines[oldIdx] === newLines[newIdx]) {
+				matchCount++;
+			}
+		}
+	}
+
+	return matchCount;
+}
+
+function getScrollIndices(
+	regionTop: number,
+	lineOffset: number,
+	scrollAmount: number,
+	direction: CSRScrollDirection,
+): { oldIdx: number; newIdx: number } {
+	if (direction === 'up') {
+		return {
+			oldIdx: regionTop + lineOffset + scrollAmount,
+			newIdx: regionTop + lineOffset,
+		};
+	}
+
+	return {
+		oldIdx: regionTop + lineOffset,
+		newIdx: regionTop + lineOffset + scrollAmount,
+	};
 }
 
 /**

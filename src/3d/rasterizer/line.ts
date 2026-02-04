@@ -7,6 +7,103 @@
 import type { LineEndpoint } from '../schemas/rasterizer';
 import { isInBounds, type PixelFramebuffer, setPixelUnsafe, testAndSetDepth } from './pixelBuffer';
 
+/** Mutable state for Bresenham line stepping */
+interface BresenhamState {
+	x: number;
+	y: number;
+	err: number;
+	step: number;
+}
+
+/** Perform one Bresenham step, returns true if line is complete */
+function bresenhamStep(
+	state: BresenhamState,
+	endX: number,
+	endY: number,
+	dx: number,
+	dy: number,
+	sx: number,
+	sy: number,
+): boolean {
+	if (state.x === endX && state.y === endY) {
+		return true;
+	}
+
+	const e2 = 2 * state.err;
+	if (e2 > -dy) {
+		state.err -= dy;
+		state.x += sx;
+	}
+	if (e2 < dx) {
+		state.err += dx;
+		state.y += sy;
+	}
+	state.step++;
+	return false;
+}
+
+/** Draw a pixel with depth testing if depth buffer exists */
+function drawPixelWithDepth(
+	fb: PixelFramebuffer,
+	x: number,
+	y: number,
+	depth: number,
+	r: number,
+	g: number,
+	b: number,
+	a: number,
+): void {
+	if (!isInBounds(fb, x, y)) return;
+	if (testAndSetDepth(fb, x, y, depth)) {
+		setPixelUnsafe(fb, x, y, r, g, b, a);
+	}
+}
+
+/** Compute interpolated color at t */
+function lerpColor(
+	r0: number,
+	g0: number,
+	b0: number,
+	a0: number,
+	r1: number,
+	g1: number,
+	b1: number,
+	a1: number,
+	t: number,
+): { r: number; g: number; b: number; a: number } {
+	return {
+		r: Math.round(r0 + (r1 - r0) * t),
+		g: Math.round(g0 + (g1 - g0) * t),
+		b: Math.round(b0 + (b1 - b0) * t),
+		a: Math.round(a0 + (a1 - a0) * t),
+	};
+}
+
+/** Check if a pixel should be drawn (handles depth test logic) */
+function shouldDrawPixel(
+	fb: PixelFramebuffer,
+	x: number,
+	y: number,
+	depth: number,
+	hasDepth: boolean,
+): boolean {
+	if (!hasDepth || !fb.depthBuffer) return true;
+	return testAndSetDepth(fb, x, y, depth);
+}
+
+/** Draw interpolated color pixel at position */
+function drawColorPixel(
+	fb: PixelFramebuffer,
+	x: number,
+	y: number,
+	p0: LineEndpoint,
+	p1: LineEndpoint,
+	t: number,
+): void {
+	const col = lerpColor(p0.r, p0.g, p0.b, p0.a ?? 255, p1.r, p1.g, p1.b, p1.a ?? 255, t);
+	setPixelUnsafe(fb, x, y, col.r, col.g, col.b, col.a);
+}
+
 /**
  * Draw a solid-color line using Bresenham's algorithm.
  * No depth testing. Pixels outside the framebuffer are skipped.
@@ -86,16 +183,20 @@ export function drawLine(
  * ```
  */
 export function drawLineDepth(fb: PixelFramebuffer, p0: LineEndpoint, p1: LineEndpoint): void {
-	let cx0 = Math.round(p0.x);
-	let cy0 = Math.round(p0.y);
-	const cx1 = Math.round(p1.x);
-	const cy1 = Math.round(p1.y);
+	const endX = Math.round(p1.x);
+	const endY = Math.round(p1.y);
+	const state: BresenhamState = {
+		x: Math.round(p0.x),
+		y: Math.round(p0.y),
+		err: 0,
+		step: 0,
+	};
 
-	const dx = Math.abs(cx1 - cx0);
-	const dy = Math.abs(cy1 - cy0);
-	const sx = cx0 < cx1 ? 1 : -1;
-	const sy = cy0 < cy1 ? 1 : -1;
-	let err = dx - dy;
+	const dx = Math.abs(endX - state.x);
+	const dy = Math.abs(endY - state.y);
+	const sx = state.x < endX ? 1 : -1;
+	const sy = state.y < endY ? 1 : -1;
+	state.err = dx - dy;
 
 	const steps = Math.max(dx, dy);
 	const invSteps = steps > 0 ? 1 / steps : 0;
@@ -106,31 +207,14 @@ export function drawLineDepth(fb: PixelFramebuffer, p0: LineEndpoint, p1: LineEn
 	const b = p0.b;
 	const a = p0.a ?? 255;
 
-	let step = 0;
-
 	for (;;) {
-		if (isInBounds(fb, cx0, cy0)) {
-			const t = step * invSteps;
-			const depth = d0 + (d1 - d0) * t;
-			if (testAndSetDepth(fb, cx0, cy0, depth)) {
-				setPixelUnsafe(fb, cx0, cy0, r, g, b, a);
-			}
-		}
+		const t = state.step * invSteps;
+		const depth = d0 + (d1 - d0) * t;
+		drawPixelWithDepth(fb, state.x, state.y, depth, r, g, b, a);
 
-		if (cx0 === cx1 && cy0 === cy1) {
+		if (bresenhamStep(state, endX, endY, dx, dy, sx, sy)) {
 			break;
 		}
-
-		const e2 = 2 * err;
-		if (e2 > -dy) {
-			err -= dy;
-			cx0 += sx;
-		}
-		if (e2 < dx) {
-			err += dx;
-			cy0 += sy;
-		}
-		step++;
 	}
 }
 
@@ -151,61 +235,39 @@ export function drawLineDepth(fb: PixelFramebuffer, p0: LineEndpoint, p1: LineEn
  * ```
  */
 export function drawLineColor(fb: PixelFramebuffer, p0: LineEndpoint, p1: LineEndpoint): void {
-	let cx0 = Math.round(p0.x);
-	let cy0 = Math.round(p0.y);
-	const cx1 = Math.round(p1.x);
-	const cy1 = Math.round(p1.y);
+	const endX = Math.round(p1.x);
+	const endY = Math.round(p1.y);
+	const state: BresenhamState = {
+		x: Math.round(p0.x),
+		y: Math.round(p0.y),
+		err: 0,
+		step: 0,
+	};
 
-	const dx = Math.abs(cx1 - cx0);
-	const dy = Math.abs(cy1 - cy0);
-	const sx = cx0 < cx1 ? 1 : -1;
-	const sy = cy0 < cy1 ? 1 : -1;
-	let err = dx - dy;
+	const dx = Math.abs(endX - state.x);
+	const dy = Math.abs(endY - state.y);
+	const sx = state.x < endX ? 1 : -1;
+	const sy = state.y < endY ? 1 : -1;
+	state.err = dx - dy;
 
 	const steps = Math.max(dx, dy);
 	const invSteps = steps > 0 ? 1 / steps : 0;
 	const d0 = p0.depth ?? 0;
 	const d1 = p1.depth ?? 0;
-	const r0 = p0.r;
-	const g0 = p0.g;
-	const b0 = p0.b;
-	const a0 = p0.a ?? 255;
-	const r1 = p1.r;
-	const g1 = p1.g;
-	const b1 = p1.b;
-	const a1 = p1.a ?? 255;
-
-	let step = 0;
+	const hasDepth = p0.depth !== undefined || p1.depth !== undefined;
 
 	for (;;) {
-		if (isInBounds(fb, cx0, cy0)) {
-			const t = step * invSteps;
+		if (isInBounds(fb, state.x, state.y)) {
+			const t = state.step * invSteps;
 			const depth = d0 + (d1 - d0) * t;
-			const hasDepth = p0.depth !== undefined || p1.depth !== undefined;
 
-			const shouldDraw = !hasDepth || !fb.depthBuffer || testAndSetDepth(fb, cx0, cy0, depth);
-			if (shouldDraw) {
-				const r = Math.round(r0 + (r1 - r0) * t);
-				const g = Math.round(g0 + (g1 - g0) * t);
-				const b = Math.round(b0 + (b1 - b0) * t);
-				const a = Math.round(a0 + (a1 - a0) * t);
-				setPixelUnsafe(fb, cx0, cy0, r, g, b, a);
+			if (shouldDrawPixel(fb, state.x, state.y, depth, hasDepth)) {
+				drawColorPixel(fb, state.x, state.y, p0, p1, t);
 			}
 		}
 
-		if (cx0 === cx1 && cy0 === cy1) {
+		if (bresenhamStep(state, endX, endY, dx, dy, sx, sy)) {
 			break;
 		}
-
-		const e2 = 2 * err;
-		if (e2 > -dy) {
-			err -= dy;
-			cx0 += sx;
-		}
-		if (e2 < dx) {
-			err += dx;
-			cy0 += sy;
-		}
-		step++;
 	}
 }

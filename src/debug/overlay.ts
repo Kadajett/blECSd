@@ -165,46 +165,43 @@ export function createDebugOverlay(world: World, config: DebugOverlayConfig = {}
 		return eid;
 	}
 
+	/** Formats FPS line with color coding. */
+	function formatFpsLine(fps: number, frameTime: number): string {
+		const fpsColor = fps >= 55 ? '32' : fps >= 30 ? '33' : '31';
+		return `│ FPS: \x1b[${fpsColor}m${fps.toString().padStart(3)}\x1b[0m (${frameTime.toFixed(1)}ms)`;
+	}
+
+	/** Formats system timing entries. */
+	function formatSystemTimings(maxShown: number): string[] {
+		const timings = getSystemTimings();
+		const entries = Object.entries(timings)
+			.filter(([, time]) => time > 0)
+			.sort(([, a], [, b]) => b - a)
+			.slice(0, maxShown);
+
+		if (entries.length === 0) return [];
+
+		const lines = ['├─ Systems ─────────────────┤'];
+		for (const [name, time] of entries) {
+			const timeStr = time.toFixed(2).padStart(6);
+			const shortName = name.length > 20 ? `${name.slice(0, 17)}...` : name;
+			lines.push(`│ ${shortName.padEnd(20)} ${timeStr}ms`);
+		}
+		return lines;
+	}
+
 	/**
 	 * Builds the overlay content string.
 	 */
 	function buildContent(stats: PerformanceStats): string {
-		const lines: string[] = [];
+		const lines: string[] = ['┌─ Debug ─────────────────────┐'];
 
-		lines.push('┌─ Debug ─────────────────────┐');
-
-		if (cfg.showFPS) {
-			const fpsColor = stats.fps >= 55 ? '32' : stats.fps >= 30 ? '33' : '31';
-			lines.push(
-				`│ FPS: \x1b[${fpsColor}m${stats.fps.toString().padStart(3)}\x1b[0m (${stats.frameTime.toFixed(1)}ms)`,
-			);
-		}
-
-		if (cfg.showEntityCount) {
-			lines.push(`│ Entities: ${stats.entityCount}`);
-		}
-
+		if (cfg.showFPS) lines.push(formatFpsLine(stats.fps, stats.frameTime));
+		if (cfg.showEntityCount) lines.push(`│ Entities: ${stats.entityCount}`);
 		if (cfg.showMemory && stats.memoryUsageMB !== null) {
-			const memStr = stats.memoryUsageMB.toFixed(1);
-			lines.push(`│ Memory: ${memStr}MB`);
+			lines.push(`│ Memory: ${stats.memoryUsageMB.toFixed(1)}MB`);
 		}
-
-		if (cfg.showSystemTimings) {
-			const timings = getSystemTimings();
-			const entries = Object.entries(timings)
-				.filter(([, time]) => time > 0)
-				.sort(([, a], [, b]) => b - a)
-				.slice(0, cfg.maxSystemsShown);
-
-			if (entries.length > 0) {
-				lines.push('├─ Systems ─────────────────┤');
-				for (const [name, time] of entries) {
-					const timeStr = time.toFixed(2).padStart(6);
-					const shortName = name.length > 20 ? `${name.slice(0, 17)}...` : name;
-					lines.push(`│ ${shortName.padEnd(20)} ${timeStr}ms`);
-				}
-			}
-		}
+		if (cfg.showSystemTimings) lines.push(...formatSystemTimings(cfg.maxSystemsShown));
 
 		lines.push(`│ Frame: ${stats.frameCount}`);
 		lines.push(`│ Time: ${stats.runningTime.toFixed(1)}s`);

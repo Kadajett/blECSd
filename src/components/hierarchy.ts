@@ -870,6 +870,31 @@ export function getChildAt(world: World, parent: Entity, index: number): Entity 
  */
 export type TraversalCallback = (entity: Entity, depth: number) => boolean | undefined;
 
+/** Stack item for depth-first traversal */
+interface TraversalStackItem {
+	entity: Entity;
+	depth: number;
+}
+
+/** Collect all children of an entity into an array */
+function collectChildren(eid: Entity, depth: number): TraversalStackItem[] {
+	const children: TraversalStackItem[] = [];
+	let child = Hierarchy.firstChild[eid] as Entity;
+	while (child !== NULL_ENTITY) {
+		children.push({ entity: child, depth });
+		child = Hierarchy.nextSibling[child] as Entity;
+	}
+	return children;
+}
+
+/** Push children to stack in reverse order for correct DFS traversal */
+function pushChildrenToStack(children: TraversalStackItem[], stack: TraversalStackItem[]): void {
+	for (let i = children.length - 1; i >= 0; i--) {
+		const item = children[i];
+		if (item) stack.push(item);
+	}
+}
+
 /**
  * Iterates over all descendants of an entity, calling a callback for each.
  * Uses depth-first traversal order.
@@ -899,21 +924,12 @@ export function forDescendants(world: World, eid: Entity, callback: TraversalCal
 		return true;
 	}
 
-	const stack: Array<{ entity: Entity; depth: number }> = [];
+	const stack: TraversalStackItem[] = [];
 	const rootDepth = Hierarchy.depth[eid] ?? 0;
 
-	// Start with children (collect then push in reverse for correct DFS order)
-	const initialChildren: Array<{ entity: Entity; depth: number }> = [];
-	let child = Hierarchy.firstChild[eid] as Entity;
-	while (child !== NULL_ENTITY) {
-		initialChildren.push({ entity: child, depth: rootDepth + 1 });
-		child = Hierarchy.nextSibling[child] as Entity;
-	}
-	// Push in reverse order so first child is popped first
-	for (let i = initialChildren.length - 1; i >= 0; i--) {
-		const item = initialChildren[i];
-		if (item) stack.push(item);
-	}
+	// Start with children
+	const initialChildren = collectChildren(eid, rootDepth + 1);
+	pushChildrenToStack(initialChildren, stack);
 
 	// Depth-first traversal
 	while (stack.length > 0) {
@@ -921,25 +937,12 @@ export function forDescendants(world: World, eid: Entity, callback: TraversalCal
 		if (!item) continue;
 
 		const { entity: current, depth } = item;
-		const relativeDepth = depth - rootDepth;
+		const result = callback(current, depth - rootDepth);
+		if (result === false) return false;
 
-		// Call callback, stop if it returns false
-		const result = callback(current, relativeDepth);
-		if (result === false) {
-			return false;
-		}
-
-		// Add children to stack (in reverse order for correct output)
-		const children: Array<{ entity: Entity; depth: number }> = [];
-		let c = Hierarchy.firstChild[current] as Entity;
-		while (c !== NULL_ENTITY) {
-			children.push({ entity: c, depth: depth + 1 });
-			c = Hierarchy.nextSibling[c] as Entity;
-		}
-		for (let i = children.length - 1; i >= 0; i--) {
-			const childItem = children[i];
-			if (childItem) stack.push(childItem);
-		}
+		// Add children to stack
+		const children = collectChildren(current, depth + 1);
+		pushChildrenToStack(children, stack);
 	}
 
 	return true;

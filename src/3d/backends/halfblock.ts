@@ -36,6 +36,28 @@ function isTransparent(buf: Uint8ClampedArray, idx: number): boolean {
 	return (buf[idx + 3] as number) === 0;
 }
 
+/** Cell rendering result */
+interface HalfBlockCell {
+	char: string;
+	fg: number;
+	bg: number;
+}
+
+/**
+ * Determine the character and colors for a half-block cell based on top/bottom pixel colors.
+ */
+function computeHalfBlockCell(topColor: number, botColor: number, bgColor: number): HalfBlockCell {
+	// Both pixels are the same color
+	if (topColor === botColor) {
+		if (topColor === bgColor) {
+			return { char: ' ', fg: bgColor, bg: bgColor };
+		}
+		return { char: FULL_BLOCK, fg: topColor, bg: bgColor };
+	}
+	// Different colors: use upper half block (fg = top, bg = bottom)
+	return { char: UPPER_HALF, fg: topColor, bg: botColor };
+}
+
 /**
  * Create a half-block rendering backend.
  *
@@ -78,39 +100,17 @@ export function createHalfBlockBackend(config?: HalfBlockConfig): RendererBacken
 					const topIdx = (cy * 2 * fbWidth + cx) * 4;
 					const botIdx = ((cy * 2 + 1) * fbWidth + cx) * 4;
 
-					const topTransparent = isTransparent(buf, topIdx);
-					const botTransparent = isTransparent(buf, botIdx);
+					const topColor = isTransparent(buf, topIdx) ? bgColor : pixelToRgb(buf, topIdx);
+					const botColor = isTransparent(buf, botIdx) ? bgColor : pixelToRgb(buf, botIdx);
 
-					const topColor = topTransparent ? bgColor : pixelToRgb(buf, topIdx);
-					const botColor = botTransparent ? bgColor : pixelToRgb(buf, botIdx);
-
-					let char: string;
-					let fg: number;
-					let bg: number;
-
-					if (topColor === botColor) {
-						if (topColor === bgColor) {
-							char = ' ';
-							fg = bgColor;
-							bg = bgColor;
-						} else {
-							char = FULL_BLOCK;
-							fg = topColor;
-							bg = bgColor;
-						}
-					} else {
-						// Use upper half block: fg = top pixel, bg = bottom pixel
-						char = UPPER_HALF;
-						fg = topColor;
-						bg = botColor;
-					}
+					const cell = computeHalfBlockCell(topColor, botColor, bgColor);
 
 					cells.push({
 						x: screenX + cx,
 						y: screenY + cy,
-						char,
-						fg,
-						bg,
+						char: cell.char,
+						fg: cell.fg,
+						bg: cell.bg,
 					});
 				}
 			}

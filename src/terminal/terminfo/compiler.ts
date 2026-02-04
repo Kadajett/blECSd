@@ -236,237 +236,7 @@ function compileToInstructions(format: string): Instruction[] {
 			break;
 		}
 
-		const code = format[i];
-
-		switch (code) {
-			case '%':
-				instructions.push({ type: 'literal', value: '%' });
-				i++;
-				break;
-
-			case 'i':
-				instructions.push({ type: 'increment' });
-				i++;
-				break;
-
-			case 'p':
-				i++;
-				if (i < format.length) {
-					const paramNum = Number.parseInt(format[i] ?? '0', 10);
-					instructions.push({ type: 'push_param', value: paramNum });
-					i++;
-				}
-				break;
-
-			case 'P':
-				i++;
-				if (i < format.length) {
-					const varName = format[i];
-					const isStatic = varName !== undefined && varName >= 'a' && varName <= 'z';
-					instructions.push({ type: 'set_var', value: (isStatic ? 's' : 'd') + (varName ?? '') });
-					i++;
-				}
-				break;
-
-			case 'g':
-				i++;
-				if (i < format.length) {
-					const varName = format[i];
-					const isStatic = varName !== undefined && varName >= 'a' && varName <= 'z';
-					instructions.push({ type: 'get_var', value: (isStatic ? 's' : 'd') + (varName ?? '') });
-					i++;
-				}
-				break;
-
-			case "'": {
-				i++;
-				const charResult = parseCharConstant(format, i - 1);
-				instructions.push({ type: 'push_char', value: charResult.value });
-				i = charResult.endIndex;
-				break;
-			}
-
-			case '{': {
-				i++;
-				const intResult = parseIntConstant(format, i);
-				instructions.push({ type: 'push_int', value: intResult.value });
-				i = intResult.endIndex;
-				break;
-			}
-
-			case 'l':
-				instructions.push({ type: 'strlen' });
-				i++;
-				break;
-
-			case '+':
-				instructions.push({ type: 'add' });
-				i++;
-				break;
-
-			case '-':
-				instructions.push({ type: 'subtract' });
-				i++;
-				break;
-
-			case '*':
-				instructions.push({ type: 'multiply' });
-				i++;
-				break;
-
-			case '/':
-				instructions.push({ type: 'divide' });
-				i++;
-				break;
-
-			case 'm':
-				instructions.push({ type: 'modulo' });
-				i++;
-				break;
-
-			case '&':
-				instructions.push({ type: 'bit_and' });
-				i++;
-				break;
-
-			case '|':
-				instructions.push({ type: 'bit_or' });
-				i++;
-				break;
-
-			case '^':
-				instructions.push({ type: 'bit_xor' });
-				i++;
-				break;
-
-			case 'A':
-				instructions.push({ type: 'logical_and' });
-				i++;
-				break;
-
-			case 'O':
-				instructions.push({ type: 'logical_or' });
-				i++;
-				break;
-
-			case '!':
-				instructions.push({ type: 'logical_not' });
-				i++;
-				break;
-
-			case '~':
-				instructions.push({ type: 'bit_not' });
-				i++;
-				break;
-
-			case '=':
-				instructions.push({ type: 'equals' });
-				i++;
-				break;
-
-			case '<':
-				instructions.push({ type: 'less_than' });
-				i++;
-				break;
-
-			case '>':
-				instructions.push({ type: 'greater_than' });
-				i++;
-				break;
-
-			case '?':
-				// Start of conditional - emit marker for nesting tracking
-				instructions.push({ type: 'cond_start' });
-				i++;
-				break;
-
-			case 't':
-				instructions.push({ type: 'cond_then' });
-				i++;
-				break;
-
-			case 'e':
-				instructions.push({ type: 'cond_else' });
-				i++;
-				break;
-
-			case ';':
-				instructions.push({ type: 'cond_end' });
-				i++;
-				break;
-
-			case 'd':
-				instructions.push({ type: 'output_decimal' });
-				i++;
-				break;
-
-			case 'o':
-				instructions.push({ type: 'output_octal' });
-				i++;
-				break;
-
-			case 'x':
-			case 'X':
-				instructions.push({ type: 'output_hex' });
-				i++;
-				break;
-
-			case 'c':
-				instructions.push({ type: 'output_char' });
-				i++;
-				break;
-
-			case 's':
-				instructions.push({ type: 'output_string' });
-				i++;
-				break;
-
-			default:
-				// Handle printf-style format specifiers like %2d, %-3d, %02d
-				if (
-					code !== undefined &&
-					((code >= '0' && code <= '9') ||
-						code === ':' ||
-						code === ' ' ||
-						code === '#' ||
-						code === '-')
-				) {
-					// Skip format flags and width
-					while (i < format.length) {
-						const ch = format[i];
-						if (ch === 'd' || ch === 'o' || ch === 'x' || ch === 'X' || ch === 's' || ch === 'c') {
-							break;
-						}
-						i++;
-					}
-					if (i < format.length) {
-						const outputCode = format[i];
-						switch (outputCode) {
-							case 'd':
-								instructions.push({ type: 'output_decimal' });
-								break;
-							case 'o':
-								instructions.push({ type: 'output_octal' });
-								break;
-							case 'x':
-							case 'X':
-								instructions.push({ type: 'output_hex' });
-								break;
-							case 's':
-								instructions.push({ type: 'output_string' });
-								break;
-							case 'c':
-								instructions.push({ type: 'output_char' });
-								break;
-						}
-						i++;
-					}
-				} else {
-					// Unknown, treat as literal
-					instructions.push({ type: 'literal', value: `%${code}` });
-					i++;
-				}
-		}
+		i = handleFormatCode(format, i, instructions);
 
 		literalStart = i;
 	}
@@ -477,6 +247,150 @@ function compileToInstructions(format: string): Instruction[] {
 	}
 
 	return instructions;
+}
+
+const SIMPLE_INSTRUCTIONS: Record<string, InstructionType> = {
+	i: 'increment',
+	l: 'strlen',
+	'+': 'add',
+	'-': 'subtract',
+	'*': 'multiply',
+	'/': 'divide',
+	m: 'modulo',
+	'&': 'bit_and',
+	'|': 'bit_or',
+	'^': 'bit_xor',
+	A: 'logical_and',
+	O: 'logical_or',
+	'!': 'logical_not',
+	'~': 'bit_not',
+	'=': 'equals',
+	'<': 'less_than',
+	'>': 'greater_than',
+	'?': 'cond_start',
+	t: 'cond_then',
+	e: 'cond_else',
+	';': 'cond_end',
+	d: 'output_decimal',
+	o: 'output_octal',
+	x: 'output_hex',
+	X: 'output_hex',
+	c: 'output_char',
+	s: 'output_string',
+};
+
+function handleFormatCode(format: string, index: number, instructions: Instruction[]): number {
+	const code = format[index];
+
+	if (code === '%') {
+		instructions.push({ type: 'literal', value: '%' });
+		return index + 1;
+	}
+
+	if (code === 'p') {
+		return handlePushParam(format, index, instructions);
+	}
+
+	if (code === 'P') {
+		return handleSetVar(format, index, instructions);
+	}
+
+	if (code === 'g') {
+		return handleGetVar(format, index, instructions);
+	}
+
+	if (code === "'") {
+		return handleCharConstant(format, index, instructions);
+	}
+
+	if (code === '{') {
+		return handleIntConstant(format, index, instructions);
+	}
+
+	const simple = code ? SIMPLE_INSTRUCTIONS[code] : undefined;
+	if (simple) {
+		instructions.push({ type: simple });
+		return index + 1;
+	}
+
+	if (code && isPrintfFormatStart(code)) {
+		return handlePrintfFormat(format, index, instructions);
+	}
+
+	instructions.push({ type: 'literal', value: `%${code ?? ''}` });
+	return index + 1;
+}
+
+function handlePushParam(format: string, index: number, instructions: Instruction[]): number {
+	const paramIndex = index + 1;
+	if (paramIndex < format.length) {
+		const paramNum = Number.parseInt(format[paramIndex] ?? '0', 10);
+		instructions.push({ type: 'push_param', value: paramNum });
+		return paramIndex + 1;
+	}
+	return paramIndex;
+}
+
+function handleSetVar(format: string, index: number, instructions: Instruction[]): number {
+	const varIndex = index + 1;
+	if (varIndex < format.length) {
+		const varName = format[varIndex];
+		const isStatic = varName !== undefined && varName >= 'a' && varName <= 'z';
+		instructions.push({ type: 'set_var', value: (isStatic ? 's' : 'd') + (varName ?? '') });
+		return varIndex + 1;
+	}
+	return varIndex;
+}
+
+function handleGetVar(format: string, index: number, instructions: Instruction[]): number {
+	const varIndex = index + 1;
+	if (varIndex < format.length) {
+		const varName = format[varIndex];
+		const isStatic = varName !== undefined && varName >= 'a' && varName <= 'z';
+		instructions.push({ type: 'get_var', value: (isStatic ? 's' : 'd') + (varName ?? '') });
+		return varIndex + 1;
+	}
+	return varIndex;
+}
+
+function handleCharConstant(format: string, index: number, instructions: Instruction[]): number {
+	const charResult = parseCharConstant(format, index);
+	instructions.push({ type: 'push_char', value: charResult.value });
+	return charResult.endIndex;
+}
+
+function handleIntConstant(format: string, index: number, instructions: Instruction[]): number {
+	const intResult = parseIntConstant(format, index + 1);
+	instructions.push({ type: 'push_int', value: intResult.value });
+	return intResult.endIndex;
+}
+
+function isPrintfFormatStart(code: string): boolean {
+	return (
+		(code >= '0' && code <= '9') || code === ':' || code === ' ' || code === '#' || code === '-'
+	);
+}
+
+function handlePrintfFormat(format: string, index: number, instructions: Instruction[]): number {
+	let i = index;
+	while (i < format.length && !isPrintfOutputCode(format[i])) {
+		i++;
+	}
+	if (i < format.length) {
+		const outputCode = format[i];
+		const outputType = SIMPLE_INSTRUCTIONS[outputCode ?? ''];
+		if (outputType) {
+			instructions.push({ type: outputType });
+		}
+		return i + 1;
+	}
+	return i;
+}
+
+function isPrintfOutputCode(code: string | undefined): boolean {
+	return (
+		code === 'd' || code === 'o' || code === 'x' || code === 'X' || code === 's' || code === 'c'
+	);
 }
 
 /**
@@ -499,221 +413,163 @@ function executeInstructions(instructions: readonly Instruction[], params: numbe
 			continue;
 		}
 
-		switch (instr.type) {
-			case 'literal':
-				state.output += instr.value as string;
-				break;
-
-			case 'push_param': {
-				const paramIndex = (instr.value as number) - 1;
-				state.stack.push(state.params[paramIndex] ?? 0);
-				break;
-			}
-
-			case 'push_char':
-			case 'push_int':
-				state.stack.push(instr.value as number);
-				break;
-
-			case 'increment':
-				if (state.params.length > 0 && state.params[0] !== undefined) state.params[0]++;
-				if (state.params.length > 1 && state.params[1] !== undefined) state.params[1]++;
-				break;
-
-			case 'output_decimal':
-				state.output += String(state.stack.pop() ?? 0);
-				break;
-
-			case 'output_octal':
-				state.output += (state.stack.pop() ?? 0).toString(8);
-				break;
-
-			case 'output_hex':
-				state.output += (state.stack.pop() ?? 0).toString(16);
-				break;
-
-			case 'output_char':
-				state.output += String.fromCharCode(state.stack.pop() ?? 0);
-				break;
-
-			case 'output_string':
-				state.output += String(state.stack.pop() ?? '');
-				break;
-
-			case 'strlen': {
-				const val = state.stack.pop() ?? 0;
-				state.stack.push(String(val).length);
-				break;
-			}
-
-			case 'add': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a + b);
-				break;
-			}
-
-			case 'subtract': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a - b);
-				break;
-			}
-
-			case 'multiply': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a * b);
-				break;
-			}
-
-			case 'divide': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(b !== 0 ? Math.floor(a / b) : 0);
-				break;
-			}
-
-			case 'modulo': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(b !== 0 ? a % b : 0);
-				break;
-			}
-
-			case 'bit_and': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a & b);
-				break;
-			}
-
-			case 'bit_or': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a | b);
-				break;
-			}
-
-			case 'bit_xor': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a ^ b);
-				break;
-			}
-
-			case 'logical_and': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a && b ? 1 : 0);
-				break;
-			}
-
-			case 'logical_or': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a || b ? 1 : 0);
-				break;
-			}
-
-			case 'logical_not': {
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a ? 0 : 1);
-				break;
-			}
-
-			case 'bit_not': {
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(~a);
-				break;
-			}
-
-			case 'equals': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a === b ? 1 : 0);
-				break;
-			}
-
-			case 'less_than': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a < b ? 1 : 0);
-				break;
-			}
-
-			case 'greater_than': {
-				const b = state.stack.pop() ?? 0;
-				const a = state.stack.pop() ?? 0;
-				state.stack.push(a > b ? 1 : 0);
-				break;
-			}
-
-			case 'cond_start':
-				// Marker for conditional start - used for depth tracking, no execution action
-				break;
-
-			case 'cond_then': {
-				const condition = state.stack.pop() ?? 0;
-				if (!condition) {
-					// Skip to else or endif, then continue from instruction AFTER it
-					const mutableInstructions = instructions as Instruction[];
-					const elseOrEnd = findConditionalEnd(
-						mutableInstructions,
-						state.instructionIndex + 1,
-						true,
-					);
-					// If we found cond_else, continue from instruction after it (the else content)
-					// If we found cond_end, continue from it (will be incremented past)
-					state.instructionIndex = elseOrEnd;
-					// Don't continue - let it increment past the cond_else/cond_end marker
-				}
-				break;
-			}
-
-			case 'cond_else': {
-				// We got here from a true condition (executed then branch), skip to endif
-				const mutableInstructions = instructions as Instruction[];
-				const endIndex = findConditionalEnd(mutableInstructions, state.instructionIndex + 1, false);
-				// Skip past the cond_end
-				state.instructionIndex = endIndex;
-				break;
-			}
-
-			case 'cond_end':
-				// End of conditional, continue
-				break;
-
-			case 'set_var': {
-				const varSpec = instr.value as string;
-				const varType = varSpec[0];
-				const varName = varSpec.slice(1);
-				const value = state.stack.pop() ?? 0;
-				if (varType === 's') {
-					state.staticVars.set(varName, value);
-				} else {
-					state.dynamicVars.set(varName, value);
-				}
-				break;
-			}
-
-			case 'get_var': {
-				const varSpec = instr.value as string;
-				const varType = varSpec[0];
-				const varName = varSpec.slice(1);
-				if (varType === 's') {
-					state.stack.push(state.staticVars.get(varName) ?? 0);
-				} else {
-					state.stack.push(state.dynamicVars.get(varName) ?? 0);
-				}
-				break;
-			}
+		const handler = instructionHandlers[instr.type];
+		if (handler) {
+			handler(state, instr, instructions);
 		}
 
 		state.instructionIndex++;
 	}
 
 	return state.output;
+}
+
+type InstructionHandler = (
+	state: ExecutionState,
+	instr: Instruction,
+	instructions: readonly Instruction[],
+) => void;
+
+const instructionHandlers: Record<InstructionType, InstructionHandler> = {
+	literal: (state, instr) => {
+		state.output += instr.value as string;
+	},
+	push_param: (state, instr) => {
+		const paramIndex = (instr.value as number) - 1;
+		state.stack.push(state.params[paramIndex] ?? 0);
+	},
+	push_char: (state, instr) => {
+		state.stack.push(instr.value as number);
+	},
+	push_int: (state, instr) => {
+		state.stack.push(instr.value as number);
+	},
+	increment: (state) => {
+		if (state.params.length > 0 && state.params[0] !== undefined) state.params[0]++;
+		if (state.params.length > 1 && state.params[1] !== undefined) state.params[1]++;
+	},
+	output_decimal: (state) => {
+		state.output += String(popNumber(state));
+	},
+	output_octal: (state) => {
+		state.output += popNumber(state).toString(8);
+	},
+	output_hex: (state) => {
+		state.output += popNumber(state).toString(16);
+	},
+	output_char: (state) => {
+		state.output += String.fromCharCode(popNumber(state));
+	},
+	output_string: (state) => {
+		const value = state.stack.pop();
+		state.output += String(value ?? '');
+	},
+	strlen: (state) => {
+		const value = state.stack.pop() ?? 0;
+		state.stack.push(String(value).length);
+	},
+	add: (state) => {
+		state.stack.push(popBinary(state, (a, b) => a + b));
+	},
+	subtract: (state) => {
+		state.stack.push(popBinary(state, (a, b) => a - b));
+	},
+	multiply: (state) => {
+		state.stack.push(popBinary(state, (a, b) => a * b));
+	},
+	divide: (state) => {
+		state.stack.push(popBinary(state, (a, b) => (b !== 0 ? Math.floor(a / b) : 0)));
+	},
+	modulo: (state) => {
+		state.stack.push(popBinary(state, (a, b) => (b !== 0 ? a % b : 0)));
+	},
+	bit_and: (state) => {
+		state.stack.push(popBinary(state, (a, b) => a & b));
+	},
+	bit_or: (state) => {
+		state.stack.push(popBinary(state, (a, b) => a | b));
+	},
+	bit_xor: (state) => {
+		state.stack.push(popBinary(state, (a, b) => a ^ b));
+	},
+	logical_and: (state) => {
+		state.stack.push(popBinary(state, (a, b) => (a && b ? 1 : 0)));
+	},
+	logical_or: (state) => {
+		state.stack.push(popBinary(state, (a, b) => (a || b ? 1 : 0)));
+	},
+	logical_not: (state) => {
+		const value = popNumber(state);
+		state.stack.push(value ? 0 : 1);
+	},
+	bit_not: (state) => {
+		state.stack.push(~popNumber(state));
+	},
+	equals: (state) => {
+		state.stack.push(popBinary(state, (a, b) => (a === b ? 1 : 0)));
+	},
+	less_than: (state) => {
+		state.stack.push(popBinary(state, (a, b) => (a < b ? 1 : 0)));
+	},
+	greater_than: (state) => {
+		state.stack.push(popBinary(state, (a, b) => (a > b ? 1 : 0)));
+	},
+	cond_start: () => {
+		// Marker for conditional start - used for depth tracking, no execution action
+	},
+	cond_then: (state, _instr, instructions) => {
+		const condition = popNumber(state);
+		if (!condition) {
+			const elseOrEnd = findConditionalEnd(
+				instructions as Instruction[],
+				state.instructionIndex + 1,
+				true,
+			);
+			state.instructionIndex = elseOrEnd;
+		}
+	},
+	cond_else: (state, _instr, instructions) => {
+		const endIndex = findConditionalEnd(
+			instructions as Instruction[],
+			state.instructionIndex + 1,
+			false,
+		);
+		state.instructionIndex = endIndex;
+	},
+	cond_end: () => {
+		// End of conditional, continue
+	},
+	set_var: (state, instr) => {
+		const varSpec = instr.value as string;
+		const varType = varSpec[0];
+		const varName = varSpec.slice(1);
+		const value = popNumber(state);
+		if (varType === 's') {
+			state.staticVars.set(varName, value);
+		} else {
+			state.dynamicVars.set(varName, value);
+		}
+	},
+	get_var: (state, instr) => {
+		const varSpec = instr.value as string;
+		const varType = varSpec[0];
+		const varName = varSpec.slice(1);
+		if (varType === 's') {
+			state.stack.push(state.staticVars.get(varName) ?? 0);
+		} else {
+			state.stack.push(state.dynamicVars.get(varName) ?? 0);
+		}
+	},
+};
+
+function popNumber(state: ExecutionState): number {
+	return state.stack.pop() ?? 0;
+}
+
+function popBinary(state: ExecutionState, op: (a: number, b: number) => number): number {
+	const b = popNumber(state);
+	const a = popNumber(state);
+	return op(a, b);
 }
 
 // =============================================================================

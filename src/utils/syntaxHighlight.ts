@@ -896,287 +896,386 @@ function statesEqual(a: LineState, b: LineState): boolean {
  */
 export function tokenizeLine(grammar: Grammar, line: string, startState: LineState): LineEntry {
 	const tokens: Token[] = [];
-	let pos = 0;
-	let state: LineState = { ...startState };
+	const context = createTokenizeContext(grammar, line, startState, tokens);
+	const stringDelimiters = getSortedDelimiters(grammar);
+	const handlers = buildTokenHandlers(stringDelimiters);
 
-	// Helper to add a token
-	const addToken = (type: TokenType, start: number, end: number): void => {
-		if (end > start) {
-			tokens.push({ type, start, end, text: line.slice(start, end) });
-		}
-	};
-
-	// Helper to check if a string starts at the position
-	const startsWithAt = (str: string, position: number): boolean => {
-		return line.slice(position, position + str.length) === str;
-	};
-
-	while (pos < line.length) {
-		// Handle multi-line string continuation
-		if (state.inString !== null) {
-			const quote = state.inString;
-			const stringStart = pos;
-
-			// Look for the closing quote
-			while (pos < line.length) {
-				if (line[pos] === '\\' && pos + 1 < line.length) {
-					pos += 2; // Skip escape sequence
-				} else if (
-					(quote.length === 3 && startsWithAt(quote, pos)) ||
-					(quote.length === 1 && line[pos] === quote)
-				) {
-					pos += quote.length;
-					state = { ...state, inString: null };
-					break;
-				} else {
-					pos++;
-				}
-			}
-
-			addToken('string', stringStart, pos);
+	while (context.pos < line.length) {
+		if (runTokenHandlers(context, handlers)) {
 			continue;
 		}
 
-		// Handle multi-line comment continuation
-		if (state.inComment && grammar.blockCommentEnd) {
-			const commentStart = pos;
-
-			while (pos < line.length) {
-				// Check for nested comment start (if supported)
-				if (
-					grammar.nestedComments &&
-					grammar.blockCommentStart &&
-					startsWithAt(grammar.blockCommentStart, pos)
-				) {
-					state = { ...state, commentDepth: state.commentDepth + 1 };
-					pos += grammar.blockCommentStart.length;
-				} else if (startsWithAt(grammar.blockCommentEnd, pos)) {
-					if (grammar.nestedComments && state.commentDepth > 0) {
-						state = { ...state, commentDepth: state.commentDepth - 1 };
-					} else {
-						pos += grammar.blockCommentEnd.length;
-						state = { ...state, inComment: false, commentDepth: 0 };
-						break;
-					}
-					pos += grammar.blockCommentEnd.length;
-				} else {
-					pos++;
-				}
-			}
-
-			addToken('comment', commentStart, pos);
-			continue;
-		}
-
-		// Handle template literal continuation
-		if (state.templateDepth > 0 && grammar.templateLiteralEnd) {
-			const templateStart = pos;
-
-			while (pos < line.length) {
-				if (line[pos] === '\\' && pos + 1 < line.length) {
-					pos += 2;
-				} else if (startsWithAt('${', pos)) {
-					// End of string part, entering expression
-					addToken('string', templateStart, pos);
-					pos += 2;
-					addToken('punctuation', pos - 2, pos);
-					// Template expression handling simplified: just continue
-					break;
-				} else if (startsWithAt(grammar.templateLiteralEnd, pos)) {
-					pos += grammar.templateLiteralEnd.length;
-					state = { ...state, templateDepth: state.templateDepth - 1 };
-					break;
-				} else {
-					pos++;
-				}
-			}
-
-			if (pos > templateStart) {
-				addToken('string', templateStart, pos);
-			}
-			continue;
-		}
-
-		// Handle whitespace - create a token for it to preserve indentation
-		if (/\s/.test(line[pos] || '')) {
-			const wsStart = pos;
-			while (pos < line.length && /\s/.test(line[pos] || '')) {
-				pos++;
-			}
-			addToken('text', wsStart, pos);
-			continue;
-		}
-
-		// Check for line comment
-		if (grammar.lineComment && startsWithAt(grammar.lineComment, pos)) {
-			addToken('comment', pos, line.length);
-			pos = line.length;
-			continue;
-		}
-
-		// Check for block comment start
-		if (grammar.blockCommentStart && startsWithAt(grammar.blockCommentStart, pos)) {
-			const commentStart = pos;
-			pos += grammar.blockCommentStart.length;
-
-			// Look for end on same line
-			let foundEnd = false;
-			while (pos < line.length && grammar.blockCommentEnd) {
-				if (grammar.nestedComments && startsWithAt(grammar.blockCommentStart, pos)) {
-					state = { ...state, commentDepth: state.commentDepth + 1 };
-					pos += grammar.blockCommentStart.length;
-				} else if (startsWithAt(grammar.blockCommentEnd, pos)) {
-					if (grammar.nestedComments && state.commentDepth > 0) {
-						state = { ...state, commentDepth: state.commentDepth - 1 };
-						pos += grammar.blockCommentEnd.length;
-					} else {
-						pos += grammar.blockCommentEnd.length;
-						foundEnd = true;
-						break;
-					}
-				} else {
-					pos++;
-				}
-			}
-
-			if (!foundEnd) {
-				state = { ...state, inComment: true };
-			}
-
-			addToken('comment', commentStart, pos);
-			continue;
-		}
-
-		// Check for template literal start
-		if (grammar.templateLiteralStart && startsWithAt(grammar.templateLiteralStart, pos)) {
-			const templateStart = pos;
-			pos += grammar.templateLiteralStart.length;
-
-			while (pos < line.length && grammar.templateLiteralEnd) {
-				if (line[pos] === '\\' && pos + 1 < line.length) {
-					pos += 2;
-				} else if (startsWithAt('${', pos)) {
-					addToken('string', templateStart, pos);
-					pos += 2;
-					addToken('punctuation', pos - 2, pos);
-					state = { ...state, templateDepth: state.templateDepth + 1 };
-					break;
-				} else if (startsWithAt(grammar.templateLiteralEnd, pos)) {
-					pos += grammar.templateLiteralEnd.length;
-					addToken('string', templateStart, pos);
-					break;
-				} else {
-					pos++;
-				}
-			}
-
-			if (pos >= line.length && pos > templateStart + 1) {
-				state = { ...state, templateDepth: state.templateDepth + 1 };
-				addToken('string', templateStart, pos);
-			}
-			continue;
-		}
-
-		// Check for strings (check longer delimiters first for triple-quoted strings)
-		let foundString = false;
-		const sortedDelimiters = [...grammar.stringDelimiters].sort((a, b) => b.length - a.length);
-		for (const delimiter of sortedDelimiters) {
-			if (startsWithAt(delimiter, pos)) {
-				const stringStart = pos;
-				pos += delimiter.length;
-
-				// Look for closing delimiter
-				while (pos < line.length) {
-					if (line[pos] === '\\' && pos + 1 < line.length) {
-						pos += 2;
-					} else if (
-						(delimiter.length === 3 && startsWithAt(delimiter, pos)) ||
-						(delimiter.length === 1 && line[pos] === delimiter)
-					) {
-						pos += delimiter.length;
-						break;
-					} else {
-						pos++;
-					}
-				}
-
-				// Check if string is unclosed (multi-line)
-				if (pos >= line.length && delimiter.length === 3) {
-					// Multi-line strings (Python triple quotes)
-					state = { ...state, inString: delimiter };
-				}
-
-				addToken('string', stringStart, pos);
-				foundString = true;
-				break;
-			}
-		}
-		if (foundString) continue;
-
-		// Check for numbers
-		const numMatch = grammar.numberPattern.exec(line.slice(pos));
-		if (numMatch && numMatch.index === 0) {
-			addToken('number', pos, pos + numMatch[0].length);
-			pos += numMatch[0].length;
-			continue;
-		}
-
-		// Check for identifiers and keywords
-		const idMatch = grammar.identifierPattern.exec(line.slice(pos));
-		if (idMatch && idMatch.index === 0) {
-			const word = idMatch[0];
-			let type: TokenType = 'identifier';
-
-			if (grammar.keywords.has(word)) {
-				type = 'keyword';
-			} else if (grammar.constants.has(word)) {
-				type = 'constant';
-			} else if (grammar.builtins.has(word)) {
-				type = 'builtin';
-			} else if (grammar.types.has(word)) {
-				type = 'type';
-			} else if (/^[A-Z]/.test(word)) {
-				// Pascal case is typically a type
-				type = 'type';
-			}
-
-			// Check if followed by ( for function calls
-			const afterWord = line.slice(pos + word.length).trimStart();
-			if (afterWord.startsWith('(') && type === 'identifier') {
-				type = 'function';
-			}
-
-			addToken(type, pos, pos + word.length);
-			pos += word.length;
-			continue;
-		}
-
-		// Check for operators
-		const opMatch = grammar.operators.exec(line.slice(pos));
-		if (opMatch && opMatch.index === 0) {
-			addToken('operator', pos, pos + opMatch[0].length);
-			pos += opMatch[0].length;
-			continue;
-		}
-
-		// Punctuation
-		const char = line[pos] || '';
-		if (/[()[\]{},;.]/.test(char)) {
-			addToken('punctuation', pos, pos + 1);
-			pos++;
-			continue;
-		}
-
-		// Unknown character, skip
-		pos++;
+		context.pos++;
 	}
 
 	return {
 		text: line,
-		tokens,
+		tokens: context.tokens,
 		startState,
-		endState: state,
+		endState: context.state,
 	};
+}
+
+type TokenHandler = (context: TokenizeContext) => boolean;
+
+function buildTokenHandlers(delimiters: readonly string[]): TokenHandler[] {
+	return [
+		handleInString,
+		handleInComment,
+		handleTemplateContinuation,
+		handleWhitespace,
+		handleLineComment,
+		handleBlockCommentStart,
+		handleTemplateStart,
+		(context) => handleStringDelimiter(context, delimiters),
+		handleNumber,
+		handleIdentifier,
+		handleOperator,
+		handlePunctuation,
+	];
+}
+
+function runTokenHandlers(context: TokenizeContext, handlers: readonly TokenHandler[]): boolean {
+	for (const handler of handlers) {
+		if (handler(context)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+interface TokenizeContext {
+	grammar: Grammar;
+	line: string;
+	tokens: Token[];
+	pos: number;
+	state: LineState;
+	addToken: (type: TokenType, start: number, end: number) => void;
+	startsWithAt: (str: string, position: number) => boolean;
+}
+
+function createTokenizeContext(
+	grammar: Grammar,
+	line: string,
+	startState: LineState,
+	tokens: Token[],
+): TokenizeContext {
+	return {
+		grammar,
+		line,
+		tokens,
+		pos: 0,
+		state: { ...startState },
+		addToken: (type, start, end) => {
+			if (end > start) {
+				tokens.push({ type, start, end, text: line.slice(start, end) });
+			}
+		},
+		startsWithAt: (str, position) => line.slice(position, position + str.length) === str,
+	};
+}
+
+function getSortedDelimiters(grammar: Grammar): string[] {
+	return [...grammar.stringDelimiters].sort((a, b) => b.length - a.length);
+}
+
+function handleInString(context: TokenizeContext): boolean {
+	if (context.state.inString === null) {
+		return false;
+	}
+	const quote = context.state.inString;
+	const stringStart = context.pos;
+
+	while (context.pos < context.line.length) {
+		const char = context.line[context.pos];
+		if (char === '\\' && context.pos + 1 < context.line.length) {
+			context.pos += 2;
+		} else if (
+			(quote.length === 3 && context.startsWithAt(quote, context.pos)) ||
+			(quote.length === 1 && char === quote)
+		) {
+			context.pos += quote.length;
+			context.state = { ...context.state, inString: null };
+			break;
+		} else {
+			context.pos++;
+		}
+	}
+
+	context.addToken('string', stringStart, context.pos);
+	return true;
+}
+
+function handleInComment(context: TokenizeContext): boolean {
+	if (!context.state.inComment || !context.grammar.blockCommentEnd) {
+		return false;
+	}
+	const commentStart = context.pos;
+
+	while (context.pos < context.line.length) {
+		if (
+			context.grammar.nestedComments &&
+			context.grammar.blockCommentStart &&
+			context.startsWithAt(context.grammar.blockCommentStart, context.pos)
+		) {
+			context.state = { ...context.state, commentDepth: context.state.commentDepth + 1 };
+			context.pos += context.grammar.blockCommentStart.length;
+		} else if (context.startsWithAt(context.grammar.blockCommentEnd, context.pos)) {
+			if (context.grammar.nestedComments && context.state.commentDepth > 0) {
+				context.state = { ...context.state, commentDepth: context.state.commentDepth - 1 };
+				context.pos += context.grammar.blockCommentEnd.length;
+			} else {
+				context.pos += context.grammar.blockCommentEnd.length;
+				context.state = { ...context.state, inComment: false, commentDepth: 0 };
+				break;
+			}
+		} else {
+			context.pos++;
+		}
+	}
+
+	context.addToken('comment', commentStart, context.pos);
+	return true;
+}
+
+function handleTemplateContinuation(context: TokenizeContext): boolean {
+	if (context.state.templateDepth <= 0 || !context.grammar.templateLiteralEnd) {
+		return false;
+	}
+	const templateStart = context.pos;
+
+	while (context.pos < context.line.length) {
+		if (context.line[context.pos] === '\\' && context.pos + 1 < context.line.length) {
+			context.pos += 2;
+		} else if (context.startsWithAt('${', context.pos)) {
+			context.addToken('string', templateStart, context.pos);
+			context.pos += 2;
+			context.addToken('punctuation', context.pos - 2, context.pos);
+			break;
+		} else if (context.startsWithAt(context.grammar.templateLiteralEnd, context.pos)) {
+			context.pos += context.grammar.templateLiteralEnd.length;
+			context.state = { ...context.state, templateDepth: context.state.templateDepth - 1 };
+			break;
+		} else {
+			context.pos++;
+		}
+	}
+
+	if (context.pos > templateStart) {
+		context.addToken('string', templateStart, context.pos);
+	}
+	return true;
+}
+
+function handleWhitespace(context: TokenizeContext): boolean {
+	if (!/\s/.test(context.line[context.pos] || '')) {
+		return false;
+	}
+	const wsStart = context.pos;
+	while (context.pos < context.line.length && /\s/.test(context.line[context.pos] || '')) {
+		context.pos++;
+	}
+	context.addToken('text', wsStart, context.pos);
+	return true;
+}
+
+function handleLineComment(context: TokenizeContext): boolean {
+	if (
+		!context.grammar.lineComment ||
+		!context.startsWithAt(context.grammar.lineComment, context.pos)
+	) {
+		return false;
+	}
+	context.addToken('comment', context.pos, context.line.length);
+	context.pos = context.line.length;
+	return true;
+}
+
+function handleBlockCommentStart(context: TokenizeContext): boolean {
+	if (
+		!context.grammar.blockCommentStart ||
+		!context.startsWithAt(context.grammar.blockCommentStart, context.pos)
+	) {
+		return false;
+	}
+	const commentStart = context.pos;
+	const foundEnd = scanBlockComment(context);
+
+	if (!foundEnd) {
+		context.state = { ...context.state, inComment: true };
+	}
+
+	context.addToken('comment', commentStart, context.pos);
+	return true;
+}
+
+function handleTemplateStart(context: TokenizeContext): boolean {
+	if (
+		!context.grammar.templateLiteralStart ||
+		!context.startsWithAt(context.grammar.templateLiteralStart, context.pos)
+	) {
+		return false;
+	}
+	const templateStart = context.pos;
+	context.pos += context.grammar.templateLiteralStart.length;
+
+	while (context.pos < context.line.length && context.grammar.templateLiteralEnd) {
+		if (context.line[context.pos] === '\\' && context.pos + 1 < context.line.length) {
+			context.pos += 2;
+		} else if (context.startsWithAt('${', context.pos)) {
+			context.addToken('string', templateStart, context.pos);
+			context.pos += 2;
+			context.addToken('punctuation', context.pos - 2, context.pos);
+			context.state = { ...context.state, templateDepth: context.state.templateDepth + 1 };
+			break;
+		} else if (context.startsWithAt(context.grammar.templateLiteralEnd, context.pos)) {
+			context.pos += context.grammar.templateLiteralEnd.length;
+			context.addToken('string', templateStart, context.pos);
+			break;
+		} else {
+			context.pos++;
+		}
+	}
+
+	if (context.pos >= context.line.length && context.pos > templateStart + 1) {
+		context.state = { ...context.state, templateDepth: context.state.templateDepth + 1 };
+		context.addToken('string', templateStart, context.pos);
+	}
+	return true;
+}
+
+function handleStringDelimiter(context: TokenizeContext, delimiters: readonly string[]): boolean {
+	const delimiter = findStringDelimiter(context, delimiters);
+	if (!delimiter) {
+		return false;
+	}
+	const stringStart = context.pos;
+	context.pos += delimiter.length;
+	scanStringLiteral(context, delimiter);
+
+	if (context.pos >= context.line.length && delimiter.length === 3) {
+		context.state = { ...context.state, inString: delimiter };
+	}
+
+	context.addToken('string', stringStart, context.pos);
+	return true;
+}
+
+function scanBlockComment(context: TokenizeContext): boolean {
+	if (!context.grammar.blockCommentStart || !context.grammar.blockCommentEnd) {
+		return false;
+	}
+	context.pos += context.grammar.blockCommentStart.length;
+	while (context.pos < context.line.length) {
+		if (
+			context.grammar.nestedComments &&
+			context.startsWithAt(context.grammar.blockCommentStart, context.pos)
+		) {
+			context.state = { ...context.state, commentDepth: context.state.commentDepth + 1 };
+			context.pos += context.grammar.blockCommentStart.length;
+			continue;
+		}
+		if (context.startsWithAt(context.grammar.blockCommentEnd, context.pos)) {
+			if (context.grammar.nestedComments && context.state.commentDepth > 0) {
+				context.state = { ...context.state, commentDepth: context.state.commentDepth - 1 };
+				context.pos += context.grammar.blockCommentEnd.length;
+				continue;
+			}
+			context.pos += context.grammar.blockCommentEnd.length;
+			return true;
+		}
+		context.pos++;
+	}
+	return false;
+}
+
+function findStringDelimiter(
+	context: TokenizeContext,
+	delimiters: readonly string[],
+): string | null {
+	for (const delimiter of delimiters) {
+		if (context.startsWithAt(delimiter, context.pos)) {
+			return delimiter;
+		}
+	}
+	return null;
+}
+
+function scanStringLiteral(context: TokenizeContext, delimiter: string): void {
+	while (context.pos < context.line.length) {
+		if (context.line[context.pos] === '\\' && context.pos + 1 < context.line.length) {
+			context.pos += 2;
+			continue;
+		}
+		if (
+			(delimiter.length === 3 && context.startsWithAt(delimiter, context.pos)) ||
+			(delimiter.length === 1 && context.line[context.pos] === delimiter)
+		) {
+			context.pos += delimiter.length;
+			break;
+		}
+		context.pos++;
+	}
+}
+
+function handleNumber(context: TokenizeContext): boolean {
+	const numMatch = context.grammar.numberPattern.exec(context.line.slice(context.pos));
+	if (!numMatch || numMatch.index !== 0) {
+		return false;
+	}
+	context.addToken('number', context.pos, context.pos + numMatch[0].length);
+	context.pos += numMatch[0].length;
+	return true;
+}
+
+function handleIdentifier(context: TokenizeContext): boolean {
+	const idMatch = context.grammar.identifierPattern.exec(context.line.slice(context.pos));
+	if (!idMatch || idMatch.index !== 0) {
+		return false;
+	}
+	const word = idMatch[0];
+	let type: TokenType = 'identifier';
+
+	if (context.grammar.keywords.has(word)) {
+		type = 'keyword';
+	} else if (context.grammar.constants.has(word)) {
+		type = 'constant';
+	} else if (context.grammar.builtins.has(word)) {
+		type = 'builtin';
+	} else if (context.grammar.types.has(word)) {
+		type = 'type';
+	} else if (/^[A-Z]/.test(word)) {
+		type = 'type';
+	}
+
+	const afterWord = context.line.slice(context.pos + word.length).trimStart();
+	if (afterWord.startsWith('(') && type === 'identifier') {
+		type = 'function';
+	}
+
+	context.addToken(type, context.pos, context.pos + word.length);
+	context.pos += word.length;
+	return true;
+}
+
+function handleOperator(context: TokenizeContext): boolean {
+	const opMatch = context.grammar.operators.exec(context.line.slice(context.pos));
+	if (!opMatch || opMatch.index !== 0) {
+		return false;
+	}
+	context.addToken('operator', context.pos, context.pos + opMatch[0].length);
+	context.pos += opMatch[0].length;
+	return true;
+}
+
+function handlePunctuation(context: TokenizeContext): boolean {
+	const char = context.line[context.pos] || '';
+	if (!/[()[\]{},;.]/.test(char)) {
+		return false;
+	}
+	context.addToken('punctuation', context.pos, context.pos + 1);
+	context.pos++;
+	return true;
 }
 
 // =============================================================================

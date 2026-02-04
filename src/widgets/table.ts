@@ -54,6 +54,28 @@ import {
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Converts a TableStyleConfig to TableDisplayOptions.
+ * Extracts style properties and maps them to display options.
+ */
+function styleConfigToDisplayOptions(style: TableStyleConfig): TableDisplayOptions {
+	const displayOptions: TableDisplayOptions = {};
+	if (style.border?.fg !== undefined) displayOptions.borderFg = style.border.fg;
+	if (style.border?.bg !== undefined) displayOptions.borderBg = style.border.bg;
+	if (style.header?.fg !== undefined) displayOptions.headerFg = style.header.fg;
+	if (style.header?.bg !== undefined) displayOptions.headerBg = style.header.bg;
+	if (style.cell?.fg !== undefined) displayOptions.cellFg = style.cell.fg;
+	if (style.cell?.bg !== undefined) displayOptions.cellBg = style.cell.bg;
+	if (style.altRowBg !== undefined) displayOptions.altRowBg = style.altRowBg;
+	if (style.selected?.fg !== undefined) displayOptions.selectedFg = style.selected.fg;
+	if (style.selected?.bg !== undefined) displayOptions.selectedBg = style.selected.bg;
+	return displayOptions;
+}
+
+// =============================================================================
 // TYPES
 // =============================================================================
 
@@ -350,35 +372,7 @@ export function createTable(
 
 	// Apply display styles if provided
 	if (validated.style) {
-		const displayOptions: TableDisplayOptions = {};
-		if (validated.style.border?.fg !== undefined) {
-			displayOptions.borderFg = validated.style.border.fg;
-		}
-		if (validated.style.border?.bg !== undefined) {
-			displayOptions.borderBg = validated.style.border.bg;
-		}
-		if (validated.style.header?.fg !== undefined) {
-			displayOptions.headerFg = validated.style.header.fg;
-		}
-		if (validated.style.header?.bg !== undefined) {
-			displayOptions.headerBg = validated.style.header.bg;
-		}
-		if (validated.style.cell?.fg !== undefined) {
-			displayOptions.cellFg = validated.style.cell.fg;
-		}
-		if (validated.style.cell?.bg !== undefined) {
-			displayOptions.cellBg = validated.style.cell.bg;
-		}
-		if (validated.style.altRowBg !== undefined) {
-			displayOptions.altRowBg = validated.style.altRowBg;
-		}
-		if (validated.style.selected?.fg !== undefined) {
-			displayOptions.selectedFg = validated.style.selected.fg;
-		}
-		if (validated.style.selected?.bg !== undefined) {
-			displayOptions.selectedBg = validated.style.selected.bg;
-		}
-		setTableDisplay(eid, displayOptions);
+		setTableDisplay(eid, styleConfigToDisplayOptions(validated.style));
 	}
 
 	// Create the widget object with chainable methods
@@ -522,35 +516,7 @@ export function createTable(
 		},
 
 		setStyle(style: TableStyleConfig): TableWidget {
-			const displayOptions: TableDisplayOptions = {};
-			if (style.border?.fg !== undefined) {
-				displayOptions.borderFg = style.border.fg;
-			}
-			if (style.border?.bg !== undefined) {
-				displayOptions.borderBg = style.border.bg;
-			}
-			if (style.header?.fg !== undefined) {
-				displayOptions.headerFg = style.header.fg;
-			}
-			if (style.header?.bg !== undefined) {
-				displayOptions.headerBg = style.header.bg;
-			}
-			if (style.cell?.fg !== undefined) {
-				displayOptions.cellFg = style.cell.fg;
-			}
-			if (style.cell?.bg !== undefined) {
-				displayOptions.cellBg = style.cell.bg;
-			}
-			if (style.altRowBg !== undefined) {
-				displayOptions.altRowBg = style.altRowBg;
-			}
-			if (style.selected?.fg !== undefined) {
-				displayOptions.selectedFg = style.selected.fg;
-			}
-			if (style.selected?.bg !== undefined) {
-				displayOptions.selectedBg = style.selected.bg;
-			}
-			setTableDisplay(eid, displayOptions);
+			setTableDisplay(eid, styleConfigToDisplayOptions(style));
 			markDirty(world, eid);
 			return widget;
 		},

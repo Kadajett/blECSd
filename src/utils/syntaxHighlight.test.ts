@@ -253,7 +253,7 @@ describe('tokenizeLine', () => {
 		});
 
 		it('handles template literals', () => {
-			const entry = tokenizeLine(GRAMMAR_JAVASCRIPT, '`hello ${name}`', EMPTY_STATE);
+			const entry = tokenizeLine(GRAMMAR_JAVASCRIPT, `\`hello \${name}\``, EMPTY_STATE);
 
 			const strings = entry.tokens.filter((t) => t.type === 'string');
 			expect(strings.length).toBeGreaterThanOrEqual(1);

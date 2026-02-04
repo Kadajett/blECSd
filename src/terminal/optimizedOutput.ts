@@ -320,76 +320,13 @@ function applyAttributesRaw(buffer: OutputBufferData, attrs: number): void {
  * @param y - Row (0-indexed)
  */
 export function moveCursor(buffer: OutputBufferData, x: number, y: number): void {
-	// Check if cursor is already at the target position
 	if (buffer.cursorKnown && buffer.knownCursorX === x && buffer.knownCursorY === y) {
-		if (buffer.trackStats) {
-			buffer.stats.cursorMovesSkipped++;
-			buffer.stats.bytesSaved += 8; // Approximate CUP sequence length
-		}
+		recordCursorSkip(buffer, 8);
 		return;
 	}
 
-	// Check for optimized single-character movements
-	if (buffer.cursorKnown) {
-		const dx = x - buffer.knownCursorX;
-		const dy = y - buffer.knownCursorY;
-
-		// Same line, just moved right by 1 (already there from last write)
-		if (dy === 0 && dx === 0) {
-			if (buffer.trackStats) {
-				buffer.stats.cursorMovesSkipped++;
-			}
-			buffer.knownCursorX = x;
-			buffer.knownCursorY = y;
-			return;
-		}
-
-		// Same line, move left/right
-		if (dy === 0) {
-			if (dx === 1) {
-				buffer.chunks.push('\x1b[C'); // CUF(1)
-			} else if (dx === -1) {
-				buffer.chunks.push('\x1b[D'); // CUB(1)
-			} else if (dx > 0) {
-				buffer.chunks.push(`\x1b[${dx}C`); // CUF(n)
-			} else {
-				buffer.chunks.push(`\x1b[${-dx}D`); // CUB(n)
-			}
-			buffer.knownCursorX = x;
-			if (buffer.trackStats) {
-				buffer.stats.cursorMoves++;
-			}
-			return;
-		}
-
-		// Same column, move up/down
-		if (dx === 0) {
-			if (dy === 1) {
-				buffer.chunks.push('\x1b[B'); // CUD(1)
-			} else if (dy === -1) {
-				buffer.chunks.push('\x1b[A'); // CUU(1)
-			} else if (dy > 0) {
-				buffer.chunks.push(`\x1b[${dy}B`); // CUD(n)
-			} else {
-				buffer.chunks.push(`\x1b[${-dy}A`); // CUU(n)
-			}
-			buffer.knownCursorY = y;
-			if (buffer.trackStats) {
-				buffer.stats.cursorMoves++;
-			}
-			return;
-		}
-
-		// Start of next line (common case)
-		if (x === 0 && dy === 1) {
-			buffer.chunks.push('\r\n');
-			buffer.knownCursorX = 0;
-			buffer.knownCursorY = y;
-			if (buffer.trackStats) {
-				buffer.stats.cursorMoves++;
-			}
-			return;
-		}
+	if (buffer.cursorKnown && tryOptimizedCursorMove(buffer, x, y)) {
+		return;
 	}
 
 	// Full cursor position command (1-indexed for ANSI)
@@ -398,9 +335,68 @@ export function moveCursor(buffer: OutputBufferData, x: number, y: number): void
 	buffer.knownCursorY = y;
 	buffer.cursorKnown = true;
 
+	recordCursorMove(buffer);
+}
+
+function recordCursorMove(buffer: OutputBufferData): void {
 	if (buffer.trackStats) {
 		buffer.stats.cursorMoves++;
 	}
+}
+
+function recordCursorSkip(buffer: OutputBufferData, bytesSaved: number): void {
+	if (buffer.trackStats) {
+		buffer.stats.cursorMovesSkipped++;
+		buffer.stats.bytesSaved += bytesSaved;
+	}
+}
+
+function tryOptimizedCursorMove(buffer: OutputBufferData, x: number, y: number): boolean {
+	const dx = x - buffer.knownCursorX;
+	const dy = y - buffer.knownCursorY;
+
+	if (dx === 0 && dy === 0) {
+		recordCursorSkip(buffer, 0);
+		buffer.knownCursorX = x;
+		buffer.knownCursorY = y;
+		return true;
+	}
+
+	if (dy === 0) {
+		buffer.chunks.push(horizontalMoveAnsi(dx));
+		buffer.knownCursorX = x;
+		recordCursorMove(buffer);
+		return true;
+	}
+
+	if (dx === 0) {
+		buffer.chunks.push(verticalMoveAnsi(dy));
+		buffer.knownCursorY = y;
+		recordCursorMove(buffer);
+		return true;
+	}
+
+	if (x === 0 && dy === 1) {
+		buffer.chunks.push('\r\n');
+		buffer.knownCursorX = 0;
+		buffer.knownCursorY = y;
+		recordCursorMove(buffer);
+		return true;
+	}
+
+	return false;
+}
+
+function horizontalMoveAnsi(dx: number): string {
+	if (dx === 1) return '\x1b[C';
+	if (dx === -1) return '\x1b[D';
+	return dx > 0 ? cursorAnsi.forward(dx) : cursorAnsi.back(-dx);
+}
+
+function verticalMoveAnsi(dy: number): string {
+	if (dy === 1) return '\x1b[B';
+	if (dy === -1) return '\x1b[A';
+	return dy > 0 ? cursorAnsi.down(dy) : cursorAnsi.up(-dy);
 }
 
 /**

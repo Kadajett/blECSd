@@ -67,6 +67,49 @@ const DOT5 = BRAILLE_DOT_MAP[5] as number; // row 2, col 1
 const DOT6 = BRAILLE_DOT_MAP[6] as number; // row 3, col 0
 const DOT7 = BRAILLE_DOT_MAP[7] as number; // row 3, col 1
 
+/** Mutable accumulator for braille cell processing */
+interface BrailleCellAccum {
+	dotPattern: number;
+	rSum: number;
+	gSum: number;
+	bSum: number;
+	litCount: number;
+}
+
+/**
+ * Process a single pixel and accumulate into the cell state.
+ * Returns true if pixel was lit (above threshold).
+ */
+function processPixel(
+	buf: Uint8ClampedArray,
+	idx: number,
+	threshold: number,
+	dotBit: number,
+	accum: BrailleCellAccum,
+): void {
+	const a = buf[idx + 3] as number;
+	if (a >= threshold) {
+		accum.dotPattern |= dotBit;
+		accum.rSum += buf[idx] as number;
+		accum.gSum += buf[idx + 1] as number;
+		accum.bSum += buf[idx + 2] as number;
+		accum.litCount++;
+	}
+}
+
+/**
+ * Compute average foreground color from accumulated RGB values.
+ */
+function computeForegroundColor(accum: BrailleCellAccum): number {
+	if (accum.litCount === 0) return 0;
+	const invLit = 1 / accum.litCount;
+	return (
+		(((accum.rSum * invLit + 0.5) | 0) << 16) |
+		(((accum.gSum * invLit + 0.5) | 0) << 8) |
+		((accum.bSum * invLit + 0.5) | 0)
+	);
+}
+
 /**
  * Create a braille rendering backend.
  *
@@ -109,120 +152,42 @@ export function createBrailleBackend(config?: BrailleConfig): RendererBackend {
 			const fbWidth = framebuffer.width;
 			const fbW4 = fbWidth * 4; // Row stride in bytes
 
+			// Reusable accumulator to avoid per-cell allocations
+			const accum: BrailleCellAccum = { dotPattern: 0, rSum: 0, gSum: 0, bSum: 0, litCount: 0 };
+
 			let cellIdx = 0;
 			for (let cy = 0; cy < cellsTall; cy++) {
 				const basePixelY = cy * 4;
-				// Pre-compute row base offsets
 				const row0Base = basePixelY * fbW4;
 				const row1Base = row0Base + fbW4;
 				const row2Base = row1Base + fbW4;
 				const row3Base = row2Base + fbW4;
 
 				for (let cx = 0; cx < cellsWide; cx++) {
-					const basePixelX4 = cx * 2 * 4; // Base pixel X * 4 bytes
+					const basePixelX4 = cx * 2 * 4;
 
-					let dotPattern = 0;
-					let rSum = 0;
-					let gSum = 0;
-					let bSum = 0;
-					let litCount = 0;
+					// Reset accumulator for this cell
+					accum.dotPattern = 0;
+					accum.rSum = 0;
+					accum.gSum = 0;
+					accum.bSum = 0;
+					accum.litCount = 0;
 
-					// Unrolled 2x4 pixel loop (8 pixels per cell)
-					// Row 0, Col 0
-					let idx = row0Base + basePixelX4;
-					let a = buf[idx + 3] as number;
-					if (a >= threshold) {
-						dotPattern |= DOT0;
-						rSum += buf[idx] as number;
-						gSum += buf[idx + 1] as number;
-						bSum += buf[idx + 2] as number;
-						litCount++;
-					}
-					// Row 0, Col 1
-					idx += 4;
-					a = buf[idx + 3] as number;
-					if (a >= threshold) {
-						dotPattern |= DOT1;
-						rSum += buf[idx] as number;
-						gSum += buf[idx + 1] as number;
-						bSum += buf[idx + 2] as number;
-						litCount++;
-					}
-					// Row 1, Col 0
-					idx = row1Base + basePixelX4;
-					a = buf[idx + 3] as number;
-					if (a >= threshold) {
-						dotPattern |= DOT2;
-						rSum += buf[idx] as number;
-						gSum += buf[idx + 1] as number;
-						bSum += buf[idx + 2] as number;
-						litCount++;
-					}
-					// Row 1, Col 1
-					idx += 4;
-					a = buf[idx + 3] as number;
-					if (a >= threshold) {
-						dotPattern |= DOT3;
-						rSum += buf[idx] as number;
-						gSum += buf[idx + 1] as number;
-						bSum += buf[idx + 2] as number;
-						litCount++;
-					}
-					// Row 2, Col 0
-					idx = row2Base + basePixelX4;
-					a = buf[idx + 3] as number;
-					if (a >= threshold) {
-						dotPattern |= DOT4;
-						rSum += buf[idx] as number;
-						gSum += buf[idx + 1] as number;
-						bSum += buf[idx + 2] as number;
-						litCount++;
-					}
-					// Row 2, Col 1
-					idx += 4;
-					a = buf[idx + 3] as number;
-					if (a >= threshold) {
-						dotPattern |= DOT5;
-						rSum += buf[idx] as number;
-						gSum += buf[idx + 1] as number;
-						bSum += buf[idx + 2] as number;
-						litCount++;
-					}
-					// Row 3, Col 0
-					idx = row3Base + basePixelX4;
-					a = buf[idx + 3] as number;
-					if (a >= threshold) {
-						dotPattern |= DOT6;
-						rSum += buf[idx] as number;
-						gSum += buf[idx + 1] as number;
-						bSum += buf[idx + 2] as number;
-						litCount++;
-					}
-					// Row 3, Col 1
-					idx += 4;
-					a = buf[idx + 3] as number;
-					if (a >= threshold) {
-						dotPattern |= DOT7;
-						rSum += buf[idx] as number;
-						gSum += buf[idx + 1] as number;
-						bSum += buf[idx + 2] as number;
-						litCount++;
-					}
-
-					let fg = 0;
-					if (litCount > 0) {
-						const invLit = 1 / litCount;
-						fg =
-							(((rSum * invLit + 0.5) | 0) << 16) |
-							(((gSum * invLit + 0.5) | 0) << 8) |
-							((bSum * invLit + 0.5) | 0);
-					}
+					// Process all 8 pixels in the 2x4 braille cell
+					processPixel(buf, row0Base + basePixelX4, threshold, DOT0, accum);
+					processPixel(buf, row0Base + basePixelX4 + 4, threshold, DOT1, accum);
+					processPixel(buf, row1Base + basePixelX4, threshold, DOT2, accum);
+					processPixel(buf, row1Base + basePixelX4 + 4, threshold, DOT3, accum);
+					processPixel(buf, row2Base + basePixelX4, threshold, DOT4, accum);
+					processPixel(buf, row2Base + basePixelX4 + 4, threshold, DOT5, accum);
+					processPixel(buf, row3Base + basePixelX4, threshold, DOT6, accum);
+					processPixel(buf, row3Base + basePixelX4 + 4, threshold, DOT7, accum);
 
 					cells[cellIdx++] = {
 						x: screenX + cx,
 						y: screenY + cy,
-						char: BRAILLE_CHAR_TABLE[dotPattern] ?? '⠀',
-						fg,
+						char: BRAILLE_CHAR_TABLE[accum.dotPattern] ?? '⠀',
+						fg: computeForegroundColor(accum),
 						bg: bgColor,
 					};
 				}

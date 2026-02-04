@@ -69,6 +69,41 @@ function chunkBase64(base64: string, chunkSize: number): ReadonlyArray<string> {
 }
 
 /**
+ * Build kitty graphics escape sequence for transmitting image data in chunks.
+ */
+function buildTransmitSequence(
+	chunks: ReadonlyArray<string>,
+	w: number,
+	h: number,
+	imageId: number,
+): string {
+	if (chunks.length === 0) return '';
+
+	const parts: string[] = [];
+
+	// First chunk includes image metadata
+	const firstChunk = chunks[0];
+	const moreChunks = chunks.length > 1 ? 1 : 0;
+	parts.push(`${APC_START}a=t,f=32,s=${w},v=${h},i=${imageId},m=${moreChunks};${firstChunk}${ST}`);
+
+	// Subsequent chunks (if any)
+	for (let c = 1; c < chunks.length; c++) {
+		const isLast = c === chunks.length - 1;
+		parts.push(`${APC_START}m=${isLast ? 0 : 1};${chunks[c]}${ST}`);
+	}
+
+	return parts.join('');
+}
+
+/**
+ * Build kitty graphics escape sequence for placing and cleaning up images.
+ */
+function buildDisplaySequence(newId: number, oldId: number): string {
+	// Place new image, then delete old
+	return `${APC_START}a=p,i=${newId},p=1,C=1;${ST}${APC_START}a=d,d=i,i=${oldId};${ST}`;
+}
+
+/**
  * Create a Kitty Graphics Protocol rendering backend.
  *
  * @param config - Optional kitty configuration
@@ -110,33 +145,16 @@ export function createKittyBackend(config?: KittyConfig): RendererBackend {
 			const base64Data = toBase64(framebuffer.colorBuffer);
 			const chunks = chunkBase64(base64Data, chunkSize);
 
-			// Swap to the next slot
+			// Swap to the next slot for double-buffering
 			const prevSlot = currentSlot;
 			currentSlot = currentSlot === 0 ? 1 : 0;
 			const newId = slots[currentSlot] ?? baseImageId;
 			const oldId = slots[prevSlot] ?? baseImageId + 1;
 
-			let escapeSeq = '';
+			const transmit = buildTransmitSequence(chunks, w, h, newId);
+			const display = buildDisplaySequence(newId, oldId);
 
-			// Transmit new image data in chunks (upload only, no display)
-			for (let c = 0; c < chunks.length; c++) {
-				const isLast = c === chunks.length - 1;
-				const isFirst = c === 0;
-
-				if (isFirst) {
-					escapeSeq += `${APC_START}a=t,f=32,s=${w},v=${h},i=${newId},m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
-				} else {
-					escapeSeq += `${APC_START}m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
-				}
-			}
-
-			// Place new image (old frame still visible until this point)
-			escapeSeq += `${APC_START}a=p,i=${newId},p=1,C=1;${ST}`;
-
-			// Now delete the old frame
-			escapeSeq += `${APC_START}a=d,d=i,i=${oldId};${ST}`;
-
-			return { escape: escapeSeq, cursorX: screenX, cursorY: screenY };
+			return { escape: transmit + display, cursorX: screenX, cursorY: screenY };
 		},
 
 		getPixelDimensions(cellWidth: number, cellHeight: number): { width: number; height: number } {
