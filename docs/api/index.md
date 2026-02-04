@@ -28,6 +28,7 @@ Pre-built UI widgets with chainable APIs. Each widget wraps ECS components for e
 | Widget | Description | Documentation |
 |--------|-------------|---------------|
 | Text | Text display with alignment, wrapping | [Text](./widgets/text.md) |
+| BigText | Large ASCII art text display | [BigText](./widgets/bigText.md) |
 | ScrollableText | Scrollable text area | [ScrollableText](./widgets/scrollableText.md) |
 | Line | Horizontal/vertical separator | [Line](./widgets/line.md) |
 | Loading | Loading indicator with spinner | [Loading](./widgets/loading.md) |
@@ -38,6 +39,12 @@ Pre-built UI widgets with chainable APIs. Each widget wraps ECS components for e
 | Module | Description | Documentation |
 |--------|-------------|---------------|
 | Registry | Widget type registration | [Registry](./widgets/registry.md) |
+
+## Fonts
+
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| Bitmap Fonts | Load and render bitmap fonts | [Fonts](./fonts.md) |
 
 ## Components
 

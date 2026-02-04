@@ -251,6 +251,22 @@ export {
 	Text,
 	TextConfigSchema,
 } from './text';
+// Fonts
+export type {
+	BitmapFont,
+	CharBitmap,
+	FontName,
+	FontNotFoundError,
+	RenderCharOptions,
+} from './fonts';
+export {
+	BitmapFontSchema,
+	CharBitmapSchema,
+	createFontNotFoundError,
+	getCharBitmap,
+	loadFont,
+	renderChar,
+} from './fonts';
 // Tree widget
 export type {
 	FlattenedNode,
