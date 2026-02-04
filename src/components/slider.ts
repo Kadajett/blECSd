@@ -349,7 +349,11 @@ function fireSliderCallbacks(eid: Entity, callbackMap: Map<Entity, Array<() => v
 }
 
 /** Handle slider state change callbacks */
-function handleSliderStateChange(eid: Entity, previousState: SliderState, newState: SliderState): void {
+function handleSliderStateChange(
+	eid: Entity,
+	previousState: SliderState,
+	newState: SliderState,
+): void {
 	if (previousState !== 'dragging' && newState === 'dragging') {
 		fireSliderCallbacks(eid, dragStartCallbacks);
 	} else if (previousState === 'dragging' && newState !== 'dragging') {

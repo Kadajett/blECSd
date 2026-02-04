@@ -815,25 +815,34 @@ function parseStrings(
 
 	for (let i = 0; i < count; i++) {
 		const strOffset = readInt16LE(buffer, offset + i * 2);
-
-		if (strOffset !== ABSENT_STRING && strOffset >= 0 && strOffset < tableSize) {
-			if (i < STRING_NAMES.length) {
-				const name = STRING_NAMES[i];
-				if (name) {
-					const str = readNullTerminatedString(
-						buffer,
-						tableStart + strOffset,
-						tableSize - strOffset,
-					);
-					if (str.length > 0) {
-						strings[name] = str;
-					}
-				}
-			}
+		const entry = readStringCapability(buffer, tableStart, tableSize, i, strOffset);
+		if (entry) {
+			strings[entry.name] = entry.value;
 		}
 	}
 
 	return { strings, offset: tableStart + tableSize };
+}
+
+function readStringCapability(
+	buffer: Buffer,
+	tableStart: number,
+	tableSize: number,
+	index: number,
+	strOffset: number,
+): { name: string; value: string } | null {
+	if (strOffset === ABSENT_STRING || strOffset < 0 || strOffset >= tableSize) {
+		return null;
+	}
+	const name = STRING_NAMES[index];
+	if (!name) {
+		return null;
+	}
+	const str = readNullTerminatedString(buffer, tableStart + strOffset, tableSize - strOffset);
+	if (str.length === 0) {
+		return null;
+	}
+	return { name, value: str };
 }
 
 /**
@@ -906,63 +915,51 @@ function parseExtended(
  */
 export function parseTerminfo(buffer: Buffer): ParseResult {
 	// Parse header
-	const headerResult = parseHeader(buffer);
-	if ('success' in headerResult && !headerResult.success) {
-		return headerResult;
+	const headerSection = unwrapSection(parseHeader(buffer), 'header');
+	if ('success' in headerSection) {
+		return headerSection;
 	}
-	if (!('header' in headerResult)) {
-		return headerResult as ParseResult;
-	}
-
-	const { header } = headerResult;
-	let offset = headerResult.offset;
+	const header = headerSection.value;
+	let offset = headerSection.offset;
 	const is32bit = header.magic === TERMINFO_MAGIC_EXTENDED;
 
 	// Parse names section
-	if (offset + header.nameSize > buffer.length) {
-		return {
-			success: false,
-			error: 'TRUNCATED_NAMES',
-			message: `Buffer truncated in names section at offset ${offset}`,
-		};
+	const namesSection = readNamesSection(buffer, offset, header.nameSize);
+	if ('success' in namesSection) {
+		return namesSection;
 	}
-
-	const namesStr = readNullTerminatedString(buffer, offset, header.nameSize);
-	const { names, description } = parseNames(namesStr);
-	offset += header.nameSize;
+	const { names, description } = namesSection;
+	offset = namesSection.offset;
 
 	// Parse booleans
-	const boolResult = parseBooleans(buffer, offset, header.boolCount);
-	if ('success' in boolResult && !boolResult.success) {
-		return boolResult;
+	const boolSection = unwrapSection(parseBooleans(buffer, offset, header.boolCount), 'booleans');
+	if ('success' in boolSection) {
+		return boolSection;
 	}
-	if (!('booleans' in boolResult)) {
-		return boolResult as ParseResult;
-	}
-	const { booleans } = boolResult;
-	offset = boolResult.offset;
+	const booleans = boolSection.value;
+	offset = boolSection.offset;
 
 	// Parse numbers
-	const numResult = parseNumbers(buffer, offset, header.numCount, is32bit);
-	if ('success' in numResult && !numResult.success) {
-		return numResult;
+	const numSection = unwrapSection(
+		parseNumbers(buffer, offset, header.numCount, is32bit),
+		'numbers',
+	);
+	if ('success' in numSection) {
+		return numSection;
 	}
-	if (!('numbers' in numResult)) {
-		return numResult as ParseResult;
-	}
-	const { numbers } = numResult;
-	offset = numResult.offset;
+	const numbers = numSection.value;
+	offset = numSection.offset;
 
 	// Parse strings
-	const strResult = parseStrings(buffer, offset, header.stringCount, header.stringTableSize);
-	if ('success' in strResult && !strResult.success) {
-		return strResult;
+	const strSection = unwrapSection(
+		parseStrings(buffer, offset, header.stringCount, header.stringTableSize),
+		'strings',
+	);
+	if ('success' in strSection) {
+		return strSection;
 	}
-	if (!('strings' in strResult)) {
-		return strResult as ParseResult;
-	}
-	const { strings } = strResult;
-	offset = strResult.offset;
+	const strings = strSection.value;
+	offset = strSection.offset;
 
 	// Parse extended section if present
 	let extended: TerminfoExtended | undefined;
@@ -984,6 +981,38 @@ export function parseTerminfo(buffer: Buffer): ParseResult {
 	};
 
 	return { success: true, data };
+}
+
+function unwrapSection<T extends { offset: number }, K extends keyof T>(
+	result: ParseResult | T,
+	key: K,
+): { value: T[K]; offset: number } | ParseResult {
+	if ('success' in result && !result.success) {
+		return result;
+	}
+	if (!(key in result)) {
+		return result as ParseResult;
+	}
+	return { value: result[key], offset: result.offset };
+}
+
+function readNamesSection(
+	buffer: Buffer,
+	offset: number,
+	nameSize: number,
+): { names: string[]; description?: string; offset: number } | ParseResult {
+	if (offset + nameSize > buffer.length) {
+		return {
+			success: false,
+			error: 'TRUNCATED_NAMES',
+			message: `Buffer truncated in names section at offset ${offset}`,
+		};
+	}
+
+	const namesStr = readNullTerminatedString(buffer, offset, nameSize);
+	const { names, description } = parseNames(namesStr);
+
+	return { names, description, offset: offset + nameSize };
 }
 
 /**

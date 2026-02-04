@@ -286,7 +286,11 @@ function fireCallbacks(eid: Entity, callbackMap: Map<Entity, Array<() => void>>)
 }
 
 /** Handle select state change callbacks */
-function handleSelectStateChange(eid: Entity, previousState: SelectState, newState: SelectState): void {
+function handleSelectStateChange(
+	eid: Entity,
+	previousState: SelectState,
+	newState: SelectState,
+): void {
 	if (previousState !== 'open' && newState === 'open') {
 		fireCallbacks(eid, openCallbacks);
 	} else if (previousState === 'open' && newState !== 'open') {

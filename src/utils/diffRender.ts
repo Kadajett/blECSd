@@ -170,65 +170,13 @@ function myersDiff(oldLines: readonly string[], newLines: readonly string[]): Di
 	const m = newLines.length;
 	const max = n + m;
 
-	// Handle edge cases
-	if (n === 0 && m === 0) return [];
-	if (n === 0) {
-		return newLines.map((line, i) => ({
-			type: 'add' as DiffType,
-			content: line,
-			newLineNo: i + 1,
-		}));
-	}
-	if (m === 0) {
-		return oldLines.map((line, i) => ({
-			type: 'remove' as DiffType,
-			content: line,
-			oldLineNo: i + 1,
-		}));
+	const emptyResult = buildEmptyDiff(oldLines, newLines);
+	if (emptyResult) {
+		return emptyResult;
 	}
 
-	// V array stores the furthest reaching path for each diagonal
-	// We use offset to handle negative indices
-	const vSize = 2 * max + 1;
-	const v: number[] = new Array(vSize).fill(0);
-	const offset = max;
-
-	// Store the path for backtracking
-	const trace: number[][] = [];
-
-	// Find the shortest edit script
-	outer: for (let d = 0; d <= max; d++) {
-		// Save current v for backtracking
-		trace.push(v.slice());
-
-		for (let k = -d; k <= d; k += 2) {
-			// Decide whether to go down or right
-			let x: number;
-			if (k === -d || (k !== d && (v[k - 1 + offset] ?? 0) < (v[k + 1 + offset] ?? 0))) {
-				x = v[k + 1 + offset] ?? 0; // Move down (insert)
-			} else {
-				x = (v[k - 1 + offset] ?? 0) + 1; // Move right (delete)
-			}
-
-			let y = x - k;
-
-			// Follow diagonal (matching lines)
-			while (x < n && y < m && oldLines[x] === newLines[y]) {
-				x++;
-				y++;
-			}
-
-			v[k + offset] = x;
-
-			// Check if we've reached the end
-			if (x >= n && y >= m) {
-				break outer;
-			}
-		}
-	}
-
-	// Backtrack to build the diff
-	return backtrackMyers(trace, oldLines, newLines, offset);
+	const traceResult = buildMyersTrace(oldLines, newLines, max);
+	return backtrackMyers(traceResult.trace, oldLines, newLines, traceResult.offset);
 }
 
 /**
@@ -250,48 +198,20 @@ function backtrackMyers(
 		const k = x - y;
 
 		// Determine previous k
-		let prevK: number;
-		if (k === -d || (k !== d && (v[k - 1 + offset] ?? 0) < (v[k + 1 + offset] ?? 0))) {
-			prevK = k + 1;
-		} else {
-			prevK = k - 1;
-		}
+		const prevK = getPrevK(k, d, v, offset);
 
 		const prevX = v[prevK + offset] ?? 0;
 		const prevY = prevX - prevK;
 
 		// Add diagonal moves (context lines) - in reverse
-		while (x > prevX && y > prevY) {
-			x--;
-			y--;
-			result.unshift({
-				type: 'context',
-				content: oldLines[x] ?? '',
-				oldLineNo: x + 1,
-				newLineNo: y + 1,
-			});
-		}
+		const updated = addDiagonalContext(result, oldLines, x, y, prevX, prevY);
+		x = updated.x;
+		y = updated.y;
 
 		// Add the edit
-		if (d > 0) {
-			if (x === prevX) {
-				// Insert
-				y--;
-				result.unshift({
-					type: 'add',
-					content: newLines[y] ?? '',
-					newLineNo: y + 1,
-				});
-			} else {
-				// Delete
-				x--;
-				result.unshift({
-					type: 'remove',
-					content: oldLines[x] ?? '',
-					oldLineNo: x + 1,
-				});
-			}
-		}
+		const edit = addBacktrackEdit(result, oldLines, newLines, d, x, y, prevX);
+		x = edit.x;
+		y = edit.y;
 	}
 
 	return result;
@@ -343,30 +263,10 @@ function backtrackLCS(
 	const ops: { type: DiffType; line: string; oldNo?: number; newNo?: number }[] = [];
 
 	while (i > 0 || j > 0) {
-		if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
-			ops.unshift({
-				type: 'context',
-				line: oldLines[i - 1]!,
-				oldNo: i,
-				newNo: j,
-			});
-			i--;
-			j--;
-		} else if (j > 0 && (i === 0 || (dp[i]?.[j - 1] ?? 0) >= (dp[i - 1]?.[j] ?? 0))) {
-			ops.unshift({
-				type: 'add',
-				line: newLines[j - 1]!,
-				newNo: j,
-			});
-			j--;
-		} else {
-			ops.unshift({
-				type: 'remove',
-				line: oldLines[i - 1]!,
-				oldNo: i,
-			});
-			i--;
-		}
+		const step = getLcsStep(dp, oldLines, newLines, i, j);
+		ops.unshift(step.op);
+		i = step.nextI;
+		j = step.nextJ;
 	}
 
 	for (const op of ops) {
@@ -495,10 +395,7 @@ export function computeDiff(
 
 	const contextLines = config.contextLines ?? DEFAULT_CONTEXT;
 	const collapseThreshold = config.collapseThreshold ?? DEFAULT_COLLAPSE_THRESHOLD;
-
-	// Split into lines (handle empty string case)
-	const oldLines = oldText === '' ? [] : oldText.split('\n');
-	const newLines = newText === '' ? [] : newText.split('\n');
+	const { oldLines, newLines } = splitDiffInput(oldText, newText);
 
 	// Compute diff using best algorithm for input size
 	// Myers' algorithm is O((N+M)D) - much faster for similar files
@@ -509,30 +406,17 @@ export function computeDiff(
 
 	// Mark initial collapse state if configured
 	if (config.initiallyCollapsed) {
-		for (const chunk of chunks) {
-			const hasChanges = chunk.lines.some((l) => l.type === 'add' || l.type === 'remove');
-			if (!hasChanges) {
-				chunk.collapsed = true;
-			}
-		}
+		applyInitialCollapse(chunks);
 	}
 
 	// Count stats
-	let additions = 0;
-	let deletions = 0;
-	let contextCount = 0;
-
-	for (const line of diffLines) {
-		if (line.type === 'add') additions++;
-		else if (line.type === 'remove') deletions++;
-		else if (line.type === 'context') contextCount++;
-	}
+	const stats = countDiffStats(diffLines);
 
 	return {
 		chunks,
-		additions,
-		deletions,
-		contextLines: contextCount,
+		additions: stats.additions,
+		deletions: stats.deletions,
+		contextLines: stats.contextLines,
 		computeTimeMs: performance.now() - startTime,
 	};
 }
@@ -762,88 +646,7 @@ export function getSideBySideView(
 	startLine: number,
 	viewportSize: number,
 ): readonly SideBySideLine[] {
-	const pairs: SideBySideLine[] = [];
-
-	// Build pairs from all chunks
-	for (const chunk of result.chunks) {
-		if (chunk.collapsed) {
-			pairs.push({
-				left: undefined,
-				right: undefined,
-			});
-			continue;
-		}
-
-		// Group lines into matched pairs
-		const removes: DiffLine[] = [];
-		const adds: DiffLine[] = [];
-
-		for (const line of chunk.lines) {
-			if (line.type === 'context') {
-				// Flush pending removes/adds as pairs first
-				while (removes.length > 0 || adds.length > 0) {
-					const remove = removes.shift();
-					const add = adds.shift();
-					pairs.push({
-						left: remove
-							? {
-									lineNo: remove.oldLineNo ?? 0,
-									content: remove.content,
-									type: 'remove',
-								}
-							: undefined,
-						right: add
-							? {
-									lineNo: add.newLineNo ?? 0,
-									content: add.content,
-									type: 'add',
-								}
-							: undefined,
-					});
-				}
-
-				// Add context line to both sides
-				pairs.push({
-					left: {
-						lineNo: line.oldLineNo ?? 0,
-						content: line.content,
-						type: 'context',
-					},
-					right: {
-						lineNo: line.newLineNo ?? 0,
-						content: line.content,
-						type: 'context',
-					},
-				});
-			} else if (line.type === 'remove') {
-				removes.push(line);
-			} else if (line.type === 'add') {
-				adds.push(line);
-			}
-		}
-
-		// Flush remaining
-		while (removes.length > 0 || adds.length > 0) {
-			const remove = removes.shift();
-			const add = adds.shift();
-			pairs.push({
-				left: remove
-					? {
-							lineNo: remove.oldLineNo ?? 0,
-							content: remove.content,
-							type: 'remove',
-						}
-					: undefined,
-				right: add
-					? {
-							lineNo: add.newLineNo ?? 0,
-							content: add.content,
-							type: 'add',
-						}
-					: undefined,
-			});
-		}
-	}
+	const pairs = buildSideBySidePairs(result);
 
 	// Return visible portion
 	const start = Math.max(0, startLine);
@@ -906,61 +709,30 @@ export function parseUnifiedDiff(diffText: string): DiffResult {
 
 		const headerMatch = chunkHeaderRegex.exec(line);
 		if (headerMatch) {
-			// Save previous chunk
-			if (currentChunk && currentLines.length > 0) {
-				chunks.push({
-					...currentChunk,
-					lines: currentLines,
-				});
-			}
-
-			// Start new chunk
-			currentChunk = {
-				id: chunkId++,
-				oldStart: parseInt(headerMatch[1]!, 10),
-				oldCount: parseInt(headerMatch[2] ?? '1', 10),
-				newStart: parseInt(headerMatch[3]!, 10),
-				newCount: parseInt(headerMatch[4] ?? '1', 10),
-				lines: [],
-				collapsed: false,
-				contextBefore: 0,
-				contextAfter: 0,
-			};
-			currentLines = [];
+			const chunk = buildChunkHeader(headerMatch, chunkId);
+			chunkId += 1;
+			const flushed = flushUnifiedChunk(chunks, currentChunk, currentLines);
+			currentChunk = chunk;
+			currentLines = flushed;
 			continue;
 		}
 
-		if (!currentChunk) continue;
-
-		let type: DiffType;
-		let content: string;
-
-		if (line.startsWith('+')) {
-			type = 'add';
-			content = line.slice(1);
-			additions++;
-		} else if (line.startsWith('-')) {
-			type = 'remove';
-			content = line.slice(1);
-			deletions++;
-		} else if (line.startsWith(' ')) {
-			type = 'context';
-			content = line.slice(1);
-			contextLines++;
-		} else {
+		if (!currentChunk) {
 			continue;
 		}
 
-		currentLines.push({ type, content });
+		const parsedLine = parseUnifiedLine(line);
+		if (!parsedLine) {
+			continue;
+		}
+		currentLines.push(parsedLine.line);
+		additions += parsedLine.additions;
+		deletions += parsedLine.deletions;
+		contextLines += parsedLine.contextLines;
 	}
 
 	// Save last chunk
-	if (currentChunk && currentLines.length > 0) {
-		chunks.push({
-			...currentChunk,
-			lines: currentLines,
-		});
-	}
+	flushUnifiedChunk(chunks, currentChunk, currentLines);
 
 	return {
 		chunks,
@@ -969,6 +741,339 @@ export function parseUnifiedDiff(diffText: string): DiffResult {
 		contextLines,
 		computeTimeMs: performance.now() - startTime,
 	};
+}
+
+function buildEmptyDiff(
+	oldLines: readonly string[],
+	newLines: readonly string[],
+): DiffLine[] | null {
+	const n = oldLines.length;
+	const m = newLines.length;
+	if (n === 0 && m === 0) return [];
+	if (n === 0) {
+		return newLines.map((line, i) => ({
+			type: 'add' as DiffType,
+			content: line,
+			newLineNo: i + 1,
+		}));
+	}
+	if (m === 0) {
+		return oldLines.map((line, i) => ({
+			type: 'remove' as DiffType,
+			content: line,
+			oldLineNo: i + 1,
+		}));
+	}
+	return null;
+}
+
+function buildMyersTrace(
+	oldLines: readonly string[],
+	newLines: readonly string[],
+	max: number,
+): { trace: number[][]; offset: number } {
+	const n = oldLines.length;
+	const m = newLines.length;
+	const vSize = 2 * max + 1;
+	const v: number[] = new Array(vSize).fill(0);
+	const offset = max;
+	const trace: number[][] = [];
+
+	outer: for (let d = 0; d <= max; d++) {
+		trace.push(v.slice());
+
+		for (let k = -d; k <= d; k += 2) {
+			const x = stepMyersPath(v, k, d, offset);
+			const y = advanceMyersDiagonal(oldLines, newLines, x, k);
+			v[k + offset] = y.x;
+			if (y.x >= n && y.y >= m) {
+				break outer;
+			}
+		}
+	}
+
+	return { trace, offset };
+}
+
+function stepMyersPath(v: number[], k: number, d: number, offset: number): number {
+	const downPath = k === -d || (k !== d && (v[k - 1 + offset] ?? 0) < (v[k + 1 + offset] ?? 0));
+	return downPath ? (v[k + 1 + offset] ?? 0) : (v[k - 1 + offset] ?? 0) + 1;
+}
+
+function advanceMyersDiagonal(
+	oldLines: readonly string[],
+	newLines: readonly string[],
+	startX: number,
+	k: number,
+): { x: number; y: number } {
+	let x = startX;
+	let y = x - k;
+	while (x < oldLines.length && y < newLines.length && oldLines[x] === newLines[y]) {
+		x++;
+		y++;
+	}
+	return { x, y };
+}
+
+function getPrevK(k: number, d: number, v: number[], offset: number): number {
+	const downPath = k === -d || (k !== d && (v[k - 1 + offset] ?? 0) < (v[k + 1 + offset] ?? 0));
+	return downPath ? k + 1 : k - 1;
+}
+
+function addDiagonalContext(
+	result: DiffLine[],
+	oldLines: readonly string[],
+	x: number,
+	y: number,
+	prevX: number,
+	prevY: number,
+): { x: number; y: number } {
+	let currentX = x;
+	let currentY = y;
+	while (currentX > prevX && currentY > prevY) {
+		currentX--;
+		currentY--;
+		result.unshift({
+			type: 'context',
+			content: oldLines[currentX] ?? '',
+			oldLineNo: currentX + 1,
+			newLineNo: currentY + 1,
+		});
+	}
+	return { x: currentX, y: currentY };
+}
+
+function addBacktrackEdit(
+	result: DiffLine[],
+	oldLines: readonly string[],
+	newLines: readonly string[],
+	d: number,
+	x: number,
+	y: number,
+	prevX: number,
+): { x: number; y: number } {
+	if (d <= 0) {
+		return { x, y };
+	}
+	if (x === prevX) {
+		const nextY = y - 1;
+		result.unshift({
+			type: 'add',
+			content: newLines[nextY] ?? '',
+			newLineNo: nextY + 1,
+		});
+		return { x, y: nextY };
+	}
+	const nextX = x - 1;
+	result.unshift({
+		type: 'remove',
+		content: oldLines[nextX] ?? '',
+		oldLineNo: nextX + 1,
+	});
+	return { x: nextX, y };
+}
+
+function splitDiffInput(
+	oldText: string,
+	newText: string,
+): { oldLines: string[]; newLines: string[] } {
+	return {
+		oldLines: oldText === '' ? [] : oldText.split('\n'),
+		newLines: newText === '' ? [] : newText.split('\n'),
+	};
+}
+
+function applyInitialCollapse(chunks: DiffChunk[]): void {
+	for (const chunk of chunks) {
+		const hasChanges = chunk.lines.some((l) => l.type === 'add' || l.type === 'remove');
+		if (!hasChanges) {
+			chunk.collapsed = true;
+		}
+	}
+}
+
+function countDiffStats(lines: readonly DiffLine[]): {
+	additions: number;
+	deletions: number;
+	contextLines: number;
+} {
+	let additions = 0;
+	let deletions = 0;
+	let contextLines = 0;
+
+	for (const line of lines) {
+		if (line.type === 'add') {
+			additions++;
+		} else if (line.type === 'remove') {
+			deletions++;
+		} else if (line.type === 'context') {
+			contextLines++;
+		}
+	}
+
+	return { additions, deletions, contextLines };
+}
+
+function buildSideBySidePairs(result: DiffResult): SideBySideLine[] {
+	const pairs: SideBySideLine[] = [];
+
+	for (const chunk of result.chunks) {
+		if (chunk.collapsed) {
+			pairs.push({ left: undefined, right: undefined });
+			continue;
+		}
+
+		const removes: DiffLine[] = [];
+		const adds: DiffLine[] = [];
+
+		for (const line of chunk.lines) {
+			if (line.type === 'context') {
+				flushSideBySidePairs(pairs, removes, adds);
+				pairs.push({
+					left: toSideBySideEntry(line, 'context', 'left'),
+					right: toSideBySideEntry(line, 'context', 'right'),
+				});
+				continue;
+			}
+			if (line.type === 'remove') {
+				removes.push(line);
+				continue;
+			}
+			if (line.type === 'add') {
+				adds.push(line);
+			}
+		}
+
+		flushSideBySidePairs(pairs, removes, adds);
+	}
+
+	return pairs;
+}
+
+function flushSideBySidePairs(
+	pairs: SideBySideLine[],
+	removes: DiffLine[],
+	adds: DiffLine[],
+): void {
+	while (removes.length > 0 || adds.length > 0) {
+		const remove = removes.shift();
+		const add = adds.shift();
+		pairs.push({
+			left: remove ? toSideBySideEntry(remove, 'remove', 'left') : undefined,
+			right: add ? toSideBySideEntry(add, 'add', 'right') : undefined,
+		});
+	}
+}
+
+function toSideBySideEntry(
+	line: DiffLine,
+	type: 'context' | 'add' | 'remove',
+	side: 'left' | 'right',
+): SideBySideEntry {
+	const lineNo = side === 'left' ? line.oldLineNo : line.newLineNo;
+	return {
+		lineNo: lineNo ?? 0,
+		content: line.content,
+		type,
+	};
+}
+
+function buildChunkHeader(match: RegExpExecArray, chunkId: number): DiffChunk {
+	return {
+		id: chunkId,
+		oldStart: parseInt(match[1] ?? '0', 10),
+		oldCount: parseInt(match[2] ?? '1', 10),
+		newStart: parseInt(match[3] ?? '0', 10),
+		newCount: parseInt(match[4] ?? '1', 10),
+		lines: [],
+		collapsed: false,
+		contextBefore: 0,
+		contextAfter: 0,
+	};
+}
+
+function getLcsStep(
+	dp: number[][],
+	oldLines: readonly string[],
+	newLines: readonly string[],
+	i: number,
+	j: number,
+): {
+	op: { type: DiffType; line: string; oldNo?: number; newNo?: number };
+	nextI: number;
+	nextJ: number;
+} {
+	const oldLine = i > 0 ? oldLines[i - 1] : undefined;
+	const newLine = j > 0 ? newLines[j - 1] : undefined;
+
+	if (oldLine !== undefined && newLine !== undefined && oldLine === newLine) {
+		return {
+			op: { type: 'context', line: oldLine, oldNo: i, newNo: j },
+			nextI: i - 1,
+			nextJ: j - 1,
+		};
+	}
+
+	const preferAdd =
+		newLine !== undefined && (i === 0 || (dp[i]?.[j - 1] ?? 0) >= (dp[i - 1]?.[j] ?? 0));
+	if (preferAdd) {
+		return {
+			op: { type: 'add', line: newLine, newNo: j },
+			nextI: i,
+			nextJ: j - 1,
+		};
+	}
+
+	return {
+		op: { type: 'remove', line: oldLine ?? '', oldNo: i },
+		nextI: i - 1,
+		nextJ: j,
+	};
+}
+
+function flushUnifiedChunk(
+	chunks: DiffChunk[],
+	currentChunk: DiffChunk | null,
+	currentLines: DiffLine[],
+): DiffLine[] {
+	if (!currentChunk || currentLines.length === 0) {
+		return currentLines;
+	}
+	chunks.push({
+		...currentChunk,
+		lines: currentLines,
+	});
+	return [];
+}
+
+function parseUnifiedLine(
+	line: string,
+): { line: DiffLine; additions: number; deletions: number; contextLines: number } | null {
+	if (line.startsWith('+')) {
+		return {
+			line: { type: 'add', content: line.slice(1) },
+			additions: 1,
+			deletions: 0,
+			contextLines: 0,
+		};
+	}
+	if (line.startsWith('-')) {
+		return {
+			line: { type: 'remove', content: line.slice(1) },
+			additions: 0,
+			deletions: 1,
+			contextLines: 0,
+		};
+	}
+	if (line.startsWith(' ')) {
+		return {
+			line: { type: 'context', content: line.slice(1) },
+			additions: 0,
+			deletions: 0,
+			contextLines: 1,
+		};
+	}
+	return null;
 }
 
 // =============================================================================

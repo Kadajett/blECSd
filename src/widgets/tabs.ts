@@ -354,10 +354,29 @@ const tabDataStore = new Map<Entity, TabData[]>();
  * Parses a color value to a packed 32-bit color.
  */
 function parseColor(color: string | number): number {
-	if (typeof color === 'string') {
-		return hexToColor(color);
-	}
-	return color;
+	return typeof color === 'string' ? hexToColor(color) : color;
+}
+
+/** Converts tab config to internal TabData. */
+function tabConfigToData(tab: {
+	label: string;
+	content?: number | (() => number);
+	closable?: boolean;
+}): TabData {
+	return {
+		label: tab.label,
+		contentEntity: typeof tab.content === 'number' ? tab.content : null,
+		lazyLoader: typeof tab.content === 'function' ? (tab.content as () => Entity) : null,
+		closable: tab.closable ?? false,
+		loaded: typeof tab.content === 'number',
+	};
+}
+
+/** Initializes tab data store from config. */
+function initializeTabData(eid: Entity, tabs: ValidatedTabsConfig['tabs']): TabData[] {
+	const tabData = tabs ? tabs.map(tabConfigToData) : [];
+	tabDataStore.set(eid, tabData);
+	return tabData;
 }
 
 /**
@@ -380,6 +399,92 @@ function parseDimension(value: string | number | undefined): number | `${number}
 		return value as `${number}%`;
 	}
 	return value;
+}
+
+/**
+ * Handles key events for tabs navigation.
+ */
+function handleTabsKey(key: string, widget: TabsWidget): TabsAction | null {
+	if (key === 'Tab' || key === 'right') {
+		widget.nextTab();
+		return { type: 'next' };
+	}
+	if (key === 'S-Tab' || key === 'left') {
+		widget.prevTab();
+		return { type: 'prev' };
+	}
+	// Number keys 1-9 for direct tab access
+	if (key >= '1' && key <= '9') {
+		const idx = Number.parseInt(key, 10) - 1;
+		const count = widget.getTabCount();
+		if (idx < count) {
+			widget.setActiveTab(idx);
+			return { type: 'goto', index: idx };
+		}
+	}
+	return null;
+}
+
+/**
+ * Sets up style for tabs from config.
+ */
+function applyTabsStyle(world: World, eid: Entity, validated: ValidatedTabsConfig): void {
+	if (validated.fg !== undefined || validated.bg !== undefined) {
+		setStyle(world, eid, {
+			fg: validated.fg !== undefined ? parseColor(validated.fg) : undefined,
+			bg: validated.bg !== undefined ? parseColor(validated.bg) : undefined,
+		});
+	}
+}
+
+/**
+ * Sets up border for tabs from config.
+ */
+function applyTabsBorder(world: World, eid: Entity, validated: ValidatedTabsConfig): void {
+	const borderConfig = validated.style?.border;
+	if (borderConfig?.type === 'none') return;
+
+	setBorder(world, eid, {
+		type: borderConfig?.type === 'bg' ? BorderType.Background : BorderType.Line,
+		fg: borderConfig?.fg !== undefined ? parseColor(borderConfig.fg) : undefined,
+		bg: borderConfig?.bg !== undefined ? parseColor(borderConfig.bg) : undefined,
+	});
+}
+
+/**
+ * Loads lazy content for a tab if needed.
+ */
+function loadTabContentImpl(world: World, eid: Entity, index: number): void {
+	const data = tabDataStore.get(eid);
+	if (!data || index < 0 || index >= data.length) return;
+
+	const tab = data[index];
+	if (!tab) return;
+
+	if (!tab.loaded && tab.lazyLoader) {
+		tab.contentEntity = tab.lazyLoader();
+		tab.loaded = true;
+		if (tab.contentEntity !== null) {
+			appendChild(world, eid, tab.contentEntity);
+		}
+	}
+}
+
+/**
+ * Shows content for the active tab and hides others.
+ */
+function updateTabContentVisibility(world: World, eid: Entity): void {
+	const data = tabDataStore.get(eid);
+	if (!data) return;
+
+	const activeIdx = Tabs.activeTab[eid] as number;
+
+	for (let i = 0; i < data.length; i++) {
+		const tab = data[i];
+		if (tab?.contentEntity !== null && tab?.contentEntity !== undefined) {
+			setVisible(world, tab.contentEntity, i === activeIdx);
+		}
+	}
 }
 
 /**
@@ -464,105 +569,35 @@ export function createTabs(world: World, entity: Entity, config: TabsConfig = {}
 	const validated = TabsConfigSchema.parse(config) as ValidatedTabsConfig;
 	const eid = entity;
 
-	// Mark as tabs
+	// Mark as tabs and initialize data
 	Tabs.isTabs[eid] = 1;
 	Tabs.position[eid] = validated.position === 'bottom' ? 1 : 0;
-
-	// Initialize tab data
-	const tabData: TabData[] = [];
-	if (validated.tabs) {
-		for (const tab of validated.tabs) {
-			const data: TabData = {
-				label: tab.label,
-				contentEntity: typeof tab.content === 'number' ? tab.content : null,
-				lazyLoader: typeof tab.content === 'function' ? (tab.content as () => Entity) : null,
-				closable: tab.closable ?? false,
-				loaded: typeof tab.content === 'number',
-			};
-			tabData.push(data);
-		}
-	}
-	tabDataStore.set(eid, tabData);
+	const tabData = initializeTabData(eid, validated.tabs);
 	Tabs.tabCount[eid] = tabData.length;
-
-	// Set active tab
 	const activeTab = Math.min(validated.activeTab ?? 0, Math.max(0, tabData.length - 1));
 	Tabs.activeTab[eid] = activeTab;
 
-	// Set up position
-	const x = parsePositionToNumber(validated.left);
-	const y = parsePositionToNumber(validated.top);
-	setPosition(world, eid, x, y);
+	// Set up layout
+	setPosition(
+		world,
+		eid,
+		parsePositionToNumber(validated.left),
+		parsePositionToNumber(validated.top),
+	);
+	setDimensions(world, eid, parseDimension(validated.width), parseDimension(validated.height));
 
-	// Set up dimensions
-	const width = parseDimension(validated.width);
-	const height = parseDimension(validated.height);
-	setDimensions(world, eid, width, height);
+	// Set up style and border
+	applyTabsStyle(world, eid, validated);
+	applyTabsBorder(world, eid, validated);
 
-	// Set up style
-	if (validated.fg !== undefined || validated.bg !== undefined) {
-		setStyle(world, eid, {
-			fg: validated.fg !== undefined ? parseColor(validated.fg) : undefined,
-			bg: validated.bg !== undefined ? parseColor(validated.bg) : undefined,
-		});
-	}
-
-	// Set up border
-	const borderConfig = validated.style?.border;
-	if (borderConfig?.type !== 'none') {
-		setBorder(world, eid, {
-			type: borderConfig?.type === 'bg' ? BorderType.Background : BorderType.Line,
-			fg: borderConfig?.fg !== undefined ? parseColor(borderConfig.fg) : undefined,
-			bg: borderConfig?.bg !== undefined ? parseColor(borderConfig.bg) : undefined,
-		});
-	}
-
-	// Make focusable
+	// Set default state
 	setFocusable(world, eid, { focusable: true });
-
-	// Default to visible
 	setVisible(world, eid, true);
-
-	/**
-	 * Loads lazy content for a tab if needed.
-	 */
-	function loadTabContent(index: number): void {
-		const data = tabDataStore.get(eid);
-		if (!data || index < 0 || index >= data.length) return;
-
-		const tab = data[index];
-		if (!tab) return;
-
-		if (!tab.loaded && tab.lazyLoader) {
-			tab.contentEntity = tab.lazyLoader();
-			tab.loaded = true;
-			if (tab.contentEntity !== null) {
-				appendChild(world, eid, tab.contentEntity);
-			}
-		}
-	}
-
-	/**
-	 * Shows content for the active tab and hides others.
-	 */
-	function updateContentVisibility(): void {
-		const data = tabDataStore.get(eid);
-		if (!data) return;
-
-		const activeIdx = Tabs.activeTab[eid] as number;
-
-		for (let i = 0; i < data.length; i++) {
-			const tab = data[i];
-			if (tab?.contentEntity !== null && tab?.contentEntity !== undefined) {
-				setVisible(world, tab.contentEntity, i === activeIdx);
-			}
-		}
-	}
 
 	// Load and show initial active tab content
 	if (tabData.length > 0) {
-		loadTabContent(activeTab);
-		updateContentVisibility();
+		loadTabContentImpl(world, eid, activeTab);
+		updateTabContentVisibility(world, eid);
 	}
 
 	// Create the widget object with chainable methods
@@ -626,7 +661,7 @@ export function createTabs(world: World, entity: Entity, config: TabsConfig = {}
 				Tabs.activeTab[eid] = 0;
 			}
 
-			updateContentVisibility();
+			updateTabContentVisibility(world, eid);
 			markDirty(world, eid);
 			return widget;
 		},
@@ -640,8 +675,8 @@ export function createTabs(world: World, entity: Entity, config: TabsConfig = {}
 			if (!data || index < 0 || index >= data.length) return widget;
 
 			Tabs.activeTab[eid] = index;
-			loadTabContent(index);
-			updateContentVisibility();
+			loadTabContentImpl(world, eid, index);
+			updateTabContentVisibility(world, eid);
 			markDirty(world, eid);
 			return widget;
 		},
@@ -710,36 +745,7 @@ export function createTabs(world: World, entity: Entity, config: TabsConfig = {}
 		// Key handling
 		handleKey(key: string): TabsAction | null {
 			if (!widget.isFocused()) return null;
-
-			switch (key) {
-				case 'Tab':
-				case 'right':
-					widget.nextTab();
-					return { type: 'next' };
-				case 'S-Tab':
-				case 'left':
-					widget.prevTab();
-					return { type: 'prev' };
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9': {
-					const idx = Number.parseInt(key, 10) - 1;
-					const count = widget.getTabCount();
-					if (idx < count) {
-						widget.setActiveTab(idx);
-						return { type: 'goto', index: idx };
-					}
-					return null;
-				}
-				default:
-					return null;
-			}
+			return handleTabsKey(key, widget);
 		},
 
 		// Lifecycle

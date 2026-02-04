@@ -490,10 +490,10 @@ export function getConnectionFlags(
 	const bottomEdges = ctx.edges.get(posKey(x, y + 1));
 
 	return {
-		left: leftEdges?.some((e) => e.type === 'h' || e.type === 'c'),
-		right: rightEdges?.some((e) => e.type === 'h' || e.type === 'c'),
-		top: topEdges?.some((e) => e.type === 'v' || e.type === 'c'),
-		bottom: bottomEdges?.some((e) => e.type === 'v' || e.type === 'c'),
+		left: leftEdges?.some((e) => e.type === 'h' || e.type === 'c') ?? false,
+		right: rightEdges?.some((e) => e.type === 'h' || e.type === 'c') ?? false,
+		top: topEdges?.some((e) => e.type === 'v' || e.type === 'c') ?? false,
+		bottom: bottomEdges?.some((e) => e.type === 'v' || e.type === 'c') ?? false,
 	};
 }
 
@@ -605,10 +605,7 @@ export function detectJunctions(ctx: BorderDockingContext): Junction[] {
  * @returns Array of detected junctions
  */
 /** Extend connection flags based on edge types at position */
-function extendConnectionFlags(
-	connections: ConnectionFlags,
-	edges: BorderEdge[],
-): ConnectionFlags {
+function extendConnectionFlags(connections: ConnectionFlags, edges: BorderEdge[]): ConnectionFlags {
 	const hasHorizontal = edges.some((e) => e.type === 'h');
 	const hasVertical = edges.some((e) => e.type === 'v');
 	return {

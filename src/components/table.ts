@@ -871,7 +871,12 @@ function formatCell(cell: TableCell, colWidth: number, padding: number, padStr: 
 }
 
 /** Render a single row */
-function renderRow(row: TableCell[], colWidths: number[], padding: number, cellBorders: boolean): string {
+function renderRow(
+	row: TableCell[],
+	colWidths: number[],
+	padding: number,
+	cellBorders: boolean,
+): string {
 	const padStr = ' '.repeat(padding);
 	const separator = cellBorders ? '│' : '';
 	let line = '';

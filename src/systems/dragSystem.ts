@@ -268,7 +268,7 @@ function applyAxisConstraint(
 	eid: Entity,
 	x: number,
 	y: number,
-	axis: 'x' | 'y' | undefined,
+	axis: 'x' | 'y' | null | undefined,
 ): { x: number; y: number } {
 	if (axis === 'x') return { x, y: (Position.y[eid] as number | undefined) ?? y };
 	if (axis === 'y') return { x: (Position.x[eid] as number | undefined) ?? x, y };
@@ -279,7 +279,7 @@ function applyAxisConstraint(
 function applyGridSnap(
 	x: number,
 	y: number,
-	grid: { x: number; y: number } | undefined,
+	grid: { x: number; y: number } | null | undefined,
 ): { x: number; y: number } {
 	if (!grid) return { x, y };
 	return {

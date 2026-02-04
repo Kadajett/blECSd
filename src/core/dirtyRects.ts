@@ -407,7 +407,11 @@ export function isEntityDirty(tracker: DirtyTrackerData, eid: Entity): boolean {
 // =============================================================================
 
 /** Get byte and bit index for a cell position */
-function getCellIndices(x: number, y: number, width: number): { byteIndex: number; bitIndex: number } {
+function getCellIndices(
+	x: number,
+	y: number,
+	width: number,
+): { byteIndex: number; bitIndex: number } {
 	const cellIndex = y * width + x;
 	return { byteIndex: cellIndex >> 3, bitIndex: cellIndex & 7 };
 }
@@ -530,7 +534,14 @@ function expandDirtyRect(
 	startX: number,
 	startY: number,
 ): DirtyRect {
-	const endX = expandRight(tracker.dirtyCells, processed, startX, startY, tracker.width, tracker.width);
+	const endX = expandRight(
+		tracker.dirtyCells,
+		processed,
+		startX,
+		startY,
+		tracker.width,
+		tracker.width,
+	);
 	const rectWidth = endX - startX;
 	if (rectWidth === 0) return { x: startX, y: startY, width: 0, height: 0 };
 

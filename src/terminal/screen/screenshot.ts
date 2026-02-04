@@ -337,9 +337,7 @@ export function screenshotToAnsi(screenshot: Screenshot, options: AnsiOutputOpti
 	const { resetPerLine = true, use256Color = false, lineSeparator = '\n' } = options;
 
 	const lines: string[] = [];
-	let lastFg = -1;
-	let lastBg = -1;
-	let lastAttrs = -1;
+	const state = createAnsiState();
 
 	for (let y = 0; y < screenshot.height; y++) {
 		const row = screenshot.cells[y];
@@ -354,42 +352,59 @@ export function screenshotToAnsi(screenshot: Screenshot, options: AnsiOutputOpti
 				continue;
 			}
 
-			// Apply attributes if changed
-			if (cell.attrs !== lastAttrs) {
-				// Reset then apply new attributes
-				line += `${CSI}0m`;
-				lastFg = -1;
-				lastBg = -1;
-				if (cell.attrs !== Attr.NONE) {
-					line += attrSequence(cell.attrs);
-				}
-				lastAttrs = cell.attrs;
-			}
-
-			// Apply colors if changed
-			if (cell.fg !== lastFg) {
-				line += fgColorSequence(cell.fg, use256Color);
-				lastFg = cell.fg;
-			}
-			if (cell.bg !== lastBg) {
-				line += bgColorSequence(cell.bg, use256Color);
-				lastBg = cell.bg;
-			}
-
-			line += cell.char;
+			line += buildCellAnsi(cell, state, use256Color);
 		}
 
 		if (resetPerLine) {
 			line += `${CSI}0m`;
-			lastFg = -1;
-			lastBg = -1;
-			lastAttrs = -1;
+			resetAnsiState(state);
 		}
 
 		lines.push(line);
 	}
 
 	return lines.join(lineSeparator);
+}
+
+interface AnsiState {
+	lastFg: number;
+	lastBg: number;
+	lastAttrs: number;
+}
+
+function createAnsiState(): AnsiState {
+	return { lastFg: -1, lastBg: -1, lastAttrs: -1 };
+}
+
+function resetAnsiState(state: AnsiState): void {
+	state.lastFg = -1;
+	state.lastBg = -1;
+	state.lastAttrs = -1;
+}
+
+function buildCellAnsi(cell: ScreenshotCell, state: AnsiState, use256Color: boolean): string {
+	let sequence = '';
+
+	if (cell.attrs !== state.lastAttrs) {
+		sequence += `${CSI}0m`;
+		state.lastFg = -1;
+		state.lastBg = -1;
+		if (cell.attrs !== Attr.NONE) {
+			sequence += attrSequence(cell.attrs);
+		}
+		state.lastAttrs = cell.attrs;
+	}
+
+	if (cell.fg !== state.lastFg) {
+		sequence += fgColorSequence(cell.fg, use256Color);
+		state.lastFg = cell.fg;
+	}
+	if (cell.bg !== state.lastBg) {
+		sequence += bgColorSequence(cell.bg, use256Color);
+		state.lastBg = cell.bg;
+	}
+
+	return sequence + cell.char;
 }
 
 /**
@@ -544,31 +559,45 @@ export function screenshotsEqual(a: Screenshot, b: Screenshot): boolean {
 	for (let y = 0; y < a.height; y++) {
 		const rowA = a.cells[y];
 		const rowB = b.cells[y];
-		if (!rowA || !rowB) {
-			if (rowA !== rowB) return false;
-			continue;
-		}
-
-		for (let x = 0; x < a.width; x++) {
-			const cellA = rowA[x];
-			const cellB = rowB[x];
-			if (!cellA || !cellB) {
-				if (cellA !== cellB) return false;
-				continue;
-			}
-
-			if (
-				cellA.char !== cellB.char ||
-				cellA.fg !== cellB.fg ||
-				cellA.bg !== cellB.bg ||
-				cellA.attrs !== cellB.attrs
-			) {
-				return false;
-			}
+		if (!rowsEqual(rowA, rowB, a.width)) {
+			return false;
 		}
 	}
 
 	return true;
+}
+
+function rowsEqual(
+	rowA: readonly Cell[] | undefined,
+	rowB: readonly Cell[] | undefined,
+	width: number,
+): boolean {
+	if (!rowA || !rowB) {
+		return rowA === rowB;
+	}
+
+	for (let x = 0; x < width; x++) {
+		const cellA = rowA[x];
+		const cellB = rowB[x];
+		if (!cellsEqual(cellA, cellB)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function cellsEqual(cellA: Cell | undefined, cellB: Cell | undefined): boolean {
+	if (!cellA || !cellB) {
+		return cellA === cellB;
+	}
+
+	return (
+		cellA.char === cellB.char &&
+		cellA.fg === cellB.fg &&
+		cellA.bg === cellB.bg &&
+		cellA.attrs === cellB.attrs
+	);
 }
 
 /**

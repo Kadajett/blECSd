@@ -117,7 +117,7 @@ const KEY_ALIASES: Readonly<Record<string, KeyName>> = {
 /**
  * Modifier aliases.
  */
-const MODIFIER_ALIASES: Readonly<Record<string, keyof ParsedKey>> = {
+const MODIFIER_ALIASES: Readonly<Record<string, 'ctrl' | 'meta' | 'shift'>> = {
 	control: 'ctrl',
 	cmd: 'meta',
 	command: 'meta',
@@ -146,11 +146,7 @@ function applyModifier(parsed: ParsedKey, modifier: 'ctrl' | 'meta' | 'shift'): 
 }
 
 /** Parse a single part of a key string (modifier or key name) */
-function parseKeyPart(
-	part: string,
-	isLast: boolean,
-	parsed: ParsedKey,
-): boolean {
+function parseKeyPart(part: string, isLast: boolean, parsed: ParsedKey): boolean {
 	if (isLast) {
 		const keyName = resolveKeyName(part);
 		if (!keyName) return false;
@@ -166,7 +162,10 @@ function parseKeyPart(
 export function parseKeyString(keyString: string): ParsedKey | null {
 	if (!keyString) return null;
 
-	const parts = keyString.toLowerCase().split('+').map((p) => p.trim());
+	const parts = keyString
+		.toLowerCase()
+		.split('+')
+		.map((p) => p.trim());
 	if (parts.length === 0) return null;
 
 	const parsed: ParsedKey = {
@@ -239,7 +238,7 @@ function resolveKeyName(name: string): KeyName | null {
 /**
  * Resolves a modifier name, handling aliases.
  */
-function resolveModifier(name: string): keyof ParsedKey | null {
+function resolveModifier(name: string): 'ctrl' | 'meta' | 'shift' | null {
 	const lower = name.toLowerCase();
 
 	// Direct match

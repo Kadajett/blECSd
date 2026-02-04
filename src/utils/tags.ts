@@ -565,21 +565,8 @@ export function parseTags(text: string): ParsedContent {
 	while ((match = TAG_PATTERN.exec(unescaped)) !== null) {
 		// Add text before the tag
 		if (match.index > lastIndex) {
-			let segmentText = unescaped.slice(lastIndex, match.index);
-			// Restore escaped braces
-			segmentText = segmentText
-				.replaceAll(LBRACE_PLACEHOLDER, '{')
-				.replaceAll(RBRACE_PLACEHOLDER, '}');
-
-			if (segmentText.length > 0) {
-				segments.push({
-					text: segmentText,
-					fg: style.fg,
-					bg: style.bg,
-					attrs: style.attrs,
-				});
-				plainText += segmentText;
-			}
+			const segmentText = restoreEscapedBraces(unescaped.slice(lastIndex, match.index));
+			plainText = appendSegmentText(segments, style, segmentText, plainText);
 		}
 
 		// Process the tag
@@ -596,20 +583,8 @@ export function parseTags(text: string): ParsedContent {
 
 	// Add remaining text after last tag
 	if (lastIndex < unescaped.length) {
-		let segmentText = unescaped.slice(lastIndex);
-		segmentText = segmentText
-			.replaceAll(LBRACE_PLACEHOLDER, '{')
-			.replaceAll(RBRACE_PLACEHOLDER, '}');
-
-		if (segmentText.length > 0) {
-			segments.push({
-				text: segmentText,
-				fg: style.fg,
-				bg: style.bg,
-				attrs: style.attrs,
-			});
-			plainText += segmentText;
-		}
+		const segmentText = restoreEscapedBraces(unescaped.slice(lastIndex));
+		plainText = appendSegmentText(segments, style, segmentText, plainText);
 	}
 
 	// Handle empty input
@@ -618,6 +593,28 @@ export function parseTags(text: string): ParsedContent {
 	}
 
 	return { segments, alignment, plainText };
+}
+
+function restoreEscapedBraces(text: string): string {
+	return text.replaceAll(LBRACE_PLACEHOLDER, '{').replaceAll(RBRACE_PLACEHOLDER, '}');
+}
+
+function appendSegmentText(
+	segments: TextSegment[],
+	style: MutableStyle,
+	segmentText: string,
+	plainText: string,
+): string {
+	if (segmentText.length === 0) {
+		return plainText;
+	}
+	segments.push({
+		text: segmentText,
+		fg: style.fg,
+		bg: style.bg,
+		attrs: style.attrs,
+	});
+	return plainText + segmentText;
 }
 
 /**

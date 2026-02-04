@@ -437,6 +437,24 @@ function numberToTitleAlign(value: number): TitleAlign {
 	}
 }
 
+/** Calculates panel padding from config, adding space for title bar. */
+function calculatePanelPadding(
+	padding: number | { left?: number; top?: number; right?: number; bottom?: number } | undefined,
+): { left: number; top: number; right: number; bottom: number } {
+	if (typeof padding === 'number') {
+		return { left: padding, top: padding + 1, right: padding, bottom: padding };
+	}
+	if (padding) {
+		return {
+			left: padding.left ?? 0,
+			top: (padding.top ?? 0) + 1,
+			right: padding.right ?? 0,
+			bottom: padding.bottom ?? 0,
+		};
+	}
+	return { left: 0, top: 1, right: 0, bottom: 0 };
+}
+
 /**
  * Validated config type from PanelConfigSchema.
  */
@@ -488,6 +506,33 @@ function getBorderCharset(ch: string | object | undefined): BorderCharset {
 	if (typeof ch === 'object') return ch as BorderCharset;
 	// Import other charsets as needed
 	return BORDER_SINGLE;
+}
+
+/**
+ * Sets up style for panel from config.
+ */
+function applyPanelStyle(world: World, eid: Entity, validated: ValidatedPanelConfig): void {
+	if (validated.fg !== undefined || validated.bg !== undefined) {
+		setStyle(world, eid, {
+			fg: validated.fg !== undefined ? parseColor(validated.fg) : undefined,
+			bg: validated.bg !== undefined ? parseColor(validated.bg) : undefined,
+		});
+	}
+}
+
+/**
+ * Sets up border for panel from config.
+ */
+function applyPanelBorder(world: World, eid: Entity, validated: ValidatedPanelConfig): void {
+	const borderConfig = validated.style?.border;
+	if (borderConfig?.type !== 'none') {
+		setBorder(world, eid, {
+			type: borderConfig?.type === 'bg' ? BorderType.Background : BorderType.Line,
+			fg: borderConfig?.fg !== undefined ? parseColor(borderConfig.fg) : undefined,
+			bg: borderConfig?.bg !== undefined ? parseColor(borderConfig.bg) : undefined,
+		});
+	}
+	setBorderChars(world, eid, getBorderCharset(borderConfig?.ch));
 }
 
 // =============================================================================
@@ -565,45 +610,12 @@ export function createPanel(world: World, entity: Entity, config: PanelConfig = 
 	const dims = getDimensions(world, eid);
 	Panel.originalHeight[eid] = dims?.height ?? 10;
 
-	// Set up style
-	if (validated.fg !== undefined || validated.bg !== undefined) {
-		setStyle(world, eid, {
-			fg: validated.fg !== undefined ? parseColor(validated.fg) : undefined,
-			bg: validated.bg !== undefined ? parseColor(validated.bg) : undefined,
-		});
-	}
-
-	// Set up border (default to single line)
-	const borderConfig = validated.style?.border;
-	if (borderConfig?.type !== 'none') {
-		setBorder(world, eid, {
-			type: borderConfig?.type === 'bg' ? BorderType.Background : BorderType.Line,
-			fg: borderConfig?.fg !== undefined ? parseColor(borderConfig.fg) : undefined,
-			bg: borderConfig?.bg !== undefined ? parseColor(borderConfig.bg) : undefined,
-		});
-	}
-	setBorderChars(world, eid, getBorderCharset(borderConfig?.ch));
+	// Set up style and border
+	applyPanelStyle(world, eid, validated);
+	applyPanelBorder(world, eid, validated);
 
 	// Set up padding for content area (add 1 to top for title bar)
-	const padding = validated.padding;
-	if (typeof padding === 'number') {
-		setPadding(world, eid, {
-			left: padding,
-			top: padding + 1, // Add space for title
-			right: padding,
-			bottom: padding,
-		});
-	} else if (padding) {
-		setPadding(world, eid, {
-			left: padding.left ?? 0,
-			top: (padding.top ?? 0) + 1, // Add space for title
-			right: padding.right ?? 0,
-			bottom: padding.bottom ?? 0,
-		});
-	} else {
-		// Default: just add space for title
-		setPadding(world, eid, { left: 0, top: 1, right: 0, bottom: 0 });
-	}
+	setPadding(world, eid, calculatePanelPadding(validated.padding));
 
 	// Set initial content
 	if (validated.content) {

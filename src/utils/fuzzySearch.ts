@@ -54,6 +54,10 @@ export interface FuzzySearchOptions<T> extends FuzzyOptions {
 	readonly getText?: (item: T) => string;
 }
 
+type ResolvedFuzzyOptions = Omit<Required<FuzzyOptions>, 'limit'> & {
+	readonly limit: number | undefined;
+};
+
 // =============================================================================
 // SCHEMA
 // =============================================================================
@@ -75,14 +79,19 @@ export const FuzzyOptionsSchema = z.object({
 // DEFAULTS
 // =============================================================================
 
-const DEFAULT_OPTIONS: Required<Omit<FuzzyOptions, 'limit'>> = {
+const DEFAULT_OPTIONS = {
 	caseSensitive: false,
 	threshold: 0,
+	limit: undefined,
 	consecutiveBonus: 0.3,
 	wordBoundaryBonus: 0.2,
 	prefixBonus: 0.5,
 	gapPenalty: 0.1,
-};
+} satisfies ResolvedFuzzyOptions;
+
+function resolveFuzzyOptions(options: FuzzyOptions = {}): ResolvedFuzzyOptions {
+	return { ...DEFAULT_OPTIONS, ...options };
+}
 
 // =============================================================================
 // FUNCTIONS
@@ -119,52 +128,16 @@ function isWordBoundary(text: string, index: number): boolean {
 }
 
 /**
- * Calculates the fuzzy match score for a query against a text.
- *
- * @param query - The search query
- * @param text - The text to search in
- * @param options - Matching options
- * @returns Match result with score and indices, or null if no match
+ * Calculates the fuzzy match score based on matched indices.
  */
-export function fuzzyMatch(
+function calculateFuzzyScore(
 	query: string,
 	text: string,
-	options: FuzzyOptions = {},
-): FuzzyMatch<string> | null {
-	const opts = { ...DEFAULT_OPTIONS, ...options };
-
-	// Handle empty query
-	if (!query) {
-		return {
-			item: text,
-			text,
-			score: 1,
-			indices: [],
-		};
-	}
-
-	// Normalize case if not case-sensitive
-	const searchQuery = opts.caseSensitive ? query : query.toLowerCase();
-	const searchText = opts.caseSensitive ? text : text.toLowerCase();
-
-	// Find all matched character indices
-	const indices: number[] = [];
-	let queryIndex = 0;
-	let textIndex = 0;
-
-	while (queryIndex < searchQuery.length && textIndex < searchText.length) {
-		if (searchQuery[queryIndex] === searchText[textIndex]) {
-			indices.push(textIndex);
-			queryIndex++;
-		}
-		textIndex++;
-	}
-
-	// Check if all query characters were found
-	if (queryIndex !== searchQuery.length) {
-		return null;
-	}
-
+	searchQuery: string,
+	searchText: string,
+	indices: number[],
+	opts: ResolvedFuzzyOptions,
+): number {
 	// Calculate base score (percentage of query matched)
 	let score = query.length / Math.max(text.length, query.length);
 
@@ -208,7 +181,58 @@ export function fuzzyMatch(
 	}
 
 	// Clamp score to 0-1
-	score = Math.max(0, Math.min(1, score));
+	return Math.max(0, Math.min(1, score));
+}
+
+/**
+ * Calculates the fuzzy match score for a query against a text.
+ *
+ * @param query - The search query
+ * @param text - The text to search in
+ * @param options - Matching options
+ * @returns Match result with score and indices, or null if no match
+ */
+export function fuzzyMatch(
+	query: string,
+	text: string,
+	options: FuzzyOptions = {},
+): FuzzyMatch<string> | null {
+	const opts = resolveFuzzyOptions(options);
+
+	// Handle empty query
+	if (!query) {
+		return {
+			item: text,
+			text,
+			score: 1,
+			indices: [],
+		};
+	}
+
+	// Normalize case if not case-sensitive
+	const searchQuery = opts.caseSensitive ? query : query.toLowerCase();
+	const searchText = opts.caseSensitive ? text : text.toLowerCase();
+
+	// Find all matched character indices
+	const indices: number[] = [];
+	let queryIndex = 0;
+	let textIndex = 0;
+
+	while (queryIndex < searchQuery.length && textIndex < searchText.length) {
+		if (searchQuery[queryIndex] === searchText[textIndex]) {
+			indices.push(textIndex);
+			queryIndex++;
+		}
+		textIndex++;
+	}
+
+	// Check if all query characters were found
+	if (queryIndex !== searchQuery.length) {
+		return null;
+	}
+
+	// Calculate score
+	const score = calculateFuzzyScore(query, text, searchQuery, searchText, indices, opts);
 
 	return {
 		item: text,
@@ -242,12 +266,12 @@ export function fuzzySearch(
 	items: readonly string[],
 	options: FuzzyOptions = {},
 ): FuzzyMatch<string>[] {
-	const opts = { ...DEFAULT_OPTIONS, ...options };
+	const opts = resolveFuzzyOptions(options);
 	const results: FuzzyMatch<string>[] = [];
 
 	for (const item of items) {
 		const match = fuzzyMatch(query, item, opts);
-		if (match && match.score >= opts.threshold) {
+		if (match && match.score >= (opts.threshold || 0)) {
 			results.push(match);
 		}
 	}
@@ -256,8 +280,8 @@ export function fuzzySearch(
 	results.sort((a, b) => b.score - a.score);
 
 	// Apply limit
-	if (options.limit !== undefined && results.length > options.limit) {
-		return results.slice(0, options.limit);
+	if (opts.limit !== undefined && results.length > opts.limit) {
+		return results.slice(0, opts.limit);
 	}
 
 	return results;
@@ -288,13 +312,13 @@ export function fuzzySearchBy<T>(
 	options: FuzzySearchOptions<T>,
 ): FuzzyMatch<T>[] {
 	const { getText = String, ...fuzzyOpts } = options;
-	const opts = { ...DEFAULT_OPTIONS, ...fuzzyOpts };
+	const opts = resolveFuzzyOptions(fuzzyOpts);
 	const results: FuzzyMatch<T>[] = [];
 
 	for (const item of items) {
 		const text = getText(item);
 		const match = fuzzyMatch(query, text, opts);
-		if (match && match.score >= opts.threshold) {
+		if (match && match.score >= (opts.threshold || 0)) {
 			results.push({
 				item,
 				text,
@@ -308,8 +332,8 @@ export function fuzzySearchBy<T>(
 	results.sort((a, b) => b.score - a.score);
 
 	// Apply limit
-	if (options.limit !== undefined && results.length > options.limit) {
-		return results.slice(0, options.limit);
+	if (opts.limit !== undefined && results.length > opts.limit) {
+		return results.slice(0, opts.limit);
 	}
 
 	return results;

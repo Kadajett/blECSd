@@ -595,69 +595,86 @@ export function createCapabilityNegotiator(config: NegotiatorConfig = {}): Capab
 		}
 
 		// Check if we can query (need TTY)
-		if (!process.stdin.isTTY || !process.stdout.isTTY) {
+		if (!canQueryTerminal()) {
 			return caps;
 		}
 
 		// Prepare queries
 		const queries = [query.primaryDA(), query.secondaryDA()];
 
-		try {
-			// Set raw mode for response collection
-			const wasRaw = process.stdin.isRaw;
-			if (!wasRaw && process.stdin.setRawMode) {
-				process.stdin.setRawMode(true);
-			}
-
-			// Send queries and collect responses
-			const responses = await sendQueriesWithTimeout(queries, timeout, input, output);
-
-			// Restore raw mode
-			if (!wasRaw && process.stdin.setRawMode) {
-				process.stdin.setRawMode(false);
-			}
-
-			// Parse responses
-			let primaryDA: PrimaryDAResponse | null = null;
-			let secondaryDA: SecondaryDAResponse | null = null;
-
-			for (const response of responses) {
-				const parsed = parseResponse(response);
-
-				if (isPrimaryDA(parsed)) {
-					primaryDA = parsed;
-				} else if (isSecondaryDA(parsed)) {
-					secondaryDA = parsed;
-				}
-			}
-
-			// Build enhanced capabilities
-			let terminalType: number | null = null;
-			let firmwareVersion: number | null = null;
-			let graphics = caps.graphics;
-
-			if (secondaryDA) {
-				const da2Info = parseTerminalTypeFromDA2(secondaryDA);
-				terminalType = da2Info.terminalType;
-				firmwareVersion = da2Info.firmwareVersion;
-			}
-
-			if (primaryDA && hasSixelSupport(primaryDA) && !graphics) {
-				graphics = GraphicsProtocol.SIXEL;
-			}
-
-			return {
-				...caps,
-				primaryDA,
-				secondaryDA,
-				terminalType,
-				firmwareVersion,
-				graphics,
-			};
-		} catch {
-			// On error, return environment-detected capabilities
+		const responses = await runCapabilityQueries(queries, timeout, input, output);
+		if (!responses) {
 			return caps;
 		}
+
+		return buildEnhancedCapabilities(caps, responses);
+	}
+
+	function canQueryTerminal(): boolean {
+		return Boolean(process.stdin.isTTY && process.stdout.isTTY);
+	}
+
+	async function runCapabilityQueries(
+		queries: readonly string[],
+		timeoutMs: number,
+		inputStream: NodeJS.ReadStream,
+		outputStream: NodeJS.WriteStream,
+	): Promise<string[] | null> {
+		const wasRaw = inputStream.isRaw;
+		try {
+			if (!wasRaw && inputStream.setRawMode) {
+				inputStream.setRawMode(true);
+			}
+			return await sendQueriesWithTimeout(queries, timeoutMs, inputStream, outputStream);
+		} catch {
+			return null;
+		} finally {
+			if (!wasRaw && inputStream.setRawMode) {
+				inputStream.setRawMode(false);
+			}
+		}
+	}
+
+	function buildEnhancedCapabilities(
+		caps: TerminalCapabilities,
+		responses: readonly string[],
+	): TerminalCapabilities {
+		const { primaryDA, secondaryDA } = parseCapabilityResponses(responses);
+		const { terminalType, firmwareVersion } = secondaryDA
+			? parseTerminalTypeFromDA2(secondaryDA)
+			: { terminalType: null, firmwareVersion: null };
+		const graphics =
+			primaryDA && hasSixelSupport(primaryDA) && !caps.graphics
+				? GraphicsProtocol.SIXEL
+				: caps.graphics;
+
+		return {
+			...caps,
+			primaryDA,
+			secondaryDA,
+			terminalType,
+			firmwareVersion,
+			graphics,
+		};
+	}
+
+	function parseCapabilityResponses(responses: readonly string[]): {
+		primaryDA: PrimaryDAResponse | null;
+		secondaryDA: SecondaryDAResponse | null;
+	} {
+		let primaryDA: PrimaryDAResponse | null = null;
+		let secondaryDA: SecondaryDAResponse | null = null;
+
+		for (const response of responses) {
+			const parsed = parseResponse(response);
+			if (isPrimaryDA(parsed)) {
+				primaryDA = parsed;
+			} else if (isSecondaryDA(parsed)) {
+				secondaryDA = parsed;
+			}
+		}
+
+		return { primaryDA, secondaryDA };
 	}
 
 	const negotiator: CapabilityNegotiator = {

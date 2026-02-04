@@ -176,7 +176,11 @@ function setBoolOption(eid: Entity, array: Uint8Array, value: boolean | undefine
 }
 
 /** Set a numeric option on Interactive component */
-function setNumOption(eid: Entity, array: Int16Array | Uint32Array, value: number | undefined): void {
+function setNumOption(
+	eid: Entity,
+	array: Int16Array | Uint32Array,
+	value: number | undefined,
+): void {
 	if (value !== undefined) array[eid] = value;
 }
 

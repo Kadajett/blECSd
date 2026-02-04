@@ -189,46 +189,16 @@ export function alignLine(line: string, width: number, align: TextAlign): string
  * Splits text at word boundaries for wrapping.
  */
 function splitWords(text: string): string[] {
-	const result: string[] = [];
-	let current = '';
-	let inAnsi = false;
+	const state: SplitState = { result: [], current: '', inAnsi: false };
 
 	for (let i = 0; i < text.length; i++) {
 		const char = text[i];
 		if (char === undefined) continue;
-
-		// Track ANSI sequences
-		if (char === '\x1b') {
-			inAnsi = true;
-			current += char;
-			continue;
-		}
-
-		if (inAnsi) {
-			current += char;
-			if (/[a-zA-Z\\]/.test(char)) {
-				inAnsi = false;
-			}
-			continue;
-		}
-
-		// Word boundary
-		if (char === ' ' || char === '\t') {
-			if (current.length > 0) {
-				result.push(current);
-				current = '';
-			}
-			result.push(char);
-		} else {
-			current += char;
-		}
+		handleSplitChar(state, char);
 	}
 
-	if (current.length > 0) {
-		result.push(current);
-	}
-
-	return result;
+	flushSplitWord(state);
+	return state.result;
 }
 
 /**
@@ -239,27 +209,7 @@ function breakLongWord(word: string, width: number): string[] {
 	let remaining = word;
 
 	while (getVisibleWidth(remaining) > width) {
-		let breakPoint = 0;
-		let breakWidth = 0;
-
-		for (let i = 0; i < remaining.length; i++) {
-			const char = remaining[i];
-			if (char === undefined) continue;
-
-			if (char === '\x1b') {
-				const ansi = findAnsiCode(remaining, i);
-				if (ansi) {
-					breakPoint = i + ansi.length;
-					continue;
-				}
-			}
-
-			if (breakWidth >= width) {
-				break;
-			}
-			breakPoint = i + 1;
-			breakWidth++;
-		}
+		const breakPoint = findWordBreakPoint(remaining, width);
 
 		chunks.push(remaining.slice(0, breakPoint));
 		remaining = remaining.slice(breakPoint);
@@ -312,67 +262,36 @@ export function wordWrap(text: string, width: number): string[] {
  * Wraps a single paragraph.
  */
 function wrapParagraph(paragraph: string, width: number): string[] {
-	const lines: string[] = [];
+	const state: WrapParagraphState = { lines: [], currentLine: '', currentWidth: 0 };
 	const words = splitWords(paragraph);
-	let currentLine = '';
-	let currentWidth = 0;
 
 	for (const word of words) {
+		if (isWhitespaceWord(word)) {
+			appendWhitespace(state, width);
+			continue;
+		}
+
 		const wordWidth = getVisibleWidth(word);
-
-		// Handle whitespace
-		if (word === ' ' || word === '\t') {
-			if (currentWidth + 1 <= width) {
-				currentLine += ' ';
-				currentWidth += 1;
-			}
+		if (fitsOnLine(state, wordWidth, width)) {
+			appendWord(state, word, wordWidth);
 			continue;
 		}
 
-		// Word fits on current line
-		if (currentWidth + wordWidth <= width) {
-			currentLine += word;
-			currentWidth += wordWidth;
-			continue;
-		}
-
-		// Word needs new line but fits on its own line
 		if (wordWidth <= width) {
-			if (currentLine.length > 0) {
-				lines.push(currentLine.trimEnd());
-			}
-			currentLine = word;
-			currentWidth = wordWidth;
+			finalizeLine(state);
+			startLineWithWord(state, word, wordWidth);
 			continue;
 		}
 
-		// Word is too long, must break it
-		if (currentLine.length > 0) {
-			lines.push(currentLine.trimEnd());
-			currentLine = '';
-			currentWidth = 0;
-		}
-
-		const chunks = breakLongWord(word, width);
-		for (let i = 0; i < chunks.length - 1; i++) {
-			const chunk = chunks[i];
-			if (chunk !== undefined) {
-				lines.push(chunk);
-			}
-		}
-
-		const lastChunk = chunks[chunks.length - 1];
-		if (lastChunk !== undefined) {
-			currentLine = lastChunk;
-			currentWidth = getVisibleWidth(lastChunk);
-		}
+		finalizeLine(state);
+		const broken = breakWordToLines(word, width);
+		state.lines.push(...broken.lines);
+		state.currentLine = broken.tail.text;
+		state.currentWidth = broken.tail.width;
 	}
 
-	if (currentLine.length > 0) {
-		lines.push(currentLine.trimEnd());
-	}
-
-	return lines;
+	finalizeLine(state);
+	return state.lines;
 }
 
 /**
@@ -403,30 +322,7 @@ function breakParagraph(paragraph: string, width: number): string[] {
 	let remaining = paragraph;
 
 	while (getVisibleWidth(remaining) > width) {
-		let breakPoint = 0;
-		let breakWidth = 0;
-		let inAnsi = false;
-
-		for (let i = 0; i < remaining.length && breakWidth < width; i++) {
-			const char = remaining[i];
-			if (char === undefined) continue;
-
-			if (char === '\x1b') {
-				inAnsi = true;
-				continue;
-			}
-
-			if (inAnsi) {
-				if (/[a-zA-Z\\]/.test(char)) {
-					inAnsi = false;
-				}
-				continue;
-			}
-
-			breakWidth++;
-			breakPoint = i + 1;
-		}
-
+		const breakPoint = findParagraphBreakPoint(remaining, width);
 		lines.push(remaining.slice(0, breakPoint));
 		remaining = remaining.slice(breakPoint);
 	}
@@ -436,6 +332,152 @@ function breakParagraph(paragraph: string, width: number): string[] {
 	}
 
 	return lines;
+}
+
+interface SplitState {
+	result: string[];
+	current: string;
+	inAnsi: boolean;
+}
+
+function handleSplitChar(state: SplitState, char: string): void {
+	if (char === '\x1b') {
+		state.inAnsi = true;
+		state.current += char;
+		return;
+	}
+
+	if (state.inAnsi) {
+		state.current += char;
+		if (/[a-zA-Z\\]/.test(char)) {
+			state.inAnsi = false;
+		}
+		return;
+	}
+
+	if (char === ' ' || char === '\t') {
+		flushSplitWord(state);
+		state.result.push(char);
+		return;
+	}
+
+	state.current += char;
+}
+
+function flushSplitWord(state: SplitState): void {
+	if (state.current.length > 0) {
+		state.result.push(state.current);
+		state.current = '';
+	}
+}
+
+function findWordBreakPoint(remaining: string, width: number): number {
+	let breakPoint = 0;
+	let breakWidth = 0;
+
+	for (let i = 0; i < remaining.length; i++) {
+		const char = remaining[i];
+		if (char === undefined) continue;
+
+		if (char === '\x1b') {
+			const ansi = findAnsiCode(remaining, i);
+			if (ansi) {
+				breakPoint = i + ansi.length;
+				continue;
+			}
+		}
+
+		if (breakWidth >= width) {
+			break;
+		}
+		breakPoint = i + 1;
+		breakWidth++;
+	}
+
+	return breakPoint === 0 ? Math.min(remaining.length, 1) : breakPoint;
+}
+
+interface WrapParagraphState {
+	lines: string[];
+	currentLine: string;
+	currentWidth: number;
+}
+
+function isWhitespaceWord(word: string): boolean {
+	return word === ' ' || word === '\t';
+}
+
+function appendWhitespace(state: WrapParagraphState, width: number): void {
+	if (state.currentWidth + 1 <= width) {
+		state.currentLine += ' ';
+		state.currentWidth += 1;
+	}
+}
+
+function fitsOnLine(state: WrapParagraphState, wordWidth: number, width: number): boolean {
+	return state.currentWidth + wordWidth <= width;
+}
+
+function appendWord(state: WrapParagraphState, word: string, wordWidth: number): void {
+	state.currentLine += word;
+	state.currentWidth += wordWidth;
+}
+
+function finalizeLine(state: WrapParagraphState): void {
+	if (state.currentLine.length > 0) {
+		state.lines.push(state.currentLine.trimEnd());
+		state.currentLine = '';
+		state.currentWidth = 0;
+	}
+}
+
+function startLineWithWord(state: WrapParagraphState, word: string, wordWidth: number): void {
+	state.currentLine = word;
+	state.currentWidth = wordWidth;
+}
+
+function breakWordToLines(
+	word: string,
+	width: number,
+): { lines: string[]; tail: { text: string; width: number } } {
+	const chunks = breakLongWord(word, width);
+	const lines = chunks.slice(0, Math.max(0, chunks.length - 1));
+	const tailText = chunks[chunks.length - 1] ?? '';
+	return {
+		lines,
+		tail: {
+			text: tailText,
+			width: getVisibleWidth(tailText),
+		},
+	};
+}
+
+function findParagraphBreakPoint(remaining: string, width: number): number {
+	let breakPoint = 0;
+	let breakWidth = 0;
+	let inAnsi = false;
+
+	for (let i = 0; i < remaining.length && breakWidth < width; i++) {
+		const char = remaining[i];
+		if (char === undefined) continue;
+
+		if (char === '\x1b') {
+			inAnsi = true;
+			continue;
+		}
+
+		if (inAnsi) {
+			if (/[a-zA-Z\\]/.test(char)) {
+				inAnsi = false;
+			}
+			continue;
+		}
+
+		breakWidth++;
+		breakPoint = i + 1;
+	}
+
+	return breakPoint === 0 ? Math.min(remaining.length, 1) : breakPoint;
 }
 
 /**

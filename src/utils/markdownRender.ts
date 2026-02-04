@@ -261,100 +261,15 @@ export function parseInline(text: string): readonly InlineElement[] {
 	let pos = 0;
 
 	while (pos < remaining.length) {
-		// Check for code spans (highest priority)
-		const codeMatch = remaining.slice(pos).match(/^`([^`]+)`/);
-		if (codeMatch) {
+		const match = matchInlineToken(remaining.slice(pos));
+		if (match) {
 			if (pos > 0) {
 				elements.push({ type: 'text', content: remaining.slice(0, pos) });
 				remaining = remaining.slice(pos);
 				pos = 0;
 			}
-			elements.push({ type: 'code', content: codeMatch[1]! });
-			remaining = remaining.slice(codeMatch[0].length);
-			continue;
-		}
-
-		// Check for bold (**text** or __text__)
-		const boldMatch = remaining.slice(pos).match(/^(\*\*|__)(.+?)\1/);
-		if (boldMatch) {
-			if (pos > 0) {
-				elements.push({ type: 'text', content: remaining.slice(0, pos) });
-				remaining = remaining.slice(pos);
-				pos = 0;
-			}
-			elements.push({
-				type: 'bold',
-				content: boldMatch[2]!,
-				children: parseInline(boldMatch[2]!),
-			});
-			remaining = remaining.slice(boldMatch[0].length);
-			continue;
-		}
-
-		// Check for italic (*text* or _text_)
-		const italicMatch = remaining.slice(pos).match(/^(\*|_)(.+?)\1/);
-		if (italicMatch) {
-			if (pos > 0) {
-				elements.push({ type: 'text', content: remaining.slice(0, pos) });
-				remaining = remaining.slice(pos);
-				pos = 0;
-			}
-			elements.push({
-				type: 'italic',
-				content: italicMatch[2]!,
-				children: parseInline(italicMatch[2]!),
-			});
-			remaining = remaining.slice(italicMatch[0].length);
-			continue;
-		}
-
-		// Check for links [text](url)
-		const linkMatch = remaining.slice(pos).match(/^\[([^\]]+)\]\(([^)]+)\)/);
-		if (linkMatch) {
-			if (pos > 0) {
-				elements.push({ type: 'text', content: remaining.slice(0, pos) });
-				remaining = remaining.slice(pos);
-				pos = 0;
-			}
-			elements.push({
-				type: 'link',
-				content: linkMatch[1]!,
-				href: linkMatch[2]!,
-			});
-			remaining = remaining.slice(linkMatch[0].length);
-			continue;
-		}
-
-		// Check for images ![alt](url)
-		const imageMatch = remaining.slice(pos).match(/^!\[([^\]]*)\]\(([^)]+)\)/);
-		if (imageMatch) {
-			if (pos > 0) {
-				elements.push({ type: 'text', content: remaining.slice(0, pos) });
-				remaining = remaining.slice(pos);
-				pos = 0;
-			}
-			elements.push({
-				type: 'image',
-				content: imageMatch[1]!,
-				href: imageMatch[2]!,
-			});
-			remaining = remaining.slice(imageMatch[0].length);
-			continue;
-		}
-
-		// Check for strikethrough ~~text~~
-		const strikeMatch = remaining.slice(pos).match(/^~~(.+?)~~/);
-		if (strikeMatch) {
-			if (pos > 0) {
-				elements.push({ type: 'text', content: remaining.slice(0, pos) });
-				remaining = remaining.slice(pos);
-				pos = 0;
-			}
-			elements.push({
-				type: 'strikethrough',
-				content: strikeMatch[1]!,
-			});
-			remaining = remaining.slice(strikeMatch[0].length);
+			elements.push(match.element);
+			remaining = remaining.slice(match.length);
 			continue;
 		}
 
@@ -367,6 +282,111 @@ export function parseInline(text: string): readonly InlineElement[] {
 	}
 
 	return elements;
+}
+
+type InlineMatchResult = { element: InlineElement; length: number };
+
+const INLINE_MATCHERS: Array<(text: string) => InlineMatchResult | null> = [
+	matchCodeSpan,
+	matchBold,
+	matchItalic,
+	matchLink,
+	matchImage,
+	matchStrikethrough,
+];
+
+function matchInlineToken(text: string): InlineMatchResult | null {
+	for (const matcher of INLINE_MATCHERS) {
+		const match = matcher(text);
+		if (match) {
+			return match;
+		}
+	}
+	return null;
+}
+
+function matchCodeSpan(text: string): InlineMatchResult | null {
+	const match = text.match(/^`([^`]+)`/);
+	if (!match) {
+		return null;
+	}
+	return {
+		element: { type: 'code', content: match[1] ?? '' },
+		length: match[0].length,
+	};
+}
+
+function matchBold(text: string): InlineMatchResult | null {
+	const match = text.match(/^(\*\*|__)(.+?)\1/);
+	if (!match) {
+		return null;
+	}
+	const content = match[2] ?? '';
+	return {
+		element: {
+			type: 'bold',
+			content,
+			children: parseInline(content),
+		},
+		length: match[0].length,
+	};
+}
+
+function matchItalic(text: string): InlineMatchResult | null {
+	const match = text.match(/^(\*|_)(.+?)\1/);
+	if (!match) {
+		return null;
+	}
+	const content = match[2] ?? '';
+	return {
+		element: {
+			type: 'italic',
+			content,
+			children: parseInline(content),
+		},
+		length: match[0].length,
+	};
+}
+
+function matchLink(text: string): InlineMatchResult | null {
+	const match = text.match(/^\[([^\]]+)\]\(([^)]+)\)/);
+	if (!match) {
+		return null;
+	}
+	return {
+		element: {
+			type: 'link',
+			content: match[1] ?? '',
+			href: match[2] ?? '',
+		},
+		length: match[0].length,
+	};
+}
+
+function matchImage(text: string): InlineMatchResult | null {
+	const match = text.match(/^!\[([^\]]*)\]\(([^)]+)\)/);
+	if (!match) {
+		return null;
+	}
+	return {
+		element: {
+			type: 'image',
+			content: match[1] ?? '',
+			href: match[2] ?? '',
+		},
+		length: match[0].length,
+	};
+}
+
+function matchStrikethrough(text: string): InlineMatchResult | null {
+	const match = text.match(/^~~(.+?)~~/);
+	if (!match) {
+		return null;
+	}
+	return {
+		element: { type: 'strikethrough', content: match[1] ?? '' },
+		length: match[0].length,
+	};
 }
 
 // =============================================================================
@@ -383,7 +403,11 @@ export function parseMarkdown(source: string): MarkdownParseResult {
 
 	let i = 0;
 	while (i < lines.length) {
-		const line = lines[i]!;
+		const line = lines[i];
+		if (line === undefined) {
+			i++;
+			continue;
+		}
 
 		// Skip empty lines
 		if (line.trim() === '') {
@@ -391,273 +415,384 @@ export function parseMarkdown(source: string): MarkdownParseResult {
 			continue;
 		}
 
-		// Check for heading
-		const headingMatch = line.match(HEADING_PATTERN);
-		if (headingMatch) {
-			blocks.push({
-				type: 'heading',
-				source: line,
-				lineStart: i,
-				lineEnd: i + 1,
-				hash: hashString(line),
-				data: {
-					kind: 'heading',
-					level: headingMatch[1]?.length as 1 | 2 | 3 | 4 | 5 | 6,
-					text: headingMatch[2]!,
-					inline: parseInline(headingMatch[2]!),
-				},
-			});
-			i++;
+		const parsed = parseBlock(lines, i);
+		if (parsed) {
+			blocks.push(parsed.block);
+			i = parsed.nextIndex;
 			continue;
 		}
 
-		// Check for horizontal rule
-		if (HR_PATTERN.test(line)) {
-			blocks.push({
-				type: 'hr',
-				source: line,
-				lineStart: i,
-				lineEnd: i + 1,
-				hash: hashString(line),
-				data: { kind: 'hr' },
-			});
-			i++;
-			continue;
-		}
-
-		// Check for code fence
-		const codeFenceMatch = line.match(CODE_FENCE_PATTERN);
-		if (codeFenceMatch) {
-			const fence = codeFenceMatch[1]!;
-			const lang = codeFenceMatch[2] || '';
-			const codeLines: string[] = [];
-			const startLine = i;
-			i++;
-
-			while (i < lines.length) {
-				const codeLine = lines[i]!;
-				if (codeLine.startsWith(fence) && codeLine.trim() === fence) {
-					i++;
-					break;
-				}
-				codeLines.push(codeLine);
-				i++;
-			}
-
-			const code = codeLines.join('\n');
-			blocks.push({
-				type: 'code',
-				source: lines.slice(startLine, i).join('\n'),
-				lineStart: startLine,
-				lineEnd: i,
-				hash: hashString(code + lang),
-				data: {
-					kind: 'code',
-					language: lang || detectLanguage('code.txt').name || '',
-					code,
-				},
-			});
-			continue;
-		}
-
-		// Check for blockquote
-		const blockquoteMatch = line.match(BLOCKQUOTE_PATTERN);
-		if (blockquoteMatch) {
-			const quoteLines: string[] = [];
-			const startLine = i;
-
-			while (i < lines.length) {
-				const quoteLine = lines[i];
-				if (!quoteLine) break;
-				const qMatch = quoteLine.match(BLOCKQUOTE_PATTERN);
-				if (!qMatch && quoteLine.trim() !== '') break;
-				quoteLines.push(qMatch ? qMatch[1]! : '');
-				i++;
-			}
-
-			const content = quoteLines.join('\n');
-			const nestedResult = parseMarkdown(content);
-
-			blocks.push({
-				type: 'blockquote',
-				source: lines.slice(startLine, i).join('\n'),
-				lineStart: startLine,
-				lineEnd: i,
-				hash: hashString(content),
-				data: {
-					kind: 'blockquote',
-					content,
-					blocks: nestedResult.blocks,
-				},
-			});
-			continue;
-		}
-
-		// Check for table
-		if (
-			i + 1 < lines.length &&
-			TABLE_ROW_PATTERN.test(line) &&
-			TABLE_SEP_PATTERN.test(lines[i + 1]!)
-		) {
-			const startLine = i;
-			const headerLine = line;
-			const sepLine = lines[i + 1]!;
-
-			// Parse headers
-			const headerCells = headerLine
-				.slice(1, -1)
-				.split('|')
-				.map((cell) => ({
-					content: cell.trim(),
-					inline: parseInline(cell.trim()),
-				}));
-
-			// Parse alignments
-			const alignments = sepLine
-				.slice(1, -1)
-				.split('|')
-				.map((cell): 'left' | 'center' | 'right' | null => {
-					const trimmed = cell.trim();
-					if (trimmed.startsWith(':') && trimmed.endsWith(':')) return 'center';
-					if (trimmed.endsWith(':')) return 'right';
-					if (trimmed.startsWith(':')) return 'left';
-					return null;
-				});
-
-			i += 2;
-			const rows: TableCell[][] = [];
-
-			while (i < lines.length && TABLE_ROW_PATTERN.test(lines[i]!)) {
-				const rowLine = lines[i]!;
-				const rowCells = rowLine
-					.slice(1, -1)
-					.split('|')
-					.map((cell) => ({
-						content: cell.trim(),
-						inline: parseInline(cell.trim()),
-					}));
-				rows.push(rowCells);
-				i++;
-			}
-
-			blocks.push({
-				type: 'table',
-				source: lines.slice(startLine, i).join('\n'),
-				lineStart: startLine,
-				lineEnd: i,
-				hash: hashString(lines.slice(startLine, i).join('\n')),
-				data: {
-					kind: 'table',
-					headers: headerCells,
-					alignments,
-					rows,
-				},
-			});
-			continue;
-		}
-
-		// Check for list
-		const ulMatch = line.match(UL_PATTERN);
-		const olMatch = line.match(OL_PATTERN);
-		if (ulMatch || olMatch) {
-			const startLine = i;
-			const items: ListItem[] = [];
-			const ordered = !!olMatch;
-			const start = olMatch ? parseInt(olMatch[2]!, 10) : undefined;
-
-			while (i < lines.length) {
-				const listLine = lines[i];
-				if (!listLine) break;
-
-				const ulm = listLine.match(UL_PATTERN);
-				const olm = listLine.match(OL_PATTERN);
-				const match = ordered ? olm : ulm;
-
-				if (!match && listLine.trim() === '') {
-					// Empty line might end the list
-					if (i + 1 < lines.length) {
-						const nextLine = lines[i + 1]!;
-						const nextMatch = ordered ? nextLine.match(OL_PATTERN) : nextLine.match(UL_PATTERN);
-						if (!nextMatch) break;
-					} else {
-						break;
-					}
-					i++;
-					continue;
-				}
-
-				if (!match) break;
-
-				const indent = (match[1] || '').length;
-				const content = ordered ? (match as RegExpMatchArray)[3]! : match[2]!;
-				const taskMatch = content.match(TASK_PATTERN);
-
-				items.push({
-					content: taskMatch ? taskMatch[2]! : content,
-					inline: parseInline(taskMatch ? taskMatch[2]! : content),
-					indent,
-					checked: taskMatch ? taskMatch[1]?.toLowerCase() === 'x' : undefined,
-				});
-				i++;
-			}
-
-			blocks.push({
-				type: 'list',
-				source: lines.slice(startLine, i).join('\n'),
-				lineStart: startLine,
-				lineEnd: i,
-				hash: hashString(lines.slice(startLine, i).join('\n')),
-				data: {
-					kind: 'list',
-					ordered,
-					start,
-					items,
-				},
-			});
-			continue;
-		}
-
-		// Default: paragraph
-		const paragraphLines: string[] = [];
-		const startLine = i;
-
-		while (i < lines.length) {
-			const pLine = lines[i];
-			if (pLine === undefined) break;
-			if (pLine.trim() === '') break;
-			// Check if next line starts a different block
-			if (HEADING_PATTERN.test(pLine) && paragraphLines.length > 0) break;
-			if (HR_PATTERN.test(pLine) && paragraphLines.length > 0) break;
-			if (CODE_FENCE_PATTERN.test(pLine)) break;
-			if (UL_PATTERN.test(pLine) && paragraphLines.length > 0) break;
-			if (OL_PATTERN.test(pLine) && paragraphLines.length > 0) break;
-			if (BLOCKQUOTE_PATTERN.test(pLine) && paragraphLines.length > 0) break;
-
-			paragraphLines.push(pLine);
-			i++;
-		}
-
-		if (paragraphLines.length > 0) {
-			const text = paragraphLines.join(' ');
-			blocks.push({
-				type: 'paragraph',
-				source: paragraphLines.join('\n'),
-				lineStart: startLine,
-				lineEnd: i,
-				hash: hashString(text),
-				data: {
-					kind: 'paragraph',
-					text,
-					inline: parseInline(text),
-				},
-			});
-		}
+		i++;
 	}
 
 	return {
 		blocks,
 		parseTimeMs: performance.now() - start,
 	};
+}
+
+type BlockParseResult = { block: MarkdownBlock; nextIndex: number };
+
+const BLOCK_PARSERS: Array<(lines: readonly string[], index: number) => BlockParseResult | null> = [
+	parseHeadingBlock,
+	parseHrBlock,
+	parseCodeFenceBlock,
+	parseBlockquoteBlock,
+	parseTableBlock,
+	parseListBlock,
+	parseParagraphBlock,
+];
+
+function parseBlock(lines: readonly string[], index: number): BlockParseResult | null {
+	for (const parser of BLOCK_PARSERS) {
+		const result = parser(lines, index);
+		if (result) {
+			return result;
+		}
+	}
+	return null;
+}
+
+function parseHeadingBlock(lines: readonly string[], index: number): BlockParseResult | null {
+	const line = lines[index];
+	if (line === undefined) {
+		return null;
+	}
+	const headingMatch = line.match(HEADING_PATTERN);
+	if (!headingMatch) {
+		return null;
+	}
+	const text = headingMatch[2] ?? '';
+	return {
+		block: {
+			type: 'heading',
+			source: line,
+			lineStart: index,
+			lineEnd: index + 1,
+			hash: hashString(line),
+			data: {
+				kind: 'heading',
+				level: (headingMatch[1]?.length ?? 1) as 1 | 2 | 3 | 4 | 5 | 6,
+				text,
+				inline: parseInline(text),
+			},
+		},
+		nextIndex: index + 1,
+	};
+}
+
+function parseHrBlock(lines: readonly string[], index: number): BlockParseResult | null {
+	const line = lines[index];
+	if (line === undefined || !HR_PATTERN.test(line)) {
+		return null;
+	}
+	return {
+		block: {
+			type: 'hr',
+			source: line,
+			lineStart: index,
+			lineEnd: index + 1,
+			hash: hashString(line),
+			data: { kind: 'hr' },
+		},
+		nextIndex: index + 1,
+	};
+}
+
+function parseCodeFenceBlock(lines: readonly string[], index: number): BlockParseResult | null {
+	const line = lines[index];
+	if (line === undefined) {
+		return null;
+	}
+	const codeFenceMatch = line.match(CODE_FENCE_PATTERN);
+	if (!codeFenceMatch) {
+		return null;
+	}
+	const fence = codeFenceMatch[1] ?? '';
+	const lang = codeFenceMatch[2] ?? '';
+	const codeLines: string[] = [];
+	const startLine = index;
+	let i = index + 1;
+
+	while (i < lines.length) {
+		const codeLine = lines[i];
+		if (codeLine === undefined) {
+			break;
+		}
+		if (codeLine.startsWith(fence) && codeLine.trim() === fence) {
+			i++;
+			break;
+		}
+		codeLines.push(codeLine);
+		i++;
+	}
+
+	const code = codeLines.join('\n');
+	return {
+		block: {
+			type: 'code',
+			source: lines.slice(startLine, i).join('\n'),
+			lineStart: startLine,
+			lineEnd: i,
+			hash: hashString(code + lang),
+			data: {
+				kind: 'code',
+				language: lang || detectLanguage('code.txt').name || '',
+				code,
+			},
+		},
+		nextIndex: i,
+	};
+}
+
+function parseBlockquoteBlock(lines: readonly string[], index: number): BlockParseResult | null {
+	const line = lines[index];
+	if (line === undefined || !BLOCKQUOTE_PATTERN.test(line)) {
+		return null;
+	}
+	const quoteLines: string[] = [];
+	const startLine = index;
+	let i = index;
+
+	while (i < lines.length) {
+		const quoteLine = lines[i];
+		if (quoteLine === undefined) break;
+		const qMatch = quoteLine.match(BLOCKQUOTE_PATTERN);
+		if (!qMatch && quoteLine.trim() !== '') break;
+		quoteLines.push(qMatch ? (qMatch[1] ?? '') : '');
+		i++;
+	}
+
+	const content = quoteLines.join('\n');
+	const nestedResult = parseMarkdown(content);
+
+	return {
+		block: {
+			type: 'blockquote',
+			source: lines.slice(startLine, i).join('\n'),
+			lineStart: startLine,
+			lineEnd: i,
+			hash: hashString(content),
+			data: {
+				kind: 'blockquote',
+				content,
+				blocks: nestedResult.blocks,
+			},
+		},
+		nextIndex: i,
+	};
+}
+
+function parseTableBlock(lines: readonly string[], index: number): BlockParseResult | null {
+	const line = lines[index];
+	const sepLine = lines[index + 1];
+	if (line === undefined || sepLine === undefined) {
+		return null;
+	}
+	if (!TABLE_ROW_PATTERN.test(line) || !TABLE_SEP_PATTERN.test(sepLine)) {
+		return null;
+	}
+
+	const startLine = index;
+	const headerCells = parseTableCells(line);
+	const alignments = parseTableAlignments(sepLine);
+	const rows: TableCell[][] = [];
+	let i = index + 2;
+
+	while (i < lines.length) {
+		const rowLine = lines[i];
+		if (rowLine === undefined || !TABLE_ROW_PATTERN.test(rowLine)) {
+			break;
+		}
+		rows.push(parseTableCells(rowLine));
+		i++;
+	}
+
+	return {
+		block: {
+			type: 'table',
+			source: lines.slice(startLine, i).join('\n'),
+			lineStart: startLine,
+			lineEnd: i,
+			hash: hashString(lines.slice(startLine, i).join('\n')),
+			data: {
+				kind: 'table',
+				headers: headerCells,
+				alignments,
+				rows,
+			},
+		},
+		nextIndex: i,
+	};
+}
+
+function parseListBlock(lines: readonly string[], index: number): BlockParseResult | null {
+	const line = lines[index];
+	if (line === undefined) {
+		return null;
+	}
+	const listInfo = getListStartInfo(line);
+	if (!listInfo) {
+		return null;
+	}
+
+	const startLine = index;
+	const itemsResult = collectListItems(lines, index, listInfo.ordered);
+
+	return {
+		block: {
+			type: 'list',
+			source: lines.slice(startLine, itemsResult.nextIndex).join('\n'),
+			lineStart: startLine,
+			lineEnd: itemsResult.nextIndex,
+			hash: hashString(lines.slice(startLine, itemsResult.nextIndex).join('\n')),
+			data: {
+				kind: 'list',
+				ordered: listInfo.ordered,
+				start: listInfo.start,
+				items: itemsResult.items,
+			},
+		},
+		nextIndex: itemsResult.nextIndex,
+	};
+}
+
+function parseParagraphBlock(lines: readonly string[], index: number): BlockParseResult | null {
+	const paragraphLines: string[] = [];
+	const startLine = index;
+	let i = index;
+
+	while (i < lines.length) {
+		const pLine = lines[i];
+		if (pLine === undefined || pLine.trim() === '') {
+			break;
+		}
+		if (paragraphLines.length > 0 && startsNewBlock(pLine)) {
+			break;
+		}
+		paragraphLines.push(pLine);
+		i++;
+	}
+
+	if (paragraphLines.length === 0) {
+		return null;
+	}
+
+	const text = paragraphLines.join(' ');
+	return {
+		block: {
+			type: 'paragraph',
+			source: paragraphLines.join('\n'),
+			lineStart: startLine,
+			lineEnd: i,
+			hash: hashString(text),
+			data: {
+				kind: 'paragraph',
+				text,
+				inline: parseInline(text),
+			},
+		},
+		nextIndex: i,
+	};
+}
+
+function parseTableCells(line: string): TableCell[] {
+	return splitTableRow(line).map((cell) => {
+		const trimmed = cell.trim();
+		return {
+			content: trimmed,
+			inline: parseInline(trimmed),
+		};
+	});
+}
+
+function parseTableAlignments(line: string): Array<'left' | 'center' | 'right' | null> {
+	return splitTableRow(line).map((cell) => {
+		const trimmed = cell.trim();
+		if (trimmed.startsWith(':') && trimmed.endsWith(':')) return 'center';
+		if (trimmed.endsWith(':')) return 'right';
+		if (trimmed.startsWith(':')) return 'left';
+		return null;
+	});
+}
+
+function splitTableRow(line: string): string[] {
+	return line.slice(1, -1).split('|');
+}
+
+function hasNextListItem(lines: readonly string[], index: number, ordered: boolean): boolean {
+	const nextLine = lines[index];
+	if (nextLine === undefined) {
+		return false;
+	}
+	return ordered ? OL_PATTERN.test(nextLine) : UL_PATTERN.test(nextLine);
+}
+
+function getListStartInfo(line: string): { ordered: boolean; start?: number } | null {
+	const ulMatch = line.match(UL_PATTERN);
+	const olMatch = line.match(OL_PATTERN);
+	if (!ulMatch && !olMatch) {
+		return null;
+	}
+	return {
+		ordered: !!olMatch,
+		start: olMatch ? parseInt(olMatch[2] ?? '1', 10) : undefined,
+	};
+}
+
+function collectListItems(
+	lines: readonly string[],
+	startIndex: number,
+	ordered: boolean,
+): { items: ListItem[]; nextIndex: number } {
+	const items: ListItem[] = [];
+	let i = startIndex;
+
+	while (i < lines.length) {
+		const listLine = lines[i];
+		if (listLine === undefined) break;
+		const match = ordered ? listLine.match(OL_PATTERN) : listLine.match(UL_PATTERN);
+
+		if (!match && listLine.trim() === '') {
+			if (!hasNextListItem(lines, i + 1, ordered)) {
+				break;
+			}
+			i++;
+			continue;
+		}
+
+		if (!match) break;
+
+		items.push(buildListItem(match, ordered));
+		i++;
+	}
+
+	return { items, nextIndex: i };
+}
+
+function buildListItem(match: RegExpMatchArray, ordered: boolean): ListItem {
+	const indent = (match[1] ?? '').length;
+	const content = ordered ? (match[3] ?? '') : (match[2] ?? '');
+	const taskMatch = content.match(TASK_PATTERN);
+	const itemContent = taskMatch ? (taskMatch[2] ?? '') : content;
+
+	return {
+		content: itemContent,
+		inline: parseInline(itemContent),
+		indent,
+		checked: taskMatch ? taskMatch[1]?.toLowerCase() === 'x' : undefined,
+	};
+}
+
+function startsNewBlock(line: string): boolean {
+	return (
+		HEADING_PATTERN.test(line) ||
+		HR_PATTERN.test(line) ||
+		CODE_FENCE_PATTERN.test(line) ||
+		UL_PATTERN.test(line) ||
+		OL_PATTERN.test(line) ||
+		BLOCKQUOTE_PATTERN.test(line)
+	);
 }
 
 // =============================================================================
@@ -738,166 +873,9 @@ export function renderBlock(block: MarkdownBlock, cache: MarkdownCache): readonl
 	const lines: RenderedLine[] = [];
 	const baseStyle: LineStyle = {};
 
-	switch (block.data.kind) {
-		case 'heading': {
-			const data = block.data;
-			lines.push({
-				content: `${'#'.repeat(data.level)} ${data.text}`,
-				style: { bold: true },
-				blockIndex: 0,
-				lineInBlock: 0,
-			});
-			break;
-		}
-
-		case 'paragraph': {
-			const data = block.data;
-			lines.push({
-				content: data.text,
-				style: baseStyle,
-				blockIndex: 0,
-				lineInBlock: 0,
-			});
-			break;
-		}
-
-		case 'code': {
-			const data = block.data;
-			// Get grammar for the language
-			const grammar = getGrammarByName(data.language || 'plaintext');
-
-			// Get or create highlight cache
-			let highlightCache = cache.highlightCaches.get(block.hash.toString());
-			if (!highlightCache) {
-				highlightCache = createHighlightCache(grammar);
-				cache.highlightCaches.set(block.hash.toString(), highlightCache);
-			} else if (highlightCache.grammar.name !== grammar.name) {
-				// Update grammar if language changed
-				setGrammar(highlightCache, grammar);
-			}
-
-			// Highlight the code (result stored in cache but we use raw lines for terminal)
-			highlightWithCache(highlightCache, data.code);
-
-			const codeLines = data.code.split('\n');
-			for (let i = 0; i < codeLines.length; i++) {
-				lines.push({
-					content: codeLines[i]!,
-					style: { dim: true }, // Code blocks are dimmed
-					blockIndex: 0,
-					lineInBlock: i,
-				});
-			}
-			break;
-		}
-
-		case 'list': {
-			const data = block.data;
-			for (let i = 0; i < data.items.length; i++) {
-				const item = data.items[i]!;
-				const prefix = data.ordered
-					? `${(data.start || 1) + i}. `
-					: `${'  '.repeat(item.indent / 2)}- `;
-				const checkbox = item.checked !== undefined ? (item.checked ? '[x] ' : '[ ] ') : '';
-				lines.push({
-					content: prefix + checkbox + item.content,
-					style: baseStyle,
-					blockIndex: 0,
-					lineInBlock: i,
-				});
-			}
-			break;
-		}
-
-		case 'table': {
-			const data = block.data;
-			// Header row
-			const headerContent = data.headers.map((h) => h.content).join(' | ');
-			lines.push({
-				content: `| ${headerContent} |`,
-				style: { bold: true },
-				blockIndex: 0,
-				lineInBlock: 0,
-			});
-
-			// Separator
-			const sep = data.headers
-				.map((_, i) => {
-					const align = data.alignments[i];
-					if (align === 'center') return ':---:';
-					if (align === 'right') return '---:';
-					if (align === 'left') return ':---';
-					return '---';
-				})
-				.join(' | ');
-			lines.push({
-				content: `| ${sep} |`,
-				style: baseStyle,
-				blockIndex: 0,
-				lineInBlock: 1,
-			});
-
-			// Data rows
-			for (let i = 0; i < data.rows.length; i++) {
-				const row = data.rows[i]!;
-				const rowContent = row.map((c) => c.content).join(' | ');
-				lines.push({
-					content: `| ${rowContent} |`,
-					style: baseStyle,
-					blockIndex: 0,
-					lineInBlock: i + 2,
-				});
-			}
-			break;
-		}
-
-		case 'blockquote': {
-			const data = block.data;
-			for (const nestedBlock of data.blocks) {
-				const nestedLines = renderBlock(nestedBlock, cache);
-				for (const line of nestedLines) {
-					lines.push({
-						...line,
-						content: `> ${line.content}`,
-						style: { ...line.style, italic: true },
-					});
-				}
-			}
-			if (lines.length === 0) {
-				// Empty blockquote
-				lines.push({
-					content: '>',
-					style: { italic: true },
-					blockIndex: 0,
-					lineInBlock: 0,
-				});
-			}
-			break;
-		}
-
-		case 'hr': {
-			lines.push({
-				content: '---',
-				style: { dim: true },
-				blockIndex: 0,
-				lineInBlock: 0,
-			});
-			break;
-		}
-
-		case 'html': {
-			const data = block.data;
-			const htmlLines = data.html.split('\n');
-			for (let i = 0; i < htmlLines.length; i++) {
-				lines.push({
-					content: htmlLines[i]!,
-					style: { dim: true },
-					blockIndex: 0,
-					lineInBlock: i,
-				});
-			}
-			break;
-		}
+	const handler = renderHandlers[block.data.kind];
+	if (handler) {
+		handler(block, cache, lines, baseStyle);
 	}
 
 	return lines;
@@ -917,8 +895,7 @@ export function renderMarkdown(
 	const lines: RenderedLine[] = [];
 	let _lineIndex = 0;
 
-	for (let blockIdx = 0; blockIdx < result.blocks.length; blockIdx++) {
-		const block = result.blocks[blockIdx]!;
+	for (const [blockIdx, block] of result.blocks.entries()) {
 		const blockLines = renderBlock(block, cache);
 
 		for (const line of blockLines) {
@@ -943,6 +920,228 @@ export function renderMarkdown(
 
 	cache.renderedLines = lines;
 	return lines;
+}
+
+type RenderHandler = (
+	block: MarkdownBlock,
+	cache: MarkdownCache,
+	lines: RenderedLine[],
+	baseStyle: LineStyle,
+) => void;
+
+const renderHandlers: Record<string, RenderHandler> = {
+	heading: renderHeadingBlock,
+	paragraph: renderParagraphBlock,
+	code: renderCodeBlock,
+	list: renderListBlock,
+	table: renderTableBlock,
+	blockquote: renderBlockquoteBlock,
+	hr: renderHrBlock,
+	html: renderHtmlBlock,
+};
+
+function renderHeadingBlock(
+	block: MarkdownBlock,
+	_cache: MarkdownCache,
+	lines: RenderedLine[],
+	_baseStyle: LineStyle,
+): void {
+	const data = block.data;
+	if (data.kind !== 'heading') {
+		return;
+	}
+	lines.push({
+		content: `${'#'.repeat(data.level)} ${data.text}`,
+		style: { bold: true },
+		blockIndex: 0,
+		lineInBlock: 0,
+	});
+}
+
+function renderParagraphBlock(
+	block: MarkdownBlock,
+	_cache: MarkdownCache,
+	lines: RenderedLine[],
+	baseStyle: LineStyle,
+): void {
+	const data = block.data;
+	if (data.kind !== 'paragraph') {
+		return;
+	}
+	lines.push({
+		content: data.text,
+		style: baseStyle,
+		blockIndex: 0,
+		lineInBlock: 0,
+	});
+}
+
+function renderCodeBlock(
+	block: MarkdownBlock,
+	cache: MarkdownCache,
+	lines: RenderedLine[],
+	_baseStyle: LineStyle,
+): void {
+	const data = block.data;
+	if (data.kind !== 'code') {
+		return;
+	}
+	const grammar = getGrammarByName(data.language || 'plaintext');
+	let highlightCache = cache.highlightCaches.get(block.hash.toString());
+	if (!highlightCache) {
+		highlightCache = createHighlightCache(grammar);
+		cache.highlightCaches.set(block.hash.toString(), highlightCache);
+	} else if (highlightCache.grammar.name !== grammar.name) {
+		setGrammar(highlightCache, grammar);
+	}
+
+	highlightWithCache(highlightCache, data.code);
+
+	for (const [i, codeLine] of data.code.split('\n').entries()) {
+		lines.push({
+			content: codeLine,
+			style: { dim: true },
+			blockIndex: 0,
+			lineInBlock: i,
+		});
+	}
+}
+
+function renderListBlock(
+	block: MarkdownBlock,
+	_cache: MarkdownCache,
+	lines: RenderedLine[],
+	baseStyle: LineStyle,
+): void {
+	const data = block.data;
+	if (data.kind !== 'list') {
+		return;
+	}
+	for (const [i, item] of data.items.entries()) {
+		const prefix = data.ordered
+			? `${(data.start || 1) + i}. `
+			: `${'  '.repeat(item.indent / 2)}- `;
+		const checkbox = item.checked !== undefined ? (item.checked ? '[x] ' : '[ ] ') : '';
+		lines.push({
+			content: prefix + checkbox + item.content,
+			style: baseStyle,
+			blockIndex: 0,
+			lineInBlock: i,
+		});
+	}
+}
+
+function renderTableBlock(
+	block: MarkdownBlock,
+	_cache: MarkdownCache,
+	lines: RenderedLine[],
+	baseStyle: LineStyle,
+): void {
+	const data = block.data;
+	if (data.kind !== 'table') {
+		return;
+	}
+	const headerContent = data.headers.map((h) => h.content).join(' | ');
+	lines.push({
+		content: `| ${headerContent} |`,
+		style: { bold: true },
+		blockIndex: 0,
+		lineInBlock: 0,
+	});
+
+	const sep = data.headers
+		.map((_, i) => {
+			const align = data.alignments[i];
+			if (align === 'center') return ':---:';
+			if (align === 'right') return '---:';
+			if (align === 'left') return ':---';
+			return '---';
+		})
+		.join(' | ');
+	lines.push({
+		content: `| ${sep} |`,
+		style: baseStyle,
+		blockIndex: 0,
+		lineInBlock: 1,
+	});
+
+	for (const [i, row] of data.rows.entries()) {
+		const rowContent = row.map((c) => c.content).join(' | ');
+		lines.push({
+			content: `| ${rowContent} |`,
+			style: baseStyle,
+			blockIndex: 0,
+			lineInBlock: i + 2,
+		});
+	}
+}
+
+function renderBlockquoteBlock(
+	block: MarkdownBlock,
+	cache: MarkdownCache,
+	lines: RenderedLine[],
+	_baseStyle: LineStyle,
+): void {
+	const data = block.data;
+	if (data.kind !== 'blockquote') {
+		return;
+	}
+	for (const nestedBlock of data.blocks) {
+		const nestedLines = renderBlock(nestedBlock, cache);
+		for (const line of nestedLines) {
+			lines.push({
+				...line,
+				content: `> ${line.content}`,
+				style: { ...line.style, italic: true },
+			});
+		}
+	}
+	if (lines.length === 0) {
+		lines.push({
+			content: '>',
+			style: { italic: true },
+			blockIndex: 0,
+			lineInBlock: 0,
+		});
+	}
+}
+
+function renderHrBlock(
+	block: MarkdownBlock,
+	_cache: MarkdownCache,
+	lines: RenderedLine[],
+	_baseStyle: LineStyle,
+): void {
+	const data = block.data;
+	if (data.kind !== 'hr') {
+		return;
+	}
+	lines.push({
+		content: '---',
+		style: { dim: true },
+		blockIndex: 0,
+		lineInBlock: 0,
+	});
+}
+
+function renderHtmlBlock(
+	block: MarkdownBlock,
+	_cache: MarkdownCache,
+	lines: RenderedLine[],
+	_baseStyle: LineStyle,
+): void {
+	const data = block.data;
+	if (data.kind !== 'html') {
+		return;
+	}
+	for (const [i, htmlLine] of data.html.split('\n').entries()) {
+		lines.push({
+			content: htmlLine,
+			style: { dim: true },
+			blockIndex: 0,
+			lineInBlock: i,
+		});
+	}
 }
 
 /**

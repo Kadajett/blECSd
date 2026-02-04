@@ -153,6 +153,65 @@ export function fillRegion(
 }
 
 /**
+ * Copies region using a temp buffer (for overlapping regions).
+ */
+function copyRegionWithTemp(
+	buffer: ScreenBufferData,
+	srcX: number,
+	srcY: number,
+	dstX: number,
+	dstY: number,
+	width: number,
+	height: number,
+): void {
+	const temp: Cell[] = new Array(width * height);
+	// Copy to temp buffer
+	for (let row = 0; row < height; row++) {
+		for (let col = 0; col < width; col++) {
+			const srcIdx = (srcY + row) * buffer.width + (srcX + col);
+			const srcCell = buffer.cells[srcIdx];
+			if (srcCell) {
+				temp[row * width + col] = cloneCell(srcCell);
+			}
+		}
+	}
+	// Copy from temp to destination
+	for (let row = 0; row < height; row++) {
+		for (let col = 0; col < width; col++) {
+			const dstIdx = (dstY + row) * buffer.width + (dstX + col);
+			const tempCell = temp[row * width + col];
+			if (tempCell) {
+				buffer.cells[dstIdx] = tempCell;
+			}
+		}
+	}
+}
+
+/**
+ * Copies region directly (for non-overlapping regions).
+ */
+function copyRegionDirect(
+	buffer: ScreenBufferData,
+	srcX: number,
+	srcY: number,
+	dstX: number,
+	dstY: number,
+	width: number,
+	height: number,
+): void {
+	for (let row = 0; row < height; row++) {
+		for (let col = 0; col < width; col++) {
+			const srcIdx = (srcY + row) * buffer.width + (srcX + col);
+			const dstIdx = (dstY + row) * buffer.width + (dstX + col);
+			const srcCell = buffer.cells[srcIdx];
+			if (srcCell) {
+				buffer.cells[dstIdx] = cloneCell(srcCell);
+			}
+		}
+	}
+}
+
+/**
  * Copies a rectangular region within the same buffer.
  * Handles overlapping regions correctly by using a temporary buffer
  * when source and destination overlap.
@@ -231,39 +290,9 @@ export function copyRegionInBuffer(
 		dstY1 < finalSrcY + finalH;
 
 	if (overlaps) {
-		// Copy to temp buffer first
-		const temp: Cell[] = new Array(finalW * finalH);
-		for (let row = 0; row < finalH; row++) {
-			for (let col = 0; col < finalW; col++) {
-				const srcIdx = (finalSrcY + row) * buffer.width + (finalSrcX + col);
-				const srcCell = buffer.cells[srcIdx];
-				if (srcCell) {
-					temp[row * finalW + col] = cloneCell(srcCell);
-				}
-			}
-		}
-		// Copy from temp to destination
-		for (let row = 0; row < finalH; row++) {
-			for (let col = 0; col < finalW; col++) {
-				const dstIdx = (dstY1 + row) * buffer.width + (dstX1 + col);
-				const tempCell = temp[row * finalW + col];
-				if (tempCell) {
-					buffer.cells[dstIdx] = tempCell;
-				}
-			}
-		}
+		copyRegionWithTemp(buffer, finalSrcX, finalSrcY, dstX1, dstY1, finalW, finalH);
 	} else {
-		// No overlap, copy directly
-		for (let row = 0; row < finalH; row++) {
-			for (let col = 0; col < finalW; col++) {
-				const srcIdx = (finalSrcY + row) * buffer.width + (finalSrcX + col);
-				const dstIdx = (dstY1 + row) * buffer.width + (dstX1 + col);
-				const srcCell = buffer.cells[srcIdx];
-				if (srcCell) {
-					buffer.cells[dstIdx] = cloneCell(srcCell);
-				}
-			}
-		}
+		copyRegionDirect(buffer, finalSrcX, finalSrcY, dstX1, dstY1, finalW, finalH);
 	}
 }
 
