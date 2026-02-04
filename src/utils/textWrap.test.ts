@@ -217,6 +217,18 @@ describe('wrapText', () => {
 		expect(result.length).toBe(1);
 		expect(result[0]).toContain('\x1b[31m');
 	});
+
+	it('handles incomplete ANSI sequences with breakWord', () => {
+		const result = wrapText('\x1b[', { width: 1, breakWord: true, align: 'left' });
+		expect(result).toEqual(['\x1b', '[']);
+	});
+
+	it('preserves content when breaking incomplete ANSI sequences', () => {
+		const input = '\x1b[ABC';
+		const result = wrapText(input, { width: 1, breakWord: true, align: 'left' });
+		const rebuilt = result.map((line) => line.trimEnd()).join('');
+		expect(rebuilt).toBe(input);
+	});
 });
 
 describe('padHeight', () => {

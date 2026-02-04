@@ -429,7 +429,7 @@ export function createVirtualizedList(
 	if (validated.style?.selectedBg !== undefined)
 		renderConfig.selectedBg = validated.style.selectedBg;
 	if (validated.style?.cursorFg !== undefined) renderConfig.cursorFg = validated.style.cursorFg;
-	if (validated.style?.cursorBg !== undefined) renderConfig.cursorFg = validated.style.cursorBg;
+	if (validated.style?.cursorBg !== undefined) renderConfig.cursorBg = validated.style.cursorBg;
 	if (validated.style?.showLineNumbers !== undefined)
 		renderConfig.showLineNumbers = validated.style.showLineNumbers;
 	if (validated.style?.lineNumberWidth !== undefined)
