@@ -17,14 +17,34 @@ import { z } from 'zod';
  * });
  * ```
  */
-export const CharBitmapSchema = z.object({
-	/** Character width in pixels */
-	width: z.number().int().positive(),
-	/** Character height in pixels */
-	height: z.number().int().positive(),
-	/** Bitmap data as array of rows (each row is array of 0/1) */
-	bitmap: z.array(z.array(z.union([z.literal(0), z.literal(1)]))),
-});
+export const CharBitmapSchema = z
+	.object({
+		/** Character width in pixels */
+		width: z.number().int().positive(),
+		/** Character height in pixels */
+		height: z.number().int().positive(),
+		/** Bitmap data as array of rows (each row is array of 0/1) */
+		bitmap: z.array(z.array(z.union([z.literal(0), z.literal(1)]))),
+	})
+	.superRefine((value, ctx) => {
+		if (value.bitmap.length !== value.height) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: `Bitmap row count (${value.bitmap.length}) does not match height (${value.height}).`,
+				path: ['bitmap'],
+			});
+		}
+
+		value.bitmap.forEach((row, index) => {
+			if (row.length !== value.width) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: `Bitmap row ${index} length (${row.length}) does not match width (${value.width}).`,
+					path: ['bitmap', index],
+				});
+			}
+		});
+	});
 
 /**
  * A single character's bitmap data.
