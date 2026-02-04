@@ -213,10 +213,10 @@ export function hasBlECSdErrorShape(value: unknown): value is BlECSdError {
 
 	const obj = value as Record<string, unknown>;
 	return (
-		typeof obj['kind'] === 'string' &&
-		typeof obj['code'] === 'string' &&
-		typeof obj['message'] === 'string' &&
-		typeof obj['timestamp'] === 'number'
+		typeof obj.kind === 'string' &&
+		typeof obj.code === 'string' &&
+		typeof obj.message === 'string' &&
+		typeof obj.timestamp === 'number'
 	);
 }
 

@@ -3,12 +3,12 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { Entity, World } from '../../core/types';
 import { Camera3D, setCamera3D } from '../components/camera3d';
 import { Material3D } from '../components/material';
-import { Mesh, clearMeshStore, createMeshFromArrays } from '../components/mesh';
-import { Transform3D, setTransform3D } from '../components/transform3d';
-import { Viewport3D, setViewport3D } from '../components/viewport3d';
-import { sceneGraphSystem } from './sceneGraphSystem';
+import { clearMeshStore, createMeshFromArrays, Mesh } from '../components/mesh';
+import { setTransform3D, Transform3D } from '../components/transform3d';
+import { setViewport3D, Viewport3D } from '../components/viewport3d';
 import { clearProjectionStore, projectionSystem } from './projectionSystem';
 import { clearFramebufferStore, rasterSystem } from './rasterSystem';
+import { sceneGraphSystem } from './sceneGraphSystem';
 import {
 	backendStore,
 	clearBackendStore,
@@ -36,7 +36,10 @@ function setupCamera(world: World): Entity {
 function setupViewport(world: World, cameraEid: Entity, pw = 160, ph = 96): Entity {
 	const eid = addEntity(world) as Entity;
 	setViewport3D(world, eid, {
-		left: 5, top: 2, width: 80, height: 24,
+		left: 5,
+		top: 2,
+		width: 80,
+		height: 24,
 		cameraEntity: cameraEid,
 	});
 	Viewport3D.pixelWidth[eid] = pw;
@@ -45,16 +48,27 @@ function setupViewport(world: World, cameraEid: Entity, pw = 160, ph = 96): Enti
 }
 
 function setupCube(world: World, config?: Record<string, number>): Entity {
-	const meshId = createMeshFromArrays('cube', [
-		{ x: -1, y: -1, z: -1 }, { x: 1, y: -1, z: -1 },
-		{ x: 1, y: 1, z: -1 }, { x: -1, y: 1, z: -1 },
-		{ x: -1, y: -1, z: 1 }, { x: 1, y: -1, z: 1 },
-		{ x: 1, y: 1, z: 1 }, { x: -1, y: 1, z: 1 },
-	], [
-		[0, 1, 2, 3], [5, 4, 7, 6],
-		[4, 0, 3, 7], [1, 5, 6, 2],
-		[3, 2, 6, 7], [4, 5, 1, 0],
-	]);
+	const meshId = createMeshFromArrays(
+		'cube',
+		[
+			{ x: -1, y: -1, z: -1 },
+			{ x: 1, y: -1, z: -1 },
+			{ x: 1, y: 1, z: -1 },
+			{ x: -1, y: 1, z: -1 },
+			{ x: -1, y: -1, z: 1 },
+			{ x: 1, y: -1, z: 1 },
+			{ x: 1, y: 1, z: 1 },
+			{ x: -1, y: 1, z: 1 },
+		],
+		[
+			[0, 1, 2, 3],
+			[5, 4, 7, 6],
+			[4, 0, 3, 7],
+			[1, 5, 6, 2],
+			[3, 2, 6, 7],
+			[4, 5, 1, 0],
+		],
+	);
 	const eid = addEntity(world) as Entity;
 	setTransform3D(world, eid, config ?? { tz: -5 });
 	addComponent(world, eid, Mesh);
@@ -124,7 +138,7 @@ describe('viewportOutputSystem', () => {
 		expect(output).toBeDefined();
 		expect(output?.backendType).toBe('braille');
 		expect(output?.encoded.cells).toBeDefined();
-		expect(output?.encoded.cells!.length).toBeGreaterThan(0);
+		expect(output?.encoded.cells?.length).toBeGreaterThan(0);
 	});
 
 	it('positions cells at viewport screen coordinates', () => {
@@ -213,14 +227,14 @@ describe('viewportOutputSystem', () => {
 		const cells = output.encoded.cells ?? [];
 
 		// At least some cells should have non-blank braille chars (not just U+2800)
-		const nonBlank = cells.filter(c => c.char !== '\u2800');
+		const nonBlank = cells.filter((c) => c.char !== '\u2800');
 		expect(nonBlank.length).toBeGreaterThan(0);
 
 		// All chars should be in braille range U+2800-U+28FF
 		for (const cell of cells) {
 			const code = cell.char.codePointAt(0) ?? 0;
 			expect(code).toBeGreaterThanOrEqual(0x2800);
-			expect(code).toBeLessThanOrEqual(0x28FF);
+			expect(code).toBeLessThanOrEqual(0x28ff);
 		}
 	});
 

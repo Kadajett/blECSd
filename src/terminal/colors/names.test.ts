@@ -21,43 +21,43 @@ import type { Color256 } from './palette';
 describe('names', () => {
 	describe('COLOR_NAMES', () => {
 		it('maps basic colors to indices 0-7', () => {
-			expect(COLOR_NAMES['black']).toBe(0);
-			expect(COLOR_NAMES['red']).toBe(1);
-			expect(COLOR_NAMES['green']).toBe(2);
-			expect(COLOR_NAMES['yellow']).toBe(3);
-			expect(COLOR_NAMES['blue']).toBe(4);
-			expect(COLOR_NAMES['magenta']).toBe(5);
-			expect(COLOR_NAMES['cyan']).toBe(6);
-			expect(COLOR_NAMES['white']).toBe(7);
+			expect(COLOR_NAMES.black).toBe(0);
+			expect(COLOR_NAMES.red).toBe(1);
+			expect(COLOR_NAMES.green).toBe(2);
+			expect(COLOR_NAMES.yellow).toBe(3);
+			expect(COLOR_NAMES.blue).toBe(4);
+			expect(COLOR_NAMES.magenta).toBe(5);
+			expect(COLOR_NAMES.cyan).toBe(6);
+			expect(COLOR_NAMES.white).toBe(7);
 		});
 
 		it('maps bright colors to indices 8-15', () => {
-			expect(COLOR_NAMES['lightblack']).toBe(8);
-			expect(COLOR_NAMES['lightred']).toBe(9);
-			expect(COLOR_NAMES['lightgreen']).toBe(10);
-			expect(COLOR_NAMES['lightyellow']).toBe(11);
-			expect(COLOR_NAMES['lightblue']).toBe(12);
-			expect(COLOR_NAMES['lightmagenta']).toBe(13);
-			expect(COLOR_NAMES['lightcyan']).toBe(14);
-			expect(COLOR_NAMES['lightwhite']).toBe(15);
+			expect(COLOR_NAMES.lightblack).toBe(8);
+			expect(COLOR_NAMES.lightred).toBe(9);
+			expect(COLOR_NAMES.lightgreen).toBe(10);
+			expect(COLOR_NAMES.lightyellow).toBe(11);
+			expect(COLOR_NAMES.lightblue).toBe(12);
+			expect(COLOR_NAMES.lightmagenta).toBe(13);
+			expect(COLOR_NAMES.lightcyan).toBe(14);
+			expect(COLOR_NAMES.lightwhite).toBe(15);
 		});
 
 		it('has bright aliases', () => {
-			expect(COLOR_NAMES['brightred']).toBe(9);
-			expect(COLOR_NAMES['brightgreen']).toBe(10);
+			expect(COLOR_NAMES.brightred).toBe(9);
+			expect(COLOR_NAMES.brightgreen).toBe(10);
 		});
 
 		it('has HTML color names', () => {
-			expect(COLOR_NAMES['maroon']).toBe(1);
-			expect(COLOR_NAMES['navy']).toBe(4);
-			expect(COLOR_NAMES['teal']).toBe(6);
-			expect(COLOR_NAMES['aqua']).toBe(14);
+			expect(COLOR_NAMES.maroon).toBe(1);
+			expect(COLOR_NAMES.navy).toBe(4);
+			expect(COLOR_NAMES.teal).toBe(6);
+			expect(COLOR_NAMES.aqua).toBe(14);
 		});
 	});
 
 	describe('COLOR_ALIASES', () => {
 		it('maps grey to gray', () => {
-			expect(COLOR_ALIASES['grey']).toBe('gray');
+			expect(COLOR_ALIASES.grey).toBe('gray');
 		});
 	});
 
@@ -170,10 +170,10 @@ describe('names', () => {
 
 	describe('CSS_COLORS', () => {
 		it('contains common CSS colors', () => {
-			expect(CSS_COLORS['coral']).toBeDefined();
-			expect(CSS_COLORS['coral']!.r).toBe(255);
-			expect(CSS_COLORS['coral']!.g).toBe(127);
-			expect(CSS_COLORS['coral']!.b).toBe(80);
+			expect(CSS_COLORS.coral).toBeDefined();
+			expect(CSS_COLORS.coral?.r).toBe(255);
+			expect(CSS_COLORS.coral?.g).toBe(127);
+			expect(CSS_COLORS.coral?.b).toBe(80);
 		});
 
 		it('has proper RGB structure', () => {

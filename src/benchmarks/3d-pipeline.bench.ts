@@ -16,21 +16,21 @@
 
 import { addComponent, addEntity, createWorld } from 'bitecs';
 import { afterEach, bench, describe } from 'vitest';
-import type { Entity, World } from '../core/types';
-import { Camera3D } from '../3d/components/camera3d';
-import { Mesh } from '../3d/components/mesh';
-import { Material3D } from '../3d/components/material';
-import { Transform3D, setTransform3D } from '../3d/components/transform3d';
-import { setCamera3D } from '../3d/components/camera3d';
-import { setViewport3D } from '../3d/components/viewport3d';
-import { Viewport3D } from '../3d/components/viewport3d';
-import { setMaterial3D } from '../3d/components/material';
+import { Camera3D, setCamera3D } from '../3d/components/camera3d';
+import { Material3D, setMaterial3D } from '../3d/components/material';
+import { clearMeshStore, Mesh } from '../3d/components/mesh';
+import { setTransform3D, Transform3D } from '../3d/components/transform3d';
+import { setViewport3D, Viewport3D } from '../3d/components/viewport3d';
 import { createCubeMesh, createSphereMesh } from '../3d/stores/primitives';
-import { clearMeshStore } from '../3d/components/mesh';
-import { sceneGraphSystem } from '../3d/systems/sceneGraphSystem';
 import { clearProjectionStore, projectionSystem } from '../3d/systems/projectionSystem';
 import { clearFramebufferStore, rasterSystem } from '../3d/systems/rasterSystem';
-import { clearBackendStore, clearOutputStore, viewportOutputSystem } from '../3d/systems/viewportOutputSystem';
+import { sceneGraphSystem } from '../3d/systems/sceneGraphSystem';
+import {
+	clearBackendStore,
+	clearOutputStore,
+	viewportOutputSystem,
+} from '../3d/systems/viewportOutputSystem';
+import type { Entity, World } from '../core/types';
 
 // =============================================================================
 // HELPERS
@@ -55,7 +55,10 @@ function addCamera(world: World): Entity {
 function addViewport(world: World, cameraEid: Entity, pw = 160, ph = 96): Entity {
 	const eid = addEntity(world) as Entity;
 	setViewport3D(world, eid, {
-		left: 0, top: 0, width: 80, height: 24,
+		left: 0,
+		top: 0,
+		width: 80,
+		height: 24,
 		cameraEntity: cameraEid,
 	});
 	Viewport3D.pixelWidth[eid] = pw;

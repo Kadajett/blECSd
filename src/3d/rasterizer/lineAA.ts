@@ -8,7 +8,7 @@
  * @module 3d/rasterizer/lineAA
  */
 
-import { type PixelFramebuffer, getPixel, isInBounds, setPixelUnsafe } from './pixelBuffer';
+import { getPixel, isInBounds, type PixelFramebuffer, setPixelUnsafe } from './pixelBuffer';
 
 /**
  * Blend a color with an existing pixel at the given intensity.

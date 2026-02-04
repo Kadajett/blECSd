@@ -1073,37 +1073,37 @@ describe('charset namespace', () => {
 
 describe('DEC_SPECIAL_GRAPHICS', () => {
 	it('contains box drawing corners', () => {
-		expect(DEC_SPECIAL_GRAPHICS['j']).toBe('\u2518'); // ┘
-		expect(DEC_SPECIAL_GRAPHICS['k']).toBe('\u2510'); // ┐
-		expect(DEC_SPECIAL_GRAPHICS['l']).toBe('\u250c'); // ┌
-		expect(DEC_SPECIAL_GRAPHICS['m']).toBe('\u2514'); // └
+		expect(DEC_SPECIAL_GRAPHICS.j).toBe('\u2518'); // ┘
+		expect(DEC_SPECIAL_GRAPHICS.k).toBe('\u2510'); // ┐
+		expect(DEC_SPECIAL_GRAPHICS.l).toBe('\u250c'); // ┌
+		expect(DEC_SPECIAL_GRAPHICS.m).toBe('\u2514'); // └
 	});
 
 	it('contains box drawing lines', () => {
-		expect(DEC_SPECIAL_GRAPHICS['q']).toBe('\u2500'); // ─
-		expect(DEC_SPECIAL_GRAPHICS['x']).toBe('\u2502'); // │
+		expect(DEC_SPECIAL_GRAPHICS.q).toBe('\u2500'); // ─
+		expect(DEC_SPECIAL_GRAPHICS.x).toBe('\u2502'); // │
 	});
 
 	it('contains box drawing tees', () => {
-		expect(DEC_SPECIAL_GRAPHICS['n']).toBe('\u253c'); // ┼
-		expect(DEC_SPECIAL_GRAPHICS['t']).toBe('\u251c'); // ├
-		expect(DEC_SPECIAL_GRAPHICS['u']).toBe('\u2524'); // ┤
-		expect(DEC_SPECIAL_GRAPHICS['v']).toBe('\u2534'); // ┴
-		expect(DEC_SPECIAL_GRAPHICS['w']).toBe('\u252c'); // ┬
+		expect(DEC_SPECIAL_GRAPHICS.n).toBe('\u253c'); // ┼
+		expect(DEC_SPECIAL_GRAPHICS.t).toBe('\u251c'); // ├
+		expect(DEC_SPECIAL_GRAPHICS.u).toBe('\u2524'); // ┤
+		expect(DEC_SPECIAL_GRAPHICS.v).toBe('\u2534'); // ┴
+		expect(DEC_SPECIAL_GRAPHICS.w).toBe('\u252c'); // ┬
 	});
 
 	it('contains scan lines', () => {
-		expect(DEC_SPECIAL_GRAPHICS['o']).toBe('\u23ba'); // ⎺
-		expect(DEC_SPECIAL_GRAPHICS['p']).toBe('\u23bb'); // ⎻
-		expect(DEC_SPECIAL_GRAPHICS['r']).toBe('\u23bc'); // ⎼
-		expect(DEC_SPECIAL_GRAPHICS['s']).toBe('\u23bd'); // ⎽
+		expect(DEC_SPECIAL_GRAPHICS.o).toBe('\u23ba'); // ⎺
+		expect(DEC_SPECIAL_GRAPHICS.p).toBe('\u23bb'); // ⎻
+		expect(DEC_SPECIAL_GRAPHICS.r).toBe('\u23bc'); // ⎼
+		expect(DEC_SPECIAL_GRAPHICS.s).toBe('\u23bd'); // ⎽
 	});
 
 	it('contains symbols', () => {
 		expect(DEC_SPECIAL_GRAPHICS['`']).toBe('\u25c6'); // ◆
-		expect(DEC_SPECIAL_GRAPHICS['a']).toBe('\u2592'); // ▒
-		expect(DEC_SPECIAL_GRAPHICS['f']).toBe('\u00b0'); // °
-		expect(DEC_SPECIAL_GRAPHICS['g']).toBe('\u00b1'); // ±
+		expect(DEC_SPECIAL_GRAPHICS.a).toBe('\u2592'); // ▒
+		expect(DEC_SPECIAL_GRAPHICS.f).toBe('\u00b0'); // °
+		expect(DEC_SPECIAL_GRAPHICS.g).toBe('\u00b1'); // ±
 		expect(DEC_SPECIAL_GRAPHICS['{']).toBe('\u03c0'); // π
 	});
 });

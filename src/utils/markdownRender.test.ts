@@ -28,63 +28,63 @@ describe('parseInline', () => {
 		const result = parseInline('Hello world');
 
 		expect(result).toHaveLength(1);
-		expect(result[0]!.type).toBe('text');
-		expect(result[0]!.content).toBe('Hello world');
+		expect(result[0]?.type).toBe('text');
+		expect(result[0]?.content).toBe('Hello world');
 	});
 
 	it('parses bold text', () => {
 		const result = parseInline('Hello **world**');
 
 		expect(result).toHaveLength(2);
-		expect(result[0]!.type).toBe('text');
-		expect(result[1]!.type).toBe('bold');
-		expect(result[1]!.content).toBe('world');
+		expect(result[0]?.type).toBe('text');
+		expect(result[1]?.type).toBe('bold');
+		expect(result[1]?.content).toBe('world');
 	});
 
 	it('parses italic text', () => {
 		const result = parseInline('Hello *world*');
 
 		expect(result).toHaveLength(2);
-		expect(result[0]!.type).toBe('text');
-		expect(result[1]!.type).toBe('italic');
-		expect(result[1]!.content).toBe('world');
+		expect(result[0]?.type).toBe('text');
+		expect(result[1]?.type).toBe('italic');
+		expect(result[1]?.content).toBe('world');
 	});
 
 	it('parses inline code', () => {
 		const result = parseInline('Use `console.log`');
 
 		expect(result).toHaveLength(2);
-		expect(result[0]!.type).toBe('text');
-		expect(result[1]!.type).toBe('code');
-		expect(result[1]!.content).toBe('console.log');
+		expect(result[0]?.type).toBe('text');
+		expect(result[1]?.type).toBe('code');
+		expect(result[1]?.content).toBe('console.log');
 	});
 
 	it('parses links', () => {
 		const result = parseInline('Click [here](https://example.com)');
 
 		expect(result).toHaveLength(2);
-		expect(result[0]!.type).toBe('text');
-		expect(result[1]!.type).toBe('link');
-		expect(result[1]!.content).toBe('here');
-		expect(result[1]!.href).toBe('https://example.com');
+		expect(result[0]?.type).toBe('text');
+		expect(result[1]?.type).toBe('link');
+		expect(result[1]?.content).toBe('here');
+		expect(result[1]?.href).toBe('https://example.com');
 	});
 
 	it('parses images', () => {
 		const result = parseInline('![alt text](image.png)');
 
 		expect(result).toHaveLength(1);
-		expect(result[0]!.type).toBe('image');
-		expect(result[0]!.content).toBe('alt text');
-		expect(result[0]!.href).toBe('image.png');
+		expect(result[0]?.type).toBe('image');
+		expect(result[0]?.content).toBe('alt text');
+		expect(result[0]?.href).toBe('image.png');
 	});
 
 	it('parses strikethrough', () => {
 		const result = parseInline('This is ~~deleted~~');
 
 		expect(result).toHaveLength(2);
-		expect(result[0]!.type).toBe('text');
-		expect(result[1]!.type).toBe('strikethrough');
-		expect(result[1]!.content).toBe('deleted');
+		expect(result[0]?.type).toBe('text');
+		expect(result[1]?.type).toBe('strikethrough');
+		expect(result[1]?.content).toBe('deleted');
 	});
 
 	it('parses multiple formats', () => {
@@ -104,8 +104,8 @@ describe('parseMarkdown - headings', () => {
 		const result = parseMarkdown('# Hello');
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('heading');
-		expect(result.blocks[0]!.data).toMatchObject({
+		expect(result.blocks[0]?.type).toBe('heading');
+		expect(result.blocks[0]?.data).toMatchObject({
 			kind: 'heading',
 			level: 1,
 			text: 'Hello',
@@ -118,8 +118,8 @@ describe('parseMarkdown - headings', () => {
 
 		expect(result.blocks).toHaveLength(5);
 		for (let i = 0; i < 5; i++) {
-			expect(result.blocks[i]!.type).toBe('heading');
-			const data = result.blocks[i]!.data;
+			expect(result.blocks[i]?.type).toBe('heading');
+			const data = result.blocks[i]?.data;
 			if (data.kind === 'heading') {
 				expect(data.level).toBe(i + 2);
 			}
@@ -133,8 +133,8 @@ describe('parseMarkdown - code blocks', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('code');
-		expect(result.blocks[0]!.data).toMatchObject({
+		expect(result.blocks[0]?.type).toBe('code');
+		expect(result.blocks[0]?.data).toMatchObject({
 			kind: 'code',
 			language: 'js',
 			code: 'const x = 1;',
@@ -146,15 +146,15 @@ describe('parseMarkdown - code blocks', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('code');
+		expect(result.blocks[0]?.type).toBe('code');
 	});
 
 	it('preserves code block content', () => {
 		const code = 'function foo() {\n  return 42;\n}';
-		const md = '```typescript\n' + code + '\n```';
+		const md = `\`\`\`typescript\n${code}\n\`\`\``;
 		const result = parseMarkdown(md);
 
-		expect(result.blocks[0]!.data).toMatchObject({
+		expect(result.blocks[0]?.data).toMatchObject({
 			kind: 'code',
 			code,
 		});
@@ -167,8 +167,8 @@ describe('parseMarkdown - lists', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('list');
-		const data = result.blocks[0]!.data;
+		expect(result.blocks[0]?.type).toBe('list');
+		const data = result.blocks[0]?.data;
 		if (data.kind === 'list') {
 			expect(data.ordered).toBe(false);
 			expect(data.items).toHaveLength(3);
@@ -180,8 +180,8 @@ describe('parseMarkdown - lists', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('list');
-		const data = result.blocks[0]!.data;
+		expect(result.blocks[0]?.type).toBe('list');
+		const data = result.blocks[0]?.data;
 		if (data.kind === 'list') {
 			expect(data.ordered).toBe(true);
 			expect(data.items).toHaveLength(3);
@@ -193,10 +193,10 @@ describe('parseMarkdown - lists', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		const data = result.blocks[0]!.data;
+		const data = result.blocks[0]?.data;
 		if (data.kind === 'list') {
-			expect(data.items[0]!.checked).toBe(false);
-			expect(data.items[1]!.checked).toBe(true);
+			expect(data.items[0]?.checked).toBe(false);
+			expect(data.items[1]?.checked).toBe(true);
 		}
 	});
 });
@@ -207,8 +207,8 @@ describe('parseMarkdown - tables', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('table');
-		const data = result.blocks[0]!.data;
+		expect(result.blocks[0]?.type).toBe('table');
+		const data = result.blocks[0]?.data;
 		if (data.kind === 'table') {
 			expect(data.headers).toHaveLength(2);
 			expect(data.rows).toHaveLength(1);
@@ -219,7 +219,7 @@ describe('parseMarkdown - tables', () => {
 		const md = '| Left | Center | Right |\n| :--- | :---: | ---: |\n| a | b | c |';
 		const result = parseMarkdown(md);
 
-		const data = result.blocks[0]!.data;
+		const data = result.blocks[0]?.data;
 		if (data.kind === 'table') {
 			expect(data.alignments[0]).toBe('left');
 			expect(data.alignments[1]).toBe('center');
@@ -234,7 +234,7 @@ describe('parseMarkdown - blockquotes', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('blockquote');
+		expect(result.blocks[0]?.type).toBe('blockquote');
 	});
 
 	it('parses multi-line blockquote', () => {
@@ -242,7 +242,7 @@ describe('parseMarkdown - blockquotes', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('blockquote');
+		expect(result.blocks[0]?.type).toBe('blockquote');
 	});
 });
 
@@ -251,21 +251,21 @@ describe('parseMarkdown - horizontal rules', () => {
 		const result = parseMarkdown('---');
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('hr');
+		expect(result.blocks[0]?.type).toBe('hr');
 	});
 
 	it('parses hr with asterisks', () => {
 		const result = parseMarkdown('***');
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('hr');
+		expect(result.blocks[0]?.type).toBe('hr');
 	});
 
 	it('parses hr with underscores', () => {
 		const result = parseMarkdown('___');
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('hr');
+		expect(result.blocks[0]?.type).toBe('hr');
 	});
 });
 
@@ -274,7 +274,7 @@ describe('parseMarkdown - paragraphs', () => {
 		const result = parseMarkdown('This is a paragraph.');
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('paragraph');
+		expect(result.blocks[0]?.type).toBe('paragraph');
 	});
 
 	it('merges consecutive lines', () => {
@@ -282,8 +282,8 @@ describe('parseMarkdown - paragraphs', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('paragraph');
-		const data = result.blocks[0]!.data;
+		expect(result.blocks[0]?.type).toBe('paragraph');
+		const data = result.blocks[0]?.data;
 		if (data.kind === 'paragraph') {
 			expect(data.text).toBe('Line 1 Line 2 Line 3');
 		}
@@ -294,8 +294,8 @@ describe('parseMarkdown - paragraphs', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(2);
-		expect(result.blocks[0]!.type).toBe('paragraph');
-		expect(result.blocks[1]!.type).toBe('paragraph');
+		expect(result.blocks[0]?.type).toBe('paragraph');
+		expect(result.blocks[1]?.type).toBe('paragraph');
 	});
 });
 
@@ -330,8 +330,8 @@ code()
 		const md = '# Title\n\nParagraph\n\n- List';
 		const result = parseMarkdown(md);
 
-		expect(result.blocks[0]!.lineStart).toBe(0);
-		expect(result.blocks[0]!.lineEnd).toBe(1);
+		expect(result.blocks[0]?.lineStart).toBe(0);
+		expect(result.blocks[0]?.lineEnd).toBe(1);
 	});
 });
 
@@ -397,8 +397,8 @@ describe('renderBlock', () => {
 		const lines = renderBlock(result.blocks[0]!, cache);
 
 		expect(lines).toHaveLength(1);
-		expect(lines[0]!.content).toBe('## Hello');
-		expect(lines[0]!.style.bold).toBe(true);
+		expect(lines[0]?.content).toBe('## Hello');
+		expect(lines[0]?.style.bold).toBe(true);
 	});
 
 	it('renders paragraph', () => {
@@ -407,7 +407,7 @@ describe('renderBlock', () => {
 		const lines = renderBlock(result.blocks[0]!, cache);
 
 		expect(lines).toHaveLength(1);
-		expect(lines[0]!.content).toBe('Hello world');
+		expect(lines[0]?.content).toBe('Hello world');
 	});
 
 	it('renders code block', () => {
@@ -416,8 +416,8 @@ describe('renderBlock', () => {
 		const lines = renderBlock(result.blocks[0]!, cache);
 
 		expect(lines).toHaveLength(1);
-		expect(lines[0]!.content).toBe('const x = 1;');
-		expect(lines[0]!.style.dim).toBe(true);
+		expect(lines[0]?.content).toBe('const x = 1;');
+		expect(lines[0]?.style.dim).toBe(true);
 	});
 
 	it('renders list', () => {
@@ -426,8 +426,8 @@ describe('renderBlock', () => {
 		const lines = renderBlock(result.blocks[0]!, cache);
 
 		expect(lines).toHaveLength(2);
-		expect(lines[0]!.content).toContain('A');
-		expect(lines[1]!.content).toContain('B');
+		expect(lines[0]?.content).toContain('A');
+		expect(lines[1]?.content).toContain('B');
 	});
 
 	it('renders table', () => {
@@ -436,7 +436,7 @@ describe('renderBlock', () => {
 		const lines = renderBlock(result.blocks[0]!, cache);
 
 		expect(lines).toHaveLength(3);
-		expect(lines[0]!.style.bold).toBe(true); // Header
+		expect(lines[0]?.style.bold).toBe(true); // Header
 	});
 
 	it('renders blockquote', () => {
@@ -444,8 +444,8 @@ describe('renderBlock', () => {
 		const result = parseMarkdown('> Quote');
 		const lines = renderBlock(result.blocks[0]!, cache);
 
-		expect(lines[0]!.content).toContain('>');
-		expect(lines[0]!.style.italic).toBe(true);
+		expect(lines[0]?.content).toContain('>');
+		expect(lines[0]?.style.italic).toBe(true);
 	});
 
 	it('renders hr', () => {
@@ -454,7 +454,7 @@ describe('renderBlock', () => {
 		const lines = renderBlock(result.blocks[0]!, cache);
 
 		expect(lines).toHaveLength(1);
-		expect(lines[0]!.style.dim).toBe(true);
+		expect(lines[0]?.style.dim).toBe(true);
 	});
 });
 
@@ -602,12 +602,12 @@ describe('performance scenarios', () => {
 
 	it('handles large code blocks', () => {
 		const code = Array.from({ length: 500 }, (_, i) => `const x${i} = ${i};`).join('\n');
-		const md = '```javascript\n' + code + '\n```';
+		const md = `\`\`\`javascript\n${code}\n\`\`\``;
 
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('code');
+		expect(result.blocks[0]?.type).toBe('code');
 	});
 
 	it('handles complex tables', () => {
@@ -622,7 +622,7 @@ describe('performance scenarios', () => {
 		const result = parseMarkdown(md);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('table');
+		expect(result.blocks[0]?.type).toBe('table');
 	});
 
 	it('parses 10K line document in reasonable time', () => {
@@ -680,14 +680,14 @@ describe('edge cases', () => {
 		const result = parseMarkdown('# Hello < World & "Test"');
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]!.type).toBe('heading');
+		expect(result.blocks[0]?.type).toBe('heading');
 	});
 
 	it('handles unicode', () => {
 		const result = parseMarkdown('# Hello 世界 🌍');
 
 		expect(result.blocks).toHaveLength(1);
-		const data = result.blocks[0]!.data;
+		const data = result.blocks[0]?.data;
 		if (data.kind === 'heading') {
 			expect(data.text).toContain('世界');
 			expect(data.text).toContain('🌍');

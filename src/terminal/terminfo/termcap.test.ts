@@ -23,10 +23,10 @@ describe('termcap parser', () => {
 
 			const entry = result.entries.get('vt100');
 			expect(entry?.name).toBe('vt100');
-			expect(entry?.bools['am']).toBe(true);
-			expect(entry?.numbers['co']).toBe(80);
-			expect(entry?.numbers['li']).toBe(24);
-			expect(entry?.strings['cl']).toBe('\x1b[H\x1b[2J');
+			expect(entry?.bools.am).toBe(true);
+			expect(entry?.numbers.co).toBe(80);
+			expect(entry?.numbers.li).toBe(24);
+			expect(entry?.strings.cl).toBe('\x1b[H\x1b[2J');
 		});
 
 		it('parses multiple terminal names', () => {
@@ -48,9 +48,9 @@ vt100|dec vt100:\\
 			const result = parseTermcap(data);
 
 			const entry = result.entries.get('vt100');
-			expect(entry?.bools['am']).toBe(true);
-			expect(entry?.numbers['co']).toBe(80);
-			expect(entry?.numbers['li']).toBe(24);
+			expect(entry?.bools.am).toBe(true);
+			expect(entry?.numbers.co).toBe(80);
+			expect(entry?.numbers.li).toBe(24);
 		});
 
 		it('removes comments', () => {
@@ -77,8 +77,8 @@ vt220|dec vt220:am:co#80:li#25:`;
 			const vt100 = result.entries.get('vt100');
 			const vt220 = result.entries.get('vt220');
 
-			expect(vt100?.numbers['li']).toBeUndefined();
-			expect(vt220?.numbers['li']).toBe(25);
+			expect(vt100?.numbers.li).toBeUndefined();
+			expect(vt220?.numbers.li).toBe(25);
 		});
 
 		it('handles empty data', () => {
@@ -100,57 +100,57 @@ vt220|dec vt220:am:co#80:li#25:`;
 		it('parses \\E as ESC', () => {
 			const data = 'test:cl=\\E[H:';
 			const result = parseTermcap(data);
-			expect(result.entries.get('test')?.strings['cl']).toBe('\x1b[H');
+			expect(result.entries.get('test')?.strings.cl).toBe('\x1b[H');
 		});
 
 		it('parses \\e as ESC (lowercase)', () => {
 			const data = 'test:cl=\\e[H:';
 			const result = parseTermcap(data);
-			expect(result.entries.get('test')?.strings['cl']).toBe('\x1b[H');
+			expect(result.entries.get('test')?.strings.cl).toBe('\x1b[H');
 		});
 
 		it('parses control characters', () => {
 			const data = 'test:kb=^H:nl=^J:';
 			const result = parseTermcap(data);
 			const entry = result.entries.get('test');
-			expect(entry?.strings['kb']).toBe('\x08'); // Backspace
-			expect(entry?.strings['nl']).toBe('\x0a'); // Newline
+			expect(entry?.strings.kb).toBe('\x08'); // Backspace
+			expect(entry?.strings.nl).toBe('\x0a'); // Newline
 		});
 
 		it('parses ^? as DEL', () => {
 			const data = 'test:kD=^?:';
 			const result = parseTermcap(data);
-			expect(result.entries.get('test')?.strings['kD']).toBe('\x7f');
+			expect(result.entries.get('test')?.strings.kD).toBe('\x7f');
 		});
 
 		it('parses standard escapes', () => {
 			const data = 'test:s1=\\n\\r\\t\\b\\f:';
 			const result = parseTermcap(data);
-			expect(result.entries.get('test')?.strings['s1']).toBe('\n\r\t\b\f');
+			expect(result.entries.get('test')?.strings.s1).toBe('\n\r\t\b\f');
 		});
 
 		it('parses escaped backslash', () => {
 			const data = 'test:s1=\\\\:';
 			const result = parseTermcap(data);
-			expect(result.entries.get('test')?.strings['s1']).toBe('\\');
+			expect(result.entries.get('test')?.strings.s1).toBe('\\');
 		});
 
 		it('parses escaped colon', () => {
 			const data = 'test:s1=a\\:b:';
 			const result = parseTermcap(data);
-			expect(result.entries.get('test')?.strings['s1']).toBe('a:b');
+			expect(result.entries.get('test')?.strings.s1).toBe('a:b');
 		});
 
 		it('parses octal sequences', () => {
 			const data = 'test:s1=\\033[H:';
 			const result = parseTermcap(data);
-			expect(result.entries.get('test')?.strings['s1']).toBe('\x1b[H');
+			expect(result.entries.get('test')?.strings.s1).toBe('\x1b[H');
 		});
 
 		it('parses \\0 octal sequences', () => {
 			const data = 'test:s1=\\0177:';
 			const result = parseTermcap(data);
-			expect(result.entries.get('test')?.strings['s1']).toBe('\x7f');
+			expect(result.entries.get('test')?.strings.s1).toBe('\x7f');
 		});
 	});
 
@@ -171,7 +171,7 @@ derived:tc=base:li#24:`;
 			const data = 'derived:tc=base:li#24:';
 			const result = parseTermcap(data);
 			const entry = result.entries.get('derived');
-			expect(entry?.strings['tc']).toBe('base');
+			expect(entry?.strings.tc).toBe('base');
 		});
 	});
 
@@ -189,9 +189,9 @@ derived:tc=base:li#24:`;
 
 			expect(terminfo.name).toBe('vt100');
 			expect(terminfo.names).toContain('vt100');
-			expect(terminfo.booleans['am']).toBe(true);
-			expect(terminfo.numbers['co']).toBe(80);
-			expect(terminfo.strings['cl']).toBe('\x1b[H');
+			expect(terminfo.booleans.am).toBe(true);
+			expect(terminfo.numbers.co).toBe(80);
+			expect(terminfo.strings.cl).toBe('\x1b[H');
 		});
 	});
 
@@ -244,9 +244,9 @@ vt102|dec vt102:\\
 
 			const entry = result.entries.get('vt102');
 			expect(entry).toBeDefined();
-			expect(entry?.numbers['co']).toBe(80);
-			expect(entry?.numbers['li']).toBe(24);
-			expect(entry?.bools['bs']).toBe(true);
+			expect(entry?.numbers.co).toBe(80);
+			expect(entry?.numbers.li).toBe(24);
+			expect(entry?.bools.bs).toBe(true);
 		});
 
 		it('parses xterm-style entry', () => {
@@ -262,11 +262,11 @@ xterm|xterm terminal emulator:\\
 
 			const entry = result.entries.get('xterm');
 			expect(entry).toBeDefined();
-			expect(entry?.bools['am']).toBe(true);
-			expect(entry?.bools['km']).toBe(true);
-			expect(entry?.numbers['it']).toBe(8);
-			expect(entry?.strings['bl']).toBe('\x07'); // ^G = BEL
-			expect(entry?.strings['cl']).toBe('\x1b[H\x1b[2J');
+			expect(entry?.bools.am).toBe(true);
+			expect(entry?.bools.km).toBe(true);
+			expect(entry?.numbers.it).toBe(8);
+			expect(entry?.strings.bl).toBe('\x07'); // ^G = BEL
+			expect(entry?.strings.cl).toBe('\x1b[H\x1b[2J');
 		});
 
 		it('handles delay numbers in capabilities', () => {
@@ -274,7 +274,7 @@ xterm|xterm terminal emulator:\\
 			// We just preserve the string as-is
 			const data = 'test:cl=50\\E[H:';
 			const result = parseTermcap(data);
-			expect(result.entries.get('test')?.strings['cl']).toBe('50\x1b[H');
+			expect(result.entries.get('test')?.strings.cl).toBe('50\x1b[H');
 		});
 	});
 });

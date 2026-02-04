@@ -20,31 +20,19 @@ function countFilledPixels(fb: ReturnType<typeof createPixelFramebuffer>): numbe
 describe('Triangle rasterizer', () => {
 	describe('triangleArea2', () => {
 		it('returns positive for CCW winding', () => {
-			const area = triangleArea2(
-				{ x: 0, y: 0 },
-				{ x: 10, y: 0 },
-				{ x: 0, y: 10 },
-			);
+			const area = triangleArea2({ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 0, y: 10 });
 
 			expect(area).toBe(100);
 		});
 
 		it('returns negative for CW winding', () => {
-			const area = triangleArea2(
-				{ x: 0, y: 0 },
-				{ x: 0, y: 10 },
-				{ x: 10, y: 0 },
-			);
+			const area = triangleArea2({ x: 0, y: 0 }, { x: 0, y: 10 }, { x: 10, y: 0 });
 
 			expect(area).toBe(-100);
 		});
 
 		it('returns zero for collinear points', () => {
-			const area = triangleArea2(
-				{ x: 0, y: 0 },
-				{ x: 5, y: 5 },
-				{ x: 10, y: 10 },
-			);
+			const area = triangleArea2({ x: 0, y: 0 }, { x: 5, y: 5 }, { x: 10, y: 10 });
 
 			expect(area).toBe(0);
 		});
@@ -52,11 +40,7 @@ describe('Triangle rasterizer', () => {
 
 	describe('triangleBoundingBox', () => {
 		it('computes correct bounding box', () => {
-			const bbox = triangleBoundingBox(
-				{ x: 5, y: 2 },
-				{ x: 15, y: 8 },
-				{ x: 3, y: 12 },
-			);
+			const bbox = triangleBoundingBox({ x: 5, y: 2 }, { x: 15, y: 8 }, { x: 3, y: 12 });
 
 			expect(bbox.minX).toBe(3);
 			expect(bbox.minY).toBe(2);
@@ -69,7 +53,8 @@ describe('Triangle rasterizer', () => {
 		it('fills a right triangle', () => {
 			const fb = createPixelFramebuffer({ width: 30, height: 30 });
 
-			fillTriangle(fb,
+			fillTriangle(
+				fb,
 				{ x: 5, y: 5, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 25, y: 5, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 5, y: 25, depth: 0.5, r: 255, g: 0, b: 0 },
@@ -87,7 +72,8 @@ describe('Triangle rasterizer', () => {
 		it('skips degenerate triangle (collinear points)', () => {
 			const fb = createPixelFramebuffer({ width: 20, height: 20 });
 
-			fillTriangle(fb,
+			fillTriangle(
+				fb,
 				{ x: 0, y: 0, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 5, y: 5, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 10, y: 10, depth: 0.5, r: 255, g: 0, b: 0 },
@@ -99,7 +85,8 @@ describe('Triangle rasterizer', () => {
 		it('skips zero-area triangle', () => {
 			const fb = createPixelFramebuffer({ width: 20, height: 20 });
 
-			fillTriangle(fb,
+			fillTriangle(
+				fb,
 				{ x: 5, y: 5, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 5, y: 5, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 5, y: 5, depth: 0.5, r: 255, g: 0, b: 0 },
@@ -111,7 +98,8 @@ describe('Triangle rasterizer', () => {
 		it('interpolates color between vertices', () => {
 			const fb = createPixelFramebuffer({ width: 30, height: 30 });
 
-			fillTriangle(fb,
+			fillTriangle(
+				fb,
 				{ x: 15, y: 2, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 2, y: 25, depth: 0.5, r: 0, g: 255, b: 0 },
 				{ x: 28, y: 25, depth: 0.5, r: 0, g: 0, b: 255 },
@@ -130,14 +118,16 @@ describe('Triangle rasterizer', () => {
 			const fb = createPixelFramebuffer({ width: 30, height: 30 });
 
 			// Draw a far red triangle
-			fillTriangle(fb,
+			fillTriangle(
+				fb,
 				{ x: 5, y: 5, depth: 0.8, r: 255, g: 0, b: 0 },
 				{ x: 25, y: 5, depth: 0.8, r: 255, g: 0, b: 0 },
 				{ x: 15, y: 25, depth: 0.8, r: 255, g: 0, b: 0 },
 			);
 
 			// Draw a closer green triangle overlapping
-			fillTriangle(fb,
+			fillTriangle(
+				fb,
 				{ x: 10, y: 10, depth: 0.2, r: 0, g: 255, b: 0 },
 				{ x: 20, y: 10, depth: 0.2, r: 0, g: 255, b: 0 },
 				{ x: 15, y: 20, depth: 0.2, r: 0, g: 255, b: 0 },
@@ -153,7 +143,8 @@ describe('Triangle rasterizer', () => {
 			const fb = createPixelFramebuffer({ width: 20, height: 20 });
 
 			// Triangle extends beyond bounds
-			fillTriangle(fb,
+			fillTriangle(
+				fb,
 				{ x: -10, y: 10, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 30, y: 10, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 10, y: 30, depth: 0.5, r: 255, g: 0, b: 0 },
@@ -168,7 +159,8 @@ describe('Triangle rasterizer', () => {
 			const fb = createPixelFramebuffer({ width: 30, height: 30 });
 
 			// CW winding
-			fillTriangle(fb,
+			fillTriangle(
+				fb,
 				{ x: 5, y: 5, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 5, y: 25, depth: 0.5, r: 255, g: 0, b: 0 },
 				{ x: 25, y: 5, depth: 0.5, r: 255, g: 0, b: 0 },
@@ -183,7 +175,8 @@ describe('Triangle rasterizer', () => {
 			const fb = createPixelFramebuffer({ width: 30, height: 30 });
 			const color = { r: 128, g: 64, b: 200, a: 255 };
 
-			fillTriangleFlat(fb,
+			fillTriangleFlat(
+				fb,
 				{ x: 5, y: 5, depth: 0.5, r: 0, g: 0, b: 0 },
 				{ x: 25, y: 5, depth: 0.5, r: 0, g: 0, b: 0 },
 				{ x: 15, y: 25, depth: 0.5, r: 0, g: 0, b: 0 },
@@ -206,7 +199,8 @@ describe('Triangle rasterizer', () => {
 		it('skips degenerate triangles', () => {
 			const fb = createPixelFramebuffer({ width: 20, height: 20 });
 
-			fillTriangleFlat(fb,
+			fillTriangleFlat(
+				fb,
 				{ x: 0, y: 0, depth: 0.5, r: 0, g: 0, b: 0 },
 				{ x: 10, y: 10, depth: 0.5, r: 0, g: 0, b: 0 },
 				{ x: 20, y: 20, depth: 0.5, r: 0, g: 0, b: 0 },
@@ -220,7 +214,8 @@ describe('Triangle rasterizer', () => {
 			const fb = createPixelFramebuffer({ width: 30, height: 30 });
 
 			// Close green triangle
-			fillTriangleFlat(fb,
+			fillTriangleFlat(
+				fb,
 				{ x: 5, y: 5, depth: 0.2, r: 0, g: 0, b: 0 },
 				{ x: 25, y: 5, depth: 0.2, r: 0, g: 0, b: 0 },
 				{ x: 15, y: 25, depth: 0.2, r: 0, g: 0, b: 0 },
@@ -228,7 +223,8 @@ describe('Triangle rasterizer', () => {
 			);
 
 			// Far red triangle (should not overwrite)
-			fillTriangleFlat(fb,
+			fillTriangleFlat(
+				fb,
 				{ x: 5, y: 5, depth: 0.8, r: 0, g: 0, b: 0 },
 				{ x: 25, y: 5, depth: 0.8, r: 0, g: 0, b: 0 },
 				{ x: 15, y: 25, depth: 0.8, r: 0, g: 0, b: 0 },

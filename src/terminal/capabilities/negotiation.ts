@@ -214,30 +214,30 @@ export interface CapabilityNegotiator {
  * Detects truecolor support from environment variables.
  */
 function detectTruecolorFromEnv(): boolean {
-	const colorterm = process.env['COLORTERM'];
+	const colorterm = process.env.COLORTERM;
 	if (colorterm === 'truecolor' || colorterm === '24bit') {
 		return true;
 	}
 
-	const term = process.env['TERM'] ?? '';
+	const term = process.env.TERM ?? '';
 	if (term.includes('truecolor') || term.includes('24bit') || term.includes('direct')) {
 		return true;
 	}
 
 	// Known truecolor terminals
-	const termProgram = process.env['TERM_PROGRAM'] ?? '';
+	const termProgram = process.env.TERM_PROGRAM ?? '';
 	const knownTruecolor = ['iTerm.app', 'Apple_Terminal', 'Hyper', 'vscode'];
 	if (knownTruecolor.includes(termProgram)) {
 		return true;
 	}
 
 	// Kitty, Alacritty, Windows Terminal support truecolor
-	if (process.env['KITTY_WINDOW_ID'] !== undefined) return true;
+	if (process.env.KITTY_WINDOW_ID !== undefined) return true;
 	if (term === 'alacritty') return true;
-	if (process.env['WT_SESSION'] !== undefined) return true;
+	if (process.env.WT_SESSION !== undefined) return true;
 
 	// VTE 3600+ supports truecolor
-	const vteVersion = process.env['VTE_VERSION'];
+	const vteVersion = process.env.VTE_VERSION;
 	if (vteVersion !== undefined) {
 		const version = Number.parseInt(vteVersion, 10);
 		if (!Number.isNaN(version) && version >= 3600) {
@@ -253,17 +253,17 @@ function detectTruecolorFromEnv(): boolean {
  */
 function detectKittyKeyboardFromEnv(): KittyKeyboardLevelValue | false {
 	// Kitty terminal natively supports the protocol
-	if (process.env['KITTY_WINDOW_ID'] !== undefined) {
+	if (process.env.KITTY_WINDOW_ID !== undefined) {
 		return KittyKeyboardLevel.REPORT_ALL;
 	}
 
 	// WezTerm supports it
-	if (process.env['TERM_PROGRAM'] === 'WezTerm') {
+	if (process.env.TERM_PROGRAM === 'WezTerm') {
 		return KittyKeyboardLevel.REPORT_ALL;
 	}
 
 	// foot terminal supports it
-	if (process.env['TERM'] === 'foot' || process.env['TERM'] === 'foot-extra') {
+	if (process.env.TERM === 'foot' || process.env.TERM === 'foot-extra') {
 		return KittyKeyboardLevel.REPORT_ALL;
 	}
 
@@ -275,18 +275,18 @@ function detectKittyKeyboardFromEnv(): KittyKeyboardLevelValue | false {
  */
 function detectGraphicsFromEnv(): GraphicsProtocolValue | false {
 	// Kitty graphics
-	if (process.env['KITTY_WINDOW_ID'] !== undefined) {
+	if (process.env.KITTY_WINDOW_ID !== undefined) {
 		return GraphicsProtocol.KITTY;
 	}
 
 	// iTerm2 inline images
-	if (process.env['TERM_PROGRAM'] === 'iTerm.app') {
+	if (process.env.TERM_PROGRAM === 'iTerm.app') {
 		return GraphicsProtocol.ITERM2;
 	}
 
 	// Sixel support is harder to detect from environment
 	// Some terminals advertise via TERM
-	const term = process.env['TERM'] ?? '';
+	const term = process.env.TERM ?? '';
 	if (term.includes('sixel')) {
 		return GraphicsProtocol.SIXEL;
 	}
@@ -299,15 +299,15 @@ function detectGraphicsFromEnv(): GraphicsProtocolValue | false {
  */
 function detectSyncOutputFromEnv(): boolean {
 	// Most modern terminals support it
-	const termProgram = process.env['TERM_PROGRAM'] ?? '';
+	const termProgram = process.env.TERM_PROGRAM ?? '';
 	const supportingSyncOutput = ['iTerm.app', 'WezTerm', 'vscode', 'Hyper'];
 
 	if (supportingSyncOutput.includes(termProgram)) {
 		return true;
 	}
 
-	if (process.env['KITTY_WINDOW_ID'] !== undefined) return true;
-	if (process.env['WT_SESSION'] !== undefined) return true;
+	if (process.env.KITTY_WINDOW_ID !== undefined) return true;
+	if (process.env.WT_SESSION !== undefined) return true;
 
 	return false;
 }
@@ -317,18 +317,18 @@ function detectSyncOutputFromEnv(): boolean {
  */
 function detectHyperlinksFromEnv(): boolean {
 	// Most modern terminals support OSC 8
-	const termProgram = process.env['TERM_PROGRAM'] ?? '';
+	const termProgram = process.env.TERM_PROGRAM ?? '';
 	const supportingHyperlinks = ['iTerm.app', 'WezTerm', 'vscode', 'Hyper'];
 
 	if (supportingHyperlinks.includes(termProgram)) {
 		return true;
 	}
 
-	if (process.env['KITTY_WINDOW_ID'] !== undefined) return true;
-	if (process.env['WT_SESSION'] !== undefined) return true;
+	if (process.env.KITTY_WINDOW_ID !== undefined) return true;
+	if (process.env.WT_SESSION !== undefined) return true;
 
 	// VTE 5000+ supports hyperlinks
-	const vteVersion = process.env['VTE_VERSION'];
+	const vteVersion = process.env.VTE_VERSION;
 	if (vteVersion !== undefined) {
 		const version = Number.parseInt(vteVersion, 10);
 		if (!Number.isNaN(version) && version >= 5000) {
@@ -477,22 +477,28 @@ function extractResponses(collector: ResponseCollector): void {
 	const csiPattern = /\x1b\[[^a-zA-Z]*[a-zA-Z]/g;
 	let match: RegExpExecArray | null;
 
-	while ((match = csiPattern.exec(buffer)) !== null) {
+	match = csiPattern.exec(buffer);
+	while (match !== null) {
 		collector.responses.push(match[0]);
+		match = csiPattern.exec(buffer);
 	}
 
 	// Look for complete DCS sequences (ending in ST)
 	// biome-ignore lint/suspicious/noControlCharactersInRegex: ESC is intentional
 	const dcsPattern = /\x1bP[^\x1b]*\x1b\\/g;
-	while ((match = dcsPattern.exec(buffer)) !== null) {
+	match = dcsPattern.exec(buffer);
+	while (match !== null) {
 		collector.responses.push(match[0]);
+		match = dcsPattern.exec(buffer);
 	}
 
 	// Look for complete OSC sequences
 	// biome-ignore lint/suspicious/noControlCharactersInRegex: ESC and BEL are intentional
 	const oscPattern = /\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g;
-	while ((match = oscPattern.exec(buffer)) !== null) {
+	match = oscPattern.exec(buffer);
+	while (match !== null) {
 		collector.responses.push(match[0]);
+		match = oscPattern.exec(buffer);
 	}
 }
 

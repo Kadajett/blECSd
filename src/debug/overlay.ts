@@ -200,7 +200,7 @@ export function createDebugOverlay(world: World, config: DebugOverlayConfig = {}
 				lines.push('├─ Systems ─────────────────┤');
 				for (const [name, time] of entries) {
 					const timeStr = time.toFixed(2).padStart(6);
-					const shortName = name.length > 20 ? name.slice(0, 17) + '...' : name;
+					const shortName = name.length > 20 ? `${name.slice(0, 17)}...` : name;
 					lines.push(`│ ${shortName.padEnd(20)} ${timeStr}ms`);
 				}
 			}
@@ -534,7 +534,7 @@ export function createFrameRateGraph(sampleCount = 60): FrameRateGraph {
 
 		getCurrentFPS(): number {
 			if (samples.length === 0) return 0;
-			const lastSample = samples[samples.length - 1]!;
+			const lastSample = samples[samples.length - 1] ?? 0;
 			return lastSample > 0 ? 1000 / lastSample : 0;
 		},
 

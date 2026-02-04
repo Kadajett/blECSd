@@ -9,7 +9,7 @@
  */
 
 import { hasComponent, query } from 'bitecs';
-import { Hierarchy, NULL_ENTITY, getChildren } from '../../components/hierarchy';
+import { getChildren, Hierarchy, NULL_ENTITY } from '../../components/hierarchy';
 import type { Entity, System, World } from '../../core/types';
 import { Transform3D } from '../components/transform3d';
 import type { Mat4 } from '../math/mat4';

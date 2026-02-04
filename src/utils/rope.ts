@@ -437,35 +437,36 @@ export function charAt(rope: Rope, index: number): string | undefined {
  */
 export function substring(rope: Rope, start: number, end?: number): string {
 	const actualEnd = end ?? rope.length;
+	let startIdx = start;
 
-	if (start < 0) {
-		start = 0;
+	if (startIdx < 0) {
+		startIdx = 0;
 	}
 	if (actualEnd > rope.length) {
-		return substring(rope, start, rope.length);
+		return substring(rope, startIdx, rope.length);
 	}
-	if (start >= actualEnd) {
+	if (startIdx >= actualEnd) {
 		return '';
 	}
 
 	if (rope.type === 'leaf') {
-		return rope.text.slice(start, actualEnd);
+		return rope.text.slice(startIdx, actualEnd);
 	}
 
 	const leftLength = rope.leftLength;
 
 	if (actualEnd <= leftLength) {
 		// Entirely in left subtree
-		return substring(rope.left, start, actualEnd);
+		return substring(rope.left, startIdx, actualEnd);
 	}
 
-	if (start >= leftLength) {
+	if (startIdx >= leftLength) {
 		// Entirely in right subtree
-		return substring(rope.right, start - leftLength, actualEnd - leftLength);
+		return substring(rope.right, startIdx - leftLength, actualEnd - leftLength);
 	}
 
 	// Spans both subtrees
-	const leftPart = substring(rope.left, start, leftLength);
+	const leftPart = substring(rope.left, startIdx, leftLength);
 	const rightPart = substring(rope.right, 0, actualEnd - leftLength);
 	return leftPart + rightPart;
 }
@@ -789,15 +790,16 @@ export function insert(rope: Rope, index: number, text: string): Rope {
 		return rope;
 	}
 
-	if (index < 0) {
-		index = 0;
+	let insertIdx = index;
+	if (insertIdx < 0) {
+		insertIdx = 0;
 	}
-	if (index > rope.length) {
-		index = rope.length;
+	if (insertIdx > rope.length) {
+		insertIdx = rope.length;
 	}
 
 	const newRope = createRope(text);
-	const { left, right } = split(rope, index);
+	const { left, right } = split(rope, insertIdx);
 
 	return concat(concat(left, newRope), right);
 }
@@ -851,18 +853,20 @@ export function prepend(rope: Rope, text: string): Rope {
  * ```
  */
 export function deleteRange(rope: Rope, start: number, end: number): Rope {
-	if (start < 0) {
-		start = 0;
+	let startIdx = start;
+	let endIdx = end;
+	if (startIdx < 0) {
+		startIdx = 0;
 	}
-	if (end > rope.length) {
-		end = rope.length;
+	if (endIdx > rope.length) {
+		endIdx = rope.length;
 	}
-	if (start >= end) {
+	if (startIdx >= endIdx) {
 		return rope;
 	}
 
-	const { left } = split(rope, start);
-	const { right } = split(rope, end);
+	const { left } = split(rope, startIdx);
+	const { right } = split(rope, endIdx);
 
 	return concat(left, right);
 }

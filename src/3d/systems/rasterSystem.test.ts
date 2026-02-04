@@ -3,12 +3,12 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { Entity, World } from '../../core/types';
 import { Camera3D, setCamera3D } from '../components/camera3d';
 import { Material3D, setMaterial3D } from '../components/material';
-import { Mesh, clearMeshStore, createMeshFromArrays } from '../components/mesh';
-import { Transform3D, setTransform3D } from '../components/transform3d';
-import { Viewport3D, setViewport3D } from '../components/viewport3d';
-import { sceneGraphSystem } from './sceneGraphSystem';
+import { clearMeshStore, createMeshFromArrays, Mesh } from '../components/mesh';
+import { setTransform3D, Transform3D } from '../components/transform3d';
+import { setViewport3D, Viewport3D } from '../components/viewport3d';
 import { clearProjectionStore, projectionSystem } from './projectionSystem';
 import { clearFramebufferStore, framebufferStore, rasterSystem } from './rasterSystem';
+import { sceneGraphSystem } from './sceneGraphSystem';
 
 function createTestWorld(): World {
 	return createWorld();
@@ -29,7 +29,10 @@ function setupCamera(world: World): Entity {
 function setupViewport(world: World, cameraEid: Entity, pw = 160, ph = 96): Entity {
 	const eid = addEntity(world) as Entity;
 	setViewport3D(world, eid, {
-		left: 0, top: 0, width: 80, height: 24,
+		left: 0,
+		top: 0,
+		width: 80,
+		height: 24,
 		cameraEntity: cameraEid,
 	});
 	Viewport3D.pixelWidth[eid] = pw;
@@ -38,16 +41,27 @@ function setupViewport(world: World, cameraEid: Entity, pw = 160, ph = 96): Enti
 }
 
 function setupCube(world: World, config?: Record<string, number>): Entity {
-	const meshId = createMeshFromArrays('cube', [
-		{ x: -1, y: -1, z: -1 }, { x: 1, y: -1, z: -1 },
-		{ x: 1, y: 1, z: -1 }, { x: -1, y: 1, z: -1 },
-		{ x: -1, y: -1, z: 1 }, { x: 1, y: -1, z: 1 },
-		{ x: 1, y: 1, z: 1 }, { x: -1, y: 1, z: 1 },
-	], [
-		[0, 1, 2, 3], [5, 4, 7, 6],
-		[4, 0, 3, 7], [1, 5, 6, 2],
-		[3, 2, 6, 7], [4, 5, 1, 0],
-	]);
+	const meshId = createMeshFromArrays(
+		'cube',
+		[
+			{ x: -1, y: -1, z: -1 },
+			{ x: 1, y: -1, z: -1 },
+			{ x: 1, y: 1, z: -1 },
+			{ x: -1, y: 1, z: -1 },
+			{ x: -1, y: -1, z: 1 },
+			{ x: 1, y: -1, z: 1 },
+			{ x: 1, y: 1, z: 1 },
+			{ x: -1, y: 1, z: 1 },
+		],
+		[
+			[0, 1, 2, 3],
+			[5, 4, 7, 6],
+			[4, 0, 3, 7],
+			[1, 5, 6, 2],
+			[3, 2, 6, 7],
+			[4, 5, 1, 0],
+		],
+	);
 	const eid = addEntity(world) as Entity;
 	setTransform3D(world, eid, config ?? { tz: -5 });
 	addComponent(world, eid, Mesh);
@@ -61,7 +75,11 @@ function runPipeline(world: World): void {
 	rasterSystem(world);
 }
 
-function countNonZeroPixels(fb: { colorBuffer: Uint8ClampedArray; width: number; height: number }): number {
+function countNonZeroPixels(fb: {
+	colorBuffer: Uint8ClampedArray;
+	width: number;
+	height: number;
+}): number {
 	let count = 0;
 	for (let i = 3; i < fb.colorBuffer.length; i += 4) {
 		if ((fb.colorBuffer[i] as number) > 0) count++;
@@ -152,18 +170,34 @@ describe('rasterSystem', () => {
 		clearFramebufferStore();
 		clearMeshStore();
 		// Reset SoA arrays for new world
-		Transform3D.tx.fill(0); Transform3D.ty.fill(0); Transform3D.tz.fill(0);
-		Transform3D.rx.fill(0); Transform3D.ry.fill(0); Transform3D.rz.fill(0);
-		Transform3D.sx.fill(0); Transform3D.sy.fill(0); Transform3D.sz.fill(0);
-		Transform3D.worldMatrix.fill(0); Transform3D.dirty.fill(0);
-		Camera3D.fov.fill(0); Camera3D.near.fill(0); Camera3D.far.fill(0);
-		Camera3D.aspect.fill(0); Camera3D.projectionMode.fill(0);
-		Viewport3D.left.fill(0); Viewport3D.top.fill(0); Viewport3D.width.fill(0);
-		Viewport3D.height.fill(0); Viewport3D.cameraEntity.fill(0);
-		Viewport3D.pixelWidth.fill(0); Viewport3D.pixelHeight.fill(0);
+		Transform3D.tx.fill(0);
+		Transform3D.ty.fill(0);
+		Transform3D.tz.fill(0);
+		Transform3D.rx.fill(0);
+		Transform3D.ry.fill(0);
+		Transform3D.rz.fill(0);
+		Transform3D.sx.fill(0);
+		Transform3D.sy.fill(0);
+		Transform3D.sz.fill(0);
+		Transform3D.worldMatrix.fill(0);
+		Transform3D.dirty.fill(0);
+		Camera3D.fov.fill(0);
+		Camera3D.near.fill(0);
+		Camera3D.far.fill(0);
+		Camera3D.aspect.fill(0);
+		Camera3D.projectionMode.fill(0);
+		Viewport3D.left.fill(0);
+		Viewport3D.top.fill(0);
+		Viewport3D.width.fill(0);
+		Viewport3D.height.fill(0);
+		Viewport3D.cameraEntity.fill(0);
+		Viewport3D.pixelWidth.fill(0);
+		Viewport3D.pixelHeight.fill(0);
 		Mesh.meshId.fill(0);
-		Material3D.wireColor.fill(0); Material3D.fillColor.fill(0);
-		Material3D.renderMode.fill(0); Material3D.backfaceCull.fill(0);
+		Material3D.wireColor.fill(0);
+		Material3D.fillColor.fill(0);
+		Material3D.renderMode.fill(0);
+		Material3D.backfaceCull.fill(0);
 
 		// Filled run with new world
 		const world2 = createTestWorld();
@@ -196,7 +230,7 @@ describe('rasterSystem', () => {
 		setupViewport(world, cam);
 		const cube = setupCube(world);
 		// Red wire color: R=255, G=0, B=0 (24-bit RGB)
-		setMaterial3D(world, cube, { wireColor: 0xFF0000 });
+		setMaterial3D(world, cube, { wireColor: 0xff0000 });
 
 		runPipeline(world);
 

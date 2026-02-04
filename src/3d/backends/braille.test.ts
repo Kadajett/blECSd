@@ -103,8 +103,8 @@ describe('Braille backend', () => {
 		it('averages color of lit pixels', () => {
 			const backend = createBrailleBackend();
 			const fb = createPixelFramebuffer({ width: 2, height: 4 });
-			setPixel(fb, 0, 0, RED);   // 255, 0, 0
-			setPixel(fb, 1, 0, BLUE);  // 0, 0, 255
+			setPixel(fb, 0, 0, RED); // 255, 0, 0
+			setPixel(fb, 1, 0, BLUE); // 0, 0, 255
 			const output = backend.encode(fb, 0, 0);
 
 			const fg = output.cells?.[0]?.fg as number;
@@ -158,7 +158,7 @@ describe('Braille backend', () => {
 			for (const cell of output.cells ?? []) {
 				const code = cell.char.charCodeAt(0);
 				expect(code).toBeGreaterThanOrEqual(0x2800);
-				expect(code).toBeLessThanOrEqual(0x28FF);
+				expect(code).toBeLessThanOrEqual(0x28ff);
 			}
 		});
 	});

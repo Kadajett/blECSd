@@ -285,11 +285,11 @@ export function createLineStoreFromLines(lines: readonly string[]): VirtualizedL
 	}
 
 	// Pre-calculate total size for efficiency
-	let totalSize = 0;
+	let _totalSize = 0;
 	for (const line of lines) {
-		totalSize += line.length + 1; // +1 for newline
+		_totalSize += line.length + 1; // +1 for newline
 	}
-	totalSize--; // No trailing newline
+	_totalSize--; // No trailing newline
 
 	// Build buffer and offsets in one pass
 	const offsets = new Uint32Array(lines.length);

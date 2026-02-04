@@ -140,9 +140,9 @@ describe('debug overlay', () => {
 			logger.log('mouse', 'click @ 10,20');
 
 			expect(logger.entries.length).toBe(2);
-			expect(logger.entries[0]!.type).toBe('key');
-			expect(logger.entries[0]!.detail).toBe('a');
-			expect(logger.entries[1]!.type).toBe('mouse');
+			expect(logger.entries[0]?.type).toBe('key');
+			expect(logger.entries[0]?.detail).toBe('a');
+			expect(logger.entries[1]?.type).toBe('mouse');
 		});
 
 		it('trims to max entries', () => {
@@ -154,8 +154,8 @@ describe('debug overlay', () => {
 			logger.log('key', '4');
 
 			expect(logger.entries.length).toBe(3);
-			expect(logger.entries[0]!.detail).toBe('2');
-			expect(logger.entries[2]!.detail).toBe('4');
+			expect(logger.entries[0]?.detail).toBe('2');
+			expect(logger.entries[2]?.detail).toBe('4');
 		});
 
 		it('getRecentEntries returns last N entries', () => {
@@ -169,8 +169,8 @@ describe('debug overlay', () => {
 
 			const recent = logger.getRecentEntries(3);
 			expect(recent.length).toBe(3);
-			expect(recent[0]!.detail).toBe('3');
-			expect(recent[2]!.detail).toBe('5');
+			expect(recent[0]?.detail).toBe('3');
+			expect(recent[2]?.detail).toBe('5');
 		});
 
 		it('clear removes all entries', () => {
@@ -227,9 +227,9 @@ describe('debug overlay', () => {
 			profiler.end('b');
 
 			const all = profiler.getAll();
-			expect(all['a']).toBeDefined();
-			expect(all['b']).toBeDefined();
-			expect(all['a']!.count).toBe(1);
+			expect(all.a).toBeDefined();
+			expect(all.b).toBeDefined();
+			expect(all.a?.count).toBe(1);
 		});
 
 		it('reset clears all data', () => {
@@ -255,7 +255,7 @@ describe('debug overlay', () => {
 			profiler.end('test');
 
 			const all = profiler.getAll();
-			expect(all['test']!.min).toBeLessThanOrEqual(all['test']!.max);
+			expect(all.test?.min).toBeLessThanOrEqual(all.test?.max);
 		});
 	});
 

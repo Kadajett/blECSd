@@ -106,7 +106,8 @@ export function createMeshFromArrays(
 ): number {
 	const vertices = new Float32Array(vertexPositions.length * 3);
 	for (let i = 0; i < vertexPositions.length; i++) {
-		const v = vertexPositions[i]!;
+		const v = vertexPositions[i];
+		if (!v) continue;
 		vertices[i * 3] = v.x;
 		vertices[i * 3 + 1] = v.y;
 		vertices[i * 3 + 2] = v.z;

@@ -6,22 +6,14 @@ This document contains instructions for AI coding agents (Codex, Claude, etc.) w
 
 ---
 
-## Issue Tracking with Beads
+## Issue Tracking
 
-This project uses **bd** (beads) for issue tracking. The `bd` command is available at `/home/kadajett/.local/bin/bd`.
+Tasks are tracked as markdown files in `.tasks/`:
 
-### Quick Reference
-
-```bash
-bd ready              # Find available work (no blockers)
-bd list --status=open # All open issues
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
-bd close <id>         # Complete work
-bd blocked            # Show blocked issues
-bd stats              # Project statistics
-bd sync               # Sync with git remote
-```
+- `.tasks/open/` - Open issues and epics
+- `.tasks/closed/` - Completed issues and epics
+- `.tasks/open/epics/{id}/` - Epic folder with `_epic.md` and all child tickets
+- `.tasks/README.md` - Summary index with all epics and counts
 
 ### Epic Completion Workflow (HARD REQUIREMENT)
 
@@ -39,16 +31,10 @@ bd sync               # Sync with git remote
 
 **Workflow:**
 
-```bash
-# Check current epic status
-bd list --status=open | grep "blessed-<epic-id>"
-
-# If blocked, check what's blocking
-bd blocked | grep "blessed-<epic-id>"
-
-# Work on unblocking dependencies first
-bd show <blocking-task-id>
-```
+- Check open epics in `.tasks/open/epics/`
+- Review each epic's `_epic.md` for children and their statuses
+- Check "Blocked By" sections in individual tickets for dependency info
+- Work on unblocking dependencies first
 
 ---
 
@@ -139,17 +125,16 @@ pnpm build            # Build - run often, catches different errors
 
 ### Checklist
 
-1. **File issues for remaining work** - Create beads issues for anything that needs follow-up
+1. **File issues for remaining work** - Create task markdown files in `.tasks/open/` for anything that needs follow-up
 2. **Run quality gates** (if code changed):
    ```bash
    pnpm test && pnpm lint && pnpm typecheck && pnpm build
    ```
-3. **Update issue status** - Close finished work, update in-progress items
+3. **Update issue status** - Move completed tickets from `.tasks/open/` to `.tasks/closed/`
 4. **Commit and push**:
    ```bash
    git add <files>
    git commit -m "<type>: <description>"
-   bd sync
    git push
    ```
 5. **Verify**:
@@ -173,7 +158,6 @@ pnpm build            # Build - run often, catches different errors
 
 [optional body]
 
-Refs: blessed-<hash>
 ```
 
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
@@ -190,8 +174,6 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
 | `pnpm lint:fix` | Fix linting issues |
 | `pnpm typecheck` | TypeScript type checking |
 | `pnpm build` | Build for production |
-| `bd ready` | Find available work |
-| `bd sync` | Sync issues with git |
 
 ---
 
@@ -199,12 +181,9 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
 
 To understand the current state:
 
-```bash
-bd stats              # Overall statistics
-bd ready              # What can be worked on now
-bd list --status=in_progress  # What's currently being worked on
-bd blocked            # What's waiting on dependencies
-```
+- Review `.tasks/README.md` for summary statistics and epic listings
+- Check `.tasks/open/` for all open work
+- Check `.tasks/open/epics/` for epic-level organization
 
 For full project context, read:
 - `CLAUDE.md` - Complete project documentation

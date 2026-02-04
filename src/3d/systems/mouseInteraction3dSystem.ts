@@ -18,12 +18,12 @@
 import { hasComponent, query } from 'bitecs';
 import type { Entity, System, World } from '../../core/types';
 import {
-	MouseInteraction3D,
 	clearMouseInputStore,
+	MouseInteraction3D,
 	mouseInputStore,
 } from '../components/mouseInteraction3d';
-import { Viewport3D } from '../components/viewport3d';
 import { Transform3D } from '../components/transform3d';
+import { Viewport3D } from '../components/viewport3d';
 
 /** Maximum pitch angle to prevent gimbal lock (just under 90 degrees). */
 const MAX_PITCH = Math.PI / 2 - 0.01;
@@ -83,9 +83,10 @@ export const mouseInteraction3DSystem: System = (world: World): World => {
 			const pitchDelta = input.dragDy * sensitivity * invertMultiplier;
 
 			const newYaw = (MouseInteraction3D.yaw[cameraEid] as number) + yawDelta;
-			const newPitch = Math.max(-MAX_PITCH, Math.min(MAX_PITCH,
-				(MouseInteraction3D.pitch[cameraEid] as number) + pitchDelta,
-			));
+			const newPitch = Math.max(
+				-MAX_PITCH,
+				Math.min(MAX_PITCH, (MouseInteraction3D.pitch[cameraEid] as number) + pitchDelta),
+			);
 
 			MouseInteraction3D.yaw[cameraEid] = newYaw;
 			MouseInteraction3D.pitch[cameraEid] = newPitch;
@@ -98,9 +99,10 @@ export const mouseInteraction3DSystem: System = (world: World): World => {
 			const zoomMax = MouseInteraction3D.zoomMax[cameraEid] as number;
 			const currentDistance = MouseInteraction3D.distance[cameraEid] as number;
 
-			const newDistance = Math.max(zoomMin, Math.min(zoomMax,
-				currentDistance + input.scrollDelta * zoomSens,
-			));
+			const newDistance = Math.max(
+				zoomMin,
+				Math.min(zoomMax, currentDistance + input.scrollDelta * zoomSens),
+			);
 			MouseInteraction3D.distance[cameraEid] = newDistance;
 		}
 

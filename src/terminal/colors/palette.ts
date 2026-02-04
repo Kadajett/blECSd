@@ -216,15 +216,15 @@ export function isRGB(value: unknown): value is RGB {
 	if (typeof value !== 'object' || value === null) return false;
 	const obj = value as Record<string, unknown>;
 	return (
-		typeof obj['r'] === 'number' &&
-		typeof obj['g'] === 'number' &&
-		typeof obj['b'] === 'number' &&
-		obj['r'] >= 0 &&
-		obj['r'] <= 255 &&
-		obj['g'] >= 0 &&
-		obj['g'] <= 255 &&
-		obj['b'] >= 0 &&
-		obj['b'] <= 255
+		typeof obj.r === 'number' &&
+		typeof obj.g === 'number' &&
+		typeof obj.b === 'number' &&
+		obj.r >= 0 &&
+		obj.r <= 255 &&
+		obj.g >= 0 &&
+		obj.g <= 255 &&
+		obj.b >= 0 &&
+		obj.b <= 255
 	);
 }
 

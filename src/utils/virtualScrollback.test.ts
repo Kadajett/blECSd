@@ -93,7 +93,7 @@ describe('appendLine', () => {
 
 		appendLine(buffer, 'data', undefined, { type: 'info' });
 
-		expect(getLine(buffer, 0)?.meta?.['type']).toBe('info');
+		expect(getLine(buffer, 0)?.meta?.type).toBe('info');
 	});
 
 	it('adds timestamp', () => {

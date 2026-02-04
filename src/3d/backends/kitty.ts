@@ -23,9 +23,9 @@
  * @module 3d/backends/kitty
  */
 
+import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { BackendCapabilities, EncodedOutput } from '../schemas/backends';
 import { type KittyConfig, KittyConfigSchema } from '../schemas/backends';
-import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { RendererBackend } from './types';
 
 /** APC (Application Program Command) introducer for kitty graphics. */
@@ -113,10 +113,10 @@ export function createKittyBackend(config?: KittyConfig): RendererBackend {
 			// Swap to the next slot
 			const prevSlot = currentSlot;
 			currentSlot = currentSlot === 0 ? 1 : 0;
-			const newId = slots[currentSlot]!;
-			const oldId = slots[prevSlot]!;
+			const newId = slots[currentSlot] ?? baseImageId;
+			const oldId = slots[prevSlot] ?? baseImageId + 1;
 
-			let escape = '';
+			let escapeSeq = '';
 
 			// Transmit new image data in chunks (upload only, no display)
 			for (let c = 0; c < chunks.length; c++) {
@@ -124,19 +124,19 @@ export function createKittyBackend(config?: KittyConfig): RendererBackend {
 				const isFirst = c === 0;
 
 				if (isFirst) {
-					escape += `${APC_START}a=t,f=32,s=${w},v=${h},i=${newId},m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
+					escapeSeq += `${APC_START}a=t,f=32,s=${w},v=${h},i=${newId},m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
 				} else {
-					escape += `${APC_START}m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
+					escapeSeq += `${APC_START}m=${isLast ? 0 : 1};${chunks[c]}${ST}`;
 				}
 			}
 
 			// Place new image (old frame still visible until this point)
-			escape += `${APC_START}a=p,i=${newId},p=1,C=1;${ST}`;
+			escapeSeq += `${APC_START}a=p,i=${newId},p=1,C=1;${ST}`;
 
 			// Now delete the old frame
-			escape += `${APC_START}a=d,d=i,i=${oldId};${ST}`;
+			escapeSeq += `${APC_START}a=d,d=i,i=${oldId};${ST}`;
 
-			return { escape, cursorX: screenX, cursorY: screenY };
+			return { escape: escapeSeq, cursorX: screenX, cursorY: screenY };
 		},
 
 		getPixelDimensions(cellWidth: number, cellHeight: number): { width: number; height: number } {

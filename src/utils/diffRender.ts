@@ -246,7 +246,7 @@ function backtrackMyers(
 
 	// Work backwards through the trace
 	for (let d = trace.length - 1; d >= 0; d--) {
-		const v = trace[d]!;
+		const v = trace[d] ?? [];
 		const k = x - y;
 
 		// Determine previous k
@@ -266,7 +266,7 @@ function backtrackMyers(
 			y--;
 			result.unshift({
 				type: 'context',
-				content: oldLines[x]!,
+				content: oldLines[x] ?? '',
 				oldLineNo: x + 1,
 				newLineNo: y + 1,
 			});
@@ -279,7 +279,7 @@ function backtrackMyers(
 				y--;
 				result.unshift({
 					type: 'add',
-					content: newLines[y]!,
+					content: newLines[y] ?? '',
 					newLineNo: y + 1,
 				});
 			} else {
@@ -287,7 +287,7 @@ function backtrackMyers(
 				x--;
 				result.unshift({
 					type: 'remove',
-					content: oldLines[x]!,
+					content: oldLines[x] ?? '',
 					oldLineNo: x + 1,
 				});
 			}
@@ -313,11 +313,13 @@ function computeLCS(oldLines: readonly string[], newLines: readonly string[]): n
 	const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0) as number[]);
 
 	for (let i = 1; i <= m; i++) {
+		const dpRow = dp[i];
+		if (!dpRow) continue;
 		for (let j = 1; j <= n; j++) {
 			if (oldLines[i - 1] === newLines[j - 1]) {
-				dp[i]![j] = (dp[i - 1]?.[j - 1] ?? 0) + 1;
+				dpRow[j] = (dp[i - 1]?.[j - 1] ?? 0) + 1;
 			} else {
-				dp[i]![j] = Math.max(dp[i - 1]?.[j] ?? 0, dp[i]?.[j - 1] ?? 0);
+				dpRow[j] = Math.max(dp[i - 1]?.[j] ?? 0, dpRow[j - 1] ?? 0);
 			}
 		}
 	}

@@ -8,8 +8,8 @@
  * @module 3d/backends/types
  */
 
-import type { BackendCapabilities, BackendType, EncodedOutput } from '../schemas/backends';
 import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
+import type { BackendCapabilities, BackendType, EncodedOutput } from '../schemas/backends';
 
 /**
  * Interface that all renderer backends must implement.

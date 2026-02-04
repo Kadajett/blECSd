@@ -125,7 +125,7 @@ describe('Error Factories', () => {
 			});
 
 			expect(error.cause).toBe(cause);
-			expect(error.context?.data?.['input']).toBe('test');
+			expect(error.context?.data?.input).toBe('test');
 		});
 
 		it('should include Zod issues', () => {

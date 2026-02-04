@@ -429,7 +429,7 @@ export function execSync(
  * @returns The editor command
  */
 export function getDefaultEditor(): string {
-	return process.env['EDITOR'] || process.env['VISUAL'] || 'vi';
+	return process.env.EDITOR || process.env.VISUAL || 'vi';
 }
 
 /**
@@ -614,12 +614,12 @@ export const processUtils = {
 	getShell(): { shell: string; args: string[] } {
 		if (process.platform === 'win32') {
 			// Use cmd.exe on Windows
-			const comspec = process.env['COMSPEC'] || 'cmd.exe';
+			const comspec = process.env.COMSPEC || 'cmd.exe';
 			return { shell: comspec, args: ['/c'] };
 		}
 
 		// Use SHELL env var or default to sh
-		const shell = process.env['SHELL'] || '/bin/sh';
+		const shell = process.env.SHELL || '/bin/sh';
 		return { shell, args: ['-c'] };
 	},
 

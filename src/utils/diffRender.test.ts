@@ -137,27 +137,27 @@ describe('chunk operations', () => {
 
 		// Collapse first, then expand
 		result.chunks[0]!.collapsed = true;
-		expandChunk(cache, result, result.chunks[0]!.id);
+		expandChunk(cache, result, result.chunks[0]?.id);
 
-		expect(result.chunks[0]!.collapsed).toBe(false);
-		expect(cache.expandedChunks.has(result.chunks[0]!.id)).toBe(true);
+		expect(result.chunks[0]?.collapsed).toBe(false);
+		expect(cache.expandedChunks.has(result.chunks[0]?.id)).toBe(true);
 	});
 
 	it('collapses chunk', () => {
 		const cache = createDiffCache();
 		const result = computeDiff('a\nb', 'a\nB');
 
-		collapseChunk(cache, result, result.chunks[0]!.id);
+		collapseChunk(cache, result, result.chunks[0]?.id);
 
-		expect(result.chunks[0]!.collapsed).toBe(true);
+		expect(result.chunks[0]?.collapsed).toBe(true);
 	});
 
 	it('toggles chunk', () => {
 		const cache = createDiffCache();
 		const result = computeDiff('a\nb', 'a\nB');
 
-		const isCollapsed1 = toggleChunk(cache, result, result.chunks[0]!.id);
-		const isCollapsed2 = toggleChunk(cache, result, result.chunks[0]!.id);
+		const isCollapsed1 = toggleChunk(cache, result, result.chunks[0]?.id);
+		const isCollapsed2 = toggleChunk(cache, result, result.chunks[0]?.id);
 
 		expect(isCollapsed1).toBe(true);
 		expect(isCollapsed2).toBe(false);

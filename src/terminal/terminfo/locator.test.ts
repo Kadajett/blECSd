@@ -4,9 +4,9 @@
  * @module terminal/terminfo/locator.test
  */
 
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
 	findCurrentTerminfo,
@@ -25,7 +25,7 @@ import {
 // TEST FIXTURES
 // =============================================================================
 
-const TEST_DIR = join(tmpdir(), 'blecsd-terminfo-test-' + process.pid);
+const TEST_DIR = join(tmpdir(), `blecsd-terminfo-test-${process.pid}`);
 
 /**
  * Creates a mock terminfo directory structure.
@@ -344,29 +344,29 @@ describe('terminfo locator', () => {
 
 	describe('getCurrentTerminal', () => {
 		it('returns TERM environment variable', () => {
-			const originalTerm = process.env['TERM'];
-			process.env['TERM'] = 'test-terminal';
+			const originalTerm = process.env.TERM;
+			process.env.TERM = 'test-terminal';
 
 			try {
 				expect(getCurrentTerminal()).toBe('test-terminal');
 			} finally {
 				if (originalTerm) {
-					process.env['TERM'] = originalTerm;
+					process.env.TERM = originalTerm;
 				} else {
-					delete process.env['TERM'];
+					process.env.TERM = undefined;
 				}
 			}
 		});
 
 		it('returns dumb when TERM not set', () => {
-			const originalTerm = process.env['TERM'];
-			delete process.env['TERM'];
+			const originalTerm = process.env.TERM;
+			process.env.TERM = undefined;
 
 			try {
 				expect(getCurrentTerminal()).toBe('dumb');
 			} finally {
 				if (originalTerm) {
-					process.env['TERM'] = originalTerm;
+					process.env.TERM = originalTerm;
 				}
 			}
 		});

@@ -128,9 +128,11 @@ export function parseObj(source: string): ObjParseResult {
  * console.log(bbox.center);
  * ```
  */
-export function computeBoundingBox(
-	vertices: ReadonlyArray<ObjVertex>,
-): { min: ObjVertex; max: ObjVertex; center: ObjVertex } {
+export function computeBoundingBox(vertices: ReadonlyArray<ObjVertex>): {
+	min: ObjVertex;
+	max: ObjVertex;
+	center: ObjVertex;
+} {
 	if (vertices.length === 0) {
 		return {
 			min: { x: 0, y: 0, z: 0 },

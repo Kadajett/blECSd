@@ -133,6 +133,7 @@ describe('parser correctness verification', () => {
 	];
 
 	for (const input of testCases) {
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 		it(`parser handles: ${input.replace(/\x1b/g, 'ESC')}`, () => {
 			const attr = createAttribute();
 			parseSgrString(input, attr);

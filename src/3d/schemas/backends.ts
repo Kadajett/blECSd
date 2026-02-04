@@ -36,10 +36,20 @@ export type BackendType = z.infer<typeof BackendTypeSchema>;
 export const BackendCapabilitiesSchema = z.object({
 	maxColors: z.number().int().positive().describe('Max simultaneous colors'),
 	supportsAlpha: z.boolean().describe('Whether backend supports alpha transparency'),
-	pixelsPerCellX: z.number().int().positive().describe('Horizontal pixel resolution per terminal cell'),
-	pixelsPerCellY: z.number().int().positive().describe('Vertical pixel resolution per terminal cell'),
+	pixelsPerCellX: z
+		.number()
+		.int()
+		.positive()
+		.describe('Horizontal pixel resolution per terminal cell'),
+	pixelsPerCellY: z
+		.number()
+		.int()
+		.positive()
+		.describe('Vertical pixel resolution per terminal cell'),
 	supportsAnimation: z.boolean().describe('Whether backend supports efficient frame updates'),
-	requiresEscapeSequences: z.boolean().describe('True if output is raw escape sequences vs cell-based'),
+	requiresEscapeSequences: z
+		.boolean()
+		.describe('True if output is raw escape sequences vs cell-based'),
 });
 export type BackendCapabilities = z.infer<typeof BackendCapabilitiesSchema>;
 
@@ -76,14 +86,16 @@ export type EncodedCell = z.infer<typeof EncodedCellSchema>;
  * const escapeOutput: EncodedOutput = { escape: '\x1bPq...', cursorX: 0, cursorY: 0 };
  * ```
  */
-export const EncodedOutputSchema = z.object({
-	cells: z.array(EncodedCellSchema).optional(),
-	escape: z.string().optional(),
-	cursorX: z.number().int().nonnegative().optional(),
-	cursorY: z.number().int().nonnegative().optional(),
-}).refine(data => data.cells !== undefined || data.escape !== undefined, {
-	message: 'EncodedOutput must have either cells or escape',
-});
+export const EncodedOutputSchema = z
+	.object({
+		cells: z.array(EncodedCellSchema).optional(),
+		escape: z.string().optional(),
+		cursorX: z.number().int().nonnegative().optional(),
+		cursorY: z.number().int().nonnegative().optional(),
+	})
+	.refine((data) => data.cells !== undefined || data.escape !== undefined, {
+		message: 'EncodedOutput must have either cells or escape',
+	});
 export type EncodedOutput = z.infer<typeof EncodedOutputSchema>;
 
 /**
@@ -95,10 +107,7 @@ export type EncodedOutput = z.infer<typeof EncodedOutputSchema>;
  * const sel2 = BackendSelectionSchema.parse('sixel'); // Valid
  * ```
  */
-export const BackendSelectionSchema = z.union([
-	BackendTypeSchema,
-	z.literal('auto'),
-]);
+export const BackendSelectionSchema = z.union([BackendTypeSchema, z.literal('auto')]);
 export type BackendSelection = z.infer<typeof BackendSelectionSchema>;
 
 /**
@@ -110,11 +119,22 @@ export type BackendSelection = z.infer<typeof BackendSelectionSchema>;
  * ```
  */
 export const BrailleConfigSchema = z.object({
-	threshold: z.number().int().min(0).max(255).default(128)
+	threshold: z
+		.number()
+		.int()
+		.min(0)
+		.max(255)
+		.default(128)
 		.describe('Alpha threshold: pixels with alpha >= threshold are lit'),
-	colorMode: z.enum(['average', 'dominant', 'brightness']).default('average')
+	colorMode: z
+		.enum(['average', 'dominant', 'brightness'])
+		.default('average')
 		.describe('How to pick fg color from the lit pixels in a 2x4 block'),
-	backgroundColor: z.number().int().nonnegative().default(0x000000)
+	backgroundColor: z
+		.number()
+		.int()
+		.nonnegative()
+		.default(0x000000)
 		.describe('Background color as 24-bit RGB'),
 });
 export type BrailleConfig = z.input<typeof BrailleConfigSchema>;
@@ -128,7 +148,11 @@ export type BrailleConfig = z.input<typeof BrailleConfigSchema>;
  * ```
  */
 export const HalfBlockConfigSchema = z.object({
-	backgroundColor: z.number().int().nonnegative().default(0x000000)
+	backgroundColor: z
+		.number()
+		.int()
+		.nonnegative()
+		.default(0x000000)
 		.describe('Background color as 24-bit RGB'),
 });
 export type HalfBlockConfig = z.input<typeof HalfBlockConfigSchema>;
@@ -142,9 +166,18 @@ export type HalfBlockConfig = z.input<typeof HalfBlockConfigSchema>;
  * ```
  */
 export const SextantConfigSchema = z.object({
-	threshold: z.number().int().min(0).max(255).default(128)
+	threshold: z
+		.number()
+		.int()
+		.min(0)
+		.max(255)
+		.default(128)
 		.describe('Alpha threshold: pixels with alpha >= threshold are lit'),
-	backgroundColor: z.number().int().nonnegative().default(0x000000)
+	backgroundColor: z
+		.number()
+		.int()
+		.nonnegative()
+		.default(0x000000)
 		.describe('Background color as 24-bit RGB'),
 });
 export type SextantConfig = z.input<typeof SextantConfigSchema>;
@@ -158,10 +191,8 @@ export type SextantConfig = z.input<typeof SextantConfigSchema>;
  * ```
  */
 export const SixelConfigSchema = z.object({
-	maxColors: z.number().int().min(2).max(256).default(256)
-		.describe('Maximum palette colors'),
-	rleEnabled: z.boolean().default(true)
-		.describe('Enable run-length encoding for repeated columns'),
+	maxColors: z.number().int().min(2).max(256).default(256).describe('Maximum palette colors'),
+	rleEnabled: z.boolean().default(true).describe('Enable run-length encoding for repeated columns'),
 });
 export type SixelConfig = z.input<typeof SixelConfigSchema>;
 
@@ -174,10 +205,8 @@ export type SixelConfig = z.input<typeof SixelConfigSchema>;
  * ```
  */
 export const KittyConfigSchema = z.object({
-	imageId: z.number().int().positive().default(1)
-		.describe('Unique image ID for reuse'),
-	chunkSize: z.number().int().positive().default(4096)
-		.describe('Max base64 bytes per chunk'),
+	imageId: z.number().int().positive().default(1).describe('Unique image ID for reuse'),
+	chunkSize: z.number().int().positive().default(4096).describe('Max base64 bytes per chunk'),
 });
 export type KittyConfig = z.input<typeof KittyConfigSchema>;
 
@@ -192,7 +221,6 @@ export type KittyConfig = z.input<typeof KittyConfigSchema>;
 export const BackendPreferenceSchema = z.object({
 	preferred: BackendSelectionSchema.default('auto'),
 	fallback: BackendTypeSchema.default('braille'),
-	forceBackend: z.boolean().default(false)
-		.describe('Skip detection, use preferred directly'),
+	forceBackend: z.boolean().default(false).describe('Skip detection, use preferred directly'),
 });
 export type BackendPreference = z.input<typeof BackendPreferenceSchema>;

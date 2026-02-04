@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 import { addComponent, addEntity, createWorld } from 'bitecs';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { Entity, World } from '../../core/types';
-import { Transform3D } from '../components/transform3d';
-import { Viewport3D } from '../components/viewport3d';
 import {
-	MouseInteraction3D,
 	clearMouseInputStore,
 	enableMouseInteraction,
 	feedMouseDrag,
 	feedMouseScroll,
+	MouseInteraction3D,
 	mouseInputStore,
 } from '../components/mouseInteraction3d';
+import { Transform3D } from '../components/transform3d';
+import { Viewport3D } from '../components/viewport3d';
 import { mouseInteraction3DSystem } from './mouseInteraction3dSystem';
 
 function setupViewportWithCamera(world: World): { vpEid: Entity; camEid: Entity } {
@@ -77,10 +77,15 @@ describe('mouseInteraction3DSystem', () => {
 
 	it('inverts Y axis when configured', () => {
 		const { vpEid, camEid } = setupViewportWithCamera(world);
-		enableMouseInteraction(world, camEid, {
-			rotationSensitivity: 0.01,
-			invertY: true,
-		}, 5);
+		enableMouseInteraction(
+			world,
+			camEid,
+			{
+				rotationSensitivity: 0.01,
+				invertY: true,
+			},
+			5,
+		);
 
 		feedMouseDrag(vpEid, 0, 50);
 		mouseInteraction3DSystem(world);
@@ -104,11 +109,16 @@ describe('mouseInteraction3DSystem', () => {
 
 	it('applies scroll to zoom distance', () => {
 		const { vpEid, camEid } = setupViewportWithCamera(world);
-		enableMouseInteraction(world, camEid, {
-			zoomSensitivity: 0.5,
-			zoomMin: 1,
-			zoomMax: 100,
-		}, 10);
+		enableMouseInteraction(
+			world,
+			camEid,
+			{
+				zoomSensitivity: 0.5,
+				zoomMin: 1,
+				zoomMax: 100,
+			},
+			10,
+		);
 
 		feedMouseScroll(vpEid, 4); // zoom out
 		mouseInteraction3DSystem(world);
@@ -119,11 +129,16 @@ describe('mouseInteraction3DSystem', () => {
 
 	it('clamps zoom distance to min/max bounds', () => {
 		const { vpEid, camEid } = setupViewportWithCamera(world);
-		enableMouseInteraction(world, camEid, {
-			zoomSensitivity: 1,
-			zoomMin: 2,
-			zoomMax: 8,
-		}, 5);
+		enableMouseInteraction(
+			world,
+			camEid,
+			{
+				zoomSensitivity: 1,
+				zoomMin: 2,
+				zoomMax: 8,
+			},
+			5,
+		);
 
 		// Zoom way out
 		feedMouseScroll(vpEid, 20);

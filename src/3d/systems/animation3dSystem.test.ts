@@ -2,7 +2,7 @@ import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Entity, World } from '../../core/types';
 import { Animation3D, setAnimation3D } from '../components/animation3d';
-import { Transform3D, setTransform3D } from '../components/transform3d';
+import { setTransform3D, Transform3D } from '../components/transform3d';
 
 // Mock getDeltaTime for testing
 let mockDeltaTime = 1.0; // 1 second for simple math
@@ -65,9 +65,13 @@ afterEach(() => {
 describe('animation3DSystem', () => {
 	it('applies Y rotation speed over 1 second', () => {
 		const world = createTestWorld();
-		const eid = createAnimatedEntity(world, {}, {
-			rotateSpeed: { y: Math.PI },
-		});
+		const eid = createAnimatedEntity(
+			world,
+			{},
+			{
+				rotateSpeed: { y: Math.PI },
+			},
+		);
 
 		// Clear dirty flag from setTransform3D
 		Transform3D.dirty[eid] = 0;
@@ -80,9 +84,13 @@ describe('animation3DSystem', () => {
 
 	it('applies X and Z rotation independently', () => {
 		const world = createTestWorld();
-		const eid = createAnimatedEntity(world, {}, {
-			rotateSpeed: { x: 1.0, z: 2.0 },
-		});
+		const eid = createAnimatedEntity(
+			world,
+			{},
+			{
+				rotateSpeed: { x: 1.0, z: 2.0 },
+			},
+		);
 
 		Transform3D.dirty[eid] = 0;
 		animation3DSystem(world);
@@ -94,9 +102,13 @@ describe('animation3DSystem', () => {
 
 	it('accumulates rotation over multiple frames', () => {
 		const world = createTestWorld();
-		const eid = createAnimatedEntity(world, {}, {
-			rotateSpeed: { y: 1.0 },
-		});
+		const eid = createAnimatedEntity(
+			world,
+			{},
+			{
+				rotateSpeed: { y: 1.0 },
+			},
+		);
 
 		mockDeltaTime = 0.5;
 		animation3DSystem(world);
@@ -108,9 +120,13 @@ describe('animation3DSystem', () => {
 
 	it('does nothing with zero rotation speed', () => {
 		const world = createTestWorld();
-		const eid = createAnimatedEntity(world, { tx: 5 }, {
-			rotateSpeed: { x: 0, y: 0, z: 0 },
-		});
+		const eid = createAnimatedEntity(
+			world,
+			{ tx: 5 },
+			{
+				rotateSpeed: { x: 0, y: 0, z: 0 },
+			},
+		);
 
 		Transform3D.dirty[eid] = 0;
 		animation3DSystem(world);
@@ -121,11 +137,15 @@ describe('animation3DSystem', () => {
 
 	it('orbits around a center point', () => {
 		const world = createTestWorld();
-		const eid = createAnimatedEntity(world, {}, {
-			orbitCenter: [0, 0, -5],
-			orbitSpeed: Math.PI / 2, // quarter turn per second
-			orbitRadius: 3,
-		});
+		const eid = createAnimatedEntity(
+			world,
+			{},
+			{
+				orbitCenter: [0, 0, -5],
+				orbitSpeed: Math.PI / 2, // quarter turn per second
+				orbitRadius: 3,
+			},
+		);
 
 		mockDeltaTime = 1.0;
 		animation3DSystem(world);
@@ -140,11 +160,15 @@ describe('animation3DSystem', () => {
 
 	it('orbit traces a circle over full rotation', () => {
 		const world = createTestWorld();
-		const eid = createAnimatedEntity(world, {}, {
-			orbitCenter: [0, 0, 0],
-			orbitSpeed: Math.PI / 2,
-			orbitRadius: 5,
-		});
+		const eid = createAnimatedEntity(
+			world,
+			{},
+			{
+				orbitCenter: [0, 0, 0],
+				orbitSpeed: Math.PI / 2,
+				orbitRadius: 5,
+			},
+		);
 
 		// At angle 0 (start): x=5, z=0
 		mockDeltaTime = 0;
@@ -161,11 +185,15 @@ describe('animation3DSystem', () => {
 
 	it('sets dirty flag when orbiting', () => {
 		const world = createTestWorld();
-		const eid = createAnimatedEntity(world, {}, {
-			orbitCenter: [0, 0, 0],
-			orbitSpeed: 1,
-			orbitRadius: 5,
-		});
+		const eid = createAnimatedEntity(
+			world,
+			{},
+			{
+				orbitCenter: [0, 0, 0],
+				orbitSpeed: 1,
+				orbitRadius: 5,
+			},
+		);
 
 		Transform3D.dirty[eid] = 0;
 		animation3DSystem(world);
@@ -175,9 +203,13 @@ describe('animation3DSystem', () => {
 
 	it('does nothing with zero delta time', () => {
 		const world = createTestWorld();
-		const eid = createAnimatedEntity(world, {}, {
-			rotateSpeed: { y: Math.PI },
-		});
+		const eid = createAnimatedEntity(
+			world,
+			{},
+			{
+				rotateSpeed: { y: Math.PI },
+			},
+		);
 
 		Transform3D.dirty[eid] = 0;
 		mockDeltaTime = 0;
@@ -189,9 +221,13 @@ describe('animation3DSystem', () => {
 
 	it('handles negative rotation speed', () => {
 		const world = createTestWorld();
-		const eid = createAnimatedEntity(world, {}, {
-			rotateSpeed: { y: -Math.PI },
-		});
+		const eid = createAnimatedEntity(
+			world,
+			{},
+			{
+				rotateSpeed: { y: -Math.PI },
+			},
+		);
 
 		animation3DSystem(world);
 
@@ -200,9 +236,13 @@ describe('animation3DSystem', () => {
 
 	it('preserves existing rotation when adding speed', () => {
 		const world = createTestWorld();
-		const eid = createAnimatedEntity(world, { ry: 1.0 }, {
-			rotateSpeed: { y: 0.5 },
-		});
+		const eid = createAnimatedEntity(
+			world,
+			{ ry: 1.0 },
+			{
+				rotateSpeed: { y: 0.5 },
+			},
+		);
 
 		animation3DSystem(world);
 

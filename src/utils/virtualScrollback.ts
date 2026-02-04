@@ -232,8 +232,9 @@ function compressChunk(chunk: Chunk): string {
  * Decompresses chunk data.
  */
 function decompressChunk(data: string): ScrollbackLine[] {
+	// biome-ignore lint/suspicious/noControlCharactersInRegex: NUL character is intentional for RLE encoding
 	const decompressed = data.replace(/(.)\x00(\d+)\x00/g, (_, char, count) =>
-		char.repeat(parseInt(count)),
+		char.repeat(parseInt(count, 10)),
 	);
 	return JSON.parse(decompressed) as ScrollbackLine[];
 }

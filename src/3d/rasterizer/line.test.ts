@@ -5,7 +5,9 @@ import { createPixelFramebuffer, getDepth, getPixel } from './pixelBuffer';
 /**
  * Collect all non-transparent pixels from a framebuffer.
  */
-function collectPixels(fb: ReturnType<typeof createPixelFramebuffer>): Array<{ x: number; y: number }> {
+function collectPixels(
+	fb: ReturnType<typeof createPixelFramebuffer>,
+): Array<{ x: number; y: number }> {
 	const pixels: Array<{ x: number; y: number }> = [];
 	for (let y = 0; y < fb.height; y++) {
 		for (let x = 0; x < fb.width; x++) {
@@ -148,7 +150,11 @@ describe('Line drawing', () => {
 		it('draws line with depth interpolation', () => {
 			const fb = createPixelFramebuffer({ width: 20, height: 10 });
 
-			drawLineDepth(fb, { x: 0, y: 5, depth: 0.25, r: 255, g: 0, b: 0 }, { x: 10, y: 5, depth: 0.75, r: 255, g: 0, b: 0 });
+			drawLineDepth(
+				fb,
+				{ x: 0, y: 5, depth: 0.25, r: 255, g: 0, b: 0 },
+				{ x: 10, y: 5, depth: 0.75, r: 255, g: 0, b: 0 },
+			);
 
 			// Start should be near 0.25
 			expect(getDepth(fb, 0, 5)).toBeCloseTo(0.25, 1);
@@ -162,10 +168,18 @@ describe('Line drawing', () => {
 			const fb = createPixelFramebuffer({ width: 20, height: 10 });
 
 			// Draw a far line (depth 0.8)
-			drawLineDepth(fb, { x: 0, y: 5, depth: 0.8, r: 255, g: 0, b: 0 }, { x: 10, y: 5, depth: 0.8, r: 255, g: 0, b: 0 });
+			drawLineDepth(
+				fb,
+				{ x: 0, y: 5, depth: 0.8, r: 255, g: 0, b: 0 },
+				{ x: 10, y: 5, depth: 0.8, r: 255, g: 0, b: 0 },
+			);
 
 			// Draw a closer line (depth 0.2)
-			drawLineDepth(fb, { x: 0, y: 5, depth: 0.2, r: 0, g: 255, b: 0 }, { x: 10, y: 5, depth: 0.2, r: 0, g: 255, b: 0 });
+			drawLineDepth(
+				fb,
+				{ x: 0, y: 5, depth: 0.2, r: 0, g: 255, b: 0 },
+				{ x: 10, y: 5, depth: 0.2, r: 0, g: 255, b: 0 },
+			);
 
 			// Should show the green (closer) line
 			const color = getPixel(fb, 5, 5);
@@ -177,10 +191,18 @@ describe('Line drawing', () => {
 			const fb = createPixelFramebuffer({ width: 20, height: 10 });
 
 			// Draw a close line (depth 0.2)
-			drawLineDepth(fb, { x: 0, y: 5, depth: 0.2, r: 255, g: 0, b: 0 }, { x: 10, y: 5, depth: 0.2, r: 255, g: 0, b: 0 });
+			drawLineDepth(
+				fb,
+				{ x: 0, y: 5, depth: 0.2, r: 255, g: 0, b: 0 },
+				{ x: 10, y: 5, depth: 0.2, r: 255, g: 0, b: 0 },
+			);
 
 			// Draw a farther line (depth 0.8)
-			drawLineDepth(fb, { x: 0, y: 5, depth: 0.8, r: 0, g: 255, b: 0 }, { x: 10, y: 5, depth: 0.8, r: 0, g: 255, b: 0 });
+			drawLineDepth(
+				fb,
+				{ x: 0, y: 5, depth: 0.8, r: 0, g: 255, b: 0 },
+				{ x: 10, y: 5, depth: 0.8, r: 0, g: 255, b: 0 },
+			);
 
 			// Should still show the red (closer) line
 			const color = getPixel(fb, 5, 5);
@@ -193,11 +215,7 @@ describe('Line drawing', () => {
 		it('interpolates color between endpoints', () => {
 			const fb = createPixelFramebuffer({ width: 20, height: 10, enableDepthBuffer: false });
 
-			drawLineColor(
-				fb,
-				{ x: 0, y: 5, r: 255, g: 0, b: 0 },
-				{ x: 10, y: 5, r: 0, g: 0, b: 255 },
-			);
+			drawLineColor(fb, { x: 0, y: 5, r: 255, g: 0, b: 0 }, { x: 10, y: 5, r: 0, g: 0, b: 255 });
 
 			// Start should be red
 			const start = getPixel(fb, 0, 5);
@@ -220,11 +238,7 @@ describe('Line drawing', () => {
 		it('draws single point with start color', () => {
 			const fb = createPixelFramebuffer({ width: 10, height: 10, enableDepthBuffer: false });
 
-			drawLineColor(
-				fb,
-				{ x: 5, y: 5, r: 100, g: 200, b: 50 },
-				{ x: 5, y: 5, r: 0, g: 0, b: 255 },
-			);
+			drawLineColor(fb, { x: 5, y: 5, r: 100, g: 200, b: 50 }, { x: 5, y: 5, r: 0, g: 0, b: 255 });
 
 			const color = getPixel(fb, 5, 5);
 			expect(color.r).toBe(100);

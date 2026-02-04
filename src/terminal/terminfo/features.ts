@@ -101,17 +101,17 @@ export function detectUnicode(options: FeatureDetectionOptions = {}): boolean {
 	}
 
 	// Check ncurses-compatible environment variable
-	const forceEnv = process.env['NCURSES_FORCE_UNICODE'];
+	const forceEnv = process.env.NCURSES_FORCE_UNICODE;
 	if (forceEnv !== undefined) {
 		return forceEnv === '1';
 	}
 
 	// Check locale settings for UTF-8
 	const localeVars = [
-		process.env['LANG'],
-		process.env['LANGUAGE'],
-		process.env['LC_ALL'],
-		process.env['LC_CTYPE'],
+		process.env.LANG,
+		process.env.LANGUAGE,
+		process.env.LC_ALL,
+		process.env.LC_CTYPE,
 	]
 		.filter(Boolean)
 		.join(':');
@@ -141,7 +141,7 @@ function getWindowsCodePage(): number {
 	}
 
 	// Allow unicode on all Windows consoles by default
-	if (process.env['NCURSES_NO_WINDOWS_UNICODE'] !== '1') {
+	if (process.env.NCURSES_NO_WINDOWS_UNICODE !== '1') {
 		return 65001;
 	}
 
@@ -166,10 +166,10 @@ function getWindowsCodePage(): number {
  * ```
  */
 export function detectPCRomSet(info: TerminfoData): boolean {
-	const enterPc = info.strings['enter_pc_charset_mode'];
-	const exitPc = info.strings['exit_pc_charset_mode'];
-	const enterAlt = info.strings['enter_alt_charset_mode'];
-	const exitAlt = info.strings['exit_alt_charset_mode'];
+	const enterPc = info.strings.enter_pc_charset_mode;
+	const exitPc = info.strings.exit_pc_charset_mode;
+	const enterAlt = info.strings.enter_alt_charset_mode;
+	const exitAlt = info.strings.exit_alt_charset_mode;
 
 	// If PC charset mode equals ACS mode, terminal uses PC ROM set
 	if (enterPc && enterAlt && enterPc === enterAlt && exitPc === exitAlt) {
@@ -188,13 +188,13 @@ export function detectPCRomSet(info: TerminfoData): boolean {
  * @internal
  */
 function hasScreenBrokenACS(info: TerminfoData): boolean {
-	const termcap = process.env['TERMCAP'] ?? '';
+	const termcap = process.env.TERMCAP ?? '';
 	if (!termcap.includes('screen') || !termcap.includes('hhII00')) {
 		return false;
 	}
 
-	const smacs = info.strings['enter_alt_charset_mode'] ?? '';
-	const sgr = info.strings['set_attributes'] ?? '';
+	const smacs = info.strings.enter_alt_charset_mode ?? '';
+	const sgr = info.strings.set_attributes ?? '';
 
 	return (
 		smacs.includes('\x0e') || smacs.includes('\x0f') || sgr.includes('\x0e') || sgr.includes('\x0f')
@@ -224,13 +224,13 @@ export function detectBrokenACS(
 	options: FeatureDetectionOptions = {},
 ): boolean {
 	// Check ncurses-compatible environment variable
-	const noUtf8Acs = process.env['NCURSES_NO_UTF8_ACS'];
+	const noUtf8Acs = process.env.NCURSES_NO_UTF8_ACS;
 	if (noUtf8Acs !== undefined) {
 		return noUtf8Acs === '1';
 	}
 
 	// Check U8 capability (terminal indicates Unicode support)
-	const u8 = info.numbers['U8'];
+	const u8 = info.numbers.U8;
 	if (u8 !== undefined && u8 >= 0) {
 		return u8 > 0;
 	}
@@ -259,7 +259,7 @@ export function detectBrokenACS(
  * @returns true if magic cookie handling is enabled
  */
 export function detectMagicCookie(): boolean {
-	return process.env['NCURSES_NO_MAGIC_COOKIE'] === undefined;
+	return process.env.NCURSES_NO_MAGIC_COOKIE === undefined;
 }
 
 /**
@@ -268,7 +268,7 @@ export function detectMagicCookie(): boolean {
  * @returns true if padding is enabled
  */
 export function detectPadding(): boolean {
-	return process.env['NCURSES_NO_PADDING'] === undefined;
+	return process.env.NCURSES_NO_PADDING === undefined;
 }
 
 /**
@@ -277,7 +277,7 @@ export function detectPadding(): boolean {
  * @returns true if setbuf is enabled
  */
 export function detectSetbuf(): boolean {
-	return process.env['NCURSES_NO_SETBUF'] === undefined;
+	return process.env.NCURSES_NO_SETBUF === undefined;
 }
 
 /**
@@ -287,7 +287,7 @@ export function detectSetbuf(): boolean {
  * @returns Number of colors (0 if monochrome)
  */
 export function detectColors(info: TerminfoData): number {
-	return info.numbers['max_colors'] ?? 0;
+	return info.numbers.max_colors ?? 0;
 }
 
 /**
@@ -298,13 +298,13 @@ export function detectColors(info: TerminfoData): number {
  */
 export function detectTrueColor(info: TerminfoData): boolean {
 	// Check COLORTERM environment variable
-	const colorterm = process.env['COLORTERM'];
+	const colorterm = process.env.COLORTERM;
 	if (colorterm === 'truecolor' || colorterm === '24bit') {
 		return true;
 	}
 
 	// Check for RGB capability in terminfo
-	const setafRgb = info.strings['set_a_foreground'];
+	const setafRgb = info.strings.set_a_foreground;
 	if (setafRgb?.includes('2;')) {
 		return true;
 	}
@@ -343,7 +343,7 @@ export function detect256Color(info: TerminfoData): boolean {
  * @returns true if alternate screen is supported
  */
 export function detectAlternateScreen(info: TerminfoData): boolean {
-	return info.strings['enter_ca_mode'] !== undefined && info.strings['exit_ca_mode'] !== undefined;
+	return info.strings.enter_ca_mode !== undefined && info.strings.exit_ca_mode !== undefined;
 }
 
 /**
@@ -354,7 +354,7 @@ export function detectAlternateScreen(info: TerminfoData): boolean {
  */
 export function detectMouse(info: TerminfoData): boolean {
 	// Check for xterm-style mouse capabilities
-	const kmous = info.strings['key_mouse'];
+	const kmous = info.strings.key_mouse;
 	if (kmous) {
 		return true;
 	}
@@ -433,7 +433,7 @@ export function detectBracketedPaste(info: TerminfoData): boolean {
  */
 export function detectTitle(info: TerminfoData): boolean {
 	// Check for title capabilities
-	if (info.booleans['has_status_line']) {
+	if (info.booleans.has_status_line) {
 		return true;
 	}
 
@@ -475,7 +475,7 @@ function parseACSFromInfo(info: TerminfoData): {
 		return { acsc, acscReverse };
 	}
 
-	const acsChars = info.strings['acs_chars'];
+	const acsChars = info.strings.acs_chars;
 	if (!acsChars) {
 		return { acsc, acscReverse };
 	}
@@ -565,13 +565,13 @@ export function detectFeatures(
  */
 export function detectModernProtocols(info: TerminfoData): ModernProtocols {
 	const name = info.name.toLowerCase();
-	const termProgram = (process.env['TERM_PROGRAM'] ?? '').toLowerCase();
+	const termProgram = (process.env.TERM_PROGRAM ?? '').toLowerCase();
 
 	// Kitty detection
 	const isKitty = name.includes('kitty') || termProgram === 'kitty';
 
 	// iTerm2 detection
-	const isIterm2 = termProgram === 'iterm.app' || process.env['ITERM_SESSION_ID'] !== undefined;
+	const isIterm2 = termProgram === 'iterm.app' || process.env.ITERM_SESSION_ID !== undefined;
 
 	// Modern terminal detection
 	const isModern =
@@ -612,7 +612,7 @@ function detectSixel(info: TerminfoData): boolean {
 	}
 
 	// Check for explicit Sixel indication
-	if (process.env['TERM']?.includes('sixel')) {
+	if (process.env.TERM?.includes('sixel')) {
 		return true;
 	}
 

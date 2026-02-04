@@ -58,12 +58,16 @@ describe('Mesh component and meshStore', () => {
 
 	describe('createMeshFromArrays', () => {
 		it('creates mesh from vertex objects and polygon faces', () => {
-			const id = createMeshFromArrays('cube-face', [
-				{ x: -1, y: -1, z: 0 },
-				{ x: 1, y: -1, z: 0 },
-				{ x: 1, y: 1, z: 0 },
-				{ x: -1, y: 1, z: 0 },
-			], [[0, 1, 2, 3]]);
+			const id = createMeshFromArrays(
+				'cube-face',
+				[
+					{ x: -1, y: -1, z: 0 },
+					{ x: 1, y: -1, z: 0 },
+					{ x: 1, y: 1, z: 0 },
+					{ x: -1, y: 1, z: 0 },
+				],
+				[[0, 1, 2, 3]],
+			);
 
 			const data = getMeshData(id);
 			expect(data?.vertexCount).toBe(4);
@@ -71,13 +75,17 @@ describe('Mesh component and meshStore', () => {
 		});
 
 		it('triangulates polygons with fan method', () => {
-			const id = createMeshFromArrays('pentagon', [
-				{ x: 0, y: 1, z: 0 },
-				{ x: 1, y: 0.3, z: 0 },
-				{ x: 0.6, y: -0.8, z: 0 },
-				{ x: -0.6, y: -0.8, z: 0 },
-				{ x: -1, y: 0.3, z: 0 },
-			], [[0, 1, 2, 3, 4]]);
+			const id = createMeshFromArrays(
+				'pentagon',
+				[
+					{ x: 0, y: 1, z: 0 },
+					{ x: 1, y: 0.3, z: 0 },
+					{ x: 0.6, y: -0.8, z: 0 },
+					{ x: -0.6, y: -0.8, z: 0 },
+					{ x: -1, y: 0.3, z: 0 },
+				],
+				[[0, 1, 2, 3, 4]],
+			);
 
 			const data = getMeshData(id);
 			expect(data?.triangleCount).toBe(3); // 5-gon -> 3 triangles
@@ -88,21 +96,29 @@ describe('Mesh component and meshStore', () => {
 		});
 
 		it('handles triangle faces without triangulation', () => {
-			const id = createMeshFromArrays('tri', [
-				{ x: 0, y: 0, z: 0 },
-				{ x: 1, y: 0, z: 0 },
-				{ x: 0, y: 1, z: 0 },
-			], [[0, 1, 2]]);
+			const id = createMeshFromArrays(
+				'tri',
+				[
+					{ x: 0, y: 0, z: 0 },
+					{ x: 1, y: 0, z: 0 },
+					{ x: 0, y: 1, z: 0 },
+				],
+				[[0, 1, 2]],
+			);
 
 			const data = getMeshData(id);
 			expect(data?.triangleCount).toBe(1);
 		});
 
 		it('skips degenerate faces with < 3 vertices', () => {
-			const id = createMeshFromArrays('degen', [
-				{ x: 0, y: 0, z: 0 },
-				{ x: 1, y: 0, z: 0 },
-			], [[0, 1]]);
+			const id = createMeshFromArrays(
+				'degen',
+				[
+					{ x: 0, y: 0, z: 0 },
+					{ x: 1, y: 0, z: 0 },
+				],
+				[[0, 1]],
+			);
 
 			const data = getMeshData(id);
 			expect(data?.triangleCount).toBe(0);
@@ -111,10 +127,7 @@ describe('Mesh component and meshStore', () => {
 
 	describe('getMeshData', () => {
 		it('returns mesh data for valid ID', () => {
-			const id = registerMesh('test',
-				new Float32Array([0, 0, 0]),
-				new Uint32Array([0]),
-			);
+			const id = registerMesh('test', new Float32Array([0, 0, 0]), new Uint32Array([0]));
 
 			const data = getMeshData(id);
 			expect(data).toBeDefined();
@@ -128,10 +141,7 @@ describe('Mesh component and meshStore', () => {
 
 	describe('unregisterMesh', () => {
 		it('removes mesh and returns true', () => {
-			const id = registerMesh('test',
-				new Float32Array([0, 0, 0]),
-				new Uint32Array([0]),
-			);
+			const id = registerMesh('test', new Float32Array([0, 0, 0]), new Uint32Array([0]));
 
 			expect(unregisterMesh(id)).toBe(true);
 			expect(getMeshData(id)).toBeUndefined();
@@ -146,10 +156,7 @@ describe('Mesh component and meshStore', () => {
 	describe('setMesh / getMesh', () => {
 		it('links entity to mesh ID', () => {
 			const { world, eid } = setup();
-			const meshId = registerMesh('test',
-				new Float32Array([0, 0, 0]),
-				new Uint32Array([0]),
-			);
+			const meshId = registerMesh('test', new Float32Array([0, 0, 0]), new Uint32Array([0]));
 
 			setMesh(world, eid, meshId);
 

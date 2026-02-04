@@ -9,21 +9,23 @@
  */
 
 import { addComponent, addEntity, removeEntity } from 'bitecs';
-import type { Entity, World } from '../core/types';
-import { setPosition } from '../components/position';
-import { setDimensions } from '../components/dimensions';
-import { markDirty, setVisible } from '../components/renderable';
+import { createBackendByType } from '../3d/backends/detection';
 import { Camera3D, setCamera3D } from '../3d/components/camera3d';
 import { setMaterial3D } from '../3d/components/material';
-import { Mesh, getMeshData } from '../3d/components/mesh';
-import { Transform3D, setTransform3D } from '../3d/components/transform3d';
-import { Viewport3D, setViewport3D } from '../3d/components/viewport3d';
-import type { Material3DConfig, Transform3DConfig } from '../3d/schemas/components';
-import { type Viewport3DWidgetConfig, Viewport3DWidgetConfigSchema } from '../3d/schemas/viewport3d';
-import { createBackendByType } from '../3d/backends/detection';
-import { framebufferStore } from '../3d/systems/rasterSystem';
-
+import { getMeshData, Mesh } from '../3d/components/mesh';
+import { setTransform3D, Transform3D } from '../3d/components/transform3d';
+import { setViewport3D, Viewport3D } from '../3d/components/viewport3d';
 import type { BackendType } from '../3d/schemas/backends';
+import type { Material3DConfig, Transform3DConfig } from '../3d/schemas/components';
+import {
+	type Viewport3DWidgetConfig,
+	Viewport3DWidgetConfigSchema,
+} from '../3d/schemas/viewport3d';
+import { framebufferStore } from '../3d/systems/rasterSystem';
+import { setDimensions } from '../components/dimensions';
+import { setPosition } from '../components/position';
+import { markDirty, setVisible } from '../components/renderable';
+import type { Entity, World } from '../core/types';
 
 const DEFAULT_CAPACITY = 10000;
 

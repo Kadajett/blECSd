@@ -845,23 +845,24 @@ function parseExtended(
 	is32bit: boolean,
 ): { extended: TerminfoExtended; offset: number } | null {
 	// Align to even boundary
-	if (offset % 2 !== 0) {
-		offset++;
+	let currentOffset = offset;
+	if (currentOffset % 2 !== 0) {
+		currentOffset++;
 	}
 
 	// Need at least 10 bytes for extended header
-	if (offset + 10 > buffer.length) {
+	if (currentOffset + 10 > buffer.length) {
 		return null;
 	}
 
-	const extBoolCount = readInt16LE(buffer, offset);
-	const extNumCount = readInt16LE(buffer, offset + 2);
+	const extBoolCount = readInt16LE(buffer, currentOffset);
+	const extNumCount = readInt16LE(buffer, currentOffset + 2);
 	// extStrCount and extStrTableCount are in the header but not needed for parsing
-	// const extStrCount = readInt16LE(buffer, offset + 4);
-	// const extStrTableCount = readInt16LE(buffer, offset + 6);
-	const extStrTableSize = readInt16LE(buffer, offset + 8);
+	// const extStrCount = readInt16LE(buffer, currentOffset + 4);
+	// const extStrTableCount = readInt16LE(buffer, currentOffset + 6);
+	const extStrTableSize = readInt16LE(buffer, currentOffset + 8);
 
-	offset += 10;
+	currentOffset += 10;
 
 	const extended: TerminfoExtended = {
 		booleans: {},
@@ -875,7 +876,7 @@ function parseExtended(
 
 	return {
 		extended,
-		offset: offset + extBoolCount + extNumCount * (is32bit ? 4 : 2) + extStrTableSize,
+		offset: currentOffset + extBoolCount + extNumCount * (is32bit ? 4 : 2) + extStrTableSize,
 	};
 }
 

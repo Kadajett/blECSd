@@ -767,6 +767,7 @@ describe('codeAttr', () => {
 			};
 			const result = codeAttr(attr, { colorDepth: '256' });
 			// RGB(255,0,0) should map to 256-color palette
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			expect(result).toMatch(/^\x1b\[38;5;\d+m$/);
 		});
 
@@ -778,6 +779,7 @@ describe('codeAttr', () => {
 			};
 			const result = codeAttr(attr, { colorDepth: '16' });
 			// Should be basic color code 31 or 91
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			expect(result).toMatch(/^\x1b\[(3[0-7]|9[0-7])m$/);
 		});
 
@@ -789,6 +791,7 @@ describe('codeAttr', () => {
 			};
 			const result = codeAttr(attr, { colorDepth: '16' });
 			// Should be basic color code
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			expect(result).toMatch(/^\x1b\[(3[0-7]|9[0-7])m$/);
 		});
 

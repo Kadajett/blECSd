@@ -1,16 +1,16 @@
 import { addEntity, createWorld, hasComponent } from 'bitecs';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { Entity, World } from '../core/types';
 import { Camera3D } from '../3d/components/camera3d';
 import { Material3D } from '../3d/components/material';
-import { Mesh, clearMeshStore, createMeshFromArrays } from '../3d/components/mesh';
+import { clearMeshStore, createMeshFromArrays, Mesh } from '../3d/components/mesh';
 import { Transform3D } from '../3d/components/transform3d';
 import { Viewport3D } from '../3d/components/viewport3d';
+import type { Entity, World } from '../core/types';
 import {
-	Viewport3DTag,
 	createViewport3D,
 	isViewport3DWidget,
 	resetViewport3DStore,
+	Viewport3DTag,
 } from './viewport3d';
 
 function createTestWorld(): World {
@@ -18,16 +18,27 @@ function createTestWorld(): World {
 }
 
 function createTestMesh(): number {
-	return createMeshFromArrays('test-cube', [
-		{ x: -1, y: -1, z: -1 }, { x: 1, y: -1, z: -1 },
-		{ x: 1, y: 1, z: -1 }, { x: -1, y: 1, z: -1 },
-		{ x: -1, y: -1, z: 1 }, { x: 1, y: -1, z: 1 },
-		{ x: 1, y: 1, z: 1 }, { x: -1, y: 1, z: 1 },
-	], [
-		[0, 1, 2, 3], [5, 4, 7, 6],
-		[4, 0, 3, 7], [1, 5, 6, 2],
-		[3, 2, 6, 7], [4, 5, 1, 0],
-	]);
+	return createMeshFromArrays(
+		'test-cube',
+		[
+			{ x: -1, y: -1, z: -1 },
+			{ x: 1, y: -1, z: -1 },
+			{ x: 1, y: 1, z: -1 },
+			{ x: -1, y: 1, z: -1 },
+			{ x: -1, y: -1, z: 1 },
+			{ x: 1, y: -1, z: 1 },
+			{ x: 1, y: 1, z: 1 },
+			{ x: -1, y: 1, z: 1 },
+		],
+		[
+			[0, 1, 2, 3],
+			[5, 4, 7, 6],
+			[4, 0, 3, 7],
+			[1, 5, 6, 2],
+			[3, 2, 6, 7],
+			[4, 5, 1, 0],
+		],
+	);
 }
 
 afterEach(() => {
@@ -100,7 +111,10 @@ describe('createViewport3D', () => {
 		const world = createTestWorld();
 		const eid = addEntity(world) as Entity;
 		createViewport3D(world, eid, {
-			left: 5, top: 2, width: 60, height: 20,
+			left: 5,
+			top: 2,
+			width: 60,
+			height: 20,
 		});
 
 		expect(Viewport3D.left[eid]).toBe(5);
@@ -113,7 +127,8 @@ describe('createViewport3D', () => {
 		const world = createTestWorld();
 		const eid = addEntity(world) as Entity;
 		createViewport3D(world, eid, {
-			width: 40, height: 10,
+			width: 40,
+			height: 10,
 		});
 
 		// Braille: 2x4 pixels per cell
@@ -125,10 +140,12 @@ describe('createViewport3D', () => {
 		const world = createTestWorld();
 		const eid = addEntity(world) as Entity;
 
-		expect(() => createViewport3D(world, eid, {
-			near: 100,
-			far: 1,
-		})).toThrow('Near plane must be less than far plane');
+		expect(() =>
+			createViewport3D(world, eid, {
+				near: 100,
+				far: 1,
+			}),
+		).toThrow('Near plane must be less than far plane');
 	});
 
 	it('sets default backend to auto', () => {
@@ -173,14 +190,18 @@ describe('Viewport3DWidget.addMesh', () => {
 		const viewport = createViewport3D(world, eid);
 		const meshId = createTestMesh();
 
-		const meshEid = viewport.addMesh(meshId, { tz: -5 }, {
-			renderMode: 'filled',
-			fillColor: 0xFF0000,
-		});
+		const meshEid = viewport.addMesh(
+			meshId,
+			{ tz: -5 },
+			{
+				renderMode: 'filled',
+				fillColor: 0xff0000,
+			},
+		);
 
 		expect(hasComponent(world, meshEid, Material3D)).toBe(true);
 		expect(Material3D.renderMode[meshEid]).toBe(1); // filled
-		expect(Material3D.fillColor[meshEid]).toBe(0xFF0000);
+		expect(Material3D.fillColor[meshEid]).toBe(0xff0000);
 	});
 
 	it('throws for invalid mesh ID', () => {

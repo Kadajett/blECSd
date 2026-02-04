@@ -63,8 +63,8 @@ describe('debug utilities', () => {
 
 			const posComp = info.components.find((c) => c.name === 'Position');
 			expect(posComp).toBeDefined();
-			expect(posComp?.data['x']).toBe(10);
-			expect(posComp?.data['y']).toBe(20);
+			expect(posComp?.data.x).toBe(10);
+			expect(posComp?.data.y).toBe(20);
 		});
 
 		it('includes entity name if set', () => {
@@ -140,8 +140,8 @@ describe('debug utilities', () => {
 			const info = inspectWorld(world);
 
 			expect(info.entityCount).toBe(2);
-			expect(info.componentCounts['Position']).toBe(2);
-			expect(info.componentCounts['Dimensions']).toBe(1);
+			expect(info.componentCounts.Position).toBe(2);
+			expect(info.componentCounts.Dimensions).toBe(1);
 		});
 
 		it('identifies hierarchy roots', () => {
@@ -181,7 +181,7 @@ describe('debug utilities', () => {
 			recordSystemTime('testSystem', 4.5);
 
 			const timings = getSystemTimings();
-			expect(timings['testSystem']).toBe(5); // Average of 5.5 and 4.5
+			expect(timings.testSystem).toBe(5); // Average of 5.5 and 4.5
 		});
 
 		it('does not track when disabled', () => {
@@ -190,7 +190,7 @@ describe('debug utilities', () => {
 			recordSystemTime('testSystem', 5);
 
 			const timings = getSystemTimings();
-			expect(timings['testSystem']).toBeUndefined();
+			expect(timings.testSystem).toBeUndefined();
 		});
 
 		it('clears timings when disabled', () => {
@@ -210,8 +210,8 @@ describe('debug utilities', () => {
 			system(world);
 
 			const timings = getSystemTimings();
-			expect(timings['mySystem']).toBeDefined();
-			expect(timings['mySystem']).toBeGreaterThanOrEqual(0);
+			expect(timings.mySystem).toBeDefined();
+			expect(timings.mySystem).toBeGreaterThanOrEqual(0);
 		});
 	});
 
@@ -251,8 +251,8 @@ describe('debug utilities', () => {
 
 			const stats = getPerformanceStats(world);
 
-			expect(stats.systemTimings['render']).toBe(2);
-			expect(stats.systemTimings['update']).toBe(1);
+			expect(stats.systemTimings.render).toBe(2);
+			expect(stats.systemTimings.update).toBe(1);
 		});
 	});
 

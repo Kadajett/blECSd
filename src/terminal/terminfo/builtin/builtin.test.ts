@@ -30,58 +30,58 @@ describe('builtin terminfo', () => {
 		});
 
 		it('has 256 colors', () => {
-			expect(XTERM_256COLOR.numbers['max_colors']).toBe(256);
+			expect(XTERM_256COLOR.numbers.max_colors).toBe(256);
 		});
 
 		it('has standard cursor movement', () => {
-			expect(XTERM_256COLOR.strings['cursor_address']).toBe('\x1b[%i%p1%d;%p2%dH');
-			expect(XTERM_256COLOR.strings['cursor_home']).toBe('\x1b[H');
-			expect(XTERM_256COLOR.strings['cursor_up']).toBe('\x1b[A');
+			expect(XTERM_256COLOR.strings.cursor_address).toBe('\x1b[%i%p1%d;%p2%dH');
+			expect(XTERM_256COLOR.strings.cursor_home).toBe('\x1b[H');
+			expect(XTERM_256COLOR.strings.cursor_up).toBe('\x1b[A');
 		});
 
 		it('has color sequences', () => {
-			expect(XTERM_256COLOR.strings['set_a_foreground']).toContain('38;5;');
-			expect(XTERM_256COLOR.strings['set_a_background']).toContain('48;5;');
-			expect(XTERM_256COLOR.strings['orig_pair']).toBe('\x1b[39;49m');
+			expect(XTERM_256COLOR.strings.set_a_foreground).toContain('38;5;');
+			expect(XTERM_256COLOR.strings.set_a_background).toContain('48;5;');
+			expect(XTERM_256COLOR.strings.orig_pair).toBe('\x1b[39;49m');
 		});
 
 		it('has alternate screen', () => {
-			expect(XTERM_256COLOR.strings['enter_ca_mode']).toContain('\x1b[?1049h');
-			expect(XTERM_256COLOR.strings['exit_ca_mode']).toContain('\x1b[?1049l');
+			expect(XTERM_256COLOR.strings.enter_ca_mode).toContain('\x1b[?1049h');
+			expect(XTERM_256COLOR.strings.exit_ca_mode).toContain('\x1b[?1049l');
 		});
 
 		it('has text attributes', () => {
-			expect(XTERM_256COLOR.strings['enter_bold_mode']).toBe('\x1b[1m');
-			expect(XTERM_256COLOR.strings['enter_underline_mode']).toBe('\x1b[4m');
-			expect(XTERM_256COLOR.strings['enter_reverse_mode']).toBe('\x1b[7m');
+			expect(XTERM_256COLOR.strings.enter_bold_mode).toBe('\x1b[1m');
+			expect(XTERM_256COLOR.strings.enter_underline_mode).toBe('\x1b[4m');
+			expect(XTERM_256COLOR.strings.enter_reverse_mode).toBe('\x1b[7m');
 		});
 
 		it('has function keys', () => {
-			expect(XTERM_256COLOR.strings['key_f1']).toBe('\x1bOP');
-			expect(XTERM_256COLOR.strings['key_f12']).toBe('\x1b[24~');
+			expect(XTERM_256COLOR.strings.key_f1).toBe('\x1bOP');
+			expect(XTERM_256COLOR.strings.key_f12).toBe('\x1b[24~');
 		});
 
 		it('has ACS characters', () => {
-			expect(XTERM_256COLOR.strings['acs_chars']).toBeDefined();
-			expect(XTERM_256COLOR.strings['enter_alt_charset_mode']).toBe('\x1b(0');
-			expect(XTERM_256COLOR.strings['exit_alt_charset_mode']).toBe('\x1b(B');
+			expect(XTERM_256COLOR.strings.acs_chars).toBeDefined();
+			expect(XTERM_256COLOR.strings.enter_alt_charset_mode).toBe('\x1b(0');
+			expect(XTERM_256COLOR.strings.exit_alt_charset_mode).toBe('\x1b(B');
 		});
 	});
 
 	describe('XTERM', () => {
 		it('has 8 colors', () => {
-			expect(XTERM.numbers['max_colors']).toBe(8);
+			expect(XTERM.numbers.max_colors).toBe(8);
 		});
 
 		it('has simpler color sequences', () => {
-			expect(XTERM.strings['set_a_foreground']).toBe('\x1b[3%p1%dm');
-			expect(XTERM.strings['set_a_background']).toBe('\x1b[4%p1%dm');
+			expect(XTERM.strings.set_a_foreground).toBe('\x1b[3%p1%dm');
+			expect(XTERM.strings.set_a_background).toBe('\x1b[4%p1%dm');
 		});
 	});
 
 	describe('XTERM_16COLOR', () => {
 		it('has 16 colors', () => {
-			expect(XTERM_16COLOR.numbers['max_colors']).toBe(16);
+			expect(XTERM_16COLOR.numbers.max_colors).toBe(16);
 		});
 	});
 
@@ -91,33 +91,33 @@ describe('builtin terminfo', () => {
 		});
 
 		it('has no colors', () => {
-			expect(VT100.numbers['max_colors']).toBeUndefined();
+			expect(VT100.numbers.max_colors).toBeUndefined();
 		});
 
 		it('has basic cursor movement', () => {
-			expect(VT100.strings['cursor_address']).toBe('\x1b[%i%p1%d;%p2%dH');
-			expect(VT100.strings['cursor_home']).toBe('\x1b[H');
+			expect(VT100.strings.cursor_address).toBe('\x1b[%i%p1%d;%p2%dH');
+			expect(VT100.strings.cursor_home).toBe('\x1b[H');
 		});
 
 		it('has basic attributes', () => {
-			expect(VT100.strings['enter_bold_mode']).toBe('\x1b[1m');
-			expect(VT100.strings['enter_reverse_mode']).toBe('\x1b[7m');
+			expect(VT100.strings.enter_bold_mode).toBe('\x1b[1m');
+			expect(VT100.strings.enter_reverse_mode).toBe('\x1b[7m');
 		});
 	});
 
 	describe('VT220', () => {
 		it('extends VT100', () => {
-			expect(VT220.strings['cursor_address']).toBe(VT100.strings['cursor_address']);
+			expect(VT220.strings.cursor_address).toBe(VT100.strings.cursor_address);
 		});
 
 		it('has cursor visibility', () => {
-			expect(VT220.strings['cursor_invisible']).toBe('\x1b[?25l');
-			expect(VT220.strings['cursor_normal']).toBe('\x1b[?25h');
+			expect(VT220.strings.cursor_invisible).toBe('\x1b[?25l');
+			expect(VT220.strings.cursor_normal).toBe('\x1b[?25h');
 		});
 
 		it('has insert/delete', () => {
-			expect(VT220.strings['insert_character']).toBe('\x1b[@');
-			expect(VT220.strings['delete_character']).toBe('\x1b[P');
+			expect(VT220.strings.insert_character).toBe('\x1b[@');
+			expect(VT220.strings.delete_character).toBe('\x1b[P');
 		});
 	});
 
@@ -127,17 +127,17 @@ describe('builtin terminfo', () => {
 		});
 
 		it('has 256 colors', () => {
-			expect(SCREEN_256COLOR.numbers['max_colors']).toBe(256);
+			expect(SCREEN_256COLOR.numbers.max_colors).toBe(256);
 		});
 
 		it('has alternate screen', () => {
-			expect(SCREEN_256COLOR.strings['enter_ca_mode']).toBe('\x1b[?1049h');
+			expect(SCREEN_256COLOR.strings.enter_ca_mode).toBe('\x1b[?1049h');
 		});
 	});
 
 	describe('SCREEN', () => {
 		it('has 8 colors', () => {
-			expect(SCREEN.numbers['max_colors']).toBe(8);
+			expect(SCREEN.numbers.max_colors).toBe(8);
 		});
 	});
 
@@ -147,13 +147,13 @@ describe('builtin terminfo', () => {
 		});
 
 		it('has 256 colors', () => {
-			expect(TMUX_256COLOR.numbers['max_colors']).toBe(256);
+			expect(TMUX_256COLOR.numbers.max_colors).toBe(256);
 		});
 	});
 
 	describe('TMUX', () => {
 		it('has 256 colors (default)', () => {
-			expect(TMUX.numbers['max_colors']).toBe(256);
+			expect(TMUX.numbers.max_colors).toBe(256);
 		});
 	});
 
@@ -163,20 +163,20 @@ describe('builtin terminfo', () => {
 		});
 
 		it('has 8 colors', () => {
-			expect(LINUX.numbers['max_colors']).toBe(8);
+			expect(LINUX.numbers.max_colors).toBe(8);
 		});
 
 		it('has 25 lines (standard console)', () => {
-			expect(LINUX.numbers['lines']).toBe(25);
+			expect(LINUX.numbers.lines).toBe(25);
 		});
 
 		it('has Linux-specific cursor sequences', () => {
-			expect(LINUX.strings['cursor_invisible']).toContain('\x1b[?1c');
+			expect(LINUX.strings.cursor_invisible).toContain('\x1b[?1c');
 		});
 
 		it('has Linux function key sequences', () => {
-			expect(LINUX.strings['key_f1']).toBe('\x1b[[A');
-			expect(LINUX.strings['key_f5']).toBe('\x1b[[E');
+			expect(LINUX.strings.key_f1).toBe('\x1b[[A');
+			expect(LINUX.strings.key_f5).toBe('\x1b[[E');
 		});
 	});
 
@@ -295,13 +295,13 @@ describe('builtin terminfo', () => {
 
 		it('all terminals have cursor_address', () => {
 			for (const [, data] of BUILTIN_TERMINALS) {
-				expect(data.strings['cursor_address']).toBeDefined();
+				expect(data.strings.cursor_address).toBeDefined();
 			}
 		});
 
 		it('all terminals have clear_screen', () => {
 			for (const [, data] of BUILTIN_TERMINALS) {
-				expect(data.strings['clear_screen']).toBeDefined();
+				expect(data.strings.clear_screen).toBeDefined();
 			}
 		});
 
@@ -309,8 +309,8 @@ describe('builtin terminfo', () => {
 			const colorTerminals = ['xterm-256color', 'xterm-16color', 'xterm', 'linux'];
 			for (const name of colorTerminals) {
 				const data = BUILTIN_TERMINALS.get(name);
-				expect(data?.strings['set_a_foreground']).toBeDefined();
-				expect(data?.strings['set_a_background']).toBeDefined();
+				expect(data?.strings.set_a_foreground).toBeDefined();
+				expect(data?.strings.set_a_background).toBeDefined();
 			}
 		});
 	});

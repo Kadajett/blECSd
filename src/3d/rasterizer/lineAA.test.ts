@@ -5,7 +5,9 @@ import { createPixelFramebuffer, getPixel, setPixel } from './pixelBuffer';
 /**
  * Collect all non-transparent pixels from a framebuffer.
  */
-function collectPixels(fb: ReturnType<typeof createPixelFramebuffer>): Array<{ x: number; y: number; a: number }> {
+function collectPixels(
+	fb: ReturnType<typeof createPixelFramebuffer>,
+): Array<{ x: number; y: number; a: number }> {
 	const pixels: Array<{ x: number; y: number; a: number }> = [];
 	for (let y = 0; y < fb.height; y++) {
 		for (let x = 0; x < fb.width; x++) {

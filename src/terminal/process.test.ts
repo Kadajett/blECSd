@@ -289,20 +289,20 @@ describe('getDefaultEditor', () => {
 	});
 
 	it('returns EDITOR if set', () => {
-		process.env['EDITOR'] = 'nano';
-		process.env['VISUAL'] = 'code';
+		process.env.EDITOR = 'nano';
+		process.env.VISUAL = 'code';
 		expect(getDefaultEditor()).toBe('nano');
 	});
 
 	it('returns VISUAL if EDITOR not set', () => {
-		process.env['EDITOR'] = '';
-		process.env['VISUAL'] = 'code';
+		process.env.EDITOR = '';
+		process.env.VISUAL = 'code';
 		expect(getDefaultEditor()).toBe('code');
 	});
 
 	it('returns vi as fallback', () => {
-		process.env['EDITOR'] = '';
-		process.env['VISUAL'] = '';
+		process.env.EDITOR = '';
+		process.env.VISUAL = '';
 		expect(getDefaultEditor()).toBe('vi');
 	});
 });

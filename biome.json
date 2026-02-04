@@ -18,7 +18,8 @@
 			"!**/vendor",
 			"!**/*.js",
 			"!**/*.cjs",
-			"!**/*.mjs"
+			"!**/*.mjs",
+			"!**/src/benchmarks"
 		]
 	},
 	"formatter": {
@@ -64,5 +65,17 @@
 			"trailingCommas": "all",
 			"arrowParentheses": "always"
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["**/*.test.ts"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		}
+	]
 }

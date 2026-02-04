@@ -3,5 +3,10 @@ dist/
 coverage/
 *.log
 .DS_Store
-# bd worktree
+.env
+.mcp.json
 ks8-performance/
+references/
+
+# DOOM WAD files (licensed content)
+*.wad

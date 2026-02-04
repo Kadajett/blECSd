@@ -667,7 +667,7 @@ function processParameters(format: string, params: number[]): string {
  * ```
  */
 export function createTput(config: TputConfig = {}): Tput {
-	const terminal = config.terminal ?? process.env['TERM'] ?? 'xterm-256color';
+	const terminal = config.terminal ?? process.env.TERM ?? 'xterm-256color';
 	const data = config.data ?? DEFAULT_XTERM_DATA;
 
 	const tput: Tput = {

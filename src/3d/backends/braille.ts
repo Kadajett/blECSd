@@ -17,9 +17,9 @@
  * @module 3d/backends/braille
  */
 
+import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { BackendCapabilities, EncodedOutput } from '../schemas/backends';
 import { type BrailleConfig, BrailleConfigSchema } from '../schemas/backends';
-import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { RendererBackend } from './types';
 
 /** Braille Unicode block base offset. */
@@ -38,10 +38,14 @@ const BRAILLE_BASE = 0x2800;
  * ```
  */
 const BRAILLE_DOT_MAP: ReadonlyArray<number> = [
-	0x01, 0x08, // row 0: col 0 = bit 0, col 1 = bit 3
-	0x02, 0x10, // row 1: col 0 = bit 1, col 1 = bit 4
-	0x04, 0x20, // row 2: col 0 = bit 2, col 1 = bit 5
-	0x40, 0x80, // row 3: col 0 = bit 6, col 1 = bit 7
+	0x01,
+	0x08, // row 0: col 0 = bit 0, col 1 = bit 3
+	0x02,
+	0x10, // row 1: col 0 = bit 1, col 1 = bit 4
+	0x04,
+	0x20, // row 2: col 0 = bit 2, col 1 = bit 5
+	0x40,
+	0x80, // row 3: col 0 = bit 6, col 1 = bit 7
 ];
 
 // Pre-computed braille character lookup table: 256 patterns -> pre-allocated strings
@@ -98,7 +102,9 @@ export function createBrailleBackend(config?: BrailleConfig): RendererBackend {
 			const cellsWide = Math.floor(framebuffer.width / 2);
 			const cellsTall = Math.floor(framebuffer.height / 4);
 			const totalCells = cellsWide * cellsTall;
-			const cells = new Array<{ x: number; y: number; char: string; fg: number; bg: number }>(totalCells);
+			const cells = new Array<{ x: number; y: number; char: string; fg: number; bg: number }>(
+				totalCells,
+			);
 			const buf = framebuffer.colorBuffer;
 			const fbWidth = framebuffer.width;
 			const fbW4 = fbWidth * 4; // Row stride in bytes
@@ -125,46 +131,97 @@ export function createBrailleBackend(config?: BrailleConfig): RendererBackend {
 					// Row 0, Col 0
 					let idx = row0Base + basePixelX4;
 					let a = buf[idx + 3] as number;
-					if (a >= threshold) { dotPattern |= DOT0; rSum += buf[idx] as number; gSum += buf[idx + 1] as number; bSum += buf[idx + 2] as number; litCount++; }
+					if (a >= threshold) {
+						dotPattern |= DOT0;
+						rSum += buf[idx] as number;
+						gSum += buf[idx + 1] as number;
+						bSum += buf[idx + 2] as number;
+						litCount++;
+					}
 					// Row 0, Col 1
 					idx += 4;
 					a = buf[idx + 3] as number;
-					if (a >= threshold) { dotPattern |= DOT1; rSum += buf[idx] as number; gSum += buf[idx + 1] as number; bSum += buf[idx + 2] as number; litCount++; }
+					if (a >= threshold) {
+						dotPattern |= DOT1;
+						rSum += buf[idx] as number;
+						gSum += buf[idx + 1] as number;
+						bSum += buf[idx + 2] as number;
+						litCount++;
+					}
 					// Row 1, Col 0
 					idx = row1Base + basePixelX4;
 					a = buf[idx + 3] as number;
-					if (a >= threshold) { dotPattern |= DOT2; rSum += buf[idx] as number; gSum += buf[idx + 1] as number; bSum += buf[idx + 2] as number; litCount++; }
+					if (a >= threshold) {
+						dotPattern |= DOT2;
+						rSum += buf[idx] as number;
+						gSum += buf[idx + 1] as number;
+						bSum += buf[idx + 2] as number;
+						litCount++;
+					}
 					// Row 1, Col 1
 					idx += 4;
 					a = buf[idx + 3] as number;
-					if (a >= threshold) { dotPattern |= DOT3; rSum += buf[idx] as number; gSum += buf[idx + 1] as number; bSum += buf[idx + 2] as number; litCount++; }
+					if (a >= threshold) {
+						dotPattern |= DOT3;
+						rSum += buf[idx] as number;
+						gSum += buf[idx + 1] as number;
+						bSum += buf[idx + 2] as number;
+						litCount++;
+					}
 					// Row 2, Col 0
 					idx = row2Base + basePixelX4;
 					a = buf[idx + 3] as number;
-					if (a >= threshold) { dotPattern |= DOT4; rSum += buf[idx] as number; gSum += buf[idx + 1] as number; bSum += buf[idx + 2] as number; litCount++; }
+					if (a >= threshold) {
+						dotPattern |= DOT4;
+						rSum += buf[idx] as number;
+						gSum += buf[idx + 1] as number;
+						bSum += buf[idx + 2] as number;
+						litCount++;
+					}
 					// Row 2, Col 1
 					idx += 4;
 					a = buf[idx + 3] as number;
-					if (a >= threshold) { dotPattern |= DOT5; rSum += buf[idx] as number; gSum += buf[idx + 1] as number; bSum += buf[idx + 2] as number; litCount++; }
+					if (a >= threshold) {
+						dotPattern |= DOT5;
+						rSum += buf[idx] as number;
+						gSum += buf[idx + 1] as number;
+						bSum += buf[idx + 2] as number;
+						litCount++;
+					}
 					// Row 3, Col 0
 					idx = row3Base + basePixelX4;
 					a = buf[idx + 3] as number;
-					if (a >= threshold) { dotPattern |= DOT6; rSum += buf[idx] as number; gSum += buf[idx + 1] as number; bSum += buf[idx + 2] as number; litCount++; }
+					if (a >= threshold) {
+						dotPattern |= DOT6;
+						rSum += buf[idx] as number;
+						gSum += buf[idx + 1] as number;
+						bSum += buf[idx + 2] as number;
+						litCount++;
+					}
 					// Row 3, Col 1
 					idx += 4;
 					a = buf[idx + 3] as number;
-					if (a >= threshold) { dotPattern |= DOT7; rSum += buf[idx] as number; gSum += buf[idx + 1] as number; bSum += buf[idx + 2] as number; litCount++; }
+					if (a >= threshold) {
+						dotPattern |= DOT7;
+						rSum += buf[idx] as number;
+						gSum += buf[idx + 1] as number;
+						bSum += buf[idx + 2] as number;
+						litCount++;
+					}
 
 					let fg = 0;
 					if (litCount > 0) {
 						const invLit = 1 / litCount;
-						fg = (((rSum * invLit + 0.5) | 0) << 16) | (((gSum * invLit + 0.5) | 0) << 8) | ((bSum * invLit + 0.5) | 0);
+						fg =
+							(((rSum * invLit + 0.5) | 0) << 16) |
+							(((gSum * invLit + 0.5) | 0) << 8) |
+							((bSum * invLit + 0.5) | 0);
 					}
 
 					cells[cellIdx++] = {
 						x: screenX + cx,
 						y: screenY + cy,
-						char: BRAILLE_CHAR_TABLE[dotPattern]!,
+						char: BRAILLE_CHAR_TABLE[dotPattern] ?? '⠀',
 						fg,
 						bg: bgColor,
 					};

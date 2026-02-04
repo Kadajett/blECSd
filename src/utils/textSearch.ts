@@ -427,9 +427,9 @@ export function searchRegex(
 	regex.lastIndex = startPosition;
 
 	const deadline = startTime + timeout;
-	let match: RegExpExecArray | null;
+	let match: RegExpExecArray | null = regex.exec(text);
 
-	while ((match = regex.exec(text)) !== null) {
+	while (match !== null) {
 		// Check timeout every 1000 matches
 		if (matches.length % 1000 === 0 && performance.now() > deadline) {
 			timedOut = true;
@@ -459,6 +459,8 @@ export function searchRegex(
 			truncated = true;
 			break;
 		}
+
+		match = regex.exec(text);
 	}
 
 	return {

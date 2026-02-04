@@ -13,20 +13,20 @@
 
 import { query } from 'bitecs';
 import type { Entity, System, World } from '../../core/types';
-import type { RendererBackend } from '../backends/types';
 import { createBackendByType } from '../backends/detection';
+import type { RendererBackend } from '../backends/types';
 import { Viewport3D } from '../components/viewport3d';
 import type { EncodedOutput } from '../schemas/backends';
 import { framebufferStore } from './rasterSystem';
 
 /** Backend type name lookup from Viewport3D.backendType numeric values. */
 const BACKEND_TYPE_NAMES: ReadonlyArray<'braille' | 'halfblock' | 'sextant' | 'sixel' | 'kitty'> = [
-	'braille',   // 0 = auto -> default to braille
-	'braille',   // 1
+	'braille', // 0 = auto -> default to braille
+	'braille', // 1
 	'halfblock', // 2
-	'sextant',   // 3
-	'sixel',     // 4
-	'kitty',     // 5
+	'sextant', // 3
+	'sixel', // 4
+	'kitty', // 5
 ];
 
 /**

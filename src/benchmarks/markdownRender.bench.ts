@@ -50,7 +50,7 @@ function createMarkdownDoc(options: {
 
 		if (i < codeBlocks) {
 			const code = Array.from({ length: 20 }, (_, j) => `const x${j} = ${j};`).join('\n');
-			sections.push('```javascript\n' + code + '\n```');
+			sections.push(`\`\`\`javascript\n${code}\n\`\`\``);
 		}
 
 		if (i < lists) {
@@ -62,7 +62,7 @@ function createMarkdownDoc(options: {
 			const headers = '| Col A | Col B | Col C |';
 			const sep = '| --- | --- | --- |';
 			const rows = Array.from({ length: 10 }, (_, j) => `| R${j}A | R${j}B | R${j}C |`).join('\n');
-			sections.push(headers + '\n' + sep + '\n' + rows);
+			sections.push(`${headers}\n${sep}\n${rows}`);
 		}
 	}
 
@@ -87,7 +87,7 @@ function create10KLineDoc(): string {
 
 		// Code block
 		const code = Array.from({ length: 10 }, (_, k) => `line ${k}`).join('\n');
-		sections.push('```ts\n' + code + '\n```');
+		sections.push(`\`\`\`ts\n${code}\n\`\`\``);
 
 		// List
 		const list = Array.from({ length: 5 }, (_, k) => `- Item ${k}`).join('\n');

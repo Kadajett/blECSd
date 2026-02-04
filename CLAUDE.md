@@ -229,16 +229,14 @@ const KeyEventSchema = z.object({
 5. **Build**: `pnpm build` - Run builds frequently, not just at the end. Builds can expose errors that tests, linting, and type checking miss (e.g., circular dependencies, export issues, bundler problems)
 6. **Commit**: Create atomic commits with clear messages
 
-### Issue Tracking with Beads
+### Issue Tracking
 
-Track all work using beads (`bd`):
+Tasks are tracked as markdown files in `.tasks/`:
 
-```bash
-bd create              # Create new issue
-bd list                # Show open issues
-bd update <id> -s done # Close issue
-bd show <id>           # View issue details
-```
+- `.tasks/open/` - Open issues and epics
+- `.tasks/closed/` - Completed issues and epics
+- `.tasks/open/epics/{id}/` - Epic folder with all child tickets
+- Each ticket is a markdown file named by its ID (e.g., `blessed-cbew.md`)
 
 ### Epic Completion Workflow (HARD REQUIREMENT)
 
@@ -258,16 +256,10 @@ bd show <id>           # View issue details
 
 **Workflow:**
 
-```bash
-# Check what's ready in the current epic
-bd list --status=open | grep "blessed-<epic-id>"
-
-# If all tasks are blocked, check what's blocking them
-bd blocked | grep "blessed-<epic-id>"
-
-# Work on unblocking dependencies first
-bd show <blocking-task-id>
-```
+- Check open epics in `.tasks/open/epics/`
+- Review each epic's `_epic.md` for children and their statuses
+- Check "Blocked By" sections in individual tickets for dependency info
+- Work on unblocking dependencies first
 
 **Example:** If working on `blessed-ree` (Screen & Rendering):
 - Complete ALL `blessed-ree.*` tasks (P0, P1, P2)
@@ -282,7 +274,6 @@ bd show <blocking-task-id>
 
 [optional body]
 
-Refs: blessed-<hash>
 ```
 
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
@@ -388,7 +379,7 @@ pnpm typecheck        # TypeScript type checking
 | `tsconfig.json` | TypeScript configuration (strict mode) |
 | `biome.json` | Biome linter/formatter config |
 | `vitest.config.ts` | Test configuration |
-| `.beads/` | Issue tracking database |
+| `.tasks/` | Issue tracking (markdown files) |
 
 ## Documentation Requirements
 

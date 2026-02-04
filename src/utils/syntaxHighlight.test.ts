@@ -678,7 +678,7 @@ describe('edge cases', () => {
 
 	it('handles very long lines', () => {
 		const cache = createHighlightCache(GRAMMAR_JAVASCRIPT);
-		const longLine = 'const x = ' + 'a'.repeat(1000) + ';';
+		const longLine = `const x = ${'a'.repeat(1000)};`;
 
 		const lines = highlightWithCache(cache, longLine);
 

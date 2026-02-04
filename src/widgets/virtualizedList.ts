@@ -400,18 +400,18 @@ export function createVirtualizedList(
 
 	// Apply render config - build object with only defined values
 	const renderConfig: Record<string, number | boolean> = {};
-	if (validated.style?.fg !== undefined) renderConfig['fg'] = validated.style.fg;
-	if (validated.style?.bg !== undefined) renderConfig['bg'] = validated.style.bg;
+	if (validated.style?.fg !== undefined) renderConfig.fg = validated.style.fg;
+	if (validated.style?.bg !== undefined) renderConfig.bg = validated.style.bg;
 	if (validated.style?.selectedFg !== undefined)
-		renderConfig['selectedFg'] = validated.style.selectedFg;
+		renderConfig.selectedFg = validated.style.selectedFg;
 	if (validated.style?.selectedBg !== undefined)
-		renderConfig['selectedBg'] = validated.style.selectedBg;
-	if (validated.style?.cursorFg !== undefined) renderConfig['cursorFg'] = validated.style.cursorFg;
-	if (validated.style?.cursorBg !== undefined) renderConfig['cursorBg'] = validated.style.cursorBg;
+		renderConfig.selectedBg = validated.style.selectedBg;
+	if (validated.style?.cursorFg !== undefined) renderConfig.cursorFg = validated.style.cursorFg;
+	if (validated.style?.cursorBg !== undefined) renderConfig.cursorBg = validated.style.cursorBg;
 	if (validated.style?.showLineNumbers !== undefined)
-		renderConfig['showLineNumbers'] = validated.style.showLineNumbers;
+		renderConfig.showLineNumbers = validated.style.showLineNumbers;
 	if (validated.style?.lineNumberWidth !== undefined)
-		renderConfig['lineNumberWidth'] = validated.style.lineNumberWidth;
+		renderConfig.lineNumberWidth = validated.style.lineNumberWidth;
 	setLineRenderConfig(eid, renderConfig as Partial<LineRenderConfig>);
 
 	// Apply border
@@ -481,7 +481,7 @@ export function createVirtualizedList(
 		},
 
 		appendLine(line: string) {
-			const newStore = appendToStore(state.store, state.store.byteSize > 0 ? '\n' + line : line);
+			const newStore = appendToStore(state.store, state.store.byteSize > 0 ? `\n${line}` : line);
 			updateStore(state, newStore);
 			return widget;
 		},
@@ -588,14 +588,14 @@ export function createVirtualizedList(
 		// Style
 		setStyle(style: VirtualizedListStyle) {
 			const config: Record<string, number | boolean> = {};
-			if (style.fg !== undefined) config['fg'] = style.fg;
-			if (style.bg !== undefined) config['bg'] = style.bg;
-			if (style.selectedFg !== undefined) config['selectedFg'] = style.selectedFg;
-			if (style.selectedBg !== undefined) config['selectedBg'] = style.selectedBg;
-			if (style.cursorFg !== undefined) config['cursorFg'] = style.cursorFg;
-			if (style.cursorBg !== undefined) config['cursorBg'] = style.cursorBg;
-			if (style.showLineNumbers !== undefined) config['showLineNumbers'] = style.showLineNumbers;
-			if (style.lineNumberWidth !== undefined) config['lineNumberWidth'] = style.lineNumberWidth;
+			if (style.fg !== undefined) config.fg = style.fg;
+			if (style.bg !== undefined) config.bg = style.bg;
+			if (style.selectedFg !== undefined) config.selectedFg = style.selectedFg;
+			if (style.selectedBg !== undefined) config.selectedBg = style.selectedBg;
+			if (style.cursorFg !== undefined) config.cursorFg = style.cursorFg;
+			if (style.cursorBg !== undefined) config.cursorBg = style.cursorBg;
+			if (style.showLineNumbers !== undefined) config.showLineNumbers = style.showLineNumbers;
+			if (style.lineNumberWidth !== undefined) config.lineNumberWidth = style.lineNumberWidth;
 			setLineRenderConfig(eid, config as Partial<LineRenderConfig>);
 			markDirty(world, eid);
 			return widget;

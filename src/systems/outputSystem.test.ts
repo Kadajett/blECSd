@@ -184,6 +184,7 @@ describe('outputSystem', () => {
 			const output = generateOutput(state, changes);
 
 			// Should only have one cursor move sequence
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			const moveCount = (output.match(/\x1b\[\d+;\d+H/g) || []).length;
 			expect(moveCount).toBe(1);
 		});
@@ -222,7 +223,9 @@ describe('outputSystem', () => {
 			const output = generateOutput(state, changes);
 
 			// Should only have one foreground and one background sequence
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			const fgCount = (output.match(/\x1b\[38;2;/g) || []).length;
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
 			const bgCount = (output.match(/\x1b\[48;2;/g) || []).length;
 			expect(fgCount).toBe(1);
 			expect(bgCount).toBe(1);

@@ -2,11 +2,11 @@ import { addComponent, addEntity, createWorld } from 'bitecs';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Entity, World } from '../../core/types';
 import { Camera3D, setCamera3D } from '../components/camera3d';
-import { Mesh, clearMeshStore, createMeshFromArrays } from '../components/mesh';
-import { Transform3D, setTransform3D } from '../components/transform3d';
-import { Viewport3D, setViewport3D } from '../components/viewport3d';
-import { sceneGraphSystem } from './sceneGraphSystem';
+import { clearMeshStore, createMeshFromArrays, Mesh } from '../components/mesh';
+import { setTransform3D, Transform3D } from '../components/transform3d';
+import { setViewport3D, Viewport3D } from '../components/viewport3d';
 import { clearProjectionStore, projectionStore, projectionSystem } from './projectionSystem';
+import { sceneGraphSystem } from './sceneGraphSystem';
 
 function createTestWorld(): World {
 	return createWorld();
@@ -40,16 +40,27 @@ function setupViewport(world: World, cameraEid: Entity): Entity {
 }
 
 function setupCubeMesh(world: World, config?: Record<string, number>): Entity {
-	const meshId = createMeshFromArrays('test-cube', [
-		{ x: -1, y: -1, z: -1 }, { x: 1, y: -1, z: -1 },
-		{ x: 1, y: 1, z: -1 }, { x: -1, y: 1, z: -1 },
-		{ x: -1, y: -1, z: 1 }, { x: 1, y: -1, z: 1 },
-		{ x: 1, y: 1, z: 1 }, { x: -1, y: 1, z: 1 },
-	], [
-		[0, 1, 2, 3], [5, 4, 7, 6],
-		[4, 0, 3, 7], [1, 5, 6, 2],
-		[3, 2, 6, 7], [4, 5, 1, 0],
-	]);
+	const meshId = createMeshFromArrays(
+		'test-cube',
+		[
+			{ x: -1, y: -1, z: -1 },
+			{ x: 1, y: -1, z: -1 },
+			{ x: 1, y: 1, z: -1 },
+			{ x: -1, y: 1, z: -1 },
+			{ x: -1, y: -1, z: 1 },
+			{ x: 1, y: -1, z: 1 },
+			{ x: 1, y: 1, z: 1 },
+			{ x: -1, y: 1, z: 1 },
+		],
+		[
+			[0, 1, 2, 3],
+			[5, 4, 7, 6],
+			[4, 0, 3, 7],
+			[1, 5, 6, 2],
+			[3, 2, 6, 7],
+			[4, 5, 1, 0],
+		],
+	);
 
 	const eid = addEntity(world) as Entity;
 	setTransform3D(world, eid, config ?? {});
@@ -147,7 +158,7 @@ describe('projectionSystem', () => {
 		const result = [...projectionStore.values()][0];
 		const mesh = result?.meshes[0];
 		// Some or all vertices should be off-screen
-		const visibleCount = mesh?.projectedVertices.filter(v => v.visible).length ?? 0;
+		const visibleCount = mesh?.projectedVertices.filter((v) => v.visible).length ?? 0;
 		expect(visibleCount).toBeLessThan(8);
 	});
 
@@ -162,13 +173,13 @@ describe('projectionSystem', () => {
 		projectionSystem(world);
 
 		const result = [...projectionStore.values()][0];
-		const nearMesh = result?.meshes.find(m => m.meshEid === near);
-		const farMesh = result?.meshes.find(m => m.meshEid === far);
+		const nearMesh = result?.meshes.find((m) => m.meshEid === near);
+		const farMesh = result?.meshes.find((m) => m.meshEid === far);
 
 		// Compute screen-space extents
 		function getExtentX(verts: ReadonlyArray<{ x: number }> | undefined): number {
 			if (!verts || verts.length === 0) return 0;
-			const xs = verts.map(v => v.x);
+			const xs = verts.map((v) => v.x);
 			return Math.max(...xs) - Math.min(...xs);
 		}
 
@@ -195,7 +206,10 @@ describe('projectionSystem', () => {
 		const fakeCam = addEntity(world) as Entity;
 		const vp = addEntity(world) as Entity;
 		setViewport3D(world, vp, {
-			left: 0, top: 0, width: 80, height: 24,
+			left: 0,
+			top: 0,
+			width: 80,
+			height: 24,
 			cameraEntity: fakeCam,
 		});
 		Viewport3D.pixelWidth[vp] = 160;
