@@ -1198,6 +1198,73 @@ export function clearTextInputCallbacks(eid: Entity): void {
 // Keyboard Handling
 // =============================================================================
 
+/** Handle enter key for text input */
+function handleEnterKey(
+	config: TextInputConfig,
+	cursorPos: number,
+	currentValue: string,
+): TextInputAction | null {
+	if (config.multiline) {
+		if (config.maxLength > 0 && currentValue.length >= config.maxLength) return null;
+		return { type: 'newline', position: cursorPos };
+	}
+	return { type: 'submit', value: currentValue };
+}
+
+/** Handle escape key for text input */
+function handleEscapeKey(config: TextInputConfig, currentValue: string): TextInputAction {
+	if (config.multiline) return { type: 'submit', value: currentValue };
+	return { type: 'cancel' };
+}
+
+/** Handle navigation keys (left, right, home, end) */
+function handleNavigationKey(
+	keyName: string,
+	cursorPos: number,
+	valueLength: number,
+): TextInputAction | null {
+	if (keyName === 'left' && cursorPos > 0) {
+		return { type: 'moveCursor', position: cursorPos - 1 };
+	}
+	if (keyName === 'right' && cursorPos < valueLength) {
+		return { type: 'moveCursor', position: cursorPos + 1 };
+	}
+	if (keyName === 'home' && cursorPos !== 0) {
+		return { type: 'moveCursor', position: 0 };
+	}
+	if (keyName === 'end' && cursorPos !== valueLength) {
+		return { type: 'moveCursor', position: valueLength };
+	}
+	return null;
+}
+
+/** Handle delete keys (backspace, delete) */
+function handleDeleteKey(
+	keyName: string,
+	cursorPos: number,
+	valueLength: number,
+): TextInputAction | null {
+	if (keyName === 'backspace' && cursorPos > 0) {
+		return { type: 'delete', start: cursorPos - 1, end: cursorPos };
+	}
+	if (keyName === 'delete' && cursorPos < valueLength) {
+		return { type: 'delete', start: cursorPos, end: cursorPos + 1 };
+	}
+	return null;
+}
+
+/** Handle printable character insertion */
+function handleCharacterInsert(
+	keyName: string,
+	cursorPos: number,
+	config: TextInputConfig,
+	valueLength: number,
+): TextInputAction | null {
+	if (keyName.length !== 1) return null;
+	if (config.maxLength > 0 && valueLength >= config.maxLength) return null;
+	return { type: 'insert', char: keyName, position: cursorPos };
+}
+
 /**
  * Handles a key press on a text input.
  * Returns information about what action to take.
@@ -1224,16 +1291,11 @@ export function handleTextInputKeyPress(
 	keyName: string,
 	currentValue: string,
 ): TextInputAction | null {
-	if (!isTextInput(world, eid)) {
-		return null;
-	}
+	if (!isTextInput(world, eid)) return null;
 
 	const state = getTextInputState(world, eid);
-	if (state === 'disabled') {
-		return null;
-	}
+	if (state === 'disabled') return null;
 
-	// If idle and receiving a key, focus first
 	if (state === 'idle') {
 		focusTextInput(world, eid);
 		return null;
@@ -1241,88 +1303,26 @@ export function handleTextInputKeyPress(
 
 	const cursorPos = getCursorPos(eid);
 	const config = getTextInputConfig(eid);
+	const valueLength = currentValue.length;
 
 	// Handle special keys
-	switch (keyName) {
-		case 'return':
-		case 'enter':
-			// In multiline mode, Enter inserts a newline
-			if (config.multiline) {
-				// Check max length
-				if (config.maxLength > 0 && currentValue.length >= config.maxLength) {
-					return null;
-				}
-				return { type: 'newline', position: cursorPos };
-			}
-			// In single-line mode, Enter submits
-			return { type: 'submit', value: currentValue };
-
-		case 'escape':
-			// In multiline mode, Escape submits (alternative to Ctrl+Enter)
-			if (config.multiline) {
-				return { type: 'submit', value: currentValue };
-			}
-			return { type: 'cancel' };
-
-		case 'backspace':
-			if (cursorPos > 0) {
-				return {
-					type: 'delete',
-					start: cursorPos - 1,
-					end: cursorPos,
-				};
-			}
-			return null;
-
-		case 'delete':
-			if (cursorPos < currentValue.length) {
-				return {
-					type: 'delete',
-					start: cursorPos,
-					end: cursorPos + 1,
-				};
-			}
-			return null;
-
-		case 'left':
-			if (cursorPos > 0) {
-				return { type: 'moveCursor', position: cursorPos - 1 };
-			}
-			return null;
-
-		case 'right':
-			if (cursorPos < currentValue.length) {
-				return { type: 'moveCursor', position: cursorPos + 1 };
-			}
-			return null;
-
-		case 'home':
-			if (cursorPos !== 0) {
-				return { type: 'moveCursor', position: 0 };
-			}
-			return null;
-
-		case 'end':
-			if (cursorPos !== currentValue.length) {
-				return { type: 'moveCursor', position: currentValue.length };
-			}
-			return null;
-
-		default:
-			// Handle printable characters
-			if (keyName.length === 1) {
-				// Check max length
-				if (config.maxLength > 0 && currentValue.length >= config.maxLength) {
-					return null;
-				}
-				return {
-					type: 'insert',
-					char: keyName,
-					position: cursorPos,
-				};
-			}
-			return null;
+	if (keyName === 'return' || keyName === 'enter') {
+		return handleEnterKey(config, cursorPos, currentValue);
 	}
+	if (keyName === 'escape') {
+		return handleEscapeKey(config, currentValue);
+	}
+
+	// Handle delete keys
+	const deleteAction = handleDeleteKey(keyName, cursorPos, valueLength);
+	if (deleteAction) return deleteAction;
+
+	// Handle navigation keys
+	const navAction = handleNavigationKey(keyName, cursorPos, valueLength);
+	if (navAction) return navAction;
+
+	// Handle character insertion
+	return handleCharacterInsert(keyName, cursorPos, config, valueLength);
 }
 
 /**

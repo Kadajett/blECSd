@@ -782,15 +782,9 @@ export function setCellBorders(world: World, eid: Entity, enabled: boolean): voi
  * @param maxTotalWidth - Maximum total width (optional)
  * @returns Array of column widths
  */
-export function calculateColumnWidths(eid: Entity, maxTotalWidth?: number): number[] {
-	const data = dataStore.get(eid) ?? [];
-	const columns = columnStore.get(eid) ?? [];
-	const colCount = tableStore.colCount[eid] ?? 0;
-	const padding = tableStore.pad[eid] ?? 1;
-
+/** Calculate content widths from data */
+function calculateContentWidths(data: TableCell[][], colCount: number, padding: number): number[] {
 	const widths: number[] = new Array(colCount).fill(0);
-
-	// Calculate max content width for each column
 	for (const row of data) {
 		for (let c = 0; c < row.length; c++) {
 			const cell = row[c];
@@ -799,8 +793,11 @@ export function calculateColumnWidths(eid: Entity, maxTotalWidth?: number): numb
 			}
 		}
 	}
+	return widths;
+}
 
-	// Apply column configuration constraints
+/** Apply column constraints to widths */
+function applyColumnConstraints(widths: number[], columns: TableColumn[]): void {
 	for (let c = 0; c < columns.length; c++) {
 		const col = columns[c];
 		if (!col) continue;
@@ -808,24 +805,34 @@ export function calculateColumnWidths(eid: Entity, maxTotalWidth?: number): numb
 		if (col.width !== undefined) {
 			widths[c] = col.width;
 		} else {
-			if (col.minWidth !== undefined) {
-				widths[c] = Math.max(widths[c] ?? 0, col.minWidth);
-			}
-			if (col.maxWidth !== undefined) {
-				widths[c] = Math.min(widths[c] ?? 0, col.maxWidth);
-			}
+			if (col.minWidth !== undefined) widths[c] = Math.max(widths[c] ?? 0, col.minWidth);
+			if (col.maxWidth !== undefined) widths[c] = Math.min(widths[c] ?? 0, col.maxWidth);
 		}
 	}
+}
 
-	// Scale down if total width exceeds maximum
-	if (maxTotalWidth !== undefined) {
-		const totalWidth = widths.reduce((sum, w) => sum + w, 0);
-		if (totalWidth > maxTotalWidth) {
-			const scale = maxTotalWidth / totalWidth;
-			for (let c = 0; c < widths.length; c++) {
-				widths[c] = Math.floor((widths[c] ?? 0) * scale);
-			}
+/** Scale widths to fit within maximum total */
+function scaleWidthsToFit(widths: number[], maxTotalWidth: number): void {
+	const totalWidth = widths.reduce((sum, w) => sum + w, 0);
+	if (totalWidth > maxTotalWidth) {
+		const scale = maxTotalWidth / totalWidth;
+		for (let c = 0; c < widths.length; c++) {
+			widths[c] = Math.floor((widths[c] ?? 0) * scale);
 		}
+	}
+}
+
+export function calculateColumnWidths(eid: Entity, maxTotalWidth?: number): number[] {
+	const data = dataStore.get(eid) ?? [];
+	const columns = columnStore.get(eid) ?? [];
+	const colCount = tableStore.colCount[eid] ?? 0;
+	const padding = tableStore.pad[eid] ?? 1;
+
+	const widths = calculateContentWidths(data, colCount, padding);
+	applyColumnConstraints(widths, columns);
+
+	if (maxTotalWidth !== undefined) {
+		scaleWidthsToFit(widths, maxTotalWidth);
 	}
 
 	return widths;
@@ -842,6 +849,42 @@ export function calculateColumnWidths(eid: Entity, maxTotalWidth?: number): numb
  * @param width - Available width
  * @returns Array of rendered line strings
  */
+/** Align text within a content width */
+function alignText(text: string, contentWidth: number, align: 'left' | 'right' | 'center'): string {
+	if (align === 'right') return text.padStart(contentWidth);
+	if (align === 'center') {
+		const leftPad = Math.floor((contentWidth - text.length) / 2);
+		return text.padStart(leftPad + text.length).padEnd(contentWidth);
+	}
+	return text.padEnd(contentWidth);
+}
+
+/** Format a single cell */
+function formatCell(cell: TableCell, colWidth: number, padding: number, padStr: string): string {
+	const contentWidth = colWidth - padding * 2;
+	let text = cell.value;
+	if (text.length > contentWidth) {
+		text = `${text.slice(0, contentWidth - 1)}…`;
+	}
+	const paddedText = alignText(text, contentWidth, cell.align ?? 'left');
+	return padStr + paddedText + padStr;
+}
+
+/** Render a single row */
+function renderRow(row: TableCell[], colWidths: number[], padding: number, cellBorders: boolean): string {
+	const padStr = ' '.repeat(padding);
+	const separator = cellBorders ? '│' : '';
+	let line = '';
+
+	for (let c = 0; c < colWidths.length; c++) {
+		const cell = row[c] ?? { value: '' };
+		if (c > 0 && cellBorders) line += separator;
+		line += formatCell(cell, colWidths[c] ?? 0, padding, padStr);
+	}
+
+	return line;
+}
+
 export function renderTableLines(eid: Entity, width: number): string[] {
 	const data = dataStore.get(eid) ?? [];
 	const colWidths = calculateColumnWidths(eid, width);
@@ -850,51 +893,13 @@ export function renderTableLines(eid: Entity, width: number): string[] {
 	const headerRowCount = tableStore.headerRows[eid] ?? 1;
 
 	const lines: string[] = [];
-	const padStr = ' '.repeat(padding);
-	const separator = cellBorders ? '│' : '';
 
 	for (let r = 0; r < data.length; r++) {
-		const row = data[r] ?? [];
-		let line = '';
-
-		for (let c = 0; c < colWidths.length; c++) {
-			const cell = row[c] ?? { value: '' };
-			const colWidth = colWidths[c] ?? 0;
-			const contentWidth = colWidth - padding * 2;
-			const align = cell.align ?? 'left';
-
-			let text = cell.value;
-			if (text.length > contentWidth) {
-				text = `${text.slice(0, contentWidth - 1)}…`;
-			}
-
-			// Pad based on alignment
-			let paddedText: string;
-			switch (align) {
-				case 'right':
-					paddedText = text.padStart(contentWidth);
-					break;
-				case 'center': {
-					const leftPad = Math.floor((contentWidth - text.length) / 2);
-					paddedText = text.padStart(leftPad + text.length).padEnd(contentWidth);
-					break;
-				}
-				default:
-					paddedText = text.padEnd(contentWidth);
-			}
-
-			if (c > 0 && cellBorders) {
-				line += separator;
-			}
-			line += padStr + paddedText + padStr;
-		}
-
-		lines.push(line);
+		lines.push(renderRow(data[r] ?? [], colWidths, padding, cellBorders));
 
 		// Add separator line after headers
 		if (cellBorders && r === headerRowCount - 1 && r < data.length - 1) {
-			const sepLine = colWidths.map((w) => '─'.repeat(w)).join('┼');
-			lines.push(sepLine);
+			lines.push(colWidths.map((w) => '─'.repeat(w)).join('┼'));
 		}
 	}
 

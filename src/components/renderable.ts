@@ -303,14 +303,19 @@ function applyColorOptions(eid: Entity, style: StyleOptions): void {
  * Applies text decoration options to a renderable entity.
  * @internal
  */
+/** Set a boolean decoration option */
+function setDecorationBool(eid: Entity, array: Uint8Array, value: boolean | undefined): void {
+	if (value !== undefined) array[eid] = value ? 1 : 0;
+}
+
 function applyDecorationOptions(eid: Entity, style: StyleOptions): void {
-	if (style.bold !== undefined) Renderable.bold[eid] = style.bold ? 1 : 0;
-	if (style.underline !== undefined) Renderable.underline[eid] = style.underline ? 1 : 0;
-	if (style.blink !== undefined) Renderable.blink[eid] = style.blink ? 1 : 0;
-	if (style.inverse !== undefined) Renderable.inverse[eid] = style.inverse ? 1 : 0;
-	if (style.transparent !== undefined) Renderable.transparent[eid] = style.transparent ? 1 : 0;
+	setDecorationBool(eid, Renderable.bold, style.bold);
+	setDecorationBool(eid, Renderable.underline, style.underline);
+	setDecorationBool(eid, Renderable.blink, style.blink);
+	setDecorationBool(eid, Renderable.inverse, style.inverse);
+	setDecorationBool(eid, Renderable.transparent, style.transparent);
+
 	if (style.opacity !== undefined) {
-		// Convert 0-1 range to 0-255
 		const opacityValue = Math.max(0, Math.min(1, style.opacity));
 		Renderable.opacity[eid] = Math.round(opacityValue * 255);
 	}

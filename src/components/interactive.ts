@@ -170,19 +170,29 @@ function ensureInteractive(world: World, eid: Entity): void {
  * });
  * ```
  */
+/** Set a boolean option on Interactive component */
+function setBoolOption(eid: Entity, array: Uint8Array, value: boolean | undefined): void {
+	if (value !== undefined) array[eid] = value ? 1 : 0;
+}
+
+/** Set a numeric option on Interactive component */
+function setNumOption(eid: Entity, array: Int16Array | Uint32Array, value: number | undefined): void {
+	if (value !== undefined) array[eid] = value;
+}
+
 export function setInteractive(world: World, eid: Entity, options: InteractiveOptions): Entity {
 	ensureInteractive(world, eid);
 
-	if (options.clickable !== undefined) Interactive.clickable[eid] = options.clickable ? 1 : 0;
-	if (options.draggable !== undefined) Interactive.draggable[eid] = options.draggable ? 1 : 0;
-	if (options.hoverable !== undefined) Interactive.hoverable[eid] = options.hoverable ? 1 : 0;
-	if (options.keyable !== undefined) Interactive.keyable[eid] = options.keyable ? 1 : 0;
-	if (options.focusable !== undefined) Interactive.focusable[eid] = options.focusable ? 1 : 0;
-	if (options.tabIndex !== undefined) Interactive.tabIndex[eid] = options.tabIndex;
-	if (options.hoverEffectFg !== undefined) Interactive.hoverEffectFg[eid] = options.hoverEffectFg;
-	if (options.hoverEffectBg !== undefined) Interactive.hoverEffectBg[eid] = options.hoverEffectBg;
-	if (options.focusEffectFg !== undefined) Interactive.focusEffectFg[eid] = options.focusEffectFg;
-	if (options.focusEffectBg !== undefined) Interactive.focusEffectBg[eid] = options.focusEffectBg;
+	setBoolOption(eid, Interactive.clickable, options.clickable);
+	setBoolOption(eid, Interactive.draggable, options.draggable);
+	setBoolOption(eid, Interactive.hoverable, options.hoverable);
+	setBoolOption(eid, Interactive.keyable, options.keyable);
+	setBoolOption(eid, Interactive.focusable, options.focusable);
+	setNumOption(eid, Interactive.tabIndex, options.tabIndex);
+	setNumOption(eid, Interactive.hoverEffectFg, options.hoverEffectFg);
+	setNumOption(eid, Interactive.hoverEffectBg, options.hoverEffectBg);
+	setNumOption(eid, Interactive.focusEffectFg, options.focusEffectFg);
+	setNumOption(eid, Interactive.focusEffectBg, options.focusEffectBg);
 
 	return eid;
 }

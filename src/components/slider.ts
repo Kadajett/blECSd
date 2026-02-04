@@ -339,10 +339,26 @@ export function isSliderDisabled(world: World, eid: Entity): boolean {
  * @param event - The event to send
  * @returns true if transition occurred
  */
-export function sendSliderEvent(world: World, eid: Entity, event: SliderEvent): boolean {
-	if (!isSlider(world, eid)) {
-		return false;
+/** Fire callbacks from a callback map */
+function fireSliderCallbacks(eid: Entity, callbackMap: Map<Entity, Array<() => void>>): void {
+	const callbacks = callbackMap.get(eid);
+	if (!callbacks) return;
+	for (const cb of callbacks) {
+		cb();
 	}
+}
+
+/** Handle slider state change callbacks */
+function handleSliderStateChange(eid: Entity, previousState: SliderState, newState: SliderState): void {
+	if (previousState !== 'dragging' && newState === 'dragging') {
+		fireSliderCallbacks(eid, dragStartCallbacks);
+	} else if (previousState === 'dragging' && newState !== 'dragging') {
+		fireSliderCallbacks(eid, dragEndCallbacks);
+	}
+}
+
+export function sendSliderEvent(world: World, eid: Entity, event: SliderEvent): boolean {
+	if (!isSlider(world, eid)) return false;
 
 	const previousState = getSliderState(world, eid);
 	const result = sendEvent(world, eid, event);
@@ -350,23 +366,7 @@ export function sendSliderEvent(world: World, eid: Entity, event: SliderEvent): 
 	if (result) {
 		const newState = getSliderState(world, eid);
 		markDirty(world, eid);
-
-		// Fire callbacks based on state changes
-		if (previousState !== 'dragging' && newState === 'dragging') {
-			const callbacks = dragStartCallbacks.get(eid);
-			if (callbacks) {
-				for (const cb of callbacks) {
-					cb();
-				}
-			}
-		} else if (previousState === 'dragging' && newState !== 'dragging') {
-			const callbacks = dragEndCallbacks.get(eid);
-			if (callbacks) {
-				for (const cb of callbacks) {
-					cb();
-				}
-			}
-		}
+		handleSliderStateChange(eid, previousState, newState);
 	}
 
 	return result;
