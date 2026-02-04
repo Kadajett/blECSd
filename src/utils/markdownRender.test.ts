@@ -5,6 +5,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import type { BlockData } from './markdownRender';
 import {
 	clearMarkdownCache,
 	createMarkdownCache,
@@ -18,7 +19,6 @@ import {
 	renderBlock,
 	renderMarkdown,
 } from './markdownRender';
-import type { BlockData } from './markdownRender';
 
 function getBlock(
 	blocks: readonly { readonly data: BlockData }[],

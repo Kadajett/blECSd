@@ -288,19 +288,20 @@ interface TestInterface {
 	req: number;
 	opt?: string;
 }
-type TestRequiredKeysPreserve = Assert<
-	IsEqual<RequiredKeys<TestInterface, 'opt'>['req'], number>
->;
+type TestRequiredKeysPreserve = Assert<IsEqual<RequiredKeys<TestInterface, 'opt'>['req'], number>>;
 
 // OptionalKeys should preserve existing optional keys
 type TestOptionalKeysPreserve = Assert<
 	undefined extends OptionalKeys<TestInterface, 'req'>['opt'] ? true : false
 >;
 
-export type TypeTests = [
+type TypeTests = [
 	TestDeepPartialPrimitive,
 	TestDeepPartialString,
 	TestDeepReadonlyPrimitive,
 	TestRequiredKeysPreserve,
 	TestOptionalKeysPreserve,
 ];
+
+const typeTests: TypeTests | null = null;
+void typeTests;
