@@ -388,7 +388,7 @@ function getChildData(world: World, children: Entity[]): ChildLayoutData[] {
  * ```
  */
 export function calculateInlineLayout(
-	children: ChildLayoutData[],
+	children: readonly ChildLayoutData[],
 	containerWidth: number,
 	gap: number,
 	wrap: boolean,
@@ -431,7 +431,7 @@ export function calculateInlineLayout(
  * ```
  */
 export function calculateGridLayout(
-	children: ChildLayoutData[],
+	children: readonly ChildLayoutData[],
 	cols: number,
 	gap: number,
 ): Map<Entity, LayoutPosition> {
@@ -495,7 +495,7 @@ export function calculateGridLayout(
  * ```
  */
 export function calculateFlexLayout(
-	children: ChildLayoutData[],
+	children: readonly ChildLayoutData[],
 	containerSize: number,
 	gap: number,
 	direction: FlexDirection,
@@ -668,55 +668,9 @@ export function createLayout(
 		if (children.length === 0) return;
 
 		const childData = getChildData(world, children);
-		const gap = Layout.gap[eid] as number;
-		const mode = numberToLayoutMode(Layout.mode[eid] as number);
-
-		const dims = getDimensions(world, eid);
-		const containerWidth = dims?.width ?? 80;
-		const containerHeight = dims?.height ?? 24;
-
-		let positions: Map<Entity, LayoutPosition>;
-
-		switch (mode) {
-			case 'inline': {
-				const wrap = Layout.wrap[eid] === 1;
-				positions = calculateInlineLayout(childData, containerWidth, gap, wrap);
-				break;
-			}
-			case 'grid': {
-				const cols = Layout.cols[eid] as number;
-				positions = calculateGridLayout(childData, cols, gap);
-				break;
-			}
-			case 'flex': {
-				const direction = Layout.direction[eid] === 0 ? 'row' : 'column';
-				const justify =
-					(['start', 'center', 'end', 'space-between'] as const)[Layout.justify[eid] as number] ??
-					'start';
-				const alignVal =
-					(['start', 'center', 'end'] as const)[Layout.align[eid] as number] ?? 'start';
-				const containerSize = direction === 'row' ? containerWidth : containerHeight;
-				positions = calculateFlexLayout(
-					childData,
-					containerSize,
-					gap,
-					direction as FlexDirection,
-					justify as JustifyContent,
-					alignVal as AlignItems,
-				);
-				break;
-			}
-		}
-
-		// Apply positions to children
-		const layoutPos = getPosition(world, eid);
-		const offsetX = layoutPos?.x ?? 0;
-		const offsetY = layoutPos?.y ?? 0;
-
-		for (const [childEid, pos] of positions) {
-			setPosition(world, childEid, offsetX + pos.x, offsetY + pos.y);
-			markDirty(world, childEid);
-		}
+		const size = getContainerSize(world, eid);
+		const positions = calculateLayoutPositions(world, eid, childData, size.width, size.height);
+		applyLayoutPositions(world, eid, positions);
 
 		markDirty(world, eid);
 	}
@@ -809,6 +763,68 @@ export function createLayout(
 	};
 
 	return widget;
+}
+
+function getContainerSize(world: World, eid: Entity): { width: number; height: number } {
+	const dims = getDimensions(world, eid);
+	return {
+		width: dims?.width ?? 80,
+		height: dims?.height ?? 24,
+	};
+}
+
+function calculateLayoutPositions(
+	_world: World,
+	eid: Entity,
+	childData: readonly ChildLayoutData[],
+	containerWidth: number,
+	containerHeight: number,
+): Map<Entity, LayoutPosition> {
+	const gap = Layout.gap[eid] as number;
+	const mode = numberToLayoutMode(Layout.mode[eid] as number);
+
+	switch (mode) {
+		case 'inline': {
+			const wrap = Layout.wrap[eid] === 1;
+			return calculateInlineLayout(childData, containerWidth, gap, wrap);
+		}
+		case 'grid': {
+			const cols = Layout.cols[eid] as number;
+			return calculateGridLayout(childData, cols, gap);
+		}
+		case 'flex': {
+			const direction = Layout.direction[eid] === 0 ? 'row' : 'column';
+			const justify =
+				(['start', 'center', 'end', 'space-between'] as const)[Layout.justify[eid] as number] ??
+				'start';
+			const alignVal =
+				(['start', 'center', 'end'] as const)[Layout.align[eid] as number] ?? 'start';
+			const containerSize = direction === 'row' ? containerWidth : containerHeight;
+			return calculateFlexLayout(
+				childData,
+				containerSize,
+				gap,
+				direction as FlexDirection,
+				justify as JustifyContent,
+				alignVal as AlignItems,
+			);
+		}
+	}
+}
+
+function applyLayoutPositions(
+	world: World,
+	eid: Entity,
+	positions: Map<Entity, LayoutPosition>,
+): void {
+	const layoutPos = getPosition(world, eid);
+	const offsetX = layoutPos?.x ?? 0;
+	const offsetY = layoutPos?.y ?? 0;
+
+	for (const [childEid, pos] of positions) {
+		setPosition(world, childEid, offsetX + pos.x, offsetY + pos.y);
+		markDirty(world, childEid);
+	}
 }
 
 // =============================================================================

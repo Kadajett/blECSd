@@ -429,6 +429,128 @@ function convertToInternalNode(
 	return internal;
 }
 
+/**
+ * Handles left/h key for tree navigation.
+ */
+function handleTreeLeftKey(
+	widget: TreeWidget,
+	currentNode: InternalTreeNode | undefined,
+	currentPath: string,
+): TreeAction {
+	if (currentNode?.expanded) {
+		widget.collapse(currentPath);
+		return { type: 'collapse' };
+	}
+	widget.selectParent();
+	return { type: 'selectParent' };
+}
+
+/**
+ * Handles right/l key for tree navigation.
+ */
+function handleTreeRightKey(
+	widget: TreeWidget,
+	currentNode: InternalTreeNode | undefined,
+	currentPath: string,
+): TreeAction | null {
+	if (currentNode && currentNode.children.length > 0 && !currentNode.expanded) {
+		widget.expand(currentPath);
+		return { type: 'expand' };
+	}
+	return null;
+}
+
+/**
+ * Handles enter/space key for tree activation.
+ */
+function handleTreeEnterKey(
+	widget: TreeWidget,
+	currentNode: InternalTreeNode | undefined,
+	currentPath: string,
+	notifyActivate: () => void,
+): TreeAction {
+	if (currentNode && currentNode.children.length > 0) {
+		widget.toggle(currentPath);
+		return { type: 'toggle' };
+	}
+	notifyActivate();
+	return { type: 'confirm' };
+}
+
+/**
+ * Builds tree indentation string with optional tree lines.
+ */
+function buildTreeIndentation(
+	depth: number,
+	indent: number,
+	showLines: boolean,
+	isLastChild: boolean,
+	parentIsLast: boolean[],
+): string {
+	if (depth === 0) {
+		return '';
+	}
+
+	if (!showLines) {
+		return TREE_LINES.SPACE.repeat(depth * indent);
+	}
+
+	let line = '';
+	for (let d = 0; d < depth - 1; d++) {
+		if (parentIsLast[d]) {
+			line += TREE_LINES.SPACE.repeat(indent);
+		} else {
+			line += TREE_LINES.VERTICAL + TREE_LINES.SPACE.repeat(indent - 1);
+		}
+	}
+	line += isLastChild ? TREE_LINES.CORNER : TREE_LINES.BRANCH;
+	line += TREE_LINES.HORIZONTAL.repeat(indent - 1);
+	return line;
+}
+
+/**
+ * Formats a single tree line with all decorations.
+ */
+function formatTreeLine(
+	node: InternalTreeNode,
+	indentation: string,
+	isSelected: boolean,
+	width: number,
+): string {
+	let line = indentation;
+
+	// Add expand/collapse indicator
+	const hasChildren = node.children.length > 0;
+	if (hasChildren) {
+		line += node.expanded ? TREE_LINES.EXPANDED : TREE_LINES.COLLAPSED;
+		line += ' ';
+	} else {
+		line += '  ';
+	}
+
+	// Add icon if present
+	if (node.icon) {
+		line += `${node.icon} `;
+	}
+
+	// Add label
+	line += node.label;
+
+	// Truncate if needed
+	if (line.length > width) {
+		line = `${line.slice(0, width - 1)}…`;
+	}
+
+	// Mark selected
+	if (isSelected) {
+		line = `[${line.padEnd(width - 2)}]`;
+	} else {
+		line = ` ${line.padEnd(width - 2)} `;
+	}
+
+	return line;
+}
+
 function flattenNodes(
 	nodes: readonly InternalTreeNode[],
 	parentPath = '',
@@ -982,56 +1104,15 @@ export function createTree(
 
 				const { node, path, isLastChild, parentIsLast } = item;
 				const isSelected = path === selectedPath;
-				const hasChildren = node.children.length > 0;
 
-				let line = '';
-
-				// Build indentation with tree lines
-				if (showLines && node.depth > 0) {
-					for (let d = 0; d < node.depth - 1; d++) {
-						if (parentIsLast[d]) {
-							line += TREE_LINES.SPACE.repeat(indent);
-						} else {
-							line += TREE_LINES.VERTICAL + TREE_LINES.SPACE.repeat(indent - 1);
-						}
-					}
-
-					// Add branch or corner
-					line += isLastChild ? TREE_LINES.CORNER : TREE_LINES.BRANCH;
-					line += TREE_LINES.HORIZONTAL.repeat(indent - 1);
-				} else {
-					// Simple indentation without lines
-					line += TREE_LINES.SPACE.repeat(node.depth * indent);
-				}
-
-				// Add expand/collapse indicator
-				if (hasChildren) {
-					line += node.expanded ? TREE_LINES.EXPANDED : TREE_LINES.COLLAPSED;
-					line += ' ';
-				} else {
-					line += '  ';
-				}
-
-				// Add icon if present
-				if (node.icon) {
-					line += `${node.icon} `;
-				}
-
-				// Add label
-				line += node.label;
-
-				// Truncate if needed
-				if (line.length > width) {
-					line = `${line.slice(0, width - 1)}…`;
-				}
-
-				// Mark selected (for simple text rendering)
-				if (isSelected) {
-					line = `[${line.padEnd(width - 2)}]`;
-				} else {
-					line = ` ${line.padEnd(width - 2)} `;
-				}
-
+				const indentation = buildTreeIndentation(
+					node.depth,
+					indent,
+					showLines,
+					isLastChild,
+					parentIsLast,
+				);
+				const line = formatTreeLine(node, indentation, isSelected, width);
 				lines.push(line);
 			}
 
@@ -1094,42 +1175,22 @@ export function createTree(
 				case 'k':
 					widget.selectPrev();
 					return { type: 'selectPrev' };
-
 				case 'down':
 				case 'j':
 					widget.selectNext();
 					return { type: 'selectNext' };
-
 				case 'left':
 				case 'h':
-					if (currentNode?.expanded) {
-						widget.collapse(currentPath);
-						return { type: 'collapse' };
-					}
-					widget.selectParent();
-					return { type: 'selectParent' };
-
+					return handleTreeLeftKey(widget, currentNode, currentPath);
 				case 'right':
 				case 'l':
-					if (currentNode && currentNode.children.length > 0 && !currentNode.expanded) {
-						widget.expand(currentPath);
-						return { type: 'expand' };
-					}
-					return null;
-
+					return handleTreeRightKey(widget, currentNode, currentPath);
 				case 'enter':
 				case ' ':
-					if (currentNode && currentNode.children.length > 0) {
-						widget.toggle(currentPath);
-						return { type: 'toggle' };
-					}
-					notifyActivate();
-					return { type: 'confirm' };
-
+					return handleTreeEnterKey(widget, currentNode, currentPath, notifyActivate);
 				case 'escape':
 					widget.blur();
 					return { type: 'cancel' };
-
 				case 'g':
 					widget.selectFirst();
 					return { type: 'selectFirst' };

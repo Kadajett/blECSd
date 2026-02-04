@@ -276,10 +276,30 @@ export function isSelectDisabled(world: World, eid: Entity): boolean {
  * @param event - The event to send
  * @returns true if transition occurred
  */
-export function sendSelectEvent(world: World, eid: Entity, event: SelectEvent): boolean {
-	if (!isSelect(world, eid)) {
-		return false;
+/** Fire callbacks from a callback map */
+function fireCallbacks(eid: Entity, callbackMap: Map<Entity, Array<() => void>>): void {
+	const callbacks = callbackMap.get(eid);
+	if (!callbacks) return;
+	for (const cb of callbacks) {
+		cb();
 	}
+}
+
+/** Handle select state change callbacks */
+function handleSelectStateChange(
+	eid: Entity,
+	previousState: SelectState,
+	newState: SelectState,
+): void {
+	if (previousState !== 'open' && newState === 'open') {
+		fireCallbacks(eid, openCallbacks);
+	} else if (previousState === 'open' && newState !== 'open') {
+		fireCallbacks(eid, closeCallbacks);
+	}
+}
+
+export function sendSelectEvent(world: World, eid: Entity, event: SelectEvent): boolean {
+	if (!isSelect(world, eid)) return false;
 
 	const previousState = getSelectState(world, eid);
 	const result = sendEvent(world, eid, event);
@@ -287,23 +307,7 @@ export function sendSelectEvent(world: World, eid: Entity, event: SelectEvent): 
 	if (result) {
 		const newState = getSelectState(world, eid);
 		markDirty(world, eid);
-
-		// Fire callbacks based on state changes
-		if (previousState !== 'open' && newState === 'open') {
-			const callbacks = openCallbacks.get(eid);
-			if (callbacks) {
-				for (const cb of callbacks) {
-					cb();
-				}
-			}
-		} else if (previousState === 'open' && newState !== 'open') {
-			const callbacks = closeCallbacks.get(eid);
-			if (callbacks) {
-				for (const cb of callbacks) {
-					cb();
-				}
-			}
-		}
+		handleSelectStateChange(eid, previousState, newState);
 	}
 
 	return result;

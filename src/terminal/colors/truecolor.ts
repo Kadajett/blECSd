@@ -398,6 +398,28 @@ export function createTruecolorSupport(config: TruecolorConfig = {}): TruecolorS
 		return ColorDepthLevel.MONO;
 	}
 
+	function detectDepthFromEnv(): ColorDepthLevelValue {
+		const colorterm = process.env.COLORTERM;
+		if (colorterm === 'truecolor' || colorterm === '24bit') {
+			return ColorDepthLevel.TRUECOLOR;
+		}
+
+		const term = process.env.TERM ?? '';
+		if (term.includes('256color')) {
+			return ColorDepthLevel.PALETTE_256;
+		}
+
+		if (term.includes('xterm') || term.includes('screen')) {
+			return ColorDepthLevel.STANDARD_16;
+		}
+
+		if (term && term !== 'dumb') {
+			return ColorDepthLevel.BASIC_8;
+		}
+
+		return ColorDepthLevel.MONO;
+	}
+
 	/**
 	 * Gets the current color depth (sync version using cached value).
 	 */
@@ -410,30 +432,7 @@ export function createTruecolorSupport(config: TruecolorConfig = {}): TruecolorS
 			return cachedDepth;
 		}
 
-		// Synchronous fallback based on environment
-		const colorterm = process.env.COLORTERM;
-		if (colorterm === 'truecolor' || colorterm === '24bit') {
-			cachedDepth = ColorDepthLevel.TRUECOLOR;
-			return cachedDepth;
-		}
-
-		const term = process.env.TERM ?? '';
-		if (term.includes('256color')) {
-			cachedDepth = ColorDepthLevel.PALETTE_256;
-			return cachedDepth;
-		}
-
-		if (term.includes('xterm') || term.includes('screen')) {
-			cachedDepth = ColorDepthLevel.STANDARD_16;
-			return cachedDepth;
-		}
-
-		if (term && term !== 'dumb') {
-			cachedDepth = ColorDepthLevel.BASIC_8;
-			return cachedDepth;
-		}
-
-		cachedDepth = ColorDepthLevel.MONO;
+		cachedDepth = detectDepthFromEnv();
 		return cachedDepth;
 	}
 

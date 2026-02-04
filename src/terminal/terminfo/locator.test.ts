@@ -353,14 +353,14 @@ describe('terminfo locator', () => {
 				if (originalTerm) {
 					process.env.TERM = originalTerm;
 				} else {
-					process.env.TERM = undefined;
+					Reflect.deleteProperty(process.env, 'TERM');
 				}
 			}
 		});
 
 		it('returns dumb when TERM not set', () => {
 			const originalTerm = process.env.TERM;
-			process.env.TERM = undefined;
+			Reflect.deleteProperty(process.env, 'TERM');
 
 			try {
 				expect(getCurrentTerminal()).toBe('dumb');

@@ -276,25 +276,32 @@ describe('types', () => {
 // These don't run at runtime but verify types are correctly defined
 // =============================================================================
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 // DeepPartial should handle primitives
-type _TestDeepPartialPrimitive = Assert<IsEqual<DeepPartial<number>, number>>;
-type _TestDeepPartialString = Assert<IsEqual<DeepPartial<string>, string>>;
+type TestDeepPartialPrimitive = Assert<IsEqual<DeepPartial<number>, number>>;
+type TestDeepPartialString = Assert<IsEqual<DeepPartial<string>, string>>;
 
 // DeepReadonly should handle primitives
-type _TestDeepReadonlyPrimitive = Assert<IsEqual<DeepReadonly<number>, number>>;
+type TestDeepReadonlyPrimitive = Assert<IsEqual<DeepReadonly<number>, number>>;
 
 // RequiredKeys should preserve existing required keys
-interface _TestInterface {
+interface TestInterface {
 	req: number;
 	opt?: string;
 }
-type _TestRequiredKeysPreserve = Assert<
-	IsEqual<RequiredKeys<_TestInterface, 'opt'>['req'], number>
->;
+type TestRequiredKeysPreserve = Assert<IsEqual<RequiredKeys<TestInterface, 'opt'>['req'], number>>;
 
 // OptionalKeys should preserve existing optional keys
-type _TestOptionalKeysPreserve = Assert<
-	undefined extends OptionalKeys<_TestInterface, 'req'>['opt'] ? true : false
+type TestOptionalKeysPreserve = Assert<
+	undefined extends OptionalKeys<TestInterface, 'req'>['opt'] ? true : false
 >;
-/* eslint-enable @typescript-eslint/no-unused-vars */
+
+type TypeTests = [
+	TestDeepPartialPrimitive,
+	TestDeepPartialString,
+	TestDeepReadonlyPrimitive,
+	TestRequiredKeysPreserve,
+	TestOptionalKeysPreserve,
+];
+
+const typeTests: TypeTests | null = null;
+void typeTests;

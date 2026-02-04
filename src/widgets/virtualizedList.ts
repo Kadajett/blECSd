@@ -151,6 +151,28 @@ export type VirtualizedListConfig = z.input<typeof VirtualizedListConfigSchema>;
  */
 export type VirtualizedListStyle = z.infer<typeof VirtualizedListStyleSchema>;
 
+/** Style properties that map directly to config. */
+const STYLE_PROPS = [
+	'fg',
+	'bg',
+	'selectedFg',
+	'selectedBg',
+	'cursorFg',
+	'cursorBg',
+	'showLineNumbers',
+	'lineNumberWidth',
+] as const;
+
+/** Converts style to line render config. */
+function styleToConfig(style: VirtualizedListStyle): Partial<LineRenderConfig> {
+	const config: Record<string, number | boolean> = {};
+	for (const prop of STYLE_PROPS) {
+		const value = style[prop as keyof VirtualizedListStyle];
+		if (value !== undefined) config[prop] = value;
+	}
+	return config as Partial<LineRenderConfig>;
+}
+
 /**
  * VirtualizedList widget interface with chainable methods.
  */
@@ -587,16 +609,7 @@ export function createVirtualizedList(
 
 		// Style
 		setStyle(style: VirtualizedListStyle) {
-			const config: Record<string, number | boolean> = {};
-			if (style.fg !== undefined) config.fg = style.fg;
-			if (style.bg !== undefined) config.bg = style.bg;
-			if (style.selectedFg !== undefined) config.selectedFg = style.selectedFg;
-			if (style.selectedBg !== undefined) config.selectedBg = style.selectedBg;
-			if (style.cursorFg !== undefined) config.cursorFg = style.cursorFg;
-			if (style.cursorBg !== undefined) config.cursorBg = style.cursorBg;
-			if (style.showLineNumbers !== undefined) config.showLineNumbers = style.showLineNumbers;
-			if (style.lineNumberWidth !== undefined) config.lineNumberWidth = style.lineNumberWidth;
-			setLineRenderConfig(eid, config as Partial<LineRenderConfig>);
+			setLineRenderConfig(eid, styleToConfig(style));
 			markDirty(world, eid);
 			return widget;
 		},

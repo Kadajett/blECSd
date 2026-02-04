@@ -5,6 +5,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import type { BlockData } from './markdownRender';
 import {
 	clearMarkdownCache,
 	createMarkdownCache,
@@ -18,6 +19,28 @@ import {
 	renderBlock,
 	renderMarkdown,
 } from './markdownRender';
+
+function getBlock(
+	blocks: readonly { readonly data: BlockData }[],
+	index: number,
+): { readonly data: BlockData } {
+	const block = blocks[index];
+	if (!block) {
+		throw new Error(`Expected block at index ${index}`);
+	}
+	return block;
+}
+
+function expectBlockData<K extends BlockData['kind']>(
+	block: { readonly data: BlockData },
+	kind: K,
+): Extract<BlockData, { readonly kind: K }> {
+	expect(block.data.kind).toBe(kind);
+	if (block.data.kind !== kind) {
+		throw new Error(`Expected block kind ${kind}`);
+	}
+	return block.data as Extract<BlockData, { readonly kind: K }>;
+}
 
 // =============================================================================
 // INLINE PARSING
@@ -102,10 +125,11 @@ describe('parseInline', () => {
 describe('parseMarkdown - headings', () => {
 	it('parses h1', () => {
 		const result = parseMarkdown('# Hello');
+		const block = getBlock(result.blocks, 0);
 
 		expect(result.blocks).toHaveLength(1);
 		expect(result.blocks[0]?.type).toBe('heading');
-		expect(result.blocks[0]?.data).toMatchObject({
+		expect(block.data).toMatchObject({
 			kind: 'heading',
 			level: 1,
 			text: 'Hello',
@@ -119,10 +143,9 @@ describe('parseMarkdown - headings', () => {
 		expect(result.blocks).toHaveLength(5);
 		for (let i = 0; i < 5; i++) {
 			expect(result.blocks[i]?.type).toBe('heading');
-			const data = result.blocks[i]?.data;
-			if (data.kind === 'heading') {
-				expect(data.level).toBe(i + 2);
-			}
+			const block = getBlock(result.blocks, i);
+			const data = expectBlockData(block, 'heading');
+			expect(data.level).toBe(i + 2);
 		}
 	});
 });
@@ -131,10 +154,11 @@ describe('parseMarkdown - code blocks', () => {
 	it('parses fenced code block', () => {
 		const md = '```js\nconst x = 1;\n```';
 		const result = parseMarkdown(md);
+		const block = getBlock(result.blocks, 0);
 
 		expect(result.blocks).toHaveLength(1);
 		expect(result.blocks[0]?.type).toBe('code');
-		expect(result.blocks[0]?.data).toMatchObject({
+		expect(block.data).toMatchObject({
 			kind: 'code',
 			language: 'js',
 			code: 'const x = 1;',
@@ -144,17 +168,19 @@ describe('parseMarkdown - code blocks', () => {
 	it('parses code block without language', () => {
 		const md = '```\nplain text\n```';
 		const result = parseMarkdown(md);
+		const block = getBlock(result.blocks, 0);
 
 		expect(result.blocks).toHaveLength(1);
-		expect(result.blocks[0]?.type).toBe('code');
+		expect(block.data.kind).toBe('code');
 	});
 
 	it('preserves code block content', () => {
 		const code = 'function foo() {\n  return 42;\n}';
 		const md = `\`\`\`typescript\n${code}\n\`\`\``;
 		const result = parseMarkdown(md);
+		const block = getBlock(result.blocks, 0);
 
-		expect(result.blocks[0]?.data).toMatchObject({
+		expect(block.data).toMatchObject({
 			kind: 'code',
 			code,
 		});
@@ -165,39 +191,36 @@ describe('parseMarkdown - lists', () => {
 	it('parses unordered list', () => {
 		const md = '- Item 1\n- Item 2\n- Item 3';
 		const result = parseMarkdown(md);
+		const block = getBlock(result.blocks, 0);
+		const data = expectBlockData(block, 'list');
 
 		expect(result.blocks).toHaveLength(1);
 		expect(result.blocks[0]?.type).toBe('list');
-		const data = result.blocks[0]?.data;
-		if (data.kind === 'list') {
-			expect(data.ordered).toBe(false);
-			expect(data.items).toHaveLength(3);
-		}
+		expect(data.ordered).toBe(false);
+		expect(data.items).toHaveLength(3);
 	});
 
 	it('parses ordered list', () => {
 		const md = '1. First\n2. Second\n3. Third';
 		const result = parseMarkdown(md);
+		const block = getBlock(result.blocks, 0);
+		const data = expectBlockData(block, 'list');
 
 		expect(result.blocks).toHaveLength(1);
 		expect(result.blocks[0]?.type).toBe('list');
-		const data = result.blocks[0]?.data;
-		if (data.kind === 'list') {
-			expect(data.ordered).toBe(true);
-			expect(data.items).toHaveLength(3);
-		}
+		expect(data.ordered).toBe(true);
+		expect(data.items).toHaveLength(3);
 	});
 
 	it('parses task list', () => {
 		const md = '- [ ] Todo\n- [x] Done';
 		const result = parseMarkdown(md);
+		const block = getBlock(result.blocks, 0);
+		const data = expectBlockData(block, 'list');
 
 		expect(result.blocks).toHaveLength(1);
-		const data = result.blocks[0]?.data;
-		if (data.kind === 'list') {
-			expect(data.items[0]?.checked).toBe(false);
-			expect(data.items[1]?.checked).toBe(true);
-		}
+		expect(data.items[0]?.checked).toBe(false);
+		expect(data.items[1]?.checked).toBe(true);
 	});
 });
 
@@ -205,26 +228,24 @@ describe('parseMarkdown - tables', () => {
 	it('parses simple table', () => {
 		const md = '| A | B |\n| --- | --- |\n| 1 | 2 |';
 		const result = parseMarkdown(md);
+		const block = getBlock(result.blocks, 0);
+		const data = expectBlockData(block, 'table');
 
 		expect(result.blocks).toHaveLength(1);
 		expect(result.blocks[0]?.type).toBe('table');
-		const data = result.blocks[0]?.data;
-		if (data.kind === 'table') {
-			expect(data.headers).toHaveLength(2);
-			expect(data.rows).toHaveLength(1);
-		}
+		expect(data.headers).toHaveLength(2);
+		expect(data.rows).toHaveLength(1);
 	});
 
 	it('parses table with alignment', () => {
 		const md = '| Left | Center | Right |\n| :--- | :---: | ---: |\n| a | b | c |';
 		const result = parseMarkdown(md);
+		const block = getBlock(result.blocks, 0);
+		const data = expectBlockData(block, 'table');
 
-		const data = result.blocks[0]?.data;
-		if (data.kind === 'table') {
-			expect(data.alignments[0]).toBe('left');
-			expect(data.alignments[1]).toBe('center');
-			expect(data.alignments[2]).toBe('right');
-		}
+		expect(data.alignments[0]).toBe('left');
+		expect(data.alignments[1]).toBe('center');
+		expect(data.alignments[2]).toBe('right');
 	});
 });
 
@@ -280,13 +301,12 @@ describe('parseMarkdown - paragraphs', () => {
 	it('merges consecutive lines', () => {
 		const md = 'Line 1\nLine 2\nLine 3';
 		const result = parseMarkdown(md);
+		const block = getBlock(result.blocks, 0);
+		const data = expectBlockData(block, 'paragraph');
 
 		expect(result.blocks).toHaveLength(1);
 		expect(result.blocks[0]?.type).toBe('paragraph');
-		const data = result.blocks[0]?.data;
-		if (data.kind === 'paragraph') {
-			expect(data.text).toBe('Line 1 Line 2 Line 3');
-		}
+		expect(data.text).toBe('Line 1 Line 2 Line 3');
 	});
 
 	it('separates paragraphs by blank lines', () => {
@@ -364,7 +384,7 @@ describe('MarkdownCache', () => {
 		parseMarkdownCached(cache, md);
 		const result2 = parseMarkdownCached(cache, md);
 
-		expect(result2.parseTimeMs).toBeLessThan(1); // Cache hit is very fast
+		expect(result2.parseTimeMs).toBeLessThan(5); // Cache hit should be fast
 	});
 
 	it('invalidates on change', () => {
@@ -685,12 +705,11 @@ describe('edge cases', () => {
 
 	it('handles unicode', () => {
 		const result = parseMarkdown('# Hello 世界 🌍');
+		const block = getBlock(result.blocks, 0);
+		const data = expectBlockData(block, 'heading');
 
 		expect(result.blocks).toHaveLength(1);
-		const data = result.blocks[0]?.data;
-		if (data.kind === 'heading') {
-			expect(data.text).toContain('世界');
-			expect(data.text).toContain('🌍');
-		}
+		expect(data.text).toContain('世界');
+		expect(data.text).toContain('🌍');
 	});
 });

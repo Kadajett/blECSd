@@ -671,6 +671,19 @@ export function getDebugBoundsEntities(world: World): Entity[] {
 // HELPER UTILITIES
 // =============================================================================
 
+/** Collects state flags for entity summary. */
+function collectEntityFlags(world: World, eid: Entity): string[] {
+	const flags: string[] = [];
+	if (hasComponent(world, eid, Focusable) && isFocused(world, eid)) flags.push('focused');
+	if (hasComponent(world, eid, Interactive)) {
+		if (isHovered(world, eid)) flags.push('hovered');
+		if (isPressed(world, eid)) flags.push('pressed');
+	}
+	if (hasAnimation(world, eid)) flags.push('animated');
+	if (hasBorder(world, eid)) flags.push('bordered');
+	return flags;
+}
+
 /**
  * Gets a debug summary of an entity as a single line.
  *
@@ -702,30 +715,12 @@ export function getEntitySummary(world: World, eid: Entity): string {
 
 	// Dimensions
 	if (hasComponent(world, eid, Dimensions)) {
-		const w = Dimensions.width[eid];
-		const h = Dimensions.height[eid];
-		parts.push(`[${w}x${h}]`);
+		parts.push(`[${Dimensions.width[eid]}x${Dimensions.height[eid]}]`);
 	}
 
 	// State flags
-	const flags: string[] = [];
-	if (hasComponent(world, eid, Focusable) && isFocused(world, eid)) {
-		flags.push('focused');
-	}
-	if (hasComponent(world, eid, Interactive)) {
-		if (isHovered(world, eid)) flags.push('hovered');
-		if (isPressed(world, eid)) flags.push('pressed');
-	}
-	if (hasAnimation(world, eid)) {
-		flags.push('animated');
-	}
-	if (hasBorder(world, eid)) {
-		flags.push('bordered');
-	}
-
-	if (flags.length > 0) {
-		parts.push(flags.join(' '));
-	}
+	const flags = collectEntityFlags(world, eid);
+	if (flags.length > 0) parts.push(flags.join(' '));
 
 	return parts.join(' ');
 }

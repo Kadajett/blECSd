@@ -255,7 +255,10 @@ describe('debug overlay', () => {
 			profiler.end('test');
 
 			const all = profiler.getAll();
-			expect(all.test?.min).toBeLessThanOrEqual(all.test?.max);
+			if (!all.test) {
+				throw new Error('Expected profiling stats for test');
+			}
+			expect(all.test.min).toBeLessThanOrEqual(all.test.max);
 		});
 	});
 

@@ -423,6 +423,92 @@ function processKeyEvent(world: World, event: ParsedKeyEvent): void {
 }
 
 /**
+ * Handles hover state transitions.
+ */
+function handleHoverTransition(
+	world: World,
+	previousHovered: Entity | null,
+	currentHovered: Entity | null,
+	x: number,
+	y: number,
+): void {
+	if (previousHovered === currentHovered) return;
+
+	// Mouse left previous entity
+	if (previousHovered !== null && hasInteractive(world, previousHovered)) {
+		setHovered(world, previousHovered, false);
+		inputState.eventBus.emit('mouseleave', { x, y });
+	}
+
+	// Mouse entered new entity
+	if (
+		currentHovered !== null &&
+		hasInteractive(world, currentHovered) &&
+		isHoverable(world, currentHovered)
+	) {
+		setHovered(world, currentHovered, true);
+		inputState.eventBus.emit('mouseenter', { x, y });
+	}
+
+	inputState.lastHoveredEntity = currentHovered;
+}
+
+/**
+ * Handles mouse press action.
+ */
+function handleMousePress(
+	world: World,
+	entity: Entity,
+	x: number,
+	y: number,
+	button: number,
+): void {
+	if (hasMouseInput(world, entity)) {
+		setMouseInput(world, entity, { x, y, button, pressed: true });
+		recordClick(world, entity, x, y, button);
+	}
+
+	if (hasInteractive(world, entity)) {
+		setPressed(world, entity, true);
+	}
+
+	inputState.eventBus.emit('mousedown', { x, y, button });
+
+	if (isFocusable(world, entity)) {
+		focus(world, entity);
+	}
+}
+
+/**
+ * Handles mouse release action.
+ */
+function handleMouseRelease(
+	world: World,
+	entity: Entity,
+	x: number,
+	y: number,
+	button: number,
+): void {
+	if (hasMouseInput(world, entity)) {
+		setMouseInput(world, entity, { x, y, button, pressed: false });
+	}
+
+	if (hasInteractive(world, entity)) {
+		setPressed(world, entity, false);
+	}
+
+	inputState.eventBus.emit('mouseup', { x, y, button });
+
+	if (isClickable(world, entity)) {
+		inputState.eventBus.emit('click', { x, y, button });
+	}
+
+	if (inputState.capturedEntity !== null) {
+		releaseMouse();
+	}
+}
+
+/**
  * Processes a single mouse event.
  */
 function processMouseEvent(world: World, event: ParsedMouseEvent): void {
@@ -436,34 +522,12 @@ function processMouseEvent(world: World, event: ParsedMouseEvent): void {
 
 	// Determine target entity
 	let targetEntity: Entity | null = inputState.capturedEntity;
-
 	if (targetEntity === null) {
 		targetEntity = getInteractiveEntityAt(world, x, y);
 	}
 
 	// Handle hover state changes
-	const previousHovered = inputState.lastHoveredEntity;
-	const currentHovered = targetEntity;
-
-	if (previousHovered !== currentHovered) {
-		// Mouse left previous entity
-		if (previousHovered !== null && hasInteractive(world, previousHovered)) {
-			setHovered(world, previousHovered, false);
-			inputState.eventBus.emit('mouseleave', { x, y });
-		}
-
-		// Mouse entered new entity
-		if (
-			currentHovered !== null &&
-			hasInteractive(world, currentHovered) &&
-			isHoverable(world, currentHovered)
-		) {
-			setHovered(world, currentHovered, true);
-			inputState.eventBus.emit('mouseenter', { x, y });
-		}
-
-		inputState.lastHoveredEntity = currentHovered;
-	}
+	handleHoverTransition(world, inputState.lastHoveredEntity, targetEntity, x, y);
 
 	// Always emit mousemove
 	inputState.eventBus.emit('mousemove', { x, y });
@@ -471,74 +535,18 @@ function processMouseEvent(world: World, event: ParsedMouseEvent): void {
 	// Handle mouse actions
 	if (targetEntity !== null) {
 		switch (event.action) {
-			case 'press': {
-				// Update MouseInput component
-				if (hasMouseInput(world, targetEntity)) {
-					setMouseInput(world, targetEntity, {
-						x,
-						y,
-						button,
-						pressed: true,
-					});
-					recordClick(world, targetEntity, x, y, button);
-				}
-
-				// Update pressed state
-				if (hasInteractive(world, targetEntity)) {
-					setPressed(world, targetEntity, true);
-				}
-
-				// Emit mousedown
-				inputState.eventBus.emit('mousedown', { x, y, button });
-
-				// Handle focus on click
-				if (isFocusable(world, targetEntity)) {
-					focus(world, targetEntity);
-				}
+			case 'press':
+				handleMousePress(world, targetEntity, x, y, button);
 				break;
-			}
-
-			case 'release': {
-				// Update MouseInput component
-				if (hasMouseInput(world, targetEntity)) {
-					setMouseInput(world, targetEntity, {
-						x,
-						y,
-						button,
-						pressed: false,
-					});
-				}
-
-				// Update pressed state
-				if (hasInteractive(world, targetEntity)) {
-					setPressed(world, targetEntity, false);
-				}
-
-				// Emit mouseup
-				inputState.eventBus.emit('mouseup', { x, y, button });
-
-				// Emit click if this was a press+release on the same entity
-				if (isClickable(world, targetEntity)) {
-					inputState.eventBus.emit('click', { x, y, button });
-				}
-
-				// Release any capture on mouse up
-				if (inputState.capturedEntity !== null) {
-					releaseMouse();
-				}
+			case 'release':
+				handleMouseRelease(world, targetEntity, x, y, button);
 				break;
-			}
-
-			case 'move': {
-				// Update position in MouseInput
+			case 'move':
 				if (hasMouseInput(world, targetEntity)) {
 					setMouseInput(world, targetEntity, { x, y });
 				}
 				break;
-			}
-
 			case 'wheel': {
-				// Emit scroll event
 				const direction = button === MouseButtons.WHEEL_UP ? 'up' : 'down';
 				inputState.eventBus.emit('scroll', { direction, amount: 1 });
 				break;

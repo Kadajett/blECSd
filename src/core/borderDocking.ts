@@ -490,10 +490,10 @@ export function getConnectionFlags(
 	const bottomEdges = ctx.edges.get(posKey(x, y + 1));
 
 	return {
-		left: leftEdges?.some((e) => e.type === 'h' || e.type === 'c'),
-		right: rightEdges?.some((e) => e.type === 'h' || e.type === 'c'),
-		top: topEdges?.some((e) => e.type === 'v' || e.type === 'c'),
-		bottom: bottomEdges?.some((e) => e.type === 'v' || e.type === 'c'),
+		left: leftEdges?.some((e) => e.type === 'h' || e.type === 'c') ?? false,
+		right: rightEdges?.some((e) => e.type === 'h' || e.type === 'c') ?? false,
+		top: topEdges?.some((e) => e.type === 'v' || e.type === 'c') ?? false,
+		bottom: bottomEdges?.some((e) => e.type === 'v' || e.type === 'c') ?? false,
 	};
 }
 
@@ -604,53 +604,54 @@ export function detectJunctions(ctx: BorderDockingContext): Junction[] {
  * @param ctx - The docking context
  * @returns Array of detected junctions
  */
+/** Extend connection flags based on edge types at position */
+function extendConnectionFlags(connections: ConnectionFlags, edges: BorderEdge[]): ConnectionFlags {
+	const hasHorizontal = edges.some((e) => e.type === 'h');
+	const hasVertical = edges.some((e) => e.type === 'v');
+	return {
+		left: connections.left || hasHorizontal,
+		right: connections.right || hasHorizontal,
+		top: connections.top || hasVertical,
+		bottom: connections.bottom || hasVertical,
+	};
+}
+
+/** Try to create a junction at the given position */
+function tryCreateJunction(
+	edges: BorderEdge[],
+	extendedConnections: ConnectionFlags,
+	x: number,
+	y: number,
+): Junction | null {
+	const hasCorner = edges.some((e) => e.type === 'c');
+	if (!hasCorner || edges.length <= 1) return null;
+
+	const edge = edges[0];
+	if (!edge) return null;
+
+	const charset = getJunctionCharset(edge.style);
+	const junctionChar = getJunctionChar(extendedConnections, charset);
+	if (junctionChar === null) return null;
+
+	return { x, y, char: junctionChar, fg: edge.fg, bg: edge.bg };
+}
+
 export function detectAllJunctions(ctx: BorderDockingContext): Junction[] {
-	if (!ctx.enabled) {
-		return [];
-	}
+	if (!ctx.enabled) return [];
 
 	const junctions: Junction[] = [];
 	const processed = new Set<string>();
 
 	for (const [key, edges] of ctx.edges) {
-		if (processed.has(key)) {
-			continue;
-		}
+		if (processed.has(key)) continue;
 		processed.add(key);
 
 		const { x, y } = parseKey(key);
 		const connections = getConnectionFlags(ctx, x, y);
-		const edge = edges[0];
-		if (!edge) continue;
+		const extendedConnections = extendConnectionFlags(connections, edges);
 
-		// Also check the current position's edges for connections
-		const hasHorizontal = edges.some((e) => e.type === 'h');
-		const hasVertical = edges.some((e) => e.type === 'v');
-		const hasCorner = edges.some((e) => e.type === 'c');
-
-		// Extend connection flags based on current position
-		const extendedConnections: ConnectionFlags = {
-			left: connections.left || hasHorizontal,
-			right: connections.right || hasHorizontal,
-			top: connections.top || hasVertical,
-			bottom: connections.bottom || hasVertical,
-		};
-
-		// For corners, we need to check if they're at an intersection
-		if (hasCorner && edges.length > 1) {
-			const charset = getJunctionCharset(edge.style);
-			const junctionChar = getJunctionChar(extendedConnections, charset);
-
-			if (junctionChar !== null) {
-				junctions.push({
-					x,
-					y,
-					char: junctionChar,
-					fg: edge.fg,
-					bg: edge.bg,
-				});
-			}
-		}
+		const junction = tryCreateJunction(edges, extendedConnections, x, y);
+		if (junction) junctions.push(junction);
 	}
 
 	return junctions;

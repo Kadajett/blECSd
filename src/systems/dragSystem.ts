@@ -263,6 +263,68 @@ export function getDragVerifyCallback(eid: Entity): DragVerifyCallback | null {
  * @param constraints - Constraints to apply
  * @returns Constrained position
  */
+/** Apply axis constraint */
+function applyAxisConstraint(
+	eid: Entity,
+	x: number,
+	y: number,
+	axis: 'x' | 'y' | null | undefined,
+): { x: number; y: number } {
+	if (axis === 'x') return { x, y: (Position.y[eid] as number | undefined) ?? y };
+	if (axis === 'y') return { x: (Position.x[eid] as number | undefined) ?? x, y };
+	return { x, y };
+}
+
+/** Apply grid snap constraint */
+function applyGridSnap(
+	x: number,
+	y: number,
+	grid: { x: number; y: number } | null | undefined,
+): { x: number; y: number } {
+	if (!grid) return { x, y };
+	return {
+		x: Math.round(x / grid.x) * grid.x,
+		y: Math.round(y / grid.y) * grid.y,
+	};
+}
+
+/** Apply min/max bounds */
+function applyBounds(x: number, y: number, constraints: DragConstraints): { x: number; y: number } {
+	let newX = x;
+	let newY = y;
+	if (constraints.minX !== undefined) newX = Math.max(newX, constraints.minX);
+	if (constraints.maxX !== undefined) newX = Math.min(newX, constraints.maxX);
+	if (constraints.minY !== undefined) newY = Math.max(newY, constraints.minY);
+	if (constraints.maxY !== undefined) newY = Math.min(newY, constraints.maxY);
+	return { x: newX, y: newY };
+}
+
+/** Apply parent bounds constraint */
+function applyParentBounds(
+	world: World,
+	eid: Entity,
+	x: number,
+	y: number,
+	constrainToParent: boolean | undefined,
+): { x: number; y: number } {
+	if (!constrainToParent) return { x, y };
+
+	const parent = getParent(world, eid);
+	if (parent === NULL_ENTITY) return { x, y };
+
+	const parentDims = getDimensions(world, parent);
+	if (!parentDims) return { x, y };
+
+	const entityDims = getDimensions(world, eid);
+	const entityWidth = entityDims?.width ?? 1;
+	const entityHeight = entityDims?.height ?? 1;
+
+	return {
+		x: Math.max(0, Math.min(x, parentDims.width - entityWidth)),
+		y: Math.max(0, Math.min(y, parentDims.height - entityHeight)),
+	};
+}
+
 function applyConstraints(
 	world: World,
 	eid: Entity,
@@ -270,48 +332,11 @@ function applyConstraints(
 	y: number,
 	constraints: DragConstraints,
 ): { x: number; y: number } {
-	let newX = x;
-	let newY = y;
-
-	// Apply axis constraint
-	if (constraints.constrainAxis === 'x') {
-		newY = (Position.y[eid] as number | undefined) ?? y;
-	} else if (constraints.constrainAxis === 'y') {
-		newX = (Position.x[eid] as number | undefined) ?? x;
-	}
-
-	// Apply grid snap
-	if (constraints.snapToGrid) {
-		const gridX = constraints.snapToGrid.x;
-		const gridY = constraints.snapToGrid.y;
-		newX = Math.round(newX / gridX) * gridX;
-		newY = Math.round(newY / gridY) * gridY;
-	}
-
-	// Apply min/max bounds
-	if (constraints.minX !== undefined) newX = Math.max(newX, constraints.minX);
-	if (constraints.maxX !== undefined) newX = Math.min(newX, constraints.maxX);
-	if (constraints.minY !== undefined) newY = Math.max(newY, constraints.minY);
-	if (constraints.maxY !== undefined) newY = Math.min(newY, constraints.maxY);
-
-	// Apply parent bounds constraint
-	if (constraints.constrainToParent) {
-		const parent = getParent(world, eid);
-		if (parent !== NULL_ENTITY) {
-			const parentDims = getDimensions(world, parent);
-			const entityDims = getDimensions(world, eid);
-
-			if (parentDims) {
-				const entityWidth = entityDims?.width ?? 1;
-				const entityHeight = entityDims?.height ?? 1;
-
-				newX = Math.max(0, Math.min(newX, parentDims.width - entityWidth));
-				newY = Math.max(0, Math.min(newY, parentDims.height - entityHeight));
-			}
-		}
-	}
-
-	return { x: newX, y: newY };
+	let pos = applyAxisConstraint(eid, x, y, constraints.constrainAxis);
+	pos = applyGridSnap(pos.x, pos.y, constraints.snapToGrid);
+	pos = applyBounds(pos.x, pos.y, constraints);
+	pos = applyParentBounds(world, eid, pos.x, pos.y, constraints.constrainToParent);
+	return pos;
 }
 
 /**

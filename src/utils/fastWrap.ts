@@ -235,74 +235,126 @@ function wrapParagraph(
 		return { lines: [''], breakPoints: [0] };
 	}
 
-	const lines: string[] = [];
-	const breakPoints: number[] = [0];
-
-	let lineStart = 0;
-	let lineWidth = 0;
-	let wordWidth = 0;
-	let lastBreakable = -1;
-	let lastBreakableWidth = 0;
+	const state = createWrapState();
 
 	for (let i = 0; i <= text.length; i++) {
-		const char = i < text.length ? text[i] : undefined;
-		const isEnd = i === text.length;
-		const isSpace = char === ' ' || char === '\t';
-		const isNewline = char === '\n';
-
-		if (isNewline || isEnd) {
-			// End of line or text
-			const line = text.slice(lineStart, i);
-			if (line.length > 0 || lines.length === 0) {
-				lines.push(line);
-				if (!isEnd) {
-					breakPoints.push(i + 1);
-				}
-			}
-			lineStart = i + 1;
-			lineWidth = 0;
-			wordWidth = 0;
-			lastBreakable = -1;
-			continue;
-		}
-
-		const charWidth = unicodeWidth ? stringWidth(char ?? '') : 1;
-
-		if (isSpace) {
-			// Space is a breakable point
-			lastBreakable = i;
-			lastBreakableWidth = lineWidth;
-			wordWidth = 0;
-			lineWidth += charWidth;
-		} else {
-			wordWidth += charWidth;
-			lineWidth += charWidth;
-		}
-
-		// Check if we need to wrap
-		if (lineWidth > width) {
-			if (lastBreakable >= lineStart && !breakWord) {
-				// Break at last space
-				const line = text.slice(lineStart, lastBreakable);
-				lines.push(line);
-				breakPoints.push(lastBreakable + 1);
-				lineStart = lastBreakable + 1;
-				lineWidth = lineWidth - lastBreakableWidth - 1;
-				lastBreakable = -1;
-			} else if (breakWord || wordWidth > width) {
-				// Break mid-word
-				const line = text.slice(lineStart, i);
-				lines.push(line);
-				breakPoints.push(i);
-				lineStart = i;
-				lineWidth = charWidth;
-				wordWidth = charWidth;
-				lastBreakable = -1;
-			}
-		}
+		processWrapIndex(state, text, i, width, breakWord, unicodeWidth);
 	}
 
-	return { lines, breakPoints };
+	return { lines: state.lines, breakPoints: state.breakPoints };
+}
+
+interface WrapState {
+	lines: string[];
+	breakPoints: number[];
+	lineStart: number;
+	lineWidth: number;
+	wordWidth: number;
+	lastBreakable: number;
+	lastBreakableWidth: number;
+}
+
+function createWrapState(): WrapState {
+	return {
+		lines: [],
+		breakPoints: [0],
+		lineStart: 0,
+		lineWidth: 0,
+		wordWidth: 0,
+		lastBreakable: -1,
+		lastBreakableWidth: 0,
+	};
+}
+
+function handleLineEnd(state: WrapState, text: string, endIndex: number, isEnd: boolean): void {
+	const line = text.slice(state.lineStart, endIndex);
+	if (line.length > 0 || state.lines.length === 0) {
+		state.lines.push(line);
+		if (!isEnd) {
+			state.breakPoints.push(endIndex + 1);
+		}
+	}
+	resetLineState(state, endIndex + 1);
+}
+
+function resetLineState(state: WrapState, newStart: number): void {
+	state.lineStart = newStart;
+	state.lineWidth = 0;
+	state.wordWidth = 0;
+	state.lastBreakable = -1;
+	state.lastBreakableWidth = 0;
+}
+
+function recordBreakable(state: WrapState, index: number, charWidth: number): void {
+	state.lastBreakable = index;
+	state.lastBreakableWidth = state.lineWidth;
+	state.wordWidth = 0;
+	state.lineWidth += charWidth;
+}
+
+function recordWordWidth(state: WrapState, charWidth: number): void {
+	state.wordWidth += charWidth;
+	state.lineWidth += charWidth;
+}
+
+function handleOverflow(
+	state: WrapState,
+	text: string,
+	index: number,
+	charWidth: number,
+	width: number,
+	breakWord: boolean,
+): void {
+	if (state.lastBreakable >= state.lineStart && !breakWord) {
+		const line = text.slice(state.lineStart, state.lastBreakable);
+		state.lines.push(line);
+		state.breakPoints.push(state.lastBreakable + 1);
+		state.lineStart = state.lastBreakable + 1;
+		state.lineWidth = state.lineWidth - state.lastBreakableWidth - 1;
+		state.lastBreakable = -1;
+		return;
+	}
+
+	if (breakWord || state.wordWidth > width) {
+		const line = text.slice(state.lineStart, index);
+		state.lines.push(line);
+		state.breakPoints.push(index);
+		state.lineStart = index;
+		state.lineWidth = charWidth;
+		state.wordWidth = charWidth;
+		state.lastBreakable = -1;
+	}
+}
+
+function processWrapIndex(
+	state: WrapState,
+	text: string,
+	index: number,
+	width: number,
+	breakWord: boolean,
+	unicodeWidth: boolean,
+): void {
+	const char = index < text.length ? text[index] : undefined;
+	const isEnd = index === text.length;
+	const isNewline = char === '\n';
+
+	if (isNewline || isEnd) {
+		handleLineEnd(state, text, index, isEnd);
+		return;
+	}
+
+	const charWidth = unicodeWidth ? stringWidth(char ?? '') : 1;
+	const isSpace = char === ' ' || char === '\t';
+
+	if (isSpace) {
+		recordBreakable(state, index, charWidth);
+	} else {
+		recordWordWidth(state, charWidth);
+	}
+
+	if (state.lineWidth > width) {
+		handleOverflow(state, text, index, charWidth, width, breakWord);
+	}
 }
 
 /**
@@ -449,21 +501,9 @@ export function wrapVisibleFirst(
 
 	// First pass: estimate paragraph for visible lines
 	// If cache has line offsets, use them; otherwise estimate
-	let targetParagraph = 0;
-	let currentLine = 0;
-
-	if (cache.lineOffsets.length > 0 && !cache.fullInvalidate) {
-		// Use cached offsets to find starting paragraph
-		for (let i = 0; i < cache.lineOffsets.length; i++) {
-			const offset = cache.lineOffsets[i];
-			if (offset !== undefined && offset <= startLine) {
-				targetParagraph = i;
-				currentLine = offset;
-			} else {
-				break;
-			}
-		}
-	}
+	const startInfo = resolveVisibleStart(cache, startLine);
+	let currentLine = startInfo.currentLine;
+	const targetParagraph = startInfo.targetParagraph;
 
 	// Process paragraphs until we have enough visible lines
 	let processedParagraphs = 0;
@@ -473,35 +513,10 @@ export function wrapVisibleFirst(
 		const paragraph = paragraphs[i];
 		if (paragraph === undefined) continue;
 
-		// Check cache first
-		const cached = cache.entries.get(i);
-		const hash = hashString(paragraph);
-
-		let entry: WrapEntry;
-		if (
-			cached &&
-			cached.hash === hash &&
-			cached.width === width &&
-			!cache.dirty.has(i) &&
-			!cache.fullInvalidate
-		) {
-			entry = cached;
-		} else {
-			entry = createEntry(paragraph, width, breakWord, unicodeWidth);
-			cache.entries.set(i, entry);
-			cache.dirty.delete(i);
-		}
+		const entry = getWrapEntry(cache, i, paragraph, width, breakWord, unicodeWidth);
 
 		// Add lines that fall within visible range
-		for (let j = 0; j < entry.lines.length; j++) {
-			if (currentLine >= startLine && currentLine < endLine) {
-				const line = entry.lines[j];
-				if (line !== undefined) {
-					visibleLines.push(line);
-				}
-			}
-			currentLine++;
-		}
+		currentLine = appendVisibleLines(visibleLines, entry.lines, currentLine, startLine, endLine);
 
 		processedParagraphs = i + 1;
 	}
@@ -514,6 +529,77 @@ export function wrapVisibleFirst(
 		nextParagraph: processedParagraphs,
 		timeMs,
 	};
+}
+
+function resolveVisibleStart(
+	cache: WrapCache,
+	startLine: number,
+): { targetParagraph: number; currentLine: number } {
+	let targetParagraph = 0;
+	let currentLine = 0;
+
+	if (cache.lineOffsets.length === 0 || cache.fullInvalidate) {
+		return { targetParagraph, currentLine };
+	}
+
+	for (let i = 0; i < cache.lineOffsets.length; i++) {
+		const offset = cache.lineOffsets[i];
+		if (offset !== undefined && offset <= startLine) {
+			targetParagraph = i;
+			currentLine = offset;
+		} else {
+			break;
+		}
+	}
+
+	return { targetParagraph, currentLine };
+}
+
+function getWrapEntry(
+	cache: WrapCache,
+	index: number,
+	paragraph: string,
+	width: number,
+	breakWord: boolean,
+	unicodeWidth: boolean,
+): WrapEntry {
+	const cached = cache.entries.get(index);
+	const hash = hashString(paragraph);
+
+	if (
+		cached &&
+		cached.hash === hash &&
+		cached.width === width &&
+		!cache.dirty.has(index) &&
+		!cache.fullInvalidate
+	) {
+		return cached;
+	}
+
+	const entry = createEntry(paragraph, width, breakWord, unicodeWidth);
+	cache.entries.set(index, entry);
+	cache.dirty.delete(index);
+	return entry;
+}
+
+function appendVisibleLines(
+	visibleLines: string[],
+	lines: readonly string[],
+	currentLine: number,
+	startLine: number,
+	endLine: number,
+): number {
+	let lineIndex = currentLine;
+	for (let i = 0; i < lines.length; i++) {
+		if (lineIndex >= startLine && lineIndex < endLine) {
+			const line = lines[i];
+			if (line !== undefined) {
+				visibleLines.push(line);
+			}
+		}
+		lineIndex++;
+	}
+	return lineIndex;
 }
 
 /**

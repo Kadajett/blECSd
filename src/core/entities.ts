@@ -1696,6 +1696,111 @@ function applyFocusableOptions(
 }
 
 /**
+ * Applies interactive options from config.
+ */
+function applyInteractiveOptions(
+	world: World,
+	eid: Entity,
+	config: z.infer<typeof InteractiveConfigSchema>,
+): void {
+	const interactiveOptions: InteractiveOptions = {};
+	if (config.clickable !== undefined) interactiveOptions.clickable = config.clickable;
+	if (config.draggable !== undefined) interactiveOptions.draggable = config.draggable;
+	if (config.hoverable !== undefined) interactiveOptions.hoverable = config.hoverable;
+	if (config.keyable !== undefined) interactiveOptions.keyable = config.keyable;
+	if (config.hoverEffectFg !== undefined) interactiveOptions.hoverEffectFg = config.hoverEffectFg;
+	if (config.hoverEffectBg !== undefined) interactiveOptions.hoverEffectBg = config.hoverEffectBg;
+
+	if (Object.keys(interactiveOptions).length > 0) {
+		setInteractive(world, eid, interactiveOptions);
+	}
+}
+
+/**
+ * Initializes Interactive component with widget defaults (clickable, hoverable, keyable).
+ */
+function initWidgetInteractive(world: World, eid: Entity): void {
+	addComponent(world, eid, Interactive);
+	Interactive.clickable[eid] = 1;
+	Interactive.draggable[eid] = 0;
+	Interactive.hoverable[eid] = 1;
+	Interactive.hovered[eid] = 0;
+	Interactive.pressed[eid] = 0;
+	Interactive.keyable[eid] = 1;
+	Interactive.hoverEffectFg[eid] = 0xffffffff;
+	Interactive.hoverEffectBg[eid] = 0x444444ff;
+}
+
+/**
+ * Initializes Focusable component with widget defaults.
+ */
+function initWidgetFocusable(world: World, eid: Entity): void {
+	addComponent(world, eid, Focusable);
+	Focusable.focusable[eid] = 1;
+	Focusable.focused[eid] = 0;
+	Focusable.tabIndex[eid] = 0;
+	Focusable.focusEffectFg[eid] = 0xffffffff;
+	Focusable.focusEffectBg[eid] = 0x0066ffff;
+}
+
+/**
+ * Applies scrollable options from config to entity.
+ */
+function applyScrollableOptions(
+	world: World,
+	eid: Entity,
+	config: {
+		scrollX?: number;
+		scrollY?: number;
+		scrollWidth?: number;
+		scrollHeight?: number;
+		scrollbarVisible?: number;
+	},
+): void {
+	const scrollableOptions: ScrollableOptions = {};
+	if (config.scrollX !== undefined) scrollableOptions.scrollX = config.scrollX;
+	if (config.scrollY !== undefined) scrollableOptions.scrollY = config.scrollY;
+	if (config.scrollWidth !== undefined) scrollableOptions.scrollWidth = config.scrollWidth;
+	if (config.scrollHeight !== undefined) scrollableOptions.scrollHeight = config.scrollHeight;
+	if (config.scrollbarVisible !== undefined)
+		scrollableOptions.scrollbarVisible = config.scrollbarVisible as 0 | 1 | 2;
+
+	if (Object.keys(scrollableOptions).length > 0) {
+		setScrollable(world, eid, scrollableOptions);
+	}
+}
+
+/**
+ * Applies slider display options from config.
+ */
+function applySliderDisplayOptions(
+	eid: Entity,
+	config: {
+		trackChar?: string;
+		thumbChar?: string;
+		fillChar?: string;
+		trackFg?: number;
+		trackBg?: number;
+		thumbFg?: number;
+		thumbBg?: number;
+		fillFg?: number;
+		fillBg?: number;
+	},
+): void {
+	const options: typeof config = {};
+	if (config.trackChar !== undefined) options.trackChar = config.trackChar;
+	if (config.thumbChar !== undefined) options.thumbChar = config.thumbChar;
+	if (config.fillChar !== undefined) options.fillChar = config.fillChar;
+	if (config.trackFg !== undefined) options.trackFg = config.trackFg;
+	if (config.trackBg !== undefined) options.trackBg = config.trackBg;
+	if (config.thumbFg !== undefined) options.thumbFg = config.thumbFg;
+	if (config.thumbBg !== undefined) options.thumbBg = config.thumbBg;
+	if (config.fillFg !== undefined) options.fillFg = config.fillFg;
+	if (config.fillBg !== undefined) options.fillBg = config.fillBg;
+	setSliderDisplay(eid, options);
+}
+
+/**
  * Creates a List entity with the specified configuration.
  *
  * List entities display a scrollable list of items with selection support.
@@ -1859,50 +1964,11 @@ export function createCheckboxEntity(world: World, config: CheckboxConfig = {}):
 		setContent(world, eid, validated.label);
 	}
 
-	// Initialize Interactive component
-	addComponent(world, eid, Interactive);
-	Interactive.clickable[eid] = 1; // Checkboxes are clickable by default
-	Interactive.draggable[eid] = 0;
-	Interactive.hoverable[eid] = 1; // Checkboxes are hoverable by default
-	Interactive.hovered[eid] = 0;
-	Interactive.pressed[eid] = 0;
-	Interactive.keyable[eid] = 1; // Checkboxes respond to keys by default
-	Interactive.hoverEffectFg[eid] = 0xffffffff;
-	Interactive.hoverEffectBg[eid] = 0x444444ff;
-
-	const interactiveOptions: InteractiveOptions = {};
-	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
-	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
-	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
-	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
-	if (validated.hoverEffectFg !== undefined)
-		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
-	if (validated.hoverEffectBg !== undefined)
-		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
-
-	if (Object.keys(interactiveOptions).length > 0) {
-		setInteractive(world, eid, interactiveOptions);
-	}
-
-	// Initialize Focusable component
-	addComponent(world, eid, Focusable);
-	Focusable.focusable[eid] = 1; // Checkboxes are focusable by default
-	Focusable.focused[eid] = 0;
-	Focusable.tabIndex[eid] = 0;
-	Focusable.focusEffectFg[eid] = 0xffffffff;
-	Focusable.focusEffectBg[eid] = 0x0066ffff;
-
-	const focusableOptions: FocusableOptions = {};
-	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
-	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
-	if (validated.focusEffectFg !== undefined)
-		focusableOptions.focusEffectFg = validated.focusEffectFg;
-	if (validated.focusEffectBg !== undefined)
-		focusableOptions.focusEffectBg = validated.focusEffectBg;
-
-	if (Object.keys(focusableOptions).length > 0) {
-		setFocusable(world, eid, focusableOptions);
-	}
+	// Initialize Interactive and Focusable components with widget defaults
+	initWidgetInteractive(world, eid);
+	applyInteractiveOptions(world, eid, validated);
+	initWidgetFocusable(world, eid);
+	applyFocusableOptions(world, eid, validated);
 
 	// Set up checkbox display characters
 	setCheckboxDisplay(eid, {
@@ -2008,50 +2074,12 @@ export function createTextboxEntity(world: World, config: TextboxConfig = {}): E
 		setContent(world, eid, validated.value);
 	}
 
-	// Initialize Interactive component
-	addComponent(world, eid, Interactive);
-	Interactive.clickable[eid] = 1; // Textboxes are clickable by default
-	Interactive.draggable[eid] = 0;
-	Interactive.hoverable[eid] = 1; // Textboxes are hoverable by default
-	Interactive.hovered[eid] = 0;
-	Interactive.pressed[eid] = 0;
-	Interactive.keyable[eid] = 1; // Textboxes respond to keys by default
-	Interactive.hoverEffectFg[eid] = 0xffffffff;
-	Interactive.hoverEffectBg[eid] = 0x333333ff;
-
-	const interactiveOptions: InteractiveOptions = {};
-	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
-	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
-	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
-	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
-	if (validated.hoverEffectFg !== undefined)
-		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
-	if (validated.hoverEffectBg !== undefined)
-		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
-
-	if (Object.keys(interactiveOptions).length > 0) {
-		setInteractive(world, eid, interactiveOptions);
-	}
-
-	// Initialize Focusable component
-	addComponent(world, eid, Focusable);
-	Focusable.focusable[eid] = 1; // Textboxes are focusable by default
-	Focusable.focused[eid] = 0;
-	Focusable.tabIndex[eid] = 0;
-	Focusable.focusEffectFg[eid] = 0xffffffff;
-	Focusable.focusEffectBg[eid] = 0x0066ffff;
-
-	const focusableOptions: FocusableOptions = {};
-	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
-	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
-	if (validated.focusEffectFg !== undefined)
-		focusableOptions.focusEffectFg = validated.focusEffectFg;
-	if (validated.focusEffectBg !== undefined)
-		focusableOptions.focusEffectBg = validated.focusEffectBg;
-
-	if (Object.keys(focusableOptions).length > 0) {
-		setFocusable(world, eid, focusableOptions);
-	}
+	// Initialize Interactive and Focusable components with widget defaults
+	initWidgetInteractive(world, eid);
+	Interactive.hoverEffectBg[eid] = 0x333333ff; // Textbox-specific hover color
+	applyInteractiveOptions(world, eid, validated);
+	initWidgetFocusable(world, eid);
+	applyFocusableOptions(world, eid, validated);
 
 	// Attach text input state machine behavior
 	attachTextInputBehavior(world, eid);
@@ -2149,50 +2177,12 @@ export function createTextareaEntity(world: World, config: TextareaConfig = {}):
 		setContent(world, eid, validated.value);
 	}
 
-	// Initialize Interactive component
-	addComponent(world, eid, Interactive);
-	Interactive.clickable[eid] = 1; // Textareas are clickable by default
-	Interactive.draggable[eid] = 0;
-	Interactive.hoverable[eid] = 1; // Textareas are hoverable by default
-	Interactive.hovered[eid] = 0;
-	Interactive.pressed[eid] = 0;
-	Interactive.keyable[eid] = 1; // Textareas respond to keys by default
-	Interactive.hoverEffectFg[eid] = 0xffffffff;
-	Interactive.hoverEffectBg[eid] = 0x333333ff;
-
-	const interactiveOptions: InteractiveOptions = {};
-	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
-	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
-	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
-	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
-	if (validated.hoverEffectFg !== undefined)
-		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
-	if (validated.hoverEffectBg !== undefined)
-		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
-
-	if (Object.keys(interactiveOptions).length > 0) {
-		setInteractive(world, eid, interactiveOptions);
-	}
-
-	// Initialize Focusable component
-	addComponent(world, eid, Focusable);
-	Focusable.focusable[eid] = 1; // Textareas are focusable by default
-	Focusable.focused[eid] = 0;
-	Focusable.tabIndex[eid] = 0;
-	Focusable.focusEffectFg[eid] = 0xffffffff;
-	Focusable.focusEffectBg[eid] = 0x0066ffff;
-
-	const focusableOptions: FocusableOptions = {};
-	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
-	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
-	if (validated.focusEffectFg !== undefined)
-		focusableOptions.focusEffectFg = validated.focusEffectFg;
-	if (validated.focusEffectBg !== undefined)
-		focusableOptions.focusEffectBg = validated.focusEffectBg;
-
-	if (Object.keys(focusableOptions).length > 0) {
-		setFocusable(world, eid, focusableOptions);
-	}
+	// Initialize Interactive and Focusable components with widget defaults
+	initWidgetInteractive(world, eid);
+	Interactive.hoverEffectBg[eid] = 0x333333ff; // Textarea-specific hover color
+	applyInteractiveOptions(world, eid, validated);
+	initWidgetFocusable(world, eid);
+	applyFocusableOptions(world, eid, validated);
 
 	// Initialize Scrollable component if requested
 	if (validated.scrollable) {
@@ -2202,19 +2192,7 @@ export function createTextareaEntity(world: World, config: TextareaConfig = {}):
 		Scrollable.scrollWidth[eid] = 0;
 		Scrollable.scrollHeight[eid] = 0; // Will be updated when content changes
 		Scrollable.scrollbarVisible[eid] = 2; // Auto
-
-		const scrollableOptions: ScrollableOptions = {};
-		if (validated.scrollX !== undefined) scrollableOptions.scrollX = validated.scrollX;
-		if (validated.scrollY !== undefined) scrollableOptions.scrollY = validated.scrollY;
-		if (validated.scrollWidth !== undefined) scrollableOptions.scrollWidth = validated.scrollWidth;
-		if (validated.scrollHeight !== undefined)
-			scrollableOptions.scrollHeight = validated.scrollHeight;
-		if (validated.scrollbarVisible !== undefined)
-			scrollableOptions.scrollbarVisible = validated.scrollbarVisible;
-
-		if (Object.keys(scrollableOptions).length > 0) {
-			setScrollable(world, eid, scrollableOptions);
-		}
+		applyScrollableOptions(world, eid, validated);
 	}
 
 	// Attach text input state machine behavior
@@ -2310,50 +2288,12 @@ export function createSelectEntity(world: World, config: SelectConfig = {}): Ent
 	Content.align[eid] = 0; // Left align
 	Content.valign[eid] = 1; // Middle
 
-	// Initialize Interactive component
-	addComponent(world, eid, Interactive);
-	Interactive.clickable[eid] = 1; // Selects are clickable by default
-	Interactive.draggable[eid] = 0;
-	Interactive.hoverable[eid] = 1; // Selects are hoverable by default
-	Interactive.hovered[eid] = 0;
-	Interactive.pressed[eid] = 0;
-	Interactive.keyable[eid] = 1; // Selects respond to keys by default
-	Interactive.hoverEffectFg[eid] = 0xffffffff;
-	Interactive.hoverEffectBg[eid] = 0x333333ff;
-
-	const interactiveOptions: InteractiveOptions = {};
-	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
-	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
-	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
-	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
-	if (validated.hoverEffectFg !== undefined)
-		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
-	if (validated.hoverEffectBg !== undefined)
-		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
-
-	if (Object.keys(interactiveOptions).length > 0) {
-		setInteractive(world, eid, interactiveOptions);
-	}
-
-	// Initialize Focusable component
-	addComponent(world, eid, Focusable);
-	Focusable.focusable[eid] = 1; // Selects are focusable by default
-	Focusable.focused[eid] = 0;
-	Focusable.tabIndex[eid] = 0;
-	Focusable.focusEffectFg[eid] = 0xffffffff;
-	Focusable.focusEffectBg[eid] = 0x0066ffff;
-
-	const focusableOptions: FocusableOptions = {};
-	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
-	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
-	if (validated.focusEffectFg !== undefined)
-		focusableOptions.focusEffectFg = validated.focusEffectFg;
-	if (validated.focusEffectBg !== undefined)
-		focusableOptions.focusEffectBg = validated.focusEffectBg;
-
-	if (Object.keys(focusableOptions).length > 0) {
-		setFocusable(world, eid, focusableOptions);
-	}
+	// Initialize Interactive and Focusable components with widget defaults
+	initWidgetInteractive(world, eid);
+	Interactive.hoverEffectBg[eid] = 0x333333ff; // Select-specific hover color
+	applyInteractiveOptions(world, eid, validated);
+	initWidgetFocusable(world, eid);
+	applyFocusableOptions(world, eid, validated);
 
 	// Attach select behavior with options
 	const options: SelectOption[] = validated.options ?? [];
@@ -2428,50 +2368,13 @@ export function createSliderEntity(world: World, config: SliderConfig = {}): Ent
 	applyBorderConfig(world, eid, validated.border);
 	applyPaddingConfig(world, eid, validated.padding);
 
-	// Initialize Interactive component
-	addComponent(world, eid, Interactive);
-	Interactive.clickable[eid] = 1;
-	Interactive.draggable[eid] = 1;
-	Interactive.hoverable[eid] = 1;
-	Interactive.keyable[eid] = 1;
-	Interactive.hovered[eid] = 0;
-	Interactive.pressed[eid] = 0;
-	Interactive.hoverEffectFg[eid] = 0xffffffff;
-	Interactive.hoverEffectBg[eid] = 0x333333ff;
-
-	const interactiveOptions: InteractiveOptions = {};
-	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
-	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
-	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
-	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
-	if (validated.hoverEffectFg !== undefined)
-		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
-	if (validated.hoverEffectBg !== undefined)
-		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
-
-	if (Object.keys(interactiveOptions).length > 0) {
-		setInteractive(world, eid, interactiveOptions);
-	}
-
-	// Initialize Focusable component
-	addComponent(world, eid, Focusable);
-	Focusable.focusable[eid] = 1; // Sliders are focusable by default
-	Focusable.focused[eid] = 0;
-	Focusable.tabIndex[eid] = 0;
-	Focusable.focusEffectFg[eid] = 0xffffffff;
-	Focusable.focusEffectBg[eid] = 0x0066ffff;
-
-	const focusableOptions: FocusableOptions = {};
-	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
-	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
-	if (validated.focusEffectFg !== undefined)
-		focusableOptions.focusEffectFg = validated.focusEffectFg;
-	if (validated.focusEffectBg !== undefined)
-		focusableOptions.focusEffectBg = validated.focusEffectBg;
-
-	if (Object.keys(focusableOptions).length > 0) {
-		setFocusable(world, eid, focusableOptions);
-	}
+	// Initialize Interactive and Focusable components with widget defaults
+	initWidgetInteractive(world, eid);
+	Interactive.draggable[eid] = 1; // Sliders are draggable by default
+	Interactive.hoverEffectBg[eid] = 0x333333ff; // Slider-specific hover color
+	applyInteractiveOptions(world, eid, validated);
+	initWidgetFocusable(world, eid);
+	applyFocusableOptions(world, eid, validated);
 
 	// Attach slider behavior
 	const min = validated.min ?? 0;
@@ -2490,28 +2393,8 @@ export function createSliderEntity(world: World, config: SliderConfig = {}): Ent
 		setShowSliderValue(world, eid, validated.showValue);
 	}
 
-	// Set up display configuration
-	const sliderDisplayOptions: {
-		trackChar?: string;
-		thumbChar?: string;
-		fillChar?: string;
-		trackFg?: number;
-		trackBg?: number;
-		thumbFg?: number;
-		thumbBg?: number;
-		fillFg?: number;
-		fillBg?: number;
-	} = {};
-	if (validated.trackChar !== undefined) sliderDisplayOptions.trackChar = validated.trackChar;
-	if (validated.thumbChar !== undefined) sliderDisplayOptions.thumbChar = validated.thumbChar;
-	if (validated.fillChar !== undefined) sliderDisplayOptions.fillChar = validated.fillChar;
-	if (validated.trackFg !== undefined) sliderDisplayOptions.trackFg = validated.trackFg;
-	if (validated.trackBg !== undefined) sliderDisplayOptions.trackBg = validated.trackBg;
-	if (validated.thumbFg !== undefined) sliderDisplayOptions.thumbFg = validated.thumbFg;
-	if (validated.thumbBg !== undefined) sliderDisplayOptions.thumbBg = validated.thumbBg;
-	if (validated.fillFg !== undefined) sliderDisplayOptions.fillFg = validated.fillFg;
-	if (validated.fillBg !== undefined) sliderDisplayOptions.fillBg = validated.fillBg;
-	setSliderDisplay(eid, sliderDisplayOptions);
+	// Apply slider display configuration
+	applySliderDisplayOptions(eid, validated);
 
 	if (validated.parent !== undefined) {
 		setParent(world, eid, validated.parent as Entity);
@@ -2758,50 +2641,12 @@ export function createRadioButtonEntity(world: World, config: RadioButtonConfig 
 		setContent(world, eid, validated.label);
 	}
 
-	// Initialize Interactive component
-	addComponent(world, eid, Interactive);
-	Interactive.clickable[eid] = 1;
-	Interactive.draggable[eid] = 0;
-	Interactive.hoverable[eid] = 1;
-	Interactive.hovered[eid] = 0;
-	Interactive.pressed[eid] = 0;
-	Interactive.keyable[eid] = 1;
-	Interactive.hoverEffectFg[eid] = 0xffffffff;
-	Interactive.hoverEffectBg[eid] = 0x333333ff;
-
-	const interactiveOptions: InteractiveOptions = {};
-	if (validated.clickable !== undefined) interactiveOptions.clickable = validated.clickable;
-	if (validated.draggable !== undefined) interactiveOptions.draggable = validated.draggable;
-	if (validated.hoverable !== undefined) interactiveOptions.hoverable = validated.hoverable;
-	if (validated.keyable !== undefined) interactiveOptions.keyable = validated.keyable;
-	if (validated.hoverEffectFg !== undefined)
-		interactiveOptions.hoverEffectFg = validated.hoverEffectFg;
-	if (validated.hoverEffectBg !== undefined)
-		interactiveOptions.hoverEffectBg = validated.hoverEffectBg;
-
-	if (Object.keys(interactiveOptions).length > 0) {
-		setInteractive(world, eid, interactiveOptions);
-	}
-
-	// Initialize Focusable component
-	addComponent(world, eid, Focusable);
-	Focusable.focusable[eid] = 1;
-	Focusable.focused[eid] = 0;
-	Focusable.tabIndex[eid] = 0;
-	Focusable.focusEffectFg[eid] = 0xffffffff;
-	Focusable.focusEffectBg[eid] = 0x0066ffff;
-
-	const focusableOptions: FocusableOptions = {};
-	if (validated.focusable !== undefined) focusableOptions.focusable = validated.focusable;
-	if (validated.tabIndex !== undefined) focusableOptions.tabIndex = validated.tabIndex;
-	if (validated.focusEffectFg !== undefined)
-		focusableOptions.focusEffectFg = validated.focusEffectFg;
-	if (validated.focusEffectBg !== undefined)
-		focusableOptions.focusEffectBg = validated.focusEffectBg;
-
-	if (Object.keys(focusableOptions).length > 0) {
-		setFocusable(world, eid, focusableOptions);
-	}
+	// Initialize Interactive and Focusable components with widget defaults
+	initWidgetInteractive(world, eid);
+	Interactive.hoverEffectBg[eid] = 0x333333ff; // RadioButton-specific hover color
+	applyInteractiveOptions(world, eid, validated);
+	initWidgetFocusable(world, eid);
+	applyFocusableOptions(world, eid, validated);
 
 	// Attach radio button state machine
 	attachRadioButtonBehavior(world, eid, validated.radioSet as Entity | undefined);

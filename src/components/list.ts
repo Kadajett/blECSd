@@ -655,44 +655,40 @@ export function getSelectedItem(eid: Entity): ListItem | undefined {
  * @param index - The index to select (-1 to clear)
  * @returns true if selection changed
  */
+/** Validate and check if index can be selected */
+function canSelectIndex(eid: Entity, index: number, itemCount: number): boolean {
+	if (index < -1 || index >= itemCount) return false;
+	if (index < 0) return true;
+
+	const item = getItem(eid, index);
+	return !item?.disabled;
+}
+
+/** Fire select callbacks for a given index */
+function fireSelectCallbacks(eid: Entity, index: number): void {
+	if (index < 0) return;
+
+	const item = getItem(eid, index);
+	if (!item) return;
+
+	const callbacks = selectCallbacks.get(eid);
+	if (!callbacks) return;
+
+	for (const cb of callbacks) {
+		cb(index, item);
+	}
+}
+
 export function setSelectedIndex(world: World, eid: Entity, index: number): boolean {
 	const itemCount = listStore.itemCount[eid] ?? 0;
 	const currentIndex = listStore.selectedIndex[eid] ?? -1;
 
-	// Validate index
-	if (index < -1 || index >= itemCount) {
-		return false;
-	}
-
-	// Skip disabled items
-	if (index >= 0) {
-		const item = getItem(eid, index);
-		if (item?.disabled) {
-			return false;
-		}
-	}
-
-	if (currentIndex === index) {
-		return false;
-	}
+	if (!canSelectIndex(eid, index, itemCount)) return false;
+	if (currentIndex === index) return false;
 
 	listStore.selectedIndex[eid] = index;
 	markDirty(world, eid);
-
-	// Fire select callbacks
-	if (index >= 0) {
-		const item = getItem(eid, index);
-		if (item) {
-			const callbacks = selectCallbacks.get(eid);
-			if (callbacks) {
-				for (const cb of callbacks) {
-					cb(index, item);
-				}
-			}
-		}
-	}
-
-	// Ensure selection is visible
+	fireSelectCallbacks(eid, index);
 	ensureVisible(world, eid, index);
 
 	return true;

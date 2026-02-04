@@ -314,38 +314,55 @@ export class InputHandler {
 		// ESC [ - incomplete, need at least one more byte
 		if (this.buffer.length === 2 && this.buffer[1] === 0x5b) return true;
 
-		// Check for complete 3-byte sequences: ESC [ <letter>
 		if (this.buffer.length >= 3 && this.buffer[1] === 0x5b) {
-			const thirdByte = this.buffer[2] ?? 0;
-			// Single letter terminators (A-Z, a-z) for arrows, focus, etc.
-			if ((thirdByte >= 0x41 && thirdByte <= 0x5a) || (thirdByte >= 0x61 && thirdByte <= 0x7a)) {
-				return false; // Complete sequence
-			}
-			// If third byte is < for SGR mouse, check for terminator
-			if (thirdByte === 0x3c) {
-				// SGR mouse sequence - look for M or m terminator
-				for (let i = 3; i < this.buffer.length; i++) {
-					const byte = this.buffer[i] ?? 0;
-					if (byte === 0x4d || byte === 0x6d) {
-						return false; // Found terminator
-					}
-				}
-				return true; // No terminator yet
-			}
-			// Check for numeric sequences ending with ~ or letter
-			if (thirdByte >= 0x30 && thirdByte <= 0x39) {
-				// Numeric sequence - look for terminator
-				for (let i = 3; i < this.buffer.length; i++) {
-					const b = this.buffer[i] ?? 0;
-					// Terminators: ~ for function keys, letters for modifiers
-					if (b === 0x7e || (b >= 0x41 && b <= 0x5a) || (b >= 0x61 && b <= 0x7a)) {
-						return false; // Complete
-					}
-				}
-				return true; // No terminator yet
-			}
+			return this.isIncompleteCsiSequence(this.buffer);
 		}
 
+		return false;
+	}
+
+	private isIncompleteCsiSequence(buffer: Uint8Array): boolean {
+		const thirdByte = buffer[2] ?? 0;
+		if (this.isLetterByte(thirdByte)) {
+			return false;
+		}
+
+		if (thirdByte === 0x3c) {
+			return !this.hasMouseTerminator(buffer, 3);
+		}
+
+		if (this.isDigitByte(thirdByte)) {
+			return !this.hasNumericTerminator(buffer, 3);
+		}
+
+		return false;
+	}
+
+	private isLetterByte(byte: number): boolean {
+		return (byte >= 0x41 && byte <= 0x5a) || (byte >= 0x61 && byte <= 0x7a);
+	}
+
+	private isDigitByte(byte: number): boolean {
+		return byte >= 0x30 && byte <= 0x39;
+	}
+
+	private hasMouseTerminator(buffer: Uint8Array, start: number): boolean {
+		for (let i = start; i < buffer.length; i++) {
+			const byte = buffer[i] ?? 0;
+			if (byte === 0x4d || byte === 0x6d) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private hasNumericTerminator(buffer: Uint8Array, start: number): boolean {
+		for (let i = start; i < buffer.length; i++) {
+			const byte = buffer[i] ?? 0;
+			if (byte === 0x7e || this.isLetterByte(byte)) {
+				return true;
+			}
+		}
 		return false;
 	}
 

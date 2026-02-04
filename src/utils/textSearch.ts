@@ -270,7 +270,7 @@ function buildLineIndex(text: string): number[] {
 /**
  * Binary search to find line number from position.
  */
-function findLineFromPosition(lineStarts: number[], position: number): number {
+function findLineFromPosition(lineStarts: readonly number[], position: number): number {
 	let low = 0;
 	let high = lineStarts.length - 1;
 
@@ -311,14 +311,7 @@ export function searchLiteral(
 	const startPosition = options.startPosition ?? 0;
 
 	if (query.length === 0) {
-		return {
-			matches: [],
-			totalCount: 0,
-			truncated: false,
-			timedOut: false,
-			timeMs: performance.now() - startTime,
-			query,
-		};
+		return createEmptySearchResult(query, startTime);
 	}
 
 	// Use Boyer-Moore-Horspool for fast searching
@@ -328,36 +321,14 @@ export function searchLiteral(
 	const lineStarts = buildLineIndex(text);
 
 	// Convert positions to matches
-	const matches: SearchMatch[] = [];
-	let truncated = false;
-
-	for (const pos of positions) {
-		// Check whole word boundary if needed
-		if (wholeWord) {
-			const charBefore = pos > 0 ? text[pos - 1] : '';
-			const charAfter = text[pos + query.length] ?? '';
-
-			if (charBefore && /\w/.test(charBefore)) continue;
-			if (charAfter && /\w/.test(charAfter)) continue;
-		}
-
-		const line = findLineFromPosition(lineStarts, pos);
-		const lineStart = lineStarts[line] ?? 0;
-		const matchText = text.slice(pos, pos + query.length);
-
-		matches.push({
-			start: pos,
-			end: pos + query.length,
-			line,
-			column: pos - lineStart,
-			text: matchText,
-		});
-
-		if (maxMatches && matches.length >= maxMatches) {
-			truncated = true;
-			break;
-		}
-	}
+	const { matches, truncated } = collectLiteralMatches(
+		text,
+		query,
+		positions,
+		lineStarts,
+		wholeWord,
+		maxMatches,
+	);
 
 	return {
 		matches,
@@ -389,71 +360,138 @@ export function searchRegex(
 	const startPosition = options.startPosition ?? 0;
 
 	if (pattern.length === 0) {
-		return {
-			matches: [],
-			totalCount: 0,
-			truncated: false,
-			timedOut: false,
-			timeMs: performance.now() - startTime,
-			query: pattern,
-		};
+		return createEmptySearchResult(pattern, startTime);
 	}
 
 	// Compile regex
-	let regex: RegExp;
-	try {
-		const flags = caseSensitive ? 'g' : 'gi';
-		regex = new RegExp(pattern, flags);
-	} catch {
-		// Invalid regex
-		return {
-			matches: [],
-			totalCount: 0,
-			truncated: false,
-			timedOut: false,
-			timeMs: performance.now() - startTime,
-			query: pattern,
-		};
+	const regex = compileRegex(pattern, caseSensitive);
+	if (!regex) {
+		return createEmptySearchResult(pattern, startTime);
 	}
 
 	// Build line index for fast line lookup
 	const lineStarts = buildLineIndex(text);
 
 	// Search with timeout protection
+	const regexResult = collectRegexMatches(
+		text,
+		regex,
+		lineStarts,
+		startPosition,
+		startTime + timeout,
+		maxMatches,
+	);
+
+	return {
+		matches: regexResult.matches,
+		totalCount: regexResult.matches.length,
+		truncated: regexResult.truncated,
+		timedOut: regexResult.timedOut,
+		timeMs: performance.now() - startTime,
+		query: pattern,
+	};
+}
+
+function createEmptySearchResult(query: string, startTime: number): SearchResult {
+	return {
+		matches: [],
+		totalCount: 0,
+		truncated: false,
+		timedOut: false,
+		timeMs: performance.now() - startTime,
+		query,
+	};
+}
+
+function compileRegex(pattern: string, caseSensitive: boolean): RegExp | null {
+	try {
+		const flags = caseSensitive ? 'g' : 'gi';
+		return new RegExp(pattern, flags);
+	} catch {
+		return null;
+	}
+}
+
+function collectLiteralMatches(
+	text: string,
+	query: string,
+	positions: readonly number[],
+	lineStarts: readonly number[],
+	wholeWord: boolean,
+	maxMatches?: number,
+): { matches: SearchMatch[]; truncated: boolean } {
+	const matches: SearchMatch[] = [];
+	let truncated = false;
+
+	for (const pos of positions) {
+		if (wholeWord && !isWholeWordMatch(text, pos, query.length)) {
+			continue;
+		}
+		matches.push(buildMatch(text, lineStarts, pos, query.length));
+		if (maxMatches && matches.length >= maxMatches) {
+			truncated = true;
+			break;
+		}
+	}
+
+	return { matches, truncated };
+}
+
+function isWholeWordMatch(text: string, pos: number, length: number): boolean {
+	const charBefore = pos > 0 ? text[pos - 1] : '';
+	const charAfter = text[pos + length] ?? '';
+	if (charBefore && /\w/.test(charBefore)) return false;
+	if (charAfter && /\w/.test(charAfter)) return false;
+	return true;
+}
+
+function buildMatch(
+	text: string,
+	lineStarts: readonly number[],
+	pos: number,
+	length: number,
+): SearchMatch {
+	const line = findLineFromPosition(lineStarts, pos);
+	const lineStart = lineStarts[line] ?? 0;
+	const matchText = text.slice(pos, pos + length);
+
+	return {
+		start: pos,
+		end: pos + length,
+		line,
+		column: pos - lineStart,
+		text: matchText,
+	};
+}
+
+function collectRegexMatches(
+	text: string,
+	regex: RegExp,
+	lineStarts: readonly number[],
+	startPosition: number,
+	deadline: number,
+	maxMatches?: number,
+): { matches: SearchMatch[]; truncated: boolean; timedOut: boolean } {
 	const matches: SearchMatch[] = [];
 	let truncated = false;
 	let timedOut = false;
 	let lastIndex = startPosition;
-	regex.lastIndex = startPosition;
 
-	const deadline = startTime + timeout;
+	regex.lastIndex = startPosition;
 	let match: RegExpExecArray | null = regex.exec(text);
 
 	while (match !== null) {
-		// Check timeout every 1000 matches
 		if (matches.length % 1000 === 0 && performance.now() > deadline) {
 			timedOut = true;
 			break;
 		}
 
-		// Prevent infinite loop on empty matches
 		if (match.index === lastIndex) {
 			regex.lastIndex = lastIndex + 1;
 		}
 		lastIndex = regex.lastIndex;
 
-		const pos = match.index;
-		const matchText = match[0];
-		const line = findLineFromPosition(lineStarts, pos);
-		const lineStart = lineStarts[line] ?? 0;
-
-		matches.push({
-			start: pos,
-			end: pos + matchText.length,
-			line,
-			column: pos - lineStart,
-			text: matchText,
-		});
+		matches.push(buildMatch(text, lineStarts, match.index, match[0].length));
 
 		if (maxMatches && matches.length >= maxMatches) {
 			truncated = true;
@@ -463,14 +501,7 @@ export function searchRegex(
 		match = regex.exec(text);
 	}
 
-	return {
-		matches,
-		totalCount: matches.length,
-		truncated,
-		timedOut,
-		timeMs: performance.now() - startTime,
-		query: pattern,
-	};
+	return { matches, truncated, timedOut };
 }
 
 /**

@@ -10,6 +10,130 @@ import { createMeshFromArrays } from '../components/mesh';
 import { type ObjLoadOptions, ObjLoadOptionsSchema } from '../schemas/model';
 import type { ObjFace, ObjGroup, ObjParseResult, ObjVertex } from './types';
 
+/** Parse a vertex (v) line */
+function parseVertex(parts: string[]): ObjVertex | null {
+	if (parts.length < 4) return null;
+	return {
+		x: Number.parseFloat(parts[1] as string),
+		y: Number.parseFloat(parts[2] as string),
+		z: Number.parseFloat(parts[3] as string),
+	};
+}
+
+/** Parse a texture coordinate (vt) line */
+function parseTexCoord(parts: string[]): { u: number; v: number } | null {
+	if (parts.length < 3) return null;
+	return {
+		u: Number.parseFloat(parts[1] as string),
+		v: Number.parseFloat(parts[2] as string),
+	};
+}
+
+/** Parse a face vertex component (v/vt/vn format) */
+function parseFaceVertex(
+	faceVert: string,
+	vertexCount: number,
+	texCoordCount: number,
+	normalCount: number,
+): { vi: number; ti?: number; ni?: number } {
+	const parts = faceVert.split('/');
+	let vi = Number.parseInt(parts[0] as string, 10);
+	vi = vi < 0 ? vertexCount + vi : vi - 1;
+
+	const result: { vi: number; ti?: number; ni?: number } = { vi };
+
+	if (parts.length >= 2 && parts[1] !== '') {
+		let ti = Number.parseInt(parts[1] as string, 10);
+		ti = ti < 0 ? texCoordCount + ti : ti - 1;
+		result.ti = ti;
+	}
+
+	if (parts.length >= 3 && parts[2] !== '') {
+		let ni = Number.parseInt(parts[2] as string, 10);
+		ni = ni < 0 ? normalCount + ni : ni - 1;
+		result.ni = ni;
+	}
+
+	return result;
+}
+
+/** Parse a face (f) line */
+function parseFace(
+	parts: string[],
+	vertexCount: number,
+	texCoordCount: number,
+	normalCount: number,
+): ObjFace | null {
+	if (parts.length < 4) return null;
+
+	const vertexIndices: number[] = [];
+	const normalIndices: number[] = [];
+	const texCoordIndices: number[] = [];
+	let hasNormals = false;
+	let hasTexCoords = false;
+
+	for (let i = 1; i < parts.length; i++) {
+		const fv = parseFaceVertex(parts[i] as string, vertexCount, texCoordCount, normalCount);
+		vertexIndices.push(fv.vi);
+		if (fv.ti !== undefined) {
+			texCoordIndices.push(fv.ti);
+			hasTexCoords = true;
+		}
+		if (fv.ni !== undefined) {
+			normalIndices.push(fv.ni);
+			hasNormals = true;
+		}
+	}
+
+	return {
+		vertexIndices,
+		...(hasNormals ? { normalIndices } : {}),
+		...(hasTexCoords ? { texCoordIndices } : {}),
+	};
+}
+
+/** Accumulator for OBJ parsing state */
+interface ObjParseState {
+	vertices: ObjVertex[];
+	normals: ObjVertex[];
+	texCoords: Array<{ u: number; v: number }>;
+	faces: ObjFace[];
+	groups: ObjGroup[];
+}
+
+/** Process a single OBJ line and update parse state */
+function processObjLine(parts: string[], state: ObjParseState): void {
+	const keyword = parts[0];
+
+	if (keyword === 'v') {
+		const v = parseVertex(parts);
+		if (v) state.vertices.push(v);
+		return;
+	}
+
+	if (keyword === 'vn') {
+		const n = parseVertex(parts);
+		if (n) state.normals.push(n);
+		return;
+	}
+
+	if (keyword === 'vt') {
+		const t = parseTexCoord(parts);
+		if (t) state.texCoords.push(t);
+		return;
+	}
+
+	if (keyword === 'f') {
+		const f = parseFace(parts, state.vertices.length, state.texCoords.length, state.normals.length);
+		if (f) state.faces.push(f);
+		return;
+	}
+
+	if ((keyword === 'g' || keyword === 'o') && parts.length >= 2) {
+		state.groups.push({ name: parts.slice(1).join(' '), startFace: state.faces.length });
+	}
+}
+
 /**
  * Parse a Wavefront OBJ file from a text string.
  *
@@ -34,86 +158,25 @@ import type { ObjFace, ObjGroup, ObjParseResult, ObjVertex } from './types';
  * ```
  */
 export function parseObj(source: string): ObjParseResult {
-	const vertices: ObjVertex[] = [];
-	const normals: ObjVertex[] = [];
-	const texCoords: Array<{ u: number; v: number }> = [];
-	const faces: ObjFace[] = [];
-	const groups: ObjGroup[] = [];
+	const state: ObjParseState = {
+		vertices: [],
+		normals: [],
+		texCoords: [],
+		faces: [],
+		groups: [],
+	};
 
 	const lines = source.split('\n');
 
 	for (const rawLine of lines) {
 		const line = rawLine.trim();
-
-		// Skip comments and blank lines
-		if (line.length === 0 || line.startsWith('#')) {
-			continue;
-		}
+		if (line.length === 0 || line.startsWith('#')) continue;
 
 		const parts = line.split(/\s+/);
-		const keyword = parts[0];
-
-		if (keyword === 'v' && parts.length >= 4) {
-			vertices.push({
-				x: Number.parseFloat(parts[1] as string),
-				y: Number.parseFloat(parts[2] as string),
-				z: Number.parseFloat(parts[3] as string),
-			});
-		} else if (keyword === 'vn' && parts.length >= 4) {
-			normals.push({
-				x: Number.parseFloat(parts[1] as string),
-				y: Number.parseFloat(parts[2] as string),
-				z: Number.parseFloat(parts[3] as string),
-			});
-		} else if (keyword === 'vt' && parts.length >= 3) {
-			texCoords.push({
-				u: Number.parseFloat(parts[1] as string),
-				v: Number.parseFloat(parts[2] as string),
-			});
-		} else if (keyword === 'f' && parts.length >= 4) {
-			const vertexIndices: number[] = [];
-			const normalIndices: number[] = [];
-			const texCoordIndices: number[] = [];
-			let hasNormals = false;
-			let hasTexCoords = false;
-
-			for (let i = 1; i < parts.length; i++) {
-				const faceVert = (parts[i] as string).split('/');
-				let vi = Number.parseInt(faceVert[0] as string, 10);
-				// Convert 1-based to 0-based, handle negative indices
-				vi = vi < 0 ? vertices.length + vi : vi - 1;
-				vertexIndices.push(vi);
-
-				if (faceVert.length >= 2 && faceVert[1] !== '') {
-					let ti = Number.parseInt(faceVert[1] as string, 10);
-					ti = ti < 0 ? texCoords.length + ti : ti - 1;
-					texCoordIndices.push(ti);
-					hasTexCoords = true;
-				}
-
-				if (faceVert.length >= 3 && faceVert[2] !== '') {
-					let ni = Number.parseInt(faceVert[2] as string, 10);
-					ni = ni < 0 ? normals.length + ni : ni - 1;
-					normalIndices.push(ni);
-					hasNormals = true;
-				}
-			}
-
-			const face: ObjFace = {
-				vertexIndices,
-				...(hasNormals ? { normalIndices } : {}),
-				...(hasTexCoords ? { texCoordIndices } : {}),
-			};
-			faces.push(face);
-		} else if ((keyword === 'g' || keyword === 'o') && parts.length >= 2) {
-			groups.push({
-				name: parts.slice(1).join(' '),
-				startFace: faces.length,
-			});
-		}
+		processObjLine(parts, state);
 	}
 
-	return { vertices, normals, texCoords, faces, groups };
+	return state;
 }
 
 /**

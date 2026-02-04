@@ -262,36 +262,15 @@ export function findFile(
 	const excludeDirs = new Set([...EXCLUDED_DIRS, ...(options?.excludeDirs ?? [])]);
 
 	function search(dir: string, depth: number): string | null {
-		if (depth > maxDepth) {
-			return null;
-		}
+		if (depth > maxDepth) return null;
 
-		let entries: fs.Dirent[];
-		try {
-			entries = fs.readdirSync(dir, { withFileTypes: true });
-		} catch {
-			// Permission denied or directory doesn't exist
-			return null;
-		}
+		const entries = readDirEntries(dir);
+		if (!entries) return null;
 
-		// Check for exact match first
-		for (const entry of entries) {
-			if (entry.name === target && entry.isFile()) {
-				return path.join(dir, entry.name);
-			}
-		}
+		const match = findExactEntry(entries, dir, target);
+		if (match) return match;
 
-		// Search subdirectories
-		for (const entry of entries) {
-			if (entry.isDirectory() && !excludeDirs.has(entry.name)) {
-				const result = search(path.join(dir, entry.name), depth + 1);
-				if (result) {
-					return result;
-				}
-			}
-		}
-
-		return null;
+		return searchSubdirectories(entries, dir, depth, maxDepth, excludeDirs, search);
 	}
 
 	return search(path.resolve(startDir), 0);
@@ -332,34 +311,101 @@ export function findAllFiles(
 	const results: string[] = [];
 
 	function search(dir: string, depth: number): void {
-		if (depth > maxDepth || results.length >= maxResults) {
-			return;
-		}
+		if (depth > maxDepth || results.length >= maxResults) return;
 
-		let entries: fs.Dirent[];
-		try {
-			entries = fs.readdirSync(dir, { withFileTypes: true });
-		} catch {
-			return;
-		}
+		const entries = readDirEntries(dir);
+		if (!entries) return;
 
-		for (const entry of entries) {
-			if (results.length >= maxResults) {
-				return;
-			}
-
-			if (entry.name === target && entry.isFile()) {
-				results.push(path.join(dir, entry.name));
-			}
-
-			if (entry.isDirectory() && !excludeDirs.has(entry.name)) {
-				search(path.join(dir, entry.name), depth + 1);
-			}
-		}
+		collectMatchingEntries(entries, dir, target, results, maxResults);
+		searchAllSubdirectories(
+			entries,
+			dir,
+			depth,
+			maxDepth,
+			excludeDirs,
+			results,
+			maxResults,
+			search,
+		);
 	}
 
 	search(path.resolve(startDir), 0);
 	return results;
+}
+
+function readDirEntries(dir: string): fs.Dirent[] | null {
+	try {
+		return fs.readdirSync(dir, { withFileTypes: true });
+	} catch {
+		return null;
+	}
+}
+
+function findExactEntry(entries: fs.Dirent[], dir: string, target: string): string | null {
+	for (const entry of entries) {
+		if (entry.name === target && entry.isFile()) {
+			return path.join(dir, entry.name);
+		}
+	}
+	return null;
+}
+
+function searchSubdirectories(
+	entries: fs.Dirent[],
+	dir: string,
+	depth: number,
+	_maxDepth: number,
+	excludeDirs: Set<string>,
+	search: (dir: string, depth: number) => string | null,
+): string | null {
+	for (const entry of entries) {
+		if (!entry.isDirectory() || excludeDirs.has(entry.name)) {
+			continue;
+		}
+		const result = search(path.join(dir, entry.name), depth + 1);
+		if (result) {
+			return result;
+		}
+	}
+	return null;
+}
+
+function collectMatchingEntries(
+	entries: fs.Dirent[],
+	dir: string,
+	target: string,
+	results: string[],
+	maxResults: number,
+): void {
+	for (const entry of entries) {
+		if (results.length >= maxResults) {
+			return;
+		}
+		if (entry.name === target && entry.isFile()) {
+			results.push(path.join(dir, entry.name));
+		}
+	}
+}
+
+function searchAllSubdirectories(
+	entries: fs.Dirent[],
+	dir: string,
+	depth: number,
+	_maxDepth: number,
+	excludeDirs: Set<string>,
+	results: string[],
+	maxResults: number,
+	search: (dir: string, depth: number) => void,
+): void {
+	for (const entry of entries) {
+		if (results.length >= maxResults) {
+			return;
+		}
+		if (!entry.isDirectory() || excludeDirs.has(entry.name)) {
+			continue;
+		}
+		search(path.join(dir, entry.name), depth + 1);
+	}
 }
 
 // =============================================================================
