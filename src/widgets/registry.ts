@@ -282,6 +282,7 @@ export function createWidgetRegistry(): WidgetRegistry {
 // =============================================================================
 
 // Import widget factories
+import { createBigText } from './bigText';
 import { createBox } from './box';
 import { createHoverTextManager } from './hoverText';
 import { createLayout } from './layout';
@@ -309,6 +310,13 @@ const BUILTIN_WIDGETS: ReadonlyArray<{
 	tags: readonly string[];
 	aliases?: readonly string[];
 }> = [
+	{
+		name: 'bigText',
+		factory: createBigText as WidgetFactory,
+		description: 'Large ASCII art text display widget',
+		tags: ['display', 'text'],
+		aliases: ['bigtext'],
+	},
 	{
 		name: 'box',
 		factory: createBox as WidgetFactory,

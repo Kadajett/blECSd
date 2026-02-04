@@ -14,6 +14,10 @@
       "import": "./dist/widgets/index.js",
       "types": "./dist/widgets/index.d.ts"
     },
+    "./widgets/bigText": {
+      "import": "./dist/widgets/bigText.js",
+      "types": "./dist/widgets/bigText.d.ts"
+    },
     "./widgets/fonts": {
       "import": "./dist/widgets/fonts/index.js",
       "types": "./dist/widgets/fonts/index.d.ts"
