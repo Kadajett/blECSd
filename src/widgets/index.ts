@@ -49,6 +49,22 @@ export {
 	spliceLines,
 	unshiftLine,
 } from './contentManipulation';
+// Fonts
+export type {
+	BitmapFont,
+	CharBitmap,
+	FontName,
+	FontNotFoundError,
+	RenderCharOptions,
+} from './fonts';
+export {
+	BitmapFontSchema,
+	CharBitmapSchema,
+	createFontNotFoundError,
+	getCharBitmap,
+	loadFont,
+	renderChar,
+} from './fonts';
 // HoverText (Tooltip) system
 export type {
 	HoverTextConfig,
