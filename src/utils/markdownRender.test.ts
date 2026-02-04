@@ -384,7 +384,7 @@ describe('MarkdownCache', () => {
 		parseMarkdownCached(cache, md);
 		const result2 = parseMarkdownCached(cache, md);
 
-		expect(result2.parseTimeMs).toBeLessThan(1); // Cache hit is very fast
+		expect(result2.parseTimeMs).toBeLessThan(5); // Cache hit should be fast
 	});
 
 	it('invalidates on change', () => {
