@@ -390,7 +390,7 @@ function tryOptimizedCursorMove(buffer: OutputBufferData, x: number, y: number):
 function horizontalMoveAnsi(dx: number): string {
 	if (dx === 1) return '\x1b[C';
 	if (dx === -1) return '\x1b[D';
-	return dx > 0 ? cursorAnsi.forward(dx) : cursorAnsi.backward(-dx);
+	return dx > 0 ? cursorAnsi.forward(dx) : cursorAnsi.back(-dx);
 }
 
 function verticalMoveAnsi(dy: number): string {

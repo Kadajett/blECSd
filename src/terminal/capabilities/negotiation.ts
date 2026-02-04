@@ -141,9 +141,9 @@ export interface NegotiatorConfig {
 	/** Negotiation timing strategy (default: eager) */
 	readonly timing?: NegotiationTimingValue;
 	/** Custom input stream (default: process.stdin) */
-	readonly input?: NodeJS.ReadableStream;
+	readonly input?: NodeJS.ReadStream;
 	/** Custom output stream (default: process.stdout) */
-	readonly output?: NodeJS.WritableStream;
+	readonly output?: NodeJS.WriteStream;
 	/** Force specific capabilities (for testing) */
 	readonly forceCapabilities?: Partial<TerminalCapabilities>;
 }
@@ -430,10 +430,10 @@ interface ResponseCollector {
  * @returns Promise resolving to array of response strings
  */
 async function sendQueriesWithTimeout(
-	queries: string[],
+	queries: readonly string[],
 	timeout: number,
-	input: NodeJS.ReadableStream,
-	output: NodeJS.WritableStream,
+	input: NodeJS.ReadStream,
+	output: NodeJS.WriteStream,
 ): Promise<string[]> {
 	return new Promise((resolve) => {
 		const collector: ResponseCollector = {

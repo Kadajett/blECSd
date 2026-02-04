@@ -118,6 +118,7 @@ export type ParserErrorType =
 export type ParseResult =
 	| { readonly success: true; readonly data: ParsedTerminfo }
 	| { readonly success: false; readonly error: ParserErrorType; readonly message: string };
+type ParseFailure = Extract<ParseResult, { readonly success: false }>;
 
 // =============================================================================
 // CAPABILITY NAME MAPPINGS
@@ -686,7 +687,7 @@ function parseNames(namesStr: string): { names: string[]; description: string } 
  * @param buffer - Buffer containing terminfo data
  * @returns ParseResult with header or error
  */
-function parseHeader(buffer: Buffer): ParseResult | { header: TerminfoHeader; offset: number } {
+function parseHeader(buffer: Buffer): ParseFailure | { header: TerminfoHeader; offset: number } {
 	if (buffer.length < 12) {
 		return {
 			success: false,
@@ -724,7 +725,7 @@ function parseBooleans(
 	buffer: Buffer,
 	offset: number,
 	count: number,
-): { booleans: Record<string, boolean>; offset: number } | ParseResult {
+): { booleans: Record<string, boolean>; offset: number } | ParseFailure {
 	const booleans: Record<string, boolean> = {};
 
 	if (offset + count > buffer.length) {
@@ -762,7 +763,7 @@ function parseNumbers(
 	offset: number,
 	count: number,
 	is32bit: boolean,
-): { numbers: Record<string, number>; offset: number } | ParseResult {
+): { numbers: Record<string, number>; offset: number } | ParseFailure {
 	const numbers: Record<string, number> = {};
 	const size = is32bit ? 4 : 2;
 	const absent = is32bit ? ABSENT_NUMBER_32 : ABSENT_NUMBER_16;
@@ -799,7 +800,7 @@ function parseStrings(
 	offset: number,
 	count: number,
 	tableSize: number,
-): { strings: Record<string, string>; offset: number } | ParseResult {
+): { strings: Record<string, string>; offset: number } | ParseFailure {
 	const strings: Record<string, string> = {};
 	const offsetsSize = count * 2;
 
@@ -973,7 +974,7 @@ export function parseTerminfo(buffer: Buffer): ParseResult {
 	const data: ParsedTerminfo = {
 		name: names[0] ?? 'unknown',
 		names,
-		description,
+		description: description ?? '',
 		booleans,
 		numbers,
 		strings,
@@ -984,14 +985,11 @@ export function parseTerminfo(buffer: Buffer): ParseResult {
 }
 
 function unwrapSection<T extends { offset: number }, K extends keyof T>(
-	result: ParseResult | T,
+	result: ParseFailure | T,
 	key: K,
-): { value: T[K]; offset: number } | ParseResult {
-	if ('success' in result && !result.success) {
+): { value: T[K]; offset: number } | ParseFailure {
+	if ('success' in result) {
 		return result;
-	}
-	if (!(key in result)) {
-		return result as ParseResult;
 	}
 	return { value: result[key], offset: result.offset };
 }
@@ -1000,7 +998,7 @@ function readNamesSection(
 	buffer: Buffer,
 	offset: number,
 	nameSize: number,
-): { names: string[]; description?: string; offset: number } | ParseResult {
+): { names: string[]; description?: string; offset: number } | ParseFailure {
 	if (offset + nameSize > buffer.length) {
 		return {
 			success: false,

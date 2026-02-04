@@ -215,8 +215,11 @@ describe('layoutSystem', () => {
 
 			expect(parentLayout).toBeDefined();
 			expect(childLayout).toBeDefined();
-			expect(childLayout?.x).toBe(parentLayout?.x + 5);
-			expect(childLayout?.y).toBe(parentLayout?.y + 5);
+			if (!parentLayout || !childLayout) {
+				throw new Error('Expected computed layouts to be defined');
+			}
+			expect(childLayout.x).toBe(parentLayout.x + 5);
+			expect(childLayout.y).toBe(parentLayout.y + 5);
 		});
 	});
 

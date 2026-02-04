@@ -382,7 +382,7 @@ function resetAnsiState(state: AnsiState): void {
 	state.lastAttrs = -1;
 }
 
-function buildCellAnsi(cell: ScreenshotCell, state: AnsiState, use256Color: boolean): string {
+function buildCellAnsi(cell: Cell, state: AnsiState, use256Color: boolean): string {
 	let sequence = '';
 
 	if (cell.attrs !== state.lastAttrs) {

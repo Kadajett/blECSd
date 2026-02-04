@@ -726,7 +726,7 @@ function reduceColorCubeTo16(color: number): number {
 	const lum = r * 0.3 + g * 0.59 + b * 0.11;
 	const bright = lum > 2.5;
 
-	const base = COLOR_CUBE_BASE[getColorCubeBits(r, g, b)];
+	const base = COLOR_CUBE_BASE[getColorCubeBits(r, g, b)] ?? 7;
 	return bright ? base + 8 : base;
 }
 

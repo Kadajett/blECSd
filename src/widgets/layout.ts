@@ -388,7 +388,7 @@ function getChildData(world: World, children: Entity[]): ChildLayoutData[] {
  * ```
  */
 export function calculateInlineLayout(
-	children: ChildLayoutData[],
+	children: readonly ChildLayoutData[],
 	containerWidth: number,
 	gap: number,
 	wrap: boolean,
@@ -431,7 +431,7 @@ export function calculateInlineLayout(
  * ```
  */
 export function calculateGridLayout(
-	children: ChildLayoutData[],
+	children: readonly ChildLayoutData[],
 	cols: number,
 	gap: number,
 ): Map<Entity, LayoutPosition> {
@@ -495,7 +495,7 @@ export function calculateGridLayout(
  * ```
  */
 export function calculateFlexLayout(
-	children: ChildLayoutData[],
+	children: readonly ChildLayoutData[],
 	containerSize: number,
 	gap: number,
 	direction: FlexDirection,

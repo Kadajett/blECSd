@@ -620,7 +620,7 @@ function detectScrollDirection(
 	newLines: readonly string[],
 	regionTop: number,
 	regionBottom: number,
-	direction: ScrollDirection,
+	direction: CSRScrollDirection,
 ): ScrollOperation | null {
 	const regionHeight = regionBottom - regionTop;
 
@@ -654,7 +654,7 @@ function countScrollMatches(
 	regionTop: number,
 	linesToCheck: number,
 	scrollAmount: number,
-	direction: ScrollDirection,
+	direction: CSRScrollDirection,
 ): number {
 	let matchCount = 0;
 
@@ -674,7 +674,7 @@ function getScrollIndices(
 	regionTop: number,
 	lineOffset: number,
 	scrollAmount: number,
-	direction: ScrollDirection,
+	direction: CSRScrollDirection,
 ): { oldIdx: number; newIdx: number } {
 	if (direction === 'up') {
 		return {

@@ -68,7 +68,10 @@ describe('Fuzzy Search', () => {
 
 			expect(consecutive).not.toBeNull();
 			expect(scattered).not.toBeNull();
-			expect(consecutive?.score).toBeGreaterThan(scattered?.score);
+			if (!consecutive || !scattered) {
+				throw new Error('Expected fuzzy matches to be defined');
+			}
+			expect(consecutive.score).toBeGreaterThan(scattered.score);
 		});
 
 		it('should give bonus for word boundary matches', () => {
@@ -77,7 +80,10 @@ describe('Fuzzy Search', () => {
 
 			expect(boundary).not.toBeNull();
 			expect(nonBoundary).not.toBeNull();
-			expect(boundary?.score).toBeGreaterThan(nonBoundary?.score);
+			if (!boundary || !nonBoundary) {
+				throw new Error('Expected fuzzy matches to be defined');
+			}
+			expect(boundary.score).toBeGreaterThan(nonBoundary.score);
 		});
 
 		it('should give bonus for prefix matches', () => {
@@ -86,7 +92,10 @@ describe('Fuzzy Search', () => {
 
 			expect(prefix).not.toBeNull();
 			expect(middle).not.toBeNull();
-			expect(prefix?.score).toBeGreaterThan(middle?.score);
+			if (!prefix || !middle) {
+				throw new Error('Expected fuzzy matches to be defined');
+			}
+			expect(prefix.score).toBeGreaterThan(middle.score);
 		});
 	});
 

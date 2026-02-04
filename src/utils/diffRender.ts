@@ -75,19 +75,22 @@ export interface DiffResult {
 /**
  * Side-by-side line pair.
  */
+export type SideBySideEntryType = 'add' | 'remove' | 'context';
+
+export interface SideBySideEntry<T extends SideBySideEntryType = SideBySideEntryType> {
+	readonly lineNo: number;
+	readonly content: string;
+	readonly type: T;
+}
+
+/**
+ * Side-by-side line pair.
+ */
 export interface SideBySideLine {
 	/** Left (old) line */
-	readonly left?: {
-		readonly lineNo: number;
-		readonly content: string;
-		readonly type: 'remove' | 'context';
-	};
+	readonly left?: SideBySideEntry<'remove' | 'context'>;
 	/** Right (new) line */
-	readonly right?: {
-		readonly lineNo: number;
-		readonly content: string;
-		readonly type: 'add' | 'context';
-	};
+	readonly right?: SideBySideEntry<'add' | 'context'>;
 }
 
 /**
@@ -965,11 +968,11 @@ function flushSideBySidePairs(
 	}
 }
 
-function toSideBySideEntry(
+function toSideBySideEntry<T extends SideBySideEntryType>(
 	line: DiffLine,
-	type: 'context' | 'add' | 'remove',
+	type: T,
 	side: 'left' | 'right',
-): SideBySideEntry {
+): SideBySideEntry<T> {
 	const lineNo = side === 'left' ? line.oldLineNo : line.newLineNo;
 	return {
 		lineNo: lineNo ?? 0,
