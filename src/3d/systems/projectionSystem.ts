@@ -109,6 +109,83 @@ function buildViewMatrix(cameraEid: Entity): Mat4 | null {
 	return mat4Invert(worldMatrix);
 }
 
+/** Inline MVP transform for a single vertex */
+function transformVertex(
+	vx: number,
+	vy: number,
+	vz: number,
+	m: Mat4,
+	toScreen: (ndc: Float32Array) => ScreenCoord,
+): ProjectedVertex {
+	const m0 = m[0] as number;
+	const m1 = m[1] as number;
+	const m2 = m[2] as number;
+	const m3 = m[3] as number;
+	const m4 = m[4] as number;
+	const m5 = m[5] as number;
+	const m6 = m[6] as number;
+	const m7 = m[7] as number;
+	const m8 = m[8] as number;
+	const m9 = m[9] as number;
+	const m10 = m[10] as number;
+	const m11 = m[11] as number;
+	const m12 = m[12] as number;
+	const m13 = m[13] as number;
+	const m14 = m[14] as number;
+	const m15 = m[15] as number;
+
+	const cx = m0 * vx + m4 * vy + m8 * vz + m12;
+	const cy = m1 * vx + m5 * vy + m9 * vz + m13;
+	const cz = m2 * vx + m6 * vy + m10 * vz + m14;
+	const cw = m3 * vx + m7 * vy + m11 * vz + m15;
+
+	const invW = cw !== 0 ? 1 / cw : 0;
+	const ndcX = cx * invW;
+	const ndcY = cy * invW;
+	const ndcZ = cz * invW;
+
+	const visible = ndcX >= -1 && ndcX <= 1 && ndcY >= -1 && ndcY <= 1 && ndcZ >= -1 && ndcZ <= 1;
+
+	_scratchNdc[0] = ndcX;
+	_scratchNdc[1] = ndcY;
+	_scratchNdc[2] = ndcZ;
+	const screen: ScreenCoord = toScreen(_scratchNdc);
+
+	return { x: screen.x, y: screen.y, depth: screen.depth, visible };
+}
+
+/** Project all vertices of a mesh */
+function projectMeshVertices(
+	meshEid: Entity,
+	vpMatrix: Mat4,
+	toScreen: (ndc: Float32Array) => ScreenCoord,
+): MeshProjection | null {
+	const meshId = Mesh.meshId[meshEid] as number;
+	const meshData = getMeshData(meshId);
+	if (!meshData) return null;
+
+	const modelOffset = meshEid * 16;
+	const modelMatrix = Transform3D.worldMatrix.subarray(modelOffset, modelOffset + 16) as Mat4;
+	const mvpMatrix = mat4Multiply(vpMatrix, modelMatrix);
+
+	const vertCount = meshData.vertexCount;
+	const projectedVertices: ProjectedVertex[] = new Array(vertCount);
+	const verts = meshData.vertices;
+
+	for (let i = 0; i < vertCount; i++) {
+		const i3 = i * 3;
+		projectedVertices[i] = transformVertex(
+			verts[i3] as number,
+			verts[i3 + 1] as number,
+			verts[i3 + 2] as number,
+			mvpMatrix,
+			toScreen,
+		);
+	}
+
+	return { meshEid, projectedVertices, triangleIndices: meshData.indices, mvpMatrix };
+}
+
 /**
  * Projection system. Projects mesh vertices through camera view/projection for each viewport.
  *
@@ -123,6 +200,45 @@ function buildViewMatrix(cameraEid: Entity): Mat4 | null {
  * const result = projectionStore.get(viewportEid);
  * ```
  */
+/** Check if camera has required components */
+function isValidCamera(world: World, cameraEid: Entity): boolean {
+	return hasComponent(world, cameraEid, Camera3D) && hasComponent(world, cameraEid, Transform3D);
+}
+
+/** Process a single viewport and return its projection data */
+function processViewport(
+	world: World,
+	vpEid: Entity,
+	meshEntities: Entity[],
+): ViewportProjection | null {
+	const cameraEid = Viewport3D.cameraEntity[vpEid] as Entity;
+	if (!isValidCamera(world, cameraEid)) return null;
+
+	const projMatrix = buildProjectionMatrix(cameraEid);
+	const viewMatrix = buildViewMatrix(cameraEid);
+	if (!viewMatrix) return null;
+
+	const vpMatrix = mat4Multiply(projMatrix, viewMatrix);
+	const pixelW = Viewport3D.pixelWidth[vpEid] as number;
+	const pixelH = Viewport3D.pixelHeight[vpEid] as number;
+	const toScreen = viewportTransform({ x: 0, y: 0, width: pixelW, height: pixelH });
+
+	const meshProjections: MeshProjection[] = [];
+	for (const meshEid of meshEntities) {
+		const projection = projectMeshVertices(meshEid, vpMatrix, toScreen);
+		if (projection) meshProjections.push(projection);
+	}
+
+	return {
+		viewportEid: vpEid,
+		cameraEid,
+		meshes: meshProjections,
+		vpMatrix,
+		pixelWidth: pixelW,
+		pixelHeight: pixelH,
+	};
+}
+
 export const projectionSystem: System = (world: World): World => {
 	projectionStore.clear();
 
@@ -130,113 +246,10 @@ export const projectionSystem: System = (world: World): World => {
 	const meshEntities = query(world, [Mesh, Transform3D]) as Entity[];
 
 	for (const vpEid of viewports) {
-		const cameraEid = Viewport3D.cameraEntity[vpEid] as Entity;
-
-		if (!hasComponent(world, cameraEid, Camera3D)) {
-			continue;
+		const viewportProjection = processViewport(world, vpEid, meshEntities);
+		if (viewportProjection) {
+			projectionStore.set(vpEid, viewportProjection);
 		}
-		if (!hasComponent(world, cameraEid, Transform3D)) {
-			continue;
-		}
-
-		const projMatrix = buildProjectionMatrix(cameraEid);
-		const viewMatrix = buildViewMatrix(cameraEid);
-		if (!viewMatrix) {
-			continue; // Camera world matrix not invertible
-		}
-
-		const vpMatrix = mat4Multiply(projMatrix, viewMatrix);
-
-		const pixelW = Viewport3D.pixelWidth[vpEid] as number;
-		const pixelH = Viewport3D.pixelHeight[vpEid] as number;
-
-		const toScreen = viewportTransform({ x: 0, y: 0, width: pixelW, height: pixelH });
-
-		const meshProjections: MeshProjection[] = [];
-
-		for (const meshEid of meshEntities) {
-			const meshId = Mesh.meshId[meshEid] as number;
-			const meshData = getMeshData(meshId);
-			if (!meshData) continue;
-
-			// Model matrix is the entity's world matrix
-			const modelOffset = meshEid * 16;
-			const modelMatrix = Transform3D.worldMatrix.subarray(modelOffset, modelOffset + 16) as Mat4;
-			const mvpMatrix = mat4Multiply(vpMatrix, modelMatrix);
-
-			const vertCount = meshData.vertexCount;
-			const projectedVertices: ProjectedVertex[] = new Array(vertCount);
-			const verts = meshData.vertices;
-
-			// Inline MVP transform to avoid per-vertex allocations (no vec3() or projectVertex() calls)
-			const m = mvpMatrix;
-			const m0 = m[0] as number;
-			const m1 = m[1] as number;
-			const m2 = m[2] as number;
-			const m3 = m[3] as number;
-			const m4 = m[4] as number;
-			const m5 = m[5] as number;
-			const m6 = m[6] as number;
-			const m7 = m[7] as number;
-			const m8 = m[8] as number;
-			const m9 = m[9] as number;
-			const m10 = m[10] as number;
-			const m11 = m[11] as number;
-			const m12 = m[12] as number;
-			const m13 = m[13] as number;
-			const m14 = m[14] as number;
-			const m15 = m[15] as number;
-
-			for (let i = 0; i < vertCount; i++) {
-				const i3 = i * 3;
-				const vx = verts[i3] as number;
-				const vy = verts[i3 + 1] as number;
-				const vz = verts[i3 + 2] as number;
-
-				// Inline mat4 * vec4 (w=1) and perspective divide
-				const cx = m0 * vx + m4 * vy + m8 * vz + m12;
-				const cy = m1 * vx + m5 * vy + m9 * vz + m13;
-				const cz = m2 * vx + m6 * vy + m10 * vz + m14;
-				const cw = m3 * vx + m7 * vy + m11 * vz + m15;
-
-				const invW = cw !== 0 ? 1 / cw : 0;
-				const ndcX = cx * invW;
-				const ndcY = cy * invW;
-				const ndcZ = cz * invW;
-
-				const visible =
-					ndcX >= -1 && ndcX <= 1 && ndcY >= -1 && ndcY <= 1 && ndcZ >= -1 && ndcZ <= 1;
-
-				// Inline viewport transform
-				_scratchNdc[0] = ndcX;
-				_scratchNdc[1] = ndcY;
-				_scratchNdc[2] = ndcZ;
-				const screen: ScreenCoord = toScreen(_scratchNdc);
-
-				projectedVertices[i] = {
-					x: screen.x,
-					y: screen.y,
-					depth: screen.depth,
-					visible,
-				};
-			}
-
-			meshProjections.push({
-				meshEid,
-				projectedVertices,
-				triangleIndices: meshData.indices,
-				mvpMatrix,
-			});
-		}
-
-		projectionStore.set(vpEid, {
-			viewportEid: vpEid,
-			cameraEid,
-			meshes: meshProjections,
-			vpMatrix,
-			pixelWidth: pixelW,
-			pixelHeight: pixelH,
-		});
 	}
 
 	return world;

@@ -7,6 +7,109 @@
 import type { RGBAColor, TriangleVertex } from '../schemas/rasterizer';
 import { type PixelFramebuffer, setPixelUnsafe, testAndSetDepth } from './pixelBuffer';
 
+/** Triangle scanline setup state */
+interface TriangleScanSetup {
+	invArea: number;
+	minX: number;
+	minY: number;
+	maxX: number;
+	maxY: number;
+	A01: number;
+	B01: number;
+	A12: number;
+	B12: number;
+	hasDepth: boolean;
+	startW0: number;
+	startW1: number;
+}
+
+/** Compute triangle scan setup, returns null if triangle is invalid */
+function computeTriangleScanSetup(
+	fb: PixelFramebuffer,
+	v0: TriangleVertex,
+	v1: TriangleVertex,
+	v2: TriangleVertex,
+): TriangleScanSetup | null {
+	const area = triangleArea2(v0, v1, v2);
+	if (Math.abs(area) < 0.5) return null;
+
+	const invArea = 1 / area;
+	const minX = Math.max(0, Math.floor(Math.min(v0.x, v1.x, v2.x)));
+	const minY = Math.max(0, Math.floor(Math.min(v0.y, v1.y, v2.y)));
+	const maxX = Math.min(fb.width - 1, Math.ceil(Math.max(v0.x, v1.x, v2.x)));
+	const maxY = Math.min(fb.height - 1, Math.ceil(Math.max(v0.y, v1.y, v2.y)));
+
+	if (minX > maxX || minY > maxY) return null;
+
+	const startCx = minX + 0.5;
+	const startCy = minY + 0.5;
+
+	return {
+		invArea,
+		minX,
+		minY,
+		maxX,
+		maxY,
+		A01: (v1.y - v2.y) * invArea,
+		B01: (v2.x - v1.x) * invArea,
+		A12: (v2.y - v0.y) * invArea,
+		B12: (v0.x - v2.x) * invArea,
+		hasDepth: fb.depthBuffer !== null && fb.depthBuffer !== undefined,
+		startW0: ((v1.y - v2.y) * (startCx - v2.x) + (v2.x - v1.x) * (startCy - v2.y)) * invArea,
+		startW1: ((v2.y - v0.y) * (startCx - v2.x) + (v0.x - v2.x) * (startCy - v2.y)) * invArea,
+	};
+}
+
+/** Process a single pixel with interpolated color */
+function processPixelInterpolated(
+	fb: PixelFramebuffer,
+	px: number,
+	py: number,
+	w0: number,
+	w1: number,
+	v0: TriangleVertex,
+	v1: TriangleVertex,
+	v2: TriangleVertex,
+	a0: number,
+	a1: number,
+	a2: number,
+	hasDepth: boolean,
+): void {
+	const w2 = 1 - w0 - w1;
+	if (w0 < 0 || w1 < 0 || w2 < 0) return;
+
+	const depth = v0.depth * w0 + v1.depth * w1 + v2.depth * w2;
+	if (hasDepth && !testAndSetDepth(fb, px, py, depth)) return;
+
+	const r = (v0.r * w0 + v1.r * w1 + v2.r * w2 + 0.5) | 0;
+	const g = (v0.g * w0 + v1.g * w1 + v2.g * w2 + 0.5) | 0;
+	const b = (v0.b * w0 + v1.b * w1 + v2.b * w2 + 0.5) | 0;
+	const a = (a0 * w0 + a1 * w1 + a2 * w2 + 0.5) | 0;
+	setPixelUnsafe(fb, px, py, r, g, b, a);
+}
+
+/** Process a single pixel with flat color */
+function processPixelFlat(
+	fb: PixelFramebuffer,
+	px: number,
+	py: number,
+	w0: number,
+	w1: number,
+	v0: TriangleVertex,
+	v1: TriangleVertex,
+	v2: TriangleVertex,
+	color: RGBAColor,
+	hasDepth: boolean,
+): void {
+	const w2 = 1 - w0 - w1;
+	if (w0 < 0 || w1 < 0 || w2 < 0) return;
+
+	const depth = v0.depth * w0 + v1.depth * w1 + v2.depth * w2;
+	if (hasDepth && !testAndSetDepth(fb, px, py, depth)) return;
+
+	setPixelUnsafe(fb, px, py, color.r, color.g, color.b, color.a);
+}
+
 /**
  * Bounding box for a triangle.
  */
@@ -95,71 +198,28 @@ export function fillTriangle(
 	v1: TriangleVertex,
 	v2: TriangleVertex,
 ): void {
-	const area = triangleArea2(v0, v1, v2);
-
-	// Skip degenerate triangles
-	if (Math.abs(area) < 0.5) {
-		return;
-	}
-
-	const invArea = 1 / area;
-
-	// Compute bounding box and clip to framebuffer
-	const minX = Math.max(0, Math.floor(Math.min(v0.x, v1.x, v2.x)));
-	const minY = Math.max(0, Math.floor(Math.min(v0.y, v1.y, v2.y)));
-	const maxX = Math.min(fb.width - 1, Math.ceil(Math.max(v0.x, v1.x, v2.x)));
-	const maxY = Math.min(fb.height - 1, Math.ceil(Math.max(v0.y, v1.y, v2.y)));
-
-	if (minX > maxX || minY > maxY) {
-		return;
-	}
+	const setup = computeTriangleScanSetup(fb, v0, v1, v2);
+	if (!setup) return;
 
 	const a0 = v0.a ?? 255;
 	const a1 = v1.a ?? 255;
 	const a2 = v2.a ?? 255;
 
-	// Pre-compute edge function coefficients for incremental evaluation
-	const A01 = (v1.y - v2.y) * invArea;
-	const B01 = (v2.x - v1.x) * invArea;
-	const A12 = (v2.y - v0.y) * invArea;
-	const B12 = (v0.x - v2.x) * invArea;
+	let rowW0 = setup.startW0;
+	let rowW1 = setup.startW1;
 
-	const hasDepth = fb.depthBuffer !== null && fb.depthBuffer !== undefined;
-
-	// Evaluate at first pixel center
-	const startCx = minX + 0.5;
-	const startCy = minY + 0.5;
-	let rowW0 = ((v1.y - v2.y) * (startCx - v2.x) + (v2.x - v1.x) * (startCy - v2.y)) * invArea;
-	let rowW1 = ((v2.y - v0.y) * (startCx - v2.x) + (v0.x - v2.x) * (startCy - v2.y)) * invArea;
-
-	for (let py = minY; py <= maxY; py++) {
+	for (let py = setup.minY; py <= setup.maxY; py++) {
 		let w0 = rowW0;
 		let w1 = rowW1;
 
-		for (let px = minX; px <= maxX; px++) {
-			const w2 = 1 - w0 - w1;
-
-			if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-				const depth = v0.depth * w0 + v1.depth * w1 + v2.depth * w2;
-
-				if (!hasDepth || testAndSetDepth(fb, px, py, depth)) {
-					const r = (v0.r * w0 + v1.r * w1 + v2.r * w2 + 0.5) | 0;
-					const g = (v0.g * w0 + v1.g * w1 + v2.g * w2 + 0.5) | 0;
-					const b = (v0.b * w0 + v1.b * w1 + v2.b * w2 + 0.5) | 0;
-					const a = (a0 * w0 + a1 * w1 + a2 * w2 + 0.5) | 0;
-
-					setPixelUnsafe(fb, px, py, r, g, b, a);
-				}
-			}
-
-			// Increment edge functions along X
-			w0 += A01;
-			w1 += A12;
+		for (let px = setup.minX; px <= setup.maxX; px++) {
+			processPixelInterpolated(fb, px, py, w0, w1, v0, v1, v2, a0, a1, a2, setup.hasDepth);
+			w0 += setup.A01;
+			w1 += setup.A12;
 		}
 
-		// Increment edge functions along Y
-		rowW0 += B01;
-		rowW1 += B12;
+		rowW0 += setup.B01;
+		rowW1 += setup.B12;
 	}
 }
 
@@ -190,61 +250,23 @@ export function fillTriangleFlat(
 	v2: TriangleVertex,
 	color: RGBAColor,
 ): void {
-	const area = triangleArea2(v0, v1, v2);
+	const setup = computeTriangleScanSetup(fb, v0, v1, v2);
+	if (!setup) return;
 
-	if (Math.abs(area) < 0.5) {
-		return;
-	}
+	let rowW0 = setup.startW0;
+	let rowW1 = setup.startW1;
 
-	const invArea = 1 / area;
-
-	const minX = Math.max(0, Math.floor(Math.min(v0.x, v1.x, v2.x)));
-	const minY = Math.max(0, Math.floor(Math.min(v0.y, v1.y, v2.y)));
-	const maxX = Math.min(fb.width - 1, Math.ceil(Math.max(v0.x, v1.x, v2.x)));
-	const maxY = Math.min(fb.height - 1, Math.ceil(Math.max(v0.y, v1.y, v2.y)));
-
-	if (minX > maxX || minY > maxY) {
-		return;
-	}
-
-	const cr = color.r;
-	const cg = color.g;
-	const cb = color.b;
-	const ca = color.a;
-
-	// Pre-compute edge function coefficients for incremental evaluation
-	const A01 = (v1.y - v2.y) * invArea;
-	const B01 = (v2.x - v1.x) * invArea;
-	const A12 = (v2.y - v0.y) * invArea;
-	const B12 = (v0.x - v2.x) * invArea;
-
-	const hasDepth = fb.depthBuffer !== null && fb.depthBuffer !== undefined;
-
-	const startCx = minX + 0.5;
-	const startCy = minY + 0.5;
-	let rowW0 = ((v1.y - v2.y) * (startCx - v2.x) + (v2.x - v1.x) * (startCy - v2.y)) * invArea;
-	let rowW1 = ((v2.y - v0.y) * (startCx - v2.x) + (v0.x - v2.x) * (startCy - v2.y)) * invArea;
-
-	for (let py = minY; py <= maxY; py++) {
+	for (let py = setup.minY; py <= setup.maxY; py++) {
 		let w0 = rowW0;
 		let w1 = rowW1;
 
-		for (let px = minX; px <= maxX; px++) {
-			const w2 = 1 - w0 - w1;
-
-			if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-				const depth = v0.depth * w0 + v1.depth * w1 + v2.depth * w2;
-
-				if (!hasDepth || testAndSetDepth(fb, px, py, depth)) {
-					setPixelUnsafe(fb, px, py, cr, cg, cb, ca);
-				}
-			}
-
-			w0 += A01;
-			w1 += A12;
+		for (let px = setup.minX; px <= setup.maxX; px++) {
+			processPixelFlat(fb, px, py, w0, w1, v0, v1, v2, color, setup.hasDepth);
+			w0 += setup.A01;
+			w1 += setup.A12;
 		}
 
-		rowW0 += B01;
-		rowW1 += B12;
+		rowW0 += setup.B01;
+		rowW1 += setup.B12;
 	}
 }

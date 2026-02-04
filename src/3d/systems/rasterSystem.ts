@@ -85,6 +85,118 @@ function extractUniqueEdges(indices: Uint32Array): ReadonlyArray<readonly [numbe
 	return edges;
 }
 
+/** Material rendering settings */
+interface MaterialSettings {
+	renderMode: number;
+	wireColor: number;
+	fillColor: number;
+	backfaceCull: boolean;
+}
+
+/** Get material settings for a mesh entity */
+function getMaterialSettings(world: World, meshEid: Entity): MaterialSettings {
+	if (!hasComponent(world, meshEid, Material3D)) {
+		return { renderMode: 0, wireColor: 0xffffff, fillColor: 0x808080, backfaceCull: true };
+	}
+	return {
+		renderMode: Material3D.renderMode[meshEid] as number,
+		wireColor: Material3D.wireColor[meshEid] as number,
+		fillColor: Material3D.fillColor[meshEid] as number,
+		backfaceCull: (Material3D.backfaceCull[meshEid] as number) !== 0,
+	};
+}
+
+/** Projected vertex type from projection store */
+interface ProjectedVert {
+	readonly x: number;
+	readonly y: number;
+	readonly depth: number;
+}
+
+/** Check if triangle is front-facing (for backface culling) */
+function isFrontFacing(v0: ProjectedVert, v1: ProjectedVert, v2: ProjectedVert): boolean {
+	const cross = (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x);
+	return cross > 0;
+}
+
+/** Fill a single triangle */
+function fillSingleTriangle(
+	fb: PixelFramebuffer,
+	v0: ProjectedVert,
+	v1: ProjectedVert,
+	v2: ProjectedVert,
+	color: { r: number; g: number; b: number; a: number },
+): void {
+	fillTriangleFlat(
+		fb,
+		{ x: v0.x, y: v0.y, depth: v0.depth, r: color.r, g: color.g, b: color.b, a: color.a },
+		{ x: v1.x, y: v1.y, depth: v1.depth, r: color.r, g: color.g, b: color.b, a: color.a },
+		{ x: v2.x, y: v2.y, depth: v2.depth, r: color.r, g: color.g, b: color.b, a: color.a },
+		color,
+	);
+}
+
+/** Draw filled triangles for a mesh */
+function drawFilledTriangles(
+	fb: PixelFramebuffer,
+	verts: ReadonlyArray<ProjectedVert>,
+	indices: Uint32Array,
+	fillColor: number,
+	backfaceCull: boolean,
+): void {
+	const color = unpackColor(fillColor);
+
+	for (let t = 0; t < indices.length; t += 3) {
+		const v0 = verts[indices[t] as number];
+		const v1 = verts[indices[t + 1] as number];
+		const v2 = verts[indices[t + 2] as number];
+		if (!v0 || !v1 || !v2) continue;
+
+		if (backfaceCull && !isFrontFacing(v0, v1, v2)) continue;
+
+		fillSingleTriangle(fb, v0, v1, v2, color);
+	}
+}
+
+/** Draw wireframe edges for a mesh */
+function drawWireframeEdges(
+	fb: PixelFramebuffer,
+	verts: ReadonlyArray<ProjectedVert>,
+	indices: Uint32Array,
+	wireColor: number,
+): void {
+	const color = unpackColor(wireColor);
+	const edges = extractUniqueEdges(indices);
+
+	for (const [a, b] of edges) {
+		const va = verts[a];
+		const vb = verts[b];
+		if (!va || !vb) continue;
+
+		drawLineDepth(
+			fb,
+			{
+				x: Math.round(va.x),
+				y: Math.round(va.y),
+				depth: va.depth,
+				r: color.r,
+				g: color.g,
+				b: color.b,
+				a: color.a,
+			},
+			{
+				x: Math.round(vb.x),
+				y: Math.round(vb.y),
+				depth: vb.depth,
+				r: color.r,
+				g: color.g,
+				b: color.b,
+				a: color.a,
+			},
+		);
+	}
+}
+
 /**
  * Raster system. Draws wireframe and/or filled geometry to per-viewport framebuffers.
  *
@@ -99,107 +211,48 @@ function extractUniqueEdges(indices: Uint32Array): ReadonlyArray<readonly [numbe
  * const fb = framebufferStore.get(viewportEid);
  * ```
  */
+/** Render a single mesh to the framebuffer */
+function renderMesh(
+	world: World,
+	fb: PixelFramebuffer,
+	meshEid: Entity,
+	verts: ReadonlyArray<ProjectedVert>,
+	indices: Uint32Array,
+): void {
+	const mat = getMaterialSettings(world, meshEid);
+	const isFilled = mat.renderMode === 1 || mat.renderMode === 2;
+	const isWireframe = mat.renderMode === 0 || mat.renderMode === 2;
+
+	if (isFilled) {
+		drawFilledTriangles(fb, verts, indices, mat.fillColor, mat.backfaceCull);
+	}
+	if (isWireframe) {
+		drawWireframeEdges(fb, verts, indices, mat.wireColor);
+	}
+}
+
+/** Process a single viewport */
+function processViewport(world: World, vpEid: Entity): void {
+	const projection = projectionStore.get(vpEid);
+	if (!projection) return;
+
+	const pixelW = projection.pixelWidth;
+	const pixelH = projection.pixelHeight;
+	if (pixelW <= 0 || pixelH <= 0) return;
+
+	const fb = getOrCreateFramebuffer(vpEid, pixelW, pixelH);
+	clearFramebuffer(fb);
+
+	for (const meshProj of projection.meshes) {
+		renderMesh(world, fb, meshProj.meshEid, meshProj.projectedVertices, meshProj.triangleIndices);
+	}
+}
+
 export const rasterSystem: System = (world: World): World => {
 	const viewports = query(world, [Viewport3D]) as Entity[];
 
 	for (const vpEid of viewports) {
-		const projection = projectionStore.get(vpEid);
-		if (!projection) continue;
-
-		const pixelW = projection.pixelWidth;
-		const pixelH = projection.pixelHeight;
-		if (pixelW <= 0 || pixelH <= 0) continue;
-
-		const fb = getOrCreateFramebuffer(vpEid, pixelW, pixelH);
-		clearFramebuffer(fb);
-
-		for (const meshProj of projection.meshes) {
-			const meshEid = meshProj.meshEid;
-			const verts = meshProj.projectedVertices;
-			const indices = meshProj.triangleIndices;
-
-			// Get material settings (defaults to wireframe if no material)
-			let renderMode = 0; // 0 = wireframe
-			let wireColor = 0xffffff; // white (24-bit RGB)
-			let fillColor = 0x808080; // gray (24-bit RGB)
-			let backfaceCull = true;
-
-			if (hasComponent(world, meshEid, Material3D)) {
-				renderMode = Material3D.renderMode[meshEid] as number;
-				wireColor = Material3D.wireColor[meshEid] as number;
-				fillColor = Material3D.fillColor[meshEid] as number;
-				backfaceCull = (Material3D.backfaceCull[meshEid] as number) !== 0;
-			}
-
-			const isFilled = renderMode === 1 || renderMode === 2;
-			const isWireframe = renderMode === 0 || renderMode === 2;
-
-			// Filled triangles
-			if (isFilled) {
-				const fc = unpackColor(fillColor);
-				const color = { r: fc.r, g: fc.g, b: fc.b, a: fc.a };
-
-				for (let t = 0; t < indices.length; t += 3) {
-					const i0 = indices[t] as number;
-					const i1 = indices[t + 1] as number;
-					const i2 = indices[t + 2] as number;
-
-					const v0 = verts[i0];
-					const v1 = verts[i1];
-					const v2 = verts[i2];
-					if (!v0 || !v1 || !v2) continue;
-
-					// Backface culling using 2D cross product (screen-space winding)
-					if (backfaceCull) {
-						const cross = (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x);
-						if (cross <= 0) continue;
-					}
-
-					fillTriangleFlat(
-						fb,
-						{ x: v0.x, y: v0.y, depth: v0.depth, r: color.r, g: color.g, b: color.b, a: color.a },
-						{ x: v1.x, y: v1.y, depth: v1.depth, r: color.r, g: color.g, b: color.b, a: color.a },
-						{ x: v2.x, y: v2.y, depth: v2.depth, r: color.r, g: color.g, b: color.b, a: color.a },
-						color,
-					);
-				}
-			}
-
-			// Wireframe edges
-			if (isWireframe) {
-				const wc = unpackColor(wireColor);
-				const color = { r: wc.r, g: wc.g, b: wc.b, a: wc.a };
-				const edges = extractUniqueEdges(indices);
-
-				for (const [a, b] of edges) {
-					const va = verts[a];
-					const vb = verts[b];
-					if (!va || !vb) continue;
-
-					drawLineDepth(
-						fb,
-						{
-							x: Math.round(va.x),
-							y: Math.round(va.y),
-							depth: va.depth,
-							r: color.r,
-							g: color.g,
-							b: color.b,
-							a: color.a,
-						},
-						{
-							x: Math.round(vb.x),
-							y: Math.round(vb.y),
-							depth: vb.depth,
-							r: color.r,
-							g: color.g,
-							b: color.b,
-							a: color.a,
-						},
-					);
-				}
-			}
-		}
+		processViewport(world, vpEid);
 	}
 
 	return world;
