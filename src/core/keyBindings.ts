@@ -138,13 +138,35 @@ const MODIFIER_ALIASES: Readonly<Record<string, keyof ParsedKey>> = {
  * @param keyString - Key string to parse (e.g., 'ctrl+shift+a')
  * @returns Parsed key combination, or null if invalid
  */
+/** Apply a modifier to the parsed key */
+function applyModifier(parsed: ParsedKey, modifier: 'ctrl' | 'meta' | 'shift'): void {
+	if (modifier === 'ctrl') parsed.ctrl = true;
+	else if (modifier === 'meta') parsed.meta = true;
+	else if (modifier === 'shift') parsed.shift = true;
+}
+
+/** Parse a single part of a key string (modifier or key name) */
+function parseKeyPart(
+	part: string,
+	isLast: boolean,
+	parsed: ParsedKey,
+): boolean {
+	if (isLast) {
+		const keyName = resolveKeyName(part);
+		if (!keyName) return false;
+		parsed.name = keyName;
+	} else {
+		const modifier = resolveModifier(part);
+		if (!modifier) return false;
+		applyModifier(parsed, modifier);
+	}
+	return true;
+}
+
 export function parseKeyString(keyString: string): ParsedKey | null {
 	if (!keyString) return null;
 
-	const parts = keyString
-		.toLowerCase()
-		.split('+')
-		.map((p) => p.trim());
+	const parts = keyString.toLowerCase().split('+').map((p) => p.trim());
 	if (parts.length === 0) return null;
 
 	const parsed: ParsedKey = {
@@ -158,22 +180,9 @@ export function parseKeyString(keyString: string): ParsedKey | null {
 		const part = parts[i];
 		if (!part) continue;
 
-		// Last part is the key name
-		if (i === parts.length - 1) {
-			const keyName = resolveKeyName(part);
-			if (!keyName) return null;
-			parsed.name = keyName;
-		} else {
-			// Modifier
-			const modifier = resolveModifier(part);
-			if (!modifier) return null;
-			if (modifier === 'ctrl') parsed.ctrl = true;
-			else if (modifier === 'meta') parsed.meta = true;
-			else if (modifier === 'shift') parsed.shift = true;
-		}
+		if (!parseKeyPart(part, i === parts.length - 1, parsed)) return null;
 	}
 
-	// Key name is required
 	if (parsed.name === 'undefined') return null;
 
 	return parsed;
