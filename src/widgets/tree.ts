@@ -488,7 +488,7 @@ function buildTreeIndentation(
 	parentIsLast: boolean[],
 ): string {
 	if (depth === 0) {
-		return showLines ? '' : '';
+		return '';
 	}
 
 	if (!showLines) {
