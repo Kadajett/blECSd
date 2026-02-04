@@ -212,10 +212,7 @@ export const loadFont = (name: FontName): BitmapFont => {
  * }
  * ```
  */
-export const getCharBitmap = (
-	font: BitmapFont,
-	char: string,
-): CharBitmap | undefined => {
+export const getCharBitmap = (font: BitmapFont, char: string): CharBitmap | undefined => {
 	const glyphs = Array.from(char);
 	if (glyphs.length !== 1) {
 		return undefined;

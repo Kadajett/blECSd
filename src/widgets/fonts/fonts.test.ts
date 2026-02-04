@@ -3,8 +3,6 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import terminus14Bold from './terminus-14-bold.json';
-import terminus14Normal from './terminus-14-normal.json';
 import {
 	BitmapFontSchema,
 	createFontNotFoundError,
@@ -12,6 +10,8 @@ import {
 	loadFont,
 	renderChar,
 } from './index';
+import terminus14Bold from './terminus-14-bold.json';
+import terminus14Normal from './terminus-14-normal.json';
 
 describe('bitmap fonts', () => {
 	describe('BitmapFontSchema', () => {
