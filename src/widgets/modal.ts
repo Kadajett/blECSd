@@ -9,6 +9,10 @@
 
 import { z } from 'zod';
 import {
+	BORDER_ASCII,
+	BORDER_BOLD,
+	BORDER_DOUBLE,
+	BORDER_ROUNDED,
 	BORDER_SINGLE,
 	type BorderCharset,
 	BorderType,
@@ -277,16 +281,30 @@ function parseColor(color: string | number): number {
  * Converts border charset name to actual charset.
  */
 function getBorderCharset(ch: string | object | undefined): BorderCharset {
-	if (ch === undefined || ch === 'single') return BORDER_SINGLE;
 	if (typeof ch === 'object') return ch as BorderCharset;
-	return BORDER_SINGLE;
+	switch (ch) {
+		case 'double':
+			return BORDER_DOUBLE;
+		case 'rounded':
+			return BORDER_ROUNDED;
+		case 'bold':
+			return BORDER_BOLD;
+		case 'ascii':
+			return BORDER_ASCII;
+		default:
+			return BORDER_SINGLE;
+	}
 }
 
 /**
  * Converts border type string to BorderType enum.
+ *
+ * The 'none' case is handled by callers before invoking this function,
+ * so only 'line' and 'bg' are mapped here.
  */
 function borderTypeToEnum(type: string | undefined): BorderType {
 	if (type === 'bg') return BorderType.Background;
+	if (type === 'none') return BorderType.None;
 	return BorderType.Line;
 }
 
@@ -370,8 +388,8 @@ function applyModalBorder(
 			fg: borderConfig?.fg !== undefined ? parseColor(borderConfig.fg) : undefined,
 			bg: borderConfig?.bg !== undefined ? parseColor(borderConfig.bg) : undefined,
 		});
+		setBorderChars(world, eid, getBorderCharset(borderConfig?.ch));
 	}
-	setBorderChars(world, eid, getBorderCharset(borderConfig?.ch));
 }
 
 // =============================================================================

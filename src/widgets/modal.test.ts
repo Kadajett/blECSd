@@ -123,6 +123,48 @@ describe('Modal widget', () => {
 	});
 
 	// =========================================================================
+	// Border charset types
+	// =========================================================================
+
+	describe('border charset types', () => {
+		it('creates a modal with double border charset', () => {
+			const modal = createModal(world, { border: { ch: 'double' } });
+			expect(modal.eid).toBeDefined();
+			expect(isModal(world, modal.eid)).toBe(true);
+		});
+
+		it('creates a modal with rounded border charset', () => {
+			const modal = createModal(world, { border: { ch: 'rounded' } });
+			expect(modal.eid).toBeDefined();
+			expect(isModal(world, modal.eid)).toBe(true);
+		});
+
+		it('creates a modal with bold border charset', () => {
+			const modal = createModal(world, { border: { ch: 'bold' } });
+			expect(modal.eid).toBeDefined();
+			expect(isModal(world, modal.eid)).toBe(true);
+		});
+
+		it('creates a modal with ascii border charset', () => {
+			const modal = createModal(world, { border: { ch: 'ascii' } });
+			expect(modal.eid).toBeDefined();
+			expect(isModal(world, modal.eid)).toBe(true);
+		});
+
+		it('creates a modal with single border charset (default)', () => {
+			const modal = createModal(world, { border: { ch: 'single' } });
+			expect(modal.eid).toBeDefined();
+			expect(isModal(world, modal.eid)).toBe(true);
+		});
+
+		it('creates a modal with border type none (no border applied)', () => {
+			const modal = createModal(world, { border: { type: 'none' } });
+			expect(modal.eid).toBeDefined();
+			expect(isModal(world, modal.eid)).toBe(true);
+		});
+	});
+
+	// =========================================================================
 	// Creation
 	// =========================================================================
 
