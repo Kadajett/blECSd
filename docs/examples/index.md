@@ -96,6 +96,256 @@ List component (virtualized)   ← Maps visible indices to loaded items
 
 ---
 
+## Terminal Demo
+
+**Location:** `examples/terminal/`
+
+Interactive demonstration of the Terminal widget's capabilities including ANSI rendering and PTY shell spawning.
+
+```
+┌─ Terminal Demo ─────────────────────────────────────────────┐
+│ blECSd Terminal Widget Demo                                 │
+│                                                             │
+│ Press 'c' to show colors, 's' to spawn shell, 'q' to quit  │
+│                                                             │
+│ ████████████████████████████████████████                   │
+│ 256-color palette test                                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Features
+
+- **Color Test**: 16-color, 256-color palette display
+- **Shell Spawning**: Interactive bash/zsh session (requires node-pty)
+- **ANSI Rendering**: SGR codes for colors and styles
+- **Cursor Control**: Visibility toggle, positioning
+
+### Running
+
+```bash
+cd examples/terminal
+pnpm dev
+```
+
+### Keyboard Controls
+
+| Key | Action |
+|-----|--------|
+| `c` | Show color palette |
+| `s` | Spawn interactive shell |
+| `q` | Quit |
+
+---
+
+## Multiplexer
+
+**Location:** `examples/multiplexer/`
+
+A tmux-like terminal multiplexer with multiple PTY panes in a 2x2 grid layout.
+
+```
+┌─ Shell 1 ───────────────────┬─ Shell 2 ───────────────────┐
+│ user@host:~$ ls             │ user@host:~$ htop           │
+│ Documents  Downloads        │ [system monitor output]     │
+│ user@host:~$ _              │                             │
+├─ Shell 3 ───────────────────┼─ Shell 4 ───────────────────┤
+│ user@host:~$ vim file.txt   │ user@host:~$ git status     │
+│ [vim interface]             │ On branch main              │
+│                             │ nothing to commit           │
+└─────────────────────────────┴─────────────────────────────┘
+ Tab/Click: Focus | Ctrl+N: New | Ctrl+D: Close | Ctrl+Q: Quit
+```
+
+### Features
+
+- **2x2 Grid Layout**: Four terminal panes with independent shells
+- **Focus Management**: Tab cycling, Shift+Tab reverse, click-to-focus
+- **Dynamic Panes**: Create new panes (Ctrl+N), close panes (Ctrl+D)
+- **Visual Focus**: Active pane highlighted with distinct border
+- **Full PTY Support**: Each pane runs an independent shell process
+
+### Running
+
+```bash
+cd examples/multiplexer
+pnpm dev
+```
+
+### Keyboard Controls
+
+| Key | Action |
+|-----|--------|
+| `Tab` | Focus next pane |
+| `Shift+Tab` | Focus previous pane |
+| `Ctrl+N` | Create new pane |
+| `Ctrl+D` | Close focused pane |
+| `Ctrl+Q` | Quit |
+| Mouse click | Focus clicked pane |
+
+---
+
+## System Monitor
+
+**Location:** `examples/system-monitor/`
+
+An htop-inspired system monitoring dashboard with real-time CPU, memory, and process information.
+
+```
+┌─ CPU ──────────────────────────────────────────────────────┐
+│ ████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░  45%        │
+│ Load: 2.34 1.89 1.56                                       │
+├─ Memory ───────────────────────────────────────────────────┤
+│ ██████████████████████████░░░░░░░░░░░░░░░░░░░  62%        │
+│ Used: 10.2 GB / 16.0 GB                                    │
+├─ Processes ────────────────────────────────────────────────┤
+│ PID    USER    CPU%   MEM%   COMMAND                       │
+│ 1234   root    15.2   2.1    node server.js                │
+│ 5678   user     8.4   4.3    chrome                        │
+│ 9012   user     3.1   1.8    code                          │
+└────────────────────────────────────────────────────────────┘
+```
+
+### Features
+
+- **CPU Monitoring**: Load average with sparkline history graph
+- **Memory Usage**: Used/total with percentage bar
+- **Process List**: Top processes by CPU usage
+- **Real-time Updates**: Auto-refresh every second
+- **Braille Sparklines**: High-resolution graphs using braille characters
+
+### Running
+
+```bash
+cd examples/system-monitor
+pnpm dev
+```
+
+### Key Concepts Demonstrated
+
+| Concept | How It's Used |
+|---------|---------------|
+| Real-time Updates | setInterval with dirty tracking |
+| Braille Graphics | Sparkline charts for CPU history |
+| Progress Bars | Visual percentage display |
+| Process Listing | os module integration |
+
+---
+
+## ANSI Art Viewer
+
+**Location:** `examples/ansi-viewer/`
+
+Browse and display classic BBS-era ANSI art with proper CP437 encoding support.
+
+```
+┌────────────────────────────────────────────────────┬───────────────────────┐
+│                                                    │      Art List         │
+│                                                    │ ─────────────────────│
+│                  ANSI Art Display                  │ > ACiD Logo           │
+│                                                    │   iCE Logo            │
+│                 (Terminal Widget)                  │   Blade               │
+│                                                    │   Fire                │
+│                                                    │   Darkside            │
+│                                                    │                       │
+│                                                    │  10 items             │
+└────────────────────────────────────────────────────┴───────────────────────┘
+ ↑↓:Navigate  Enter:View  /:Search  s:Slideshow  r:Shuffle  h:Toggle List  q:Quit
+```
+
+### Features
+
+- **Art Catalog**: Browse curated collection from textfiles.com
+- **CP437 Encoding**: Proper IBM PC character set conversion
+- **Search**: Filter by name, author, or group
+- **Slideshow Mode**: Auto-advance through catalog
+- **Split View**: Art display with navigable list
+
+### Running
+
+```bash
+cd examples/ansi-viewer
+pnpm dev
+```
+
+### Keyboard Controls
+
+| Key | Action |
+|-----|--------|
+| `j` / `↓` | Navigate down |
+| `k` / `↑` | Navigate up |
+| `Enter` | View selected art |
+| `/` | Search mode |
+| `s` | Toggle slideshow |
+| `r` | Shuffle catalog |
+| `h` | Toggle list visibility |
+| `q` | Quit |
+
+### Key Concepts Demonstrated
+
+| Concept | How It's Used |
+|---------|---------------|
+| Terminal Widget | ANSI art rendering |
+| CP437 Encoding | `encoding.bufferToString()` for legacy files |
+| Async Fetching | Load art from remote URLs |
+| Split Layout | Two-panel interface |
+
+---
+
+## Telnet Server
+
+**Location:** `examples/telnet-server/`
+
+Serve blECSd UIs to remote clients over telnet. Each connection gets an isolated session.
+
+```
+╔═══════════════════════════════════════════════════════════╗
+║   blECSd Telnet Server Example                            ║
+║   Server listening on port 2300                           ║
+║   Connect with:  telnet localhost 2300                    ║
+╚═══════════════════════════════════════════════════════════╝
+```
+
+### Features
+
+- **Multi-client Support**: Isolated sessions per connection
+- **Telnet Protocol**: NAWS (window size), TTYPE (terminal type)
+- **Demo UI**: Menu navigation, color test, box drawing
+- **Client Stats**: View all connected sessions
+- **Clean Disconnect**: Graceful session cleanup
+
+### Running
+
+```bash
+cd examples/telnet-server
+pnpm dev
+
+# Connect from another terminal
+telnet localhost 2300
+```
+
+### Demo Menu
+
+1. **System Info**: Server version, client ID, terminal info
+2. **Client Stats**: List of all connected clients
+3. **Color Test**: 16-color, 256-color, grayscale
+4. **Box Drawing**: Unicode box and block characters
+5. **Quit**: Disconnect
+
+### Key Concepts Demonstrated
+
+| Concept | How It's Used |
+|---------|---------------|
+| Custom I/O Streams | Socket as Program input/output |
+| Session Isolation | Separate World per client |
+| Protocol Handling | Telnet option negotiation |
+| Remote UI | Network-accessible terminal apps |
+
+### Security Note
+
+Telnet is unencrypted. Use only on trusted networks. For production, consider SSH tunnels.
+
+---
+
 ## Creating Your Own Examples
 
 When building applications with blECSd, follow these patterns:
