@@ -26,9 +26,9 @@
  * ```
  */
 
-import { hasComponent } from 'bitecs';
 import { getParent, NULL_ENTITY } from '../../components/hierarchy';
 import { packColor, Renderable, unpackColor } from '../../components/renderable';
+import { hasComponent } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 
 // =============================================================================

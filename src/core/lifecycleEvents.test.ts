@@ -2,8 +2,8 @@
  * Lifecycle events tests.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { addEntity, createWorld } from '../core/ecs';
 import { createEventBus, type EventBus } from './events';
 import {
 	clearLifecycleEventBuses,

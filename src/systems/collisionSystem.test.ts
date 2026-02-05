@@ -1,7 +1,7 @@
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ColliderType, setCollider } from '../components/collision';
 import { setPosition } from '../components/position';
+import { addEntity, createWorld } from '../core/ecs';
 import {
 	areColliding,
 	collisionSystem,

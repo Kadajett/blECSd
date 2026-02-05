@@ -17,7 +17,7 @@ function createViewport3D(
 Creates a 3D viewport widget on an entity. Automatically creates a camera entity, sets up components, and provides chainable methods for scene management.
 
 ```typescript
-import { addEntity, createWorld } from 'bitecs';
+import { addEntity, createWorld } from 'blecsd';
 import { type Entity, type World, createViewport3D } from 'blecsd';
 
 const world = createWorld() as World;
@@ -139,7 +139,7 @@ viewport.destroy();
 ## Full Example
 
 ```typescript
-import { addEntity, createWorld } from 'bitecs';
+import { addEntity, createWorld } from 'blecsd';
 import { type Entity, type World, three, createViewport3D } from 'blecsd';
 
 const world = createWorld() as World;

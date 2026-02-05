@@ -3,8 +3,8 @@
  */
 
 import { Writable } from 'node:stream';
-import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import type { CellChange } from '../terminal/screen/cell';
 import { Attr, createCell, setCell } from '../terminal/screen/cell';

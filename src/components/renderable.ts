@@ -3,7 +3,7 @@
  * @module components/renderable
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { getAncestors, hasHierarchy, isRoot } from './hierarchy';
 
@@ -266,7 +266,7 @@ function ensureRenderable(world: World, eid: Entity): void {
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { setStyle } from 'blecsd';
  *
  * const world = createWorld();

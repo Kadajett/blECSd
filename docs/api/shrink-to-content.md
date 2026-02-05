@@ -152,7 +152,7 @@ applyShrink(world, entity);
 ### Auto-sizing Button
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setContent, setDimensions, setShrink, applyShrink, setPaddingAll, setBorder } from 'blecsd';
 
 const world = createWorld();

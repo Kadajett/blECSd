@@ -4,8 +4,8 @@
  * @module core/eventBubbling
  */
 
-import { hasComponent } from 'bitecs';
 import { getParent, Hierarchy, NULL_ENTITY } from '../components/hierarchy';
+import { hasComponent } from './ecs';
 import type { EventBus, EventMap } from './events';
 import type { Entity, World } from './types';
 

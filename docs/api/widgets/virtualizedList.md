@@ -16,7 +16,7 @@ import {
 ## Basic Usage
 
 ```typescript
-import { createWorld } from 'bitecs';
+import { createWorld } from 'blecsd';
 import { createVirtualizedList } from 'blecsd';
 
 const world = createWorld();
@@ -201,7 +201,7 @@ function onWheel(event) {
 ## Example: Log Viewer
 
 ```typescript
-import { createWorld } from 'bitecs';
+import { createWorld } from 'blecsd';
 import { createVirtualizedList, handleVirtualizedListKey } from 'blecsd';
 import * as fs from 'fs';
 

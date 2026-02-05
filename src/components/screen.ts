@@ -32,7 +32,7 @@
  * ```
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { getDimensions, setDimensions } from './dimensions';
 import { NULL_ENTITY } from './hierarchy';

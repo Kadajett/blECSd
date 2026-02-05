@@ -3,7 +3,6 @@
  * @module systems/virtualizedRenderSystem.test
  */
 
-import { addComponent, addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BorderType, setBorder } from '../components/border';
 import { Position, setPosition } from '../components/position';
@@ -13,6 +12,7 @@ import {
 	setVirtualViewport,
 	VirtualViewport,
 } from '../components/virtualViewport';
+import { addComponent, addEntity, createWorld } from '../core/ecs';
 import { getCell } from '../terminal/screen/cell';
 import { createDoubleBuffer, getBackBuffer } from '../terminal/screen/doubleBuffer';
 import { createLineStore, createLineStoreFromLines } from '../utils/virtualizedLineStore';

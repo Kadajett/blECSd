@@ -234,7 +234,7 @@ interface FocusableOptions {
 ### Basic Focus Handling
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { makeFocusable, focus, isFocused, blur } from 'blecsd';
 
 const world = createWorld();

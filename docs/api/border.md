@@ -83,7 +83,7 @@ Border.charVertical   // Uint32Array - Vertical edge (Unicode codepoint)
 Sets or updates border configuration. Adds the Border component if not present.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
 
 const world = createWorld();
@@ -337,7 +337,7 @@ interface BorderData {
 ### Dialog Box
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
 
 const world = createWorld();

@@ -8,7 +8,7 @@
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { setVirtualViewport, scrollToLine, getVisibleRange } from 'blecsd';
  *
  * const world = createWorld();
@@ -31,8 +31,8 @@
  * ```
  */
 
-import { addComponent, hasComponent } from 'bitecs';
 import { z } from 'zod';
+import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================

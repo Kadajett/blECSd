@@ -25,7 +25,6 @@
  * ```
  */
 
-import { hasComponent, removeEntity } from 'bitecs';
 import {
 	getChildren,
 	getParent,
@@ -33,6 +32,7 @@ import {
 	NULL_ENTITY,
 	removeChild,
 } from '../components/hierarchy';
+import { hasComponent, removeEntity } from './ecs';
 import { createEventBus } from './events';
 import {
 	emitDestroy,

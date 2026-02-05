@@ -1,5 +1,5 @@
-import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createWorld } from '../core/ecs';
 import { createBoxEntity, createCheckboxEntity, createTextboxEntity } from '../core/entities';
 import type { World } from '../core/types';
 import { resetCheckboxStore } from './checkbox';

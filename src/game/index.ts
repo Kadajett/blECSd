@@ -34,8 +34,8 @@
  * ```
  */
 
-import { createWorld } from 'bitecs';
 import { z } from 'zod';
+import { createWorld } from '../core/ecs';
 
 import {
 	type BoxConfig,

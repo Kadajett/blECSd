@@ -1,10 +1,10 @@
-import { addEntity, createWorld, hasComponent } from 'bitecs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Camera3D } from '../3d/components/camera3d';
 import { Material3D } from '../3d/components/material';
 import { clearMeshStore, createMeshFromArrays, Mesh } from '../3d/components/mesh';
 import { Transform3D } from '../3d/components/transform3d';
 import { Viewport3D } from '../3d/components/viewport3d';
+import { addEntity, createWorld, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import {
 	createViewport3D,

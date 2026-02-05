@@ -2,11 +2,10 @@
  * Tests for debug overlay widget.
  */
 
-import { createWorld, hasComponent } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-
 import { Content } from '../components/content';
 import { Position } from '../components/position';
+import { createWorld, hasComponent } from '../core/ecs';
 import type { World } from '../core/types';
 import {
 	createDebugOverlay,

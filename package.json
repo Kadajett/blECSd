@@ -37,7 +37,7 @@
     "bench": "vitest bench",
     "bench:run": "vitest bench --run",
     "bench:json": "vitest bench --run --outputFile=benchmark-results.json",
-    "lint": "biome check .",
+    "lint": "biome check . && ./scripts/check-bitecs-imports.sh",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "typecheck": "tsc --noEmit",

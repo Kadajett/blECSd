@@ -2,13 +2,13 @@
  * Tests for Render System
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BORDER_SINGLE, BorderType, setBorder, setBorderChars } from '../components/border';
 import { setDimensions } from '../components/dimensions';
 import { appendChild } from '../components/hierarchy';
 import { setPosition, setZIndex } from '../components/position';
 import { hide, Renderable, setStyle } from '../components/renderable';
+import { addEntity, createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { World } from '../core/types';
 import { createCell, getCell } from '../terminal/screen/cell';

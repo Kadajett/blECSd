@@ -29,9 +29,9 @@
  * ```
  */
 
-import { hasComponent } from 'bitecs';
 import { Interactive } from '../components/interactive';
 import { isPointInEntity } from './computedPosition';
+import { hasComponent } from './ecs';
 import { isPointInCachedBounds } from './positionCache';
 import { queryInteractive } from './queries';
 import type { Entity, World } from './types';

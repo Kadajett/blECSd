@@ -4,7 +4,6 @@
  * @module systems/renderSystem
  */
 
-import { hasComponent, query } from 'bitecs';
 import { Border, BorderType, getBorder, hasBorderVisible } from '../components/border';
 // getChildren reserved for future tree-based rendering mode
 // import { getChildren } from '../components/hierarchy';
@@ -16,7 +15,9 @@ import {
 	markClean,
 	Renderable,
 } from '../components/renderable';
+import { hasComponent } from '../core/ecs';
 import type { Entity, System, World } from '../core/types';
+import { getWorldAdapter } from '../core/worldAdapter';
 import type { Cell, ScreenBufferData } from '../terminal/screen/cell';
 import { Attr, createCell, fillRect, setCell, writeString } from '../terminal/screen/cell';
 import type { DoubleBufferData } from '../terminal/screen/doubleBuffer';
@@ -543,8 +544,9 @@ export const renderSystem: System = (world: World): World => {
 		doubleBuffer: renderDoubleBuffer,
 	};
 
-	// Query all entities with Position and Renderable
-	const entities = query(world, [Position, Renderable]);
+	// Query all entities with Position and Renderable via adapter
+	const adapter = getWorldAdapter(world);
+	const entities = adapter.queryRenderables(world);
 
 	// Collect root entities (those without parents or at top level)
 	// and sort by z-index
@@ -673,7 +675,8 @@ export function renderRect(
  * ```
  */
 export function markAllDirty(world: World): void {
-	const entities = query(world, [Renderable]);
+	const adapter = getWorldAdapter(world);
+	const entities = adapter.queryRenderables(world);
 	for (const eid of entities) {
 		Renderable.dirty[eid] = 1;
 	}

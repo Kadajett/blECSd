@@ -3,7 +3,7 @@
  * @module components/position
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 /** Default entity capacity for typed arrays */
@@ -62,7 +62,7 @@ export interface PositionData {
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { setPosition } from 'blecsd';
  *
  * const world = createWorld();

@@ -4,7 +4,6 @@
  * @module systems/movementSystem
  */
 
-import { hasComponent, query, registerComponent, withStore } from 'bitecs';
 import { Position } from '../components/position';
 import {
 	applyAccelerationToEntity,
@@ -14,6 +13,7 @@ import {
 	hasAcceleration,
 	hasVelocity,
 } from '../components/velocity';
+import { hasComponent, query, registerComponent, withStore } from '../core/ecs';
 import { getDeltaTime, type Scheduler } from '../core/scheduler';
 import { LoopPhase, type System, type World } from '../core/types';
 

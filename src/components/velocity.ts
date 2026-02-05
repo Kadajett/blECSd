@@ -3,7 +3,7 @@
  * @module components/velocity
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { hasPosition, Position } from './position';
 
@@ -90,7 +90,7 @@ function initVelocity(eid: Entity): void {
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { setVelocity, setPosition } from 'blecsd';
  *
  * const world = createWorld();

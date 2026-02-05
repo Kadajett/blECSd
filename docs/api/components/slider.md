@@ -23,7 +23,7 @@ import {
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   attachSliderBehavior,
   onSliderChange,
@@ -328,7 +328,7 @@ const action = handleSliderKeyPress(world, eid, key);
 ## Example: Volume Control
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   attachSliderBehavior,
   onSliderChange,

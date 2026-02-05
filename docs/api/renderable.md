@@ -133,7 +133,7 @@ hasRenderable(world, eid);            // true
 Sets colors and text decorations. Adds the Renderable component if not present.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setStyle } from 'blecsd';
 
 const world = createWorld();
@@ -339,7 +339,7 @@ isVisible(world, eid);  // false
 Checks if an entity and all its ancestors are visible. An entity with a hidden parent is not effectively visible.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setStyle, setParent, show, hide, isEffectivelyVisible } from 'blecsd';
 
 const world = createWorld();
@@ -365,7 +365,7 @@ isEffectivelyVisible(world, child);  // true
 Checks if an entity has a hierarchy but no path to a root.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setStyle, setParent, removeChild, isDetached } from 'blecsd';
 
 const world = createWorld();

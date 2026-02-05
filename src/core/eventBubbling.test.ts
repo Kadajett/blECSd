@@ -1,6 +1,6 @@
-import { addEntity, createWorld } from 'bitecs';
 import { describe, expect, it, vi } from 'vitest';
 import { appendChild } from '../components/hierarchy';
+import { addEntity, createWorld } from '../core/ecs';
 import {
 	type BubbleableEvent,
 	bubbleEvent,

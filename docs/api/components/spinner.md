@@ -5,7 +5,7 @@ The Spinner component provides animated character sequences for loading indicato
 ## Overview
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { addSpinner, updateSpinner, getSpinnerChar } from 'blecsd';
 
 const world = createWorld();
@@ -71,7 +71,7 @@ import { DEFAULT_SPINNER_INTERVAL } from 'blecsd';
 Adds a Spinner component to an entity.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { addSpinner, BRAILLE_SPINNER_CHARS } from 'blecsd';
 
 const world = createWorld();
@@ -302,7 +302,7 @@ interface SpinnerData {
 ### Basic Spinner Animation
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { addSpinner, updateSpinner, getSpinnerChar } from 'blecsd';
 
 const world = createWorld();

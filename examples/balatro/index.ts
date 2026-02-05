@@ -11,8 +11,8 @@
  * @module examples/balatro
  */
 
-import { addEntity, removeEntity } from 'bitecs';
-import type { World, Entity } from 'blecsd';
+import { addEntity, removeEntity } from 'blecsd';
+import type { World } from 'blecsd';
 import {
 	Position,
 	setPosition,
@@ -34,10 +34,10 @@ import {
 	clearLog,
 	dumpRaw,
 	LogLevel,
-} from '../../src/terminal/debug';
+} from 'blecsd';
 
 // Core
-import type { FrameContext, GamePhase } from './core';
+import type { FrameContext, System } from './core';
 import {
 	createGameLoop,
 	createInputSystem,
@@ -55,7 +55,6 @@ import {
 	endRound,
 	getGameEndState,
 	getRoundStatus,
-	getNextBlindName,
 	isBossBlind as isCurrentBossBlind,
 	isFinalAnte,
 } from './core';
@@ -76,7 +75,6 @@ import {
 } from './data';
 import { sortHand, createSortState, toggleSortMode, getSortModeName } from './data';
 import type { SortState } from './data';
-import { createRunStats, recordHandPlayed, recordBlindComplete } from './data';
 
 // Input
 import type { InputState, KeyAction } from './input/keyboard';
@@ -91,7 +89,7 @@ import {
 // UI
 import type { Layout } from './ui/layout';
 import { calculateLayout, getHandCardPositions, getPlayedCardPositions, getPlayAreaCenter } from './ui/layout';
-import type { MenuState, MenuAction } from './ui/menu';
+import type { MenuState } from './ui/menu';
 import type { StarterDeckType } from './data';
 import {
 	createMenuState,
@@ -104,7 +102,7 @@ import {
 	isOnOptionsScreen,
 	isOnDeckSelectScreen,
 } from './ui/menu';
-import type { ShopState, ShopAction } from './ui/shop';
+import type { ShopState } from './ui/shop';
 import {
 	generateShopInventory,
 	processShopInput,
@@ -115,7 +113,7 @@ import {
 	buyVoucher,
 	rerollShop,
 } from './ui/shop';
-import type { PackOpeningState, PackOpeningAction } from './ui/pack-opening';
+import type { PackOpeningState } from './ui/pack-opening';
 import {
 	openPack,
 	processPackInput,
@@ -124,7 +122,7 @@ import {
 	isPackDone,
 	getItemName,
 } from './ui/pack-opening';
-import type { EndScreenState, EndScreenAction } from './ui/end-screen';
+import type { EndScreenState } from './ui/end-screen';
 import {
 	createEndScreenState,
 	createRunStatistics,
@@ -137,7 +135,6 @@ import {
 	createHandPreview,
 	getPreviewRenderData,
 	createPreviewBox,
-	PREVIEW_COLORS,
 } from './ui/hand-preview';
 import { formatJokerEffect, getJokerRarityColor } from './ui/joker-tray';
 import { MAX_JOKER_SLOTS } from './data/joker';
@@ -164,7 +161,6 @@ import {
 	moveCursor,
 	updateLiftAnimation,
 	getCardY,
-	clearSelections as clearLiftSelections,
 } from './animation/card-lift';
 import type { ScorePopupState } from './animation/score-popup';
 import {
@@ -212,7 +208,6 @@ const logGame = createDebugLogger('balatro:game');
 const logAnim = createDebugLogger('balatro:animation');
 const logRender = createDebugLogger('balatro:render');
 const logEcs = createDebugLogger('balatro:ecs');
-const logShop = createDebugLogger('balatro:shop');
 
 logMain.info('=== BALATRO DEBUG SESSION STARTED ===');
 logMain.info('Log file:', LOG_FILE);
@@ -309,7 +304,6 @@ const HEADER_FG = 0xffffff_ff;
 const STATUS_FG = 0xcccccc_ff;
 const ACTION_FG = 0x88cc88_ff;
 const CURSOR_FG = 0xffff44_ff;
-const SELECTED_BG = 0xffffdd_ff;
 const MONEY_COLOR = 0xffdd44_ff;
 const TITLE_COLOR = 0xff4444_ff;
 
@@ -1624,7 +1618,8 @@ function createGameLogicSystem() {
 		if (phase.type === 'idle') return state;
 
 		const now = Date.now();
-		const elapsed = now - (phase.type !== 'idle' ? (phase as { startTime: number }).startTime : 0);
+		// After the early return above, phase is guaranteed to not be 'idle' so it has startTime
+		const elapsed = now - (phase as { startTime: number }).startTime;
 
 		// Phase: cards_to_play_area -> card_scoring (after 400ms)
 		if (phase.type === 'cards_to_play_area') {
@@ -2073,18 +2068,20 @@ async function main(): Promise<void> {
 	};
 
 	// Wrap a system's run function with error logging
-	function wrapSystem<TState>(system: { name: string; phase: string; run: (s: TState, c: FrameContext) => TState }): typeof system {
+	function wrapSystem<TState>(system: System<TState>): System<TState> {
 		const originalRun = system.run;
-		system.run = (s: TState, c: FrameContext): TState => {
-			try {
-				return originalRun(s, c);
-			} catch (err) {
-				logMain.error(`CRASH in system "${system.name}" (phase=${system.phase}):`, err);
-				logMain.error('Stack:', err instanceof Error ? err.stack ?? 'no stack' : String(err));
-				throw err; // re-throw so the game still crashes visibly
-			}
+		return {
+			...system,
+			run: (s: TState, c: FrameContext): TState => {
+				try {
+					return originalRun(s, c);
+				} catch (err) {
+					logMain.error(`CRASH in system "${system.name}" (phase=${system.phase}):`, err);
+					logMain.error('Stack:', err instanceof Error ? err.stack ?? 'no stack' : String(err));
+					throw err; // re-throw so the game still crashes visibly
+				}
+			},
 		};
-		return system;
 	}
 
 	// Create systems

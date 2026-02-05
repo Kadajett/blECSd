@@ -233,7 +233,7 @@ function log(msg: string) {
 ### How do I inspect ECS state?
 
 ```typescript
-import { getAllEntities } from 'bitecs';
+import { getAllEntities } from 'blecsd';
 
 function debugWorld(world: World): void {
   const entities = getAllEntities(world);

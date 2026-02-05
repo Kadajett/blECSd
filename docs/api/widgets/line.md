@@ -5,7 +5,7 @@ The Line widget is a simple separator for creating horizontal or vertical lines.
 ## Overview
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
 
 const world = createWorld();
@@ -39,7 +39,7 @@ const vLine = createLine(world, addEntity(world), {
 Creates a new Line widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
 
 const world = createWorld();
@@ -391,7 +391,7 @@ if (result.success) {
 ### Horizontal Separator
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
 
 const world = createWorld();
@@ -409,7 +409,7 @@ const separator = createLine(world, eid, {
 ### Vertical Divider
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
 
 const world = createWorld();
@@ -427,7 +427,7 @@ const divider = createLine(world, eid, {
 ### Double Line Border
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
 
 const world = createWorld();
@@ -472,7 +472,7 @@ const rightLine = createLine(world, addEntity(world), {
 ### Dynamic Length
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
 
 const world = createWorld();
@@ -492,7 +492,7 @@ function onResize(terminalWidth: number) {
 ### Method Chaining
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
 
 const world = createWorld();

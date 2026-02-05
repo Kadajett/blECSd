@@ -36,7 +36,7 @@ In this tutorial, you'll build a simple todo list application that demonstrates 
 Create a new file `todo.ts`:
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   createScheduler,
   LoopPhase,

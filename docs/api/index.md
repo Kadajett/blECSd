@@ -94,6 +94,10 @@ See [Events](./events.md) for the full API.
 
 See [Queries](./queries.md) for pre-built queries, filters, and sorting functions.
 
+### World Adapter
+
+See [World Adapter](./core/worldAdapter.md) for customizing renderable queries and storage backends.
+
 ### Scheduler
 
 Optional game loop with phase ordering.

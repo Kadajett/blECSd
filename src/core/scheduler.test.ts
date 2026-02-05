@@ -1,5 +1,5 @@
-import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createWorld } from '../core/ecs';
 import { createScheduler, getDeltaTime, Scheduler } from './scheduler';
 import type { System } from './types';
 import { LoopPhase } from './types';

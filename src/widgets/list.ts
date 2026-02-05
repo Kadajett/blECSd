@@ -7,7 +7,6 @@
  * @module widgets/list
  */
 
-import { removeEntity } from 'bitecs';
 import { z } from 'zod';
 import { setDimensions } from '../components/dimensions';
 import {
@@ -51,6 +50,7 @@ import {
 } from '../components/list';
 import { Position, setPosition } from '../components/position';
 import { markDirty, setVisible } from '../components/renderable';
+import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -264,7 +264,7 @@ export const ListWidgetConfigSchema = z.object({
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { createList } from 'blecsd/widgets';
  *
  * const world = createWorld();

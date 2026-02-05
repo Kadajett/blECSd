@@ -18,7 +18,7 @@ import {
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   createScheduler,
   LoopPhase,
@@ -122,7 +122,7 @@ The animation system uses a Structure of Arrays (SoA) pattern for cache efficien
 ## Example: Character Animation
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   createScheduler,
   LoopPhase,

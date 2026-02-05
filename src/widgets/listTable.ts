@@ -7,7 +7,6 @@
  * @module widgets/listTable
  */
 
-import { removeEntity } from 'bitecs';
 import { z } from 'zod';
 import { setDimensions } from '../components/dimensions';
 import {
@@ -78,6 +77,7 @@ import {
 	type TableDisplayOptions,
 	type TableRow,
 } from '../components/table';
+import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -424,7 +424,7 @@ function styleToTableDisplayOptions(style: ListTableStyleConfig): TableDisplayOp
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { createListTable } from 'blecsd/widgets';
  *
  * const world = createWorld();

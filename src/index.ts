@@ -795,6 +795,8 @@ export type {
 	BubbleResult,
 	ButtonConfig,
 	CheckboxConfig,
+	// ECS types (from bitecs wrapper)
+	ComponentRef,
 	Entity,
 	EventHandler,
 	EventMap,
@@ -804,6 +806,8 @@ export type {
 	ListConfig,
 	PositionValue,
 	ProgressBarConfig,
+	QueryResult,
+	QueryTerm,
 	RadioButtonConfig,
 	RadioSetConfig,
 	ScreenConfig,
@@ -818,8 +822,14 @@ export type {
 	UIEventMap,
 	Unsubscribe,
 	World,
+	WorldAdapter,
+	WorldAdapterType,
 } from './core';
 export {
+	// ECS primitives (wrapped from bitecs)
+	addComponent,
+	addEntity,
+	// Application utilities
 	applyShrink,
 	BoxConfigSchema,
 	ButtonConfigSchema,
@@ -828,6 +838,7 @@ export {
 	calculateShrinkSize,
 	centerPosition,
 	clampPosition,
+	clearWorldAdapter,
 	createBoxEntity,
 	createBubbleableEvent,
 	createButtonEntity,
@@ -848,13 +859,17 @@ export {
 	createTextboxEntity,
 	createTextEntity,
 	createWorld,
+	createWorldAdapter,
+	DEFAULT_WORLD_ADAPTER,
 	EventBus,
+	entityExists,
 	FormConfigSchema,
 	filterClickable,
 	filterDirty,
 	filterFocusable,
 	filterVisible,
 	filterVisibleDirty,
+	getAllEntities,
 	getChildEntities,
 	getDeltaTime,
 	getDescendantEntities,
@@ -862,7 +877,9 @@ export {
 	getShrinkBox,
 	getShrinkHeight,
 	getShrinkWidth,
+	getWorldAdapter,
 	getZIndex,
+	hasComponent,
 	hasZOrder,
 	InputConfigSchema,
 	isKeywordPosition,
@@ -875,6 +892,7 @@ export {
 	parsePositionWithNegative,
 	percentOffsetPosition,
 	percentPosition,
+	query,
 	queryBorder,
 	queryContent,
 	queryFocusable,
@@ -885,6 +903,9 @@ export {
 	queryScrollable,
 	RadioButtonConfigSchema,
 	RadioSetConfigSchema,
+	registerComponent,
+	removeComponent,
+	removeEntity,
 	resetWorld,
 	resolvePosition,
 	resolvePositionClamped,
@@ -892,12 +913,14 @@ export {
 	ScreenConfigSchema,
 	SelectConfigSchema,
 	SliderConfigSchema,
+	setWorldAdapter,
 	sortByDepth,
 	sortByTabIndex,
 	sortByZIndex,
 	TextareaConfigSchema,
 	TextboxConfigSchema,
 	TextConfigSchema,
+	withStore,
 	ZOrder,
 } from './core';
 // =============================================================================
@@ -1153,6 +1176,21 @@ export {
 	parseKeySequence,
 	parseMouseSequence,
 } from './terminal';
+// =============================================================================
+// TERMINAL - Debug Logging
+// =============================================================================
+export type {
+	DebugLoggerConfig,
+	LogLevelName,
+	LogLevelValue,
+} from './terminal/debug';
+export {
+	clearLog,
+	configureDebugLogger,
+	createDebugLogger,
+	dumpRaw,
+	LogLevel,
+} from './terminal/debug';
 export type { InputHandler } from './terminal/inputStream';
 export { createInputHandler, InputHandlerConfigSchema } from './terminal/inputStream';
 export { setupSigwinchHandler, triggerResize } from './terminal/resize';

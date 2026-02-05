@@ -7,11 +7,11 @@
  * @module widgets/tree
  */
 
-import { removeEntity } from 'bitecs';
 import { z } from 'zod';
 import { setDimensions } from '../components/dimensions';
 import { Position, setPosition } from '../components/position';
 import { markDirty, setVisible } from '../components/renderable';
+import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -651,7 +651,7 @@ function collapseAllNodes(nodes: InternalTreeNode[]): void {
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { createTree } from 'blecsd/widgets';
  *
  * const world = createWorld();

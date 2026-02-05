@@ -11,7 +11,7 @@ import { createTree, isTreeWidget } from 'blecsd';
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createTree } from 'blecsd';
 
 const world = createWorld();
@@ -243,7 +243,7 @@ Nodes are addressed using dot-separated indices:
 ## Example: File Browser
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createTree, createPanel } from 'blecsd';
 import * as fs from 'fs';
 

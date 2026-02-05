@@ -4,7 +4,6 @@
  * @module systems/collisionSystem
  */
 
-import { hasComponent, query } from 'bitecs';
 import {
 	Collider,
 	type CollisionPair,
@@ -15,6 +14,7 @@ import {
 	testCollision,
 } from '../components/collision';
 import { Position } from '../components/position';
+import { hasComponent, query } from '../core/ecs';
 import { createEventBus, type EventBus } from '../core/events';
 import type { Scheduler } from '../core/scheduler';
 import { LoopPhase, type System, type World } from '../core/types';

@@ -2,8 +2,8 @@
  * List Component Tests
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { addEntity, createWorld } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import {
 	activateSelected,

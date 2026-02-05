@@ -32,7 +32,7 @@ blECSd uses [bitECS](https://github.com/NateTheGreatt/bitECS) for its ECS implem
 An entity is an integer ID with no data or behavior.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 
 const world = createWorld();
 const sidebar = addEntity(world);   // Returns an integer like 1
@@ -69,7 +69,7 @@ const pos = getPosition(world, player);
 Systems are functions that process entities with specific components:
 
 ```typescript
-import { defineQuery } from 'bitecs';
+import { defineQuery } from 'blecsd';
 import { Position, Renderable, queryRenderable } from 'blecsd';
 
 // Query for entities with both Position and Renderable

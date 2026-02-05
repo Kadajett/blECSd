@@ -8,8 +8,8 @@
  * @module 3d/systems/sceneGraphSystem
  */
 
-import { hasComponent, query } from 'bitecs';
 import { getChildren, Hierarchy, NULL_ENTITY } from '../../components/hierarchy';
+import { hasComponent, query } from '../../core/ecs';
 import type { Entity, System, World } from '../../core/types';
 import { Transform3D } from '../components/transform3d';
 import type { Mat4 } from '../math/mat4';

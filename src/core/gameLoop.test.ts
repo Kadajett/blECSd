@@ -1,5 +1,5 @@
-import { createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createWorld } from '../core/ecs';
 import { createGameLoop, GameLoop, isLoopPaused, isLoopRunning, LoopState } from './gameLoop';
 import type { System, World } from './types';
 import { LoopPhase } from './types';

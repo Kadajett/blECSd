@@ -1,6 +1,6 @@
-import { addComponent, addEntity, createWorld } from 'bitecs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { appendChild, Hierarchy } from '../../components/hierarchy';
+import { addComponent, addEntity, createWorld } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { setTransform3D, Transform3D } from '../components/transform3d';
 import { mat4Identity } from '../math/mat4';

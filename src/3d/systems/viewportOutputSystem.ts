@@ -11,7 +11,7 @@
  * @module 3d/systems/viewportOutputSystem
  */
 
-import { query } from 'bitecs';
+import { query } from '../../core/ecs';
 import type { Entity, System, World } from '../../core/types';
 import { createBackendByType } from '../backends/detection';
 import type { RendererBackend } from '../backends/types';

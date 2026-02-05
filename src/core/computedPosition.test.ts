@@ -2,13 +2,13 @@
  * Computed position utilities tests.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { describe, expect, it } from 'vitest';
 import { BorderType, setBorder } from '../components/border';
 import { setDimensions } from '../components/dimensions';
 import { appendChild } from '../components/hierarchy';
 import { setPadding } from '../components/padding';
 import { setAbsolute, setPosition } from '../components/position';
+import { addEntity, createWorld } from '../core/ecs';
 import {
 	getAbsolutePosition,
 	getComputedPosition,

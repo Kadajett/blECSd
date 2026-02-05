@@ -5,7 +5,7 @@ The 3D subsystem adds terminal-based 3D rendering to blECSd. It provides a compl
 ## Quick Start
 
 ```typescript
-import { addEntity, createWorld } from 'bitecs';
+import { addEntity, createWorld } from 'blecsd';
 import { type Entity, type World, three, createViewport3D } from 'blecsd';
 
 const world = createWorld() as World;

@@ -2,10 +2,10 @@
  * Tests for transparency and alpha blending utilities.
  */
 
-import { addComponent, addEntity, createWorld, type World } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { appendChild, Hierarchy } from '../../components/hierarchy';
 import { packColor, Renderable, setStyle, unpackColor } from '../../components/renderable';
+import { addComponent, addEntity, createWorld, type World } from '../../core/ecs';
 import type { Entity } from '../../core/types';
 import {
 	blendCellColors,

@@ -50,7 +50,7 @@ export type ScrollableTextWidget = ScrollableBoxWidget;
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { createScrollableText } from 'blecsd/widgets';
  *
  * const world = createWorld();

@@ -4,9 +4,7 @@
  * @module core/entities
  */
 
-import { addComponent, addEntity } from 'bitecs';
 import { z } from 'zod';
-
 import { Border, type BorderCharset, type BorderOptions, setBorder } from '../components/border';
 import {
 	attachCheckboxBehavior,
@@ -54,6 +52,7 @@ import {
 	DEFAULT_PLACEHOLDER,
 	setTextInputConfig,
 } from '../components/textInput';
+import { addComponent, addEntity } from './ecs';
 import type { Entity, World } from './types';
 
 // =============================================================================

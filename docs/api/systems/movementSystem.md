@@ -18,7 +18,7 @@ import {
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   createScheduler,
   LoopPhase,
@@ -163,7 +163,7 @@ position.y += velocity.y * deltaTime;
 ## Example: Player Movement
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   createScheduler,
   LoopPhase,

@@ -2,11 +2,11 @@
  * Tests for Layout System
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { setConstraints, setDimensions } from '../components/dimensions';
 import { appendChild } from '../components/hierarchy';
 import { setAbsolute, setPosition } from '../components/position';
+import { addEntity, createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { World } from '../core/types';
 import {

@@ -11,12 +11,11 @@
  * @module debug/overlay
  */
 
-import { addEntity, removeEntity } from 'bitecs';
-
 import { setContent } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { setPosition } from '../components/position';
 import { hide as hideEntity, setStyle, show as showEntity } from '../components/renderable';
+import { addEntity, removeEntity } from '../core/ecs';
 import { setEntityData } from '../core/entityData';
 import type { GameLoop } from '../core/gameLoop';
 import type { Entity, World } from '../core/types';

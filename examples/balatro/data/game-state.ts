@@ -10,6 +10,10 @@
 import type { Card } from './card';
 import { createDeck, shuffleDeck } from './card';
 import { evaluateHand, calculateScore } from './hand';
+import type { Joker, JokerEffect } from './joker';
+
+// Re-export for backwards compatibility
+export type { Joker, JokerEffect };
 
 // =============================================================================
 // TYPES
@@ -19,20 +23,6 @@ export interface BlindInfo {
 	readonly name: string;
 	readonly chipTarget: number;
 	readonly reward: number;
-}
-
-export interface JokerEffect {
-	readonly type: 'mult' | 'chips' | 'mult_x' | 'money' | 'special';
-	readonly value: number;
-	readonly trigger: 'always' | 'on_play' | 'on_score' | 'on_discard';
-}
-
-export interface Joker {
-	readonly id: string;
-	readonly name: string;
-	readonly description: string;
-	readonly rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
-	readonly effect: JokerEffect;
 }
 
 export type StarterDeckType = 'red' | 'blue' | 'yellow';
@@ -418,17 +408,16 @@ export function clearPlayed(state: GameState): GameState {
  * Adds a joker to the player's collection.
  *
  * @param state - Current game state
- * @param joker - Joker to add (without ID)
+ * @param joker - Joker to add (can include ID or ID will be generated)
  * @returns New game state with joker added
  */
 export function addJoker(
 	state: GameState,
-	joker: Omit<Joker, 'id'>,
+	joker: Joker | Omit<Joker, 'id'>,
 ): GameState {
-	const newJoker: Joker = {
-		...joker,
-		id: generateId(),
-	};
+	const newJoker: Joker = 'id' in joker && joker.id
+		? joker as Joker
+		: { ...joker, id: generateId() } as Joker;
 
 	return {
 		...state,

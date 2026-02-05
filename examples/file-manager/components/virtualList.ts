@@ -3,7 +3,7 @@
  * @module components/virtualList
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from 'blecsd';
 import type { Entity, World } from 'blecsd';
 
 /** Default entity capacity */

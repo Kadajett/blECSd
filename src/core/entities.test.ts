@@ -1,4 +1,3 @@
-import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Border, BorderType } from '../components/border';
 import {
@@ -66,6 +65,7 @@ import {
 	isTextInput,
 	resetTextInputStore,
 } from '../components/textInput';
+import { createWorld } from '../core/ecs';
 import {
 	BoxConfigSchema,
 	ButtonConfigSchema,

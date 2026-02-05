@@ -18,7 +18,7 @@ import {
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createHoverTextManager, setHoverText } from 'blecsd';
 
 const world = createWorld();
@@ -203,7 +203,7 @@ clearAllHoverText();
 ## Example: Form Tooltips
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   createHoverTextManager,
   createTextInput,

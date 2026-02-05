@@ -2,9 +2,9 @@
  * Tests for z-order management.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { appendChild } from '../components/hierarchy';
+import { addEntity, createWorld } from '../core/ecs';
 import type { World } from './types';
 import {
 	DEFAULT_Z_INDEX,

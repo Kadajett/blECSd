@@ -141,6 +141,20 @@ export {
 	registerCleanupCallback,
 	resetDisposalState,
 } from './disposal';
+export type { ComponentRef, QueryResult, QueryTerm } from './ecs';
+// ECS primitives - wrapped bitECS functions
+export {
+	addComponent,
+	addEntity,
+	entityExists,
+	getAllEntities,
+	hasComponent,
+	query,
+	registerComponent,
+	removeComponent,
+	removeEntity,
+	withStore,
+} from './ecs';
 // Effects system
 export type { DynamicValue, EffectConfig, EffectsConfig, ResolvedEffect } from './effects';
 export {
@@ -510,6 +524,30 @@ export {
 	getShrinkHeight,
 	getShrinkWidth,
 } from './shrinkToContent';
+// Packed storage utilities
+export type { EntityHandle, EntityPool, PackedHandle, PackedStore } from './storage';
+export {
+	addToStore,
+	allocateEntity,
+	assertEntityAlive,
+	clearStore,
+	createEntityPool,
+	createPackedStore,
+	deallocateEntity,
+	forEachInStore,
+	getEntityCount,
+	getEntityPoolCapacity,
+	getFromStore,
+	getStoreCapacity,
+	getStoreData,
+	getStoreSize,
+	isEntityAlive,
+	isValidHandle,
+	mapStore,
+	removeFromStore,
+	resetEntityPool,
+	setInStore,
+} from './storage';
 // Style inheritance
 export {
 	clearStyleCache,
@@ -534,6 +572,14 @@ export {
 export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
 export { createWorld, resetWorld } from './world';
+export type { WorldAdapter, WorldAdapterType } from './worldAdapter';
+export {
+	clearWorldAdapter,
+	createWorldAdapter,
+	DEFAULT_WORLD_ADAPTER,
+	getWorldAdapter,
+	setWorldAdapter,
+} from './worldAdapter';
 // Z-order management
 export {
 	DEFAULT_Z_INDEX,

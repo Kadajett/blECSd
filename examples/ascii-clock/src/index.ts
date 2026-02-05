@@ -5,14 +5,15 @@
  * using bitmap fonts and a manual render loop.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import {
+	addEntity,
 	cleanup as cleanupOutput,
 	clearBuffer,
 	clearScreen,
 	createDoubleBuffer,
 	createInputHandler,
 	createScreenEntity,
+	createWorld,
 	type Entity,
 	enterAlternateScreen,
 	getContent,

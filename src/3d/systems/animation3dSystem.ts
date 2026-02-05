@@ -7,7 +7,7 @@
  * @module 3d/systems/animation3dSystem
  */
 
-import { query } from 'bitecs';
+import { query } from '../../core/ecs';
 import { getDeltaTime } from '../../core/scheduler';
 import type { Entity, System, World } from '../../core/types';
 import { Animation3D } from '../components/animation3d';

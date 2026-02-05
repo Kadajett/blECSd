@@ -8,7 +8,7 @@
  * Quit: Ctrl+C
  */
 
-import { addEntity, createWorld } from 'bitecs';
+import { addEntity, createWorld } from 'blecsd';
 import {
 	type Entity,
 	type World,

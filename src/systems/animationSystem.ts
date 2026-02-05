@@ -4,8 +4,8 @@
  * @module systems/animationSystem
  */
 
-import { hasComponent, query, registerComponent, withStore } from 'bitecs';
 import { updateAnimationEntity } from '../components/animation';
+import { hasComponent, query, registerComponent, withStore } from '../core/ecs';
 import { getDeltaTime, type Scheduler } from '../core/scheduler';
 import { LoopPhase, type System, type World } from '../core/types';
 

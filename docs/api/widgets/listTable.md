@@ -11,7 +11,7 @@ import { createListTable, isListTableWidget } from 'blecsd';
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createListTable } from 'blecsd';
 
 const world = createWorld();
@@ -248,7 +248,7 @@ table.destroy();  // Remove entity and cleanup
 ## Example: Process List
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createListTable, createPanel } from 'blecsd';
 
 const world = createWorld();

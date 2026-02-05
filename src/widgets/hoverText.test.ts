@@ -2,8 +2,8 @@
  * Hover Text (Tooltip) System tests.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { addEntity, createWorld } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import {
 	clearAllHoverText,

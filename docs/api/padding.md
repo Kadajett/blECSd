@@ -26,7 +26,7 @@ Checks if an entity has a Padding component.
 
 ```typescript
 import { createWorld, hasPadding, setPadding } from 'blecsd';
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -45,7 +45,7 @@ Sets individual padding sides on an entity. Adds the Padding component if not al
 
 ```typescript
 import { createWorld, setPadding } from 'blecsd';
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -78,7 +78,7 @@ Sets all padding sides to the same value. Adds the Padding component if not alre
 
 ```typescript
 import { createWorld, setPaddingAll, getPadding } from 'blecsd';
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -105,7 +105,7 @@ Sets horizontal (left/right) and vertical (top/bottom) padding separately. Adds 
 
 ```typescript
 import { createWorld, setPaddingHV, getPadding } from 'blecsd';
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -133,7 +133,7 @@ Gets the padding data for an entity.
 
 ```typescript
 import { createWorld, setPadding, getPadding } from 'blecsd';
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -161,7 +161,7 @@ Gets the total horizontal padding (left + right).
 
 ```typescript
 import { createWorld, setPadding, getHorizontalPadding } from 'blecsd';
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -182,7 +182,7 @@ Gets the total vertical padding (top + bottom).
 
 ```typescript
 import { createWorld, setPadding, getVerticalPadding } from 'blecsd';
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -203,7 +203,7 @@ Checks if an entity has any padding value greater than 0.
 
 ```typescript
 import { createWorld, setPadding, setPaddingAll, hasPaddingValue } from 'blecsd';
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);

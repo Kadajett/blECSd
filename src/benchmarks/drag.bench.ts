@@ -8,7 +8,7 @@
  * @module benchmarks/drag
  */
 
-import { addComponent, addEntity, createWorld } from 'bitecs';
+import { addComponent, addEntity, createWorld } from '../core/ecs';
 import { bench, describe } from 'vitest';
 import { Dimensions, setDimensions } from '../components/dimensions';
 import { Hierarchy, setParent } from '../components/hierarchy';

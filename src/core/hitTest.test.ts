@@ -2,11 +2,11 @@
  * Tests for hit test system with z-order aware clickable sorting.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { setDimensions } from '../components/dimensions';
 import { setInteractive } from '../components/interactive';
 import { setPosition } from '../components/position';
+import { addEntity, createWorld } from '../core/ecs';
 import {
 	createClickableCache,
 	getAllClickablesAt,

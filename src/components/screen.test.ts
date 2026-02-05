@@ -2,8 +2,8 @@
  * Tests for Screen component
  */
 
-import { createWorld } from 'bitecs';
 import { afterEach, describe, expect, it } from 'vitest';
+import { createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { Entity, World } from '../core/types';
 import {

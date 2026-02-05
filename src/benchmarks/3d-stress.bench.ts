@@ -7,7 +7,7 @@
  * @module benchmarks/3d-stress
  */
 
-import { addComponent, addEntity, createWorld } from 'bitecs';
+import { addComponent, addEntity, createWorld } from '../core/ecs';
 import { bench, describe } from 'vitest';
 import { setCamera3D } from '../3d/components/camera3d';
 import { setMaterial3D } from '../3d/components/material';

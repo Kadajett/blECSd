@@ -2,8 +2,8 @@
  * Tests for VirtualViewport component
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { describe, expect, it } from 'vitest';
+import { addEntity, createWorld } from '../core/ecs';
 import {
 	clearViewportDirty,
 	ensureCursorVisible,

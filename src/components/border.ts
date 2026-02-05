@@ -3,7 +3,7 @@
  * @module components/border
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 /** Default entity capacity for typed arrays */
@@ -302,7 +302,7 @@ function applyBorderOptions(eid: Entity, options: BorderOptions): void {
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { setBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
  *
  * const world = createWorld();

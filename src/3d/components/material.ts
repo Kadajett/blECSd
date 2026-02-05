@@ -4,7 +4,7 @@
  * @module 3d/components/material
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { type Material3DConfig, Material3DConfigSchema } from '../schemas/components';
 

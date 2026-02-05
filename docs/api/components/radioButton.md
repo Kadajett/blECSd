@@ -25,7 +25,7 @@ import {
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   attachRadioSetBehavior,
   attachRadioButtonBehavior,
@@ -262,7 +262,7 @@ sendRadioButtonEvent(world, eid, 'enable');
 ## Example: Size Selection
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   attachRadioSetBehavior,
   attachRadioButtonBehavior,

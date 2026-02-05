@@ -3,10 +3,10 @@
  * @module widgets/virtualizedList.test
  */
 
-import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Renderable } from '../components/renderable';
 import { VirtualViewport } from '../components/virtualViewport';
+import { createWorld } from '../core/ecs';
 import { cleanupVirtualizedRenderSystem, getLineStore } from '../systems/virtualizedRenderSystem';
 import {
 	createVirtualizedList,

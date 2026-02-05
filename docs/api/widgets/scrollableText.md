@@ -5,7 +5,7 @@ The ScrollableText widget is a thin wrapper over ScrollableBox optimized for rea
 ## Overview
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
 
 const world = createWorld();
@@ -34,7 +34,7 @@ logView.scrollToBottom();
 Creates a new ScrollableText widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
 
 const world = createWorld();
@@ -446,7 +446,7 @@ type ScrollableTextWidget = ScrollableBoxWidget;
 ### Log Viewer
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
 
 const world = createWorld();
@@ -477,7 +477,7 @@ appendLog('Ready');
 ### Help Text Display
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
 
 const world = createWorld();
@@ -513,7 +513,7 @@ const helpView = createScrollableText(world, addEntity(world), {
 ### Auto-Scrolling Terminal Output
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
 
 const world = createWorld();
@@ -544,7 +544,7 @@ output('drwxr-xr-x 10 user user 4096 Jan 1 11:00 ..');
 ### Method Chaining
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
 
 const world = createWorld();

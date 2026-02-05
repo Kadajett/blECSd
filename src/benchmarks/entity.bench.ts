@@ -8,7 +8,7 @@
  * @module benchmarks/entity
  */
 
-import { addComponent, addEntity, createWorld, removeEntity } from 'bitecs';
+import { addComponent, addEntity, createWorld, removeEntity } from '../core/ecs';
 import { bench, describe } from 'vitest';
 import { Dimensions } from '../components/dimensions';
 import { Hierarchy } from '../components/hierarchy';

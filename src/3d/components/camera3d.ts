@@ -4,7 +4,7 @@
  * @module 3d/components/camera3d
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { type Camera3DConfig, Camera3DConfigSchema } from '../schemas/components';
 
