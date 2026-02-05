@@ -195,6 +195,24 @@ export {
 	stateMachineSystem,
 	updateStateAges,
 } from './stateMachineSystem';
+// TileMap renderer system
+export type {
+	TileMapBuffer,
+	TileMapCamera,
+	TileMapRendererConfig,
+} from './tilemapRenderer';
+export {
+	clearTileMapRenderBuffer,
+	createEmptyBuffer,
+	createTilemapRenderSystem,
+	getTileMapRenderBuffer,
+	getTileMapRendererConfig,
+	renderAllTileMaps,
+	renderTileMapToBuffer,
+	resetTileMapRenderer,
+	setTileMapRendererConfig,
+	tilemapRenderSystem,
+} from './tilemapRenderer';
 // Virtualized render system
 export type {
 	LineRenderConfig,
