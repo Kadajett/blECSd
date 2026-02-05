@@ -159,7 +159,7 @@ function getMemoryUsage(): { used: number; total: number } {
 function getProcessCount(): number {
 	// Node.js doesn't have a direct way to count processes
 	// We'll use a rough estimate based on load average
-	return Math.floor(os.loadavg()[0] ?? 0 * 10) + 50;
+	return Math.floor((os.loadavg()[0] ?? 0) * 10) + 50;
 }
 
 /**

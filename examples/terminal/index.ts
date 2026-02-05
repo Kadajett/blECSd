@@ -396,6 +396,7 @@ async function main(): Promise<void> {
 
 	let running = true;
 	let needsRender = true;
+	let shellHandlersRegistered = false;
 
 	// Mark dirty on any input
 	const markDirty = () => {
@@ -428,17 +429,20 @@ async function main(): Promise<void> {
 				terminal.writeln('');
 				terminal.writeln('\x1b[1;33mAttempting to spawn shell...\x1b[0m');
 				try {
-					// Register handlers first
+					// Register handlers once (avoid accumulating handlers on repeated spawn attempts)
 					// Note: PTY output is automatically written to the terminal buffer by spawn()
 					// We just need to mark dirty so the display updates
-					terminal.onData(() => {
-						markDirty();
-					});
-					terminal.onExit((code) => {
-						terminal.writeln('');
-						terminal.writeln(`\x1b[1;33mShell exited with code ${code}\x1b[0m`);
-						markDirty();
-					});
+					if (!shellHandlersRegistered) {
+						terminal.onData(() => {
+							markDirty();
+						});
+						terminal.onExit((code) => {
+							terminal.writeln('');
+							terminal.writeln(`\x1b[1;33mShell exited with code ${code}\x1b[0m`);
+							markDirty();
+						});
+						shellHandlersRegistered = true;
+					}
 					// Then spawn
 					terminal.spawn(process.env.SHELL || '/bin/bash');
 					// Check if it actually started
