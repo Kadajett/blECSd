@@ -9,6 +9,7 @@
  */
 
 import type { MapData } from '../wad/types.js';
+import type { GameState } from './death.js';
 import type { Mobj } from './mobj.js';
 import { MobjFlags } from './mobj.js';
 import type { PlayerState } from './player.js';
@@ -67,11 +68,13 @@ export function initThinkers(mobjs: Mobj[]): void {
  *
  * @param mobjs - All map objects
  * @param player - Current player state
+ * @param gameState - Game state for player damage handling
  * @param map - Map data for collision and sight checks
  */
 export function runThinkers(
 	mobjs: Mobj[],
 	player: PlayerState,
+	gameState: GameState,
 	map: MapData,
 ): void {
 	for (const mobj of mobjs) {
@@ -85,7 +88,7 @@ export function runThinkers(
 		if (mobj.tics === -1) {
 			// Infinite tics: call action every tic if present
 			if (currentState.action) {
-				callAction(currentState.action, mobj, player, map, mobjs);
+				callAction(currentState.action, mobj, player, gameState, map, mobjs);
 			}
 			continue;
 		}
@@ -106,7 +109,7 @@ export function runThinkers(
 
 		// Call the new state's action function
 		if (state.action) {
-			callAction(state.action, mobj, player, map, mobjs);
+			callAction(state.action, mobj, player, gameState, map, mobjs);
 		}
 	}
 }
@@ -118,13 +121,14 @@ function callAction(
 	name: string,
 	mobj: Mobj,
 	player: PlayerState,
+	gameState: GameState,
 	map: MapData,
 	mobjs: readonly Mobj[],
 ): void {
 	const fn = actionRegistry[name];
 	if (!fn) return;
 
-	const ctx: ActionContext = { mobj, player, map, mobjs };
+	const ctx: ActionContext = { mobj, player, gameState, map, mobjs };
 	fn(ctx);
 }
 

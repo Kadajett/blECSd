@@ -46,6 +46,14 @@ import { ACTION_FUNCTIONS } from './game/enemyAI.js';
 import { createWeaponState, tickWeapon, processWeaponInput, WEAPON_INFO } from './game/weapons.js';
 import { fireHitscan, fireMelee } from './game/hitscan.js';
 import { drawWeaponSprite } from './game/psprite.js';
+import {
+	createGameState,
+	canPlayerAct,
+	isAwaitingRespawn,
+	isGameOver,
+	tickDeath,
+	respawnPlayer,
+} from './game/death.js';
 
 // ─── Configuration ─────────────────────────────────────────────────
 
@@ -147,6 +155,9 @@ function main(): void {
 	// Create weapon state
 	const weaponState = createWeaponState();
 
+	// Create game state (death/respawn tracking)
+	const gameState = createGameState();
+
 	// Enter alt screen, hide cursor
 	process.stdout.write('\x1b[?1049h'); // alt screen
 	process.stdout.write('\x1b[?25l');   // hide cursor
@@ -177,33 +188,44 @@ function main(): void {
 			return;
 		}
 
-		// Update player and HUD
-		updatePlayer(player, input, map);
-		updateHud(hudState, input);
+		// Handle respawn input (USE key while dead)
+		if (isAwaitingRespawn(gameState) && input.keys.has('space')) {
+			respawnPlayer(gameState, player, weaponState, map);
+		}
 
-		// Process weapon input and tick
-		const firing = processWeaponInput(weaponState, input.keys);
-		const shouldFire = tickWeapon(weaponState, player, firing);
+		// Tick death animation if dying
+		tickDeath(gameState, player);
 
-		if (shouldFire) {
-			const info = WEAPON_INFO[weaponState.current];
-			if (info) {
-				if (info.melee) {
-					fireMelee(player, mobjs, info.damage);
-				} else {
-					for (let p = 0; p < info.pellets; p++) {
-						const pelletDamage = ((Math.random() * info.damage | 0) + 1);
-						fireHitscan(player, map, mobjs, pelletDamage, info.spread);
+		// Update player and weapons only when alive
+		let extralight = 0;
+		if (canPlayerAct(gameState)) {
+			updatePlayer(player, input, map);
+			updateHud(hudState, input);
+
+			// Process weapon input and tick
+			const firing = processWeaponInput(weaponState, input.keys);
+			const shouldFire = tickWeapon(weaponState, player, firing);
+
+			if (shouldFire) {
+				const info = WEAPON_INFO[weaponState.current];
+				if (info) {
+					if (info.melee) {
+						fireMelee(player, mobjs, info.damage);
+					} else {
+						for (let p = 0; p < info.pellets; p++) {
+							const pelletDamage = ((Math.random() * info.damage | 0) + 1);
+							fireHitscan(player, map, mobjs, pelletDamage, info.spread);
+						}
 					}
 				}
 			}
+
+			// Apply muzzle flash extralight
+			extralight = weaponState.flashTics > 0 ? 2 : 0;
 		}
 
-		// Apply muzzle flash extralight
-		const extralight = weaponState.flashTics > 0 ? 2 : 0;
-
-		// Run enemy AI thinkers
-		runThinkers(mobjs, player, map);
+		// Run enemy AI thinkers (still run while dying for ambient animation)
+		runThinkers(mobjs, player, gameState, map);
 
 		// Set up render state
 		const rs = createRenderState(fb, map, textures, palette, colormap);
@@ -234,11 +256,20 @@ function main(): void {
 		// Render sprites
 		renderSprites(rs, mobjs, spriteStore);
 
-		// Render weapon sprite overlay
-		drawWeaponSprite(rs, weaponState, spriteStore);
+		// Render weapon sprite overlay (only when alive)
+		if (canPlayerAct(gameState)) {
+			drawWeaponSprite(rs, weaponState, spriteStore);
+		}
 
 		// Draw HUD
 		drawHud(rs, player, hudState, map);
+
+		// Draw death/game over overlay
+		if (isAwaitingRespawn(gameState)) {
+			drawDeathOverlay(rs, gameState.lives);
+		} else if (isGameOver(gameState)) {
+			drawGameOverOverlay(rs);
+		}
 
 		// Encode and output
 		const encoded = backend.encode(fb, 0, 0);
@@ -266,6 +297,122 @@ function main(): void {
 	console.log('Starting render loop...');
 	setTimeout(frame, 100);
 }
+
+// ─── Death / Game Over Overlays ─────────────────────────────────────
+
+/**
+ * Draw a red-tinted "YOU DIED" overlay with respawn prompt.
+ * Shows remaining lives and "Press SPACE to respawn".
+ */
+function drawDeathOverlay(rs: { fb: ReturnType<typeof three.createPixelFramebuffer>; screenWidth: number; screenHeight: number }, lives: number): void {
+	// Red tint over entire screen
+	applyRedTint(rs);
+
+	// Center text: "YOU DIED" and "PRESS SPACE TO RESPAWN"
+	const cx = Math.floor(rs.screenWidth / 2);
+	const cy = Math.floor(rs.screenHeight / 2) - 20;
+
+	drawOverlayText(rs, cx - 24, cy, 'YOU DIED', 255, 40, 40);
+	drawOverlayText(rs, cx - 60, cy + 16, 'PRESS SPACE TO RESPAWN', 200, 200, 200);
+	drawOverlayText(rs, cx - 24, cy + 32, `LIVES: ${lives}`, 200, 200, 0);
+}
+
+/**
+ * Draw a "GAME OVER" overlay.
+ */
+function drawGameOverOverlay(rs: { fb: ReturnType<typeof three.createPixelFramebuffer>; screenWidth: number; screenHeight: number }): void {
+	// Deep red tint
+	applyRedTint(rs);
+
+	const cx = Math.floor(rs.screenWidth / 2);
+	const cy = Math.floor(rs.screenHeight / 2) - 10;
+
+	drawOverlayText(rs, cx - 27, cy, 'GAME OVER', 255, 0, 0);
+}
+
+/**
+ * Apply a red tint to the framebuffer by blending red into every pixel.
+ */
+function applyRedTint(rs: { fb: ReturnType<typeof three.createPixelFramebuffer>; screenWidth: number; screenHeight: number }): void {
+	const data = rs.fb.data;
+	for (let i = 0; i < data.length; i += 4) {
+		// Blend toward red: increase red channel, reduce green and blue
+		const r = data[i] ?? 0;
+		const g = data[i + 1] ?? 0;
+		const b = data[i + 2] ?? 0;
+		data[i] = Math.min(255, r + 60);
+		data[i + 1] = Math.floor(g * 0.4);
+		data[i + 2] = Math.floor(b * 0.4);
+	}
+}
+
+/**
+ * Draw simple text at a position using 3x5 minimal font.
+ * Each character is 4px wide (3px char + 1px gap).
+ */
+function drawOverlayText(
+	rs: { fb: ReturnType<typeof three.createPixelFramebuffer>; screenWidth: number; screenHeight: number },
+	x: number,
+	y: number,
+	text: string,
+	r: number,
+	g: number,
+	b: number,
+): void {
+	for (let i = 0; i < text.length; i++) {
+		const ch = text[i];
+		if (!ch || ch === ' ') continue;
+		const pattern = OVERLAY_FONT[ch];
+		if (!pattern) continue;
+		const cx = x + i * 4;
+		for (let row = 0; row < pattern.length; row++) {
+			const line = pattern[row];
+			if (!line) continue;
+			for (let col = 0; col < line.length; col++) {
+				if (line[col] !== '#') continue;
+				const px = cx + col;
+				const py = y + row;
+				if (px >= 0 && px < rs.screenWidth && py >= 0 && py < rs.screenHeight) {
+					three.setPixelUnsafe(rs.fb, px, py, r, g, b, 255);
+				}
+			}
+		}
+	}
+}
+
+/** Minimal 3x5 font for overlay messages. */
+const OVERLAY_FONT: Readonly<Record<string, readonly string[]>> = {
+	A: ['###', '# #', '###', '# #', '# #'],
+	B: ['## ', '# #', '## ', '# #', '## '],
+	C: ['###', '#  ', '#  ', '#  ', '###'],
+	D: ['## ', '# #', '# #', '# #', '## '],
+	E: ['###', '#  ', '## ', '#  ', '###'],
+	G: ['###', '#  ', '# #', '# #', '###'],
+	I: ['###', ' # ', ' # ', ' # ', '###'],
+	L: ['#  ', '#  ', '#  ', '#  ', '###'],
+	M: ['# #', '###', '###', '# #', '# #'],
+	N: ['# #', '## ', '###', '# #', '# #'],
+	O: ['###', '# #', '# #', '# #', '###'],
+	P: ['###', '# #', '###', '#  ', '#  '],
+	R: ['###', '# #', '## ', '# #', '# #'],
+	S: ['###', '#  ', '###', '  #', '###'],
+	T: ['###', ' # ', ' # ', ' # ', ' # '],
+	U: ['# #', '# #', '# #', '# #', '###'],
+	V: ['# #', '# #', '# #', '# #', ' # '],
+	W: ['# #', '# #', '###', '###', '# #'],
+	Y: ['# #', '# #', '###', ' # ', ' # '],
+	':': ['   ', ' # ', '   ', ' # ', '   '],
+	'0': ['###', '# #', '# #', '# #', '###'],
+	'1': [' # ', '## ', ' # ', ' # ', '###'],
+	'2': ['###', '  #', '###', '#  ', '###'],
+	'3': ['###', '  #', '###', '  #', '###'],
+	'4': ['# #', '# #', '###', '  #', '  #'],
+	'5': ['###', '#  ', '###', '  #', '###'],
+	'6': ['###', '#  ', '###', '# #', '###'],
+	'7': ['###', '  #', ' # ', ' # ', ' # '],
+	'8': ['###', '# #', '###', '# #', '###'],
+	'9': ['###', '# #', '###', '  #', '###'],
+};
 
 // ─── Shutdown ──────────────────────────────────────────────────────
 
