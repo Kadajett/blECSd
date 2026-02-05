@@ -252,6 +252,28 @@ export {
 	promptStateMap,
 	resetPromptStore,
 } from './prompt';
+// Question widget
+export type {
+	QuestionBorderConfig,
+	QuestionConfig,
+	QuestionPaddingConfig,
+	QuestionWidget,
+} from './question';
+export {
+	ask,
+	confirm,
+	createQuestion,
+	DEFAULT_QUESTION_BG,
+	DEFAULT_QUESTION_FG,
+	DEFAULT_QUESTION_HEIGHT,
+	DEFAULT_QUESTION_WIDTH,
+	handleQuestionKey,
+	isQuestion,
+	Question,
+	QuestionConfigSchema,
+	questionStateMap,
+	resetQuestionStore,
+} from './question';
 // Widget Registry
 export type { WidgetFactory, WidgetRegistration, WidgetRegistry } from './registry';
 export {
