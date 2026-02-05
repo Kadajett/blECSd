@@ -24,9 +24,10 @@
  */
 
 import * as net from 'node:net';
-import { type Duplex, PassThrough } from 'node:stream';
+import { PassThrough } from 'node:stream';
 import { createWorld, type World } from 'blecsd';
 import { Program, type ProgramConfig } from 'blecsd/terminal';
+import { InputHandler } from 'blecsd/terminal';
 
 // =============================================================================
 // TELNET PROTOCOL CONSTANTS
@@ -61,17 +62,22 @@ interface ClientSession {
 	socket: net.Socket;
 	world: World;
 	program: Program;
+	inputHandler: InputHandler;
 	width: number;
 	height: number;
 	terminalType: string;
 	connectedAt: Date;
+	negotiationTimeout: ReturnType<typeof setTimeout> | null;
 }
 
-interface TelnetStream extends Duplex {
+interface TelnetStream {
+	input: PassThrough;
+	output: PassThrough;
 	width: number;
 	height: number;
 	terminalType: string;
 	onResize: (callback: (width: number, height: number) => void) => void;
+	destroy: () => void;
 }
 
 // =============================================================================
@@ -79,7 +85,7 @@ interface TelnetStream extends Duplex {
 // =============================================================================
 
 /**
- * Creates a duplex stream that handles telnet protocol negotiation.
+ * Creates streams that handle telnet protocol negotiation.
  * Strips telnet commands from input and provides clean data to the application.
  */
 function createTelnetStream(socket: net.Socket): TelnetStream {
@@ -91,13 +97,13 @@ function createTelnetStream(socket: net.Socket): TelnetStream {
 	let terminalType = 'xterm-256color';
 	let inSubnegotiation = false;
 	let subnegBuffer: number[] = [];
-	let resizeCallbacks: Array<(width: number, height: number) => void> = [];
+	const resizeCallbacks: Array<(width: number, height: number) => void> = [];
 
 	// Parse incoming telnet data
 	let pendingIAC = false;
 	let pendingCommand = 0;
 
-	socket.on('data', (data: Buffer) => {
+	function handleData(data: Buffer): void {
 		const cleanData: number[] = [];
 
 		for (let i = 0; i < data.length; i++) {
@@ -152,7 +158,7 @@ function createTelnetStream(socket: net.Socket): TelnetStream {
 		if (cleanData.length > 0) {
 			input.push(Buffer.from(cleanData));
 		}
-	});
+	}
 
 	// Handle telnet option negotiation
 	function handleTelnetOption(command: number, option: number): void {
@@ -223,6 +229,10 @@ function createTelnetStream(socket: net.Socket): TelnetStream {
 		}
 	});
 
+	// Handle socket data
+	const dataHandler = (data: Buffer) => handleData(data);
+	socket.on('data', dataHandler);
+
 	socket.on('close', () => {
 		input.push(null);
 		output.end();
@@ -236,30 +246,28 @@ function createTelnetStream(socket: net.Socket): TelnetStream {
 	// Start negotiation
 	negotiate();
 
-	// Create duplex-like object
-	const stream = Object.assign(input, {
-		write: (chunk: Buffer | string) => output.write(chunk),
-		end: () => output.end(),
-		width,
-		height,
-		terminalType,
+	return {
+		input,
+		output,
+		get width() {
+			return width;
+		},
+		get height() {
+			return height;
+		},
+		get terminalType() {
+			return terminalType;
+		},
 		onResize: (callback: (width: number, height: number) => void) => {
 			resizeCallbacks.push(callback);
 		},
-	}) as TelnetStream;
-
-	// Update width/height getters
-	Object.defineProperty(stream, 'width', {
-		get: () => width,
-	});
-	Object.defineProperty(stream, 'height', {
-		get: () => height,
-	});
-	Object.defineProperty(stream, 'terminalType', {
-		get: () => terminalType,
-	});
-
-	return stream;
+		destroy: () => {
+			socket.off('data', dataHandler);
+			resizeCallbacks.length = 0;
+			input.destroy();
+			output.destroy();
+		},
+	};
 }
 
 // =============================================================================
@@ -270,11 +278,8 @@ function createTelnetStream(socket: net.Socket): TelnetStream {
  * Creates a demo UI for a connected client.
  * Displays server info, client stats, and interactive elements.
  */
-function createDemoUI(
-	program: Program,
-	session: ClientSession,
-	sessions: Map<number, ClientSession>,
-): void {
+function createDemoUI(session: ClientSession, sessions: Map<number, ClientSession>): void {
+	const { program, inputHandler } = session;
 	let selectedItem = 0;
 	const menuItems = ['System Info', 'Client Stats', 'Color Test', 'Box Drawing', 'Quit'];
 
@@ -306,7 +311,7 @@ function createDemoUI(
 		program.write('\n');
 
 		// Draw content area based on selection
-		drawContent(program, session, sessions, selectedItem);
+		drawContent(session, sessions, selectedItem);
 
 		// Draw footer
 		program.write(`\x1b[${height};1H`);
@@ -318,7 +323,6 @@ function createDemoUI(
 	}
 
 	function drawContent(
-		prog: Program,
 		sess: ClientSession,
 		allSessions: Map<number, ClientSession>,
 		selection: number,
@@ -328,16 +332,16 @@ function createDemoUI(
 
 		switch (selection) {
 			case 0: // System Info
-				drawSystemInfo(prog, sess);
+				drawSystemInfo(sess);
 				break;
 			case 1: // Client Stats
-				drawClientStats(prog, allSessions);
+				drawClientStats(allSessions);
 				break;
 			case 2: // Color Test
-				drawColorTest(prog);
+				drawColorTest();
 				break;
 			case 3: // Box Drawing
-				drawBoxDrawing(prog);
+				drawBoxDrawing();
 				break;
 			case 4: // Quit
 				program.write('  Press Enter to disconnect.\n');
@@ -345,7 +349,7 @@ function createDemoUI(
 		}
 	}
 
-	function drawSystemInfo(prog: Program, sess: ClientSession): void {
+	function drawSystemInfo(sess: ClientSession): void {
 		const uptime = Math.floor((Date.now() - sess.connectedAt.getTime()) / 1000);
 		const info = [
 			`  Server: blECSd Telnet Server v1.0.0`,
@@ -358,49 +362,49 @@ function createDemoUI(
 		];
 
 		for (const line of info) {
-			prog.write(line + '\n');
+			program.write(line + '\n');
 		}
 	}
 
-	function drawClientStats(prog: Program, allSessions: Map<number, ClientSession>): void {
-		prog.write(`  Connected Clients: ${allSessions.size}\n\n`);
+	function drawClientStats(allSessions: Map<number, ClientSession>): void {
+		program.write(`  Connected Clients: ${allSessions.size}\n\n`);
 
 		for (const [id, clientSess] of allSessions) {
 			const uptime = Math.floor((Date.now() - clientSess.connectedAt.getTime()) / 1000);
 			const isCurrent = id === session.id;
 			const marker = isCurrent ? '\x1b[32m*\x1b[0m' : ' ';
-			prog.write(`  ${marker} Client #${id}: ${clientSess.width}x${clientSess.height} (${uptime}s)\n`);
+			program.write(`  ${marker} Client #${id}: ${clientSess.width}x${clientSess.height} (${uptime}s)\n`);
 		}
 	}
 
-	function drawColorTest(prog: Program): void {
-		prog.write('  Standard Colors:\n  ');
+	function drawColorTest(): void {
+		program.write('  Standard Colors:\n  ');
 		for (let i = 0; i < 8; i++) {
-			prog.write(`\x1b[48;5;${i}m  \x1b[0m`);
+			program.write(`\x1b[48;5;${i}m  \x1b[0m`);
 		}
-		prog.write('\n  ');
+		program.write('\n  ');
 		for (let i = 8; i < 16; i++) {
-			prog.write(`\x1b[48;5;${i}m  \x1b[0m`);
+			program.write(`\x1b[48;5;${i}m  \x1b[0m`);
 		}
 
-		prog.write('\n\n  256-Color Cube:\n  ');
+		program.write('\n\n  256-Color Cube:\n  ');
 		for (let row = 0; row < 6; row++) {
-			prog.write('  ');
+			program.write('  ');
 			for (let col = 0; col < 36; col++) {
 				const color = 16 + row * 36 + col;
-				prog.write(`\x1b[48;5;${color}m \x1b[0m`);
+				program.write(`\x1b[48;5;${color}m \x1b[0m`);
 			}
-			prog.write('\n');
+			program.write('\n');
 		}
 
-		prog.write('\n  Grayscale:\n  ');
+		program.write('\n  Grayscale:\n  ');
 		for (let i = 232; i < 256; i++) {
-			prog.write(`\x1b[48;5;${i}m \x1b[0m`);
+			program.write(`\x1b[48;5;${i}m \x1b[0m`);
 		}
-		prog.write('\n');
+		program.write('\n');
 	}
 
-	function drawBoxDrawing(prog: Program): void {
+	function drawBoxDrawing(): void {
 		const box = [
 			'  ┌────────────────────────────────┐',
 			'  │  Box Drawing Characters        │',
@@ -416,36 +420,31 @@ function createDemoUI(
 		];
 
 		for (const line of box) {
-			prog.write(line + '\n');
+			program.write(line + '\n');
 		}
 	}
 
-	// Handle input
-	program.on('key', (event) => {
-		const { key, ctrl } = event;
+	// Handle input using InputHandler
+	inputHandler.onKey((event) => {
+		const { name, ctrl } = event;
 
-		if (key === 'q' || (ctrl && key === 'c')) {
+		if (name === 'q' || (ctrl && name === 'c')) {
 			session.socket.end();
 			return;
 		}
 
-		if (key === 'j' || key === 'down') {
+		if (name === 'j' || name === 'down') {
 			selectedItem = Math.min(menuItems.length - 1, selectedItem + 1);
 			render();
-		} else if (key === 'k' || key === 'up') {
+		} else if (name === 'k' || name === 'up') {
 			selectedItem = Math.max(0, selectedItem - 1);
 			render();
-		} else if (key === 'enter' || key === 'return') {
+		} else if (name === 'enter' || name === 'return') {
 			if (selectedItem === 4) {
 				// Quit
 				session.socket.end();
 			}
 		}
-	});
-
-	// Handle resize
-	program.on('resize', () => {
-		render();
 	});
 
 	// Initial render
@@ -457,6 +456,7 @@ function createDemoUI(
 // =============================================================================
 
 const PORT = parseInt(process.env['TELNET_PORT'] ?? '2300', 10);
+const NEGOTIATION_DELAY = parseInt(process.env['TELNET_NEGOTIATION_DELAY'] ?? '200', 10);
 const sessions = new Map<number, ClientSession>();
 let nextSessionId = 1;
 
@@ -469,30 +469,33 @@ const server = net.createServer((socket) => {
 	// Create telnet stream wrapper
 	const telnetStream = createTelnetStream(socket);
 
+	// Track the timeout so we can cancel it if socket closes
+	let negotiationTimeout: ReturnType<typeof setTimeout> | null = null;
+
 	// Wait a moment for telnet negotiation
-	setTimeout(() => {
+	negotiationTimeout = setTimeout(() => {
+		// Check if socket was closed during negotiation
+		if (socket.destroyed) {
+			console.log(`[${new Date().toISOString()}] Client #${sessionId} disconnected during negotiation`);
+			telnetStream.destroy();
+			return;
+		}
+
 		// Create world and program
 		const world = createWorld();
 
+		// Use PassThrough for proper output stream
+		const programOutput = new PassThrough();
+		programOutput.on('data', (chunk: Buffer) => {
+			if (!socket.destroyed) {
+				telnetStream.output.write(chunk);
+			}
+		});
+
 		const programConfig: ProgramConfig = {
-			input: telnetStream,
-			output: {
-				write: (chunk: Buffer | string) => {
-					if (!socket.destroyed) {
-						telnetStream.write(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-					}
-					return true;
-				},
-				// biome-ignore lint/suspicious/noExplicitAny: Writable interface compatibility
-				end: () => telnetStream.end() as any,
-				// biome-ignore lint/suspicious/noExplicitAny: Writable interface compatibility
-				on: () => telnetStream as any,
-				// biome-ignore lint/suspicious/noExplicitAny: Writable interface compatibility
-				once: () => telnetStream as any,
-				// biome-ignore lint/suspicious/noExplicitAny: Writable interface compatibility
-				emit: () => false as any,
-			} as NodeJS.WritableStream,
-			useAlternateScreen: false, // Telnet clients may not support
+			input: telnetStream.input,
+			output: programOutput as NodeJS.WritableStream,
+			useAlternateScreen: false, // Telnet clients may have issues with alternate screen
 			hideCursor: false,
 			forceWidth: telnetStream.width,
 			forceHeight: telnetStream.height,
@@ -500,45 +503,62 @@ const server = net.createServer((socket) => {
 
 		const program = new Program(programConfig);
 
+		// Create InputHandler to parse key events from the telnet stream
+		const inputHandler = new InputHandler(telnetStream.input);
+
 		const session: ClientSession = {
 			id: sessionId,
 			socket,
 			world,
 			program,
+			inputHandler,
 			width: telnetStream.width,
 			height: telnetStream.height,
 			terminalType: telnetStream.terminalType,
 			connectedAt: new Date(),
+			negotiationTimeout: null,
 		};
 
 		sessions.set(sessionId, session);
 
 		// Handle window resize
-		telnetStream.onResize((w, h) => {
-			session.width = w;
-			session.height = h;
-			program.emit('resize', { width: w, height: h });
+		telnetStream.onResize((cols, rows) => {
+			session.width = cols;
+			session.height = rows;
+			program.emit('resize', { cols, rows });
 		});
 
 		// Initialize program and create UI
 		program
 			.init()
 			.then(() => {
-				createDemoUI(program, session, sessions);
+				// Start the input handler
+				inputHandler.start();
+				createDemoUI(session, sessions);
 			})
 			.catch((err) => {
 				console.error(`[Session #${sessionId}] Failed to initialize:`, err);
 				socket.end();
 			});
-	}, 200); // Wait for telnet negotiation
+	}, NEGOTIATION_DELAY);
 
 	socket.on('close', () => {
 		console.log(`[${new Date().toISOString()}] Client #${sessionId} disconnected`);
+
+		// Clear negotiation timeout if still pending
+		if (negotiationTimeout) {
+			clearTimeout(negotiationTimeout);
+			negotiationTimeout = null;
+		}
+
 		const session = sessions.get(sessionId);
 		if (session) {
+			session.inputHandler.stop();
 			session.program.destroy();
 			sessions.delete(sessionId);
 		}
+
+		telnetStream.destroy();
 	});
 
 	socket.on('error', (err) => {
@@ -576,6 +596,7 @@ process.on('SIGINT', () => {
 
 	for (const [id, session] of sessions) {
 		console.log(`Closing session #${id}`);
+		session.inputHandler.stop();
 		session.socket.end();
 		session.program.destroy();
 	}
