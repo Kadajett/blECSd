@@ -18,6 +18,15 @@ import { FRACBITS, FRACUNIT, fixedMul } from '../math/fixed.js';
 import { NF_SUBSECTOR, type MapData } from '../wad/types.js';
 import type { InputState } from './input.js';
 
+// ─── Movement Constants ─────────────────────────────────────────────
+
+/**
+ * Ground friction factor (fixed-point).
+ * Matches Doom's FRICTION = 0xE800 (~0.906 per tic).
+ * Each tic, momentum is multiplied by this value.
+ */
+export const FRICTION = 0xe800;
+
 // ─── Player State ──────────────────────────────────────────────────
 
 /** Mutable player state. */
@@ -97,7 +106,23 @@ export function createPlayer(map: MapData): PlayerState {
 }
 
 /**
+ * Apply thrust in a given direction to player momentum.
+ * Matches Doom's P_Thrust: adds to momx/momy based on angle.
+ *
+ * @param player - Mutable player state
+ * @param angle - BAM angle for thrust direction
+ * @param thrust - Thrust magnitude (fixed-point)
+ */
+export function thrustPlayer(player: PlayerState, angle: number, thrust: number): void {
+	const fineAngle = (angle >> ANGLETOFINESHIFT) & FINEMASK;
+	player.momx += fixedMul(thrust, finecosine[fineAngle] ?? FRACUNIT);
+	player.momy += fixedMul(thrust, finesine[fineAngle] ?? 0);
+}
+
+/**
  * Process one tick of player movement from input.
+ * Uses thrust-based movement: input adds to momentum, friction decays it.
+ * Matches Doom's P_MovePlayer + P_XYMovement approach.
  *
  * @param player - Mutable player state
  * @param input - Current frame input
@@ -116,40 +141,25 @@ export function updatePlayer(
 		player.angle = ((player.angle - player.turnSpeed) >>> 0);
 	}
 
-	// Forward/backward movement
-	const fineAngle = (player.angle >> ANGLETOFINESHIFT) & FINEMASK;
-	const cos = finecosine[fineAngle] ?? FRACUNIT;
-	const sin = finesine[fineAngle] ?? 0;
-
-	let moveX = 0;
-	let moveY = 0;
-
+	// Apply thrust from input (adds to momentum)
 	if (input.keys.has('up') || input.keys.has('w')) {
-		moveX += fixedMul(cos, player.forwardSpeed);
-		moveY += fixedMul(sin, player.forwardSpeed);
+		thrustPlayer(player, player.angle, player.forwardSpeed);
 	}
 	if (input.keys.has('down') || input.keys.has('s')) {
-		moveX -= fixedMul(cos, player.forwardSpeed);
-		moveY -= fixedMul(sin, player.forwardSpeed);
+		thrustPlayer(player, ((player.angle + 0x80000000) >>> 0), player.forwardSpeed);
 	}
 
-	// Strafe (Q/E for strafe, or use A/D with arrows for turning)
+	// Strafe thrust (Q/E for strafe)
 	if (input.keys.has('q') || input.keys.has(',')) {
-		const strafeAngle = ((player.angle + ANG90) >>> 0);
-		const sfine = (strafeAngle >> ANGLETOFINESHIFT) & FINEMASK;
-		moveX += fixedMul(finecosine[sfine] ?? FRACUNIT, player.sideSpeed);
-		moveY += fixedMul(finesine[sfine] ?? 0, player.sideSpeed);
+		thrustPlayer(player, ((player.angle + ANG90) >>> 0), player.sideSpeed);
 	}
 	if (input.keys.has('e') || input.keys.has('.')) {
-		const strafeAngle = ((player.angle - ANG90) >>> 0);
-		const sfine = (strafeAngle >> ANGLETOFINESHIFT) & FINEMASK;
-		moveX += fixedMul(finecosine[sfine] ?? FRACUNIT, player.sideSpeed);
-		moveY += fixedMul(finesine[sfine] ?? 0, player.sideSpeed);
+		thrustPlayer(player, ((player.angle - ANG90) >>> 0), player.sideSpeed);
 	}
 
-	// Try to move with collision detection
-	if (moveX !== 0 || moveY !== 0) {
-		tryMove(player, moveX, moveY, map);
+	// Apply momentum with collision detection
+	if (player.momx !== 0 || player.momy !== 0) {
+		xyMovement(player, map);
 	}
 
 	// Update view height (snap to floor)
@@ -159,6 +169,23 @@ export function updatePlayer(
 		player.z = sector.floorHeight << FRACBITS;
 		player.viewz = player.z + player.viewheight;
 	}
+}
+
+/**
+ * Apply player XY momentum with collision and friction.
+ * Matches Doom's P_XYMovement: moves in steps, applies friction.
+ */
+function xyMovement(player: PlayerState, map: MapData): void {
+	// Try to move by full momentum amount
+	tryMove(player, player.momx, player.momy, map);
+
+	// Apply ground friction
+	player.momx = fixedMul(player.momx, FRICTION);
+	player.momy = fixedMul(player.momy, FRICTION);
+
+	// Kill very small momentum to prevent drift
+	if (Math.abs(player.momx) < 0x1000) player.momx = 0;
+	if (Math.abs(player.momy) < 0x1000) player.momy = 0;
 }
 
 // ─── Collision Detection ───────────────────────────────────────────
