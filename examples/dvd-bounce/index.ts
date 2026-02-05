@@ -3,13 +3,21 @@
  * DVD Bounce Demo - Thousands of floating panels bouncing around the screen
  *
  * Demonstrates:
- * - High-performance rendering with thousands of entities
+ * - High-performance rendering with 5000 entities
+ * - Double buffering with dirty rect optimization
+ * - Only changed cells are sent to terminal (see "Dirty: X%" in stats)
  * - World adapter with precomputed renderable entities
- * - Physics-based movement with velocity and acceleration
+ * - Physics-based movement with velocity
  * - Wall bouncing (DVD logo style)
  * - Dynamic z-order shuffling (card shuffle effect)
  * - Shadow rendering
  * - Color cycling and visual effects
+ *
+ * Double Buffer Optimization:
+ * - Keeps previous frame buffer for comparison
+ * - Only emits ANSI codes for cells that actually changed
+ * - Uses cursor positioning to jump to dirty cells
+ * - Significantly reduces terminal I/O bandwidth
  *
  * @module examples/dvd-bounce
  */
@@ -41,7 +49,7 @@ import {
 // =============================================================================
 
 /** Number of panels to create */
-const PANEL_COUNT = 2000;
+const PANEL_COUNT = 5000;
 
 /** Panel dimensions */
 const PANEL_WIDTH = 6;
@@ -185,6 +193,7 @@ interface AppState {
 	world: World;
 	panels: Panel[];
 	buffer: CellBufferDirect;
+	prevBuffer: CellBufferDirect; // Previous frame for dirty rect comparison
 	width: number;
 	height: number;
 	running: boolean;
@@ -192,6 +201,7 @@ interface AppState {
 	frameCount: number;
 	lastFpsUpdate: number;
 	fps: number;
+	dirtyCount: number; // Track how many cells changed (for stats)
 }
 
 // =============================================================================
@@ -489,18 +499,143 @@ function render(state: AppState): void {
 	// Render centered logo on top of everything
 	renderLogo(buffer);
 
-	// Render stats overlay
-	const statsText = `Panels: ${panels.length} | FPS: ${fps.toFixed(0)} | Press Q/Ctrl+C to quit`;
+	// Render stats overlay (include dirty cell percentage)
+	const totalCells = width * height;
+	const dirtyPct = totalCells > 0 ? ((state.dirtyCount / totalCells) * 100).toFixed(1) : '0.0';
+	const statsText = `Panels: ${panels.length} | FPS: ${fps.toFixed(0)} | Dirty: ${dirtyPct}% | Q to quit`;
 	for (let i = 0; i < statsText.length && i < width; i++) {
 		buffer.setCell(i, 0, statsText[i] ?? ' ', 0xffffffff, 0x000000cc);
 	}
 }
 
 // =============================================================================
-// OUTPUT
+// OUTPUT - Double Buffer with Dirty Rect Optimization
 // =============================================================================
 
-function bufferToAnsi(buffer: CellBufferDirect): string {
+/**
+ * Compare two cells to check if they're identical
+ */
+function cellsEqual(
+	a: { char: string; fg: number; bg: number } | undefined,
+	b: { char: string; fg: number; bg: number } | undefined,
+): boolean {
+	if (!a || !b) return a === b;
+	return a.char === b.char && a.fg === b.fg && a.bg === b.bg;
+}
+
+/**
+ * Copy current buffer to previous buffer for next frame comparison
+ */
+function copyBuffer(src: CellBufferDirect, dst: CellBufferDirect): void {
+	for (let y = 0; y < src.height && y < dst.height; y++) {
+		const srcRow = src.cells[y];
+		const dstRow = dst.cells[y];
+		if (!srcRow || !dstRow) continue;
+
+		for (let x = 0; x < src.width && x < dst.width; x++) {
+			const srcCell = srcRow[x];
+			const dstCell = dstRow[x];
+			if (srcCell && dstCell) {
+				dstCell.char = srcCell.char;
+				dstCell.fg = srcCell.fg;
+				dstCell.bg = srcCell.bg;
+			}
+		}
+	}
+}
+
+/**
+ * Generate ANSI output only for cells that changed between frames.
+ * Uses cursor positioning to jump to dirty cells instead of redrawing everything.
+ * Returns the number of dirty cells for stats.
+ */
+function bufferToAnsiDirty(
+	current: CellBufferDirect,
+	previous: CellBufferDirect,
+): { output: string; dirtyCount: number } {
+	let output = '';
+	let dirtyCount = 0;
+	let lastFg = -1;
+	let lastBg = -1;
+	let lastX = -1;
+	let lastY = -1;
+
+	for (let y = 0; y < current.height; y++) {
+		const currentRow = current.cells[y];
+		const prevRow = previous.cells[y];
+		if (!currentRow) continue;
+
+		// Track runs of consecutive dirty cells on this row
+		let runStart = -1;
+		let runChars = '';
+
+		for (let x = 0; x < current.width; x++) {
+			const currentCell = currentRow[x];
+			const prevCell = prevRow?.[x];
+
+			if (!currentCell) continue;
+
+			// Check if cell changed
+			const isDirty = !cellsEqual(currentCell, prevCell);
+
+			if (isDirty) {
+				dirtyCount++;
+
+				// If starting a new run or not consecutive, position cursor
+				if (runStart === -1) {
+					runStart = x;
+					// Only emit cursor position if not already there
+					if (lastX !== x || lastY !== y) {
+						output += `\x1b[${y + 1};${x + 1}H`; // 1-indexed cursor position
+					}
+				}
+
+				// Emit color codes if changed
+				const fg = currentCell.fg;
+				const bg = currentCell.bg;
+				if (fg !== lastFg || bg !== lastBg) {
+					// Flush any pending run chars first
+					if (runChars) {
+						output += runChars;
+						runChars = '';
+					}
+					const fgR = (fg >> 24) & 0xff;
+					const fgG = (fg >> 16) & 0xff;
+					const fgB = (fg >> 8) & 0xff;
+					const bgR = (bg >> 24) & 0xff;
+					const bgG = (bg >> 16) & 0xff;
+					const bgB = (bg >> 8) & 0xff;
+					output += `\x1b[38;2;${fgR};${fgG};${fgB};48;2;${bgR};${bgG};${bgB}m`;
+					lastFg = fg;
+					lastBg = bg;
+				}
+
+				runChars += currentCell.char;
+				lastX = x + 1;
+				lastY = y;
+			} else {
+				// Cell unchanged - flush any pending run
+				if (runChars) {
+					output += runChars;
+					runChars = '';
+					runStart = -1;
+				}
+			}
+		}
+
+		// Flush remaining run chars at end of row
+		if (runChars) {
+			output += runChars;
+		}
+	}
+
+	return { output, dirtyCount };
+}
+
+/**
+ * Full buffer render (used for first frame or after resize)
+ */
+function bufferToAnsiFull(buffer: CellBufferDirect): string {
 	let output = '\x1b[H'; // Move cursor to home
 	let lastFg = -1;
 	let lastBg = -1;
@@ -513,11 +648,9 @@ function bufferToAnsi(buffer: CellBufferDirect): string {
 			const cell = row[x];
 			if (!cell) continue;
 
-			// Extract RGB from packed colors
 			const fg = cell.fg;
 			const bg = cell.bg;
 
-			// Only emit color codes when colors change
 			if (fg !== lastFg || bg !== lastBg) {
 				const fgR = (fg >> 24) & 0xff;
 				const fgG = (fg >> 16) & 0xff;
@@ -555,6 +688,7 @@ async function main(): Promise<void> {
 	// Create world with custom adapter for precomputed render list
 	const world = createWorld();
 	const buffer = createCellBuffer(width, height) as CellBufferDirect;
+	const prevBuffer = createCellBuffer(width, height) as CellBufferDirect; // For dirty rect comparison
 	const adapter = createWorldAdapter({
 		type: 'custom',
 		queryRenderables: () => renderableEntities,
@@ -571,6 +705,7 @@ async function main(): Promise<void> {
 		world,
 		panels,
 		buffer,
+		prevBuffer,
 		width,
 		height,
 		running: true,
@@ -578,6 +713,7 @@ async function main(): Promise<void> {
 		frameCount: 0,
 		lastFpsUpdate: Date.now(),
 		fps: 0,
+		dirtyCount: 0,
 	};
 
 	// Setup terminal
@@ -598,10 +734,15 @@ async function main(): Promise<void> {
 	stdout.on('resize', () => {
 		state.width = stdout.columns ?? 80;
 		state.height = stdout.rows ?? 24;
-		// Recreate buffer on resize
-		const newBuffer = createCellBuffer(state.width, state.height) as CellBufferDirect;
-		state.buffer = newBuffer;
+		// Recreate both buffers on resize
+		state.buffer = createCellBuffer(state.width, state.height) as CellBufferDirect;
+		state.prevBuffer = createCellBuffer(state.width, state.height) as CellBufferDirect;
+		// Force full redraw on next frame by clearing previous buffer
+		needsFullRedraw = true;
 	});
+
+	// Track if we need a full redraw (first frame, resize, etc.)
+	let needsFullRedraw = true;
 
 	// Main loop
 	let lastTime = Date.now();
@@ -635,11 +776,26 @@ async function main(): Promise<void> {
 		// Update physics
 		updatePhysics(state, deltaTime);
 
-		// Render
+		// Render to current buffer
 		render(state);
 
-		// Output
-		stdout.write(bufferToAnsi(state.buffer));
+		// Output using dirty rect optimization
+		if (needsFullRedraw) {
+			// Full redraw for first frame or after resize
+			stdout.write(bufferToAnsiFull(state.buffer));
+			state.dirtyCount = state.width * state.height;
+			needsFullRedraw = false;
+		} else {
+			// Dirty rect optimization - only output changed cells
+			const { output, dirtyCount } = bufferToAnsiDirty(state.buffer, state.prevBuffer);
+			state.dirtyCount = dirtyCount;
+			if (output) {
+				stdout.write(output);
+			}
+		}
+
+		// Copy current buffer to previous for next frame comparison
+		copyBuffer(state.buffer, state.prevBuffer);
 
 		// Schedule next frame
 		const elapsed = Date.now() - now;
