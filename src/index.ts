@@ -1153,6 +1153,10 @@ export {
 	parseKeySequence,
 	parseMouseSequence,
 } from './terminal';
+export type { InputHandler } from './terminal/inputStream';
+export { createInputHandler, InputHandlerConfigSchema } from './terminal/inputStream';
+export { setupSigwinchHandler, triggerResize } from './terminal/resize';
+export { clearBuffer, writeString } from './terminal/screen/cell';
 // =============================================================================
 // TERMINAL - Screen Buffers
 // =============================================================================
