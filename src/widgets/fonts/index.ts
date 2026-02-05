@@ -1,5 +1,6 @@
-import { createRequire } from 'node:module';
 import { z } from 'zod';
+import terminus14Bold from './terminus-14-bold.json';
+import terminus14Normal from './terminus-14-normal.json';
 
 /**
  * Schema for a single character's bitmap data.
@@ -176,7 +177,6 @@ export type RenderCharOptions = {
 
 const BUILTIN_FONT_NAMES = ['terminus-14-bold', 'terminus-14-normal'] as const;
 
-const requireJson = createRequire(import.meta.url);
 const fontCache: Partial<Record<FontName, BitmapFont>> = {};
 
 const loadBuiltinFont = (name: FontName): BitmapFont => {
@@ -188,10 +188,10 @@ const loadBuiltinFont = (name: FontName): BitmapFont => {
 	let font: BitmapFont;
 	switch (name) {
 		case 'terminus-14-bold':
-			font = requireJson('./terminus-14-bold.json') as BitmapFont;
+			font = terminus14Bold as BitmapFont;
 			break;
 		case 'terminus-14-normal':
-			font = requireJson('./terminus-14-normal.json') as BitmapFont;
+			font = terminus14Normal as BitmapFont;
 			break;
 		default:
 			throw createFontNotFoundError(name);

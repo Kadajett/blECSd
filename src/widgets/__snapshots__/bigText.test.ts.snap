@@ -1,0 +1,39 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BigText widget > renders text using built-in fonts 1`] = `
+[
+  "        ",
+  "        ",
+  " █████  ",
+  "██   ██ ",
+  "██   ██ ",
+  "██   ██ ",
+  "██   ██ ",
+  "███████ ",
+  "██   ██ ",
+  "██   ██ ",
+  "██   ██ ",
+  "██   ██ ",
+  "        ",
+  "        ",
+]
+`;
+
+exports[`BigText widget > updates text content 1`] = `
+[
+  "        ",
+  "        ",
+  "██████  ",
+  "██   ██ ",
+  "██   ██ ",
+  "██   ██ ",
+  "██████  ",
+  "██   ██ ",
+  "██   ██ ",
+  "██   ██ ",
+  "██   ██ ",
+  "██████  ",
+  "        ",
+  "        ",
+]
+`;

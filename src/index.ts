@@ -1058,21 +1058,51 @@ export type {
 export {
 	// Input system
 	captureMouseTo,
+	// Output system
+	cleanup,
 	clearEntityInput,
 	clearEventQueue,
+	clearOutputBuffer,
+	clearOutputStream,
+	// Render system
+	clearRenderBuffer,
+	clearScreen,
+	// Layout system
+	computeLayoutNow,
 	createInputSystem,
+	createLayoutSystem,
+	createOutputState,
+	createOutputSystem,
+	createRenderSystem,
 	// State machine system
 	createStateMachineSystem,
+	cursorHome,
+	enterAlternateScreen,
+	generateOutput,
+	getComputedBounds,
+	getComputedLayout,
 	getEventQueue,
 	getInputEventBus,
 	getInteractiveEntityAt,
 	getMouseCaptureEntity,
+	getOutputBuffer,
+	getOutputState,
+	getOutputStream,
+	getRenderBuffer,
 	getStateAgeStore,
 	getSystemStateAge,
+	hasComputedLayout,
+	hideCursor,
 	hitTest,
 	inputState,
 	inputSystem,
+	invalidateAllLayouts,
+	invalidateLayout,
 	isMouseCaptured,
+	layoutSystem,
+	leaveAlternateScreen,
+	markAllDirty,
+	outputSystem,
 	pointInEntity,
 	queryInputReceivers,
 	queryStateMachine,
@@ -1081,10 +1111,23 @@ export {
 	registerInputSystem,
 	registerStateMachineSystem,
 	releaseMouse,
+	renderBackground,
+	renderBorder,
+	renderContent,
+	renderRect,
+	renderScrollbar,
+	renderSystem,
+	resetAttributes,
 	resetInputState,
+	resetOutputState,
 	resetStateAge,
+	setOutputBuffer,
+	setOutputStream,
+	setRenderBuffer,
+	showCursor,
 	stateMachineSystem,
 	updateStateAges,
+	writeRaw,
 } from './systems';
 // =============================================================================
 // TERMINAL - Input Parsing
@@ -1110,6 +1153,11 @@ export {
 	parseKeySequence,
 	parseMouseSequence,
 } from './terminal';
+// =============================================================================
+// TERMINAL - Screen Buffers
+// =============================================================================
+export type { DoubleBufferData } from './terminal/screen/doubleBuffer';
+export { createDoubleBuffer } from './terminal/screen/doubleBuffer';
 // =============================================================================
 // TYPES - TypeScript Utility Types and Re-exports
 // =============================================================================
