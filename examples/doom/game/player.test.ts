@@ -1,9 +1,9 @@
 import { describe, expect, it, beforeAll } from 'vitest';
-import { createPlayer, updatePlayer } from './player.js';
+import { createPlayer, updatePlayer, thrustPlayer, FRICTION } from './player.js';
 import type { PlayerState } from './player.js';
 import type { InputState } from './input.js';
 import type { MapData } from '../wad/types.js';
-import { FRACBITS, FRACUNIT } from '../math/fixed.js';
+import { FRACBITS, FRACUNIT, fixedMul } from '../math/fixed.js';
 import { generateTables, ANG90 } from '../math/angles.js';
 
 beforeAll(() => {
@@ -270,5 +270,129 @@ describe('updatePlayer', () => {
 		// Player facing east (angle=0): backward movement should decrease x
 		const movedX = player.x !== startX;
 		expect(movedX).toBe(true);
+	});
+});
+
+describe('thrustPlayer', () => {
+	it('adds forward thrust to momentum (facing east)', () => {
+		const map = createMapWithPlayerStart(0, 0, 0);
+		const player = createPlayer(map);
+
+		thrustPlayer(player, player.angle, player.forwardSpeed);
+
+		// Facing east (angle=0): thrust should increase momx
+		expect(player.momx).toBeGreaterThan(0);
+		// momy should be near zero for angle 0
+		expect(Math.abs(player.momy)).toBeLessThan(1000);
+	});
+
+	it('adds thrust in reverse direction', () => {
+		const map = createMapWithPlayerStart(0, 0, 0);
+		const player = createPlayer(map);
+
+		// Thrust in opposite direction (angle + 180 degrees)
+		thrustPlayer(player, ((player.angle + 0x80000000) >>> 0), player.forwardSpeed);
+
+		// Should produce negative momx (moving west)
+		expect(player.momx).toBeLessThan(0);
+	});
+
+	it('accumulates thrust over multiple calls', () => {
+		const map = createMapWithPlayerStart(0, 0, 0);
+		const player = createPlayer(map);
+
+		thrustPlayer(player, player.angle, player.forwardSpeed);
+		const firstMomx = player.momx;
+
+		thrustPlayer(player, player.angle, player.forwardSpeed);
+
+		// Second thrust should roughly double momentum
+		expect(player.momx).toBeGreaterThan(firstMomx);
+	});
+
+	it('applies lateral thrust for strafing', () => {
+		const map = createMapWithPlayerStart(0, 0, 0);
+		const player = createPlayer(map);
+
+		// Strafe left (angle + 90 degrees)
+		thrustPlayer(player, ((player.angle + ANG90) >>> 0), player.sideSpeed);
+
+		// For facing east, strafing left should increase momy
+		expect(Math.abs(player.momy)).toBeGreaterThan(0);
+	});
+});
+
+describe('momentum and friction', () => {
+	it('applies friction to reduce momentum each tick', () => {
+		const map = createMapWithPlayerStart(0, 0, 0);
+		const player = createPlayer(map);
+
+		// Give player some momentum
+		player.momx = 10 * FRACUNIT;
+		player.momy = 0;
+
+		const input: InputState = { keys: new Set(), ctrl: false, shift: false };
+		updatePlayer(player, input, map);
+
+		// After one tick with friction, momx should be reduced
+		// FRICTION = 0xE800 (~0.906), so momx should be roughly 9.06 * FRACUNIT
+		expect(player.momx).toBeLessThan(10 * FRACUNIT);
+		expect(player.momx).toBeGreaterThan(0);
+	});
+
+	it('momentum decays to zero over multiple ticks', () => {
+		const map = createMapWithPlayerStart(0, 0, 0);
+		const player = createPlayer(map);
+
+		// Give player some initial momentum
+		player.momx = 5 * FRACUNIT;
+		player.momy = 0;
+
+		const input: InputState = { keys: new Set(), ctrl: false, shift: false };
+
+		// Run many ticks with no input
+		for (let i = 0; i < 50; i++) {
+			updatePlayer(player, input, map);
+		}
+
+		// Momentum should have decayed to zero (killed by threshold)
+		expect(player.momx).toBe(0);
+		expect(player.momy).toBe(0);
+	});
+
+	it('player slides after releasing input', () => {
+		const map = createMapWithPlayerStart(0, 0, 0);
+		const player = createPlayer(map);
+
+		// Apply thrust for one tick
+		const moveInput: InputState = { keys: new Set(['up']), ctrl: false, shift: false };
+		updatePlayer(player, moveInput, map);
+		const posAfterThrust = player.x;
+
+		// Release input, player should still move due to momentum
+		const noKeys: InputState = { keys: new Set(), ctrl: false, shift: false };
+		updatePlayer(player, noKeys, map);
+
+		expect(player.x).toBeGreaterThan(posAfterThrust);
+	});
+
+	it('FRICTION constant is 0xE800', () => {
+		expect(FRICTION).toBe(0xe800);
+	});
+
+	it('kills very small momentum values to prevent drift', () => {
+		const map = createMapWithPlayerStart(0, 0, 0);
+		const player = createPlayer(map);
+
+		// Set momentum just above the threshold
+		player.momx = 0x0fff;
+		player.momy = 0x0fff;
+
+		const input: InputState = { keys: new Set(), ctrl: false, shift: false };
+		updatePlayer(player, input, map);
+
+		// After friction, the small values should be zeroed
+		expect(player.momx).toBe(0);
+		expect(player.momy).toBe(0);
 	});
 });
