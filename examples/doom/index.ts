@@ -56,6 +56,7 @@ import {
 } from './game/death.js';
 import { createMenuState, updateMenu, isMenuActive } from './game/menu.js';
 import { loadTitlePic, drawTitleScreen } from './render/titleScreen.js';
+import { tickProjectiles } from './game/projectiles.js';
 
 // ─── Configuration ─────────────────────────────────────────────────
 
@@ -264,6 +265,9 @@ function main(): void {
 
 		// Run enemy AI thinkers (still run while dying for ambient animation)
 		runThinkers(mobjs, player, gameState, map);
+
+		// Move projectiles and check collisions
+		tickProjectiles(mobjs, player, map);
 
 		// Set up render state
 		const rs = createRenderState(fb, map, textures, palette, colormap);
