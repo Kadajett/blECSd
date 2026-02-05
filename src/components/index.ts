@@ -1083,6 +1083,46 @@ export {
 	textInputStore,
 	toggleCursorMode,
 } from './textInput';
+// TileMap component
+export type {
+	RenderedTileCell,
+	TileDefinition,
+	TileMapComponentData,
+	TileMapData,
+	TileMapLayer,
+	TileMapOptions,
+	TilesetData,
+	TilesetOptions,
+} from './tilemap';
+export {
+	addLayer,
+	createTileData,
+	EMPTY_TILE,
+	fillTileRect,
+	fillTiles,
+	getLayerCount,
+	getTile,
+	getTileData,
+	getTileMap,
+	getTileMapDataId,
+	getTileset,
+	getTilesetByName,
+	hasTileMap,
+	isLayerVisible,
+	registerTileset,
+	removeTileData,
+	removeTileMap,
+	renderTileMapArea,
+	resetTileMapStore,
+	resetTilesetStore,
+	setLayerVisible,
+	setTile,
+	setTileMap,
+	TileMap,
+	tileMapStore,
+	tilesetStore,
+	unregisterTileset,
+} from './tilemap';
 // Timer component
 export type { TimerCallback, TimerCompleteCallback, TimerData, TimerOptions } from './timer';
 export {
