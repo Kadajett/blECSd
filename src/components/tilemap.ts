@@ -804,6 +804,52 @@ export interface RenderedTileCell {
 	readonly bg: number;
 }
 
+/** Default empty cell for rendering. */
+const EMPTY_CELL: RenderedTileCell = { char: ' ', fg: 0, bg: 0 };
+
+/**
+ * Creates an empty row of rendered cells.
+ */
+function createEmptyRow(width: number): RenderedTileCell[] {
+	const row: RenderedTileCell[] = [];
+	for (let x = 0; x < width; x++) {
+		row.push({ ...EMPTY_CELL });
+	}
+	return row;
+}
+
+/**
+ * Composites all visible layers at a tile position into a single cell.
+ */
+function compositeTile(
+	tileData: TileMapData,
+	tileset: TilesetData,
+	tx: number,
+	ty: number,
+): RenderedTileCell {
+	if (tx < 0 || tx >= tileData.width || ty < 0 || ty >= tileData.height) {
+		return EMPTY_CELL;
+	}
+
+	let cell: RenderedTileCell = EMPTY_CELL;
+
+	for (const layer of tileData.layers) {
+		if (!layer.visible) {
+			continue;
+		}
+		const tileIdx = layer.tiles[ty * tileData.width + tx] as number;
+		if (tileIdx === EMPTY_TILE) {
+			continue;
+		}
+		const tileDef = tileset.tiles[tileIdx];
+		if (tileDef) {
+			cell = { char: tileDef.char, fg: tileDef.fg, bg: tileDef.bg };
+		}
+	}
+
+	return cell;
+}
+
 /**
  * Renders a rectangular viewport of the tile map to an array of cells.
  * Composites all visible layers from bottom to top.
@@ -846,11 +892,7 @@ export function renderTileMapArea(
 
 	if (!tileData || !tileset) {
 		for (let y = 0; y < viewHeight; y++) {
-			const row: RenderedTileCell[] = [];
-			for (let x = 0; x < viewWidth; x++) {
-				row.push({ char: ' ', fg: 0, bg: 0 });
-			}
-			result.push(row);
+			result.push(createEmptyRow(viewWidth));
 		}
 		return result;
 	}
@@ -858,28 +900,7 @@ export function renderTileMapArea(
 	for (let vy = 0; vy < viewHeight; vy++) {
 		const row: RenderedTileCell[] = [];
 		for (let vx = 0; vx < viewWidth; vx++) {
-			const tx = viewX + vx;
-			const ty = viewY + vy;
-
-			let cell: RenderedTileCell = { char: ' ', fg: 0, bg: 0 };
-
-			if (tx >= 0 && tx < tileData.width && ty >= 0 && ty < tileData.height) {
-				for (const layer of tileData.layers) {
-					if (!layer.visible) {
-						continue;
-					}
-					const tileIdx = layer.tiles[ty * tileData.width + tx] as number;
-					if (tileIdx === EMPTY_TILE) {
-						continue;
-					}
-					const tileDef = tileset.tiles[tileIdx];
-					if (tileDef) {
-						cell = { char: tileDef.char, fg: tileDef.fg, bg: tileDef.bg };
-					}
-				}
-			}
-
-			row.push(cell);
+			row.push(compositeTile(tileData, tileset, viewX + vx, viewY + vy));
 		}
 		result.push(row);
 	}

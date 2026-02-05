@@ -13,6 +13,8 @@ import {
 	EMPTY_TILE,
 	type RenderedTileCell,
 	TileMap,
+	type TileMapData,
+	type TilesetData,
 	tileMapStore,
 	tilesetStore,
 } from '../components/tilemap';
@@ -168,6 +170,112 @@ export function createEmptyBuffer(width: number, height: number): TileMapBuffer 
 }
 
 /**
+ * Composites all visible layers at a given tile coordinate into one cell.
+ *
+ * @param tileData - The tile map data
+ * @param tileset - The tileset for rendering
+ * @param tx - Tile X coordinate
+ * @param ty - Tile Y coordinate
+ * @returns The composited cell
+ */
+function compositeLayersAtTile(
+	tileData: TileMapData,
+	tileset: TilesetData,
+	tx: number,
+	ty: number,
+): RenderedTileCell {
+	let finalChar = ' ';
+	let finalFg = 0;
+	let finalBg = 0;
+
+	for (const layer of tileData.layers) {
+		if (!layer.visible) {
+			continue;
+		}
+		const tileIdx = layer.tiles[ty * tileData.width + tx] as number;
+		if (tileIdx === EMPTY_TILE) {
+			continue;
+		}
+		const tileDef = tileset.tiles[tileIdx];
+		if (tileDef) {
+			finalChar = tileDef.char;
+			finalFg = tileDef.fg;
+			finalBg = tileDef.bg;
+		}
+	}
+
+	return { char: finalChar, fg: finalFg, bg: finalBg };
+}
+
+/**
+ * Writes a composited cell into the buffer at the correct screen position,
+ * filling the tile's width and height in buffer cells.
+ *
+ * @param buffer - The target buffer
+ * @param cell - The composited tile cell
+ * @param screenX - Screen X start position
+ * @param screenY - Screen Y start position
+ * @param tileWidth - Tile width in buffer cells
+ * @param tileHeight - Tile height in buffer cells
+ */
+function writeTileToBuffer(
+	buffer: TileMapBuffer,
+	cell: RenderedTileCell,
+	screenX: number,
+	screenY: number,
+	tileWidth: number,
+	tileHeight: number,
+): void {
+	for (let dy = 0; dy < tileHeight; dy++) {
+		const bufY = screenY + dy;
+		if (bufY < 0 || bufY >= buffer.height) {
+			continue;
+		}
+		const row = buffer.cells[bufY];
+		if (!row) {
+			continue;
+		}
+		for (let dx = 0; dx < tileWidth; dx++) {
+			const bufX = screenX + dx;
+			if (bufX < 0 || bufX >= buffer.width) {
+				continue;
+			}
+			row[bufX] = cell;
+		}
+	}
+}
+
+/**
+ * Calculates the visible tile range for a tile map in a buffer.
+ *
+ * @param mapWorldX - Map world X offset (after camera)
+ * @param mapWorldY - Map world Y offset (after camera)
+ * @param mapWidth - Map width in tiles
+ * @param mapHeight - Map height in tiles
+ * @param tileWidth - Tile width in cells
+ * @param tileHeight - Tile height in cells
+ * @param bufferWidth - Buffer width in cells
+ * @param bufferHeight - Buffer height in cells
+ * @returns The visible tile range [startX, startY, endX, endY]
+ */
+function getVisibleTileRange(
+	mapWorldX: number,
+	mapWorldY: number,
+	mapWidth: number,
+	mapHeight: number,
+	tileWidth: number,
+	tileHeight: number,
+	bufferWidth: number,
+	bufferHeight: number,
+): [number, number, number, number] {
+	const startTileX = Math.max(0, Math.floor(-mapWorldX / tileWidth));
+	const startTileY = Math.max(0, Math.floor(-mapWorldY / tileHeight));
+	const endTileX = Math.min(mapWidth, Math.ceil((bufferWidth - mapWorldX) / tileWidth));
+	const endTileY = Math.min(mapHeight, Math.ceil((bufferHeight - mapWorldY) / tileHeight));
+	return [startTileX, startTileY, endTileX, endTileY];
+}
+
+/**
  * Renders a single tile map entity into a buffer.
  * Takes into account entity position and camera offset.
  *
@@ -205,61 +313,26 @@ export function renderTileMapToBuffer(
 
 	const entityX = Position.x[eid] as number;
 	const entityY = Position.y[eid] as number;
-
-	// World position of the top-left corner of the tile map
 	const mapWorldX = entityX - cameraX;
 	const mapWorldY = entityY - cameraY;
 
-	// Calculate which tiles are visible in the viewport
-	const startTileX = Math.max(0, Math.floor(-mapWorldX / tileWidth));
-	const startTileY = Math.max(0, Math.floor(-mapWorldY / tileHeight));
-	const endTileX = Math.min(mapWidth, Math.ceil((buffer.width - mapWorldX) / tileWidth));
-	const endTileY = Math.min(mapHeight, Math.ceil((buffer.height - mapWorldY) / tileHeight));
+	const [startTileX, startTileY, endTileX, endTileY] = getVisibleTileRange(
+		mapWorldX,
+		mapWorldY,
+		mapWidth,
+		mapHeight,
+		tileWidth,
+		tileHeight,
+		buffer.width,
+		buffer.height,
+	);
 
 	for (let ty = startTileY; ty < endTileY; ty++) {
 		for (let tx = startTileX; tx < endTileX; tx++) {
-			// Composite all visible layers for this tile
-			let finalChar = ' ';
-			let finalFg = 0;
-			let finalBg = 0;
-
-			for (const layer of tileData.layers) {
-				if (!layer.visible) {
-					continue;
-				}
-				const tileIdx = layer.tiles[ty * tileData.width + tx] as number;
-				if (tileIdx === EMPTY_TILE) {
-					continue;
-				}
-				const tileDef = tileset.tiles[tileIdx];
-				if (tileDef) {
-					finalChar = tileDef.char;
-					finalFg = tileDef.fg;
-					finalBg = tileDef.bg;
-				}
-			}
-
-			// Write to buffer at the correct screen position
-			const screenStartX = Math.round(mapWorldX + tx * tileWidth);
-			const screenStartY = Math.round(mapWorldY + ty * tileHeight);
-
-			for (let dy = 0; dy < tileHeight; dy++) {
-				const bufY = screenStartY + dy;
-				if (bufY < 0 || bufY >= buffer.height) {
-					continue;
-				}
-				const row = buffer.cells[bufY];
-				if (!row) {
-					continue;
-				}
-				for (let dx = 0; dx < tileWidth; dx++) {
-					const bufX = screenStartX + dx;
-					if (bufX < 0 || bufX >= buffer.width) {
-						continue;
-					}
-					row[bufX] = { char: finalChar, fg: finalFg, bg: finalBg };
-				}
-			}
+			const cell = compositeLayersAtTile(tileData, tileset, tx, ty);
+			const screenX = Math.round(mapWorldX + tx * tileWidth);
+			const screenY = Math.round(mapWorldY + ty * tileHeight);
+			writeTileToBuffer(buffer, cell, screenX, screenY, tileWidth, tileHeight);
 		}
 	}
 }
