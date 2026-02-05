@@ -207,6 +207,30 @@ export {
 	resetPanelStore,
 	setPanelTitle,
 } from './panel';
+// Prompt widget
+export type {
+	PromptBorderConfig,
+	PromptConfig,
+	PromptPaddingConfig,
+	PromptValidator,
+	PromptWidget,
+} from './prompt';
+export {
+	createPrompt,
+	DEFAULT_PROMPT_BG,
+	DEFAULT_PROMPT_FG,
+	DEFAULT_PROMPT_HEIGHT,
+	DEFAULT_PROMPT_WIDTH,
+	handlePromptKey,
+	isPrompt,
+	Prompt,
+	PromptBorderConfigSchema,
+	PromptConfigSchema,
+	PromptPaddingConfigSchema,
+	prompt,
+	promptStateMap,
+	resetPromptStore,
+} from './prompt';
 // Widget Registry
 export type { WidgetFactory, WidgetRegistration, WidgetRegistry } from './registry';
 export {
