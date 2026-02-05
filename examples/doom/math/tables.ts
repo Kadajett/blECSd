@@ -10,11 +10,9 @@ import {
 	ANGLETOFINESHIFT,
 	FINEANGLES,
 	FINEMASK,
-	SLOPERANGE,
 	finecosine,
 	finesine,
 	finetangent,
-	tantoangle,
 } from './angles.js';
 import { FRACBITS, FRACUNIT, fixedDiv, fixedMul } from './fixed.js';
 
