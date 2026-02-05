@@ -20,7 +20,7 @@ import {
 	setBorderChars,
 } from '../components/border';
 import { setContent } from '../components/content';
-import { setDimensions } from '../components/dimensions';
+import { getDimensions, setDimensions } from '../components/dimensions';
 import { setPadding } from '../components/padding';
 import { Position, setPosition } from '../components/position';
 import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
@@ -517,13 +517,10 @@ function createQuestionWidgetInterface(world: World, eid: Entity): QuestionWidge
 		},
 
 		center(screenWidth: number, screenHeight: number) {
-			const state = questionStateMap.get(eid);
-			if (!state) return widget;
-			const parsed = QuestionConfigSchema.parse({});
-			const w = parsed.width;
-			const h = parsed.height;
-			const x = Math.floor((screenWidth - w) / 2);
-			const y = Math.floor((screenHeight - h) / 2);
+			const dims = getDimensions(world, eid);
+			if (!dims) return widget;
+			const x = Math.floor((screenWidth - dims.width) / 2);
+			const y = Math.floor((screenHeight - dims.height) / 2);
 			setPosition(world, eid, x, y);
 			markDirty(world, eid);
 			return widget;
