@@ -199,6 +199,8 @@ Choose blECSd if you want data-oriented design, physics-based animations, or gam
 - [Core Concepts](./docs/getting-started/concepts.md): ECS, scheduler, events
 - [Hello World](./docs/getting-started/hello-world.md): Your first blECSd application
 - [API Reference](./docs/api/index.md): Components, widgets, systems, terminal I/O
+- [Terminal Widget](./docs/api/widgets/terminal.md): ANSI rendering and PTY shell support
+- [Examples](./docs/examples/index.md): File manager, multiplexer, system monitor, ANSI viewer, telnet server
 - [Guides](./docs/guides/): Animations, forms, layouts, and more
 
 ## Development
