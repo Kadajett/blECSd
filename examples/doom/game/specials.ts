@@ -16,6 +16,7 @@ import {
 } from '../math/angles.js';
 import { FRACBITS, FRACUNIT, fixedMul } from '../math/fixed.js';
 import type { MapData, MapLinedef, MapSector } from '../wad/types.js';
+import { evDoCrusher, CrusherType, tickCrusher, type CrusherThinker } from './crushers.js';
 import { evDoDoor, DoorType, tickDoor } from './doors.js';
 import { evDoPlat, PlatType, tickPlat } from './platforms.js';
 import type { PlayerState } from './player.js';
@@ -50,7 +51,18 @@ export interface PlatThinker {
 	type: number;
 }
 
-export type SectorThinker = DoorThinker | PlatThinker;
+/** A floor mover thinker. */
+export interface FloorThinker {
+	readonly kind: 'floor';
+	sector: MapSector;
+	sectorIndex: number;
+	type: number;
+	speed: number;
+	direction: number; // 1 = raising, -1 = lowering
+	targetHeight: number;
+}
+
+export type SectorThinker = DoorThinker | PlatThinker | FloorThinker | CrusherThinker;
 
 /** Mutable state for all active sector movers. */
 export interface SpecialsState {
@@ -80,6 +92,22 @@ export const PLATSPEED = 4;
 
 /** Lift wait time in tics (~3 seconds). */
 export const PLATWAIT = 105;
+
+/** Floor movement speed in map units per tic. */
+export const FLOORSPEED = 1;
+
+/** Fast floor movement speed. */
+export const FLOORSPEED_FAST = 4;
+
+// ─── Floor Types ──────────────────────────────────────────────
+
+export const FloorType = {
+	LOWER_TO_LOWEST: 0,     // Lower floor to lowest surrounding floor
+	LOWER_TO_NEAREST: 1,    // Lower floor to nearest lower floor
+	RAISE_TO_NEAREST: 2,    // Raise floor to nearest higher floor
+	RAISE_24: 3,            // Raise floor by 24 units
+	RAISE_TO_CEILING: 4,    // Raise floor to ceiling
+} as const;
 
 // ─── Initialization ──────────────────────────────────────────────
 
@@ -396,6 +424,118 @@ function activateSpecial(
 			break;
 		}
 
+		// W1 Door close stay
+		case 16:
+		{
+			activateTaggedDoors(linedef.tag, map, state, DoorType.CLOSE, VDOORSPEED);
+			break;
+		}
+
+		// S1 Door open stay
+		case 103:
+		{
+			activateTaggedDoors(linedef.tag, map, state, DoorType.OPEN, VDOORSPEED);
+			break;
+		}
+
+		// S1 Door close stay
+		case 50:
+		{
+			activateTaggedDoors(linedef.tag, map, state, DoorType.CLOSE, VDOORSPEED);
+			break;
+		}
+
+		// SR Door open stay
+		case 61:
+		{
+			activateTaggedDoors(linedef.tag, map, state, DoorType.OPEN, VDOORSPEED);
+			break;
+		}
+
+		// SR Door close stay
+		case 42:
+		{
+			activateTaggedDoors(linedef.tag, map, state, DoorType.CLOSE, VDOORSPEED);
+			break;
+		}
+
+		// W1 Crusher (slow)
+		case 6:
+		{
+			activateTaggedCrushers(linedef.tag, map, state, CrusherType.CRUSH_AND_RAISE);
+			break;
+		}
+
+		// W1 Fast crusher
+		case 77:
+		{
+			activateTaggedCrushers(linedef.tag, map, state, CrusherType.FAST_CRUSH_AND_RAISE);
+			break;
+		}
+
+		// W1 Silent crusher
+		case 141:
+		{
+			activateTaggedCrushers(linedef.tag, map, state, CrusherType.SILENT_CRUSH);
+			break;
+		}
+
+		// W1 Floor lower to lowest
+		case 38:
+		{
+			activateTaggedFloors(linedef.tag, map, state, FloorType.LOWER_TO_LOWEST, FLOORSPEED);
+			break;
+		}
+
+		// W1 Floor lower to nearest
+		case 36:
+		{
+			activateTaggedFloors(linedef.tag, map, state, FloorType.LOWER_TO_NEAREST, FLOORSPEED_FAST);
+			break;
+		}
+
+		// W1 Floor raise to nearest
+		case 5:
+		{
+			activateTaggedFloors(linedef.tag, map, state, FloorType.RAISE_TO_NEAREST, FLOORSPEED);
+			break;
+		}
+
+		// S1 Floor lower to lowest
+		case 23:
+		{
+			activateTaggedFloors(linedef.tag, map, state, FloorType.LOWER_TO_LOWEST, FLOORSPEED);
+			break;
+		}
+
+		// S1 Floor raise to nearest
+		case 18:
+		{
+			activateTaggedFloors(linedef.tag, map, state, FloorType.RAISE_TO_NEAREST, FLOORSPEED);
+			break;
+		}
+
+		// W1 Floor raise by 24
+		case 58:
+		{
+			activateTaggedFloors(linedef.tag, map, state, FloorType.RAISE_24, FLOORSPEED);
+			break;
+		}
+
+		// WR Floor lower to lowest
+		case 82:
+		{
+			activateTaggedFloors(linedef.tag, map, state, FloorType.LOWER_TO_LOWEST, FLOORSPEED);
+			break;
+		}
+
+		// WR Floor raise to nearest
+		case 91:
+		{
+			activateTaggedFloors(linedef.tag, map, state, FloorType.RAISE_TO_NEAREST, FLOORSPEED);
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -438,24 +578,156 @@ function activateTaggedPlats(
 	}
 }
 
+// ─── Floor Mover Creation ────────────────────────────────────────
+
+/**
+ * Create a floor mover thinker for the given sector.
+ * Matches Doom's EV_DoFloor from p_floor.c.
+ */
+export function evDoFloor(
+	state: SpecialsState,
+	map: MapData,
+	sectorIndex: number,
+	floorType: number,
+	speed: number,
+): void {
+	const sector = map.sectors[sectorIndex];
+	if (!sector) return;
+
+	let targetHeight: number;
+	let direction: number;
+
+	switch (floorType) {
+		case FloorType.LOWER_TO_LOWEST:
+			targetHeight = findLowestFloorSurrounding(sectorIndex, map);
+			direction = -1;
+			break;
+		case FloorType.LOWER_TO_NEAREST:
+			targetHeight = findNextLowestFloor(sectorIndex, map);
+			direction = -1;
+			break;
+		case FloorType.RAISE_TO_NEAREST:
+			targetHeight = findNextHighestFloor(sectorIndex, map);
+			direction = 1;
+			break;
+		case FloorType.RAISE_24:
+			targetHeight = sector.floorHeight + 24;
+			direction = 1;
+			break;
+		case FloorType.RAISE_TO_CEILING:
+			targetHeight = sector.ceilingHeight - 8;
+			direction = 1;
+			break;
+		default:
+			return;
+	}
+
+	const thinker: FloorThinker = {
+		kind: 'floor',
+		sector,
+		sectorIndex,
+		type: floorType,
+		speed,
+		direction,
+		targetHeight,
+	};
+
+	state.thinkers.push(thinker);
+	state.activeSectors.add(sectorIndex);
+}
+
+/**
+ * Advance a floor mover thinker by one tic.
+ *
+ * @param floor - Floor thinker (modified)
+ * @returns true if the thinker is done and should be removed
+ */
+export function tickFloor(floor: FloorThinker): boolean {
+	if (floor.direction === 1) {
+		const newHeight = floor.sector.floorHeight + floor.speed;
+		if (newHeight >= floor.targetHeight) {
+			setSectorFloor(floor.sector, floor.targetHeight);
+			return true;
+		}
+		setSectorFloor(floor.sector, newHeight);
+	} else {
+		const newHeight = floor.sector.floorHeight - floor.speed;
+		if (newHeight <= floor.targetHeight) {
+			setSectorFloor(floor.sector, floor.targetHeight);
+			return true;
+		}
+		setSectorFloor(floor.sector, newHeight);
+	}
+	return false;
+}
+
+// ─── Crusher Specials ────────────────────────────────────────────
+
+/**
+ * Activate crushers on all sectors matching a tag.
+ */
+function activateTaggedCrushers(
+	tag: number,
+	map: MapData,
+	state: SpecialsState,
+	crusherType: number,
+): void {
+	if (tag === 0) return;
+	for (let i = 0; i < map.sectors.length; i++) {
+		const sector = map.sectors[i];
+		if (!sector || sector.tag !== tag) continue;
+		if (state.activeSectors.has(i)) continue;
+		evDoCrusher(state, map, i, crusherType);
+	}
+}
+
+/**
+ * Activate floor movers on all sectors matching a tag.
+ */
+function activateTaggedFloors(
+	tag: number,
+	map: MapData,
+	state: SpecialsState,
+	floorType: number,
+	speed: number,
+): void {
+	if (tag === 0) return;
+	for (let i = 0; i < map.sectors.length; i++) {
+		const sector = map.sectors[i];
+		if (!sector || sector.tag !== tag) continue;
+		if (state.activeSectors.has(i)) continue;
+		evDoFloor(state, map, i, floorType, speed);
+	}
+}
+
 // ─── Thinker Tick ────────────────────────────────────────────────
 
 /**
  * Run one tic of all active sector thinkers.
  *
  * @param state - Specials state (modified)
+ * @param map - Map data (needed for crushers)
  */
-export function runSectorThinkers(state: SpecialsState): void {
+export function runSectorThinkers(state: SpecialsState, map: MapData): void {
 	const toRemove: number[] = [];
 
 	for (let i = 0; i < state.thinkers.length; i++) {
 		const thinker = state.thinkers[i]!;
 		let done = false;
 
-		if (thinker.kind === 'door') {
-			done = tickDoor(thinker);
-		} else if (thinker.kind === 'plat') {
-			done = tickPlat(thinker);
+		switch (thinker.kind) {
+			case 'door':
+				done = tickDoor(thinker);
+				break;
+			case 'plat':
+				done = tickPlat(thinker);
+				break;
+			case 'floor':
+				done = tickFloor(thinker);
+				break;
+			case 'crusher':
+				done = tickCrusher(thinker, map);
+				break;
 		}
 
 		if (done) {
@@ -476,15 +748,26 @@ export function runSectorThinkers(state: SpecialsState): void {
 
 /** Check if a linedef special is a walk-trigger (W1 or WR). */
 function isWalkTrigger(special: number): boolean {
-	// Common walk triggers from Doom
 	switch (special) {
-		case 2: // W1 Door open stay
-		case 3: // W1 Door close
-		case 4: // W1 Door open-wait-close
-		case 10: // W1 Lift
-		case 86: // WR Door open-wait-close
-		case 88: // WR Lift
-		case 90: // WR Door open stay
+		// W1 (one-shot walk triggers)
+		case 2:   // W1 Door open stay
+		case 3:   // W1 Door close
+		case 4:   // W1 Door open-wait-close
+		case 5:   // W1 Floor raise to nearest
+		case 6:   // W1 Crusher
+		case 10:  // W1 Lift
+		case 16:  // W1 Door close stay
+		case 36:  // W1 Floor lower to nearest
+		case 38:  // W1 Floor lower to lowest
+		case 58:  // W1 Floor raise by 24
+		case 77:  // W1 Fast crusher
+		case 141: // W1 Silent crusher
+		// WR (repeatable walk triggers)
+		case 82:  // WR Floor lower to lowest
+		case 86:  // WR Door open-wait-close
+		case 88:  // WR Lift
+		case 90:  // WR Door open stay
+		case 91:  // WR Floor raise to nearest
 			return true;
 		default:
 			return false;
@@ -494,7 +777,9 @@ function isWalkTrigger(special: number): boolean {
 /** Check if a walk trigger is one-shot (W1 vs WR). */
 function isOneShotWalk(special: number): boolean {
 	switch (special) {
-		case 2: case 3: case 4: case 10:
+		case 2: case 3: case 4: case 5: case 6:
+		case 10: case 16: case 36: case 38: case 58:
+		case 77: case 141:
 			return true;
 		default:
 			return false;
@@ -575,6 +860,82 @@ export function findLowestFloorSurrounding(
 	}
 
 	return floor;
+}
+
+/**
+ * Find the next lowest floor height among neighboring sectors.
+ * Returns the highest floor below the sector's current floor.
+ */
+export function findNextLowestFloor(
+	sectorIndex: number,
+	map: MapData,
+): number {
+	const sector = map.sectors[sectorIndex];
+	if (!sector) return 0;
+
+	const currentFloor = sector.floorHeight;
+	let nextFloor = -32768;
+
+	for (const linedef of map.linedefs) {
+		const front = map.sidedefs[linedef.frontSidedef];
+		const back = map.sidedefs[linedef.backSidedef];
+		if (!front || !back) continue;
+
+		let otherSectorIdx = -1;
+		if (front.sector === sectorIndex) {
+			otherSectorIdx = back.sector;
+		} else if (back.sector === sectorIndex) {
+			otherSectorIdx = front.sector;
+		}
+
+		if (otherSectorIdx < 0) continue;
+		const otherSector = map.sectors[otherSectorIdx];
+		if (!otherSector) continue;
+
+		if (otherSector.floorHeight < currentFloor && otherSector.floorHeight > nextFloor) {
+			nextFloor = otherSector.floorHeight;
+		}
+	}
+
+	return nextFloor === -32768 ? currentFloor : nextFloor;
+}
+
+/**
+ * Find the next highest floor height among neighboring sectors.
+ * Returns the lowest floor above the sector's current floor.
+ */
+export function findNextHighestFloor(
+	sectorIndex: number,
+	map: MapData,
+): number {
+	const sector = map.sectors[sectorIndex];
+	if (!sector) return 0;
+
+	const currentFloor = sector.floorHeight;
+	let nextFloor = 32767;
+
+	for (const linedef of map.linedefs) {
+		const front = map.sidedefs[linedef.frontSidedef];
+		const back = map.sidedefs[linedef.backSidedef];
+		if (!front || !back) continue;
+
+		let otherSectorIdx = -1;
+		if (front.sector === sectorIndex) {
+			otherSectorIdx = back.sector;
+		} else if (back.sector === sectorIndex) {
+			otherSectorIdx = front.sector;
+		}
+
+		if (otherSectorIdx < 0) continue;
+		const otherSector = map.sectors[otherSectorIdx];
+		if (!otherSector) continue;
+
+		if (otherSector.floorHeight > currentFloor && otherSector.floorHeight < nextFloor) {
+			nextFloor = otherSector.floorHeight;
+		}
+	}
+
+	return nextFloor === 32767 ? currentFloor : nextFloor;
 }
 
 /**
