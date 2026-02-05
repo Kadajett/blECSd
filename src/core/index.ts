@@ -534,6 +534,14 @@ export {
 export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
 export { createWorld, resetWorld } from './world';
+export type { WorldAdapter, WorldAdapterType } from './worldAdapter';
+export {
+	clearWorldAdapter,
+	createWorldAdapter,
+	DEFAULT_WORLD_ADAPTER,
+	getWorldAdapter,
+	setWorldAdapter,
+} from './worldAdapter';
 // Z-order management
 export {
 	DEFAULT_Z_INDEX,
