@@ -21,6 +21,7 @@ import {
 } from '../math/angles.js';
 import { FRACBITS, FRACUNIT, fixedMul } from '../math/fixed.js';
 import type { MapData } from '../wad/types.js';
+import { damagePlayer } from './death.js';
 import { type Mobj, MobjFlags, MobjType, damageMobj } from './mobj.js';
 import type { PlayerState } from './player.js';
 import { findSectorAt } from './player.js';
@@ -197,7 +198,7 @@ function actionFaceTarget(ctx: ActionContext): void {
 
 /** Zombieman hitscan attack: single bullet. */
 function actionPosAttack(ctx: ActionContext): void {
-	const { mobj, player } = ctx;
+	const { mobj, player, gameState } = ctx;
 	if (!mobj.target) return;
 
 	actionFaceTarget(ctx);
@@ -205,7 +206,7 @@ function actionPosAttack(ctx: ActionContext): void {
 	// Hitscan: damage player directly if in line of sight
 	if (checkSight(mobj, player, ctx.map)) {
 		const damage = ((Math.random() * 5 | 0) + 1) * 3;
-		player.health -= damage;
+		damagePlayer(gameState, player, damage);
 	}
 
 	mobj.flags |= MobjFlags.MF_JUSTATTACKED;
@@ -213,7 +214,7 @@ function actionPosAttack(ctx: ActionContext): void {
 
 /** Shotgun Guy attack: 3 pellets. */
 function actionSPosAttack(ctx: ActionContext): void {
-	const { mobj, player } = ctx;
+	const { mobj, player, gameState } = ctx;
 	if (!mobj.target) return;
 
 	actionFaceTarget(ctx);
@@ -221,7 +222,7 @@ function actionSPosAttack(ctx: ActionContext): void {
 	if (checkSight(mobj, player, ctx.map)) {
 		for (let i = 0; i < 3; i++) {
 			const damage = ((Math.random() * 5 | 0) + 1) * 3;
-			player.health -= damage;
+			damagePlayer(gameState, player, damage);
 		}
 	}
 
@@ -230,7 +231,7 @@ function actionSPosAttack(ctx: ActionContext): void {
 
 /** Imp attack: melee claw if close, otherwise fireball (simplified as hitscan). */
 function actionTroopAttack(ctx: ActionContext): void {
-	const { mobj, player } = ctx;
+	const { mobj, player, gameState } = ctx;
 	if (!mobj.target) return;
 
 	actionFaceTarget(ctx);
@@ -240,11 +241,11 @@ function actionTroopAttack(ctx: ActionContext): void {
 	if (dist < MELEERANGE) {
 		// Melee: claw attack
 		const damage = ((Math.random() * 8 | 0) + 1) * 3;
-		player.health -= damage;
+		damagePlayer(gameState, player, damage);
 	} else if (checkSight(mobj, player, ctx.map)) {
 		// Ranged: fireball (simplified as direct damage for now)
 		const damage = ((Math.random() * 8 | 0) + 1) * 3;
-		player.health -= damage;
+		damagePlayer(gameState, player, damage);
 	}
 
 	mobj.flags |= MobjFlags.MF_JUSTATTACKED;
@@ -252,7 +253,7 @@ function actionTroopAttack(ctx: ActionContext): void {
 
 /** Demon melee bite attack. */
 function actionSargAttack(ctx: ActionContext): void {
-	const { mobj, player } = ctx;
+	const { mobj, player, gameState } = ctx;
 	if (!mobj.target) return;
 
 	actionFaceTarget(ctx);
@@ -261,7 +262,7 @@ function actionSargAttack(ctx: ActionContext): void {
 
 	if (dist < MELEERANGE) {
 		const damage = ((Math.random() * 10 | 0) + 1) * 4;
-		player.health -= damage;
+		damagePlayer(gameState, player, damage);
 	}
 
 	mobj.flags |= MobjFlags.MF_JUSTATTACKED;

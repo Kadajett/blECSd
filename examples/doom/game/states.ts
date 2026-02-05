@@ -11,6 +11,7 @@
 import type { Mobj } from './mobj.js';
 import type { MapData } from '../wad/types.js';
 import type { PlayerState } from './player.js';
+import type { GameState } from './death.js';
 
 // ─── Action Function Type ─────────────────────────────────────────
 
@@ -18,6 +19,7 @@ import type { PlayerState } from './player.js';
 export interface ActionContext {
 	readonly mobj: Mobj;
 	readonly player: PlayerState;
+	readonly gameState: GameState;
 	readonly map: MapData;
 	readonly mobjs: readonly Mobj[];
 }
