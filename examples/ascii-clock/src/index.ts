@@ -13,6 +13,7 @@ import {
 	createDoubleBuffer,
 	createInputHandler,
 	createScreenEntity,
+	type Entity,
 	enterAlternateScreen,
 	getContent,
 	getOutputBuffer,
@@ -26,7 +27,6 @@ import {
 	setRenderBuffer,
 	setupSigwinchHandler,
 	triggerResize,
-	type Entity,
 	type World,
 	writeString,
 } from 'blecsd';
