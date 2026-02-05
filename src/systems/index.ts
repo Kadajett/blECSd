@@ -184,6 +184,31 @@ export {
 	renderText,
 	setRenderBuffer,
 } from './renderSystem';
+// Spatial hash system
+export type {
+	CellCoord,
+	SpatialHashConfig,
+	SpatialHashGrid,
+	SpatialHashStats,
+} from './spatialHash';
+export {
+	clearSpatialHash,
+	createSpatialHash,
+	createSpatialHashSystem,
+	DEFAULT_CELL_SIZE,
+	getEntitiesAtPoint,
+	getEntitiesInCell,
+	getNearbyEntities,
+	getSpatialHashGrid,
+	getSpatialHashStats,
+	insertEntity,
+	queryArea,
+	rebuildSpatialHash,
+	removeEntityFromGrid,
+	setSpatialHashGrid,
+	spatialHashSystem,
+	worldToCell,
+} from './spatialHash';
 // State machine system
 export {
 	createStateMachineSystem,
