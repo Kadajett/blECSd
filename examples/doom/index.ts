@@ -54,6 +54,8 @@ import {
 	tickDeath,
 	respawnPlayer,
 } from './game/death.js';
+import { createMenuState, updateMenu, isMenuActive } from './game/menu.js';
+import { loadTitlePic, drawTitleScreen } from './render/titleScreen.js';
 
 // ─── Configuration ─────────────────────────────────────────────────
 
@@ -134,6 +136,10 @@ function main(): void {
 	initThinkers(mobjs);
 	console.log('Enemy AI initialized');
 
+	// Load title screen picture
+	const hasTitlePic = loadTitlePic(wad);
+	console.log(`Title screen: ${hasTitlePic ? 'TITLEPIC loaded' : 'fallback'}`);
+
 	// Create framebuffer and backend
 	const fb = three.createPixelFramebuffer({
 		width: SCREEN_WIDTH,
@@ -158,6 +164,9 @@ function main(): void {
 	// Create game state (death/respawn tracking)
 	const gameState = createGameState();
 
+	// Create menu state (game starts on title screen)
+	const menuState = createMenuState();
+
 	// Enter alt screen, hide cursor
 	process.stdout.write('\x1b[?1049h'); // alt screen
 	process.stdout.write('\x1b[?25l');   // hide cursor
@@ -178,11 +187,40 @@ function main(): void {
 		// Process input
 		const input = pollInput();
 
-		// Check for quit
+		// Check for Ctrl+C quit (always active)
 		if (input.keys.has('c') && input.ctrl) {
 			shutdown();
 			return;
 		}
+
+		// ─── Menu Mode ──────────────────────────────────────────
+		if (isMenuActive(menuState)) {
+			const menuResult = updateMenu(menuState, input.keys);
+
+			if (menuResult.quit) {
+				shutdown();
+				return;
+			}
+
+			// Draw title screen with menu overlays
+			drawTitleScreen(fb, palette, menuState);
+
+			// Encode and output
+			const encoded = backend.encode(fb, 0, 0);
+			if (encoded.escape) {
+				process.stdout.write(`\x1b[1;1H${encoded.escape}`);
+			}
+
+			// Schedule next frame
+			const elapsed = Date.now() - frameStart;
+			const delay = Math.max(1, FRAME_TIME - elapsed);
+			setTimeout(frame, delay);
+			return;
+		}
+
+		// ─── Gameplay Mode ──────────────────────────────────────
+
+		// Escape quits during gameplay
 		if (input.keys.has('escape')) {
 			shutdown();
 			return;
