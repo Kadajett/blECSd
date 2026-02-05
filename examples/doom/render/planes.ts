@@ -209,11 +209,6 @@ function drawFloorCeilingPlane(rs: RenderState, plane: Visplane): void {
 		(plane.lightLevel >> 4) + rs.extralight));
 	const lightTable = zlight[lightIdx];
 
-	// Per-frame view angle trig
-	const viewAngleFine = (rs.viewangle >> ANGLETOFINESHIFT) & FINEMASK;
-	const viewcos = finecosine[viewAngleFine] ?? FRACUNIT;
-	const viewsin = finesine[viewAngleFine] ?? 0;
-
 	// Column-based span extraction matching Doom's R_MakeSpans.
 	// Tracks previous column top/bottom and only processes delta rows.
 	// O(columns + total_span_boundary_changes) instead of O(width * height).
