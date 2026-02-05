@@ -119,6 +119,11 @@ export type {
 	TextInputEvent,
 	TextInputState,
 	TextInputStore,
+	// Timer
+	TimerCallback,
+	TimerCompleteCallback,
+	TimerData,
+	TimerOptions,
 	// Velocity & Acceleration
 	VelocityData,
 	VelocityOptions,
@@ -207,6 +212,8 @@ export {
 	clearSliderDisplay,
 	clearTextInputCallbacks,
 	clearTextInputError,
+	// Timer
+	clearTimerCallbacks,
 	closeSelect,
 	// Renderable
 	colorToHex,
@@ -427,6 +434,8 @@ export {
 	getText,
 	getTextInputConfig,
 	getTextInputState,
+	getTimer,
+	getTimerProgress,
 	getTotalCount,
 	getVelocity,
 	getVerticalPadding,
@@ -460,6 +469,7 @@ export {
 	hasSelection,
 	hasShadow,
 	hasStateMachine,
+	hasTimer,
 	hasVelocity,
 	hexToColor,
 	hide,
@@ -550,6 +560,8 @@ export {
 	isTextInputFocused,
 	isTextInputInState,
 	isTextWrapped,
+	isTimerComplete,
+	isTimerRunning,
 	isUnchecked,
 	isVisible,
 	Label,
@@ -586,11 +598,14 @@ export {
 	onTextInputCancel,
 	onTextInputChange,
 	onTextInputSubmit,
+	onTimerComplete,
+	onTimerFire,
 	openSelect,
 	Padding,
 	Position,
 	ProgressOrientation,
 	packColor,
+	pauseTimer,
 	prepend,
 	pressButton,
 	// ProgressBar
@@ -606,6 +621,7 @@ export {
 	removeItem,
 	removeLabel,
 	removeShadow,
+	removeTimer,
 	removeVelocity,
 	// Rendering
 	renderListItems,
@@ -626,6 +642,9 @@ export {
 	resetSelectStore,
 	resetSliderStore,
 	resetTextInputStore,
+	resetTimer,
+	resetTimerStore,
+	resumeTimer,
 	Scrollable,
 	ScrollbarVisibility,
 	// Select
@@ -750,6 +769,7 @@ export {
 	setTextInputError,
 	setTextVAlign,
 	setTextWrap,
+	setTimer,
 	// Virtualization / lazy loading
 	setTotalCount,
 	setVelocity,
@@ -763,13 +783,17 @@ export {
 	startDragging,
 	startEditingTextInput,
 	startListSearch,
+	startTimer,
 	stopDragging,
 	stopEntity,
+	stopTimer,
 	submitForm,
 	// TextInput
 	TEXT_INPUT_STATE_MACHINE_CONFIG,
 	TextAlign,
 	TextVAlign,
+	TIMER_INFINITE,
+	Timer,
 	textInputStore,
 	toggle,
 	toggleCheckbox,
@@ -782,6 +806,7 @@ export {
 	updateEntityMovement,
 	updateItem,
 	updateStateAge,
+	updateTimers,
 	// Velocity & Acceleration
 	Velocity,
 } from './components';
