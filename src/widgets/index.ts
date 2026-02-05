@@ -180,6 +180,27 @@ export {
 	showLoading,
 	updateLoadingAnimation,
 } from './loading';
+// Log widget
+export type {
+	BorderConfig as LogBorderConfig,
+	DimensionValue as LogDimensionValue,
+	LogConfig,
+	LogWidget,
+	PaddingConfig as LogPaddingConfig,
+	PositionValue as LogPositionValue,
+	ScrollbarConfig as LogScrollbarConfig,
+	ScrollbarMode as LogScrollbarMode,
+} from './log';
+export {
+	createLog,
+	getScrollback,
+	isKeysScrollEnabled as isLogKeysScrollEnabled,
+	isLog,
+	isMouseScrollEnabled as isLogMouseScrollEnabled,
+	Log,
+	LogConfigSchema,
+	resetLogStore,
+} from './log';
 // Modal widget
 export type {
 	ModalBorderConfig,

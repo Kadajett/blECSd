@@ -291,6 +291,8 @@ export {
 	wordWrap,
 	wrapText,
 } from './textWrap';
+// Time utilities
+export { formatDate, unixTimestamp, unixTimestampMs } from './time';
 // Unicode utilities
 export type {
 	CodePointRange,
