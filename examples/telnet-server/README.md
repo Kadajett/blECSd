@@ -37,7 +37,7 @@ telnet localhost 2300
 nc localhost 2300
 
 # Using PuTTY (Windows)
-# Connection type: Raw, Port: 2300
+# Connection type: Telnet, Port: 2300
 ```
 
 ## Keybindings
