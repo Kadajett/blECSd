@@ -120,6 +120,17 @@ export {
 	resetHoverTextStore,
 	setHoverText,
 } from './hoverText';
+// Image widget
+export type { ImageConfig, ImageType, ImageWidget } from './image';
+export {
+	createImage,
+	getImageBitmap,
+	getImageCellMap,
+	Image,
+	ImageConfigSchema,
+	isImage,
+	resetImageStore,
+} from './image';
 // Layout widget
 export type {
 	AlignItems,
