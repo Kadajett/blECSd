@@ -5,6 +5,18 @@
  */
 
 export type {
+	FilterError,
+	FilterOutput,
+	FilterResult,
+} from './filters';
+export {
+	bytesPerPixel,
+	FilterType,
+	paethPredictor,
+	reconstructFilters,
+	scanlineBytes,
+} from './filters';
+export type {
 	PNGChunk,
 	PNGHeader,
 	PNGParseError,
@@ -24,3 +36,15 @@ export {
 	validateCRC,
 	validateMagicBytes,
 } from './parser';
+export type {
+	PaletteEntry,
+	PixelData,
+	PixelError,
+	PixelOutput,
+	PixelResult,
+} from './pixels';
+export {
+	extractPixels,
+	parsePLTE,
+	parseTRNS,
+} from './pixels';
