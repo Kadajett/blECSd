@@ -2,9 +2,9 @@
  * Tests for entity disposal and cleanup system.
  */
 
-import { addEntity, createWorld, entityExists } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { appendChild, getChildren } from '../components/hierarchy';
+import { addEntity, createWorld, entityExists } from '../core/ecs';
 import {
 	clearCleanupCallbacks,
 	clearDestroyQueue,

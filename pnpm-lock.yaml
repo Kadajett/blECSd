@@ -42,9 +42,6 @@ importers:
 
   examples/3d-backends:
     dependencies:
-      bitecs:
-        specifier: ^0.4.0
-        version: 0.4.0
       blecsd:
         specifier: workspace:*
         version: link:../..
@@ -61,9 +58,6 @@ importers:
 
   examples/3d-cube:
     dependencies:
-      bitecs:
-        specifier: ^0.4.0
-        version: 0.4.0
       blecsd:
         specifier: workspace:*
         version: link:../..
@@ -80,9 +74,6 @@ importers:
 
   examples/3d-obj-viewer:
     dependencies:
-      bitecs:
-        specifier: ^0.4.0
-        version: 0.4.0
       blecsd:
         specifier: workspace:*
         version: link:../..
@@ -99,9 +90,6 @@ importers:
 
   examples/ascii-clock:
     dependencies:
-      bitecs:
-        specifier: ^0.4.0
-        version: 0.4.0
       blecsd:
         specifier: workspace:*
         version: link:../..
@@ -134,9 +122,6 @@ importers:
 
   examples/big-text:
     dependencies:
-      bitecs:
-        specifier: ^0.4.0
-        version: 0.4.0
       blecsd:
         specifier: workspace:*
         version: link:../..
@@ -172,9 +157,6 @@ importers:
 
   examples/dvd-bounce:
     dependencies:
-      bitecs:
-        specifier: ^0.4.0
-        version: 0.4.0
       blecsd:
         specifier: workspace:*
         version: link:../..

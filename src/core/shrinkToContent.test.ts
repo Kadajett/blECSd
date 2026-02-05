@@ -1,9 +1,9 @@
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BorderType, setBorder } from '../components/border';
 import { resetContentStore, setContent } from '../components/content';
 import { Dimensions, setConstraints, setDimensions, setShrink } from '../components/dimensions';
 import { setPadding, setPaddingAll } from '../components/padding';
+import { addEntity, createWorld } from '../core/ecs';
 import {
 	applyShrink,
 	calculateShrinkSize,

@@ -469,7 +469,7 @@ import { contentStore } from 'blecsd';
 ### Basic Text Display
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setContent, getContent } from 'blecsd';
 
 const world = createWorld();
@@ -482,7 +482,7 @@ console.log(getContent(world, textEntity)); // 'Hello, Terminal!'
 ### Centered Title
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setContent, TextAlign, TextVAlign } from 'blecsd';
 
 const world = createWorld();
@@ -497,7 +497,7 @@ setContent(world, titleEntity, 'Game Title', {
 ### Wrapping Text Block
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setContent, appendContent, TextAlign } from 'blecsd';
 
 const world = createWorld();
@@ -514,7 +514,7 @@ appendContent(world, paragraphEntity, 'when it reaches the container boundary.')
 ### Change Detection
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setContent, getContentHash } from 'blecsd';
 
 const world = createWorld();
@@ -535,7 +535,7 @@ if (hash1 !== hash2) {
 ### Styled Text with Tags
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setContent, setParseTags } from 'blecsd';
 
 const world = createWorld();

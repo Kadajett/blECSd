@@ -4,8 +4,8 @@
  * @module systems/cameraSystem
  */
 
-import { query } from 'bitecs';
 import { Camera, updateCameraFollow } from '../components/camera';
+import { query } from '../core/ecs';
 import { getDeltaTime, type Scheduler } from '../core/scheduler';
 import { LoopPhase, type System, type World } from '../core/types';
 

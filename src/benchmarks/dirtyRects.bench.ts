@@ -8,7 +8,7 @@
  * @module benchmarks/dirtyRects
  */
 
-import { addComponent, addEntity, createWorld } from 'bitecs';
+import { addComponent, addEntity, createWorld } from '../core/ecs';
 import { bench, describe } from 'vitest';
 import {
 	clearDirtyTracking,

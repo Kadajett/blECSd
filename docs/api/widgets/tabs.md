@@ -5,7 +5,7 @@ The Tabs widget is a tabbed container that manages multiple content panels with 
 ## Overview
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
 
 const world = createWorld();
@@ -38,7 +38,7 @@ tabs.setActiveTab(2);
 Creates a new Tabs widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
 
 const world = createWorld();
@@ -579,7 +579,7 @@ if (result.success) {
 ### Basic Tab Navigation
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
 
 const world = createWorld();
@@ -603,7 +603,7 @@ tabs.prevTab(); // Back to Profile
 ### Closable Tabs
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
 
 const world = createWorld();
@@ -623,7 +623,7 @@ tabs.removeTab(1); // Remove "Document 1"
 ### Lazy Content Loading
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createTabs, createBox } from 'blecsd';
 
 const world = createWorld();
@@ -655,7 +655,7 @@ tabs.setActiveTab(1);
 ### Keyboard Navigation
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
 
 const world = createWorld();
@@ -686,7 +686,7 @@ onKeyPress('left');  // Goes to previous tab
 ### Dynamic Tab Management
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
 
 const world = createWorld();
@@ -712,7 +712,7 @@ tabs.removeTab(2);
 ### Method Chaining
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
 
 const world = createWorld();

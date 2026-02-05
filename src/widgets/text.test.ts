@@ -2,7 +2,6 @@
  * Tests for the Text widget.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { getContent, getContentData, TextAlign, TextVAlign } from '../components/content';
 import { getDimensions, shouldShrink } from '../components/dimensions';
@@ -10,6 +9,7 @@ import { resetFocusState } from '../components/focusable';
 import { getParent } from '../components/hierarchy';
 import { getPosition } from '../components/position';
 import { getRenderable, hexToColor } from '../components/renderable';
+import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import {
 	createText,

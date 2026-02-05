@@ -1,5 +1,5 @@
-import { addEntity } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { addEntity } from '../core/ecs';
 import type { World } from '../core/types';
 import { createWorld } from '../core/world';
 import { StateMachineStore } from './stateMachine';

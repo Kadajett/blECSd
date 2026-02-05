@@ -4,8 +4,8 @@
  * @module widgets/registry.test
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import {
 	createWidgetRegistry,

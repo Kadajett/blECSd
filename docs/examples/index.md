@@ -105,7 +105,7 @@ When building applications with blECSd, follow these patterns:
 Use blECSd components standalone in your own bitecs world:
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setPosition, setRenderable } from 'blecsd';
 
 const world = createWorld();

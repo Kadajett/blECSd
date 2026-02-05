@@ -3,7 +3,7 @@
  * @module components/scrollable
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 /** Default entity capacity for typed arrays */
@@ -239,7 +239,7 @@ function applyScrollableOptions(eid: Entity, options: ScrollableOptions): void {
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { setScrollable, ScrollbarVisibility } from 'blecsd';
  *
  * const world = createWorld();

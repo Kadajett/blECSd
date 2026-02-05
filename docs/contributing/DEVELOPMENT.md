@@ -112,7 +112,7 @@ Add tests in the corresponding location under `tests/` or as `.test.ts` files al
 // src/components/position.test.ts
 import { describe, it, expect } from 'vitest';
 import { setPosition, getPosition } from './position';
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 
 describe('Position component', () => {
   it('sets and gets position', () => {
@@ -161,7 +161,7 @@ Components are data containers defined with bitecs:
 
 ```typescript
 // src/components/myComponent.ts
-import { defineComponent, Types } from 'bitecs';
+import { defineComponent, Types } from 'blecsd';
 
 /** Default capacity for component stores */
 const DEFAULT_CAPACITY = 10000;
@@ -209,7 +209,7 @@ Systems are functions that process entities:
 
 ```typescript
 // src/systems/mySystem.ts
-import { defineQuery, hasComponent } from 'bitecs';
+import { defineQuery, hasComponent } from 'blecsd';
 import { MyComponent } from '../components/myComponent';
 import { Position } from '../components/position';
 
@@ -240,7 +240,7 @@ Widgets are factory functions that create configured entities:
 
 ```typescript
 // src/widgets/myWidget.ts
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 import { setPosition } from '../components/position';
 import { setDimensions } from '../components/dimensions';
 import { setBorder } from '../components/border';
@@ -334,7 +334,7 @@ if (process.env.DEBUG) {
 ### Inspecting ECS State
 
 ```typescript
-import { getAllEntities } from 'bitecs';
+import { getAllEntities } from 'blecsd';
 import { Position } from './components/position';
 
 function debugWorld(world: World): void {

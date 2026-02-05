@@ -4,6 +4,7 @@
  *
  * Demonstrates:
  * - High-performance rendering with thousands of entities
+ * - World adapter with precomputed renderable entities
  * - Physics-based movement with velocity and acceleration
  * - Wall bouncing (DVD logo style)
  * - Dynamic z-order shuffling (card shuffle effect)
@@ -13,9 +14,11 @@
  * @module examples/dvd-bounce
  */
 
-import { addEntity, createWorld, hasComponent } from 'bitecs';
+import { addEntity, hasComponent } from 'blecsd';
 import type { World, Entity } from 'blecsd';
 import {
+	createWorld,
+	createWorldAdapter,
 	Position,
 	setPosition,
 	getPosition,
@@ -27,6 +30,7 @@ import {
 	setZIndex,
 	getZIndex,
 	sortByZIndex,
+	setWorldAdapter,
 	createCellBuffer,
 	fillRect,
 	packColor,
@@ -174,6 +178,9 @@ interface Panel {
 	char: string;
 }
 
+/** Precomputed list of renderable entities for the world adapter */
+const renderableEntities: Entity[] = [];
+
 interface AppState {
 	world: World;
 	panels: Panel[];
@@ -222,6 +229,9 @@ function createPanel(world: World, width: number, height: number, index: number)
 	// Random color and character
 	const color = COLORS[index % COLORS.length] ?? COLORS[0] ?? 0xffffffff;
 	const char = PANEL_CHARS[index % PANEL_CHARS.length] ?? '█';
+
+	// Register entity in the precomputed render list
+	renderableEntities.push(eid);
 
 	return { eid, color, char };
 }
@@ -542,9 +552,14 @@ async function main(): Promise<void> {
 	const width = stdout.columns ?? 80;
 	const height = stdout.rows ?? 24;
 
-	// Create world and buffer
+	// Create world with custom adapter for precomputed render list
 	const world = createWorld();
 	const buffer = createCellBuffer(width, height) as CellBufferDirect;
+	const adapter = createWorldAdapter({
+		type: 'custom',
+		queryRenderables: () => renderableEntities,
+	});
+	setWorldAdapter(world, adapter);
 
 	// Create panels
 	const panels: Panel[] = [];

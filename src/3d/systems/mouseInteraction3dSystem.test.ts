@@ -1,5 +1,5 @@
-import { addComponent, addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { addComponent, addEntity, createWorld } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import {
 	clearMouseInputStore,

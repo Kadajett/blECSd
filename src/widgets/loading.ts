@@ -6,7 +6,6 @@
  * @module widgets/loading
  */
 
-import { addEntity, removeEntity } from 'bitecs';
 import { z } from 'zod';
 import { setContent } from '../components/content';
 import { setDimensions } from '../components/dimensions';
@@ -24,6 +23,7 @@ import {
 	setSpinnerInterval,
 	updateSpinner,
 } from '../components/spinner';
+import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================

@@ -2,10 +2,10 @@
  * ListTable Widget Tests
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetListStore } from '../components/list';
 import { resetTableStore } from '../components/table';
+import { addEntity, createWorld } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { createListTable, isListTableWidget, type ListTableWidget } from './listTable';
 

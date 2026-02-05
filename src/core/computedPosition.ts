@@ -4,12 +4,12 @@
  * @module core/computedPosition
  */
 
-import { hasComponent } from 'bitecs';
 import { Border, BorderType, hasBorder } from '../components/border';
 import { getDimensions, hasDimensions } from '../components/dimensions';
 import { getParent, Hierarchy, NULL_ENTITY } from '../components/hierarchy';
 import { getPadding } from '../components/padding';
 import { getPosition, hasPosition, Position } from '../components/position';
+import { hasComponent } from './ecs';
 import type { Entity, World } from './types';
 
 // =============================================================================

@@ -1,6 +1,4 @@
-import { addComponent, addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-
 import { Border } from '../components/border';
 import { Content } from '../components/content';
 import { Dimensions } from '../components/dimensions';
@@ -11,6 +9,7 @@ import { Padding } from '../components/padding';
 import { Position } from '../components/position';
 import { Renderable } from '../components/renderable';
 import { Scrollable } from '../components/scrollable';
+import { addComponent, addEntity, createWorld } from '../core/ecs';
 import {
 	filterClickable,
 	filterDirty,

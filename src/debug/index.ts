@@ -10,8 +10,6 @@
  * @module debug
  */
 
-import { getAllEntities, hasComponent } from 'bitecs';
-
 import { Animation, hasAnimation } from '../components/animation';
 import { Border, hasBorder } from '../components/border';
 import { Collider } from '../components/collision';
@@ -26,6 +24,7 @@ import { Renderable, unpackColor } from '../components/renderable';
 import { Scrollable } from '../components/scrollable';
 import { Shadow } from '../components/shadow';
 import { Velocity } from '../components/velocity';
+import { getAllEntities, hasComponent } from '../core/ecs';
 import { getEntityData, hasEntityData } from '../core/entityData';
 import type { Entity, World } from '../core/types';
 

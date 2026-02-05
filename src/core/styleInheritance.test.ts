@@ -2,10 +2,10 @@
  * Style inheritance system tests.
  */
 
-import { addComponent, addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { appendChild, Hierarchy } from '../components/hierarchy';
 import { DEFAULT_FG, Renderable } from '../components/renderable';
+import { addComponent, addEntity, createWorld } from '../core/ecs';
 import {
 	clearStyleCache,
 	computeInheritedStyle,

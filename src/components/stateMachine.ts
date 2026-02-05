@@ -4,7 +4,13 @@
  * @internal This module is for internal use by widgets
  */
 
-import { addComponent, hasComponent, registerComponent, removeComponent, withStore } from 'bitecs';
+import {
+	addComponent,
+	hasComponent,
+	registerComponent,
+	removeComponent,
+	withStore,
+} from '../core/ecs';
 import type { StateMachine } from '../core/stateMachine';
 import { createStateMachine, type StateMachineConfig } from '../core/stateMachine';
 import type { Entity, World } from '../core/types';

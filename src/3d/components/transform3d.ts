@@ -4,7 +4,7 @@
  * @module 3d/components/transform3d
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { type Transform3DConfig, Transform3DConfigSchema } from '../schemas/components';
 

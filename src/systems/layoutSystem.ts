@@ -4,7 +4,6 @@
  * @module systems/layoutSystem
  */
 
-import { addComponent, hasComponent, query } from 'bitecs';
 import {
 	AUTO_DIMENSION,
 	Dimensions,
@@ -15,6 +14,7 @@ import {
 import { getChildren, getParent, hasHierarchy, NULL_ENTITY } from '../components/hierarchy';
 import { hasPosition, isAbsolute, Position } from '../components/position';
 import { getScreen, hasScreenSingleton } from '../components/screen';
+import { addComponent, hasComponent, query } from '../core/ecs';
 import type { Entity, System, World } from '../core/types';
 
 // =============================================================================

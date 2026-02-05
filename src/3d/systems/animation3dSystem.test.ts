@@ -1,5 +1,5 @@
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { addEntity, createWorld } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { Animation3D, setAnimation3D } from '../components/animation3d';
 import { setTransform3D, Transform3D } from '../components/transform3d';

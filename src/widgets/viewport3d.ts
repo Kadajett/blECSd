@@ -8,7 +8,6 @@
  * @module widgets/viewport3d
  */
 
-import { addComponent, addEntity, removeEntity } from 'bitecs';
 import { createBackendByType } from '../3d/backends/detection';
 import { Camera3D, setCamera3D } from '../3d/components/camera3d';
 import { setMaterial3D } from '../3d/components/material';
@@ -25,6 +24,7 @@ import { framebufferStore } from '../3d/systems/rasterSystem';
 import { setDimensions } from '../components/dimensions';
 import { setPosition } from '../components/position';
 import { markDirty, setVisible } from '../components/renderable';
+import { addComponent, addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 const DEFAULT_CAPACITY = 10000;
@@ -95,7 +95,7 @@ export interface Viewport3DWidget {
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { createViewport3D } from 'blecsd/widgets';
  * import { createCubeMesh } from 'blecsd/3d/stores';
  *

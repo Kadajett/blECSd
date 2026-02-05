@@ -7,7 +7,6 @@
  * @module widgets/text
  */
 
-import { removeEntity } from 'bitecs';
 import { z } from 'zod';
 import { getContent, setContent, TextAlign, TextVAlign } from '../components/content';
 import { setDimensions, setShrink } from '../components/dimensions';
@@ -15,6 +14,7 @@ import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
 import { moveBy, setPosition } from '../components/position';
 import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
+import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -330,7 +330,7 @@ function setupContent(world: World, eid: Entity, config: ValidatedTextConfig): v
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { createText } from 'blecsd/widgets';
  *
  * const world = createWorld();

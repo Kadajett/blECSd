@@ -4,7 +4,7 @@
  * @module 3d/components/animation3d
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { type Animation3DConfig, Animation3DConfigSchema } from '../schemas/components';
 

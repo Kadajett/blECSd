@@ -8,7 +8,7 @@
  * @module 3d/systems/rasterSystem
  */
 
-import { hasComponent, query } from 'bitecs';
+import { hasComponent, query } from '../../core/ecs';
 import type { Entity, System, World } from '../../core/types';
 import { Material3D } from '../components/material';
 import { Viewport3D } from '../components/viewport3d';

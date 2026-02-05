@@ -10,7 +10,6 @@
 		"dev": "tsx src/index.ts"
 	},
 	"dependencies": {
-		"bitecs": "^0.4.0",
 		"blecsd": "workspace:*"
 	},
 	"devDependencies": {

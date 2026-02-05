@@ -15,7 +15,7 @@
  * @module 3d/systems/mouseInteraction3dSystem
  */
 
-import { hasComponent, query } from 'bitecs';
+import { hasComponent, query } from '../../core/ecs';
 import type { Entity, System, World } from '../../core/types';
 import {
 	clearMouseInputStore,

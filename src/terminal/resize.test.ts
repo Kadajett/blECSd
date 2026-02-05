@@ -2,9 +2,9 @@
  * Tests for Terminal Resize Handling
  */
 
-import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getScreenSize, resetScreenSingleton } from '../components/screen';
+import { createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { World } from '../core/types';
 import { clearOutputBuffer, getOutputBuffer, setOutputBuffer } from '../systems/outputSystem';

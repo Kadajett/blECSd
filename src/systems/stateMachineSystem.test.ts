@@ -1,5 +1,5 @@
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { addEntity, createWorld } from '../core/ecs';
 import * as scheduler from '../core/scheduler';
 import {
 	createStateMachineSystem,

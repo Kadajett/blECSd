@@ -7,13 +7,13 @@
  * @module widgets/layout
  */
 
-import { removeEntity } from 'bitecs';
 import { z } from 'zod';
 import { getDimensions, setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
 import { getPosition, moveBy, setPosition } from '../components/position';
 import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
+import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -592,7 +592,7 @@ export function calculateFlexLayout(
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { createLayout, createBox } from 'blecsd/widgets';
  *
  * const world = createWorld();

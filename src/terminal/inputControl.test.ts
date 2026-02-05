@@ -2,9 +2,9 @@
  * Tests for Screen Input Control
  */
 
-import { createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetScreenSingleton } from '../components/screen';
+import { createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import { lockAllKeys, resetKeyLockState, setIgnoredKeys } from '../core/keyLock';
 import type { World } from '../core/types';

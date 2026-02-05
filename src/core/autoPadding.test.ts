@@ -2,11 +2,11 @@
  * Tests for auto-padding system.
  */
 
-import { addEntity, createWorld, type World } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { BorderType, setBorder } from '../components/border';
 import { setPadding } from '../components/padding';
 import { setAutoPadding } from '../components/screen';
+import { addEntity, createWorld, type World } from '../core/ecs';
 import {
 	getAutoPadding,
 	getEffectivePadding,

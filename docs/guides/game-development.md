@@ -16,7 +16,7 @@ The Entity Component System pattern originated in game development. Benefits for
 For games, you'll typically want a continuous update loop:
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScheduler, LoopPhase } from 'blecsd';
 
 const world = createWorld();
@@ -329,7 +329,7 @@ function getNearbyEntities(x: number, y: number): number[] {
 ## Example: Simple Snake Game
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setPosition, setContent, setStyle, getPosition } from 'blecsd';
 
 const world = createWorld();

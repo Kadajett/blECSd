@@ -29,10 +29,10 @@
  * ```
  */
 
-import { addComponent, hasComponent } from 'bitecs';
 import { Border, hasBorderVisible } from '../components/border';
 import { getParent, NULL_ENTITY } from '../components/hierarchy';
 import { ComputedLayout, hasComputedLayout } from '../systems/layoutSystem';
+import { addComponent, hasComponent } from './ecs';
 import type { Entity, World } from './types';
 
 // =============================================================================

@@ -3,7 +3,7 @@
  * @module components/camera
  */
 
-import { addComponent, hasComponent, removeComponent } from 'bitecs';
+import { addComponent, hasComponent, removeComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { hasPosition, Position } from './position';
 

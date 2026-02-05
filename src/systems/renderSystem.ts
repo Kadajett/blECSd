@@ -4,7 +4,6 @@
  * @module systems/renderSystem
  */
 
-import { hasComponent } from 'bitecs';
 import { Border, BorderType, getBorder, hasBorderVisible } from '../components/border';
 // getChildren reserved for future tree-based rendering mode
 // import { getChildren } from '../components/hierarchy';
@@ -16,6 +15,7 @@ import {
 	markClean,
 	Renderable,
 } from '../components/renderable';
+import { hasComponent } from '../core/ecs';
 import type { Entity, System, World } from '../core/types';
 import { getWorldAdapter } from '../core/worldAdapter';
 import type { Cell, ScreenBufferData } from '../terminal/screen/cell';

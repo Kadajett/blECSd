@@ -3,7 +3,7 @@
  * @module components/content
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { stripAnsi } from '../utils/textWrap';
 
@@ -213,7 +213,7 @@ function applyContentOptions(eid: Entity, options: ContentOptions): void {
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { setContent, TextAlign } from 'blecsd';
  *
  * const world = createWorld();

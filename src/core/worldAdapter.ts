@@ -9,9 +9,9 @@
  * @module core/worldAdapter
  */
 
-import { query } from 'bitecs';
 import { Position } from '../components/position';
 import { Renderable } from '../components/renderable';
+import { query } from './ecs';
 import type { Entity, World } from './types';
 
 /**

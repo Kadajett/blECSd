@@ -2,12 +2,12 @@
  * Drag system tests.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setDimensions } from '../components/dimensions';
 import { setParent } from '../components/hierarchy';
 import { setDraggable } from '../components/interactive';
 import { getPosition, getZIndex, setPosition, setZIndex } from '../components/position';
+import { addEntity, createWorld } from '../core/ecs';
 import { EventBus } from '../core/events';
 import type { Entity, World } from '../core/types';
 import {

@@ -2,13 +2,12 @@
  * Tests for debug utilities.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { setDimensions } from '../components/dimensions';
 import { focus, makeFocusable } from '../components/focusable';
 import { setParent } from '../components/hierarchy';
 import { setPosition } from '../components/position';
+import { addEntity, createWorld } from '../core/ecs';
 import { setEntityData } from '../core/entityData';
 import type { World } from '../core/types';
 import {

@@ -4,7 +4,7 @@
  * @module components/input
  */
 
-import { addComponent, hasComponent, removeComponent } from 'bitecs';
+import { addComponent, hasComponent, removeComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 /** Default entity capacity for typed arrays */

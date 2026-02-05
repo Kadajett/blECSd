@@ -8,8 +8,6 @@
  * @module core/queries
  */
 
-import { query } from 'bitecs';
-
 import { Border } from '../components/border';
 import { Content } from '../components/content';
 import { Dimensions } from '../components/dimensions';
@@ -20,6 +18,7 @@ import { Padding } from '../components/padding';
 import { Position } from '../components/position';
 import { Renderable } from '../components/renderable';
 import { Scrollable } from '../components/scrollable';
+import { query } from './ecs';
 import type { Entity, World } from './types';
 
 // =============================================================================

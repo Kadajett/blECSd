@@ -4,7 +4,6 @@
  * @module systems/inputSystem
  */
 
-import { hasComponent, query } from 'bitecs';
 import { Dimensions } from '../components/dimensions';
 import {
 	Focusable,
@@ -34,6 +33,7 @@ import {
 	setPressed,
 } from '../components/interactive';
 import { Position } from '../components/position';
+import { hasComponent, query } from '../core/ecs';
 import { EventBus, type UIEventMap } from '../core/events';
 import type { Scheduler } from '../core/scheduler';
 import type { Entity, System, World } from '../core/types';

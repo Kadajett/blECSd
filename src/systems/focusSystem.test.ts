@@ -2,12 +2,12 @@
  * Tests for Focus System
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { isFocused, setFocusable, setInteractive } from '../components/interactive';
 import { setPosition } from '../components/position';
 import { setStyle, setVisible } from '../components/renderable';
 import { resetScreenSingleton } from '../components/screen';
+import { addEntity, createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { World } from '../core/types';
 import {

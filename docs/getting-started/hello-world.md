@@ -5,7 +5,7 @@ A minimal example using blECSd components.
 ## The Code
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   setPosition,
   setDimensions,
@@ -126,7 +126,7 @@ process.stdout.write(screen.alternateOff());
 Combining ECS data with terminal output:
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   setPosition,
   setStyle,

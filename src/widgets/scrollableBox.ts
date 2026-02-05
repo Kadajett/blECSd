@@ -8,7 +8,6 @@
  * @module widgets/scrollableBox
  */
 
-import { removeEntity } from 'bitecs';
 import { z } from 'zod';
 import {
 	BORDER_SINGLE,
@@ -51,6 +50,7 @@ import {
 	setScrollSize,
 	setViewport,
 } from '../components/scrollable';
+import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -698,7 +698,7 @@ function setupScrollable(world: World, eid: Entity, config: ValidatedScrollableB
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { createScrollableBox } from 'blecsd/widgets';
  *
  * const world = createWorld();

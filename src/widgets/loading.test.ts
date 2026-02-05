@@ -4,9 +4,9 @@
  * @module widgets/loading.test
  */
 
-import { createWorld } from 'bitecs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { resetSpinnerStore } from '../components/spinner';
+import { createWorld } from '../core/ecs';
 import {
 	createLoading,
 	hideLoading,

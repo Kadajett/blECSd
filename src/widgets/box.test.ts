@@ -2,7 +2,6 @@
  * Tests for the Box widget.
  */
 
-import { addEntity, createWorld, hasComponent } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { BorderType, getBorder } from '../components/border';
 import { getContent, getContentData, TextAlign, TextVAlign } from '../components/content';
@@ -12,6 +11,7 @@ import { getParent } from '../components/hierarchy';
 import { getPadding } from '../components/padding';
 import { getPosition } from '../components/position';
 import { getRenderable, hexToColor } from '../components/renderable';
+import { addEntity, createWorld, hasComponent } from '../core/ecs';
 import type { World } from '../core/types';
 import {
 	BoxConfigSchema,

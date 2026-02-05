@@ -5,7 +5,7 @@ The Text widget is a simple container for displaying text that shrinks to fit it
 ## Overview
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
 
 const world = createWorld();
@@ -31,7 +31,7 @@ label.setContent('Updated!').setPosition(20, 10).show();
 Creates a new Text widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
 
 const world = createWorld();
@@ -406,7 +406,7 @@ if (result.success) {
 ### Simple Label
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
 
 const world = createWorld();
@@ -422,7 +422,7 @@ const label = createText(world, eid, {
 ### Styled Status Message
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
 
 const world = createWorld();
@@ -443,7 +443,7 @@ status.setContent('Status: Disconnected');
 ### Multi-line Text
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
 
 const world = createWorld();
@@ -460,7 +460,7 @@ const paragraph = createText(world, eid, {
 ### Method Chaining
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
 
 const world = createWorld();
@@ -481,7 +481,7 @@ const text = createText(world, eid, { left: 0, top: 0 })
 ### Dynamic Content Update
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createText, setTextContent, getTextContent } from 'blecsd';
 
 const world = createWorld();
@@ -506,7 +506,7 @@ const current = getTextContent(world, eid); // 'Count: 2'
 ### Fixed Size Text (No Shrink)
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
 
 const world = createWorld();

@@ -3,7 +3,7 @@
  * @module components/preview
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from 'blecsd';
 import type { Entity, World } from 'blecsd';
 import type { PreviewContent } from '../data';
 

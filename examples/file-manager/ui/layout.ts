@@ -3,7 +3,7 @@
  * @module ui/layout
  */
 
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 import type { Entity, World, ListbarWidget } from 'blecsd';
 import { createListbar } from 'blecsd';
 import {

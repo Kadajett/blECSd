@@ -25,7 +25,7 @@ import {
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   attachSelectBehavior,
   onSelectChange,
@@ -296,7 +296,7 @@ const action = handleSelectKeyPress(world, eid, key);
 ## Example: Country Selector
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   attachSelectBehavior,
   onSelectChange,

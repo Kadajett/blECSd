@@ -8,7 +8,7 @@
  * @module benchmarks/hitTest
  */
 
-import { addComponent, addEntity, createWorld } from 'bitecs';
+import { addComponent, addEntity, createWorld } from '../core/ecs';
 import { bench, describe } from 'vitest';
 import { Dimensions } from '../components/dimensions';
 import { Interactive, setInteractive } from '../components/interactive';

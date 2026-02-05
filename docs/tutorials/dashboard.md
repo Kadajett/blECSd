@@ -40,7 +40,7 @@ In this tutorial, you'll build a system monitoring dashboard that displays CPU, 
 Create `dashboard.ts`:
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   createScheduler,
   LoopPhase,

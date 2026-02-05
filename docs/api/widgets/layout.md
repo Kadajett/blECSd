@@ -5,7 +5,7 @@ The Layout widget is an auto-layout container that arranges children using diffe
 ## Overview
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLayout, createBox } from 'blecsd';
 
 const world = createWorld();
@@ -42,7 +42,7 @@ layout.recalculate();
 Creates a new Layout widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLayout } from 'blecsd';
 
 const world = createWorld();
@@ -586,7 +586,7 @@ if (result.success) {
 ### Dashboard Layout
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLayout, createBox } from 'blecsd';
 
 const world = createWorld();
@@ -618,7 +618,7 @@ dashboard.recalculate();
 ### Toolbar Layout
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLayout, createBox } from 'blecsd';
 
 const world = createWorld();
@@ -651,7 +651,7 @@ toolbar.recalculate();
 ### Centered Content
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLayout, createBox } from 'blecsd';
 
 const world = createWorld();
@@ -681,7 +681,7 @@ container.recalculate();
 ### Method Chaining
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createLayout, createBox } from 'blecsd';
 
 const world = createWorld();

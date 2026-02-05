@@ -24,8 +24,8 @@
  * ```
  */
 
-import { addComponent, hasComponent } from 'bitecs';
 import { getChildren, getParent, Hierarchy, NULL_ENTITY } from '../components/hierarchy';
+import { addComponent, hasComponent } from './ecs';
 import type { Entity, World } from './types';
 
 // =============================================================================

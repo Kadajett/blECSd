@@ -2,11 +2,11 @@
  * Effects system tests.
  */
 
-import { addComponent, addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Focusable, focus, resetFocusState, setFocusable } from '../components/focusable';
 import { setHovered, setInteractive } from '../components/interactive';
 import { Renderable } from '../components/renderable';
+import { addComponent, addEntity, createWorld } from '../core/ecs';
 import {
 	applyCustomEffect,
 	applyDisabledEffect,

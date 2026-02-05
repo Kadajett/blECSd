@@ -11,7 +11,7 @@ import { createListbar, isListbarWidget } from 'blecsd';
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createListbar } from 'blecsd';
 
 const world = createWorld();
@@ -191,7 +191,7 @@ menubar.destroy();  // Remove entity and cleanup
 ## Example: Application Menu
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createListbar, createPanel } from 'blecsd';
 
 const world = createWorld();

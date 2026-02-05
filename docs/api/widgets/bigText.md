@@ -5,7 +5,7 @@ The BigText widget renders large ASCII art text using bitmap fonts.
 ## Overview
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createBigText } from 'blecsd/widgets';
 import { loadFont } from 'blecsd/widgets/bigText';
 
@@ -30,7 +30,7 @@ const bigText = createBigText(world, eid, {
 Creates a new BigText widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createBigText } from 'blecsd/widgets';
 
 const world = createWorld();

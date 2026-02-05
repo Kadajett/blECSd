@@ -5,7 +5,7 @@ The Box widget is a basic container for building terminal UI elements. It provid
 ## Overview
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
 
 const world = createWorld();
@@ -35,7 +35,7 @@ box.setContent('Updated content').focus().show();
 Creates a new Box widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
 
 const world = createWorld();
@@ -451,7 +451,7 @@ if (result.success) {
 ### Basic Container
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
 
 const world = createWorld();
@@ -469,7 +469,7 @@ const box = createBox(world, eid, {
 ### Styled Box with Border
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
 
 const world = createWorld();
@@ -497,7 +497,7 @@ const dialog = createBox(world, eid, {
 ### Nested Boxes
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
 
 const world = createWorld();
@@ -529,7 +529,7 @@ parent.append(childEid);
 ### Method Chaining
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
 
 const world = createWorld();
@@ -550,7 +550,7 @@ const box = createBox(world, eid, { left: 0, top: 0 })
 ### Focus Management
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
 
 const world = createWorld();
@@ -573,7 +573,7 @@ console.log(box2.isFocused()); // true
 ### Dynamic Content Update
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createBox, setBoxContent, getBoxContent } from 'blecsd';
 
 const world = createWorld();

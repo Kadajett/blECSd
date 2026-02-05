@@ -14,7 +14,7 @@
  * @module benchmarks/3d-pipeline
  */
 
-import { addComponent, addEntity, createWorld } from 'bitecs';
+import { addComponent, addEntity, createWorld } from '../core/ecs';
 import { afterEach, bench, describe } from 'vitest';
 import { Camera3D, setCamera3D } from '../3d/components/camera3d';
 import { Material3D, setMaterial3D } from '../3d/components/material';

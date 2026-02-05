@@ -7,7 +7,7 @@
  * @module components/shadow
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 /** Default entity capacity for typed arrays */
@@ -206,7 +206,7 @@ function ensureShadow(world: World, eid: Entity): void {
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { setShadow } from 'blecsd';
  *
  * const world = createWorld();

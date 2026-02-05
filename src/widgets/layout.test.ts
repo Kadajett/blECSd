@@ -2,13 +2,13 @@
  * Tests for the Layout widget.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { setDimensions } from '../components/dimensions';
 import { resetFocusState } from '../components/focusable';
 import { getParent } from '../components/hierarchy';
 import { getPosition } from '../components/position';
 import { getRenderable, hexToColor } from '../components/renderable';
+import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import {
 	type ChildLayoutData,

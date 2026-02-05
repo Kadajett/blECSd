@@ -3,7 +3,7 @@
  * @module components/dimensions
  */
 
-import { addComponent, hasComponent } from 'bitecs';
+import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 /** Default entity capacity for typed arrays */
@@ -158,7 +158,7 @@ function parseDimensionValue(value: DimensionValue): number {
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { setDimensions } from 'blecsd';
  *
  * const world = createWorld();

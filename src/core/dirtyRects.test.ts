@@ -4,8 +4,8 @@
  * @module core/dirtyRects.test
  */
 
-import { addComponent, addEntity, createWorld } from 'bitecs';
 import { describe, expect, it } from 'vitest';
+import { addComponent, addEntity, createWorld } from '../core/ecs';
 import { ComputedLayout } from '../systems/layoutSystem';
 import {
 	clearDirtyTracking,

@@ -5,7 +5,7 @@ The Panel widget is a container with a title bar at the top. It supports optiona
 ## Overview
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
 
 const world = createWorld();
@@ -41,7 +41,7 @@ const toolWindow = createPanel(world, addEntity(world), {
 Creates a new Panel widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
 
 const world = createWorld();
@@ -607,7 +607,7 @@ if (result.success) {
 ### Dialog Panel
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
 
 const world = createWorld();
@@ -632,7 +632,7 @@ if (dialog.isClosable()) {
 ### Collapsible Section
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
 
 const world = createWorld();
@@ -659,7 +659,7 @@ if (section.isCollapsed()) {
 ### Styled Tool Window
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
 
 const world = createWorld();
@@ -691,7 +691,7 @@ const toolWindow = createPanel(world, addEntity(world), {
 ### Method Chaining
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
 
 const world = createWorld();

@@ -2,12 +2,12 @@
  * Tests for the Tabs widget.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getDimensions } from '../components/dimensions';
 import { resetFocusState } from '../components/focusable';
 import { getPosition } from '../components/position';
 import { getRenderable, hexToColor } from '../components/renderable';
+import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import {
 	createTabs,

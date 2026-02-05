@@ -57,7 +57,7 @@ import {
 Sets the shadow configuration on an entity. Adds the Shadow component if not present.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setShadow } from 'blecsd';
 
 const world = createWorld();
@@ -507,7 +507,7 @@ interface ShadowPosition {
 ### Creating a Dialog with Drop Shadow
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { setPosition, setDimensions, setShadow } from 'blecsd';
 
 const world = createWorld();

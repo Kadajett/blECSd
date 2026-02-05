@@ -5,7 +5,7 @@ The ScrollableBox widget is a container that supports scrolling content. It comb
 ## Overview
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
 
 const world = createWorld();
@@ -41,7 +41,7 @@ scrollBox.scrollToBottom();
 Creates a new ScrollableBox widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
 
 const world = createWorld();
@@ -666,7 +666,7 @@ if (result.success) {
 ### Basic Scrollable Container
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
 
 const world = createWorld();
@@ -685,7 +685,7 @@ const scrollBox = createScrollableBox(world, eid, {
 ### Log Viewer with Auto-Scroll
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
 
 const world = createWorld();
@@ -714,7 +714,7 @@ function addLog(message: string) {
 ### Scroll Position Indicator
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
 
 const world = createWorld();
@@ -742,7 +742,7 @@ function updateStatusBar() {
 ### Keyboard Navigation
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox, isKeysScrollEnabled } from 'blecsd';
 
 const world = createWorld();
@@ -785,7 +785,7 @@ function onKeyPress(key: string) {
 ### Method Chaining
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
 
 const world = createWorld();

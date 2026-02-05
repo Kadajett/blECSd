@@ -2,13 +2,13 @@
  * Tests for the ScrollableText widget.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { getDimensions } from '../components/dimensions';
 import { resetFocusState } from '../components/focusable';
 import { getPosition } from '../components/position';
 import { getRenderable, hexToColor } from '../components/renderable';
 import { getScrollable } from '../components/scrollable';
+import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import { resetScrollableBoxStore } from './scrollableBox';
 import { createScrollableText, isScrollableText } from './scrollableText';

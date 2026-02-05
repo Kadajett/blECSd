@@ -2,13 +2,13 @@
  * Tests for Element Clipping System
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { setDimensions } from '../components/dimensions';
 import { appendChild } from '../components/hierarchy';
 import { setPosition } from '../components/position';
 import { setStyle } from '../components/renderable';
 import { resetScreenSingleton } from '../components/screen';
+import { addEntity, createWorld } from '../core/ecs';
 import { layoutSystem } from '../systems/layoutSystem';
 import type { ClipRect } from './clipping';
 import {

@@ -40,8 +40,7 @@ ECS provides significant advantages for terminal applications:
 
 ```typescript
 // This must always work - user's loop, our components
-import { setPosition, setRenderable } from 'blecsd';
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity, setPosition, setRenderable } from 'blecsd';
 
 const world = createWorld();  // User's world
 const eid = addEntity(world);
@@ -49,6 +48,32 @@ setPosition(world, eid, 10, 5);  // Works without our update loop
 ```
 
 **Never create implicit dependencies on the update loop.** Systems should be pure functions that transform world state.
+
+### No Direct bitecs Imports (HARD REQUIREMENT)
+
+**All ECS primitives must be imported from `'blecsd'`, never directly from `'bitecs'`.**
+
+The only files allowed to import from `'bitecs'` are:
+- `src/core/ecs.ts` - The ECS wrapper module
+- `src/core/world.ts` - World creation utilities
+- `src/core/types.ts` - Type definitions
+
+All other code (components, systems, widgets, tests, examples) must import from either:
+- `'blecsd'` (for external consumers and examples)
+- `'../core/ecs'` or `'./ecs'` (for internal library code)
+
+```typescript
+// BANNED - direct bitecs import
+import { addEntity, hasComponent } from 'bitecs';
+
+// REQUIRED - import from blecsd
+import { addEntity, hasComponent } from 'blecsd';
+
+// REQUIRED - internal library code uses relative imports
+import { addEntity, hasComponent } from '../core/ecs';
+```
+
+**Why:** This abstraction layer allows us to evolve the ECS implementation without breaking user code. It also enables future optimizations like packed entity stores or custom query strategies.
 
 ### Input Priority (HARD REQUIREMENT)
 
@@ -283,6 +308,7 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
 ```
 src/
 ├── core/              # Core systems
+│   ├── ecs.ts         # ECS wrapper (ONLY file that imports bitecs)
 │   ├── world.ts       # bitecs world setup
 │   ├── scheduler.ts   # System execution order
 │   └── events.ts      # Event bus
@@ -347,8 +373,8 @@ describe('animation system', () => {
   it('updates position based on velocity', () => {
     const world = createWorld()
     const eid = addEntity(world)
-    addComponent(world, Position, eid)
-    addComponent(world, Velocity, eid)
+    addComponent(world, eid, Position)
+    addComponent(world, eid, Velocity)
     Position.x[eid] = 0
     Velocity.x[eid] = 1
 
@@ -376,6 +402,7 @@ pnpm typecheck        # TypeScript type checking
 
 | File | Purpose |
 |------|---------|
+| `src/core/ecs.ts` | ECS wrapper (only file that imports bitecs directly) |
 | `tsconfig.json` | TypeScript configuration (strict mode) |
 | `biome.json` | Biome linter/formatter config |
 | `vitest.config.ts` | Test configuration |

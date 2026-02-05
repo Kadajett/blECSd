@@ -2,7 +2,6 @@
  * Tests for the ScrollableBox widget.
  */
 
-import { addEntity, createWorld } from 'bitecs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { BorderType, getBorder } from '../components/border';
 import { getContent } from '../components/content';
@@ -13,6 +12,7 @@ import { getPadding } from '../components/padding';
 import { getPosition } from '../components/position';
 import { getRenderable, hexToColor } from '../components/renderable';
 import { hasScrollable } from '../components/scrollable';
+import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import {
 	createScrollableBox,

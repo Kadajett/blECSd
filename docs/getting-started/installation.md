@@ -52,7 +52,7 @@ Create `test.ts`:
 
 ```typescript
 import { createWorld, setPosition, getPosition } from 'blecsd';
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 
 const world = createWorld();
 const entity = addEntity(world);

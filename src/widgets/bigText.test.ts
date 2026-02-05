@@ -3,10 +3,10 @@
  */
 
 import { fileURLToPath } from 'node:url';
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getContent } from '../components/content';
 import { resetFocusState } from '../components/focusable';
+import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import { createBigText, loadFont, resetBigTextStore, setText } from './bigText';
 

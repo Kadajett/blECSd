@@ -7,7 +7,6 @@
  * @module widgets/table
  */
 
-import { removeEntity } from 'bitecs';
 import { z } from 'zod';
 import { setDimensions } from '../components/dimensions';
 import { Position, setPosition } from '../components/position';
@@ -51,6 +50,7 @@ import {
 	type TableDisplayOptions,
 	type TableRow,
 } from '../components/table';
+import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -303,7 +303,7 @@ export const TableWidgetConfigSchema = z.object({
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity } from 'bitecs';
+ * import { createWorld, addEntity } from '../core/ecs';
  * import { createTable } from 'blecsd/widgets';
  *
  * const world = createWorld();

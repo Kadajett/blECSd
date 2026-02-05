@@ -1,7 +1,7 @@
-import { addEntity, createWorld } from 'bitecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getCameraPosition, setCamera, setCameraTarget } from '../components/camera';
 import { setPosition } from '../components/position';
+import { addEntity, createWorld } from '../core/ecs';
 import { cameraSystem, queryCameras, updateCameras } from './cameraSystem';
 
 describe('Camera System', () => {

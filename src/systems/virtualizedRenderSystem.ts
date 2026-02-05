@@ -25,7 +25,6 @@
  * ```
  */
 
-import { hasComponent, query } from 'bitecs';
 import { z } from 'zod';
 import { Border, hasBorderVisible } from '../components/border';
 import { Position } from '../components/position';
@@ -37,6 +36,7 @@ import {
 	VirtualViewport,
 	type VisibleRange,
 } from '../components/virtualViewport';
+import { hasComponent, query } from '../core/ecs';
 import type { Entity, System, World } from '../core/types';
 import type { ScreenBufferData } from '../terminal/screen/cell';
 import { Attr, createCell, fillRect, setCell, writeString } from '../terminal/screen/cell';

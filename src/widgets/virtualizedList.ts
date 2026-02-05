@@ -30,7 +30,6 @@
  * ```
  */
 
-import { addEntity, removeEntity } from 'bitecs';
 import { z } from 'zod';
 import { type BorderOptions, BorderType, setBorder } from '../components/border';
 import { setDimensions } from '../components/dimensions';
@@ -51,6 +50,7 @@ import {
 	setVisibleLineCount,
 	VirtualViewport,
 } from '../components/virtualViewport';
+import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { ComputedLayout } from '../systems/layoutSystem';
 import {

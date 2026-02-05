@@ -295,7 +295,7 @@ interface HierarchyData {
 ### Building a Tree
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import { appendChild, getChildren, getDepth } from 'blecsd';
 
 const world = createWorld();

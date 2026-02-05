@@ -10,7 +10,7 @@
  * @module 3d/systems/projectionSystem
  */
 
-import { hasComponent, query } from 'bitecs';
+import { hasComponent, query } from '../../core/ecs';
 import type { Entity, System, World } from '../../core/types';
 import { Camera3D } from '../components/camera3d';
 import { getMeshData, Mesh } from '../components/mesh';

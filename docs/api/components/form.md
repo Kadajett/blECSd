@@ -26,7 +26,7 @@ import {
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   attachFormBehavior,
   attachTextInputBehavior,
@@ -200,7 +200,7 @@ const action = handleFormKeyPress(world, form, key);
 ## Example: Login Form
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
+import { createWorld, addEntity } from 'blecsd';
 import {
   attachFormBehavior,
   attachTextInputBehavior,

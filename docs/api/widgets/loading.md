@@ -5,7 +5,7 @@ The Loading widget displays an animated spinner with a customizable message. It 
 ## Overview
 
 ```typescript
-import { createWorld } from 'bitecs';
+import { createWorld } from 'blecsd';
 import { createLoading, showLoading, hideLoading } from 'blecsd';
 
 const world = createWorld();
@@ -59,7 +59,7 @@ import {
 Creates a new loading widget with the specified configuration.
 
 ```typescript
-import { createWorld } from 'bitecs';
+import { createWorld } from 'blecsd';
 import { createLoading, BRAILLE_SPINNER_CHARS } from 'blecsd';
 
 const world = createWorld();
@@ -421,7 +421,7 @@ const result = LoadingConfigSchema.safeParse({
 ### Basic Loading Indicator
 
 ```typescript
-import { createWorld } from 'bitecs';
+import { createWorld } from 'blecsd';
 import { showLoading, hideLoading } from 'blecsd';
 
 const world = createWorld();
@@ -440,7 +440,7 @@ async function saveDocument() {
 ### Multi-Step Progress
 
 ```typescript
-import { createWorld } from 'bitecs';
+import { createWorld } from 'blecsd';
 import { createLoading } from 'blecsd';
 
 const world = createWorld();
@@ -467,7 +467,7 @@ async function runSteps() {
 ### Custom Spinner Animation
 
 ```typescript
-import { createWorld } from 'bitecs';
+import { createWorld } from 'blecsd';
 import { createLoading, BRAILLE_SPINNER_CHARS } from 'blecsd';
 
 const world = createWorld();
@@ -499,7 +499,7 @@ const progressLoading = createLoading(world, {
 ### Animated Loading in Game Loop
 
 ```typescript
-import { createWorld } from 'bitecs';
+import { createWorld } from 'blecsd';
 import { createLoading, updateLoadingAnimation } from 'blecsd';
 
 const world = createWorld();
@@ -526,7 +526,7 @@ gameLoop();
 ### Method Chaining
 
 ```typescript
-import { createWorld } from 'bitecs';
+import { createWorld } from 'blecsd';
 import { createLoading, DOTS_SPINNER_CHARS } from 'blecsd';
 
 const world = createWorld();

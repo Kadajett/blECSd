@@ -25,7 +25,7 @@ function clearDebugLog(): void {
 	if (!debugEnabled) return;
 	writeFileSync(DEBUG_LOG_PATH, `--- Debug log started at ${new Date().toISOString()} ---\n`);
 }
-import { addEntity } from 'bitecs';
+import { addEntity } from 'blecsd';
 import type { Entity, World, KeyEvent, ParsedMouseEvent, CellBuffer } from 'blecsd';
 import {
 	createWorld,
