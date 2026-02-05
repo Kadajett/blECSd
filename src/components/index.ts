@@ -1083,6 +1083,29 @@ export {
 	textInputStore,
 	toggleCursorMode,
 } from './textInput';
+// Timer component
+export type { TimerCallback, TimerCompleteCallback, TimerData, TimerOptions } from './timer';
+export {
+	clearTimerCallbacks,
+	getTimer,
+	getTimerProgress,
+	hasTimer,
+	isTimerComplete,
+	isTimerRunning,
+	onTimerComplete,
+	onTimerFire,
+	pauseTimer,
+	removeTimer,
+	resetTimer,
+	resetTimerStore,
+	resumeTimer,
+	setTimer,
+	startTimer,
+	stopTimer,
+	TIMER_INFINITE,
+	Timer,
+	updateTimers,
+} from './timer';
 // Velocity and Acceleration components
 export type { AccelerationData, VelocityData, VelocityOptions } from './velocity';
 export {
