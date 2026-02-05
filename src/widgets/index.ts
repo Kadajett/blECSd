@@ -180,6 +180,27 @@ export {
 	showLoading,
 	updateLoadingAnimation,
 } from './loading';
+// Modal widget
+export type {
+	ModalBorderConfig,
+	ModalConfig,
+	ModalPaddingConfig,
+	ModalWidget,
+} from './modal';
+export {
+	closeAllModals,
+	closeModal,
+	createModal,
+	getModalStack,
+	handleModalBackdropClick,
+	handleModalEscape,
+	isModal,
+	isModalOpen,
+	Modal,
+	ModalConfigSchema,
+	openModal,
+	resetModalStore,
+} from './modal';
 // Panel widget
 export type {
 	PanelAction,
