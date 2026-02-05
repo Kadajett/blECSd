@@ -515,6 +515,29 @@ export {
 	// sortByZIndex is exported from ./zOrder (uses dedicated ZOrder component)
 } from './queries';
 export { createScheduler, getDeltaTime, Scheduler } from './scheduler';
+// Serialization
+export type {
+	ComponentDescriptor,
+	DeserializeOptions,
+	DeserializeResult,
+	SerializedComponentData,
+	SerializedEntity,
+	SerializedWorld,
+	SerializeOptions,
+} from './serialization';
+export {
+	clearSerializableRegistry,
+	cloneSnapshot,
+	deserializeWorld,
+	deserializeWorldFromJSON,
+	getRegisteredComponents,
+	getSerializable,
+	registerSerializable,
+	SERIALIZATION_VERSION,
+	serializeWorld,
+	serializeWorldToJSON,
+	unregisterSerializable,
+} from './serialization';
 // Shrink-to-content
 export type { ShrinkBox } from './shrinkToContent';
 export {
