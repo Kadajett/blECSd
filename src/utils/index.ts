@@ -51,6 +51,8 @@ export {
 	toggleChunk,
 	toUnifiedDiff,
 } from './diffRender';
+// Legacy codepage encoding utilities (CP437, etc.)
+export * as encoding from './encoding';
 // Fast word wrap with caching
 export type {
 	FastWrapOptions,

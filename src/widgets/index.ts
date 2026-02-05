@@ -266,6 +266,24 @@ export {
 	Tabs,
 	TabsConfigSchema,
 } from './tabs';
+// Terminal widget
+export type {
+	BorderConfig as TerminalBorderConfig,
+	PtyOptions,
+	TerminalConfig,
+	TerminalStyle,
+	TerminalWidget,
+} from './terminal';
+export {
+	createTerminal,
+	handleTerminalKey,
+	isTerminal,
+	isTerminalKeysEnabled,
+	isTerminalMouseEnabled,
+	resetTerminalStore,
+	Terminal,
+	TerminalConfigSchema,
+} from './terminal';
 // Text widget
 export type { TextConfig, TextWidget } from './text';
 export {
