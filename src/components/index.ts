@@ -976,6 +976,38 @@ export {
 	Table,
 	tableStore,
 } from './table';
+// TerminalBuffer component
+export type {
+	CursorShape as TerminalCursorShape,
+	TerminalBufferConfig,
+	TerminalState,
+} from './terminalBuffer';
+export {
+	clearTerminal,
+	DEFAULT_SCROLLBACK_LINES,
+	DEFAULT_TERMINAL_HEIGHT,
+	DEFAULT_TERMINAL_WIDTH,
+	getTerminalBuffer,
+	getTerminalCells,
+	getTerminalState,
+	hasTerminalBuffer,
+	removeTerminalBuffer,
+	renderTerminalToAnsi,
+	resetTerminal,
+	resetTerminalBufferStore,
+	resizeTerminalBuffer,
+	scrollTerminalDown,
+	scrollTerminalToBottom,
+	scrollTerminalToTop,
+	scrollTerminalUp,
+	setCursorPosition,
+	setCursorVisible,
+	setTerminalBuffer,
+	TerminalBuffer,
+	TerminalBufferConfigSchema,
+	writeChar,
+	writeToTerminal,
+} from './terminalBuffer';
 // TextInput component
 export type {
 	CursorConfig,
