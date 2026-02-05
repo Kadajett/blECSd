@@ -59,6 +59,24 @@ export {
 	spliceLines,
 	unshiftLine,
 } from './contentManipulation';
+// FileManager widget
+export type {
+	FileEntry,
+	FileManagerBorderConfig,
+	FileManagerConfig,
+	FileManagerPaddingConfig,
+	FileManagerWidget,
+} from './fileManager';
+export {
+	createFileManager,
+	FileManager,
+	FileManagerConfigSchema,
+	fileManagerStateMap,
+	handleFileManagerKey,
+	isFileManager,
+	resetFileManagerStore,
+	setReadDirFn,
+} from './fileManager';
 // Fonts
 export type {
 	BitmapFont,
