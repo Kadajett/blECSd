@@ -201,6 +201,33 @@ export {
 	LogConfigSchema,
 	resetLogStore,
 } from './log';
+// Message widget
+export type {
+	BorderConfig as MessageBorderConfig,
+	MessageConfig,
+	MessageStyleConfig,
+	MessageType,
+	MessageWidget,
+	PositionValue as MessagePositionValue,
+} from './message';
+export {
+	createMessage,
+	DEFAULT_MESSAGE_PADDING,
+	DEFAULT_MESSAGE_STYLES,
+	DEFAULT_MESSAGE_TIMEOUT,
+	handleMessageClick,
+	handleMessageKey,
+	isDismissOnClick,
+	isDismissOnKey,
+	isMessage,
+	Message,
+	MessageConfigSchema,
+	resetMessageStore,
+	showError,
+	showInfo,
+	showSuccess,
+	showWarning,
+} from './message';
 // Modal widget
 export type {
 	ModalBorderConfig,
