@@ -26,7 +26,6 @@ jobs:
         with:
           node-version: '24'
           cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -49,7 +48,16 @@ jobs:
       - name: Verify pack contents
         run: pnpm verify-pack
 
+      - name: Debug OIDC and auth
+        run: |
+          echo "Node: $(node -v)"
+          echo "npm: $(npm -v)"
+          echo "OIDC URL set: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && echo 'yes' || echo 'NO - OIDC not available')"
+          echo "npmrc locations:"
+          cat ~/.npmrc 2>/dev/null || echo "  No ~/.npmrc"
+          cat .npmrc 2>/dev/null || echo "  No ./.npmrc"
+          echo "npm config:"
+          npm config list
+
       - name: Publish to npm
-        run: pnpm publish --no-git-checks --access public
-        env:
-          NPM_CONFIG_PROVENANCE: true
+        run: npm publish --provenance --access public
