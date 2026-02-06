@@ -87,17 +87,11 @@ export function detectGpuCapabilities(): GpuCapabilities {
 	const isGpuAccelerated = terminal !== 'unknown';
 
 	const syncOutput = isGpuAccelerated; // All GPU terminals support this
-	const kittyGraphics =
-		terminal === 'kitty' || terminal === 'ghostty' || terminal === 'wezterm';
-	const sixelGraphics =
-		terminal === 'wezterm' || terminal === 'contour' || terminal === 'rio';
+	const kittyGraphics = terminal === 'kitty' || terminal === 'ghostty' || terminal === 'wezterm';
+	const sixelGraphics = terminal === 'wezterm' || terminal === 'contour' || terminal === 'rio';
 	const unicodeSupport = isGpuAccelerated;
 
-	const strategies = buildStrategies(
-		syncOutput,
-		kittyGraphics,
-		sixelGraphics,
-	);
+	const strategies = buildStrategies(syncOutput, kittyGraphics, sixelGraphics);
 
 	return {
 		isGpuAccelerated,
@@ -190,9 +184,7 @@ export function wrapSyncOutput(content: string): string {
 // INTERNAL HELPERS
 // =============================================================================
 
-function detectTerminal(
-	env: Record<string, string | undefined>,
-): GpuTerminal {
+function detectTerminal(env: Record<string, string | undefined>): GpuTerminal {
 	// Check specific terminal identifiers
 	if (env.ALACRITTY_LOG || env.ALACRITTY_SOCKET) return 'alacritty';
 	if (env.KITTY_PID || env.KITTY_WINDOW_ID) return 'kitty';
