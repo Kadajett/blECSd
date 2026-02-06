@@ -50,6 +50,47 @@ export {
 	ST_ALT,
 } from './iterm2';
 
+// Kitty backend
+export type {
+	KittyAction,
+	KittyControlData,
+	KittyDeleteMode,
+	KittyEnvChecker,
+	KittyFormat,
+	KittyFrameConfig,
+	KittyImageConfig,
+	KittyQuiet,
+	KittyTransmission,
+} from './kitty';
+export {
+	APC_PREFIX,
+	buildAnimationControl,
+	buildAnimationFrame,
+	buildChunkedSequences,
+	buildDeleteAll,
+	buildDeleteAtCursor,
+	buildDeleteById,
+	buildKittySequence,
+	buildPlacement,
+	buildQuery,
+	buildTransmitAndDisplay,
+	buildTransmitOnly,
+	chunkBase64,
+	clearKittyImage,
+	createKittyBackend,
+	imageFormatToKitty,
+	isKittySupported,
+	KITTY_BACKEND_NAME,
+	KITTY_ST,
+	KittyFrameConfigSchema,
+	KittyImageConfigSchema,
+	kittyCursorPosition,
+	kittyEncodeBase64,
+	MAX_CHUNK_SIZE,
+	renderKittyImage,
+	serializeControlData,
+} from './kitty';
+
 // Sixel backend
 export type { SixelBackendConfig, SixelEnvChecker } from './sixel';
 export {
