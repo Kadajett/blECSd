@@ -3,6 +3,7 @@
 	"version": "0.0.1",
 	"description": "Widget and feature demos for blECSd",
 	"type": "module",
+	"private": true,
 	"scripts": {
 		"box-widget": "tsx box-widget-demo.ts",
 		"hover-tooltips": "tsx hover-tooltips-demo.ts",
@@ -13,7 +14,19 @@
 		"scrollable-box": "tsx scrollable-box-demo.ts",
 		"markdown-rendering": "tsx markdown-rendering-demo.ts",
 		"dimensions": "tsx dimensions-demo.ts",
-		"fast-word-wrap": "tsx fast-word-wrap-demo.ts"
+		"fast-word-wrap": "tsx fast-word-wrap-demo.ts",
+		"focus-navigation": "tsx focus-navigation-demo.ts",
+		"keyboard-input": "tsx keyboard-input-demo.ts",
+		"vi-navigation": "tsx vi-navigation-demo.ts",
+		"rope-data-structure": "tsx rope-data-structure-demo.ts",
+		"virtual-data-structure": "tsx virtual-data-structure-demo.ts",
+		"large-text-search": "tsx large-text-search-demo.ts",
+		"animation-system": "tsx animation-system-demo.ts",
+		"entity-factories": "tsx entity-factories-demo.ts",
+		"resize-handling": "tsx resize-handling-demo.ts",
+		"kitty-protocol": "tsx kitty-protocol-demo.ts",
+		"terminfo-tput": "tsx terminfo-tput-demo.ts",
+		"terminal-focus": "tsx terminal-focus-demo.ts"
 	},
 	"dependencies": {
 		"blecsd": "workspace:*"
