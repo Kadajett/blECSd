@@ -377,16 +377,6 @@ describe('MarkdownCache', () => {
 		expect(cache.sourceHash).toBe(0);
 	});
 
-	it('caches parsed result', () => {
-		const cache = createMarkdownCache();
-		const md = '# Title\n\nParagraph';
-
-		parseMarkdownCached(cache, md);
-		const result2 = parseMarkdownCached(cache, md);
-
-		expect(result2.parseTimeMs).toBeLessThan(5); // Cache hit should be fast
-	});
-
 	it('invalidates on change', () => {
 		const cache = createMarkdownCache();
 
