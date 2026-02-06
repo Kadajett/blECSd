@@ -17,6 +17,7 @@ import { markDirty, setStyle, setVisible } from '../components/renderable';
 import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { parseColor } from '../utils/color';
+import { createComponentStore } from '../utils/componentStorage';
 
 // =============================================================================
 // TYPES
@@ -344,8 +345,10 @@ export const Tabs = {
 
 /**
  * Store for tab data (arrays can't be stored in typed arrays).
+ * Uses iterable ComponentStore backed by PackedStore for cache-friendly
+ * dense iteration when rendering all tab entities.
  */
-const tabDataStore = new Map<Entity, TabData[]>();
+const tabDataStore = createComponentStore<TabData[]>({ iterable: true });
 
 // =============================================================================
 // INTERNAL HELPERS

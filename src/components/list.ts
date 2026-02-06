@@ -10,6 +10,7 @@ import { z } from 'zod';
 import type { StateMachineConfig } from '../core/stateMachine';
 import type { Entity, World } from '../core/types';
 import { ListBehaviorOptionsSchema, ListItemSchema } from '../schemas/components';
+import { createComponentStore } from '../utils/componentStorage';
 import { markDirty } from './renderable';
 import { attachStateMachine, getState, hasStateMachine, sendEvent } from './stateMachine';
 
@@ -215,8 +216,12 @@ export const listStore: ListStore = {
 	isLoading: new Uint8Array(MAX_ENTITIES),
 };
 
-/** Store for list items */
-const itemsStore = new Map<Entity, ListItem[]>();
+/**
+ * Store for list items.
+ * Uses iterable ComponentStore backed by PackedStore for cache-friendly
+ * dense iteration when rendering all list entities.
+ */
+const itemsStore = createComponentStore<ListItem[]>({ iterable: true });
 
 /** Store for lazy load callbacks */
 const lazyLoadCallbacks = new Map<Entity, ListLazyLoadCallback>();
