@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createWorld } from '../core/ecs';
-import { createScheduler, getDeltaTime, Scheduler } from './scheduler';
+import { createScheduler, getDeltaTime, type Scheduler } from './scheduler';
 import type { System } from './types';
 import { LoopPhase } from './types';
 
@@ -14,7 +14,7 @@ describe('Scheduler', () => {
 	describe('createScheduler', () => {
 		it('creates a new scheduler instance', () => {
 			const s = createScheduler();
-			expect(s).toBeInstanceOf(Scheduler);
+			expect(s.registerSystem).toBeTypeOf('function');
 		});
 	});
 

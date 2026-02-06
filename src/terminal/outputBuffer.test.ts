@@ -5,7 +5,7 @@
 import { PassThrough } from 'node:stream';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cursor, style } from './ansi';
-import { OutputBuffer } from './outputBuffer';
+import { createOutputBuffer, type OutputBuffer } from './outputBuffer';
 
 describe('OutputBuffer', () => {
 	let buffer: OutputBuffer;
@@ -13,7 +13,7 @@ describe('OutputBuffer', () => {
 	let written: string;
 
 	beforeEach(() => {
-		buffer = new OutputBuffer();
+		buffer = createOutputBuffer();
 		written = '';
 		output = new PassThrough();
 		output.on('data', (chunk) => {
@@ -112,7 +112,7 @@ describe('OutputBuffer cursor tracking', () => {
 	let buffer: OutputBuffer;
 
 	beforeEach(() => {
-		buffer = new OutputBuffer({ trackCursor: true });
+		buffer = createOutputBuffer({ trackCursor: true });
 	});
 
 	describe('initial position', () => {
@@ -262,7 +262,7 @@ describe('OutputBuffer cursor tracking', () => {
 
 	describe('cursor tracking disabled', () => {
 		it('does not track cursor when disabled', () => {
-			const noTrack = new OutputBuffer({ trackCursor: false });
+			const noTrack = createOutputBuffer({ trackCursor: false });
 			noTrack.write(cursor.move(10, 5));
 			noTrack.write('Hello');
 			// Position remains at initial values
@@ -280,7 +280,7 @@ describe('OutputBuffer auto-flush', () => {
 			written += chunk.toString();
 		});
 
-		const buffer = new OutputBuffer({ autoFlush: true });
+		const buffer = createOutputBuffer({ autoFlush: true });
 		buffer.setAutoFlushTarget(output);
 		buffer.write('Hello');
 
@@ -298,7 +298,7 @@ describe('OutputBuffer auto-flush', () => {
 			writes.push(chunk.toString());
 		});
 
-		const buffer = new OutputBuffer({ autoFlush: true });
+		const buffer = createOutputBuffer({ autoFlush: true });
 		buffer.setAutoFlushTarget(output);
 		buffer.write('a');
 		buffer.write('b');
@@ -312,7 +312,7 @@ describe('OutputBuffer auto-flush', () => {
 	});
 
 	it('does not auto-flush without target', async () => {
-		const buffer = new OutputBuffer({ autoFlush: true });
+		const buffer = createOutputBuffer({ autoFlush: true });
 		buffer.write('Hello');
 
 		await new Promise((resolve) => setImmediate(resolve));
@@ -327,7 +327,7 @@ describe('OutputBuffer auto-flush', () => {
 			written += chunk.toString();
 		});
 
-		const buffer = new OutputBuffer({ autoFlush: true });
+		const buffer = createOutputBuffer({ autoFlush: true });
 		buffer.setAutoFlushTarget(output);
 		buffer.write('Hello');
 		buffer.clear();

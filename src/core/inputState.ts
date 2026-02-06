@@ -139,7 +139,7 @@ const DEFAULT_MOUSE_BUTTON_STATE: MouseButtonState = {
 	lastEventTime: 0,
 };
 
-function createDefaultMouseState(): MouseState {
+function createDefaultMouseState(): MutableMouseState {
 	return {
 		x: 0,
 		y: 0,
@@ -188,671 +188,59 @@ interface MutableMouseState {
 }
 
 // =============================================================================
-// INPUT STATE CLASS
+// INPUT STATE INTERFACE
 // =============================================================================
 
 /**
- * Tracks input state across frames.
+ * InputState interface for type-safe access.
  *
+ * Tracks input state across frames.
  * Call `update()` at the start of each frame with input events from the buffer.
  * Then use query methods like `isKeyDown()`, `isKeyPressed()`, etc.
- *
- * @example
- * ```typescript
- * import { InputState, createInputEventBuffer } from 'blecsd';
- *
- * const buffer = createInputEventBuffer();
- * const inputState = new InputState();
- *
- * // In game loop
- * function update(deltaTime: number) {
- *   // Update input state with events from buffer
- *   inputState.update(buffer.drainKeys(), buffer.drainMouse(), deltaTime);
- *
- *   // Query input state
- *   if (inputState.isKeyPressed('space')) {
- *     jump();
- *   }
- *   if (inputState.isKeyDown('left')) {
- *     moveLeft();
- *   }
- * }
- * ```
  */
-export class InputState {
-	private keyStates: Map<string, MutableKeyState> = new Map();
-	private mouseState: MutableMouseState = createDefaultMouseState() as MutableMouseState;
-	private config: Required<InputStateConfig>;
-	private frameCount = 0;
-	private keyEventsThisFrame = 0;
-	private mouseEventsThisFrame = 0;
-
-	// Modifiers tracked separately for convenience
-	private ctrlDown = false;
-	private altDown = false;
-	private shiftDown = false;
-
-	/**
-	 * Creates a new InputState tracker.
-	 *
-	 * @param config - Configuration options
-	 */
-	constructor(config: InputStateConfig = {}) {
-		this.config = {
-			trackRepeats: config.trackRepeats ?? true,
-			debounceTime: config.debounceTime ?? 0,
-			customRepeatRate: config.customRepeatRate ?? 0,
-			customRepeatDelay: config.customRepeatDelay ?? 500,
-		};
-	}
-
-	// =========================================================================
-	// UPDATE
-	// =========================================================================
-
-	/**
-	 * Updates input state with events from this frame.
-	 * Call this once at the start of each frame.
-	 *
-	 * @param keyEvents - Keyboard events from the input buffer
-	 * @param mouseEvents - Mouse events from the input buffer
-	 * @param deltaTime - Time since last frame in seconds
-	 *
-	 * @example
-	 * ```typescript
-	 * const keys = buffer.drainKeys();
-	 * const mouse = buffer.drainMouse();
-	 * inputState.update(keys, mouse, deltaTime);
-	 * ```
-	 */
+export interface InputState {
 	update(
 		keyEvents: readonly TimestampedKeyEvent[],
 		mouseEvents: readonly TimestampedMouseEvent[],
 		deltaTime: number,
-	): void {
-		this.frameCount++;
-		this.keyEventsThisFrame = keyEvents.length;
-		this.mouseEventsThisFrame = mouseEvents.length;
+	): void;
+	isKeyDown(key: KeyName | string): boolean;
+	isKeyPressed(key: KeyName | string): boolean;
+	isKeyReleased(key: KeyName | string): boolean;
+	getKeyHeldTime(key: KeyName | string): number;
+	getKeyState(key: KeyName | string): KeyState;
+	getKeyRepeatCount(key: KeyName | string): number;
+	getPressedKeys(): string[];
+	getJustPressedKeys(): string[];
+	getJustReleasedKeys(): string[];
+	isCtrlDown(): boolean;
+	isAltDown(): boolean;
+	isShiftDown(): boolean;
+	hasModifier(): boolean;
+	isMouseButtonDown(button: MouseButton): boolean;
+	isMouseButtonPressed(button: MouseButton): boolean;
+	isMouseButtonReleased(button: MouseButton): boolean;
+	getMouseX(): number;
+	getMouseY(): number;
+	getMousePosition(): { x: number; y: number };
+	getMouseDelta(): { deltaX: number; deltaY: number };
+	getWheelDelta(): number;
+	getMouseState(): MouseState;
+	releaseKey(key: KeyName | string): void;
+	releaseAllKeys(): void;
+	releaseAllMouseButtons(): void;
+	releaseAll(): void;
+	getStats(): InputStateStats;
+	getFrameCount(): number;
+	reset(): void;
+}
 
-		const deltaMs = deltaTime * 1000;
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
 
-		// Clear just pressed/released flags from previous frame
-		this.clearTransientFlags();
-
-		// Update held times for all currently pressed keys
-		this.updateHeldTimes(deltaMs);
-
-		// Process key events
-		for (const event of keyEvents) {
-			this.processKeyEvent(event.event, event.timestamp);
-		}
-
-		// Process mouse events
-		this.mouseState.deltaX = 0;
-		this.mouseState.deltaY = 0;
-		this.mouseState.wheelDelta = 0;
-
-		for (const event of mouseEvents) {
-			this.processMouseEvent(event.event, event.timestamp);
-		}
-
-		// Update mouse button held times
-		for (const button of Object.values(this.mouseState.buttons)) {
-			if (button.pressed) {
-				button.heldTime += deltaMs;
-			}
-		}
-	}
-
-	/**
-	 * Clears transient flags (justPressed, justReleased) from previous frame.
-	 */
-	private clearTransientFlags(): void {
-		for (const state of this.keyStates.values()) {
-			state.justPressed = false;
-			state.justReleased = false;
-		}
-		for (const button of Object.values(this.mouseState.buttons)) {
-			button.justPressed = false;
-			button.justReleased = false;
-		}
-	}
-
-	/**
-	 * Updates held times for all pressed keys.
-	 */
-	private updateHeldTimes(deltaMs: number): void {
-		for (const state of this.keyStates.values()) {
-			if (state.pressed) {
-				state.heldTime += deltaMs;
-			}
-		}
-	}
-
-	/**
-	 * Processes a single key event.
-	 */
-	private processKeyEvent(event: KeyEvent, timestamp: number): void {
-		const key = this.normalizeKeyName(event.name, event);
-		let state = this.keyStates.get(key);
-
-		if (!state) {
-			state = { ...DEFAULT_KEY_STATE } as MutableKeyState;
-			this.keyStates.set(key, state);
-		}
-
-		// Handle debouncing (only if there was a previous event)
-		if (this.config.debounceTime > 0 && state.lastEventTime > 0) {
-			const timeSinceLastEvent = timestamp - state.lastEventTime;
-			if (timeSinceLastEvent < this.config.debounceTime) {
-				return; // Ignore debounced event
-			}
-		}
-
-		// Detect if this is a repeat event (key already pressed, no release in between)
-		const isRepeat = state.pressed;
-
-		if (isRepeat) {
-			// This is a key repeat event
-			if (this.config.trackRepeats) {
-				state.repeatCount++;
-			}
-			// Don't set justPressed again for repeats
-		} else {
-			// This is a new key press
-			state.pressed = true;
-			state.justPressed = true;
-			state.justReleased = false;
-			state.heldTime = 0;
-			state.repeatCount = 0;
-		}
-
-		state.lastEventTime = timestamp;
-
-		// Update modifier tracking from event flags
-		if (event.ctrl && !state.pressed) {
-			this.ctrlDown = true;
-		}
-		if (event.meta && !state.pressed) {
-			this.altDown = true;
-		}
-		if (event.shift && !state.pressed) {
-			this.shiftDown = true;
-		}
-	}
-
-	/**
-	 * Processes a key release.
-	 * Note: Terminal key events don't have explicit "release" events.
-	 * Keys are released by calling releaseKey() or releaseAllKeys().
-	 */
-	private processKeyRelease(key: string, timestamp: number): void {
-		const state = this.keyStates.get(key);
-		if (!state || !state.pressed) {
-			return;
-		}
-
-		state.pressed = false;
-		state.justPressed = false;
-		state.justReleased = true;
-		state.lastEventTime = timestamp;
-
-		// Update modifier tracking
-		if (key === 'ctrl') {
-			this.ctrlDown = false;
-		}
-		if (key === 'alt') {
-			this.altDown = false;
-		}
-		if (key === 'shift') {
-			this.shiftDown = false;
-		}
-	}
-
-	/**
-	 * Processes a mouse event.
-	 */
-	private processMouseEvent(event: MouseEvent, timestamp: number): void {
-		// Update position
-		const prevX = this.mouseState.x;
-		const prevY = this.mouseState.y;
-		this.mouseState.x = event.x;
-		this.mouseState.y = event.y;
-		this.mouseState.deltaX += event.x - prevX;
-		this.mouseState.deltaY += event.y - prevY;
-
-		// Handle wheel events
-		if (event.button === 'wheelUp') {
-			this.mouseState.wheelDelta += 1;
-		} else if (event.button === 'wheelDown') {
-			this.mouseState.wheelDelta -= 1;
-		}
-
-		// Update button state
-		const button = this.mouseState.buttons[event.button];
-		if (!button) {
-			return;
-		}
-
-		if (event.action === 'press') {
-			if (!button.pressed) {
-				button.pressed = true;
-				button.justPressed = true;
-				button.justReleased = false;
-				button.heldTime = 0;
-			}
-			button.lastEventTime = timestamp;
-		} else if (event.action === 'release') {
-			if (button.pressed) {
-				button.pressed = false;
-				button.justPressed = false;
-				button.justReleased = true;
-			}
-			button.lastEventTime = timestamp;
-		}
-	}
-
-	/**
-	 * Normalizes a key name to a consistent format.
-	 */
-	private normalizeKeyName(name: KeyName, _event: KeyEvent): string {
-		// Include modifiers in the key identifier for combo tracking
-		// But store base key separately for simple queries
-		return name.toLowerCase();
-	}
-
-	// =========================================================================
-	// KEY QUERIES
-	// =========================================================================
-
-	/**
-	 * Checks if a key is currently pressed down.
-	 *
-	 * @param key - The key to check
-	 * @returns true if the key is currently held down
-	 *
-	 * @example
-	 * ```typescript
-	 * if (inputState.isKeyDown('w')) {
-	 *   moveForward();
-	 * }
-	 * ```
-	 */
-	isKeyDown(key: KeyName | string): boolean {
-		const state = this.keyStates.get(key.toLowerCase());
-		return state?.pressed ?? false;
-	}
-
-	/**
-	 * Checks if a key was pressed this frame.
-	 * Only returns true on the first frame the key is pressed.
-	 *
-	 * @param key - The key to check
-	 * @returns true if the key was just pressed this frame
-	 *
-	 * @example
-	 * ```typescript
-	 * if (inputState.isKeyPressed('space')) {
-	 *   jump(); // Only triggers once per press
-	 * }
-	 * ```
-	 */
-	isKeyPressed(key: KeyName | string): boolean {
-		const state = this.keyStates.get(key.toLowerCase());
-		return state?.justPressed ?? false;
-	}
-
-	/**
-	 * Checks if a key was released this frame.
-	 * Only returns true on the first frame after the key is released.
-	 *
-	 * @param key - The key to check
-	 * @returns true if the key was just released this frame
-	 *
-	 * @example
-	 * ```typescript
-	 * if (inputState.isKeyReleased('space')) {
-	 *   endJump();
-	 * }
-	 * ```
-	 */
-	isKeyReleased(key: KeyName | string): boolean {
-		const state = this.keyStates.get(key.toLowerCase());
-		return state?.justReleased ?? false;
-	}
-
-	/**
-	 * Gets how long a key has been held in milliseconds.
-	 *
-	 * @param key - The key to check
-	 * @returns Time in milliseconds, or 0 if not pressed
-	 *
-	 * @example
-	 * ```typescript
-	 * const chargeTime = inputState.getKeyHeldTime('space');
-	 * if (chargeTime > 1000) {
-	 *   superJump();
-	 * }
-	 * ```
-	 */
-	getKeyHeldTime(key: KeyName | string): number {
-		const state = this.keyStates.get(key.toLowerCase());
-		return state?.heldTime ?? 0;
-	}
-
-	/**
-	 * Gets the full state of a key.
-	 *
-	 * @param key - The key to check
-	 * @returns Full key state, or default state if key hasn't been pressed
-	 *
-	 * @example
-	 * ```typescript
-	 * const state = inputState.getKeyState('space');
-	 * console.log(`Space: pressed=${state.pressed}, held=${state.heldTime}ms`);
-	 * ```
-	 */
-	getKeyState(key: KeyName | string): KeyState {
-		return this.keyStates.get(key.toLowerCase()) ?? DEFAULT_KEY_STATE;
-	}
-
-	/**
-	 * Gets the number of auto-repeat events for a key.
-	 *
-	 * @param key - The key to check
-	 * @returns Number of repeat events since key was pressed
-	 */
-	getKeyRepeatCount(key: KeyName | string): number {
-		const state = this.keyStates.get(key.toLowerCase());
-		return state?.repeatCount ?? 0;
-	}
-
-	/**
-	 * Gets all currently pressed keys.
-	 *
-	 * @returns Array of key names that are currently held down
-	 *
-	 * @example
-	 * ```typescript
-	 * const pressed = inputState.getPressedKeys();
-	 * console.log(`Keys held: ${pressed.join(', ')}`);
-	 * ```
-	 */
-	getPressedKeys(): string[] {
-		const pressed: string[] = [];
-		for (const [key, state] of this.keyStates) {
-			if (state.pressed) {
-				pressed.push(key);
-			}
-		}
-		return pressed;
-	}
-
-	/**
-	 * Gets all keys that were just pressed this frame.
-	 *
-	 * @returns Array of key names that were just pressed
-	 */
-	getJustPressedKeys(): string[] {
-		const pressed: string[] = [];
-		for (const [key, state] of this.keyStates) {
-			if (state.justPressed) {
-				pressed.push(key);
-			}
-		}
-		return pressed;
-	}
-
-	/**
-	 * Gets all keys that were just released this frame.
-	 *
-	 * @returns Array of key names that were just released
-	 */
-	getJustReleasedKeys(): string[] {
-		const released: string[] = [];
-		for (const [key, state] of this.keyStates) {
-			if (state.justReleased) {
-				released.push(key);
-			}
-		}
-		return released;
-	}
-
-	// =========================================================================
-	// MODIFIER QUERIES
-	// =========================================================================
-
-	/**
-	 * Checks if Ctrl is currently pressed.
-	 */
-	isCtrlDown(): boolean {
-		return this.ctrlDown;
-	}
-
-	/**
-	 * Checks if Alt/Meta is currently pressed.
-	 */
-	isAltDown(): boolean {
-		return this.altDown;
-	}
-
-	/**
-	 * Checks if Shift is currently pressed.
-	 */
-	isShiftDown(): boolean {
-		return this.shiftDown;
-	}
-
-	/**
-	 * Checks if any modifier key is pressed.
-	 */
-	hasModifier(): boolean {
-		return this.ctrlDown || this.altDown || this.shiftDown;
-	}
-
-	// =========================================================================
-	// MOUSE QUERIES
-	// =========================================================================
-
-	/**
-	 * Checks if a mouse button is currently pressed.
-	 *
-	 * @param button - The button to check
-	 * @returns true if the button is held down
-	 *
-	 * @example
-	 * ```typescript
-	 * if (inputState.isMouseButtonDown('left')) {
-	 *   drag();
-	 * }
-	 * ```
-	 */
-	isMouseButtonDown(button: MouseButton): boolean {
-		return this.mouseState.buttons[button]?.pressed ?? false;
-	}
-
-	/**
-	 * Checks if a mouse button was just pressed this frame.
-	 *
-	 * @param button - The button to check
-	 * @returns true if the button was just pressed
-	 */
-	isMouseButtonPressed(button: MouseButton): boolean {
-		return this.mouseState.buttons[button]?.justPressed ?? false;
-	}
-
-	/**
-	 * Checks if a mouse button was just released this frame.
-	 *
-	 * @param button - The button to check
-	 * @returns true if the button was just released
-	 */
-	isMouseButtonReleased(button: MouseButton): boolean {
-		return this.mouseState.buttons[button]?.justReleased ?? false;
-	}
-
-	/**
-	 * Gets the current mouse X position.
-	 */
-	getMouseX(): number {
-		return this.mouseState.x;
-	}
-
-	/**
-	 * Gets the current mouse Y position.
-	 */
-	getMouseY(): number {
-		return this.mouseState.y;
-	}
-
-	/**
-	 * Gets the current mouse position.
-	 *
-	 * @returns Object with x and y coordinates
-	 */
-	getMousePosition(): { x: number; y: number } {
-		return { x: this.mouseState.x, y: this.mouseState.y };
-	}
-
-	/**
-	 * Gets the mouse movement since last frame.
-	 *
-	 * @returns Object with deltaX and deltaY
-	 */
-	getMouseDelta(): { deltaX: number; deltaY: number } {
-		return { deltaX: this.mouseState.deltaX, deltaY: this.mouseState.deltaY };
-	}
-
-	/**
-	 * Gets the scroll wheel delta since last frame.
-	 * Positive = scroll up, negative = scroll down.
-	 */
-	getWheelDelta(): number {
-		return this.mouseState.wheelDelta;
-	}
-
-	/**
-	 * Gets the full mouse state.
-	 */
-	getMouseState(): MouseState {
-		return this.mouseState;
-	}
-
-	// =========================================================================
-	// MANUAL KEY MANAGEMENT
-	// =========================================================================
-
-	/**
-	 * Manually releases a key.
-	 * Use this when focus is lost or to implement key timeout.
-	 *
-	 * @param key - The key to release
-	 *
-	 * @example
-	 * ```typescript
-	 * // Release all keys when window loses focus
-	 * inputState.releaseKey('a');
-	 * ```
-	 */
-	releaseKey(key: KeyName | string): void {
-		this.processKeyRelease(key.toLowerCase(), performance.now());
-	}
-
-	/**
-	 * Releases all currently held keys.
-	 * Call this when the window loses focus or the game pauses.
-	 *
-	 * @example
-	 * ```typescript
-	 * // On window blur
-	 * inputState.releaseAllKeys();
-	 * ```
-	 */
-	releaseAllKeys(): void {
-		const currentTime = performance.now();
-		for (const [key, state] of this.keyStates) {
-			if (state.pressed) {
-				this.processKeyRelease(key, currentTime);
-			}
-		}
-		this.ctrlDown = false;
-		this.altDown = false;
-		this.shiftDown = false;
-	}
-
-	/**
-	 * Releases all mouse buttons.
-	 */
-	releaseAllMouseButtons(): void {
-		const currentTime = performance.now();
-		for (const button of Object.values(this.mouseState.buttons)) {
-			if (button.pressed) {
-				button.pressed = false;
-				button.justReleased = true;
-				button.lastEventTime = currentTime;
-			}
-		}
-	}
-
-	/**
-	 * Releases all input (keys and mouse).
-	 */
-	releaseAll(): void {
-		this.releaseAllKeys();
-		this.releaseAllMouseButtons();
-	}
-
-	// =========================================================================
-	// STATS & DEBUG
-	// =========================================================================
-
-	/**
-	 * Gets input state statistics.
-	 *
-	 * @returns Statistics about current input state
-	 */
-	getStats(): InputStateStats {
-		let keysDown = 0;
-		let keysPressed = 0;
-		let keysReleased = 0;
-
-		for (const state of this.keyStates.values()) {
-			if (state.pressed) keysDown++;
-			if (state.justPressed) keysPressed++;
-			if (state.justReleased) keysReleased++;
-		}
-
-		return {
-			keysDown,
-			keysPressed,
-			keysReleased,
-			keyEventsThisFrame: this.keyEventsThisFrame,
-			mouseEventsThisFrame: this.mouseEventsThisFrame,
-			frameCount: this.frameCount,
-		};
-	}
-
-	/**
-	 * Gets the current frame number.
-	 */
-	getFrameCount(): number {
-		return this.frameCount;
-	}
-
-	/**
-	 * Resets all input state.
-	 * Clears all tracked keys and mouse state.
-	 */
-	reset(): void {
-		this.keyStates.clear();
-		this.mouseState = createDefaultMouseState() as MutableMouseState;
-		this.frameCount = 0;
-		this.keyEventsThisFrame = 0;
-		this.mouseEventsThisFrame = 0;
-		this.ctrlDown = false;
-		this.altDown = false;
-		this.shiftDown = false;
-	}
+function normalizeKeyName(name: KeyName, _event: KeyEvent): string {
+	return name.toLowerCase();
 }
 
 // =============================================================================
@@ -876,7 +264,374 @@ export class InputState {
  * ```
  */
 export function createInputState(config: InputStateConfig = {}): InputState {
-	return new InputState(config);
+	const resolvedConfig = {
+		trackRepeats: config.trackRepeats ?? true,
+		debounceTime: config.debounceTime ?? 0,
+		customRepeatRate: config.customRepeatRate ?? 0,
+		customRepeatDelay: config.customRepeatDelay ?? 500,
+	};
+
+	const keyStates = new Map<string, MutableKeyState>();
+	let mouseState: MutableMouseState = createDefaultMouseState();
+	let frameCount = 0;
+	let keyEventsThisFrame = 0;
+	let mouseEventsThisFrame = 0;
+
+	// Modifiers tracked separately for convenience
+	let ctrlDown = false;
+	let altDown = false;
+	let shiftDown = false;
+
+	function clearTransientFlags(): void {
+		for (const state of keyStates.values()) {
+			state.justPressed = false;
+			state.justReleased = false;
+		}
+		for (const button of Object.values(mouseState.buttons)) {
+			button.justPressed = false;
+			button.justReleased = false;
+		}
+	}
+
+	function updateHeldTimes(deltaMs: number): void {
+		for (const state of keyStates.values()) {
+			if (state.pressed) {
+				state.heldTime += deltaMs;
+			}
+		}
+	}
+
+	function processKeyEvent(event: KeyEvent, timestamp: number): void {
+		const key = normalizeKeyName(event.name, event);
+		let state = keyStates.get(key);
+
+		if (!state) {
+			state = { ...DEFAULT_KEY_STATE } as MutableKeyState;
+			keyStates.set(key, state);
+		}
+
+		// Handle debouncing (only if there was a previous event)
+		if (resolvedConfig.debounceTime > 0 && state.lastEventTime > 0) {
+			const timeSinceLastEvent = timestamp - state.lastEventTime;
+			if (timeSinceLastEvent < resolvedConfig.debounceTime) {
+				return; // Ignore debounced event
+			}
+		}
+
+		// Detect if this is a repeat event (key already pressed, no release in between)
+		const isRepeat = state.pressed;
+
+		if (isRepeat) {
+			// This is a key repeat event
+			if (resolvedConfig.trackRepeats) {
+				state.repeatCount++;
+			}
+			// Don't set justPressed again for repeats
+		} else {
+			// This is a new key press
+			state.pressed = true;
+			state.justPressed = true;
+			state.justReleased = false;
+			state.heldTime = 0;
+			state.repeatCount = 0;
+		}
+
+		state.lastEventTime = timestamp;
+
+		// Update modifier tracking from event flags
+		if (event.ctrl && !state.pressed) {
+			ctrlDown = true;
+		}
+		if (event.meta && !state.pressed) {
+			altDown = true;
+		}
+		if (event.shift && !state.pressed) {
+			shiftDown = true;
+		}
+	}
+
+	function processKeyRelease(key: string, timestamp: number): void {
+		const state = keyStates.get(key);
+		if (!state || !state.pressed) {
+			return;
+		}
+
+		state.pressed = false;
+		state.justPressed = false;
+		state.justReleased = true;
+		state.lastEventTime = timestamp;
+
+		// Update modifier tracking
+		if (key === 'ctrl') {
+			ctrlDown = false;
+		}
+		if (key === 'alt') {
+			altDown = false;
+		}
+		if (key === 'shift') {
+			shiftDown = false;
+		}
+	}
+
+	function processMouseEvent(event: MouseEvent, timestamp: number): void {
+		// Update position
+		const prevX = mouseState.x;
+		const prevY = mouseState.y;
+		mouseState.x = event.x;
+		mouseState.y = event.y;
+		mouseState.deltaX += event.x - prevX;
+		mouseState.deltaY += event.y - prevY;
+
+		// Handle wheel events
+		if (event.button === 'wheelUp') {
+			mouseState.wheelDelta += 1;
+		} else if (event.button === 'wheelDown') {
+			mouseState.wheelDelta -= 1;
+		}
+
+		// Update button state
+		const button = mouseState.buttons[event.button];
+		if (!button) {
+			return;
+		}
+
+		if (event.action === 'press') {
+			if (!button.pressed) {
+				button.pressed = true;
+				button.justPressed = true;
+				button.justReleased = false;
+				button.heldTime = 0;
+			}
+			button.lastEventTime = timestamp;
+		} else if (event.action === 'release') {
+			if (button.pressed) {
+				button.pressed = false;
+				button.justPressed = false;
+				button.justReleased = true;
+			}
+			button.lastEventTime = timestamp;
+		}
+	}
+
+	return {
+		update(
+			keyEvents: readonly TimestampedKeyEvent[],
+			mouseEvents: readonly TimestampedMouseEvent[],
+			deltaTime: number,
+		): void {
+			frameCount++;
+			keyEventsThisFrame = keyEvents.length;
+			mouseEventsThisFrame = mouseEvents.length;
+
+			const deltaMs = deltaTime * 1000;
+
+			// Clear just pressed/released flags from previous frame
+			clearTransientFlags();
+
+			// Update held times for all currently pressed keys
+			updateHeldTimes(deltaMs);
+
+			// Process key events
+			for (const event of keyEvents) {
+				processKeyEvent(event.event, event.timestamp);
+			}
+
+			// Process mouse events
+			mouseState.deltaX = 0;
+			mouseState.deltaY = 0;
+			mouseState.wheelDelta = 0;
+
+			for (const event of mouseEvents) {
+				processMouseEvent(event.event, event.timestamp);
+			}
+
+			// Update mouse button held times
+			for (const button of Object.values(mouseState.buttons)) {
+				if (button.pressed) {
+					button.heldTime += deltaMs;
+				}
+			}
+		},
+
+		isKeyDown(key: KeyName | string): boolean {
+			const state = keyStates.get(key.toLowerCase());
+			return state?.pressed ?? false;
+		},
+
+		isKeyPressed(key: KeyName | string): boolean {
+			const state = keyStates.get(key.toLowerCase());
+			return state?.justPressed ?? false;
+		},
+
+		isKeyReleased(key: KeyName | string): boolean {
+			const state = keyStates.get(key.toLowerCase());
+			return state?.justReleased ?? false;
+		},
+
+		getKeyHeldTime(key: KeyName | string): number {
+			const state = keyStates.get(key.toLowerCase());
+			return state?.heldTime ?? 0;
+		},
+
+		getKeyState(key: KeyName | string): KeyState {
+			return keyStates.get(key.toLowerCase()) ?? DEFAULT_KEY_STATE;
+		},
+
+		getKeyRepeatCount(key: KeyName | string): number {
+			const state = keyStates.get(key.toLowerCase());
+			return state?.repeatCount ?? 0;
+		},
+
+		getPressedKeys(): string[] {
+			const pressed: string[] = [];
+			for (const [key, state] of keyStates) {
+				if (state.pressed) {
+					pressed.push(key);
+				}
+			}
+			return pressed;
+		},
+
+		getJustPressedKeys(): string[] {
+			const pressed: string[] = [];
+			for (const [key, state] of keyStates) {
+				if (state.justPressed) {
+					pressed.push(key);
+				}
+			}
+			return pressed;
+		},
+
+		getJustReleasedKeys(): string[] {
+			const released: string[] = [];
+			for (const [key, state] of keyStates) {
+				if (state.justReleased) {
+					released.push(key);
+				}
+			}
+			return released;
+		},
+
+		isCtrlDown(): boolean {
+			return ctrlDown;
+		},
+
+		isAltDown(): boolean {
+			return altDown;
+		},
+
+		isShiftDown(): boolean {
+			return shiftDown;
+		},
+
+		hasModifier(): boolean {
+			return ctrlDown || altDown || shiftDown;
+		},
+
+		isMouseButtonDown(button: MouseButton): boolean {
+			return mouseState.buttons[button]?.pressed ?? false;
+		},
+
+		isMouseButtonPressed(button: MouseButton): boolean {
+			return mouseState.buttons[button]?.justPressed ?? false;
+		},
+
+		isMouseButtonReleased(button: MouseButton): boolean {
+			return mouseState.buttons[button]?.justReleased ?? false;
+		},
+
+		getMouseX(): number {
+			return mouseState.x;
+		},
+
+		getMouseY(): number {
+			return mouseState.y;
+		},
+
+		getMousePosition(): { x: number; y: number } {
+			return { x: mouseState.x, y: mouseState.y };
+		},
+
+		getMouseDelta(): { deltaX: number; deltaY: number } {
+			return { deltaX: mouseState.deltaX, deltaY: mouseState.deltaY };
+		},
+
+		getWheelDelta(): number {
+			return mouseState.wheelDelta;
+		},
+
+		getMouseState(): MouseState {
+			return mouseState;
+		},
+
+		releaseKey(key: KeyName | string): void {
+			processKeyRelease(key.toLowerCase(), performance.now());
+		},
+
+		releaseAllKeys(): void {
+			const currentTime = performance.now();
+			for (const [key, state] of keyStates) {
+				if (state.pressed) {
+					processKeyRelease(key, currentTime);
+				}
+			}
+			ctrlDown = false;
+			altDown = false;
+			shiftDown = false;
+		},
+
+		releaseAllMouseButtons(): void {
+			const currentTime = performance.now();
+			for (const button of Object.values(mouseState.buttons)) {
+				if (button.pressed) {
+					button.pressed = false;
+					button.justReleased = true;
+					button.lastEventTime = currentTime;
+				}
+			}
+		},
+
+		releaseAll(): void {
+			this.releaseAllKeys();
+			this.releaseAllMouseButtons();
+		},
+
+		getStats(): InputStateStats {
+			let keysDown = 0;
+			let keysPressed = 0;
+			let keysReleased = 0;
+
+			for (const state of keyStates.values()) {
+				if (state.pressed) keysDown++;
+				if (state.justPressed) keysPressed++;
+				if (state.justReleased) keysReleased++;
+			}
+
+			return {
+				keysDown,
+				keysPressed,
+				keysReleased,
+				keyEventsThisFrame,
+				mouseEventsThisFrame,
+				frameCount,
+			};
+		},
+
+		getFrameCount(): number {
+			return frameCount;
+		},
+
+		reset(): void {
+			keyStates.clear();
+			mouseState = createDefaultMouseState();
+			frameCount = 0;
+			keyEventsThisFrame = 0;
+			mouseEventsThisFrame = 0;
+			ctrlDown = false;
+			altDown = false;
+			shiftDown = false;
+		},
+	};
 }
 
 // =============================================================================

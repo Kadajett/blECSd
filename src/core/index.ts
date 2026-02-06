@@ -266,12 +266,13 @@ export {
 	createEntityEventBusStore,
 } from './eventBubbling';
 // Event system
-export type { EventHandler, EventMap, ScreenEventMap, UIEventMap } from './events';
-export { createEventBus, EventBus } from './events';
+export type { EventBus, EventHandler, EventMap, ScreenEventMap, UIEventMap } from './events';
+export { createEventBus } from './events';
 // Game loop
 export type {
 	FixedTimestepConfig,
 	FixedUpdateHook,
+	GameLoop,
 	GameLoopHooks,
 	GameLoopOptions,
 	InterpolateHook,
@@ -280,7 +281,6 @@ export type {
 } from './gameLoop';
 export {
 	createGameLoop,
-	GameLoop,
 	isLoopPaused,
 	isLoopRunning,
 	LoopState,
@@ -309,13 +309,13 @@ export type {
 	ActionBinding,
 	ActionCallback,
 	ActionState,
+	InputActionManager,
 	SerializedBindings,
 } from './inputActions';
 export {
 	ActionBindingSchema,
 	ActionPresets,
 	createInputActionManager,
-	InputActionManager,
 	SerializedBindingsSchema,
 } from './inputActions';
 // Input event buffer
@@ -357,6 +357,7 @@ export {
 } from './inputEventBuffer';
 // Input state tracking
 export type {
+	InputState,
 	InputStateConfig,
 	InputStateStats,
 	KeyState,
@@ -366,7 +367,6 @@ export type {
 export {
 	createInputState,
 	getMovementDirection,
-	InputState,
 	isAllKeysDown,
 	isAnyKeyDown,
 	isAnyKeyPressed,
@@ -455,13 +455,12 @@ export {
 	removeLifecycleEventBus,
 } from './lifecycleEvents';
 // Phase manager
-export type { PhaseId } from './phaseManager';
+export type { PhaseId, PhaseManager } from './phaseManager';
 export {
 	BUILTIN_PHASE_NAMES,
 	createPhaseManager,
 	defaultPhaseManager,
 	isBuiltinPhase,
-	PhaseManager,
 } from './phaseManager';
 // Position cache
 export type { CachedPosition, SetPositionCacheOptions } from './positionCache';
@@ -522,7 +521,8 @@ export {
 	createSceneSystem,
 	createSlideTransition,
 } from './scene';
-export { createScheduler, getDeltaTime, Scheduler } from './scheduler';
+export type { Scheduler } from './scheduler';
+export { createScheduler, getDeltaTime } from './scheduler';
 // Serialization
 export type {
 	ComponentDescriptor,

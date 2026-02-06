@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { EventHandler, ScreenEventMap, UIEventMap } from './events';
-import { createEventBus, EventBus } from './events';
+import { createEventBus } from './events';
 
 // Test event map for type safety verification
 interface TestEventMap {
@@ -12,7 +12,7 @@ interface TestEventMap {
 describe('EventBus', () => {
 	describe('on()', () => {
 		it('registers a listener and calls it on emit', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler = vi.fn();
 
 			events.on('test:simple', handler);
@@ -23,7 +23,7 @@ describe('EventBus', () => {
 		});
 
 		it('allows multiple listeners for same event', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler1 = vi.fn();
 			const handler2 = vi.fn();
 
@@ -36,7 +36,7 @@ describe('EventBus', () => {
 		});
 
 		it('returns unsubscribe function', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler = vi.fn();
 
 			const unsubscribe = events.on('test:simple', handler);
@@ -49,7 +49,7 @@ describe('EventBus', () => {
 		});
 
 		it('preserves listener order', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const order: number[] = [];
 
 			events.on('test:simple', () => order.push(1));
@@ -63,7 +63,7 @@ describe('EventBus', () => {
 
 	describe('once()', () => {
 		it('only fires once then removes itself', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler = vi.fn();
 
 			events.once('test:simple', handler);
@@ -76,7 +76,7 @@ describe('EventBus', () => {
 		});
 
 		it('returns unsubscribe function that works before firing', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler = vi.fn();
 
 			const unsubscribe = events.once('test:simple', handler);
@@ -87,7 +87,7 @@ describe('EventBus', () => {
 		});
 
 		it('can coexist with regular listeners', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const onceHandler = vi.fn();
 			const regularHandler = vi.fn();
 
@@ -103,7 +103,7 @@ describe('EventBus', () => {
 
 	describe('off()', () => {
 		it('removes specific listener', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler = vi.fn();
 
 			events.on('test:simple', handler);
@@ -114,7 +114,7 @@ describe('EventBus', () => {
 		});
 
 		it('only removes the specified handler', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler1 = vi.fn();
 			const handler2 = vi.fn();
 
@@ -128,7 +128,7 @@ describe('EventBus', () => {
 		});
 
 		it('does nothing when removing non-existent handler', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler = vi.fn();
 
 			// Should not throw
@@ -137,7 +137,7 @@ describe('EventBus', () => {
 		});
 
 		it('does nothing when removing from non-existent event', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler = vi.fn();
 
 			events.on('test:simple', handler);
@@ -147,7 +147,7 @@ describe('EventBus', () => {
 		});
 
 		it('returns this for chaining', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler = vi.fn();
 
 			const result = events.off('test:simple', handler);
@@ -157,7 +157,7 @@ describe('EventBus', () => {
 
 	describe('emit()', () => {
 		it('returns true when listeners were called', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			events.on('test:simple', () => {});
 
 			const result = events.emit('test:simple', { value: 1 });
@@ -165,14 +165,14 @@ describe('EventBus', () => {
 		});
 
 		it('returns false when no listeners exist', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 
 			const result = events.emit('test:simple', { value: 1 });
 			expect(result).toBe(false);
 		});
 
 		it('passes correct payload to handlers', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler = vi.fn();
 
 			events.on('test:complex', handler);
@@ -182,7 +182,7 @@ describe('EventBus', () => {
 		});
 
 		it('handles empty event payload', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler = vi.fn();
 
 			events.on('test:empty', handler);
@@ -194,7 +194,7 @@ describe('EventBus', () => {
 
 	describe('removeAllListeners()', () => {
 		it('removes all listeners for specific event', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler1 = vi.fn();
 			const handler2 = vi.fn();
 			const handler3 = vi.fn();
@@ -214,7 +214,7 @@ describe('EventBus', () => {
 		});
 
 		it('removes all listeners when no event specified', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const handler1 = vi.fn();
 			const handler2 = vi.fn();
 
@@ -231,7 +231,7 @@ describe('EventBus', () => {
 		});
 
 		it('returns this for chaining', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const result = events.removeAllListeners();
 			expect(result).toBe(events);
 		});
@@ -239,12 +239,12 @@ describe('EventBus', () => {
 
 	describe('listenerCount()', () => {
 		it('returns 0 for event with no listeners', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			expect(events.listenerCount('test:simple')).toBe(0);
 		});
 
 		it('returns correct count', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			events.on('test:simple', () => {});
 			events.on('test:simple', () => {});
 			events.once('test:simple', () => {});
@@ -253,7 +253,7 @@ describe('EventBus', () => {
 		});
 
 		it('decrements after unsubscribe', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const unsubscribe = events.on('test:simple', () => {});
 			events.on('test:simple', () => {});
 
@@ -265,12 +265,12 @@ describe('EventBus', () => {
 
 	describe('eventNames()', () => {
 		it('returns empty array when no listeners', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			expect(events.eventNames()).toEqual([]);
 		});
 
 		it('returns all events with listeners', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			events.on('test:simple', () => {});
 			events.on('test:complex', () => {});
 
@@ -281,7 +281,7 @@ describe('EventBus', () => {
 		});
 
 		it('removes event name when all listeners removed', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			const unsubscribe = events.on('test:simple', () => {});
 
 			expect(events.eventNames()).toContain('test:simple');
@@ -292,12 +292,12 @@ describe('EventBus', () => {
 
 	describe('hasListeners()', () => {
 		it('returns false when no listeners', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			expect(events.hasListeners('test:simple')).toBe(false);
 		});
 
 		it('returns true when listeners exist', () => {
-			const events = new EventBus<TestEventMap>();
+			const events = createEventBus<TestEventMap>();
 			events.on('test:simple', () => {});
 			expect(events.hasListeners('test:simple')).toBe(true);
 		});
@@ -307,7 +307,8 @@ describe('EventBus', () => {
 describe('createEventBus()', () => {
 	it('creates a new EventBus instance', () => {
 		const events = createEventBus<TestEventMap>();
-		expect(events).toBeInstanceOf(EventBus);
+		expect(events.on).toBeTypeOf('function');
+		expect(events.emit).toBeTypeOf('function');
 	});
 
 	it('works with UIEventMap', () => {

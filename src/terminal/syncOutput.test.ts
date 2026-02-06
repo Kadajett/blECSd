@@ -5,7 +5,11 @@
 import { PassThrough } from 'node:stream';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { bracketedPaste, sync } from './ansi';
-import { isSyncOutputSupported, SynchronizedOutput } from './syncOutput';
+import {
+	createSynchronizedOutput,
+	isSyncOutputSupported,
+	type SynchronizedOutput,
+} from './syncOutput';
 
 describe('sync namespace', () => {
 	describe('begin', () => {
@@ -68,7 +72,7 @@ describe('SynchronizedOutput', () => {
 		output.on('data', (chunk) => {
 			written += chunk.toString();
 		});
-		syncOut = new SynchronizedOutput(output);
+		syncOut = createSynchronizedOutput(output);
 	});
 
 	describe('constructor', () => {
@@ -78,12 +82,12 @@ describe('SynchronizedOutput', () => {
 		});
 
 		it('respects supported option', () => {
-			const s = new SynchronizedOutput(output, { supported: false });
+			const s = createSynchronizedOutput(output, { supported: false });
 			expect(s.supported).toBe(false);
 		});
 
 		it('respects autoSync option', () => {
-			const s = new SynchronizedOutput(output, { autoSync: true });
+			const s = createSynchronizedOutput(output, { autoSync: true });
 			expect(s.autoSync).toBe(true);
 		});
 	});

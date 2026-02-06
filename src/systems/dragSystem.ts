@@ -347,9 +347,9 @@ function applyConstraints(
  *
  * @example
  * ```typescript
- * import { createDragSystem, EventBus } from 'blecsd';
+ * import { createDragSystem, createEventBus } from 'blecsd';
  *
- * const dragEvents = new EventBus<DragEventMap>();
+ * const dragEvents = createEventBus<DragEventMap>();
  * const dragSystem = createDragSystem(dragEvents);
  *
  * // Listen for drag events

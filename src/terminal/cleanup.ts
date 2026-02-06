@@ -55,195 +55,50 @@ interface RegisteredInstance {
 }
 
 /**
- * CleanupManager is a singleton that coordinates terminal cleanup
- * across multiple Program instances.
- *
- * It ensures that:
- * - Terminal is restored on normal exit
- * - Terminal is restored on Ctrl+C (SIGINT)
- * - Terminal is restored on kill signals (SIGTERM, SIGQUIT, SIGHUP)
- * - Terminal is restored on uncaught exceptions
- * - Cleanup runs only once even with multiple instances
- * - All registered instances are cleaned up
- *
- * @example
- * ```typescript
- * // Register a program instance
- * CleanupManager.instance.register('program-1', process.stdout, () => {
- *   // Custom cleanup for this instance
- * });
- *
- * // Add exit handler
- * CleanupManager.instance.onExit((info) => {
- *   console.log('Exiting:', info.reason);
- * });
- *
- * // Unregister when done
- * CleanupManager.instance.unregister('program-1');
- * ```
+ * CleanupManager interface for type-safe access.
  */
-export class CleanupManager {
-	private static _instance: CleanupManager | null = null;
+export interface CleanupManager {
+	readonly instanceCount: number;
+	readonly hasCleanedUp: boolean;
+	register(id: string, output: Writable, cleanup: CleanupHandler): void;
+	unregister(id: string): void;
+	onExit(handler: ExitHandler): () => void;
+	runCleanup(reason: ExitReason, error?: Error): Promise<void>;
+	runCleanupSync(reason: ExitReason, error?: Error): void;
+}
 
-	/**
-	 * Get the singleton instance
-	 */
-	static get instance(): CleanupManager {
-		if (!CleanupManager._instance) {
-			CleanupManager._instance = new CleanupManager();
-		}
-		return CleanupManager._instance;
+// =============================================================================
+// CLEANUP MANAGER SINGLETON (module-level state, no class)
+// =============================================================================
+
+let cleanupInstance: CleanupManager | null = null;
+
+function restoreTerminal(output: Writable): void {
+	try {
+		output.write(screen.alternateOff());
+		output.write(cursor.show());
+		output.write(style.reset());
+		output.write('\n');
+	} catch {
+		// Ignore write errors during cleanup
 	}
+}
 
-	/**
-	 * Reset the singleton (for testing)
-	 */
-	static reset(): void {
-		if (CleanupManager._instance) {
-			CleanupManager._instance.removeSignalHandlers();
-			CleanupManager._instance.instances.clear();
-			CleanupManager._instance.exitHandlers.clear();
-			CleanupManager._instance.cleanupRun = false;
-		}
-		CleanupManager._instance = null;
-	}
+function createCleanupManager(): CleanupManager {
+	const instances = new Map<string, RegisteredInstance>();
+	const exitHandlers = new Set<ExitHandler>();
+	let signalHandlersInstalled = false;
+	let cleanupRun = false;
 
-	private instances = new Map<string, RegisteredInstance>();
-	private exitHandlers = new Set<ExitHandler>();
-	private signalHandlersInstalled = false;
-	private cleanupRun = false;
-
-	private constructor() {
-		// Private constructor for singleton
-	}
-
-	/**
-	 * Number of registered instances
-	 */
-	get instanceCount(): number {
-		return this.instances.size;
-	}
-
-	/**
-	 * Whether cleanup has already been run
-	 */
-	get hasCleanedUp(): boolean {
-		return this.cleanupRun;
-	}
-
-	/**
-	 * Register a program instance for cleanup.
-	 *
-	 * @param id - Unique identifier for this instance
-	 * @param output - Output stream to write cleanup sequences to
-	 * @param cleanup - Custom cleanup function for this instance
-	 *
-	 * @example
-	 * ```typescript
-	 * CleanupManager.instance.register('my-program', process.stdout, () => {
-	 *   // Custom cleanup logic
-	 * });
-	 * ```
-	 */
-	register(id: string, output: Writable, cleanup: CleanupHandler): void {
-		this.instances.set(id, { id, output, cleanup });
-
-		// Install signal handlers on first registration
-		if (!this.signalHandlersInstalled) {
-			this.installSignalHandlers();
-		}
-	}
-
-	/**
-	 * Unregister a program instance.
-	 *
-	 * @param id - Instance identifier to unregister
-	 */
-	unregister(id: string): void {
-		this.instances.delete(id);
-
-		// Remove signal handlers when no instances remain
-		if (this.instances.size === 0) {
-			this.removeSignalHandlers();
-		}
-	}
-
-	/**
-	 * Add an exit handler that runs during cleanup.
-	 * Handler receives information about why cleanup was triggered.
-	 *
-	 * @param handler - Exit handler callback
-	 * @returns Unsubscribe function
-	 *
-	 * @example
-	 * ```typescript
-	 * const unsubscribe = CleanupManager.instance.onExit((info) => {
-	 *   console.log('Exit reason:', info.reason);
-	 *   if (info.error) {
-	 *     console.error('Error:', info.error);
-	 *   }
-	 * });
-	 * ```
-	 */
-	onExit(handler: ExitHandler): () => void {
-		this.exitHandlers.add(handler);
-		return () => {
-			this.exitHandlers.delete(handler);
-		};
-	}
-
-	/**
-	 * Run cleanup for all registered instances.
-	 * Safe to call multiple times - only runs once.
-	 *
-	 * @param reason - Why cleanup was triggered
-	 * @param error - Error that caused cleanup (if applicable)
-	 */
-	async runCleanup(reason: ExitReason, error?: Error): Promise<void> {
-		// Prevent multiple cleanup runs
-		if (this.cleanupRun) {
+	function runCleanupSync(reason: ExitReason, error?: Error): void {
+		if (cleanupRun) {
 			return;
 		}
-		this.cleanupRun = true;
+		cleanupRun = true;
 
 		const exitInfo: ExitInfo = error !== undefined ? { reason, error } : { reason };
 
-		// Run exit handlers first
-		for (const handler of this.exitHandlers) {
-			try {
-				await handler(exitInfo);
-			} catch {
-				// Ignore errors during exit handlers
-			}
-		}
-
-		// Clean up all registered instances
-		for (const instance of this.instances.values()) {
-			try {
-				// Write terminal restoration sequences
-				this.restoreTerminal(instance.output);
-
-				// Run custom cleanup
-				await instance.cleanup();
-			} catch {
-				// Ignore errors during cleanup
-			}
-		}
-	}
-
-	/**
-	 * Run cleanup synchronously (for exit handler where async isn't supported)
-	 */
-	runCleanupSync(reason: ExitReason, error?: Error): void {
-		if (this.cleanupRun) {
-			return;
-		}
-		this.cleanupRun = true;
-
-		const exitInfo: ExitInfo = error !== undefined ? { reason, error } : { reason };
-
-		// Run exit handlers (synchronously)
-		for (const handler of this.exitHandlers) {
+		for (const handler of exitHandlers) {
 			try {
 				handler(exitInfo);
 			} catch {
@@ -251,10 +106,9 @@ export class CleanupManager {
 			}
 		}
 
-		// Clean up all instances
-		for (const instance of this.instances.values()) {
+		for (const instance of instances.values()) {
 			try {
-				this.restoreTerminal(instance.output);
+				restoreTerminal(instance.output);
 				instance.cleanup();
 			} catch {
 				// Ignore errors
@@ -262,112 +116,148 @@ export class CleanupManager {
 		}
 	}
 
-	/**
-	 * Write terminal restoration sequences.
-	 */
-	private restoreTerminal(output: Writable): void {
-		try {
-			// Exit alternate screen
-			output.write(screen.alternateOff());
-			// Show cursor
-			output.write(cursor.show());
-			// Reset styles
-			output.write(style.reset());
-			// Move to new line (avoid prompt overwrite)
-			output.write('\n');
-		} catch {
-			// Ignore write errors during cleanup
-		}
-	}
-
-	/**
-	 * Install global signal handlers.
-	 */
-	private installSignalHandlers(): void {
-		if (this.signalHandlersInstalled) {
-			return;
-		}
-
-		// Ctrl+C
-		process.on('SIGINT', this.handleSigint);
-
-		// kill
-		process.on('SIGTERM', this.handleSigterm);
-
-		// Ctrl+\ (quit)
-		process.on('SIGQUIT', this.handleSigquit);
-
-		// Terminal closed
-		process.on('SIGHUP', this.handleSighup);
-
-		// Process exit (last resort)
-		process.on('exit', this.handleExit);
-
-		// Uncaught exceptions
-		process.on('uncaughtException', this.handleUncaughtException);
-
-		// Unhandled promise rejections
-		process.on('unhandledRejection', this.handleUnhandledRejection);
-
-		this.signalHandlersInstalled = true;
-	}
-
-	/**
-	 * Remove global signal handlers.
-	 */
-	private removeSignalHandlers(): void {
-		if (!this.signalHandlersInstalled) {
-			return;
-		}
-
-		process.off('SIGINT', this.handleSigint);
-		process.off('SIGTERM', this.handleSigterm);
-		process.off('SIGQUIT', this.handleSigquit);
-		process.off('SIGHUP', this.handleSighup);
-		process.off('exit', this.handleExit);
-		process.off('uncaughtException', this.handleUncaughtException);
-		process.off('unhandledRejection', this.handleUnhandledRejection);
-
-		this.signalHandlersInstalled = false;
-	}
-
-	// Arrow functions to preserve `this` binding
-	private handleSigint = (): void => {
-		this.runCleanupSync('SIGINT');
-		process.exit(130); // 128 + SIGINT (2)
+	const handleSigint = (): void => {
+		runCleanupSync('SIGINT');
+		process.exit(130);
 	};
-
-	private handleSigterm = (): void => {
-		this.runCleanupSync('SIGTERM');
-		process.exit(143); // 128 + SIGTERM (15)
+	const handleSigterm = (): void => {
+		runCleanupSync('SIGTERM');
+		process.exit(143);
 	};
-
-	private handleSigquit = (): void => {
-		this.runCleanupSync('SIGQUIT');
-		process.exit(131); // 128 + SIGQUIT (3)
+	const handleSigquit = (): void => {
+		runCleanupSync('SIGQUIT');
+		process.exit(131);
 	};
-
-	private handleSighup = (): void => {
-		this.runCleanupSync('SIGHUP');
-		process.exit(129); // 128 + SIGHUP (1)
+	const handleSighup = (): void => {
+		runCleanupSync('SIGHUP');
+		process.exit(129);
 	};
-
-	private handleExit = (): void => {
-		this.runCleanupSync('exit');
+	const handleExit = (): void => {
+		runCleanupSync('exit');
 	};
-
-	private handleUncaughtException = (error: Error): void => {
-		this.runCleanupSync('uncaughtException', error);
-		// Re-throw to crash the process with the error
+	const handleUncaughtException = (error: Error): void => {
+		runCleanupSync('uncaughtException', error);
 		throw error;
 	};
-
-	private handleUnhandledRejection = (reason: unknown): void => {
+	const handleUnhandledRejection = (reason: unknown): void => {
 		const error = reason instanceof Error ? reason : new Error(String(reason));
-		this.runCleanupSync('unhandledRejection', error);
-		// Let Node.js handle the rejection (may crash in newer versions)
+		runCleanupSync('unhandledRejection', error);
+	};
+
+	function installSignalHandlers(): void {
+		if (signalHandlersInstalled) {
+			return;
+		}
+		process.on('SIGINT', handleSigint);
+		process.on('SIGTERM', handleSigterm);
+		process.on('SIGQUIT', handleSigquit);
+		process.on('SIGHUP', handleSighup);
+		process.on('exit', handleExit);
+		process.on('uncaughtException', handleUncaughtException);
+		process.on('unhandledRejection', handleUnhandledRejection);
+		signalHandlersInstalled = true;
+	}
+
+	function removeSignalHandlers(): void {
+		if (!signalHandlersInstalled) {
+			return;
+		}
+		process.off('SIGINT', handleSigint);
+		process.off('SIGTERM', handleSigterm);
+		process.off('SIGQUIT', handleSigquit);
+		process.off('SIGHUP', handleSighup);
+		process.off('exit', handleExit);
+		process.off('uncaughtException', handleUncaughtException);
+		process.off('unhandledRejection', handleUnhandledRejection);
+		signalHandlersInstalled = false;
+	}
+
+	return {
+		get instanceCount(): number {
+			return instances.size;
+		},
+		get hasCleanedUp(): boolean {
+			return cleanupRun;
+		},
+		register(id: string, output: Writable, cleanup: CleanupHandler): void {
+			instances.set(id, { id, output, cleanup });
+			if (!signalHandlersInstalled) {
+				installSignalHandlers();
+			}
+		},
+		unregister(id: string): void {
+			instances.delete(id);
+			if (instances.size === 0) {
+				removeSignalHandlers();
+			}
+		},
+		onExit(handler: ExitHandler): () => void {
+			exitHandlers.add(handler);
+			return () => {
+				exitHandlers.delete(handler);
+			};
+		},
+		async runCleanup(reason: ExitReason, error?: Error): Promise<void> {
+			if (cleanupRun) {
+				return;
+			}
+			cleanupRun = true;
+
+			const exitInfo: ExitInfo = error !== undefined ? { reason, error } : { reason };
+
+			for (const handler of exitHandlers) {
+				try {
+					await handler(exitInfo);
+				} catch {
+					// Ignore errors during exit handlers
+				}
+			}
+
+			for (const instance of instances.values()) {
+				try {
+					restoreTerminal(instance.output);
+					await instance.cleanup();
+				} catch {
+					// Ignore errors during cleanup
+				}
+			}
+		},
+		runCleanupSync,
 	};
 }
+
+/**
+ * CleanupManager singleton access and management.
+ *
+ * Coordinates terminal cleanup across multiple Program instances.
+ * Ensures terminal is restored on exit, signals, or errors.
+ *
+ * @example
+ * ```typescript
+ * CleanupManager.instance.register('program-1', process.stdout, () => {
+ *   // Custom cleanup for this instance
+ * });
+ *
+ * CleanupManager.instance.onExit((info) => {
+ *   console.log('Exiting:', info.reason);
+ * });
+ *
+ * CleanupManager.instance.unregister('program-1');
+ * ```
+ */
+export const CleanupManager = {
+	/** Get the singleton instance. */
+	get instance(): CleanupManager {
+		if (!cleanupInstance) {
+			cleanupInstance = createCleanupManager();
+		}
+		return cleanupInstance;
+	},
+	/** Reset the singleton (for testing). */
+	reset(): void {
+		cleanupInstance = null;
+	},
+};
 
 /**
  * Convenience function to register for cleanup.

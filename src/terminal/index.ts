@@ -246,12 +246,13 @@ export {
 // Input stream handler
 export type {
 	FocusHandler,
+	InputHandler,
 	InputHandlerConfig,
 	KeyHandler,
 	MouseHandler,
 	Unsubscribe,
 } from './inputStream';
-export { createInputHandler, InputHandler, InputHandlerConfigSchema } from './inputStream';
+export { createInputHandler, InputHandlerConfigSchema } from './inputStream';
 // Keyboard protocols
 export type {
 	KittyConfig,
@@ -341,14 +342,13 @@ export {
 	writeStringAt,
 } from './optimizedOutput';
 // Output buffering (internal)
-export type { CursorPosition, OutputBufferOptions } from './outputBuffer';
-export { OutputBuffer } from './outputBuffer';
+export type { CursorPosition, OutputBuffer, OutputBufferOptions } from './outputBuffer';
 // Process utilities (internal)
 export type { EditorOptions, ExecOptions, ExecResult, SpawnOptions } from './process';
 export { exec, execSync, getDefaultEditor, processUtils, readEditor, spawn } from './process';
 // Program (internal)
-export type { KeyEvent, MouseEvent, ProgramConfig, ResizeEvent } from './program';
-export { Program, ProgramConfigSchema } from './program';
+export type { KeyEvent, MouseEvent, Program, ProgramConfig, ResizeEvent } from './program';
+export { createProgram, ProgramConfigSchema } from './program';
 // Resize handling
 export type {
 	ResizeEventData,
@@ -433,8 +433,7 @@ export {
 	writeString,
 } from './screen';
 // Screen buffer management (internal)
-export type { CleanupCallback } from './screenBuffer';
-export { ScreenBuffer } from './screenBuffer';
+export type { CleanupCallback, ScreenBuffer } from './screenBuffer';
 // Input sanitization
 export type { InputSanitizeOptions, SanitizeResult } from './security/inputSanitize';
 export {
@@ -452,23 +451,23 @@ export {
 	stripNullBytes,
 } from './security/inputSanitize';
 // Security utilities (internal)
-export type { SanitizeOptions } from './security/sanitize';
+export type { SafeStringBuilder, SanitizeOptions } from './security/sanitize';
 export {
 	categorizeEscapeSequences,
 	containsEscapeSequences,
+	createSafeStringBuilder,
 	DEFAULT_SANITIZE_OPTIONS,
 	extractEscapeSequences,
 	isSafeForTerminal,
-	SafeStringBuilder,
 	SanitizeOptionsSchema,
 	sanitizeForTerminal,
 } from './security/sanitize';
 // Suspend/resume handling (internal)
-export type { SuspendManagerOptions, SuspendState } from './suspend';
-export { SuspendManager, suspend, suspendSequences } from './suspend';
+export type { SuspendManager, SuspendManagerOptions, SuspendState } from './suspend';
+export { createSuspendManager, suspend, suspendSequences } from './suspend';
 // Synchronized output (internal)
-export type { SyncOutputOptions } from './syncOutput';
-export { isSyncOutputSupported, SynchronizedOutput } from './syncOutput';
+export type { SynchronizedOutput, SyncOutputOptions } from './syncOutput';
+export { createSynchronizedOutput, isSyncOutputSupported } from './syncOutput';
 // Terminfo (internal)
 export type {
 	BooleanCapability,

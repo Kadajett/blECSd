@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createInputHandler, InputHandler, InputHandlerConfigSchema } from './inputStream';
+import { createInputHandler, type InputHandler, InputHandlerConfigSchema } from './inputStream';
 
 /**
  * Creates a mock readable stream for testing.
@@ -15,7 +15,7 @@ describe('InputHandler', () => {
 
 	beforeEach(() => {
 		stream = createMockStream();
-		handler = new InputHandler(stream as NodeJS.ReadableStream);
+		handler = createInputHandler(stream as NodeJS.ReadableStream);
 	});
 
 	afterEach(() => {
@@ -26,13 +26,13 @@ describe('InputHandler', () => {
 
 	describe('constructor', () => {
 		it('creates handler with default config', () => {
-			const h = new InputHandler(stream as NodeJS.ReadableStream);
+			const h = createInputHandler(stream as NodeJS.ReadableStream);
 			expect(h.isRunning()).toBe(false);
 			expect(h.getBufferSize()).toBe(0);
 		});
 
 		it('creates handler with custom config', () => {
-			const h = new InputHandler(stream as NodeJS.ReadableStream, {
+			const h = createInputHandler(stream as NodeJS.ReadableStream, {
 				maxBufferSize: 8192,
 				escapeTimeout: 50,
 			});
@@ -307,7 +307,7 @@ describe('InputHandler', () => {
 		});
 
 		it('flushes buffer when max size reached', () => {
-			const h = new InputHandler(stream as NodeJS.ReadableStream, {
+			const h = createInputHandler(stream as NodeJS.ReadableStream, {
 				maxBufferSize: 10,
 			});
 			const keyHandler = vi.fn();
@@ -344,7 +344,7 @@ describe('createInputHandler()', () => {
 	it('creates a new InputHandler instance', () => {
 		const stream = createMockStream();
 		const handler = createInputHandler(stream as NodeJS.ReadableStream);
-		expect(handler).toBeInstanceOf(InputHandler);
+		expect(handler.onKey).toBeTypeOf('function');
 	});
 
 	it('passes config to handler', () => {
@@ -352,7 +352,7 @@ describe('createInputHandler()', () => {
 		const handler = createInputHandler(stream as NodeJS.ReadableStream, {
 			escapeTimeout: 50,
 		});
-		expect(handler).toBeInstanceOf(InputHandler);
+		expect(handler.onKey).toBeTypeOf('function');
 	});
 });
 

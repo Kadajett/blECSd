@@ -176,79 +176,59 @@ export function matchColor(rgb: RGB, options: MatchOptions = {}): Color256 {
 // =============================================================================
 
 /**
- * Simple LRU cache for color matching results.
+ * ColorCache interface for type-safe access.
  */
-class ColorCache {
-	private cache: Map<number, Color256>;
-	private maxSize: number;
+export interface ColorCache {
+	get(rgb: RGB): Color256 | undefined;
+	set(rgb: RGB, color: Color256): void;
+	clear(): void;
+	readonly size: number;
+}
 
-	constructor(maxSize: number = 1024) {
-		this.cache = new Map();
-		this.maxSize = maxSize;
-	}
+/**
+ * Creates a simple LRU cache for color matching results.
+ */
+function createColorCacheInternal(maxSize: number = 1024): ColorCache {
+	const cache = new Map<number, Color256>();
 
-	/**
-	 * Creates a cache key from RGB values.
-	 */
-	private key(rgb: RGB): number {
+	function key(rgb: RGB): number {
 		return (rgb.r << 16) | (rgb.g << 8) | rgb.b;
 	}
 
-	/**
-	 * Gets a cached result.
-	 */
-	get(rgb: RGB): Color256 | undefined {
-		const k = this.key(rgb);
-		const value = this.cache.get(k);
-
-		if (value !== undefined) {
-			// Move to end for LRU
-			this.cache.delete(k);
-			this.cache.set(k, value);
-		}
-
-		return value;
-	}
-
-	/**
-	 * Sets a cached result.
-	 */
-	set(rgb: RGB, color: Color256): void {
-		const k = this.key(rgb);
-
-		// Delete if exists (to update position)
-		if (this.cache.has(k)) {
-			this.cache.delete(k);
-		}
-
-		// Evict oldest if at capacity
-		if (this.cache.size >= this.maxSize) {
-			const firstKey = this.cache.keys().next().value;
-			if (firstKey !== undefined) {
-				this.cache.delete(firstKey);
+	return {
+		get(rgb: RGB): Color256 | undefined {
+			const k = key(rgb);
+			const value = cache.get(k);
+			if (value !== undefined) {
+				cache.delete(k);
+				cache.set(k, value);
 			}
-		}
-
-		this.cache.set(k, color);
-	}
-
-	/**
-	 * Clears the cache.
-	 */
-	clear(): void {
-		this.cache.clear();
-	}
-
-	/**
-	 * Returns the current cache size.
-	 */
-	get size(): number {
-		return this.cache.size;
-	}
+			return value;
+		},
+		set(rgb: RGB, color: Color256): void {
+			const k = key(rgb);
+			if (cache.has(k)) {
+				cache.delete(k);
+			}
+			if (cache.size >= maxSize) {
+				const firstKey = cache.keys().next().value;
+				if (firstKey !== undefined) {
+					cache.delete(firstKey);
+				}
+			}
+			cache.set(k, color);
+		},
+		clear(): void {
+			cache.clear();
+		},
+		get size(): number {
+			return cache.size;
+		},
+	};
 }
 
 // Global cache instance
-const globalCache = new ColorCache(4096);
+const globalCache = createColorCacheInternal(4096);
 
 /**
  * Matches a color with LRU caching for performance.
@@ -330,7 +310,7 @@ export function getColorCacheSize(): number {
  * ```
  */
 export function createColorCache(maxSize: number = 1024): ColorCache {
-	return new ColorCache(maxSize);
+	return createColorCacheInternal(maxSize);
 }
 
 // =============================================================================

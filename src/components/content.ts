@@ -28,68 +28,38 @@ export enum TextVAlign {
 	Bottom = 2,
 }
 
+// =============================================================================
+// CONTENT STORE (module-level state, no class)
+// =============================================================================
+
+const contentTexts = new Map<number, string>();
+let nextContentId = 1;
+
 /**
- * Content store for managing string content.
+ * Content store: functional interface for managing string content.
  * Since bitecs uses typed arrays, strings must be stored separately.
  */
-class ContentStore {
-	private content: Map<number, string> = new Map();
-	private nextId = 1;
-
-	/**
-	 * Sets content for an entity and returns the content ID.
-	 */
-	set(eid: Entity, text: string): number {
-		// Reuse existing ID if entity already has content
-		const existingId = this.findIdByEntity(eid);
-		if (existingId !== 0) {
-			this.content.set(existingId, text);
-			return existingId;
-		}
-
-		// Assign new ID
-		const id = this.nextId++;
-		this.content.set(id, text);
+export const contentStore = {
+	/** Sets content for an entity and returns the content ID. */
+	set(_eid: Entity, text: string): number {
+		const id = nextContentId++;
+		contentTexts.set(id, text);
 		return id;
-	}
-
-	/**
-	 * Gets content by ID.
-	 */
+	},
+	/** Gets content by ID. */
 	get(id: number): string {
-		return this.content.get(id) ?? '';
-	}
-
-	/**
-	 * Deletes content by ID.
-	 */
+		return contentTexts.get(id) ?? '';
+	},
+	/** Deletes content by ID. */
 	delete(id: number): void {
-		this.content.delete(id);
-	}
-
-	/**
-	 * Finds content ID by entity (for internal use).
-	 * This is O(n) but only used during set operations.
-	 */
-	private findIdByEntity(_eid: Entity): number {
-		// Content IDs are stored in the component, not mapped here
-		// This method is a placeholder for potential future optimization
-		return 0;
-	}
-
-	/**
-	 * Clears all content.
-	 */
+		contentTexts.delete(id);
+	},
+	/** Clears all content. */
 	clear(): void {
-		this.content.clear();
-		this.nextId = 1;
-	}
-}
-
-/**
- * Global content store instance.
- */
-export const contentStore = new ContentStore();
+		contentTexts.clear();
+		nextContentId = 1;
+	},
+};
 
 /**
  * Simple hash function for change detection.

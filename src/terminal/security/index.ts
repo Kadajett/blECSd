@@ -21,14 +21,14 @@ export {
 	stripControlChars,
 	stripNullBytes,
 } from './inputSanitize';
-export type { SanitizeOptions } from './sanitize';
+export type { SafeStringBuilder, SanitizeOptions } from './sanitize';
 export {
 	categorizeEscapeSequences,
 	containsEscapeSequences,
+	createSafeStringBuilder,
 	DEFAULT_SANITIZE_OPTIONS,
 	extractEscapeSequences,
 	isSafeForTerminal,
-	SafeStringBuilder,
 	SanitizeOptionsSchema,
 	sanitizeForTerminal,
 } from './sanitize';

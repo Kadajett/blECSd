@@ -5,7 +5,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { KeyName } from '../terminal/keyParser';
 import type { MouseAction, MouseButton, MouseProtocol } from '../terminal/mouseParser';
-import { ActionPresets, createInputActionManager, InputActionManager } from './inputActions';
+import { ActionPresets, createInputActionManager, type InputActionManager } from './inputActions';
 import type { TimestampedKeyEvent, TimestampedMouseEvent } from './inputEventBuffer';
 import { createInputState, type InputState } from './inputState';
 
@@ -72,7 +72,7 @@ describe('InputActionManager', () => {
 	describe('createInputActionManager', () => {
 		it('should create an action manager', () => {
 			const manager = createInputActionManager();
-			expect(manager).toBeInstanceOf(InputActionManager);
+			expect(manager.register).toBeTypeOf('function');
 		});
 
 		it('should create with initial bindings', () => {

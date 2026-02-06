@@ -8,7 +8,7 @@ import { setParent } from '../components/hierarchy';
 import { setDraggable } from '../components/interactive';
 import { getPosition, getZIndex, setPosition, setZIndex } from '../components/position';
 import { addEntity, createWorld } from '../core/ecs';
-import { EventBus } from '../core/events';
+import { createEventBus, type EventBus } from '../core/events';
 import type { Entity, World } from '../core/types';
 import {
 	clearDragConstraints,
@@ -29,7 +29,7 @@ describe('dragSystem', () => {
 
 	beforeEach(() => {
 		world = createWorld() as World;
-		eventBus = new EventBus<DragEventMap>();
+		eventBus = createEventBus<DragEventMap>();
 		dragSystem = createDragSystem(eventBus);
 		resetDragStores();
 

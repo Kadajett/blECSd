@@ -4,7 +4,7 @@ import {
 	createPhaseManager,
 	defaultPhaseManager,
 	isBuiltinPhase,
-	PhaseManager,
+	type PhaseManager,
 } from './phaseManager';
 import { LoopPhase } from './types';
 
@@ -12,13 +12,14 @@ describe('PhaseManager', () => {
 	let manager: PhaseManager;
 
 	beforeEach(() => {
-		manager = new PhaseManager();
+		manager = createPhaseManager();
 	});
 
 	describe('createPhaseManager', () => {
 		it('should create a new PhaseManager', () => {
 			const pm = createPhaseManager();
-			expect(pm).toBeInstanceOf(PhaseManager);
+			expect(pm.hasPhase).toBeTypeOf('function');
+			expect(pm.getPhaseOrder).toBeTypeOf('function');
 		});
 	});
 
@@ -28,7 +29,8 @@ describe('PhaseManager', () => {
 		});
 
 		it('should be a PhaseManager instance', () => {
-			expect(defaultPhaseManager).toBeInstanceOf(PhaseManager);
+			expect(defaultPhaseManager.hasPhase).toBeTypeOf('function');
+			expect(defaultPhaseManager.getPhaseOrder).toBeTypeOf('function');
 		});
 	});
 

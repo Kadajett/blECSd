@@ -15,7 +15,7 @@
  *   getResizeEventBus,
  * } from 'blecsd';
  *
- * const program = new Program();
+ * const program = createProgram();
  * const world = createWorld();
  * const screen = createScreenEntity(world, { width: 80, height: 24 });
  *

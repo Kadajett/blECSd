@@ -215,88 +215,12 @@ export interface InputBufferOptions {
 // InputBufferStore - Text storage for input buffers
 // =============================================================================
 
-/**
- * Store for text input buffers.
- * Maps buffer IDs to text content.
- */
-class InputBufferTextStore {
-	private buffers = new Map<number, string>();
-	private nextId = 1;
+// =============================================================================
+// INPUT BUFFER STORE (module-level state, no class)
+// =============================================================================
 
-	/**
-	 * Creates a new buffer and returns its ID.
-	 */
-	create(initialText = ''): number {
-		const id = this.nextId++;
-		this.buffers.set(id, initialText);
-		return id;
-	}
-
-	/**
-	 * Gets the text content of a buffer.
-	 */
-	getText(bufferId: number): string {
-		return this.buffers.get(bufferId) ?? '';
-	}
-
-	/**
-	 * Sets the text content of a buffer.
-	 */
-	setText(bufferId: number, text: string): void {
-		if (this.buffers.has(bufferId)) {
-			this.buffers.set(bufferId, text);
-		}
-	}
-
-	/**
-	 * Inserts text at a position.
-	 */
-	insert(bufferId: number, position: number, text: string): void {
-		const current = this.buffers.get(bufferId) ?? '';
-		const before = current.slice(0, position);
-		const after = current.slice(position);
-		this.buffers.set(bufferId, before + text + after);
-	}
-
-	/**
-	 * Deletes text in a range.
-	 */
-	delete(bufferId: number, start: number, end: number): void {
-		const current = this.buffers.get(bufferId) ?? '';
-		const before = current.slice(0, start);
-		const after = current.slice(end);
-		this.buffers.set(bufferId, before + after);
-	}
-
-	/**
-	 * Gets the length of a buffer's text.
-	 */
-	getLength(bufferId: number): number {
-		return (this.buffers.get(bufferId) ?? '').length;
-	}
-
-	/**
-	 * Removes a buffer.
-	 */
-	remove(bufferId: number): boolean {
-		return this.buffers.delete(bufferId);
-	}
-
-	/**
-	 * Checks if a buffer exists.
-	 */
-	has(bufferId: number): boolean {
-		return this.buffers.has(bufferId);
-	}
-
-	/**
-	 * Clears all buffers.
-	 */
-	clear(): void {
-		this.buffers.clear();
-		this.nextId = 1;
-	}
-}
+const inputBuffers = new Map<number, string>();
+let nextInputBufferId = 1;
 
 /**
  * Global store for input buffer text content.
@@ -317,7 +241,55 @@ class InputBufferTextStore {
  * console.log(inputBufferStore.getText(bufferId)); // 'Hello'
  * ```
  */
-export const inputBufferStore = new InputBufferTextStore();
+export const inputBufferStore = {
+	/** Creates a new buffer and returns its ID. */
+	create(initialText = ''): number {
+		const id = nextInputBufferId++;
+		inputBuffers.set(id, initialText);
+		return id;
+	},
+	/** Gets the text content of a buffer. */
+	getText(bufferId: number): string {
+		return inputBuffers.get(bufferId) ?? '';
+	},
+	/** Sets the text content of a buffer. */
+	setText(bufferId: number, text: string): void {
+		if (inputBuffers.has(bufferId)) {
+			inputBuffers.set(bufferId, text);
+		}
+	},
+	/** Inserts text at a position. */
+	insert(bufferId: number, position: number, text: string): void {
+		const current = inputBuffers.get(bufferId) ?? '';
+		const before = current.slice(0, position);
+		const after = current.slice(position);
+		inputBuffers.set(bufferId, before + text + after);
+	},
+	/** Deletes text in a range. */
+	delete(bufferId: number, start: number, end: number): void {
+		const current = inputBuffers.get(bufferId) ?? '';
+		const before = current.slice(0, start);
+		const after = current.slice(end);
+		inputBuffers.set(bufferId, before + after);
+	},
+	/** Gets the length of a buffer's text. */
+	getLength(bufferId: number): number {
+		return (inputBuffers.get(bufferId) ?? '').length;
+	},
+	/** Removes a buffer. */
+	remove(bufferId: number): boolean {
+		return inputBuffers.delete(bufferId);
+	},
+	/** Checks if a buffer exists. */
+	has(bufferId: number): boolean {
+		return inputBuffers.has(bufferId);
+	},
+	/** Clears all buffers. */
+	clear(): void {
+		inputBuffers.clear();
+		nextInputBufferId = 1;
+	},
+};
 
 // =============================================================================
 // Helper Functions - Keyboard Input
