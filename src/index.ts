@@ -950,6 +950,46 @@ export {
 	Velocity,
 } from './components';
 // =============================================================================
+// COMPONENTS - Text Selection Across Virtualized Content
+// =============================================================================
+export type {
+	CopyProgress,
+	LineSelectionInfo,
+	SelectionMode,
+	SelectionPosition,
+	SelectionRange,
+	TextSelectionState,
+} from './components/textSelection';
+export {
+	BACKGROUND_COPY_CHUNK_SIZE,
+	clearTextSelection,
+	createBackgroundCopy,
+	createSelectionState,
+	getLineSelectionInfo,
+	getNormalizedRange,
+	getSelectedLinesInViewport,
+	getSelectedText,
+	getSelectionDirtyRanges,
+	getSelectionLineCount,
+	getSelectionState,
+	hasActiveSelection,
+	hasSelectionState,
+	isLineSelected,
+	registerSelectionState,
+	removeSelectionState,
+	resetSelectionStore,
+	SelectionModeSchema,
+	SelectionPositionSchema,
+	SYNC_COPY_LINE_LIMIT,
+	selectAll,
+	selectLine,
+	selectLineRange,
+	setSelectionMode,
+	snapshotSelection,
+	startSelection,
+	updateSelection,
+} from './components/textSelection';
+// =============================================================================
 // CORE - ECS Foundation
 // =============================================================================
 export type {
