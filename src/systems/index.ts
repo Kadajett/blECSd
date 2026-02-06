@@ -12,6 +12,13 @@ export {
 	registerAnimationSystem,
 	updateAnimations,
 } from './animationSystem';
+// Behavior system
+export type {
+	BehaviorSystemConfig,
+	MovementApplier,
+	PositionResolver,
+} from './behaviorSystem';
+export { createBehaviorSystem } from './behaviorSystem';
 // Camera system
 export {
 	cameraSystem,
