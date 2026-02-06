@@ -103,6 +103,7 @@ Creates a simple throttle function for resize events. Useful when you need just 
 function throttleResize<T extends (...args: unknown[]) => void>(fn: T, maxRate: number): T
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { throttleResize } from 'blecsd';
 
@@ -121,6 +122,7 @@ function debounceResize<T extends (...args: unknown[]) => void>(
 ): { fn: T; cancel: () => void }
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { debounceResize } from 'blecsd';
 

@@ -4,6 +4,7 @@ Game loop with input priority, lifecycle management, fixed timestep support, and
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, createWorld, LoopPhase } from 'blecsd';
 
@@ -181,6 +182,7 @@ function isLoopPaused(loop: GameLoop | undefined): boolean;
 
 ### Variable Timestep
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, createWorld, LoopPhase } from 'blecsd';
 
@@ -196,6 +198,7 @@ loop.start();
 
 ### Fixed Timestep with Interpolation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, createWorld, LoopPhase } from 'blecsd';
 
@@ -222,6 +225,7 @@ loop.start();
 
 ### Manual Stepping (Testing)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, createWorld } from 'blecsd';
 

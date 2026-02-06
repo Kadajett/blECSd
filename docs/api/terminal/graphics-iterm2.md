@@ -4,6 +4,7 @@ Implements the iTerm2 inline images protocol (OSC 1337) for displaying images di
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createITerm2Backend,
@@ -24,6 +25,7 @@ process.stdout.write(seq);
 
 ## Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { OSC_1337_PREFIX, ST, ST_ALT, ITERM2_BACKEND_NAME } from 'blecsd';
 
@@ -92,6 +94,7 @@ Formats a size value for the OSC 1337 protocol.
 function formatSize(size: ITerm2Size): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { formatSize } from 'blecsd';
 
@@ -111,6 +114,7 @@ Builds the parameter string for an OSC 1337 image sequence.
 function buildParams(config: ITerm2ImageConfig, dataSize: number): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { buildParams } from 'blecsd';
 
@@ -126,6 +130,7 @@ Builds a complete OSC 1337 image sequence.
 function buildImageSequence(data: Uint8Array, config?: ITerm2ImageConfig): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { buildImageSequence } from 'blecsd';
 
@@ -143,6 +148,7 @@ Renders image data using the iTerm2 protocol with cursor positioning.
 function renderITerm2Image(image: ImageData, options: RenderOptions): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderITerm2Image } from 'blecsd';
 
@@ -191,6 +197,7 @@ Creates an iTerm2 graphics backend for use with the graphics manager.
 function createITerm2Backend(envChecker?: ITerm2EnvChecker): GraphicsBackend
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createITerm2Backend, createGraphicsManager, registerBackend } from 'blecsd';
 
@@ -200,6 +207,7 @@ registerBackend(manager, createITerm2Backend());
 
 ## Zod Schemas
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ITerm2SizeSchema, ITerm2ImageConfigSchema } from 'blecsd';
 

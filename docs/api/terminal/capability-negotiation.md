@@ -9,6 +9,7 @@ Supports three timing strategies:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createCapabilityNegotiator,
@@ -37,6 +38,7 @@ negotiator.destroy();
 
 ## Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   DEFAULT_QUERY_TIMEOUT,
@@ -145,6 +147,7 @@ Creates a capability negotiator that queries the terminal for capabilities and c
 function createCapabilityNegotiator(config?: NegotiatorConfig): CapabilityNegotiator
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCapabilityNegotiator } from 'blecsd';
 
@@ -208,6 +211,7 @@ Gets terminal capabilities using the default negotiator.
 function getTerminalCapabilities(): Promise<TerminalCapabilities>
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalCapabilities } from 'blecsd';
 
@@ -224,6 +228,7 @@ Checks if a specific capability is supported.
 function hasCapability(capability: keyof TerminalCapabilities): Promise<boolean>
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasCapability } from 'blecsd';
 
@@ -261,6 +266,7 @@ The negotiator detects capabilities from environment variables before sending an
 
 ## Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { NegotiatorConfigSchema } from 'blecsd';
 

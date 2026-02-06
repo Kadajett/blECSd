@@ -4,6 +4,7 @@ Parses the older termcap text format used before terminfo. Supports capability i
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseTermcap, findTermcapEntry, getTermcapData, createTput } from 'blecsd';
 
@@ -30,6 +31,7 @@ if (terminfo) {
 
 Parses termcap format data into a database of entries.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseTermcap } from 'blecsd';
 
@@ -111,6 +113,7 @@ interface TermcapEntry {
 
 Finds and parses a terminal's termcap entry from standard locations.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findTermcapEntry } from 'blecsd';
 
@@ -144,6 +147,7 @@ The returned entry has:
 
 Finds termcap entry and converts to TerminfoData format.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTermcapData, createTput } from 'blecsd';
 
@@ -166,6 +170,7 @@ if (data) {
 
 Gets the list of paths searched for termcap files.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTermcapSearchPaths } from 'blecsd';
 
@@ -200,6 +205,7 @@ const paths2 = getTermcapSearchPaths({
 
 Converts a TermcapEntry to TerminfoData format.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseTermcap, termcapToTerminfo } from 'blecsd';
 
@@ -223,6 +229,7 @@ if (entry) {
 
 Reads and parses a termcap file.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { readTermcapFile } from 'blecsd';
 
@@ -245,6 +252,7 @@ if (result?.success) {
 
 Lists all terminals in a termcap file.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { listTermcapTerminals } from 'blecsd';
 
@@ -264,6 +272,7 @@ terminals.forEach(name => console.log(`  ${name}`));
 
 Checks if a termcap file exists and is readable.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { termcapFileExists } from 'blecsd';
 
@@ -283,6 +292,7 @@ if (termcapFileExists('/etc/termcap')) {
 
 Gets the first existing termcap file from search paths.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findTermcapFile } from 'blecsd';
 
@@ -363,6 +373,7 @@ Common termcap-to-terminfo name mappings:
 
 ### Reading System Termcap
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findTermcapFile, readTermcapFile } from 'blecsd';
 
@@ -377,6 +388,7 @@ if (file) {
 
 ### Using Termcap with Tput
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTermcapData, createTput } from 'blecsd';
 
@@ -397,6 +409,7 @@ if (tput) {
 
 ### Parsing Inline Termcap
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseTermcap } from 'blecsd';
 

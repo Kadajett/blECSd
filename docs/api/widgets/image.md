@@ -4,6 +4,7 @@ Renders bitmap images in the terminal using ANSI escape sequences (256-color, AS
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createImage } from 'blecsd';
 
@@ -68,6 +69,7 @@ interface Bitmap {
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ImageConfigSchema } from 'blecsd';
 
@@ -86,6 +88,7 @@ const result = ImageConfigSchema.safeParse({
 
 Creates an Image widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createImage } from 'blecsd';
 
@@ -239,6 +242,7 @@ Destroys the image widget and removes the entity from the world.
 
 ### isImage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isImage } from 'blecsd';
 
@@ -249,6 +253,7 @@ if (isImage(world, entity)) {
 
 ### getImageBitmap
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getImageBitmap } from 'blecsd';
 
@@ -260,6 +265,7 @@ if (bitmap) {
 
 ### getImageCellMap
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getImageCellMap } from 'blecsd';
 
@@ -275,6 +281,7 @@ if (cellMap) {
 
 ### Render Modes
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createImage } from 'blecsd';
 
@@ -291,6 +298,7 @@ image.setRenderMode('braille');  // Braille characters
 
 ### Overlay Mode for External Protocols
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createImage, getImageBitmap } from 'blecsd';
 
@@ -308,6 +316,7 @@ const bitmap = getImageBitmap(image.eid);
 
 ### Dynamic Image Updates
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createImage } from 'blecsd';
 

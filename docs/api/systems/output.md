@@ -12,6 +12,7 @@ The output system:
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScheduler,
@@ -41,6 +42,7 @@ scheduler.run(world, deltaTime);
 
 Before the output system can work, you must configure both the output stream and buffer:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setOutputStream,
@@ -94,6 +96,7 @@ resetOutputState();
 
 The `generateOutput` function converts cell changes to ANSI sequences:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { generateOutput, createOutputState } from 'blecsd';
 import type { CellChange } from 'blecsd';

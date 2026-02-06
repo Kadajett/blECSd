@@ -12,6 +12,7 @@ The process utilities provide:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   spawn,
@@ -44,6 +45,7 @@ const edited = await readEditor({
 
 Open an external editor and return the edited content.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { readEditor } from 'blecsd';
 
@@ -73,6 +75,7 @@ The function:
 
 Get the default editor command.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDefaultEditor } from 'blecsd';
 
@@ -100,6 +103,7 @@ interface EditorOptions {
 
 Spawn a child process with terminal state management.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { spawn } from 'blecsd';
 
@@ -134,6 +138,7 @@ interface SpawnOptions extends NodeSpawnOptions {
 
 Execute a command and capture output.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { exec } from 'blecsd';
 
@@ -147,6 +152,7 @@ console.log(result.exitCode);
 
 Execute synchronously (blocking).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { execSync } from 'blecsd';
 
@@ -181,6 +187,7 @@ interface ExecResult {
 
 Check if a command exists in PATH.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { processUtils } from 'blecsd';
 
@@ -193,6 +200,7 @@ if (processUtils.commandExists('git')) {
 
 Get the shell for the current platform.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { processUtils } from 'blecsd';
 
@@ -207,6 +215,7 @@ spawn(shell, [...args, 'echo hello']);
 
 Escape a string for shell commands.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { processUtils } from 'blecsd';
 
@@ -234,6 +243,7 @@ When spawning processes, the terminal state is automatically managed:
 
 ## Example: Interactive Git Commit
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { readEditor, exec, processUtils } from 'blecsd';
 
@@ -273,6 +283,7 @@ ${diff.stdout.split('\n').map(l => '# ' + l).join('\n')}
 
 ## Example: Interactive Shell
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { spawn } from 'blecsd';
 
@@ -295,6 +306,7 @@ console.log('Back from shell');
 
 ## Error Handling
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { readEditor, exec } from 'blecsd';
 

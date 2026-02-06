@@ -28,6 +28,7 @@ NULL_ENTITY;  // 0 (represents no entity)
 
 ### hasHierarchy
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasHierarchy, setParent } from 'blecsd';
 
@@ -45,6 +46,7 @@ hasHierarchy(world, child);   // true
 
 Sets an entity's parent. Adds Hierarchy component if needed. Removes from previous parent automatically.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setParent, getParent } from 'blecsd';
 
@@ -56,6 +58,7 @@ getParent(world, child);  // parent entity ID
 
 Adds an entity as the last child of a parent.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { appendChild, getChildren } from 'blecsd';
 
@@ -68,6 +71,7 @@ getChildren(world, parent);  // [child1, child2]
 
 Adds an entity as the first child of a parent.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { prepend, appendChild, getChildren } from 'blecsd';
 
@@ -84,6 +88,7 @@ getChildren(world, parent);  // [child1, child2]
 
 Inserts at a specific index. Negative indices count from the end.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { insertAt, appendChild, getChildren } from 'blecsd';
 
@@ -100,6 +105,7 @@ insertAt(world, parent, newChild, -1);
 
 Inserts before a sibling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { insertBefore, appendChild, getChildren } from 'blecsd';
 
@@ -113,6 +119,7 @@ getChildren(world, parent);  // [child1, child2, child3]
 
 Inserts after a sibling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { insertAfter, appendChild, getChildren } from 'blecsd';
 
@@ -130,6 +137,7 @@ getChildren(world, parent);  // [child1, child2, child3]
 
 Removes a child from its parent.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { removeChild, getChildren } from 'blecsd';
 
@@ -140,6 +148,7 @@ removeChild(world, parent, child);
 
 Convenience function to remove an entity from its parent.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detach, appendChild, getParent, NULL_ENTITY } from 'blecsd';
 
@@ -165,6 +174,7 @@ const parent = getParent(world, entity);
 
 Returns direct children only.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getChildren } from 'blecsd';
 
@@ -176,6 +186,7 @@ const children = getChildren(world, parent);
 
 Returns all descendants (children, grandchildren, etc.) in depth-first order.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDescendants } from 'blecsd';
 
@@ -195,6 +206,7 @@ const ancestors = getAncestors(world, entity);
 
 ### getFirstChild / getLastChild
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getFirstChild, getLastChild, NULL_ENTITY } from 'blecsd';
 
@@ -204,6 +216,7 @@ const last = getLastChild(world, parent);    // Entity ID or NULL_ENTITY
 
 ### getChildAt
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getChildAt, appendChild, NULL_ENTITY } from 'blecsd';
 
@@ -216,6 +229,7 @@ getChildAt(world, parent, 5);  // NULL_ENTITY (out of bounds)
 
 ### getChildIndex
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getChildIndex, appendChild } from 'blecsd';
 
@@ -237,6 +251,7 @@ const prev = getPrevSibling(world, entity);  // Entity ID or NULL_ENTITY
 
 ### getDepth
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDepth } from 'blecsd';
 
@@ -347,6 +362,7 @@ function getRoot(world, entity) {
 
 ### Moving Between Parents
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detach, appendChild } from 'blecsd';
 

@@ -114,10 +114,10 @@ Renderable.transparent // Uint8Array  - Transparent background flag
 ### hasRenderable
 
 ```typescript
-import { createWorld, hasRenderable, setStyle } from 'blecsd';
+import { createWorld, addEntity, hasRenderable, setStyle } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 hasRenderable(world, eid);            // false
 setStyle(world, eid, { fg: '#ff0000' });
@@ -167,10 +167,10 @@ setStyle(world, entity, { blink: true });
 Returns style data or `undefined` if no Renderable component.
 
 ```typescript
-import { createWorld, setStyle, getStyle, colorToHex } from 'blecsd';
+import { createWorld, addEntity, setStyle, getStyle, colorToHex } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setStyle(world, eid, {
   fg: '#ff0000',
@@ -201,10 +201,10 @@ console.log(colorToHex(style.fg));  // '#ff0000'
 Returns full renderable data including visibility and dirty state.
 
 ```typescript
-import { createWorld, setStyle, getRenderable } from 'blecsd';
+import { createWorld, addEntity, setStyle, getRenderable } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setStyle(world, eid, { fg: '#00ff00' });
 
@@ -233,10 +233,10 @@ const data = getRenderable(world, eid);
 Marks an entity as needing redraw. Adds Renderable if not present.
 
 ```typescript
-import { createWorld, markDirty, isDirty } from 'blecsd';
+import { createWorld, addEntity, markDirty, isDirty } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 markDirty(world, eid);
 isDirty(world, eid);  // true
@@ -251,10 +251,10 @@ isDirty(world, eid);  // true
 Clears the dirty flag after rendering.
 
 ```typescript
-import { createWorld, setStyle, markClean, isDirty } from 'blecsd';
+import { createWorld, addEntity, setStyle, markClean, isDirty } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setStyle(world, eid, { fg: '#ff0000' });
 isDirty(world, eid);  // true (setStyle marks dirty)
@@ -270,10 +270,10 @@ isDirty(world, eid);  // false
 ### isDirty
 
 ```typescript
-import { createWorld, setStyle, markClean, markDirty, isDirty } from 'blecsd';
+import { createWorld, addEntity, setStyle, markClean, markDirty, isDirty } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 isDirty(world, eid);  // false (no component)
 
@@ -291,10 +291,10 @@ isDirty(world, eid);  // false
 ### setVisible
 
 ```typescript
-import { createWorld, setVisible, isVisible } from 'blecsd';
+import { createWorld, addEntity, setVisible, isVisible } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setVisible(world, eid, false);
 isVisible(world, eid);  // false
@@ -314,10 +314,10 @@ Automatically marks the entity dirty when visibility changes.
 Convenience functions for visibility control.
 
 ```typescript
-import { createWorld, setStyle, show, hide, toggle, isVisible } from 'blecsd';
+import { createWorld, addEntity, setStyle, show, hide, toggle, isVisible } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setStyle(world, eid, { fg: '#ff0000' });
 isVisible(world, eid);  // true

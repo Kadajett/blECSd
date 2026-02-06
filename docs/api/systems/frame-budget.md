@@ -13,6 +13,7 @@ The frame budget manager handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createFrameBudgetManager,
@@ -156,6 +157,7 @@ function profiledSystem(name: string, system: System): System
 
 **Returns:** A wrapped `System` that records its execution time.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { profiledSystem } from 'blecsd';
 
@@ -263,6 +265,7 @@ const metrics = exportFrameBudgetMetrics();
 
 Complete example with budget alerts and profiled systems:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

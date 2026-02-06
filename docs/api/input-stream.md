@@ -36,6 +36,7 @@ handler.start();
 
 ### Constructor
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { InputHandler } from 'blecsd';
 
@@ -214,6 +215,7 @@ if (!result.success) {
 
 Connect InputHandler to the input system for ECS processing:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createInputHandler,

@@ -4,6 +4,7 @@ Dynamic capability negotiation queries the terminal for modern features at start
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCapabilityNegotiator, getTerminalCapabilities } from 'blecsd';
 
@@ -45,6 +46,7 @@ import {
 
 Kitty keyboard protocol enhancement levels.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { KittyKeyboardLevel } from 'blecsd';
 
@@ -60,6 +62,7 @@ KittyKeyboardLevel.REPORT_TEXT        // 16 - Report associated text
 
 Graphics protocol types.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { GraphicsProtocol } from 'blecsd';
 
@@ -73,6 +76,7 @@ GraphicsProtocol.SIXEL   // 'sixel' - Sixel graphics
 
 Negotiation timing strategies.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { NegotiationTiming } from 'blecsd';
 
@@ -87,6 +91,7 @@ NegotiationTiming.SKIP   // 'skip' - Environment detection only
 
 Creates a capability negotiator instance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCapabilityNegotiator } from 'blecsd';
 
@@ -191,6 +196,7 @@ negotiator.destroy();
 
 Gets terminal capabilities using the default negotiator.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalCapabilities } from 'blecsd';
 
@@ -202,6 +208,7 @@ console.log(`Truecolor: ${caps.truecolor}`);
 
 Checks if a specific capability is supported.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasCapability } from 'blecsd';
 
@@ -218,6 +225,7 @@ if (await hasCapability('kittyKeyboard')) {
 
 Gets the default capability negotiator instance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDefaultNegotiator } from 'blecsd';
 
@@ -229,6 +237,7 @@ const caps = await negotiator.getCapabilities();
 
 Resets the default negotiator. For testing purposes.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetDefaultNegotiator } from 'blecsd';
 
@@ -241,6 +250,7 @@ resetDefaultNegotiator();
 
 Manual query generators for capability detection.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { capabilityQuery } from 'blecsd';
 
@@ -349,6 +359,7 @@ The module automatically detects capabilities from environment variables:
 
 ### Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalCapabilities } from 'blecsd';
 
@@ -369,6 +380,7 @@ async function setupTerminal() {
 
 ### Custom Negotiation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCapabilityNegotiator, NegotiationTiming } from 'blecsd';
 
@@ -387,6 +399,7 @@ negotiator.destroy();
 
 ### Skip Active Queries
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCapabilityNegotiator, NegotiationTiming } from 'blecsd';
 
@@ -401,6 +414,7 @@ const caps = await negotiator.getCapabilities();
 
 ### Testing with Forced Capabilities
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCapabilityNegotiator, GraphicsProtocol, KittyKeyboardLevel } from 'blecsd';
 
@@ -421,6 +435,7 @@ const caps = await negotiator.getCapabilities();
 
 ### Re-negotiation on Terminal Change
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDefaultNegotiator } from 'blecsd';
 

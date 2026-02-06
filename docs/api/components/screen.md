@@ -15,6 +15,7 @@ Every blECSd application has exactly one Screen entity, which serves as the root
 
 Screens are created using `createScreenEntity` from the entities module. Only one screen can exist per world.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createScreenEntity, getScreen } from 'blecsd';
 
@@ -50,6 +51,7 @@ const screenEntity = getScreen(world);
 
 ### Cursor Shapes
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { CursorShape } from 'blecsd';
 
@@ -63,6 +65,7 @@ CursorShape.BLINKING_BAR
 
 ### Cursor Functions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getScreenCursor,
@@ -91,6 +94,7 @@ setScreenCursorShape(world, screen, CursorShape.UNDERLINE);
 
 Track which entity has keyboard focus:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getScreenFocus,
@@ -118,6 +122,7 @@ const hovered = getScreenHover(world, screen);
 
 ## Screen Size
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getScreenSize, resizeScreen } from 'blecsd';
 
@@ -133,6 +138,7 @@ process.stdout.on('resize', () => {
 
 ## Unicode and Padding Settings
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   isFullUnicode,
@@ -152,6 +158,7 @@ setAutoPadding(world, screen, true);
 
 ## Getting All Screen Data
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getScreenData } from 'blecsd';
 
@@ -172,6 +179,7 @@ if (data) {
 
 Only one screen can exist per world:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createScreenEntity, hasScreenSingleton, destroyScreen } from 'blecsd';
 

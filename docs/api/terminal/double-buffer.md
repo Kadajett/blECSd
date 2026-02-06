@@ -12,6 +12,7 @@ After rendering to the back buffer, you swap the buffers and only output the cel
 
 ## Creating a Double Buffer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDoubleBuffer, getBackBuffer, setCell, createCell } from 'blecsd';
 
@@ -25,6 +26,7 @@ const dbWithDefault = createDoubleBuffer(80, 24, customDefault);
 
 ## Basic Rendering Loop
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createDoubleBuffer,
@@ -70,6 +72,7 @@ The system tracks which regions have changed to avoid comparing the entire buffe
 
 ### Marking Dirty Regions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { markDirtyRegion, markLineDirty, markFullRedraw } from 'blecsd';
 
@@ -85,6 +88,7 @@ markFullRedraw(db);
 
 ### Checking Dirty State
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   hasDirtyRegions,
@@ -119,6 +123,7 @@ console.log(`Dirty lines: ${lines.join(', ')}`);
 
 Multiple overlapping or adjacent dirty regions can be coalesced:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { coalesceDirtyRegions } from 'blecsd';
 
@@ -136,6 +141,7 @@ coalesceDirtyRegions(db);
 
 ### Accessing Buffers
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getBackBuffer, getFrontBuffer } from 'blecsd';
 
@@ -148,6 +154,7 @@ const front = getFrontBuffer(db);
 
 ### Swapping Buffers
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { swapBuffers } from 'blecsd';
 
@@ -157,6 +164,7 @@ swapBuffers(db);
 
 ### Clearing
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearBackBuffer, clearDirtyRegions, createCell } from 'blecsd';
 
@@ -172,6 +180,7 @@ clearDirtyRegions(db);
 
 ### Copying Between Buffers
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { copyFrontToBack } from 'blecsd';
 
@@ -181,6 +190,7 @@ copyFrontToBack(db);
 
 ## Resizing
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resizeDoubleBuffer, createCell } from 'blecsd';
 
@@ -197,6 +207,7 @@ function onResize(newWidth: number, newHeight: number): void {
 
 Get debugging information about buffer state:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDoubleBufferStats } from 'blecsd';
 

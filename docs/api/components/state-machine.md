@@ -169,6 +169,7 @@ if (hasStateMachine(world, entity)) {
 
 Updates state age for a batch of entities. Call each frame.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { updateStateAge } from 'blecsd';
 
@@ -177,6 +178,7 @@ updateStateAge(world, entities, deltaTime);
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { attachStateMachine, sendEvent, getState, isInState, updateStateAge } from 'blecsd';

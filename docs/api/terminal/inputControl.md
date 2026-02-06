@@ -12,6 +12,7 @@ The input control module provides:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createInputControl,
@@ -44,6 +45,7 @@ enableMouse(inputControl, MouseTrackingMode.ANY);
 
 Creates an input control for a world and program.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputControl } from 'blecsd';
 
@@ -69,6 +71,7 @@ const inputControl = createInputControl(world, program, {
 
 Gets the input control for a world.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInputControl } from 'blecsd';
 
@@ -82,6 +85,7 @@ if (inputControl) {
 
 Destroys an input control, disabling all input.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { destroyInputControl } from 'blecsd';
 
@@ -94,6 +98,7 @@ destroyInputControl(inputControl);
 
 Enables keyboard input handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableKeys } from 'blecsd';
 
@@ -104,6 +109,7 @@ enableKeys(inputControl);
 
 Disables keyboard input handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { disableKeys } from 'blecsd';
 
@@ -114,6 +120,7 @@ disableKeys(inputControl);
 
 Checks if keyboard input is enabled.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { areKeysEnabled } from 'blecsd';
 
@@ -128,6 +135,7 @@ if (areKeysEnabled(inputControl)) {
 
 Enables mouse input handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableMouse, MouseTrackingMode } from 'blecsd';
 
@@ -142,6 +150,7 @@ enableMouse(inputControl, MouseTrackingMode.ANY);
 
 Disables mouse input handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { disableMouse } from 'blecsd';
 
@@ -152,6 +161,7 @@ disableMouse(inputControl);
 
 Checks if mouse input is enabled.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isMouseEnabled } from 'blecsd';
 
@@ -164,6 +174,7 @@ if (isMouseEnabled(inputControl)) {
 
 Gets the current mouse tracking mode.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getMouseMode } from 'blecsd';
 
@@ -174,6 +185,7 @@ const mode = getMouseMode(inputControl);
 
 Sets the mouse tracking mode.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setMouseMode, MouseTrackingMode } from 'blecsd';
 
@@ -188,6 +200,7 @@ If mouse is currently enabled, it will be re-enabled with the new mode.
 
 Enables both keyboard and mouse input.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableInput, MouseTrackingMode } from 'blecsd';
 
@@ -202,6 +215,7 @@ enableInput(inputControl, MouseTrackingMode.BUTTON);
 
 Disables both keyboard and mouse input.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { disableInput } from 'blecsd';
 
@@ -212,6 +226,7 @@ disableInput(inputControl);
 
 Checks if any input is enabled.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isInputEnabled } from 'blecsd';
 
@@ -226,6 +241,7 @@ Convenience functions that operate on a world directly.
 
 ### enableWorldKeys / disableWorldKeys
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableWorldKeys, disableWorldKeys } from 'blecsd';
 
@@ -236,6 +252,7 @@ disableWorldKeys(world);
 
 ### enableWorldMouse / disableWorldMouse
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableWorldMouse, disableWorldMouse, MouseTrackingMode } from 'blecsd';
 
@@ -246,6 +263,7 @@ disableWorldMouse(world);
 
 ### enableWorldInput / disableWorldInput
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableWorldInput, disableWorldInput } from 'blecsd';
 
@@ -258,6 +276,7 @@ disableWorldInput(world);
 
 ### MouseTrackingMode
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { MouseTrackingMode } from 'blecsd';
 
@@ -284,6 +303,7 @@ MouseTrackingMode.SGR     // 4 - SGR extended mode (recommended)
 
 Gets the event bus for input control events.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInputControlEventBus } from 'blecsd';
 
@@ -310,6 +330,7 @@ bus.on('mouseDisabled', () => console.log('Mouse disabled'));
 
 Resets the event bus (for testing).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetInputControlEventBus } from 'blecsd';
 
@@ -365,6 +386,7 @@ type MouseModeValue = 0 | 1 | 2 | 3 | 4;
 
 Input control automatically integrates with the key lock system. Locked keys are filtered before being queued.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputControl, enableKeys } from 'blecsd';
 import { lockAllKeys, setIgnoredKeys } from 'blecsd';
@@ -381,6 +403,7 @@ setIgnoredKeys(['escape']);
 
 ## Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

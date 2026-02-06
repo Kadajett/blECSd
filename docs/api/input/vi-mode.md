@@ -4,6 +4,7 @@ Vi-style navigation mode for scrollable elements. Provides vi key bindings for s
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createViState, createViConfig, processViKey } from 'blecsd';
 

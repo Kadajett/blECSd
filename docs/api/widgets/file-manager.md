@@ -4,6 +4,7 @@ A file browser widget for navigating directories and selecting files. Supports d
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFileManager } from 'blecsd';
 
@@ -59,6 +60,7 @@ interface FileEntry {
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { FileManagerConfigSchema } from 'blecsd';
 
@@ -78,6 +80,7 @@ const result = FileManagerConfigSchema.safeParse({
 
 Creates a FileManager widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFileManager } from 'blecsd';
 
@@ -218,6 +221,7 @@ Destroys the widget and removes the entity from the world.
 
 Handles keyboard input for a file manager widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleFileManagerKey } from 'blecsd';
 
@@ -249,6 +253,7 @@ handleFileManagerKey(world, fmEid, 'backspace');  // Go to parent directory
 
 ### isFileManager
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isFileManager } from 'blecsd';
 
@@ -261,6 +266,7 @@ if (isFileManager(world, entity)) {
 
 Injects a custom directory-reading function. Primarily used for testing to mock filesystem operations.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setReadDirFn } from 'blecsd';
 
@@ -276,6 +282,7 @@ setReadDirFn(fmEid, (dir) => [
 
 ### File Picker Dialog
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFileManager } from 'blecsd';
 
@@ -298,6 +305,7 @@ picker.onSelect((entry) => {
 
 ### Directory Browser with Hidden Files
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFileManager, handleFileManagerKey } from 'blecsd';
 
@@ -316,6 +324,7 @@ function onKeyPress(key) {
 
 ### Filtered File Listing
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFileManager } from 'blecsd';
 

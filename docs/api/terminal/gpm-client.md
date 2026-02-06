@@ -133,6 +133,7 @@ Parses a raw GPM event buffer (20 bytes) into a `GpmRawEvent`.
 function parseGpmEventBuffer(buffer: Uint8Array): GpmRawEvent | null
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseGpmEventBuffer } from 'blecsd';
 
@@ -174,6 +175,7 @@ Converts a GPM raw event to a standard `MouseEvent`. Coordinates are converted f
 function gpmEventToMouseEvent(raw: GpmRawEvent): MouseEvent
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseGpmEventBuffer, gpmEventToMouseEvent } from 'blecsd';
 

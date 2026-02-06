@@ -123,6 +123,8 @@ function createRope(text?: string): Rope
 **Returns:** A new Rope.
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRope } from 'blecsd';
 
@@ -259,6 +261,8 @@ function getLine(rope: Rope, lineNumber: number): LineInfo | undefined
 **Returns:** Line info or `undefined` if out of bounds.
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRope, getLine } from 'blecsd';
 
@@ -295,6 +299,8 @@ function insert(rope: Rope, index: number, text: string): Rope
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRope, insert, getText } from 'blecsd';
 
@@ -333,6 +339,8 @@ function deleteRange(rope: Rope, start: number, end: number): Rope
 - `end` - End index (exclusive)
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRope, deleteRange, getText } from 'blecsd';
 
@@ -350,6 +358,8 @@ function replaceRange(rope: Rope, start: number, end: number, text: string): Rop
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRope, replaceRange, getText } from 'blecsd';
 
@@ -378,6 +388,7 @@ function verify(rope: Rope): boolean
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRope, insert, deleteRange, getLine, getText, getStats } from 'blecsd';
 

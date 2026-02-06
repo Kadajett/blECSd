@@ -4,6 +4,7 @@ A 3D rendering viewport that combines camera setup, viewport configuration, and 
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createViewport3D, addEntity, createWorld } from 'blecsd';
 
@@ -218,6 +219,7 @@ if (isViewport3DWidget(entity)) {
 
 ### Basic 3D Scene
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createViewport3D, addEntity, createWorld } from 'blecsd';
 

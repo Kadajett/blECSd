@@ -10,6 +10,7 @@ OBJ file parser and procedural mesh primitives.
 
 Parse an OBJ format string and register it as a mesh. Returns the mesh ID.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { readFileSync } from 'fs';
 

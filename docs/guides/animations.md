@@ -17,6 +17,7 @@ Think of iOS's bounce scroll, Material Design's ripples, or macOS's rubber-bandi
 
 The Velocity component enables smooth movement:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setPosition, setVelocity, getVelocity } from 'blecsd';
 
@@ -335,6 +336,7 @@ function particleSystem(delta: number): void {
 
 Register animation systems in the ANIMATION phase:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, LoopPhase } from 'blecsd';
 

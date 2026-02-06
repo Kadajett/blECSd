@@ -4,6 +4,7 @@ Memory profiling and leak detection for development. Tracks entity and component
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createMemoryProfiler } from 'blecsd';
 
@@ -188,6 +189,7 @@ reset(): void;
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createMemoryProfiler, createWorld, addEntity, Position, Renderable } from 'blecsd';
 

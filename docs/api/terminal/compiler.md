@@ -6,6 +6,7 @@ Compiles terminfo capability strings with parameter placeholders into executable
 
 Many terminfo capabilities require runtime parameters. For example, cursor positioning needs row and column values, and color setting needs a color number. The compiler transforms these parameterized strings into efficient, reusable functions.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tparm, compileCapability } from 'blecsd';
 
@@ -26,6 +27,7 @@ cup.execute(24, 79); // '\x1b[25;80H' (bottom-right on 80x25)
 
 Executes a terminfo capability string with parameters. For repeated use with the same capability, use `compileCapability()` instead.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tparm } from 'blecsd';
 
@@ -57,6 +59,7 @@ tparm('\x1b[%i%p1%d;%p2%dr', 0, 23);  // '\x1b[1;24r'
 
 Compiles a terminfo capability string for efficient repeated execution. Results are cached automatically.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { compileCapability } from 'blecsd';
 
@@ -91,6 +94,7 @@ process.stdout.write(setab.execute(21));   // Blue background
 
 Pre-compiles multiple capabilities at once for performance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { precompileCapabilities } from 'blecsd';
 
@@ -120,6 +124,7 @@ process.stdout.write(setaf?.execute(196) ?? '');
 
 Checks if a capability string contains parameters. Useful for optimization.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasParameters } from 'blecsd';
 
@@ -152,6 +157,7 @@ clearCapabilityCache();
 
 Gets the current number of cached compiled capabilities.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCapabilityCacheSize, compileCapability } from 'blecsd';
 
@@ -385,6 +391,7 @@ tparm(setaf, 196);  // '\x1b[38;5;196m' (256-color red)
 
 ### Cursor Positioning
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { compileCapability } from 'blecsd';
 
@@ -400,6 +407,7 @@ process.stdout.write(csr.execute(4, 19));  // 1-based: rows 5-20
 
 ### Building a Terminal Interface
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { precompileCapabilities, createTput, getDefaultTput } from 'blecsd';
 

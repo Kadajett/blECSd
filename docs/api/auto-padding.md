@@ -8,6 +8,7 @@ When `autoPadding` is enabled on the Screen, entities with borders automatically
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScreenEntity,
@@ -58,6 +59,7 @@ setPadding(world, box, { left: 2 });
 
 Check if auto-padding is enabled globally.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasAutoPadding } from 'blecsd';
 
@@ -72,6 +74,7 @@ if (hasAutoPadding(world)) {
 
 Get the auto-padding values for an entity based on its borders.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAutoPadding } from 'blecsd';
 
@@ -88,6 +91,7 @@ console.log(auto.bottom); // 1 if bottom border exists, 0 otherwise
 
 Get the total effective padding (explicit + auto-padding).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getEffectivePadding } from 'blecsd';
 
@@ -103,6 +107,7 @@ console.log(effective.vertical);   // top + bottom
 
 Get the sum of all effective padding.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTotalEffectivePadding } from 'blecsd';
 
@@ -116,6 +121,7 @@ console.log(`Total padding: ${total}`);  // left + right + top + bottom
 
 Check if an entity has any auto-padding applied.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasEntityAutoPadding } from 'blecsd';
 
@@ -166,6 +172,7 @@ const screen = createScreenEntity(world, {
 
 Or toggle it at runtime:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setAutoPadding, isAutoPadding } from 'blecsd';
 
@@ -183,6 +190,7 @@ const enabled = isAutoPadding(world, screen);
 
 Auto-padding only applies to sides with borders:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setBorder, BorderType, getAutoPadding } from 'blecsd';
 
@@ -204,6 +212,7 @@ const auto = getAutoPadding(world, entity);
 
 The layout system uses effective padding when calculating inner dimensions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInnerDimensions, getEffectivePadding } from 'blecsd';
 

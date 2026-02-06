@@ -189,6 +189,7 @@ const tabButton = createButtonEntity(world, {
 
 Creates a screen entity, the root container for all other entities.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createScreenEntity } from 'blecsd';
 

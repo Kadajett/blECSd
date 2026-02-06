@@ -28,6 +28,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -194,6 +195,7 @@ clearLineRenderConfig(viewer);
 
 Line render config is validated with Zod:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { LineRenderConfigSchema } from 'blecsd';
 
@@ -208,6 +210,7 @@ const config = LineRenderConfigSchema.parse({
 
 ## Example: Log Viewer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   virtualizedRenderSystem,

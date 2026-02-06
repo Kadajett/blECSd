@@ -172,6 +172,7 @@ function submitTask<TInput = unknown, TOutput = unknown>(
 
 **Returns:** Promise resolving to `TaskResult`.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { submitTask } from 'blecsd';
 

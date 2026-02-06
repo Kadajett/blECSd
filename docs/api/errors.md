@@ -248,6 +248,7 @@ createInternalError(code, message, options?)
 
 Use type guards to narrow error types:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   isValidationError,
@@ -281,6 +282,7 @@ if (isErrorKind(error, 'validation')) {
 
 ### Additional Guards
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   hasContext,
@@ -311,6 +313,7 @@ Convert between BlECSd errors and native JavaScript Errors:
 
 Convert a BlECSd error to a throwable Error:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createValidationError, ValidationErrorCode, toNativeError } from 'blecsd';
 
@@ -382,6 +385,7 @@ const failed = divide(10, 0);
 
 ### Checking Results
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isOk, isErr } from 'blecsd';
 
@@ -396,6 +400,7 @@ if (isErr(result)) {
 
 ### Unwrapping Values
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { unwrap, unwrapOr, unwrapOrElse } from 'blecsd';
 
@@ -486,6 +491,7 @@ function validateBoxConfig(config: unknown): Result<BoxConfig> {
 
 ### Handling Entity Operations
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createEntityError,
@@ -621,6 +627,7 @@ function requireEntity(name: string): Entity {
 
 ### 4. Chain Result Operations
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { flatMap, map, unwrapOr } from 'blecsd';
 

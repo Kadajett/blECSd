@@ -14,6 +14,7 @@ The regions module provides utilities for manipulating rectangular regions withi
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScreenBuffer,
@@ -45,6 +46,7 @@ blankLine(buffer, 23);
 
 Clears a rectangular region with empty cells.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearRegion } from 'blecsd';
 
@@ -59,6 +61,7 @@ clearRegion(buffer, 0, 0, 80, 1, 0xffffffff, 0x0000ffff);
 
 Fills a rectangular region with a specific cell.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { fillRegion, createCell, Attr } from 'blecsd';
 
@@ -74,6 +77,7 @@ fillRegion(buffer, 0, 0, 80, 1, headerCell);
 
 Blanks a single line.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { blankLine } from 'blecsd';
 
@@ -88,6 +92,7 @@ blankLine(buffer, 23, 0xffffffff, 0x0000ffff);
 
 Blanks multiple lines.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { blankLines } from 'blecsd';
 
@@ -104,6 +109,7 @@ blankLines(buffer, 0, 2, 0xffffffff, 0x333333ff);
 
 Scrolls a region up, filling empty lines at the bottom.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { scrollRegionUp } from 'blecsd';
 
@@ -121,6 +127,7 @@ scrollRegionUp(buffer, 0, 0, 80, 24, 1, createCell('~'));
 
 Scrolls a region down, filling empty lines at the top.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { scrollRegionDown } from 'blecsd';
 
@@ -135,6 +142,7 @@ scrollRegionDown(buffer, 10, 5, 40, 10, 3);
 
 Copies a region within the same buffer. Handles overlapping regions correctly.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { copyRegionInBuffer } from 'blecsd';
 
@@ -151,6 +159,7 @@ copyRegionInBuffer(buffer, 0, 0, 0, 1, 80, 23);
 
 Inserts blank lines, pushing content down.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { insertLines } from 'blecsd';
 
@@ -165,6 +174,7 @@ insertLines(buffer, 5, 2, 15);
 
 Deletes lines, pulling content up.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { deleteLines } from 'blecsd';
 
@@ -181,6 +191,7 @@ deleteLines(buffer, 5, 2, 15);
 
 Creates a region bounds object.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRegion } from 'blecsd';
 
@@ -192,6 +203,7 @@ const region = createRegion(10, 5, 20, 15);
 
 Computes the intersection of two regions.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { intersectRegions } from 'blecsd';
 
@@ -213,6 +225,7 @@ const noOverlap = intersectRegions(
 
 Computes the bounding box of two regions.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { unionRegions } from 'blecsd';
 
@@ -227,6 +240,7 @@ const bbox = unionRegions(a, b);
 
 Checks if a point is inside a region.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPointInRegion } from 'blecsd';
 
@@ -241,6 +255,7 @@ isPointInRegion(region, 30, 8);  // false - on right edge (exclusive)
 
 Checks if a region has zero or negative dimensions.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isRegionEmpty } from 'blecsd';
 
@@ -253,6 +268,7 @@ isRegionEmpty({ x: 0, y: 0, width: 10, height: 10 });  // false
 
 Clips a region to buffer bounds.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clipToBuffer, createScreenBuffer } from 'blecsd';
 

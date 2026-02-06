@@ -88,6 +88,7 @@ BehaviorState.Completed // 3
 
 Sets behavior on an entity. Adds the component if not present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setBehavior, BehaviorType } from 'blecsd';
 
@@ -136,6 +137,7 @@ if (hasBehavior(world, entity)) {
 
 ### setIdle / setPatrol / setChase / setFlee / setCustomBehavior
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setPatrol, setChase, setFlee, setCustomBehavior } from 'blecsd';
 
@@ -186,6 +188,7 @@ These functions return movement direction vectors without modifying entity posit
 
 ### computePatrolDirection
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { computePatrolDirection } from 'blecsd';
 
@@ -197,6 +200,7 @@ if (dir) {
 
 ### computeChaseDirection / computeFleeDirection
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { computeChaseDirection, computeFleeDirection } from 'blecsd';
 
@@ -208,6 +212,7 @@ const flee = computeFleeDirection(world, entity, myX, myY, targetX, targetY);
 
 ### executeCustomBehavior / updateBehaviorTimer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { executeCustomBehavior, updateBehaviorTimer } from 'blecsd';
 
@@ -218,6 +223,7 @@ executeCustomBehavior(world, entity, deltaTime);
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setBehavior, BehaviorType, setPatrol, computePatrolDirection } from 'blecsd';

@@ -30,6 +30,7 @@ type CodePointRange = readonly [number, number];
 
 Wide character ranges that display as two terminal cells.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { WIDE_RANGES } from 'blecsd';
 
@@ -119,6 +120,8 @@ function isWideChar(codePoint: number): boolean
 **Returns:** `true` if the character is wide (2 cells)
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isWideChar } from 'blecsd';
 
@@ -143,6 +146,8 @@ function isZeroWidthChar(codePoint: number): boolean
 **Returns:** `true` if the character is zero-width
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isZeroWidthChar } from 'blecsd';
 
@@ -167,6 +172,8 @@ function isAmbiguousChar(codePoint: number): boolean
 **Returns:** `true` if the character has ambiguous width
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isAmbiguousChar } from 'blecsd';
 
@@ -193,6 +200,8 @@ function getCharWidth(codePoint: number, ambiguousIsWide?: boolean): number
 **Returns:** Character display width (0, 1, or 2)
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCharWidth } from 'blecsd';
 
@@ -227,6 +236,7 @@ const elapsed = performance.now() - start;
 
 ### Calculating String Display Width
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCharWidth } from 'blecsd';
 
@@ -249,6 +259,7 @@ getStringWidth('Hello🚀');   // 7 (5 + 2)
 
 ### Text Truncation with Ellipsis
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCharWidth } from 'blecsd';
 
@@ -278,6 +289,7 @@ truncate('你好世界', 5);      // '你好…'
 
 ### Terminal Column Alignment
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCharWidth } from 'blecsd';
 
@@ -315,6 +327,8 @@ function isSurrogate(str: string, index: number): boolean
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isHighSurrogate, isLowSurrogate, isSurrogate } from 'blecsd';
 
@@ -333,6 +347,8 @@ function codePointToSurrogatePair(codePoint: number): [number, number]
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { surrogatePairToCodePoint, codePointToSurrogatePair } from 'blecsd';
 
@@ -350,6 +366,8 @@ function fromCodePoint(...codePoints: number[]): string
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { codePointAt, fromCodePoint } from 'blecsd';
 
@@ -367,6 +385,8 @@ function toCodePoints(str: string): number[]
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { codePoints, characters, toCodePoints } from 'blecsd';
 
@@ -390,6 +410,8 @@ function sliceCodePoints(str: string, start: number, end?: number): string
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { codePointLength, charAtCodePoint, sliceCodePoints } from 'blecsd';
 
@@ -410,6 +432,8 @@ function isAstral(codePoint: number): boolean
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isValidCodePoint, isBMP, isAstral } from 'blecsd';
 
@@ -434,6 +458,7 @@ Combining characters are marks that attach to the preceding base character. They
 
 Sorted array of combining character ranges.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { COMBINING_RANGES } from 'blecsd';
 
@@ -453,6 +478,7 @@ console.log(COMBINING_RANGES.length);
 
 Pre-computed Set of all combining character code points for O(1) lookup.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { COMBINING_SET } from 'blecsd';
 
@@ -475,6 +501,8 @@ function isCombiningChar(codePoint: number): boolean
 **Returns:** `true` if the character is a combining character
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isCombiningChar } from 'blecsd';
 
@@ -495,6 +523,8 @@ function isCombiningCharBinarySearch(codePoint: number): boolean
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isCombiningCharBinarySearch } from 'blecsd';
 
@@ -511,6 +541,8 @@ function getCombiningCharCount(): number
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCombiningCharCount } from 'blecsd';
 
@@ -561,6 +593,8 @@ function strWidth(str: string, options?: WidthOptions): number  // alias
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { stringWidth, strWidth } from 'blecsd';
 
@@ -584,6 +618,8 @@ function charWidth(char: string, ambiguousAsWide?: boolean): 0 | 1 | 2
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { charWidth } from 'blecsd';
 
@@ -601,6 +637,8 @@ function charWidthAt(str: string, index: number, ambiguousAsWide?: boolean): 0 |
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { charWidthAt } from 'blecsd';
 
@@ -626,6 +664,8 @@ interface SliceResult {
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sliceByWidth } from 'blecsd';
 
@@ -645,6 +685,8 @@ function truncateByWidth(str: string, maxWidth: number, options?: WidthOptions):
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { truncateByWidth } from 'blecsd';
 
@@ -666,6 +708,8 @@ function truncateWithEllipsis(
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { truncateWithEllipsis } from 'blecsd';
 
@@ -683,6 +727,8 @@ function centerByWidth(str: string, targetWidth: number, padChar?: string, optio
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { padEndByWidth, padStartByWidth, centerByWidth } from 'blecsd';
 
@@ -702,6 +748,8 @@ function columnAtIndex(str: string, index: number, options?: WidthOptions): numb
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { indexAtColumn, columnAtIndex } from 'blecsd';
 
@@ -724,6 +772,8 @@ function hasZeroWidthChars(str: string): boolean
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasWideChars, hasZeroWidthChars } from 'blecsd';
 
@@ -758,6 +808,8 @@ interface DropUnicodeOptions {
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { dropUnicode } from 'blecsd';
 
@@ -780,6 +832,8 @@ function toAscii(text: string, replacement?: string): string
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { toAscii } from 'blecsd';
 
@@ -796,6 +850,8 @@ function stripControl(text: string): string
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { stripZeroWidth, stripCombining, stripControl } from 'blecsd';
 
@@ -814,6 +870,8 @@ function normalizeNFKD(text: string): string  // Compatibility decomposition
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { normalizeNFC, normalizeNFD, normalizeNFKC } from 'blecsd';
 

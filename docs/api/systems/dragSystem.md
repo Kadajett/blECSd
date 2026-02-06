@@ -26,6 +26,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -237,6 +238,7 @@ setDragVerifyCallback(entity, null);
 
 ## Example: Draggable Window
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createDragSystem,

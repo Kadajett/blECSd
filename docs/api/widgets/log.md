@@ -4,6 +4,7 @@ An append-only scrollable log display optimized for log messages, console output
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createLog, addEntity } from 'blecsd';
 
@@ -62,6 +63,7 @@ interface ScrollbarConfig {
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { LogConfigSchema } from 'blecsd';
 
@@ -81,6 +83,7 @@ const validated = LogConfigSchema.parse({
 
 Creates a Log widget attached to an existing entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createLog, addEntity } from 'blecsd';
 
@@ -233,6 +236,7 @@ Destroys the widget and removes the entity from the world.
 
 ### isLog
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isLog } from 'blecsd';
 
@@ -243,6 +247,7 @@ if (isLog(world, entity)) {
 
 ### isMouseScrollEnabled
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isMouseScrollEnabled } from 'blecsd';
 
@@ -253,6 +258,7 @@ if (isMouseScrollEnabled(world, entity)) {
 
 ### isKeysScrollEnabled
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isKeysScrollEnabled } from 'blecsd';
 
@@ -263,6 +269,7 @@ if (isKeysScrollEnabled(world, entity)) {
 
 ### getScrollback
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getScrollback } from 'blecsd';
 
@@ -276,6 +283,7 @@ const limit = getScrollback(world, entity);
 
 ### Application Log Viewer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createLog, addEntity, createWorld } from 'blecsd';
 

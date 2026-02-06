@@ -23,6 +23,7 @@ function runBlock(
       cwd: rootDir,
       stdio: ["ignore", "ignore", "pipe"],
       env: { ...process.env, NODE_NO_WARNINGS: "1" },
+      detached: true,
     });
 
     let stderr = "";
@@ -36,7 +37,14 @@ function runBlock(
 
     const timer = setTimeout(() => {
       timedOut = true;
-      child.kill("SIGKILL");
+      // Kill the entire process group to handle spawned subprocesses
+      try {
+        if (child.pid) {
+          process.kill(-child.pid, "SIGKILL");
+        }
+      } catch {
+        child.kill("SIGKILL");
+      }
     }, timeoutMs);
 
     child.on("close", (code) => {

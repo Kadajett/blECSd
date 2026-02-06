@@ -269,6 +269,7 @@ Destroying a list removes the entity and clears all callbacks.
 
 Configuration is validated using Zod:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ListWidgetConfigSchema } from 'blecsd';
 

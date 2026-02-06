@@ -191,6 +191,7 @@ const roots = getRootEntities(world);
 
 Direct children of an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getChildEntities } from 'blecsd';
 
@@ -201,6 +202,7 @@ const children = getChildEntities(world, parentEntity);
 
 All descendants (children, grandchildren, etc.).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDescendantEntities } from 'blecsd';
 

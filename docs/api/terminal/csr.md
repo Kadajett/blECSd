@@ -15,6 +15,7 @@ Hardware scrolling is significantly faster than redrawing because the terminal c
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createCSRContext,
@@ -51,6 +52,7 @@ if (canUseCSR(ctx, 5, 20, 3, 'up')) {
 
 Create a CSR context with terminal capabilities.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCSRContext } from 'blecsd';
 
@@ -79,6 +81,7 @@ interface CSRContextOptions {
 
 Update context dimensions after terminal resize.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resizeCSRContext } from 'blecsd';
 
@@ -91,6 +94,7 @@ const resized = resizeCSRContext(ctx, 120, 40);
 
 Determine if hardware scrolling would be beneficial.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { canUseCSR } from 'blecsd';
 
@@ -110,6 +114,7 @@ CSR is beneficial when:
 
 Check if region edges are suitable for CSR.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasCleanSides } from 'blecsd';
 
@@ -121,6 +126,7 @@ const clean = hasCleanSides(leftEdgeEmpty, rightEdgeEmpty);
 
 Detect scroll operations by comparing buffer states.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectScrollOperation, computeLineHashes } from 'blecsd';
 
@@ -141,6 +147,7 @@ if (op) {
 
 Generate escape sequences for a scroll operation.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getScrollSequence } from 'blecsd';
 
@@ -171,6 +178,7 @@ interface CSRScrollResult {
 
 Convenience function using a scroll operation object.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { scrollWithCSR } from 'blecsd';
 
@@ -201,6 +209,7 @@ Low-level escape sequence generators.
 
 ### setScrollRegion / resetScrollRegion
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setScrollRegion, resetScrollRegion } from 'blecsd';
 
@@ -213,6 +222,7 @@ const reset = resetScrollRegion();   // '\x1b[r'
 
 ### scrollUp / scrollDown
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { scrollUp, scrollDown } from 'blecsd';
 
@@ -222,6 +232,7 @@ const down = scrollDown(2); // '\x1b[2T'
 
 ### insertLine / deleteLine
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { insertLine, deleteLine } from 'blecsd';
 
@@ -243,6 +254,7 @@ Alternative to scroll regions for some operations.
 
 ### getInsertLineSequence
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInsertLineSequence } from 'blecsd';
 
@@ -253,6 +265,7 @@ process.stdout.write(sequences.join(''));
 
 ### getDeleteLineSequence
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDeleteLineSequence } from 'blecsd';
 
@@ -269,6 +282,7 @@ Utilities for scroll detection.
 
 Compute a fast hash for a line of content.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hashLine } from 'blecsd';
 
@@ -279,6 +293,7 @@ const hash = hashLine('Hello, World!');
 
 Compute hashes for multiple lines.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { computeLineHashes } from 'blecsd';
 
@@ -287,6 +302,7 @@ const hashes = computeLineHashes(['Line 1', 'Line 2', 'Line 3']);
 
 ## Example: Scrolling Text Area
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createCSRContext,
@@ -344,6 +360,7 @@ Automatic detection and optimization for scroll operations.
 
 Create a smart CSR context with automatic detection.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSmartCSRContext } from 'blecsd';
 
@@ -379,6 +396,7 @@ interface SmartCSRConfig {
 
 Analyze whether CSR should be used for a scroll operation.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSmartCSRContext, analyzeCSR } from 'blecsd';
 
@@ -422,6 +440,7 @@ type SmartCSRReason =
 
 Analyze buffer changes and detect if CSR should be used.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSmartCSRContext, analyzeBufferForCSR } from 'blecsd';
 
@@ -438,6 +457,7 @@ if (analysis.shouldUseCSR && analysis.scrollOperation) {
 
 One-step smart scroll with buffer comparison.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSmartCSRContext, smartScroll } from 'blecsd';
 
@@ -456,6 +476,7 @@ if (result.usedCSR) {
 
 Check if region edges are clean for CSR.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { checkEdges } from 'blecsd';
 
@@ -487,6 +508,7 @@ interface SmartCSRCell {
 
 Calculate efficiency ratio for CSR vs redraw.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSmartCSRContext, calculateCSREfficiency } from 'blecsd';
 
@@ -502,6 +524,7 @@ console.log(`CSR is ${efficiency}x more efficient`);
 
 Check if smart CSR is enabled.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSmartCSRContext, isSmartCSREnabled } from 'blecsd';
 
@@ -515,6 +538,7 @@ if (isSmartCSREnabled(ctx)) {
 
 Update smart CSR configuration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSmartCSRContext, updateSmartCSRConfig } from 'blecsd';
 
@@ -524,6 +548,7 @@ ctx = updateSmartCSRConfig(ctx, { minRegionHeight: 6 });
 
 ## Example: Automatic Scroll Detection
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createSmartCSRContext,

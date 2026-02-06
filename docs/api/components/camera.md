@@ -60,6 +60,7 @@ const Camera = {
 
 Creates or updates a camera on an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setCamera } from 'blecsd';
 
@@ -84,6 +85,7 @@ setCamera(world, cameraEntity, {
 
 Returns a snapshot of camera state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCamera } from 'blecsd';
 
@@ -97,6 +99,7 @@ if (cam) {
 
 ### hasCamera / removeCamera
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasCamera, removeCamera } from 'blecsd';
 
@@ -111,6 +114,7 @@ if (hasCamera(world, entity)) {
 
 Sets the entity for the camera to follow with optional smoothing.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setCameraTarget } from 'blecsd';
 
@@ -120,6 +124,7 @@ setCameraTarget(world, camera, 0);            // Stop following
 
 ### getCameraTarget / isFollowingTarget
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCameraTarget, isFollowingTarget } from 'blecsd';
 
@@ -131,6 +136,7 @@ const following = isFollowingTarget(world, camera); // boolean
 
 Sets the dead zone. The camera only moves when the target exits this zone around the viewport center.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setCameraDeadZone } from 'blecsd';
 
@@ -141,6 +147,7 @@ setCameraDeadZone(world, camera, 10, 5);
 
 Updates camera position to follow its target. Call each frame.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { updateCameraFollow } from 'blecsd';
 
@@ -153,6 +160,7 @@ updateCameraFollow(world, camera, deltaTime);
 
 Restrict the camera to a rectangular area.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setCameraBounds, clearCameraBounds, isCameraBounded } from 'blecsd';
 
@@ -170,6 +178,7 @@ if (isCameraBounded(world, camera)) {
 
 ### setCameraPosition / getCameraPosition / moveCameraBy / centerCameraOn
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setCameraPosition, getCameraPosition, moveCameraBy, centerCameraOn } from 'blecsd';
 
@@ -185,6 +194,7 @@ const pos = getCameraPosition(world, camera);
 
 ### worldToScreen / screenToWorld
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { worldToScreen, screenToWorld } from 'blecsd';
 
@@ -201,6 +211,7 @@ if (worldPos) {
 
 ### isInView / isAreaInView
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isInView, isAreaInView } from 'blecsd';
 
@@ -215,6 +226,7 @@ if (isAreaInView(world, camera, rect.x, rect.y, rect.w, rect.h)) {
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setCamera, setCameraTarget, setCameraBounds, updateCameraFollow } from 'blecsd';

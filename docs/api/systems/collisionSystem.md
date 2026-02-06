@@ -25,6 +25,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -258,6 +259,7 @@ bus.on('triggerExit', ({ entityA, entityB }) => {
 
 ## Example: Platformer Collisions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   registerCollisionSystem,

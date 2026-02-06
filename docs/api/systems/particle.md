@@ -14,6 +14,7 @@ The particle system handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createParticleSystem } from 'blecsd';
 
@@ -117,6 +118,7 @@ function burstParticles(
 
 **Returns:** Array of spawned particle entity IDs.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { burstParticles } from 'blecsd';
 

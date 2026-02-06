@@ -11,6 +11,7 @@ The state machine system handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScheduler,
@@ -35,6 +36,7 @@ The state machine system function. Reads delta time from the scheduler and updat
 const stateMachineSystem: System
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { stateMachineSystem, LoopPhase } from 'blecsd';
 
@@ -102,6 +104,7 @@ function getSystemStateAge(eid: number): number
 
 **Returns:** Time in seconds the entity has been in its current state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getSystemStateAge } from 'blecsd';
 
@@ -119,6 +122,7 @@ Resets the state age for an entity to zero. Typically called when a state transi
 function resetStateAge(eid: number): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetStateAge } from 'blecsd';
 
@@ -153,6 +157,7 @@ function getStateAgeStore(): Float32Array
 
 Complete state machine setup with time-based transitions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

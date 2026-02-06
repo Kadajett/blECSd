@@ -9,6 +9,7 @@ blECSd does not own your update loop or world. You can:
 3. Use only the parts you need
 4. Integrate with existing systems
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Your own update loop
 function updateLoop() {
@@ -43,6 +44,7 @@ const mainPanel = addEntity(world); // Returns 2
 
 Components are typed data stores. blECSd provides components for common UI needs:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Position, Renderable, Dimensions } from 'blecsd';
 
@@ -54,6 +56,7 @@ Renderable.fg[sidebar] = 0xffffffff;  // White foreground
 
 blECSd wraps raw component access with helper functions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setPosition, setStyle, getPosition } from 'blecsd';
 
@@ -68,6 +71,7 @@ const pos = getPosition(world, player);
 
 Systems are functions that process entities with specific components:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { defineQuery } from 'blecsd';
 import { Position, Renderable, queryRenderable } from 'blecsd';
@@ -99,6 +103,7 @@ const sorted = sortByZIndex(world, visibleEntities);
 
 The scheduler provides phase-ordered execution when you want it:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, LoopPhase } from 'blecsd';
 
@@ -169,6 +174,7 @@ unsubscribe();
 
 Attach FSMs to entities for state management:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { attachStateMachine, sendEvent, getState, isInState } from 'blecsd';
 

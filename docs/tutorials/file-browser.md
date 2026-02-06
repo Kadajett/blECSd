@@ -35,6 +35,7 @@ In this tutorial, you'll build a dual-pane file browser similar to Midnight Comm
 
 Create `file-browser.ts`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

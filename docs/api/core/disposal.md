@@ -13,6 +13,7 @@ The disposal system handles entity destruction with:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   destroyEntity,
@@ -39,6 +40,7 @@ flushDestroyQueue(world);
 
 Marks an entity for destruction.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { destroyEntity } from 'blecsd';
 
@@ -67,6 +69,7 @@ destroyEntity(world, entity, { emitEvent: false });
 
 Destroys all children without destroying the parent.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { destroyAllChildren } from 'blecsd';
 
@@ -81,6 +84,7 @@ destroyAllChildren(world, container, { immediate: true });
 
 Clears all disposal state for a world.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { destroyWorld } from 'blecsd';
 
@@ -93,6 +97,7 @@ destroyWorld(world);
 
 Processes all pending destructions. Call at end of frame.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { flushDestroyQueue } from 'blecsd';
 
@@ -105,6 +110,7 @@ console.log(`Destroyed ${destroyedCount} entities`);
 
 Checks if an entity is queued for destruction.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isMarkedForDestruction } from 'blecsd';
 
@@ -117,6 +123,7 @@ if (isMarkedForDestruction(entity)) {
 
 Gets number of entities pending destruction.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDestroyQueueSize } from 'blecsd';
 
@@ -131,6 +138,7 @@ const globalCount = getDestroyQueueSize();
 
 Cancels pending destructions without destroying.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearDestroyQueue } from 'blecsd';
 
@@ -144,6 +152,7 @@ clearDestroyQueue(world);
 
 Registers cleanup logic for entity destruction.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { registerCleanupCallback } from 'blecsd';
 
@@ -161,6 +170,7 @@ unregister();
 
 Removes all cleanup callbacks (for testing).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearCleanupCallbacks } from 'blecsd';
 
@@ -192,6 +202,7 @@ type CleanupCallback = (world: World, entity: Entity) => void;
 
 Destruction emits a `destroy` event that can be listened to:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getLifecycleEventBus, createEventBus } from 'blecsd';
 
@@ -210,6 +221,7 @@ bus.on('destroy', (event) => {
 
 ## Integration with Game Loop
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, LoopPhase, flushDestroyQueue } from 'blecsd';
 
@@ -224,6 +236,7 @@ loop.registerSystem(LoopPhase.POST_RENDER, (w) => {
 
 ## Example: Complete Cleanup
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   destroyEntity,

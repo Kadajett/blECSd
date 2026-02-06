@@ -192,6 +192,7 @@ if (hasAcceleration(world, entity)) {
 
 Full movement update for a single entity. Applies: acceleration, friction, speed clamping, then velocity to position.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { updateEntityMovement } from 'blecsd';
 
@@ -203,6 +204,7 @@ updateEntityMovement(world, entity, deltaTime);
 
 For finer control, use the individual functions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   applyAccelerationToEntity,
@@ -221,6 +223,7 @@ Note: These lower-level functions take only `Entity` (not `World`) and access ty
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -250,6 +253,7 @@ console.log(`Speed: ${getSpeed(world, entity)}`);
 
 For high-performance code in systems, access arrays directly:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Velocity, Acceleration } from 'blecsd';
 

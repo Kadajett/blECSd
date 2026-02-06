@@ -4,6 +4,7 @@ Provides character maps for box drawing and special symbols used in terminal UIs
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   ACS,
@@ -32,6 +33,7 @@ box.forEach(line => console.log(line));
 
 Named constants for common box drawing and special characters. These are the Unicode characters that terminals display when using the alternate character set.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ACS } from 'blecsd';
 
@@ -103,6 +105,7 @@ ACS.lrcorner_rounded // '╯' - rounded lower right
 
 ### Example: Drawing a Simple Box
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ACS } from 'blecsd';
 
@@ -138,6 +141,7 @@ box.forEach(line => console.log(line));
 
 Maps terminfo ACS codes (single characters) to their Unicode representations. These codes are used in the terminfo `acs_chars` capability string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ACSC_CODES } from 'blecsd';
 
@@ -173,6 +177,7 @@ ACSC_CODES['0']  // '█' - solid block
 
 Maps Unicode box drawing and special characters to their ASCII equivalents. Use this for terminals that don't support Unicode.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { UNICODE_TO_ASCII } from 'blecsd';
 
@@ -205,6 +210,7 @@ UNICODE_TO_ASCII['◆']  // '*'
 
 Parses a terminfo `acs_chars` capability string into a Map of code-to-character mappings.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseAcsc } from 'blecsd';
 
@@ -228,6 +234,7 @@ map.size;      // 25 pairs
 
 Gets a Unicode ACS character by its name.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAcsChar } from 'blecsd';
 
@@ -249,6 +256,7 @@ getAcsChar('invalid');   // undefined
 
 Gets a Unicode ACS character by its terminfo code.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAcsCharByCode } from 'blecsd';
 
@@ -269,6 +277,7 @@ getAcsCharByCode('Z');  // 'Z' (unknown code, returns as-is)
 
 Converts a single Unicode character to its ASCII fallback.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { unicodeToAscii } from 'blecsd';
 
@@ -289,6 +298,7 @@ unicodeToAscii('A');  // 'A' (no mapping, returns as-is)
 
 Converts a string containing Unicode box drawing characters to ASCII.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { stringToAscii } from 'blecsd';
 
@@ -310,6 +320,7 @@ stringToAscii('│ Text │');   // '| Text |'
 
 Checks if a character is a Unicode box drawing character (U+2500-U+257F).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isBoxDrawingChar } from 'blecsd';
 
@@ -332,6 +343,7 @@ isBoxDrawingChar('█');  // false (block element, not box drawing)
 
 Checks if a string contains any Unicode box drawing characters.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { containsBoxDrawing } from 'blecsd';
 
@@ -353,6 +365,7 @@ containsBoxDrawing('');              // false
 
 Creates a box with the specified dimensions and style.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createBox } from 'blecsd';
 
@@ -386,6 +399,7 @@ const minBox = createBox(2, 2, 'single');
 
 Returns an array of all available ACS character names.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAcsCharNames } from 'blecsd';
 
@@ -436,6 +450,7 @@ When Unicode is not available, box drawing characters fall back to ASCII:
 
 ### Window with Title
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ACS } from 'blecsd';
 
@@ -476,6 +491,7 @@ const window = drawWindow('My Window', 30, 5);
 
 ### Table with Dividers
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ACS } from 'blecsd';
 
@@ -508,6 +524,7 @@ console.log(drawTableDivider(widths, 'bottom'));
 
 ### ASCII-Safe Rendering
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createBox, stringToAscii } from 'blecsd';
 

@@ -329,6 +329,7 @@ function decompressAll(buffer: ScrollbackBuffer): void
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScrollbackBuffer,

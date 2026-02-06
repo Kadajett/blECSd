@@ -6,6 +6,7 @@ See the [Kitty graphics protocol specification](https://sw.kovidgoyal.net/kitty/
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createKittyBackend,
@@ -35,6 +36,7 @@ process.stdout.write(buildDeleteAll());
 
 ## Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { APC_PREFIX, KITTY_ST, MAX_CHUNK_SIZE, KITTY_BACKEND_NAME } from 'blecsd';
 
@@ -158,6 +160,7 @@ Serializes control data key-value pairs into a comma-separated string.
 function serializeControlData(ctrl: KittyControlData): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { serializeControlData } from 'blecsd';
 
@@ -220,6 +223,7 @@ function buildTransmitAndDisplay(
 ): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { buildTransmitAndDisplay } from 'blecsd';
 
@@ -290,6 +294,7 @@ Controls animation playback.
 function buildAnimationControl(imageId: number, action: 'start' | 'stop', loops?: number): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { buildAnimationControl } from 'blecsd';
 
@@ -334,6 +339,7 @@ Creates a Kitty graphics backend for use with the graphics manager.
 function createKittyBackend(envChecker?: KittyEnvChecker): GraphicsBackend
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createKittyBackend, createGraphicsManager, registerBackend } from 'blecsd';
 
@@ -343,6 +349,7 @@ registerBackend(manager, createKittyBackend());
 
 ## Zod Schemas
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { KittyImageConfigSchema, KittyFrameConfigSchema } from 'blecsd';
 

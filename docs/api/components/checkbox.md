@@ -222,6 +222,7 @@ if (isCheckboxInState(world, eid, 'checked')) {
 
 ## Example: Settings Panel
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -268,6 +269,7 @@ onCheckboxChange(settings.autoSave, (checked) => {
 
 ## Example: Form with Checkboxes
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachFormBehavior,

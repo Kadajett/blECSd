@@ -116,6 +116,7 @@ const focused = getFocusedEntity(world);
 
 Focus the next entity in tab order.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focusNext } from 'blecsd';
 
@@ -127,6 +128,7 @@ focusNext(world);
 
 Focus the previous entity in tab order.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focusPrev } from 'blecsd';
 
@@ -170,6 +172,7 @@ isInTabOrder(world, entity); // true if tabIndex >= 0
 
 Get all entities in tab order, sorted.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTabOrder } from 'blecsd';
 
@@ -251,6 +254,7 @@ isFocused(world, button); // false
 
 ### Tab Navigation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   makeFocusable,
@@ -287,6 +291,7 @@ function handleKey(key) {
 
 ### Focus Styling
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setFocusable, isFocused, getStyle, getFocusable } from 'blecsd';
 

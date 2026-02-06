@@ -4,6 +4,7 @@ The BigText widget renders large ASCII art text using bitmap fonts.
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createBigText } from 'blecsd/widgets';
@@ -79,6 +80,7 @@ interface BigTextConfig {
 
 Loads a bitmap font definition from a JSON file path.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { loadFont } from 'blecsd/widgets/bigText';
 

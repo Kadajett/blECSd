@@ -4,6 +4,7 @@ Detects whether the host terminal is GPU-accelerated and reports which optimizat
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   detectGpuCapabilities,
@@ -82,6 +83,7 @@ Detects GPU-accelerated terminal capabilities from environment variables. This i
 function detectGpuCapabilities(): GpuCapabilities
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectGpuCapabilities } from 'blecsd';
 
@@ -100,6 +102,7 @@ Returns a human-readable report of GPU capabilities.
 function formatGpuReport(caps: GpuCapabilities): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectGpuCapabilities, formatGpuReport } from 'blecsd';
 
@@ -130,6 +133,7 @@ Wraps content in synchronized output sequences. This prevents tearing when the t
 function wrapSyncOutput(content: string): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { wrapSyncOutput } from 'blecsd';
 

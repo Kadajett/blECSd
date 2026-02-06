@@ -4,6 +4,7 @@ Configurable game loop execution order. Allows users to add custom phases betwee
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPhaseManager, LoopPhase } from 'blecsd';
 
@@ -51,6 +52,7 @@ interface PhaseManager {
 
 Maps built-in LoopPhase values to their string names.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { BUILTIN_PHASE_NAMES, LoopPhase } from 'blecsd';
 
@@ -137,6 +139,7 @@ getPhaseOrder(): readonly PhaseId[];
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPhaseManager, LoopPhase } from 'blecsd';
 

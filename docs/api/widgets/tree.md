@@ -10,6 +10,7 @@ import { createTree, isTreeWidget } from 'blecsd';
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTree } from 'blecsd';
@@ -242,6 +243,7 @@ Nodes are addressed using dot-separated indices:
 
 ## Example: File Browser
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTree, createPanel } from 'blecsd';

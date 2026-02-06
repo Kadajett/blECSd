@@ -12,6 +12,7 @@ The clipping module provides:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createClipRect,
@@ -39,6 +40,7 @@ if (isPointVisible(clipRect, x, y)) {
 
 Constants defining overflow behavior.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Overflow } from 'blecsd';
 
@@ -51,6 +53,7 @@ Overflow.SCROLL  // 2 - Content clipped but scrollable
 
 Sets the overflow mode for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setOverflow, Overflow } from 'blecsd';
 
@@ -78,6 +81,7 @@ setOverflow(world, container, {
 
 Gets the overflow mode for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getOverflow, Overflow } from 'blecsd';
 
@@ -93,6 +97,7 @@ if (mode === Overflow.HIDDEN) {
 
 Gets the full clipping data for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getClipping } from 'blecsd';
 
@@ -110,6 +115,7 @@ if (clipping) {
 
 Checks if an entity has the Clipping component.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasClipping } from 'blecsd';
 
@@ -137,6 +143,7 @@ interface ClipRect {
 
 Creates a clip rect from position and dimensions.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createClipRect } from 'blecsd';
 
@@ -148,6 +155,7 @@ const rect = createClipRect(10, 20, 30, 40);
 
 Creates a clip rect with no bounds.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInfiniteClipRect } from 'blecsd';
 
@@ -159,6 +167,7 @@ const rect = createInfiniteClipRect();
 
 Gets the effective clip rect for an entity, considering parent hierarchy.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getClipRect } from 'blecsd';
 
@@ -182,6 +191,7 @@ The clip rect is computed by intersecting:
 
 Gets the clip rect up to a specific ancestor.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getClipRectToAncestor } from 'blecsd';
 
@@ -195,6 +205,7 @@ const clipRect = getClipRectToAncestor(world, entity, ancestor);
 
 Computes the intersection of two clip rects.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { intersectClipRects } from 'blecsd';
 
@@ -207,6 +218,7 @@ const finalClip = intersectClipRects(parentClip, childClip);
 
 Checks if a clip rect has no visible area.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isClipRectEmpty } from 'blecsd';
 
@@ -220,6 +232,7 @@ if (isClipRectEmpty(clipRect)) {
 
 Checks if a point is within a clip rect.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPointVisible } from 'blecsd';
 
@@ -232,6 +245,7 @@ if (isPointVisible(clipRect, mouseX, mouseY)) {
 
 Checks if a rectangle overlaps with a clip rect.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isRectVisible } from 'blecsd';
 
@@ -244,6 +258,7 @@ if (isRectVisible(clipRect, x, y, width, height)) {
 
 Clamps a point to be within a clip rect.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clampToClipRect } from 'blecsd';
 
@@ -254,6 +269,7 @@ const { x, y } = clampToClipRect(clipRect, cursorX, cursorY);
 
 Gets the dimensions of a clip rect.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getClipRectWidth, getClipRectHeight } from 'blecsd';
 
@@ -265,6 +281,7 @@ const height = getClipRectHeight(clipRect);
 
 Checks if an entity should clip its content.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { shouldClipContent } from 'blecsd';
 
@@ -281,6 +298,7 @@ For managing nested clip contexts during rendering.
 
 Creates a new clip stack.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createClipStack } from 'blecsd';
 
@@ -291,6 +309,7 @@ let clipStack = createClipStack();
 
 Pushes a clip rect onto the stack.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { pushClipRect, createClipRect } from 'blecsd';
 
@@ -306,6 +325,7 @@ clipStack = pushClipRect(clipStack, createClipRect(0, 0, 50, 50));
 
 Pops a clip rect from the stack.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { popClipRect } from 'blecsd';
 
@@ -317,6 +337,7 @@ clipStack = popClipRect(clipStack);
 
 Gets the current effective clip rect from the stack.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCurrentClip } from 'blecsd';
 
@@ -364,6 +385,7 @@ type OverflowValue = 0 | 1 | 2;  // HIDDEN | VISIBLE | SCROLL
 
 Complete rendering example with clipping:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createClipStack,

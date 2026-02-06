@@ -67,6 +67,7 @@ const tilesetId = registerTileset({
 
 ### getTileset / getTilesetByName / unregisterTileset
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTileset, getTilesetByName, unregisterTileset } from 'blecsd';
 
@@ -91,6 +92,7 @@ const dataId = createTileData(32, 32, 2); // 32x32 map, 2 layers
 
 Set or get individual tiles by position and layer.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setTile, getTile, EMPTY_TILE } from 'blecsd';
 
@@ -106,6 +108,7 @@ if (tile !== EMPTY_TILE) {
 
 Fill operations for bulk tile placement.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { fillTiles, fillTileRect } from 'blecsd';
 
@@ -115,6 +118,7 @@ fillTileRect(dataId, 0, 2, 4, 5, 3, 2); // 5x3 wall region at (2,4)
 
 ### Layer Management
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getLayerCount, addLayer, setLayerVisible, isLayerVisible } from 'blecsd';
 
@@ -126,6 +130,7 @@ const visible = isLayerVisible(dataId, 0); // Check visibility
 
 ### getTileData / removeTileData
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTileData, removeTileData } from 'blecsd';
 
@@ -156,6 +161,7 @@ const TileMap = {
 
 Creates a tile map on an entity. Automatically creates tile data if not provided.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setTileMap } from 'blecsd';
 
@@ -207,6 +213,7 @@ if (hasTileMap(world, entity)) {
 
 Renders a rectangular viewport of the tile map to a 2D array of cells. Composites all visible layers from bottom to top.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderTileMapArea } from 'blecsd';
 

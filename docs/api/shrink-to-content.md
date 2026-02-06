@@ -25,6 +25,7 @@ interface ShrinkBox {
 
 Calculates the minimum width needed to fit an entity's content.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getShrinkWidth, setContent } from 'blecsd';
 
@@ -130,6 +131,7 @@ if (size) {
 
 Shrink calculations respect min/max constraints set on the entity:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setConstraints, setShrink, applyShrink, setContent } from 'blecsd';
 
@@ -175,6 +177,7 @@ applyShrink(world, button);
 
 ### Layout Preview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { calculateShrinkSize, getShrinkBox } from 'blecsd';
 

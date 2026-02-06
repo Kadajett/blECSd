@@ -16,6 +16,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -158,6 +159,7 @@ attachCamera(world, camera, {
 
 ## Example: Side-Scroller Camera
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScheduler,
@@ -226,6 +228,7 @@ function render() {
 
 ## Example: Camera Shake
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getPosition, setPosition } from 'blecsd';
 

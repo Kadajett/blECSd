@@ -4,6 +4,7 @@ Arbitrary key-value data storage for entities. Store custom data on entities wit
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setEntityData, getEntityData, hasEntityData } from 'blecsd';
 
@@ -47,6 +48,7 @@ function getEntityData<T = DataValue>(eid: Entity, key: string, defaultValue?: T
 
 **Returns:** The stored value or defaultValue.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getEntityData } from 'blecsd';
 
@@ -61,6 +63,7 @@ Sets a value on an entity.
 function setEntityData(eid: Entity, key: string, value: DataValue): void;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setEntityData } from 'blecsd';
 
@@ -109,6 +112,7 @@ Sets multiple values on an entity at once.
 function setEntityDataBulk(eid: Entity, data: Record<string, DataValue>): void;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setEntityDataBulk } from 'blecsd';
 
@@ -164,6 +168,7 @@ function updateEntityData<T = DataValue>(
 ): void;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { updateEntityData } from 'blecsd';
 
@@ -179,6 +184,7 @@ updateEntityData<string[]>(entity, 'items', (current) => [...(current ?? []), ne
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setEntityData,

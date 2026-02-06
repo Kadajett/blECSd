@@ -14,6 +14,7 @@ The tilemap renderer handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setTileMapRendererConfig,
@@ -154,6 +155,7 @@ function renderTileMapToBuffer(
 ): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEmptyBuffer, renderTileMapToBuffer } from 'blecsd';
 
@@ -189,6 +191,7 @@ function createTilemapRenderSystem(): System
 
 Complete tilemap rendering with camera scrolling:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

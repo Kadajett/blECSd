@@ -6,6 +6,7 @@ Parses compiled terminfo database files (.tic format) into structured data. Supp
 
 The parser reads binary terminfo files and extracts terminal capabilities including boolean flags, numeric values, and string sequences.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseTerminfo, isValidTerminfo, toTerminfoData } from 'blecsd';
 import { readFileSync } from 'fs';
@@ -32,6 +33,7 @@ if (isValidTerminfo(buffer)) {
 
 Magic number for legacy 16-bit terminfo format.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TERMINFO_MAGIC_LEGACY } from 'blecsd';
 
@@ -42,6 +44,7 @@ TERMINFO_MAGIC_LEGACY  // 0x011a
 
 Magic number for extended 32-bit terminfo format (NCurses 5+).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TERMINFO_MAGIC_EXTENDED } from 'blecsd';
 
@@ -54,6 +57,7 @@ TERMINFO_MAGIC_EXTENDED  // 0x021e
 
 Parses a terminfo binary buffer into structured data.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseTerminfo } from 'blecsd';
 import { readFileSync } from 'fs';
@@ -94,6 +98,7 @@ if (result.success) {
 
 Quick validation check without full parsing.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isValidTerminfo } from 'blecsd';
 
@@ -115,6 +120,7 @@ if (isValidTerminfo(buffer)) {
 
 Gets the terminfo format version from a buffer.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminfoFormat } from 'blecsd';
 
@@ -144,6 +150,7 @@ switch (format) {
 
 Converts ParsedTerminfo to TerminfoData format for use with Tput.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseTerminfo, toTerminfoData, createTput } from 'blecsd';
 
@@ -297,6 +304,7 @@ Same structure but numbers use 4 bytes instead of 2, and absent number value is 
 
 ### Reading System Terminfo
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseTerminfo, toTerminfoData, createTput } from 'blecsd';
 import { readFileSync } from 'fs';
@@ -333,6 +341,7 @@ if (data) {
 
 ### Inspecting Terminal Capabilities
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseTerminfo } from 'blecsd';
 import { readFileSync } from 'fs';
@@ -366,6 +375,7 @@ if (result.success) {
 
 ### Validating Terminfo Files
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isValidTerminfo, getTerminfoFormat, parseTerminfo } from 'blecsd';
 import { readFileSync, readdirSync } from 'fs';

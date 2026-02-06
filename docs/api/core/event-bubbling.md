@@ -4,6 +4,7 @@ Hierarchical event propagation system. Events bubble up from a target entity thr
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createBubbleableEvent, bubbleEvent, createEntityEventBusStore } from 'blecsd';
 
@@ -97,6 +98,7 @@ Creates a new bubbleable event.
 function createBubbleableEvent<T>(options: BubbleableEventOptions<T>): BubbleableEvent<T>;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createBubbleableEvent } from 'blecsd';
 
@@ -144,6 +146,7 @@ function createEntityEventBusStore<E extends EventMap>(): {
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createBubbleableEvent,

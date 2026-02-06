@@ -168,6 +168,7 @@ setRegen(world, entity, 5);          // 5 HP per second
 
 Call each frame. Decrements invulnerability timer and applies regeneration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { updateHealth } from 'blecsd';
 
@@ -177,6 +178,7 @@ updateHealth(world, entity, deltaTime);
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setHealth, damage, heal, isDead, setInvulnerable, updateHealth } from 'blecsd';

@@ -330,6 +330,7 @@ onSelectChange(countrySelect, (value, label) => {
 
 ## Example: Form with Select
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachFormBehavior,

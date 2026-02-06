@@ -26,8 +26,9 @@ npm install blecsd
 ## Quick Start
 
 ```typescript
-import { createWorld, addEntity } from 'bitecs';
 import {
+  createWorld,
+  addEntity,
   setPosition,
   setDimensions,
   setBorder,
@@ -161,8 +162,7 @@ blECSd is a library, not a framework:
 
 ```typescript
 // Your world, your control
-import { createWorld, addEntity } from 'bitecs';
-import { setPosition, setRenderable, layoutSystem, renderSystem } from 'blecsd';
+import { createWorld, addEntity, setPosition, setRenderable, layoutSystem, renderSystem } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);

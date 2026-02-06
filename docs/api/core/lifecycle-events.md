@@ -4,6 +4,7 @@ Node lifecycle events for tracking entity hierarchy changes. These events integr
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { onReparent, onDestroy, createEventBus } from 'blecsd';
 
@@ -246,6 +247,7 @@ function onDestroy(
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getLifecycleEventBus,

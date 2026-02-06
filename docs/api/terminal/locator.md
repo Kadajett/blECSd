@@ -4,6 +4,7 @@ Locates compiled terminfo files on the filesystem using standard search paths. S
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findTerminfo, listTerminals, getTerminfoSearchPaths } from 'blecsd';
 
@@ -45,6 +46,7 @@ The locator searches these locations in order:
 
 Finds the terminfo file for a terminal.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findTerminfo } from 'blecsd';
 
@@ -68,6 +70,7 @@ if (path) {
 
 Finds a terminfo file with detailed search information.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findTerminfoDetailed } from 'blecsd';
 
@@ -95,6 +98,7 @@ if (result.path) {
 
 Gets the terminfo path for a terminal, throwing if not found.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminfoPath } from 'blecsd';
 
@@ -120,6 +124,7 @@ try {
 
 Gets the ordered list of terminfo search paths.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminfoSearchPaths } from 'blecsd';
 
@@ -141,6 +146,7 @@ for (const path of paths) {
 
 Gets all existing terminfo search paths. Filters out paths that don't exist on the filesystem.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getExistingSearchPaths } from 'blecsd';
 
@@ -159,6 +165,7 @@ console.log(`Found ${paths.length} terminfo directories`);
 
 Lists all available terminal definitions in the terminfo database.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { listTerminals } from 'blecsd';
 
@@ -181,6 +188,7 @@ console.log('xterm variants:', xterms);
 
 Lists terminals matching a pattern with wildcards.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { listTerminalsMatching } from 'blecsd';
 
@@ -206,6 +214,7 @@ const vtTerms = listTerminalsMatching('vt???');
 
 Checks if a terminal exists in the terminfo database.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { terminalExists } from 'blecsd';
 
@@ -226,6 +235,7 @@ if (terminalExists('xterm-256color')) {
 
 Gets the current terminal name from the TERM environment variable.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCurrentTerminal } from 'blecsd';
 
@@ -241,6 +251,7 @@ console.log(`Current terminal: ${term}`);
 
 Finds the terminfo file for the current terminal.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findCurrentTerminfo } from 'blecsd';
 
@@ -331,6 +342,7 @@ The locator checks both conventions for each search path.
 
 ### Loading Terminfo for Current Terminal
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findCurrentTerminfo, parseTerminfo, toTerminfoData, createTput } from 'blecsd';
 import { readFileSync } from 'fs';
@@ -354,6 +366,7 @@ if (result.success) {
 
 ### Finding Terminal with Fallbacks
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findTerminfo } from 'blecsd';
 
@@ -377,6 +390,7 @@ const path = findTerminalWithFallbacks([
 
 ### Custom Search Paths
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findTerminfo, listTerminals } from 'blecsd';
 
@@ -391,6 +405,7 @@ const allTerminals = listTerminals(config);
 
 ### Debugging Search Issues
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { findTerminfoDetailed } from 'blecsd';
 

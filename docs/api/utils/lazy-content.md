@@ -157,6 +157,7 @@ function createArraySource(lines: readonly string[]): ContentSource
 
 ## Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createLazyContent, getLazyLines, prefetchAround, getLazyContentState } from 'blecsd';
 

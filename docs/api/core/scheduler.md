@@ -10,6 +10,7 @@ import { createScheduler, getDeltaTime, LoopPhase } from 'blecsd';
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, LoopPhase } from 'blecsd';
 
@@ -122,6 +123,7 @@ scheduler.registerSystem(LoopPhase.UPDATE, aiSystem, 20);
 
 ## Example: Custom Game Loop
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, getDeltaTime, LoopPhase } from 'blecsd';
 

@@ -187,6 +187,7 @@ function destroyCoalescer(state: MutableCoalescingState): FlushResult | undefine
 
 ## Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCoalescer, queueChange, insertChange } from 'blecsd';
 

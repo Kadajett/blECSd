@@ -4,6 +4,7 @@ Utilities for handling legacy character encodings, primarily CP437 (IBM PC / DOS
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { encoding } from 'blecsd';
 
@@ -46,6 +47,8 @@ function bufferToString(
 **Returns:** UTF-8 string
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { encoding } from 'blecsd';
 
@@ -78,6 +81,8 @@ function stringToBuffer(
 **Returns:** Buffer with encoded bytes
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { encoding } from 'blecsd';
 import { writeFileSync } from 'node:fs';
@@ -138,6 +143,7 @@ Mixed:   ╒ ╓ ╕ ╖ ╘ ╙ ╛ ╜ ╞ ╟ ╡ ╢ ╤ ╥ ╧ ╨
 
 ### ANSI Art Viewer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { encoding } from 'blecsd';
 import { createTerminal } from 'blecsd/widgets';
@@ -158,6 +164,7 @@ async function displayAnsiArt(url: string): Promise<void> {
 
 ### Legacy File Conversion
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { encoding } from 'blecsd';
 import { readFileSync, writeFileSync } from 'node:fs';

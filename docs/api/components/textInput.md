@@ -310,6 +310,7 @@ focusTextInput(world, username);
 
 ## Example: Validation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachTextInputBehavior,

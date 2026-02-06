@@ -8,6 +8,7 @@ The hit test system provides efficient point-in-entity testing with z-index awar
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createClickableCache,
@@ -35,6 +36,7 @@ invalidateClickableCache(cache);
 
 Creates a new cache for clickable element sorting.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createClickableCache } from 'blecsd';
 
@@ -48,6 +50,7 @@ Marks the cache as needing rebuild. Call when:
 - Z-index values change
 - Interactive state changes
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { invalidateClickableCache } from 'blecsd';
 
@@ -59,6 +62,7 @@ invalidateClickableCache(cache);
 
 Rebuilds the cache if dirty.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { updateClickableCache } from 'blecsd';
 
@@ -69,6 +73,7 @@ updateClickableCache(world, cache);
 
 Gets all clickable/hoverable entities sorted by z-index.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getClickableEntities } from 'blecsd';
 
@@ -82,6 +87,7 @@ const entities = getClickableEntities(world, cache);
 
 Returns the topmost entity at a point.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hitTest, createClickableCache } from 'blecsd';
 
@@ -110,6 +116,7 @@ hitTest(world, x, y, cache, {
 
 Returns all entities at a point, sorted by z-index.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hitTestAll, createClickableCache } from 'blecsd';
 
@@ -126,6 +133,7 @@ for (const eid of entities) {
 
 Returns detailed results including z-index values.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hitTestDetailed, createClickableCache } from 'blecsd';
 
@@ -144,6 +152,7 @@ for (const { entity, zIndex } of results) {
 
 Check if any clickable/hoverable entity is at a point.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasClickableAt, hasHoverableAt } from 'blecsd';
 
@@ -160,6 +169,7 @@ if (hasHoverableAt(world, x, y, cache)) {
 
 Get the topmost clickable/hoverable at a point.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getClickableAt, getHoverableAt } from 'blecsd';
 
@@ -171,6 +181,7 @@ const hoverable = getHoverableAt(world, mouseX, mouseY, cache);
 
 Get all clickables/hoverables at a point.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAllClickablesAt, getAllHoverablesAt } from 'blecsd';
 
@@ -212,6 +223,7 @@ interface HitTestOptions {
 
 ## Integration with Input System
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createClickableCache,

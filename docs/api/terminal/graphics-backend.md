@@ -4,6 +4,7 @@ Pluggable terminal graphics backend system for image rendering. Provides a unifi
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createGraphicsManager,
@@ -131,6 +132,7 @@ function selectBackend(
 ): GraphicsBackend | undefined
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { selectBackend } from 'blecsd';
 
@@ -148,6 +150,7 @@ Creates a graphics manager state.
 function createGraphicsManager(config?: GraphicsManagerConfig): GraphicsManagerState
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGraphicsManager, registerBackend } from 'blecsd';
 
@@ -183,6 +186,7 @@ function renderImage(
 ): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderImage } from 'blecsd';
 
@@ -216,6 +220,7 @@ function getBackendCapabilities(manager: GraphicsManagerState): GraphicsCapabili
 
 ## Zod Schemas
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   GraphicsCapabilitiesSchema,

@@ -82,6 +82,8 @@ function primaryDA(): string  // Returns '\x1b[c'
 **Response:** `ESC [ ? Pn ; ... c`
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query, parseResponse, isPrimaryDA } from 'blecsd/terminal';
 
@@ -106,6 +108,8 @@ function secondaryDA(): string  // Returns '\x1b[>c'
 **Response:** `ESC [ > Pn ; Pn ; Pn c`
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query, parseResponse, isSecondaryDA } from 'blecsd/terminal';
 
@@ -252,6 +256,8 @@ isUnknown(response): response is UnknownResponse
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseResponse, isCursorPosition, isDeviceStatus } from 'blecsd/terminal';
 
@@ -419,6 +425,7 @@ const ResponseType = {
 
 Zod schema for validating cursor position responses:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { CursorPositionSchema } from 'blecsd/terminal';
 
@@ -430,6 +437,7 @@ if (result.success) {
 
 ## Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   query,

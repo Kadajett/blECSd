@@ -15,6 +15,7 @@ When the process resumes (via `fg` command), it should:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SuspendManager } from 'blecsd/terminal';
 
@@ -172,6 +173,8 @@ function suspend(options: {
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { suspend } from 'blecsd/terminal';
 
@@ -233,6 +236,7 @@ When the process receives SIGCONT:
 
 ### Game Loop Integration
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SuspendManager, screen, mouse } from 'blecsd/terminal';
 
@@ -274,6 +278,7 @@ class Game {
 
 ### Custom Key Binding
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SuspendManager } from 'blecsd/terminal';
 

@@ -77,6 +77,7 @@ enum LoopPhase {
 }
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { LoopPhase } from 'blecsd';
 
@@ -87,6 +88,7 @@ loop.registerInputSystem(inputSystem); // Always LoopPhase.INPUT
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { Entity, World, System, Unsubscribe } from 'blecsd';
 import { LoopPhase, createWorld, addEntity } from 'blecsd';

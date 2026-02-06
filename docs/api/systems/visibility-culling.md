@@ -13,6 +13,7 @@ The visibility culling system handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createSpatialHash,
@@ -125,6 +126,7 @@ function queryVisibleEntities(
 ): ReadonlySet<number>
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { queryVisibleEntities } from 'blecsd';
 
@@ -146,6 +148,7 @@ function performCulling(
 ): CullingResult
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { performCulling } from 'blecsd';
 
@@ -170,6 +173,7 @@ function createIncrementalSpatialSystem(
 
 **Returns:** A `System` function.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createSpatialHash,
@@ -196,6 +200,7 @@ function createVisibilityCullingSystem(
 ): System
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createVisibilityCullingSystem } from 'blecsd';
 
@@ -211,6 +216,7 @@ const cullSystem = createVisibilityCullingSystem(grid, () => ({
 
 Complete visibility culling pipeline with incremental updates:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

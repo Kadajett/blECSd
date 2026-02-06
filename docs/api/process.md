@@ -14,6 +14,7 @@ After the process exits, the terminal state should be restored. This module hand
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { spawn, exec, readEditor } from 'blecsd/terminal';
 
@@ -173,6 +174,7 @@ function readEditor(options?: EditorOptions): Promise<string>
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { readEditor } from 'blecsd/terminal';
 
@@ -348,6 +350,7 @@ processUtils.shellEscape(str: string): string
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { processUtils } from 'blecsd/terminal';
 

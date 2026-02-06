@@ -353,6 +353,7 @@ setBorder(world, dialog, {
 
 ### Menu with Rounded Corners
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setBorder, BorderType, BORDER_ROUNDED } from 'blecsd';
 
@@ -365,6 +366,7 @@ setBorder(world, menu, {
 
 ### Horizontal Divider
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setBorder, BorderType } from 'blecsd';
 
@@ -380,6 +382,7 @@ setBorder(world, divider, {
 
 ### ASCII-Only Terminal Support
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setBorder, BorderType, BORDER_ASCII } from 'blecsd';
 

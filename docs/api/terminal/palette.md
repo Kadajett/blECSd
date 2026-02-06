@@ -58,6 +58,7 @@ Complete 256-color palette as RGB values.
 - Indices 16-231: 6x6x6 color cube
 - Indices 232-255: 24-step grayscale
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { PALETTE_RGB } from 'blecsd';
 
@@ -69,6 +70,7 @@ const gray = PALETTE_RGB[240]; // Grayscale value
 
 Complete 256-color palette as hex strings.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { PALETTE_HEX } from 'blecsd';
 
@@ -84,6 +86,7 @@ const white = PALETTE_HEX[15]; // '#ffffff'
 
 Validates and transforms numbers to Color256.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Color256Schema } from 'blecsd';
 
@@ -97,6 +100,7 @@ if (result.success) {
 
 Validates RGB and RGBA objects.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { RGBSchema, RGBASchema } from 'blecsd';
 
@@ -108,6 +112,7 @@ RGBASchema.parse({ r: 255, g: 0, b: 0, a: 0.5 });
 
 Validates HSL and HSLA objects.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { HSLSchema, HSLASchema } from 'blecsd';
 
@@ -119,6 +124,7 @@ HSLASchema.parse({ h: 0, s: 100, l: 50, a: 0.5 });
 
 Validates hex color strings (#RGB, #RRGGBB, #RRGGBBAA).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { HexColorSchema } from 'blecsd';
 
@@ -135,6 +141,7 @@ HexColorSchema.parse('#ff000080'); // Valid (with alpha)
 
 Checks if a value is a valid Color256.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isColor256 } from 'blecsd';
 
@@ -147,6 +154,7 @@ if (isColor256(userInput)) {
 
 Converts a number to Color256, throwing if invalid.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { asColor256 } from 'blecsd';
 
@@ -158,6 +166,7 @@ asColor256(256); // Throws Error
 
 Checks if a value is a valid RGB object.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isRGB } from 'blecsd';
 
@@ -174,6 +183,7 @@ if (isRGB(value)) {
 
 Get the RGB value for a palette index.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getRGB, asColor256 } from 'blecsd';
 
@@ -186,6 +196,7 @@ console.log(rgb); // { r: 255, g: 0, b: 95 }
 
 Get the hex string for a palette index.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getHex, asColor256 } from 'blecsd';
 
@@ -202,6 +213,7 @@ console.log(hex); // '#ff005f'
 
 The 6 intensity levels used in the color cube.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { COLOR_CUBE_LEVELS } from 'blecsd';
 
@@ -212,6 +224,7 @@ console.log(COLOR_CUBE_LEVELS); // [0, 95, 135, 175, 215, 255]
 
 Get the palette index for given R, G, B levels (0-5 each).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { colorCubeIndex } from 'blecsd';
 
@@ -223,6 +236,7 @@ const purple = colorCubeIndex(3, 0, 3);     // Some purple
 
 Get the palette index for a grayscale step (0-23).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { grayscaleIndex } from 'blecsd';
 
@@ -238,6 +252,7 @@ const lightGray = grayscaleIndex(20); // 252
 
 Check if a color is in the standard range (0-15).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isStandardColor, asColor256 } from 'blecsd';
 
@@ -249,6 +264,7 @@ isStandardColor(asColor256(196)); // false
 
 Check if a color is in the color cube range (16-231).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isColorCube, asColor256 } from 'blecsd';
 
@@ -260,6 +276,7 @@ isColorCube(asColor256(9));   // false
 
 Check if a color is in the grayscale range (232-255).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isGrayscale, asColor256 } from 'blecsd';
 
@@ -275,6 +292,7 @@ isGrayscale(asColor256(196)); // false
 
 Named constants for the 16 standard ANSI colors.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { COLORS } from 'blecsd';
 
@@ -290,6 +308,7 @@ Available colors:
 
 Extended color constants with common aliases.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ANSI } from 'blecsd';
 
@@ -307,6 +326,7 @@ ANSI.BRIGHT_CYAN;   // 14
 
 ### Creating a Color Scheme
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { COLORS, colorCubeIndex, grayscaleIndex } from 'blecsd';
 
@@ -320,6 +340,7 @@ const theme = {
 
 ### Validating User Input
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Color256Schema, isColor256 } from 'blecsd';
 

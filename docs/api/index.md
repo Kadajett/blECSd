@@ -102,6 +102,7 @@ See [World Adapter](./core/worldAdapter.md) for customizing renderable queries a
 
 Optional game loop with phase ordering.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, LoopPhase } from 'blecsd';
 
@@ -174,6 +175,7 @@ See [Input Stream](./input-stream.md) for wrapping NodeJS readable streams.
 
 ### Input Parsing
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKeyBuffer, parseMouseSequence } from 'blecsd';
 

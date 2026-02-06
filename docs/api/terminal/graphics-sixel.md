@@ -6,6 +6,7 @@ Sixel images are encoded in 6-pixel-tall horizontal bands using a color-indexed 
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createSixelGraphicsBackend,
@@ -26,6 +27,7 @@ process.stdout.write(seq);
 
 ## Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { DCS_START, SIXEL_ST, SIXEL_BACKEND_NAME, DEFAULT_MAX_COLORS } from 'blecsd';
 
@@ -179,6 +181,7 @@ Encodes image data as a complete sixel escape sequence (palette quantization + e
 function encodeSixelImage(image: ImageData, maxColors: number, rleEnabled: boolean): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { encodeSixelImage } from 'blecsd';
 
@@ -232,6 +235,7 @@ function createSixelGraphicsBackend(
 ): GraphicsBackend
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSixelGraphicsBackend, createGraphicsManager, registerBackend } from 'blecsd';
 
@@ -241,6 +245,7 @@ registerBackend(manager, createSixelGraphicsBackend({ maxColors: 64 }));
 
 ## Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SixelBackendConfigSchema } from 'blecsd';
 

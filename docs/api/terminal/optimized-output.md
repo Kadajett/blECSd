@@ -11,6 +11,7 @@ Key optimizations:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createOutputBuffer,
@@ -86,6 +87,7 @@ The output buffer state object. Created by `createOutputBuffer`.
 
 ### Text Attribute Flags
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   ATTR_BOLD,

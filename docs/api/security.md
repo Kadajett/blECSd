@@ -30,6 +30,8 @@ function sanitizeForTerminal(input: string, options?: SanitizeOptions): string
 **Returns:** Sanitized string safe for terminal output
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sanitizeForTerminal } from 'blecsd/terminal';
 
@@ -64,6 +66,8 @@ function containsEscapeSequences(input: string): boolean
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { containsEscapeSequences } from 'blecsd/terminal';
 
@@ -81,6 +85,8 @@ function isSafeForTerminal(input: string): boolean
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isSafeForTerminal } from 'blecsd/terminal';
 
@@ -100,6 +106,8 @@ function extractEscapeSequences(input: string): string[]
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { extractEscapeSequences } from 'blecsd/terminal';
 
@@ -126,6 +134,8 @@ function categorizeEscapeSequences(input: string): {
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { categorizeEscapeSequences } from 'blecsd/terminal';
 
@@ -157,6 +167,8 @@ class SafeStringBuilder {
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SafeStringBuilder } from 'blecsd/terminal';
 

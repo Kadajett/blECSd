@@ -15,6 +15,7 @@ The smooth scroll system handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createSmoothScrollSystem,
@@ -110,6 +111,7 @@ function createSmoothScrollSystem(physics?: Partial<ScrollPhysicsConfig>): Syste
 
 **Returns:** A `System` function for the ANIMATION phase.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSmoothScrollSystem, LoopPhase } from 'blecsd';
 

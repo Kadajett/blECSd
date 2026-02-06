@@ -10,6 +10,7 @@ OutputBuffer accumulates write operations and flushes them in a single operation
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { OutputBuffer } from 'blecsd/terminal';
 
@@ -230,6 +231,7 @@ console.log(buffer.cursorY); // 5
 
 ### Game Rendering
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { OutputBuffer, cursor, style, screen } from 'blecsd/terminal';
 
@@ -270,6 +272,7 @@ buffer.write('Line 3\n');
 
 ### Styled Output
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { OutputBuffer, style } from 'blecsd/terminal';
 

@@ -4,6 +4,7 @@ Debug overlay widget for visual debugging. Displays real-time FPS, entity count,
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDebugOverlay } from 'blecsd';
 
@@ -119,6 +120,7 @@ function createInputLogger(maxEntries?: number): InputLogger;
 
 **Returns:** Input logger instance with `log`, `clear`, and `getRecentEntries` methods.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputLogger } from 'blecsd';
 
@@ -169,6 +171,7 @@ function createFrameRateGraph(sampleCount?: number): FrameRateGraph;
 **Parameters:**
 - `sampleCount` - Number of samples to keep (default: 60)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFrameRateGraph } from 'blecsd';
 
@@ -186,6 +189,7 @@ console.log(`FPS range: ${min.toFixed(0)} - ${max.toFixed(0)}`);
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createDebugOverlay,

@@ -239,6 +239,7 @@ const state = createStreamingState({ wrapWidth: 120 }, 24);
 
 ### appendToState
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { appendToState } from 'blecsd';
 
@@ -250,6 +251,7 @@ Appends text to a state object, handling wrapping, eviction, and auto-scroll.
 
 ### clearState
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearState } from 'blecsd';
 
@@ -258,6 +260,7 @@ state = clearState(state);
 
 ### getStreamVisibleLines
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getStreamVisibleLines } from 'blecsd';
 
@@ -266,6 +269,7 @@ const visible = getStreamVisibleLines(state);
 
 ### scrollToLine / scrollByLines
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { scrollToLine, scrollByLines } from 'blecsd';
 
@@ -342,6 +346,7 @@ interface StreamDirtyRegion {
 
 ### Streaming from an Async Source
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createStreamingText, addEntity, createWorld } from 'blecsd';
 

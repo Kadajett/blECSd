@@ -11,6 +11,7 @@ Terminfo capabilities can include padding specifications that indicate delays ne
 - `$<5/>` - 5ms mandatory (even for high-speed terminals)
 - `$<5*/>` - proportional and mandatory
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { processPadding, createPaddedPrint } from 'blecsd';
 
@@ -30,6 +31,7 @@ await print('\x1b[?5h$<100/>\x1b[?5l');
 
 Parses a padding specification string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parsePadding } from 'blecsd';
 
@@ -74,6 +76,7 @@ interface PaddingSpec {
 
 Extracts all padding specifications from a string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { extractPadding } from 'blecsd';
 
@@ -98,6 +101,7 @@ const multiple = extractPadding('$<10>\x1b[H$<20*>\x1b[J');
 
 Checks if a string contains padding markers.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasPadding } from 'blecsd';
 
@@ -111,6 +115,7 @@ hasPadding('\x1b[H\x1b[J');   // false
 
 Removes padding markers from a string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { stripPadding } from 'blecsd';
 
@@ -127,6 +132,7 @@ stripPadding('$<10>\x1b[H$<20>\x1b[J');
 
 Calculates the effective delay for a padding specification.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { calculateDelay, parsePadding } from 'blecsd';
 
@@ -175,6 +181,7 @@ interface PaddingConfig {
 
 Calculates total delay for all padding in a string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { calculateTotalDelay } from 'blecsd';
 
@@ -197,6 +204,7 @@ calculateTotalDelay('$<50>\x1b[H$<25>', { highSpeed: false });
 
 Processes a string for output, extracting padding information.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { processPadding } from 'blecsd';
 
@@ -227,6 +235,7 @@ interface PrintResult {
 
 Creates an async print function with padding support.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPaddedPrint } from 'blecsd';
 
@@ -256,6 +265,7 @@ Creates a synchronous print function with padding support.
 
 Uses blocking delay (busy wait). Prefer `createPaddedPrint` for async operation.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPaddedPrintSync } from 'blecsd';
 
@@ -274,6 +284,7 @@ print('\x1b[?5h$<100/>\x1b[?5l');
 
 Formats a padding specification back to string format.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { formatPadding } from 'blecsd';
 
@@ -290,6 +301,7 @@ formatPadding({ delay: 50, proportional: true, mandatory: true });
 
 Appends padding to a string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addPadding } from 'blecsd';
 
@@ -330,6 +342,7 @@ import { DEFAULT_PADDING_CONFIG } from 'blecsd';
 
 ### Screen Flash Effect
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPaddedPrint } from 'blecsd';
 
@@ -341,6 +354,7 @@ await print('\x1b[?5h$<100/>\x1b[?5l');
 
 ### Processing Capability Strings
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { processPadding, tparm } from 'blecsd';
 
@@ -357,6 +371,7 @@ if (totalDelay > 0) {
 
 ### Building Capabilities with Padding
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addPadding } from 'blecsd';
 

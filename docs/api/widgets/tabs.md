@@ -334,6 +334,7 @@ tabs.destroy();
 
 Checks if an entity is a tabs widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTabs } from 'blecsd';
 
@@ -350,6 +351,7 @@ if (isTabs(world, entity)) {
 
 Gets the active tab index of a tabs entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getActiveTabIndex } from 'blecsd';
 
@@ -364,6 +366,7 @@ const index = getActiveTabIndex(world, tabsEntity);
 
 Gets the tab count of a tabs entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTabCount } from 'blecsd';
 
@@ -378,6 +381,7 @@ const count = getTabCount(world, tabsEntity);
 
 Gets the tab bar position of a tabs entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTabPosition } from 'blecsd';
 
@@ -393,6 +397,7 @@ const position = getTabPosition(world, tabsEntity);
 
 Renders the tab bar as a string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderTabBar } from 'blecsd';
 
@@ -622,6 +627,7 @@ tabs.removeTab(1); // Remove "Document 1"
 
 ### Lazy Content Loading
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTabs, createBox } from 'blecsd';

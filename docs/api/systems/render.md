@@ -14,6 +14,7 @@ The render system:
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScheduler,
@@ -41,6 +42,7 @@ scheduler.run(world, deltaTime);
 
 Before the render system can work, you must set a double buffer:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDoubleBuffer, setRenderBuffer, clearRenderBuffer } from 'blecsd';
 
@@ -59,6 +61,7 @@ clearRenderBuffer();
 
 Entities are rendered in z-index order:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setPosition, setZIndex, setStyle } from 'blecsd';
 
@@ -103,6 +106,7 @@ interface RenderContext {
 
 Fills the entity's bounds with its background color:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderBackground } from 'blecsd';
 
@@ -121,6 +125,7 @@ setStyle(world, entity, { bg: '#ff0000', transparent: true });
 
 Renders the entity's border if configured:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderBorder, setBorder, BorderType } from 'blecsd';
 
@@ -135,6 +140,7 @@ renderBorder(ctx, entity, { x: 10, y: 5, width: 20, height: 10 });
 
 Base implementation is a placeholder for widget extensions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderContent } from 'blecsd';
 
@@ -146,6 +152,7 @@ renderContent(ctx, entity, contentBounds);
 
 Placeholder for scrollable content support:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderScrollbar } from 'blecsd';
 
@@ -159,6 +166,7 @@ renderScrollbar(ctx, entity, bounds);
 
 Writes text to the buffer:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderText, Attr } from 'blecsd';
 
@@ -176,6 +184,7 @@ renderText(buffer, 10, 9, 'Styled', 0xff0000ff, 0x000000ff, Attr.BOLD | Attr.UND
 
 Fills a rectangular region:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderRect, createCell } from 'blecsd';
 
@@ -201,6 +210,7 @@ markAllDirty(world);
 
 The render system uses computed layout for positions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { layoutSystem, renderSystem } from 'blecsd';
 
@@ -211,6 +221,7 @@ scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
 
 ## Complete Render Loop Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

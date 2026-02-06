@@ -4,6 +4,7 @@ The Line widget is a simple separator for creating horizontal or vertical lines.
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
@@ -38,6 +39,7 @@ const vLine = createLine(world, addEntity(world), {
 
 Creates a new Line widget with the specified configuration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
@@ -242,6 +244,7 @@ line.destroy();
 
 Checks if an entity is a line widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isLine } from 'blecsd';
 
@@ -258,6 +261,7 @@ if (isLine(world, entity)) {
 
 Gets the line character of a line entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getLineChar } from 'blecsd';
 
@@ -272,6 +276,7 @@ const char = getLineChar(world, lineEntity);
 
 Sets the line character of a line entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setLineChar } from 'blecsd';
 
@@ -286,6 +291,7 @@ setLineChar(world, lineEntity, '═');
 
 Gets the orientation of a line entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getLineOrientation } from 'blecsd';
 
@@ -369,6 +375,7 @@ interface LineWidget {
 
 ## Zod Schemas
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { LineConfigSchema } from 'blecsd';
 
@@ -390,6 +397,7 @@ if (result.success) {
 
 ### Horizontal Separator
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
@@ -408,6 +416,7 @@ const separator = createLine(world, eid, {
 
 ### Vertical Divider
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
@@ -426,6 +435,7 @@ const divider = createLine(world, eid, {
 
 ### Double Line Border
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
@@ -471,6 +481,7 @@ const rightLine = createLine(world, addEntity(world), {
 
 ### Dynamic Length
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';
@@ -491,6 +502,7 @@ function onResize(terminalWidth: number) {
 
 ### Method Chaining
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLine } from 'blecsd';

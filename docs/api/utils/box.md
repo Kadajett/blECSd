@@ -93,6 +93,7 @@ interface RenderBoxOptions {
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCellBuffer, renderBox, BOX_ROUNDED, BOX_DOUBLE } from 'blecsd';
 

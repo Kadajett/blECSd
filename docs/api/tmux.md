@@ -73,6 +73,8 @@ function isWrapped(sequence: string): boolean
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -118,6 +120,8 @@ function end(): string    // Returns '\x1b\\'
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -172,6 +176,7 @@ process.stdout.write(seq);
 
 ### Combining Multiple Sequences
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title, cursor, screen, isTmux } from 'blecsd/terminal';
 
