@@ -10,6 +10,7 @@ import {
 	getSelectedText,
 	getSelectionDirtyRanges,
 	getSelectionLineCount,
+	getSelectionState,
 	hasActiveSelection,
 	hasSelectionState,
 	isLineSelected,
@@ -565,6 +566,78 @@ describe('textSelection', () => {
 			expect(lastProgress.done).toBe(true);
 			expect(lastProgress.linesProcessed).toBe(100_000);
 			expect(lastProgress.text.length).toBeGreaterThan(0);
+		});
+	});
+
+	describe('input validation', () => {
+		it('clamps negative line/col to zero in startSelection', () => {
+			const state = createSelectionState();
+			startSelection(state, -5, -10);
+			expect(state.anchorLine).toBe(0);
+			expect(state.anchorCol).toBe(0);
+		});
+
+		it('clamps NaN line/col to zero in startSelection', () => {
+			const state = createSelectionState();
+			startSelection(state, Number.NaN, Number.NaN);
+			expect(state.anchorLine).toBe(0);
+			expect(state.anchorCol).toBe(0);
+		});
+
+		it('clamps negative values in updateSelection', () => {
+			const state = createSelectionState();
+			startSelection(state, 5, 5);
+			updateSelection(state, -3, -7);
+			expect(state.focusLine).toBe(0);
+			expect(state.focusCol).toBe(0);
+		});
+
+		it('truncates fractional values to integers', () => {
+			const state = createSelectionState();
+			startSelection(state, 3.7, 8.2);
+			expect(state.anchorLine).toBe(3);
+			expect(state.anchorCol).toBe(8);
+		});
+	});
+
+	describe('clearTextSelection resets mode', () => {
+		it('resets mode to stream after clearing rectangular selection', () => {
+			const state = createSelectionState();
+			startSelection(state, 0, 0, 'rectangular');
+			updateSelection(state, 5, 10);
+			expect(state.mode).toBe('rectangular');
+			clearTextSelection(state);
+			expect(state.mode).toBe('stream');
+		});
+	});
+
+	describe('getSelectionState', () => {
+		it('retrieves registered entity state', () => {
+			const state = registerSelectionState(99);
+			const retrieved = getSelectionState(99);
+			expect(retrieved).toBe(state);
+		});
+
+		it('returns undefined for unregistered entity', () => {
+			expect(getSelectionState(999)).toBeUndefined();
+		});
+	});
+
+	describe('dirty range deduplication', () => {
+		it('merges duplicate ranges when start and end line are the same', () => {
+			const oldState = createSelectionState();
+			startSelection(oldState, 5, 0);
+			updateSelection(oldState, 5, 10);
+			const oldSnap = snapshotSelection(oldState);
+
+			const newState = createSelectionState();
+			startSelection(newState, 5, 3);
+			updateSelection(newState, 5, 15);
+
+			const ranges = getSelectionDirtyRanges(oldSnap, newState);
+			// Should be merged to a single range, not duplicated
+			const lineSet = new Set(ranges.map(([s]) => s));
+			expect(lineSet.size).toBe(ranges.length);
 		});
 	});
 });

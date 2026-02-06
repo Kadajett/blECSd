@@ -40,7 +40,20 @@ import { getLineAtIndex, getLineRange } from '../utils/virtualizedLineStore';
 // CONSTANTS
 // =============================================================================
 
-/** Maximum lines to materialize in a single synchronous batch */
+/**
+ * Maximum number of lines that callers are advised to materialize in a single
+ * synchronous copy operation.
+ *
+ * This constant is intentionally exported for consumers of this module to use
+ * as a heuristic when deciding between:
+ *
+ * - synchronous copy via {@link getSelectedText}, and
+ * - a background/streaming copy via {@link createBackgroundCopy}.
+ *
+ * The selection utilities provided by this module do not enforce this limit
+ * automatically; it is a guideline for API users who need to avoid blocking
+ * the UI thread when dealing with very large selections.
+ */
 export const SYNC_COPY_LINE_LIMIT = 50_000;
 
 /** Chunk size for background copy operations */
@@ -194,6 +207,14 @@ export function registerSelectionState(eid: number): TextSelectionState {
  *
  * @param eid - Entity ID
  * @returns Selection state or undefined
+ *
+ * @example
+ * ```typescript
+ * import { registerSelectionState, getSelectionState } from 'blecsd';
+ *
+ * registerSelectionState(42);
+ * const state = getSelectionState(42);
+ * ```
  */
 export function getSelectionState(eid: number): TextSelectionState | undefined {
 	return selectionStore.get(eid);
@@ -252,27 +273,30 @@ export function startSelection(
 	col: number,
 	mode: SelectionMode = 'stream',
 ): void {
-	state.anchorLine = line;
-	state.anchorCol = col;
-	state.focusLine = line;
-	state.focusCol = col;
+	const safeLine = Math.max(0, Math.trunc(line) || 0);
+	const safeCol = Math.max(0, Math.trunc(col) || 0);
+	state.anchorLine = safeLine;
+	state.anchorCol = safeCol;
+	state.focusLine = safeLine;
+	state.focusCol = safeCol;
 	state.active = true;
 	state.mode = mode;
 }
 
 /**
  * Updates the focus (extension point) of the current selection.
+ * If no selection is active (i.e. startSelection was not called), this is a no-op.
  *
  * @param state - Selection state
- * @param line - New focus line
- * @param col - New focus column
+ * @param line - New focus line (non-negative integer)
+ * @param col - New focus column (non-negative integer)
  */
 export function updateSelection(state: TextSelectionState, line: number, col: number): void {
 	if (!state.active) {
 		return;
 	}
-	state.focusLine = line;
-	state.focusCol = col;
+	state.focusLine = Math.max(0, Math.trunc(line) || 0);
+	state.focusCol = Math.max(0, Math.trunc(col) || 0);
 }
 
 /**
@@ -286,6 +310,7 @@ export function clearTextSelection(state: TextSelectionState): void {
 	state.anchorCol = 0;
 	state.focusLine = 0;
 	state.focusCol = 0;
+	state.mode = 'stream';
 }
 
 /**
@@ -303,6 +328,8 @@ export function hasActiveSelection(state: TextSelectionState): boolean {
 
 /**
  * Selects an entire line.
+ * Note: This always sets the selection mode to 'stream', regardless of the
+ * current mode, since line selection is inherently a stream operation.
  *
  * @param state - Selection state
  * @param line - Line to select
@@ -319,6 +346,8 @@ export function selectLine(state: TextSelectionState, line: number, lineLength: 
 
 /**
  * Extends selection to select a range of full lines.
+ * Note: This always sets the selection mode to 'stream', regardless of the
+ * current mode, since line range selection is inherently a stream operation.
  *
  * @param state - Selection state
  * @param startLine - First line
@@ -556,9 +585,13 @@ export function getSelectedLinesInViewport(
 // =============================================================================
 
 /**
- * Extracts selected text from a line store.
+ * Extracts selected text from a line store synchronously.
  * For stream selection, text flows across lines.
  * For rectangular selection, each line contributes the selected column range.
+ *
+ * **Warning:** This materializes the entire selection in one call. For
+ * selections larger than {@link SYNC_COPY_LINE_LIMIT} lines, prefer
+ * {@link createBackgroundCopy} to avoid blocking the UI thread.
  *
  * @param state - Selection state
  * @param store - The virtualized line store
@@ -593,6 +626,7 @@ export function getSelectedText(state: TextSelectionState, store: VirtualizedLin
 
 /**
  * Extracts stream-selected text.
+ * Missing lines in the store are represented as empty strings to preserve line structure.
  */
 function getStreamSelectedText(range: SelectionRange, store: VirtualizedLineStore): string {
 	const { start, end } = range;
@@ -610,9 +644,7 @@ function getStreamSelectedText(range: SelectionRange, store: VirtualizedLineStor
 
 	// First line: from start col to end
 	const firstLine = getLineAtIndex(store, start.line);
-	if (firstLine !== undefined) {
-		parts.push(firstLine.slice(start.col));
-	}
+	parts.push(firstLine !== undefined ? firstLine.slice(start.col) : '');
 
 	// Middle lines: full lines in batches
 	if (end.line - start.line > 1) {
@@ -624,9 +656,7 @@ function getStreamSelectedText(range: SelectionRange, store: VirtualizedLineStor
 
 	// Last line: from start to end col
 	const lastLine = getLineAtIndex(store, end.line);
-	if (lastLine !== undefined) {
-		parts.push(lastLine.slice(0, end.col));
-	}
+	parts.push(lastLine !== undefined ? lastLine.slice(0, end.col) : '');
 
 	return parts.join('\n');
 }
@@ -796,7 +826,37 @@ function computeOverlapDirtyRanges(
 		}
 	}
 
-	return ranges;
+	return mergeRanges(ranges);
+}
+
+/**
+ * Merges overlapping or adjacent dirty ranges to avoid redundant re-rendering.
+ */
+function mergeRanges(ranges: [number, number][]): [number, number][] {
+	if (ranges.length <= 1) {
+		return ranges;
+	}
+
+	ranges.sort((a, b) => a[0] - b[0]);
+
+	const merged: [number, number][] = [];
+	for (const range of ranges) {
+		const last = merged[merged.length - 1];
+		if (!last) {
+			merged.push(range);
+			continue;
+		}
+
+		if (range[0] <= last[1] + 1) {
+			if (range[1] > last[1]) {
+				last[1] = range[1];
+			}
+		} else {
+			merged.push(range);
+		}
+	}
+
+	return merged;
 }
 
 /**
@@ -842,11 +902,12 @@ export function getSelectionDirtyRanges(
 // =============================================================================
 
 /**
- * Creates a snapshot of the current selection state (immutable copy).
+ * Creates a snapshot of the current selection state.
+ * Returns a shallow copy that is independent of the original state.
  * Useful for tracking previous state for dirty computation.
  *
  * @param state - Selection state
- * @returns Frozen copy of the state
+ * @returns Independent copy of the state
  */
 export function snapshotSelection(state: TextSelectionState): TextSelectionState {
 	return {

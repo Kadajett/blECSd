@@ -971,6 +971,7 @@ export {
 	getSelectedText,
 	getSelectionDirtyRanges,
 	getSelectionLineCount,
+	getSelectionState,
 	hasActiveSelection,
 	hasSelectionState,
 	isLineSelected,
