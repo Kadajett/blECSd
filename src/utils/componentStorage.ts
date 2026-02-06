@@ -144,13 +144,17 @@ export interface ComponentStore<T> {
 	/**
 	 * Returns a readonly view of the dense data array for fastest iteration.
 	 * Only meaningful in iterable mode. In non-iterable mode, returns an
-	 * empty array.
+	 * empty frozen array.
 	 *
-	 * WARNING: The returned array is a view into internal storage.
-	 * Do not modify its structure.
+	 * WARNING: Only elements at indices `0` through `size - 1` are live.
+	 * Elements beyond `size` are stale leftovers from swap-and-pop removals.
+	 * Do not modify the array structure (push/pop/splice).
 	 */
 	data(): readonly T[];
 }
+
+/** Shared frozen empty array returned by non-iterable data(). */
+const EMPTY_ARRAY: readonly never[] = Object.freeze([]) as readonly never[];
 
 // =============================================================================
 // COMPONENT STORE
@@ -202,6 +206,9 @@ export function createComponentStore<T>(
 function createIterableStore<T>(initialCapacity?: number): ComponentStore<T> {
 	const packed = createPackedStore<T>(initialCapacity);
 	const handleMap = new Map<Entity, PackedHandle>();
+	// Reverse index: handle.index -> Entity, maintained incrementally
+	// so forEach never needs to rebuild it.
+	const entityByIndex = new Map<number, Entity>();
 
 	return {
 		get(eid: Entity): T | undefined {
@@ -220,6 +227,7 @@ function createIterableStore<T>(initialCapacity?: number): ComponentStore<T> {
 			}
 			const handle = addToStore(packed, value);
 			handleMap.set(eid, handle);
+			entityByIndex.set(handle.index, eid);
 		},
 
 		has(eid: Entity): boolean {
@@ -234,6 +242,7 @@ function createIterableStore<T>(initialCapacity?: number): ComponentStore<T> {
 			const removed = removeFromStore(packed, handle);
 			if (removed) {
 				handleMap.delete(eid);
+				entityByIndex.delete(handle.index);
 			}
 			return removed;
 		},
@@ -244,22 +253,16 @@ function createIterableStore<T>(initialCapacity?: number): ComponentStore<T> {
 
 		clear(): void {
 			// Remove each entry so PackedStore generations stay correct
-			for (const [eid, handle] of handleMap) {
+			for (const [, handle] of handleMap) {
 				removeFromStore(packed, handle);
-				handleMap.delete(eid);
 			}
+			handleMap.clear();
+			entityByIndex.clear();
 		},
 
 		forEach(fn: (value: T, eid: Entity) => void): void {
-			// Build a reverse map: packed index -> entity
-			// We need this because PackedStore's forEach gives us handles,
-			// but the caller expects entities
-			const indexToEntity = new Map<number, Entity>();
-			for (const [eid, handle] of handleMap) {
-				indexToEntity.set(handle.index, eid);
-			}
 			forEachInStore(packed, (value, handle) => {
-				const eid = indexToEntity.get(handle.index);
+				const eid = entityByIndex.get(handle.index);
 				if (eid !== undefined) {
 					fn(value, eid);
 				}
@@ -310,7 +313,7 @@ function createMapStore<T>(): ComponentStore<T> {
 		},
 
 		data(): readonly T[] {
-			return [];
+			return EMPTY_ARRAY as readonly T[];
 		},
 	};
 }

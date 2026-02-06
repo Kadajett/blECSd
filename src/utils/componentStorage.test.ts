@@ -8,6 +8,20 @@ function eid(n: number): Entity {
 	return n as Entity;
 }
 
+/**
+ * Simple seeded PRNG (mulberry32) for deterministic test sequences.
+ * Returns a function that yields numbers in [0, 1).
+ */
+function seededRng(seed: number): () => number {
+	let state = seed | 0;
+	return (): number => {
+		state = (state + 0x6d2b79f5) | 0;
+		let t = Math.imul(state ^ (state >>> 15), 1 | state);
+		t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+	};
+}
+
 // =============================================================================
 // Shared behavior tests that apply to BOTH modes
 // =============================================================================
@@ -192,11 +206,15 @@ describe('createComponentStore (non-iterable / Map-backed)', () => {
 		expect(store.data()).toEqual([]);
 	});
 
-	it('data() returns empty array', () => {
+	it('data() returns a shared frozen empty array', () => {
 		const store = factory<number>();
 		store.set(eid(1), 1);
 		store.set(eid(2), 2);
-		expect(store.data()).toEqual([]);
+		const d1 = store.data();
+		const d2 = store.data();
+		expect(d1).toEqual([]);
+		expect(d1).toBe(d2); // same reference, no allocation
+		expect(Object.isFrozen(d1)).toBe(true);
 	});
 });
 
@@ -280,15 +298,16 @@ describe('createComponentStore (iterable / PackedStore-backed)', () => {
 	it('stress test: interleaved operations maintain consistency', () => {
 		const store = factory<number>();
 		const reference = new Map<number, number>();
+		const rng = seededRng(42);
 
-		// Perform 500 random operations
+		// Perform 500 deterministic operations
 		for (let i = 0; i < 500; i++) {
-			const entity = eid(Math.floor(Math.random() * 50));
-			const op = Math.random();
+			const entity = eid(Math.floor(rng() * 50));
+			const op = rng();
 
 			if (op < 0.5) {
 				// Add/update
-				const value = Math.floor(Math.random() * 1000);
+				const value = Math.floor(rng() * 1000);
 				store.set(entity, value);
 				reference.set(entity as number, value);
 			} else if (op < 0.8) {
