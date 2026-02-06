@@ -1181,6 +1181,43 @@ export {
 	textInputStore,
 	toggleCursorMode,
 } from './textInput';
+// TextSelection component for virtualized content
+export type {
+	CopyProgress,
+	LineSelectionInfo,
+	SelectionMode,
+	SelectionPosition,
+	SelectionRange,
+	TextSelectionState,
+} from './textSelection';
+export {
+	BACKGROUND_COPY_CHUNK_SIZE,
+	clearTextSelection,
+	createBackgroundCopy,
+	createSelectionState,
+	getLineSelectionInfo,
+	getNormalizedRange,
+	getSelectedLinesInViewport,
+	getSelectedText,
+	getSelectionDirtyRanges,
+	getSelectionLineCount,
+	hasActiveSelection,
+	hasSelectionState,
+	isLineSelected,
+	registerSelectionState,
+	removeSelectionState,
+	resetSelectionStore,
+	SelectionModeSchema,
+	SelectionPositionSchema,
+	SYNC_COPY_LINE_LIMIT,
+	selectAll,
+	selectLine,
+	selectLineRange,
+	setSelectionMode,
+	snapshotSelection,
+	startSelection,
+	updateSelection,
+} from './textSelection';
 // TileMap component
 export type {
 	RenderedTileCell,
