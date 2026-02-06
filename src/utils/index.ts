@@ -21,6 +21,66 @@ export {
 	renderText,
 	renderVLine,
 } from './box';
+// Change coalescing
+export type {
+	CoalescingConfig,
+	CoalescingState,
+	DirtyRegion,
+	FlushResult,
+	TextChange,
+} from './changeCoalescing';
+export {
+	createCoalescer,
+	deleteChange,
+	destroyCoalescer,
+	flushChanges,
+	getCoalescingState,
+	insertChange,
+	queueChange,
+	replaceChange,
+} from './changeCoalescing';
+// Component storage
+export type {
+	ComponentMemoryReport,
+	SparseStorageConfig,
+	SparseStore,
+	TypedArrayPool,
+} from './componentStorage';
+export {
+	createSparseStore,
+	createTypedArrayPool,
+	estimateMemoryUsage,
+	getComponentMemoryReport,
+	isWithinMemoryBounds,
+} from './componentStorage';
+// Cursor navigation
+export type {
+	CursorNavConfig,
+	CursorPosition,
+	LineIndex,
+	NavigationResult,
+	ViewportState,
+} from './cursorNavigation';
+export {
+	buildLineIndex,
+	buildLineIndexFromLengths,
+	clampCursor,
+	createCursor,
+	createNavConfig,
+	createViewport,
+	ensureCursorVisible,
+	goToEnd,
+	goToLine,
+	goToStart,
+	lineForOffset,
+	moveCursorDown,
+	moveCursorLeft,
+	moveCursorRight,
+	moveCursorUp,
+	offsetForLine,
+	pageDown,
+	pageUp,
+} from './cursorNavigation';
 // Efficient diff rendering
 export type {
 	DiffCache,
@@ -78,6 +138,31 @@ export {
 	wrapVisibleFirst,
 	wrapWithCache,
 } from './fastWrap';
+// Fold regions
+export type {
+	FoldConfig,
+	FoldRegion,
+	FoldStats,
+	VisibleLine,
+} from './foldRegions';
+export {
+	addFoldRegion,
+	createFoldState,
+	foldAll,
+	foldAtDepth,
+	foldRegion,
+	getAllFoldRegions,
+	getFoldAtLine,
+	getFoldStats,
+	getVisibleFoldLines,
+	originalToVisibleLine,
+	removeFoldRegion,
+	toggleFold,
+	unfoldAll,
+	unfoldRegion,
+	updateTotalLines,
+	visibleToOriginalLine,
+} from './foldRegions';
 // Fuzzy search utilities
 export type { FuzzyMatch, FuzzyOptions, FuzzySearchOptions } from './fuzzySearch';
 export {
@@ -104,6 +189,39 @@ export {
 	unique,
 	uniqueBy,
 } from './helpers';
+// Lazy content loading
+export type {
+	ContentChunk,
+	ContentSource,
+	LazyContentConfig,
+	LazyContentState,
+} from './lazyContent';
+export {
+	clearLazyContent,
+	createArraySource,
+	createLazyContent,
+	evictChunks,
+	getLazyContentState,
+	getLazyLines,
+	isRangeLoaded,
+	prefetchAround,
+} from './lazyContent';
+// Line gutter
+export type {
+	GutterConfig,
+	GutterLine,
+	GutterResult,
+	LineNumberMode,
+} from './lineGutter';
+export {
+	computeDigitWidth,
+	computeGutterWidth,
+	computeVisibleGutter,
+	createGutterConfig,
+	formatLineNumber,
+	gutterWidthChanged,
+	renderGutterBlock,
+} from './lineGutter';
 // Efficient markdown rendering
 export type {
 	BlockData,
