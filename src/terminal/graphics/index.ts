@@ -49,3 +49,31 @@ export {
 	ST,
 	ST_ALT,
 } from './iterm2';
+
+// Sixel backend
+export type { SixelBackendConfig, SixelEnvChecker } from './sixel';
+export {
+	buildPalette,
+	buildPaletteHeader,
+	buildSixelColumn,
+	bytesPerPixel,
+	clearSixelImage,
+	countImageColors,
+	createSixelGraphicsBackend,
+	cursorPosition as sixelCursorPosition,
+	DCS_START,
+	DEFAULT_MAX_COLORS,
+	encodeSixelData,
+	encodeSixelImage,
+	findNearestColor,
+	getPixelRGBA,
+	isSixelSupported,
+	mapPixelsToPalette,
+	packRGB,
+	rawEncodeBand,
+	renderSixelImage,
+	rleEncodeBand,
+	SIXEL_BACKEND_NAME,
+	SIXEL_ST,
+	SixelBackendConfigSchema,
+} from './sixel';
