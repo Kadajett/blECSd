@@ -4,7 +4,7 @@
 
 import { Writable } from 'node:stream';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SuspendManager, suspendSequences } from './suspend';
+import { createSuspendManager, type SuspendManager, suspendSequences } from './suspend';
 
 // Create a mock output stream that captures writes
 function createMockOutput(): { output: Writable; getOutput: () => string } {
@@ -71,7 +71,7 @@ describe('SuspendManager', () => {
 	beforeEach(() => {
 		mockOutput = createMockOutput();
 		mockInput = createMockInput();
-		manager = new SuspendManager({
+		manager = createSuspendManager({
 			output: mockOutput.output,
 			input: mockInput,
 		});
@@ -83,14 +83,14 @@ describe('SuspendManager', () => {
 
 	describe('constructor', () => {
 		it('creates with default options', () => {
-			const m = new SuspendManager();
+			const m = createSuspendManager();
 			expect(m.isAlternateBuffer).toBe(false);
 			expect(m.isMouseEnabled).toBe(false);
 			expect(m.enabled).toBe(false);
 		});
 
 		it('accepts initial state', () => {
-			const m = new SuspendManager({
+			const m = createSuspendManager({
 				isAlternateBuffer: true,
 				isMouseEnabled: true,
 			});
@@ -224,7 +224,7 @@ describe('SuspendManager callbacks', () => {
 		const mockInput = createMockInput();
 		const onSuspend = vi.fn().mockReturnValue({ custom: 'data' });
 
-		const manager = new SuspendManager({
+		const manager = createSuspendManager({
 			output: mockOutput.output,
 			input: mockInput,
 			onSuspend,
@@ -239,7 +239,7 @@ describe('SuspendManager callbacks', () => {
 		const mockOutput = createMockOutput();
 		const mockInput = createMockInput();
 
-		const manager = new SuspendManager({
+		const manager = createSuspendManager({
 			output: mockOutput.output,
 			input: mockInput,
 			isAlternateBuffer: false,

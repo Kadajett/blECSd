@@ -15,7 +15,7 @@
  *   enableInput,
  * } from 'blecsd';
  *
- * const program = new Program();
+ * const program = createProgram();
  * await program.init();
  *
  * const world = createWorld();

@@ -4,7 +4,7 @@
 
 import { PassThrough } from 'node:stream';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ScreenBuffer } from './screenBuffer';
+import { createScreenBuffer, type ScreenBuffer } from './screenBuffer';
 
 describe('ScreenBuffer', () => {
 	let output: PassThrough;
@@ -17,7 +17,7 @@ describe('ScreenBuffer', () => {
 		output.on('data', (chunk) => {
 			written += chunk.toString();
 		});
-		buffer = new ScreenBuffer(output);
+		buffer = createScreenBuffer(output);
 	});
 
 	afterEach(() => {

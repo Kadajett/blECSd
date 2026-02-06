@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { EventBus } from '../core/events';
+import { createEventBus } from '../core/events';
 import type { AudioAdapter } from './hooks';
 import { AudioChannel, createAudioManager } from './hooks';
 
@@ -247,7 +247,7 @@ describe('createAudioManager', () => {
 
 		it('triggers sound on event', () => {
 			const audio = createAudioManager(adapter);
-			const bus = new EventBus<GameEvents>();
+			const bus = createEventBus<GameEvents>();
 
 			audio.onEvent(bus, {
 				event: 'player:hit',
@@ -260,7 +260,7 @@ describe('createAudioManager', () => {
 
 		it('applies play options to triggered sound', () => {
 			const audio = createAudioManager(adapter);
-			const bus = new EventBus<GameEvents>();
+			const bus = createEventBus<GameEvents>();
 
 			audio.onEvent(bus, {
 				event: 'player:death',
@@ -279,7 +279,7 @@ describe('createAudioManager', () => {
 
 		it('respects conditional predicate', () => {
 			const audio = createAudioManager(adapter);
-			const bus = new EventBus<GameEvents>();
+			const bus = createEventBus<GameEvents>();
 
 			audio.onEvent(bus, {
 				event: 'player:hit',
@@ -296,7 +296,7 @@ describe('createAudioManager', () => {
 
 		it('unsubscribes from single trigger', () => {
 			const audio = createAudioManager(adapter);
-			const bus = new EventBus<GameEvents>();
+			const bus = createEventBus<GameEvents>();
 
 			const unsub = audio.onEvent(bus, {
 				event: 'player:hit',
@@ -310,7 +310,7 @@ describe('createAudioManager', () => {
 
 		it('registers multiple triggers at once', () => {
 			const audio = createAudioManager(adapter);
-			const bus = new EventBus<GameEvents>();
+			const bus = createEventBus<GameEvents>();
 
 			audio.onEvents(bus, [
 				{ event: 'player:hit', soundId: 'hit' },
@@ -326,7 +326,7 @@ describe('createAudioManager', () => {
 
 		it('unsubscribes all triggers from onEvents', () => {
 			const audio = createAudioManager(adapter);
-			const bus = new EventBus<GameEvents>();
+			const bus = createEventBus<GameEvents>();
 
 			const unsub = audio.onEvents(bus, [
 				{ event: 'player:hit', soundId: 'hit' },
@@ -360,7 +360,7 @@ describe('createAudioManager', () => {
 				test: { value: number };
 			}
 
-			const bus = new EventBus<TestEvents>();
+			const bus = createEventBus<TestEvents>();
 			audio.onEvent(bus, {
 				event: 'test',
 				soundId: 'test_sound',

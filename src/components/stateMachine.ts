@@ -70,30 +70,27 @@ function getStateMachineComponent(world: World): unknown {
 	return StateMachineComponentRef;
 }
 
-/**
- * Store for state machine instances and definitions.
- * Maps machine IDs to runtime state machine instances.
- */
-class StateMachineDefinitionStore {
-	private machines = new Map<number, StateMachine<string, string, unknown>>();
-	private stateIndices = new Map<number, Map<string, number>>();
-	private stateNames = new Map<number, string[]>();
-	private nextId = 1;
+// =============================================================================
+// STATE MACHINE DEFINITION STORE (module-level state, no class)
+// =============================================================================
 
-	/**
-	 * Register a new state machine configuration.
-	 *
-	 * @param config - State machine configuration
-	 * @returns Machine ID for use with entities
-	 */
+const machines = new Map<number, StateMachine<string, string, unknown>>();
+const stateIndices = new Map<number, Map<string, number>>();
+const stateNames = new Map<number, string[]>();
+let nextMachineDefId = 1;
+
+/**
+ * Global store for state machine definitions.
+ */
+export const StateMachineStore = {
+	/** Register a new state machine configuration. Returns machine ID. */
 	register<S extends string, E extends string, C = unknown>(
 		config: StateMachineConfig<S, E, C>,
 	): number {
-		const id = this.nextId++;
+		const id = nextMachineDefId++;
 		const machine = createStateMachine(config);
-		this.machines.set(id, machine as unknown as StateMachine<string, string, unknown>);
+		machines.set(id, machine as unknown as StateMachine<string, string, unknown>);
 
-		// Build state index lookup
 		const states = Object.keys(config.states) as S[];
 		const indexMap = new Map<string, number>();
 		for (let i = 0; i < states.length; i++) {
@@ -102,57 +99,37 @@ class StateMachineDefinitionStore {
 				indexMap.set(state, i);
 			}
 		}
-		this.stateIndices.set(id, indexMap);
-		this.stateNames.set(id, states);
+		stateIndices.set(id, indexMap);
+		stateNames.set(id, states);
 
 		return id;
-	}
-
-	/**
-	 * Get the state machine instance for a machine ID.
-	 */
+	},
+	/** Get the state machine instance for a machine ID. */
 	getMachine(machineId: number): StateMachine<string, string, unknown> | undefined {
-		return this.machines.get(machineId);
-	}
-
-	/**
-	 * Get the state index for a state name.
-	 */
+		return machines.get(machineId);
+	},
+	/** Get the state index for a state name. */
 	getStateIndex(machineId: number, state: string): number {
-		return this.stateIndices.get(machineId)?.get(state) ?? 0;
-	}
-
-	/**
-	 * Get the state name for a state index.
-	 */
+		return stateIndices.get(machineId)?.get(state) ?? 0;
+	},
+	/** Get the state name for a state index. */
 	getStateName(machineId: number, index: number): string {
-		return this.stateNames.get(machineId)?.[index] ?? '';
-	}
-
-	/**
-	 * Remove a machine registration.
-	 */
+		return stateNames.get(machineId)?.[index] ?? '';
+	},
+	/** Remove a machine registration. */
 	unregister(machineId: number): void {
-		this.machines.delete(machineId);
-		this.stateIndices.delete(machineId);
-		this.stateNames.delete(machineId);
-	}
-
-	/**
-	 * Clear all registrations.
-	 */
+		machines.delete(machineId);
+		stateIndices.delete(machineId);
+		stateNames.delete(machineId);
+	},
+	/** Clear all registrations. */
 	clear(): void {
-		this.machines.clear();
-		this.stateIndices.clear();
-		this.stateNames.clear();
-		this.nextId = 1;
-	}
-}
-
-/**
- * Global store for state machine definitions.
- */
-export const StateMachineStore = new StateMachineDefinitionStore();
+		machines.clear();
+		stateIndices.clear();
+		stateNames.clear();
+		nextMachineDefId = 1;
+	},
+};
 
 // =============================================================================
 // Helper Functions

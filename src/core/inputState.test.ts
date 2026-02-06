@@ -9,7 +9,7 @@ import type { TimestampedKeyEvent, TimestampedMouseEvent } from './inputEventBuf
 import {
 	createInputState,
 	getMovementDirection,
-	InputState,
+	type InputState,
 	isAllKeysDown,
 	isAnyKeyDown,
 	isAnyKeyPressed,
@@ -66,7 +66,7 @@ describe('InputState', () => {
 	describe('createInputState', () => {
 		it('should create an input state with default config', () => {
 			const state = createInputState();
-			expect(state).toBeInstanceOf(InputState);
+			expect(state.isKeyDown).toBeTypeOf('function');
 		});
 
 		it('should create an input state with custom config', () => {
@@ -74,7 +74,7 @@ describe('InputState', () => {
 				trackRepeats: false,
 				debounceTime: 100,
 			});
-			expect(state).toBeInstanceOf(InputState);
+			expect(state.isKeyDown).toBeTypeOf('function');
 		});
 	});
 

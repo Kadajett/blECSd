@@ -6,10 +6,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	categorizeEscapeSequences,
 	containsEscapeSequences,
+	createSafeStringBuilder,
 	DEFAULT_SANITIZE_OPTIONS,
 	extractEscapeSequences,
 	isSafeForTerminal,
-	SafeStringBuilder,
 	sanitizeForTerminal,
 } from './sanitize';
 
@@ -242,7 +242,7 @@ describe('isSafeForTerminal', () => {
 describe('SafeStringBuilder', () => {
 	describe('basic usage', () => {
 		it('combines trusted and untrusted content', () => {
-			const builder = new SafeStringBuilder();
+			const builder = createSafeStringBuilder();
 			const result = builder
 				.append('\x1b[1m')
 				.appendUntrusted('user\x1b[0mInput')
@@ -253,14 +253,14 @@ describe('SafeStringBuilder', () => {
 		});
 
 		it('preserves trusted escape sequences', () => {
-			const builder = new SafeStringBuilder();
+			const builder = createSafeStringBuilder();
 			const result = builder.append('\x1b[31m').append('Red').append('\x1b[0m').toString();
 
 			expect(result).toBe('\x1b[31mRed\x1b[0m');
 		});
 
 		it('sanitizes untrusted content', () => {
-			const builder = new SafeStringBuilder();
+			const builder = createSafeStringBuilder();
 			const result = builder.appendUntrusted('\x1b[31mMalicious\x1b[0m').toString();
 
 			expect(result).toBe('Malicious');
@@ -269,7 +269,7 @@ describe('SafeStringBuilder', () => {
 
 	describe('with custom default options', () => {
 		it('uses custom options for all untrusted content', () => {
-			const builder = new SafeStringBuilder({
+			const builder = createSafeStringBuilder({
 				stripAllEscapes: false,
 				allowColors: true,
 			});
@@ -281,7 +281,7 @@ describe('SafeStringBuilder', () => {
 
 	describe('per-append options override', () => {
 		it('allows overriding options per append', () => {
-			const builder = new SafeStringBuilder(); // Default: strip all
+			const builder = createSafeStringBuilder(); // Default: strip all
 			const result = builder
 				.appendUntrusted('\x1b[31mStripped\x1b[0m')
 				.appendUntrusted('\x1b[32mKept\x1b[0m', {
@@ -296,7 +296,7 @@ describe('SafeStringBuilder', () => {
 
 	describe('clear', () => {
 		it('clears all content', () => {
-			const builder = new SafeStringBuilder();
+			const builder = createSafeStringBuilder();
 			builder.append('Hello').clear().append('World');
 			expect(builder.toString()).toBe('World');
 		});
@@ -304,7 +304,7 @@ describe('SafeStringBuilder', () => {
 
 	describe('length', () => {
 		it('returns total length', () => {
-			const builder = new SafeStringBuilder();
+			const builder = createSafeStringBuilder();
 			builder.append('Hello').append(' ').append('World');
 			expect(builder.length).toBe(11);
 		});
@@ -312,7 +312,7 @@ describe('SafeStringBuilder', () => {
 
 	describe('chaining', () => {
 		it('supports method chaining', () => {
-			const result = new SafeStringBuilder()
+			const result = createSafeStringBuilder()
 				.append('A')
 				.appendUntrusted('B\x1b[1m')
 				.append('C')

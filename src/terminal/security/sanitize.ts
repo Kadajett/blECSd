@@ -295,15 +295,27 @@ export function isSafeForTerminal(input: string): boolean {
 // =============================================================================
 
 /**
- * Safe string builder for combining trusted and untrusted content.
+ * SafeStringBuilder interface for type-safe access.
+ */
+export interface SafeStringBuilder {
+	append(trusted: string): SafeStringBuilder;
+	appendUntrusted(untrusted: string, options?: SanitizeOptions): SafeStringBuilder;
+	clear(): SafeStringBuilder;
+	toString(): string;
+	readonly length: number;
+}
+
+/**
+ * Create a safe string builder for combining trusted and untrusted content.
  *
- * Use this when building terminal output that includes user-provided data.
  * Trusted content is passed through unchanged, while untrusted content
  * is automatically sanitized.
  *
+ * @param defaultOptions - Default sanitization options for untrusted content
+ *
  * @example
  * ```typescript
- * const builder = new SafeStringBuilder();
+ * const builder = createSafeStringBuilder();
  * builder
  *   .append('\x1b[1m')           // Trusted: bold on
  *   .appendUntrusted(userName)   // Sanitized user input
@@ -314,73 +326,33 @@ export function isSafeForTerminal(input: string): boolean {
  * process.stdout.write(builder.toString());
  * ```
  */
-export class SafeStringBuilder {
-	private parts: string[] = [];
-	private defaultOptions: SanitizeOptions;
+export function createSafeStringBuilder(defaultOptions: SanitizeOptions = {}): SafeStringBuilder {
+	let parts: string[] = [];
+	const resolvedDefaults = { ...DEFAULT_SANITIZE_OPTIONS, ...defaultOptions };
 
-	/**
-	 * Create a new SafeStringBuilder.
-	 *
-	 * @param defaultOptions - Default sanitization options for untrusted content
-	 */
-	constructor(defaultOptions: SanitizeOptions = {}) {
-		this.defaultOptions = { ...DEFAULT_SANITIZE_OPTIONS, ...defaultOptions };
-	}
+	const builder: SafeStringBuilder = {
+		append(trusted: string): SafeStringBuilder {
+			parts.push(trusted);
+			return builder;
+		},
+		appendUntrusted(untrusted: string, options?: SanitizeOptions): SafeStringBuilder {
+			const opts = options ? { ...resolvedDefaults, ...options } : resolvedDefaults;
+			parts.push(sanitizeForTerminal(untrusted, opts));
+			return builder;
+		},
+		clear(): SafeStringBuilder {
+			parts = [];
+			return builder;
+		},
+		toString(): string {
+			return parts.join('');
+		},
+		get length(): number {
+			return parts.reduce((sum, part) => sum + part.length, 0);
+		},
+	};
 
-	/**
-	 * Append trusted content (no sanitization).
-	 *
-	 * Only use this for content you control, such as escape sequences
-	 * you generate programmatically.
-	 *
-	 * @param trusted - Trusted content to append
-	 * @returns this for chaining
-	 */
-	append(trusted: string): this {
-		this.parts.push(trusted);
-		return this;
-	}
-
-	/**
-	 * Append untrusted content (sanitized).
-	 *
-	 * Use this for any user-provided or external content.
-	 *
-	 * @param untrusted - Untrusted content to sanitize and append
-	 * @param options - Override default sanitization options
-	 * @returns this for chaining
-	 */
-	appendUntrusted(untrusted: string, options?: SanitizeOptions): this {
-		const opts = options ? { ...this.defaultOptions, ...options } : this.defaultOptions;
-		this.parts.push(sanitizeForTerminal(untrusted, opts));
-		return this;
-	}
-
-	/**
-	 * Clear the builder.
-	 *
-	 * @returns this for chaining
-	 */
-	clear(): this {
-		this.parts = [];
-		return this;
-	}
-
-	/**
-	 * Get the combined string.
-	 *
-	 * @returns Combined string with trusted and sanitized content
-	 */
-	toString(): string {
-		return this.parts.join('');
-	}
-
-	/**
-	 * Get the current length of the combined string.
-	 */
-	get length(): number {
-		return this.parts.reduce((sum, part) => sum + part.length, 0);
-	}
+	return builder;
 }
 
 // =============================================================================

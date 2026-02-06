@@ -4,7 +4,7 @@
 
 import { PassThrough, Readable } from 'node:stream';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Program, ProgramConfigSchema } from './program';
+import { createProgram, type Program, ProgramConfigSchema } from './program';
 
 // Mock TTY streams for testing
 function createMockTTYOutput(): PassThrough & { isTTY: true; columns: number; rows: number } {
@@ -79,12 +79,12 @@ describe('Program', () => {
 
 	describe('constructor', () => {
 		it('creates with default config', () => {
-			program = new Program({ input, output });
+			program = createProgram({ input, output });
 			expect(program.initialized).toBe(false);
 		});
 
 		it('uses provided streams', () => {
-			program = new Program({ input, output });
+			program = createProgram({ input, output });
 			expect(program.input).toBe(input);
 			expect(program.output).toBe(output);
 		});
@@ -92,7 +92,7 @@ describe('Program', () => {
 
 	describe('init', () => {
 		it('initializes the terminal', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -103,14 +103,14 @@ describe('Program', () => {
 		});
 
 		it('detects terminal dimensions from TTY', async () => {
-			program = new Program({ input, output });
+			program = createProgram({ input, output });
 			await program.init();
 			expect(program.cols).toBe(120);
 			expect(program.rows).toBe(40);
 		});
 
 		it('uses forced dimensions', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				forceWidth: 80,
@@ -122,7 +122,7 @@ describe('Program', () => {
 		});
 
 		it('enters alternate screen when configured', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: true,
@@ -133,7 +133,7 @@ describe('Program', () => {
 		});
 
 		it('hides cursor when configured', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -144,7 +144,7 @@ describe('Program', () => {
 		});
 
 		it('sets title when provided', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -156,7 +156,7 @@ describe('Program', () => {
 		});
 
 		it('enables raw mode on input', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -167,7 +167,7 @@ describe('Program', () => {
 		});
 
 		it('is idempotent', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -182,7 +182,7 @@ describe('Program', () => {
 
 	describe('destroy', () => {
 		it('restores terminal state', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: true,
@@ -199,7 +199,7 @@ describe('Program', () => {
 		});
 
 		it('disables raw mode', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -211,7 +211,7 @@ describe('Program', () => {
 		});
 
 		it('marks as not initialized', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -223,7 +223,7 @@ describe('Program', () => {
 		});
 
 		it('is idempotent', async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -240,7 +240,7 @@ describe('Program', () => {
 
 	describe('write and flush', () => {
 		beforeEach(async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -272,7 +272,7 @@ describe('Program', () => {
 
 	describe('rawWrite', () => {
 		beforeEach(async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -290,7 +290,7 @@ describe('Program', () => {
 
 	describe('clear', () => {
 		beforeEach(async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -310,7 +310,7 @@ describe('Program', () => {
 
 	describe('move and cursorTo', () => {
 		beforeEach(async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -335,7 +335,7 @@ describe('Program', () => {
 
 	describe('cursor visibility', () => {
 		beforeEach(async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -360,7 +360,7 @@ describe('Program', () => {
 
 	describe('cursor position tracking', () => {
 		beforeEach(async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -384,7 +384,7 @@ describe('Program', () => {
 
 	describe('resize event', () => {
 		it('emits resize event when dimensions change', async () => {
-			program = new Program({ input, output });
+			program = createProgram({ input, output });
 			await program.init();
 
 			const resizeHandler = vi.fn();
@@ -401,7 +401,7 @@ describe('Program', () => {
 		});
 
 		it('does not emit if dimensions unchanged', async () => {
-			program = new Program({ input, output });
+			program = createProgram({ input, output });
 			await program.init();
 
 			const resizeHandler = vi.fn();
@@ -416,7 +416,7 @@ describe('Program', () => {
 
 	describe('setTitle', () => {
 		beforeEach(async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -434,7 +434,7 @@ describe('Program', () => {
 
 	describe('resetStyle', () => {
 		beforeEach(async () => {
-			program = new Program({
+			program = createProgram({
 				input,
 				output,
 				useAlternateScreen: false,
@@ -461,7 +461,7 @@ describe('Program with non-TTY streams', () => {
 			written += chunk.toString();
 		});
 
-		const program = new Program({
+		const program = createProgram({
 			input,
 			output,
 			useAlternateScreen: false,

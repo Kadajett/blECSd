@@ -30,214 +30,122 @@ export interface SyncOutputOptions {
 }
 
 /**
- * SynchronizedOutput manages synchronized output mode for flicker-free rendering.
+ * SynchronizedOutput interface for type-safe access.
+ */
+export interface SynchronizedOutput {
+	supported: boolean;
+	autoSync: boolean;
+	readonly inFrame: boolean;
+	beginFrame(): void;
+	endFrame(): void;
+	renderFrame(renderFn: () => void): void;
+	renderFrameAsync(renderFn: () => Promise<void>): Promise<void>;
+	writeFrame(content: string): void;
+	write(content: string): void;
+	getBeginMarker(): string;
+	getEndMarker(): string;
+}
+
+/**
+ * Create a new SynchronizedOutput instance for flicker-free rendering.
  *
  * In synchronized mode, the terminal buffers all output until the end marker
- * is received, then displays the entire frame at once. This prevents partial
- * frames from being displayed, eliminating tearing and flicker.
+ * is received, then displays the entire frame at once.
+ *
+ * @param output - Output stream to write to
+ * @param options - Configuration options
  *
  * @example
  * ```typescript
- * const syncOut = new SynchronizedOutput(process.stdout);
+ * const syncOut = createSynchronizedOutput(process.stdout);
  *
- * // Manual frame rendering
  * syncOut.beginFrame();
  * // ... write frame content ...
  * syncOut.endFrame();
  *
- * // Or render a complete frame
  * syncOut.renderFrame(() => {
  *   process.stdout.write(clearScreen);
  *   process.stdout.write(renderGameState());
  * });
  * ```
  */
-export class SynchronizedOutput {
-	private output: Writable;
-	private _supported: boolean;
-	private _autoSync: boolean;
-	private _inFrame = false;
+export function createSynchronizedOutput(
+	output: Writable,
+	options: SyncOutputOptions = {},
+): SynchronizedOutput {
+	let supported = options.supported ?? true;
+	let autoSyncEnabled = options.autoSync ?? false;
+	let inFrame = false;
 
-	/**
-	 * Create a new SynchronizedOutput instance.
-	 *
-	 * @param output - Output stream to write to
-	 * @param options - Configuration options
-	 */
-	constructor(output: Writable, options: SyncOutputOptions = {}) {
-		this.output = output;
-		this._supported = options.supported ?? true;
-		this._autoSync = options.autoSync ?? false;
-	}
+	const syncOut: SynchronizedOutput = {
+		get supported(): boolean {
+			return supported;
+		},
+		set supported(value: boolean) {
+			supported = value;
+		},
+		get autoSync(): boolean {
+			return autoSyncEnabled;
+		},
+		set autoSync(value: boolean) {
+			autoSyncEnabled = value;
+		},
+		get inFrame(): boolean {
+			return inFrame;
+		},
+		beginFrame(): void {
+			if (!supported || inFrame) {
+				return;
+			}
+			output.write(sync.begin());
+			inFrame = true;
+		},
+		endFrame(): void {
+			if (!supported || !inFrame) {
+				return;
+			}
+			output.write(sync.end());
+			inFrame = false;
+		},
+		renderFrame(renderFn: () => void): void {
+			syncOut.beginFrame();
+			try {
+				renderFn();
+			} finally {
+				syncOut.endFrame();
+			}
+		},
+		async renderFrameAsync(renderFn: () => Promise<void>): Promise<void> {
+			syncOut.beginFrame();
+			try {
+				await renderFn();
+			} finally {
+				syncOut.endFrame();
+			}
+		},
+		writeFrame(content: string): void {
+			if (!supported) {
+				output.write(content);
+				return;
+			}
+			output.write(sync.wrap(content));
+		},
+		write(content: string): void {
+			if (autoSyncEnabled && supported && !inFrame) {
+				syncOut.writeFrame(content);
+			} else {
+				output.write(content);
+			}
+		},
+		getBeginMarker(): string {
+			return supported ? sync.begin() : '';
+		},
+		getEndMarker(): string {
+			return supported ? sync.end() : '';
+		},
+	};
 
-	/**
-	 * Whether synchronized output is supported.
-	 */
-	get supported(): boolean {
-		return this._supported;
-	}
-
-	/**
-	 * Set whether synchronized output is supported.
-	 * Use this after capability detection.
-	 */
-	set supported(value: boolean) {
-		this._supported = value;
-	}
-
-	/**
-	 * Whether auto-sync is enabled.
-	 */
-	get autoSync(): boolean {
-		return this._autoSync;
-	}
-
-	/**
-	 * Set auto-sync mode.
-	 */
-	set autoSync(value: boolean) {
-		this._autoSync = value;
-	}
-
-	/**
-	 * Whether currently in a synchronized frame.
-	 */
-	get inFrame(): boolean {
-		return this._inFrame;
-	}
-
-	/**
-	 * Begin a synchronized frame.
-	 * All output will be buffered until endFrame() is called.
-	 *
-	 * @example
-	 * ```typescript
-	 * syncOut.beginFrame();
-	 * // ... render frame ...
-	 * syncOut.endFrame();
-	 * ```
-	 */
-	beginFrame(): void {
-		if (!this._supported || this._inFrame) {
-			return;
-		}
-
-		this.output.write(sync.begin());
-		this._inFrame = true;
-	}
-
-	/**
-	 * End a synchronized frame.
-	 * Buffered output is flushed to the screen.
-	 *
-	 * @example
-	 * ```typescript
-	 * syncOut.endFrame();
-	 * ```
-	 */
-	endFrame(): void {
-		if (!this._supported || !this._inFrame) {
-			return;
-		}
-
-		this.output.write(sync.end());
-		this._inFrame = false;
-	}
-
-	/**
-	 * Execute a render function within a synchronized frame.
-	 * Automatically begins and ends the frame.
-	 *
-	 * @param renderFn - Function that performs rendering
-	 *
-	 * @example
-	 * ```typescript
-	 * syncOut.renderFrame(() => {
-	 *   process.stdout.write(screen.clear());
-	 *   process.stdout.write(renderGameState());
-	 * });
-	 * ```
-	 */
-	renderFrame(renderFn: () => void): void {
-		this.beginFrame();
-		try {
-			renderFn();
-		} finally {
-			this.endFrame();
-		}
-	}
-
-	/**
-	 * Execute an async render function within a synchronized frame.
-	 *
-	 * @param renderFn - Async function that performs rendering
-	 *
-	 * @example
-	 * ```typescript
-	 * await syncOut.renderFrameAsync(async () => {
-	 *   await drawComplexScene();
-	 * });
-	 * ```
-	 */
-	async renderFrameAsync(renderFn: () => Promise<void>): Promise<void> {
-		this.beginFrame();
-		try {
-			await renderFn();
-		} finally {
-			this.endFrame();
-		}
-	}
-
-	/**
-	 * Write content wrapped in sync markers.
-	 * Convenience method for single-write frames.
-	 *
-	 * @param content - Content to write
-	 *
-	 * @example
-	 * ```typescript
-	 * syncOut.writeFrame(frameContent);
-	 * ```
-	 */
-	writeFrame(content: string): void {
-		if (!this._supported) {
-			this.output.write(content);
-			return;
-		}
-
-		this.output.write(sync.wrap(content));
-	}
-
-	/**
-	 * Write content, optionally wrapping in sync markers if autoSync is enabled.
-	 *
-	 * @param content - Content to write
-	 */
-	write(content: string): void {
-		if (this._autoSync && this._supported && !this._inFrame) {
-			this.writeFrame(content);
-		} else {
-			this.output.write(content);
-		}
-	}
-
-	/**
-	 * Get the begin sync marker (or empty string if not supported).
-	 *
-	 * @returns Sync begin marker
-	 */
-	getBeginMarker(): string {
-		return this._supported ? sync.begin() : '';
-	}
-
-	/**
-	 * Get the end sync marker (or empty string if not supported).
-	 *
-	 * @returns Sync end marker
-	 */
-	getEndMarker(): string {
-		return this._supported ? sync.end() : '';
-	}
+	return syncOut;
 }
 
 /**

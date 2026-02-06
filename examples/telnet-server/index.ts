@@ -26,8 +26,8 @@
 import * as net from 'node:net';
 import { PassThrough } from 'node:stream';
 import { createWorld, type World } from 'blecsd';
-import { Program, type ProgramConfig } from 'blecsd/terminal';
-import { InputHandler } from 'blecsd/terminal';
+import { createProgram, type Program, type ProgramConfig } from 'blecsd/terminal';
+import { createInputHandler, type InputHandler } from 'blecsd/terminal';
 
 // =============================================================================
 // TELNET PROTOCOL CONSTANTS
@@ -501,10 +501,10 @@ const server = net.createServer((socket) => {
 			forceHeight: telnetStream.height,
 		};
 
-		const program = new Program(programConfig);
+		const program = createProgram(programConfig);
 
 		// Create InputHandler to parse key events from the telnet stream
-		const inputHandler = new InputHandler(telnetStream.input);
+		const inputHandler = createInputHandler(telnetStream.input);
 
 		const session: ClientSession = {
 			id: sessionId,

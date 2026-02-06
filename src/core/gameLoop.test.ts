@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createWorld } from '../core/ecs';
-import { createGameLoop, GameLoop, isLoopPaused, isLoopRunning, LoopState } from './gameLoop';
+import { createGameLoop, isLoopPaused, isLoopRunning, LoopState } from './gameLoop';
 import type { System, World } from './types';
 import { LoopPhase } from './types';
 
@@ -20,7 +20,7 @@ describe('GameLoop', () => {
 		it('should create a game loop with default options', () => {
 			const loop = createGameLoop(world);
 
-			expect(loop).toBeInstanceOf(GameLoop);
+			expect(loop.getState).toBeTypeOf('function');
 			expect(loop.getState()).toBe(LoopState.STOPPED);
 			expect(loop.getTargetFPS()).toBe(60);
 		});

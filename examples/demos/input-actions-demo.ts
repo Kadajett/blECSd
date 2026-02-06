@@ -9,10 +9,10 @@
  * @module demos/input-actions
  */
 
-import { InputActionManager, ActionPresets } from '../../src/core/inputActions';
+import { createInputActionManager, ActionPresets } from '../../src/core/inputActions';
 import type { ActionBinding, ActionState } from '../../src/core/inputActions';
 
-const manager = new InputActionManager();
+const manager = createInputActionManager();
 
 // Register platformer preset bindings
 for (const binding of ActionPresets.platformer) {

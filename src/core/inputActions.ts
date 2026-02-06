@@ -132,678 +132,65 @@ const DEFAULT_ACTION_STATE: ActionState = {
 const CURRENT_VERSION = 1;
 
 // =============================================================================
-// INPUT ACTION MANAGER
+// INPUT ACTION MANAGER INTERFACE
 // =============================================================================
 
 /**
- * Manages input action mappings and state.
- *
- * @example
- * ```typescript
- * import { InputActionManager, createInputState } from 'blecsd';
- *
- * const inputState = createInputState();
- * const actions = new InputActionManager();
- *
- * // Register actions
- * actions.register({
- *   action: 'jump',
- *   keys: ['space', 'w'],
- *   continuous: false,
- * });
- *
- * actions.register({
- *   action: 'move_left',
- *   keys: ['a', 'left'],
- *   continuous: true,
- * });
- *
- * // In game loop
- * function update(deltaTime: number) {
- *   actions.update(inputState, deltaTime);
- *
- *   if (actions.isJustActivated('jump')) {
- *     player.jump();
- *   }
- *   if (actions.isActive('move_left')) {
- *     player.moveLeft();
- *   }
- * }
- * ```
+ * InputActionManager interface for type-safe access.
  */
-export class InputActionManager {
-	private bindings: Map<string, InternalBinding> = new Map();
-	private states: Map<string, MutableActionState> = new Map();
-	private callbacks: Map<string, Set<ActionCallback>> = new Map();
-	private globalCallbacks: Set<ActionCallback> = new Set();
-
-	// =========================================================================
-	// REGISTRATION
-	// =========================================================================
-
-	/**
-	 * Registers an action binding.
-	 * If the action already exists, it will be updated.
-	 *
-	 * @param binding - The action binding configuration
-	 * @returns The manager for chaining
-	 *
-	 * @example
-	 * ```typescript
-	 * actions.register({
-	 *   action: 'attack',
-	 *   keys: ['j', 'enter'],
-	 *   mouseButtons: ['left'],
-	 *   continuous: false,
-	 * });
-	 * ```
-	 */
-	register(binding: ActionBinding): this {
-		const validated = ActionBindingSchema.parse(binding);
-
-		const internal: InternalBinding = {
-			action: validated.action,
-			keys: [...validated.keys],
-			mouseButtons: validated.mouseButtons ? [...validated.mouseButtons] : [],
-			continuous: validated.continuous ?? false,
-			deadzone: validated.deadzone ?? 0.1,
-		};
-
-		this.bindings.set(validated.action, internal);
-
-		// Initialize state if not exists
-		if (!this.states.has(validated.action)) {
-			this.states.set(validated.action, { ...DEFAULT_ACTION_STATE } as MutableActionState);
-		}
-
-		return this;
-	}
-
-	/**
-	 * Registers multiple action bindings at once.
-	 *
-	 * @param bindings - Array of action bindings
-	 * @returns The manager for chaining
-	 *
-	 * @example
-	 * ```typescript
-	 * actions.registerAll([
-	 *   { action: 'jump', keys: ['space'] },
-	 *   { action: 'attack', keys: ['j'] },
-	 *   { action: 'move_left', keys: ['a', 'left'], continuous: true },
-	 * ]);
-	 * ```
-	 */
-	registerAll(bindings: readonly ActionBinding[]): this {
-		for (const binding of bindings) {
-			this.register(binding);
-		}
-		return this;
-	}
-
-	/**
-	 * Unregisters an action.
-	 *
-	 * @param action - The action to unregister
-	 * @returns true if the action was found and removed
-	 */
-	unregister(action: string): boolean {
-		const existed = this.bindings.delete(action);
-		this.states.delete(action);
-		this.callbacks.delete(action);
-		return existed;
-	}
-
-	/**
-	 * Checks if an action is registered.
-	 *
-	 * @param action - The action to check
-	 * @returns true if the action is registered
-	 */
-	hasAction(action: string): boolean {
-		return this.bindings.has(action);
-	}
-
-	/**
-	 * Gets all registered action names.
-	 *
-	 * @returns Array of action names
-	 */
-	getActions(): string[] {
-		return [...this.bindings.keys()];
-	}
-
-	/**
-	 * Gets the binding for an action.
-	 *
-	 * @param action - The action to get bindings for
-	 * @returns The action binding, or undefined if not found
-	 */
-	getBinding(action: string): ActionBinding | undefined {
-		const internal = this.bindings.get(action);
-		if (!internal) return undefined;
-
-		return {
-			action: internal.action,
-			keys: [...internal.keys],
-			mouseButtons: internal.mouseButtons.length > 0 ? [...internal.mouseButtons] : undefined,
-			continuous: internal.continuous,
-			deadzone: internal.deadzone,
-		};
-	}
-
-	// =========================================================================
-	// UPDATE
-	// =========================================================================
-
-	/**
-	 * Updates all action states based on current input.
-	 * Call this once per frame after updating InputState.
-	 *
-	 * @param inputState - The current input state
-	 * @param deltaTime - Time since last frame in seconds
-	 *
-	 * @example
-	 * ```typescript
-	 * function update(deltaTime: number) {
-	 *   inputState.update(keys, mouse, deltaTime);
-	 *   actions.update(inputState, deltaTime);
-	 *
-	 *   // Now query actions
-	 *   if (actions.isActive('jump')) { ... }
-	 * }
-	 * ```
-	 */
-	update(inputState: InputState, deltaTime: number): void {
-		const deltaMs = deltaTime * 1000;
-
-		for (const [action, binding] of this.bindings) {
-			const state = this.states.get(action);
-			if (!state) continue;
-
-			// Clear transient flags
-			state.justActivated = false;
-			state.justDeactivated = false;
-
-			// Check if any bound input is active
-			const wasActive = state.active;
-			const isNowActive = this.checkBindingActive(binding, inputState);
-
-			// Update state
-			if (isNowActive && !wasActive) {
-				// Just activated
-				state.active = true;
-				state.justActivated = true;
-				state.activeTime = 0;
-				state.value = 1;
-				this.fireCallbacks(action, state, inputState);
-			} else if (!isNowActive && wasActive) {
-				// Just deactivated
-				state.active = false;
-				state.justDeactivated = true;
-				state.value = 0;
-				this.fireCallbacks(action, state, inputState);
-			} else if (isNowActive) {
-				// Still active
-				state.activeTime += deltaMs;
-				state.value = 1;
-
-				// Fire callback for continuous actions
-				if (binding.continuous) {
-					this.fireCallbacks(action, state, inputState);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Checks if any input for a binding is active.
-	 */
-	private checkBindingActive(binding: InternalBinding, inputState: InputState): boolean {
-		// Check keys
-		for (const key of binding.keys) {
-			if (inputState.isKeyDown(key)) {
-				return true;
-			}
-		}
-
-		// Check mouse buttons
-		for (const button of binding.mouseButtons) {
-			if (inputState.isMouseButtonDown(button)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Fires callbacks for an action state change.
-	 */
-	private fireCallbacks(action: string, state: ActionState, inputState: InputState): void {
-		// Fire action-specific callbacks
-		const actionCallbacks = this.callbacks.get(action);
-		if (actionCallbacks) {
-			for (const callback of actionCallbacks) {
-				callback(action, state, inputState);
-			}
-		}
-
-		// Fire global callbacks
-		for (const callback of this.globalCallbacks) {
-			callback(action, state, inputState);
-		}
-	}
-
-	// =========================================================================
-	// QUERIES
-	// =========================================================================
-
-	/**
-	 * Checks if an action is currently active (input is held).
-	 *
-	 * @param action - The action to check
-	 * @returns true if the action is active
-	 *
-	 * @example
-	 * ```typescript
-	 * if (actions.isActive('move_left')) {
-	 *   player.moveLeft(deltaTime);
-	 * }
-	 * ```
-	 */
-	isActive(action: string): boolean {
-		return this.states.get(action)?.active ?? false;
-	}
-
-	/**
-	 * Checks if an action was just activated this frame.
-	 *
-	 * @param action - The action to check
-	 * @returns true if the action was just activated
-	 *
-	 * @example
-	 * ```typescript
-	 * if (actions.isJustActivated('jump')) {
-	 *   player.jump(); // Only triggers once per press
-	 * }
-	 * ```
-	 */
-	isJustActivated(action: string): boolean {
-		return this.states.get(action)?.justActivated ?? false;
-	}
-
-	/**
-	 * Checks if an action was just deactivated this frame.
-	 *
-	 * @param action - The action to check
-	 * @returns true if the action was just deactivated
-	 *
-	 * @example
-	 * ```typescript
-	 * if (actions.isJustDeactivated('charge')) {
-	 *   player.releaseCharge();
-	 * }
-	 * ```
-	 */
-	isJustDeactivated(action: string): boolean {
-		return this.states.get(action)?.justDeactivated ?? false;
-	}
-
-	/**
-	 * Gets the analog value for an action (0-1).
-	 * For digital inputs, returns 1 when active, 0 when inactive.
-	 *
-	 * @param action - The action to check
-	 * @returns Value between 0 and 1
-	 *
-	 * @example
-	 * ```typescript
-	 * const throttle = actions.getValue('accelerate');
-	 * car.speed += throttle * maxAcceleration * deltaTime;
-	 * ```
-	 */
-	getValue(action: string): number {
-		return this.states.get(action)?.value ?? 0;
-	}
-
-	/**
-	 * Gets how long an action has been active (ms).
-	 *
-	 * @param action - The action to check
-	 * @returns Time in milliseconds, or 0 if not active
-	 *
-	 * @example
-	 * ```typescript
-	 * const chargeTime = actions.getActiveTime('charge');
-	 * if (chargeTime > 1000) {
-	 *   player.fullyCharged = true;
-	 * }
-	 * ```
-	 */
-	getActiveTime(action: string): number {
-		return this.states.get(action)?.activeTime ?? 0;
-	}
-
-	/**
-	 * Gets the full state of an action.
-	 *
-	 * @param action - The action to check
-	 * @returns The action state, or default state if not found
-	 */
-	getState(action: string): ActionState {
-		return this.states.get(action) ?? DEFAULT_ACTION_STATE;
-	}
-
-	/**
-	 * Gets all currently active actions.
-	 *
-	 * @returns Array of active action names
-	 */
-	getActiveActions(): string[] {
-		const active: string[] = [];
-		for (const [action, state] of this.states) {
-			if (state.active) {
-				active.push(action);
-			}
-		}
-		return active;
-	}
-
-	// =========================================================================
-	// REBINDING
-	// =========================================================================
-
-	/**
-	 * Rebinds an action to new keys.
-	 * Replaces all existing key bindings.
-	 *
-	 * @param action - The action to rebind
-	 * @param keys - New keys for the action
-	 * @returns true if the action was found and rebound
-	 *
-	 * @example
-	 * ```typescript
-	 * actions.rebindKeys('jump', ['up', 'space']);
-	 * ```
-	 */
-	rebindKeys(action: string, keys: readonly string[]): boolean {
-		const binding = this.bindings.get(action);
-		if (!binding) return false;
-
-		binding.keys = [...keys];
-		return true;
-	}
-
-	/**
-	 * Rebinds an action to new mouse buttons.
-	 * Replaces all existing mouse bindings.
-	 *
-	 * @param action - The action to rebind
-	 * @param buttons - New mouse buttons for the action
-	 * @returns true if the action was found and rebound
-	 */
-	rebindMouseButtons(action: string, buttons: readonly MouseButton[]): boolean {
-		const binding = this.bindings.get(action);
-		if (!binding) return false;
-
-		binding.mouseButtons = [...buttons];
-		return true;
-	}
-
-	/**
-	 * Adds a key to an action's bindings.
-	 *
-	 * @param action - The action to modify
-	 * @param key - The key to add
-	 * @returns true if the action was found
-	 */
-	addKey(action: string, key: string): boolean {
-		const binding = this.bindings.get(action);
-		if (!binding) return false;
-
-		if (!binding.keys.includes(key)) {
-			binding.keys.push(key);
-		}
-		return true;
-	}
-
-	/**
-	 * Removes a key from an action's bindings.
-	 *
-	 * @param action - The action to modify
-	 * @param key - The key to remove
-	 * @returns true if the key was found and removed
-	 */
-	removeKey(action: string, key: string): boolean {
-		const binding = this.bindings.get(action);
-		if (!binding) return false;
-
-		const index = binding.keys.indexOf(key);
-		if (index !== -1) {
-			binding.keys.splice(index, 1);
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Gets all keys bound to an action.
-	 *
-	 * @param action - The action to check
-	 * @returns Array of key names, or empty array if action not found
-	 */
-	getKeysForAction(action: string): string[] {
-		const binding = this.bindings.get(action);
-		return binding ? [...binding.keys] : [];
-	}
-
-	/**
-	 * Gets all mouse buttons bound to an action.
-	 *
-	 * @param action - The action to check
-	 * @returns Array of mouse buttons, or empty array if action not found
-	 */
-	getMouseButtonsForAction(action: string): MouseButton[] {
-		const binding = this.bindings.get(action);
-		return binding ? [...binding.mouseButtons] : [];
-	}
-
-	/**
-	 * Finds the action bound to a specific key.
-	 *
-	 * @param key - The key to search for
-	 * @returns Array of action names that use this key
-	 */
-	getActionsForKey(key: string): string[] {
-		const actions: string[] = [];
-		for (const [action, binding] of this.bindings) {
-			if (binding.keys.includes(key)) {
-				actions.push(action);
-			}
-		}
-		return actions;
-	}
-
-	// =========================================================================
-	// CALLBACKS
-	// =========================================================================
-
-	/**
-	 * Registers a callback for a specific action.
-	 *
-	 * @param action - The action to listen for
-	 * @param callback - Function to call on action state changes
-	 * @returns Unsubscribe function
-	 *
-	 * @example
-	 * ```typescript
-	 * const unsubscribe = actions.onAction('jump', (action, state) => {
-	 *   if (state.justActivated) {
-	 *     playSound('jump');
-	 *   }
-	 * });
-	 *
-	 * // Later
-	 * unsubscribe();
-	 * ```
-	 */
-	onAction(action: string, callback: ActionCallback): () => void {
-		let callbacks = this.callbacks.get(action);
-		if (!callbacks) {
-			callbacks = new Set();
-			this.callbacks.set(action, callbacks);
-		}
-		callbacks.add(callback);
-
-		return () => {
-			callbacks?.delete(callback);
-		};
-	}
-
-	/**
-	 * Registers a callback for all action state changes.
-	 *
-	 * @param callback - Function to call on any action state change
-	 * @returns Unsubscribe function
-	 *
-	 * @example
-	 * ```typescript
-	 * const unsubscribe = actions.onAnyAction((action, state) => {
-	 *   console.log(`Action ${action}: active=${state.active}`);
-	 * });
-	 * ```
-	 */
-	onAnyAction(callback: ActionCallback): () => void {
-		this.globalCallbacks.add(callback);
-		return () => {
-			this.globalCallbacks.delete(callback);
-		};
-	}
-
-	// =========================================================================
-	// SAVE/LOAD
-	// =========================================================================
-
-	/**
-	 * Saves all bindings to a serializable format.
-	 *
-	 * @returns Serialized bindings object
-	 *
-	 * @example
-	 * ```typescript
-	 * const saved = actions.saveBindings();
-	 * localStorage.setItem('controls', JSON.stringify(saved));
-	 * ```
-	 */
-	saveBindings(): SerializedBindings {
-		const bindingsArray: Array<{
-			action: string;
-			keys: string[];
-			mouseButtons?: string[];
-			continuous?: boolean;
-		}> = [];
-
-		for (const [, binding] of this.bindings) {
-			bindingsArray.push({
-				action: binding.action,
-				keys: [...binding.keys],
-				mouseButtons: binding.mouseButtons.length > 0 ? [...binding.mouseButtons] : undefined,
-				continuous: binding.continuous || undefined,
-			});
-		}
-
-		return {
-			version: CURRENT_VERSION,
-			bindings: bindingsArray,
-		};
-	}
-
-	/**
-	 * Loads bindings from a serialized format.
-	 * Existing bindings are replaced.
-	 *
-	 * @param data - Serialized bindings to load
-	 * @throws Error if the data is invalid
-	 *
-	 * @example
-	 * ```typescript
-	 * const saved = JSON.parse(localStorage.getItem('controls') || '{}');
-	 * actions.loadBindings(saved);
-	 * ```
-	 */
-	loadBindings(data: unknown): void {
-		const validated = SerializedBindingsSchema.parse(data);
-
-		// Clear existing bindings
-		this.bindings.clear();
-		this.states.clear();
-
-		// Load new bindings
-		for (const binding of validated.bindings) {
-			this.register({
-				action: binding.action,
-				keys: binding.keys,
-				mouseButtons: binding.mouseButtons as MouseButton[] | undefined,
-				continuous: binding.continuous,
-			});
-		}
-	}
-
-	/**
-	 * Exports bindings as a JSON string.
-	 *
-	 * @param pretty - Whether to format the JSON (default: false)
-	 * @returns JSON string
-	 */
-	toJSON(pretty = false): string {
-		const data = this.saveBindings();
-		return pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data);
-	}
-
-	/**
-	 * Imports bindings from a JSON string.
-	 *
-	 * @param json - JSON string to parse
-	 * @throws Error if JSON is invalid
-	 */
-	fromJSON(json: string): void {
-		const data = JSON.parse(json);
-		this.loadBindings(data);
-	}
-
-	// =========================================================================
-	// RESET
-	// =========================================================================
-
-	/**
-	 * Resets all action states to inactive.
-	 * Does not remove bindings.
-	 */
-	resetStates(): void {
-		for (const state of this.states.values()) {
-			state.active = false;
-			state.justActivated = false;
-			state.justDeactivated = false;
-			state.activeTime = 0;
-			state.value = 0;
-		}
-	}
-
-	/**
-	 * Clears all bindings and states.
-	 */
-	clear(): void {
-		this.bindings.clear();
-		this.states.clear();
-		this.callbacks.clear();
-		this.globalCallbacks.clear();
-	}
+export interface InputActionManager {
+	register(binding: ActionBinding): InputActionManager;
+	registerAll(bindings: readonly ActionBinding[]): InputActionManager;
+	unregister(action: string): boolean;
+	hasAction(action: string): boolean;
+	getActions(): string[];
+	getBinding(action: string): ActionBinding | undefined;
+	update(inputState: InputState, deltaTime: number): void;
+	isActive(action: string): boolean;
+	isJustActivated(action: string): boolean;
+	isJustDeactivated(action: string): boolean;
+	getValue(action: string): number;
+	getActiveTime(action: string): number;
+	getState(action: string): ActionState;
+	getActiveActions(): string[];
+	rebindKeys(action: string, keys: readonly string[]): boolean;
+	rebindMouseButtons(action: string, buttons: readonly MouseButton[]): boolean;
+	addKey(action: string, key: string): boolean;
+	removeKey(action: string, key: string): boolean;
+	getKeysForAction(action: string): string[];
+	getMouseButtonsForAction(action: string): MouseButton[];
+	getActionsForKey(key: string): string[];
+	onAction(action: string, callback: ActionCallback): () => void;
+	onAnyAction(callback: ActionCallback): () => void;
+	saveBindings(): SerializedBindings;
+	loadBindings(data: unknown): void;
+	toJSON(pretty?: boolean): string;
+	fromJSON(json: string): void;
+	resetStates(): void;
+	clear(): void;
 }
 
 // =============================================================================
 // FACTORY FUNCTION
 // =============================================================================
+
+function checkBindingActive(binding: InternalBinding, inputState: InputState): boolean {
+	// Check keys
+	for (const key of binding.keys) {
+		if (inputState.isKeyDown(key)) {
+			return true;
+		}
+	}
+
+	// Check mouse buttons
+	for (const button of binding.mouseButtons) {
+		if (inputState.isMouseButtonDown(button)) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 /**
  * Creates a new InputActionManager.
@@ -824,10 +211,310 @@ export class InputActionManager {
 export function createInputActionManager(
 	initialBindings?: readonly ActionBinding[],
 ): InputActionManager {
-	const manager = new InputActionManager();
+	const bindings = new Map<string, InternalBinding>();
+	const states = new Map<string, MutableActionState>();
+	const callbacks = new Map<string, Set<ActionCallback>>();
+	const globalCallbacks = new Set<ActionCallback>();
+
+	function fireCallbacks(action: string, state: ActionState, inputState: InputState): void {
+		// Fire action-specific callbacks
+		const actionCallbacks = callbacks.get(action);
+		if (actionCallbacks) {
+			for (const callback of actionCallbacks) {
+				callback(action, state, inputState);
+			}
+		}
+
+		// Fire global callbacks
+		for (const callback of globalCallbacks) {
+			callback(action, state, inputState);
+		}
+	}
+
+	const manager: InputActionManager = {
+		register(binding: ActionBinding): InputActionManager {
+			const validated = ActionBindingSchema.parse(binding);
+
+			const internal: InternalBinding = {
+				action: validated.action,
+				keys: [...validated.keys],
+				mouseButtons: validated.mouseButtons ? [...validated.mouseButtons] : [],
+				continuous: validated.continuous ?? false,
+				deadzone: validated.deadzone ?? 0.1,
+			};
+
+			bindings.set(validated.action, internal);
+
+			// Initialize state if not exists
+			if (!states.has(validated.action)) {
+				states.set(validated.action, { ...DEFAULT_ACTION_STATE } as MutableActionState);
+			}
+
+			return manager;
+		},
+
+		registerAll(bindingList: readonly ActionBinding[]): InputActionManager {
+			for (const binding of bindingList) {
+				manager.register(binding);
+			}
+			return manager;
+		},
+
+		unregister(action: string): boolean {
+			const existed = bindings.delete(action);
+			states.delete(action);
+			callbacks.delete(action);
+			return existed;
+		},
+
+		hasAction(action: string): boolean {
+			return bindings.has(action);
+		},
+
+		getActions(): string[] {
+			return [...bindings.keys()];
+		},
+
+		getBinding(action: string): ActionBinding | undefined {
+			const internal = bindings.get(action);
+			if (!internal) return undefined;
+
+			return {
+				action: internal.action,
+				keys: [...internal.keys],
+				mouseButtons: internal.mouseButtons.length > 0 ? [...internal.mouseButtons] : undefined,
+				continuous: internal.continuous,
+				deadzone: internal.deadzone,
+			};
+		},
+
+		update(inputState: InputState, deltaTime: number): void {
+			const deltaMs = deltaTime * 1000;
+
+			for (const [action, binding] of bindings) {
+				const state = states.get(action);
+				if (!state) continue;
+
+				// Clear transient flags
+				state.justActivated = false;
+				state.justDeactivated = false;
+
+				// Check if any bound input is active
+				const wasActive = state.active;
+				const isNowActive = checkBindingActive(binding, inputState);
+
+				// Update state
+				if (isNowActive && !wasActive) {
+					// Just activated
+					state.active = true;
+					state.justActivated = true;
+					state.activeTime = 0;
+					state.value = 1;
+					fireCallbacks(action, state, inputState);
+				} else if (!isNowActive && wasActive) {
+					// Just deactivated
+					state.active = false;
+					state.justDeactivated = true;
+					state.value = 0;
+					fireCallbacks(action, state, inputState);
+				} else if (isNowActive) {
+					// Still active
+					state.activeTime += deltaMs;
+					state.value = 1;
+
+					// Fire callback for continuous actions
+					if (binding.continuous) {
+						fireCallbacks(action, state, inputState);
+					}
+				}
+			}
+		},
+
+		isActive(action: string): boolean {
+			return states.get(action)?.active ?? false;
+		},
+
+		isJustActivated(action: string): boolean {
+			return states.get(action)?.justActivated ?? false;
+		},
+
+		isJustDeactivated(action: string): boolean {
+			return states.get(action)?.justDeactivated ?? false;
+		},
+
+		getValue(action: string): number {
+			return states.get(action)?.value ?? 0;
+		},
+
+		getActiveTime(action: string): number {
+			return states.get(action)?.activeTime ?? 0;
+		},
+
+		getState(action: string): ActionState {
+			return states.get(action) ?? DEFAULT_ACTION_STATE;
+		},
+
+		getActiveActions(): string[] {
+			const active: string[] = [];
+			for (const [action, state] of states) {
+				if (state.active) {
+					active.push(action);
+				}
+			}
+			return active;
+		},
+
+		rebindKeys(action: string, keys: readonly string[]): boolean {
+			const binding = bindings.get(action);
+			if (!binding) return false;
+
+			binding.keys = [...keys];
+			return true;
+		},
+
+		rebindMouseButtons(action: string, buttons: readonly MouseButton[]): boolean {
+			const binding = bindings.get(action);
+			if (!binding) return false;
+
+			binding.mouseButtons = [...buttons];
+			return true;
+		},
+
+		addKey(action: string, key: string): boolean {
+			const binding = bindings.get(action);
+			if (!binding) return false;
+
+			if (!binding.keys.includes(key)) {
+				binding.keys.push(key);
+			}
+			return true;
+		},
+
+		removeKey(action: string, key: string): boolean {
+			const binding = bindings.get(action);
+			if (!binding) return false;
+
+			const index = binding.keys.indexOf(key);
+			if (index !== -1) {
+				binding.keys.splice(index, 1);
+				return true;
+			}
+			return false;
+		},
+
+		getKeysForAction(action: string): string[] {
+			const binding = bindings.get(action);
+			return binding ? [...binding.keys] : [];
+		},
+
+		getMouseButtonsForAction(action: string): MouseButton[] {
+			const binding = bindings.get(action);
+			return binding ? [...binding.mouseButtons] : [];
+		},
+
+		getActionsForKey(key: string): string[] {
+			const actions: string[] = [];
+			for (const [action, binding] of bindings) {
+				if (binding.keys.includes(key)) {
+					actions.push(action);
+				}
+			}
+			return actions;
+		},
+
+		onAction(action: string, callback: ActionCallback): () => void {
+			let cbs = callbacks.get(action);
+			if (!cbs) {
+				cbs = new Set();
+				callbacks.set(action, cbs);
+			}
+			cbs.add(callback);
+
+			return () => {
+				cbs?.delete(callback);
+			};
+		},
+
+		onAnyAction(callback: ActionCallback): () => void {
+			globalCallbacks.add(callback);
+			return () => {
+				globalCallbacks.delete(callback);
+			};
+		},
+
+		saveBindings(): SerializedBindings {
+			const bindingsArray: Array<{
+				action: string;
+				keys: string[];
+				mouseButtons?: string[];
+				continuous?: boolean;
+			}> = [];
+
+			for (const [, binding] of bindings) {
+				bindingsArray.push({
+					action: binding.action,
+					keys: [...binding.keys],
+					mouseButtons: binding.mouseButtons.length > 0 ? [...binding.mouseButtons] : undefined,
+					continuous: binding.continuous || undefined,
+				});
+			}
+
+			return {
+				version: CURRENT_VERSION,
+				bindings: bindingsArray,
+			};
+		},
+
+		loadBindings(data: unknown): void {
+			const validated = SerializedBindingsSchema.parse(data);
+
+			// Clear existing bindings
+			bindings.clear();
+			states.clear();
+
+			// Load new bindings
+			for (const binding of validated.bindings) {
+				manager.register({
+					action: binding.action,
+					keys: binding.keys,
+					mouseButtons: binding.mouseButtons as MouseButton[] | undefined,
+					continuous: binding.continuous,
+				});
+			}
+		},
+
+		toJSON(pretty = false): string {
+			const data = manager.saveBindings();
+			return pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data);
+		},
+
+		fromJSON(json: string): void {
+			const data = JSON.parse(json);
+			manager.loadBindings(data);
+		},
+
+		resetStates(): void {
+			for (const state of states.values()) {
+				state.active = false;
+				state.justActivated = false;
+				state.justDeactivated = false;
+				state.activeTime = 0;
+				state.value = 0;
+			}
+		},
+
+		clear(): void {
+			bindings.clear();
+			states.clear();
+			callbacks.clear();
+			globalCallbacks.clear();
+		},
+	};
+
 	if (initialBindings) {
 		manager.registerAll(initialBindings);
 	}
+
 	return manager;
 }
 

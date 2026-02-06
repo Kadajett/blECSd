@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createStateMachine, StateMachine, validateStateMachineConfig } from './stateMachine';
+import { createStateMachine, validateStateMachineConfig } from './stateMachine';
 
 // Simple toggle machine for basic tests
 type ToggleStates = 'on' | 'off';
@@ -49,13 +49,13 @@ const buttonConfig = {
 describe('StateMachine', () => {
 	describe('constructor', () => {
 		it('starts in initial state', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 			expect(machine.current).toBe('off');
 		});
 
 		it('runs entry actions on initial state', () => {
 			const entryAction = vi.fn();
-			const machine = new StateMachine<ToggleStates, ToggleEvents>({
+			const machine = createStateMachine<ToggleStates, ToggleEvents>({
 				initial: 'off',
 				states: {
 					off: { entry: [entryAction], on: { toggle: 'on' } },
@@ -70,7 +70,7 @@ describe('StateMachine', () => {
 
 	describe('send()', () => {
 		it('transitions to target state on valid event', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 
 			machine.send('toggle');
 			expect(machine.current).toBe('on');
@@ -80,12 +80,12 @@ describe('StateMachine', () => {
 		});
 
 		it('returns true when transition occurs', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 			expect(machine.send('toggle')).toBe(true);
 		});
 
 		it('returns false when no valid transition', () => {
-			const machine = new StateMachine<ButtonStates, ButtonEvents>(buttonConfig);
+			const machine = createStateMachine<ButtonStates, ButtonEvents>(buttonConfig);
 			// 'release' is not valid from 'idle'
 			expect(machine.send('release')).toBe(false);
 			expect(machine.current).toBe('idle');
@@ -95,7 +95,7 @@ describe('StateMachine', () => {
 			const exitAction = vi.fn();
 			const order: string[] = [];
 
-			const machine = new StateMachine<ToggleStates, ToggleEvents>({
+			const machine = createStateMachine<ToggleStates, ToggleEvents>({
 				initial: 'off',
 				states: {
 					off: {
@@ -123,7 +123,7 @@ describe('StateMachine', () => {
 		it('runs entry actions after transition', () => {
 			const entryAction = vi.fn();
 
-			const machine = new StateMachine<ToggleStates, ToggleEvents>({
+			const machine = createStateMachine<ToggleStates, ToggleEvents>({
 				initial: 'off',
 				states: {
 					off: { on: { toggle: 'on' } },
@@ -139,7 +139,7 @@ describe('StateMachine', () => {
 			const transitionAction = vi.fn();
 			const order: string[] = [];
 
-			const machine = new StateMachine<ToggleStates, ToggleEvents>({
+			const machine = createStateMachine<ToggleStates, ToggleEvents>({
 				initial: 'off',
 				states: {
 					off: {
@@ -174,7 +174,7 @@ describe('StateMachine', () => {
 				attempts: number;
 			}
 
-			const machine = new StateMachine<'locked' | 'unlocked', 'unlock', Context>({
+			const machine = createStateMachine<'locked' | 'unlocked', 'unlock', Context>({
 				initial: 'locked',
 				context: { attempts: 0 },
 				states: {
@@ -200,12 +200,12 @@ describe('StateMachine', () => {
 
 	describe('can()', () => {
 		it('returns true for valid transitions', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 			expect(machine.can('toggle')).toBe(true);
 		});
 
 		it('returns false for invalid transitions', () => {
-			const machine = new StateMachine<ButtonStates, ButtonEvents>(buttonConfig);
+			const machine = createStateMachine<ButtonStates, ButtonEvents>(buttonConfig);
 			expect(machine.can('release')).toBe(false);
 		});
 
@@ -214,7 +214,7 @@ describe('StateMachine', () => {
 				canToggle: boolean;
 			}
 
-			const machine = new StateMachine<ToggleStates, ToggleEvents, Context>({
+			const machine = createStateMachine<ToggleStates, ToggleEvents, Context>({
 				initial: 'off',
 				context: { canToggle: false },
 				states: {
@@ -236,13 +236,13 @@ describe('StateMachine', () => {
 
 	describe('matches()', () => {
 		it('returns true when in specified state', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 			expect(machine.matches('off')).toBe(true);
 			expect(machine.matches('on')).toBe(false);
 		});
 
 		it('updates after transition', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 			machine.send('toggle');
 			expect(machine.matches('on')).toBe(true);
 			expect(machine.matches('off')).toBe(false);
@@ -251,7 +251,7 @@ describe('StateMachine', () => {
 
 	describe('subscribe()', () => {
 		it('notifies listener on state change', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 			const listener = vi.fn();
 
 			machine.subscribe(listener);
@@ -262,7 +262,7 @@ describe('StateMachine', () => {
 		});
 
 		it('returns unsubscribe function', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 			const listener = vi.fn();
 
 			const unsubscribe = machine.subscribe(listener);
@@ -273,7 +273,7 @@ describe('StateMachine', () => {
 		});
 
 		it('supports multiple listeners', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 			const listener1 = vi.fn();
 			const listener2 = vi.fn();
 
@@ -286,7 +286,7 @@ describe('StateMachine', () => {
 		});
 
 		it('does not notify on failed transition', () => {
-			const machine = new StateMachine<ButtonStates, ButtonEvents>(buttonConfig);
+			const machine = createStateMachine<ButtonStates, ButtonEvents>(buttonConfig);
 			const listener = vi.fn();
 
 			machine.subscribe(listener);
@@ -298,7 +298,7 @@ describe('StateMachine', () => {
 
 	describe('validEvents()', () => {
 		it('returns all valid events from current state', () => {
-			const machine = new StateMachine<ButtonStates, ButtonEvents>(buttonConfig);
+			const machine = createStateMachine<ButtonStates, ButtonEvents>(buttonConfig);
 			const events = machine.validEvents();
 
 			expect(events).toContain('focus');
@@ -308,7 +308,7 @@ describe('StateMachine', () => {
 		});
 
 		it('updates after transition', () => {
-			const machine = new StateMachine<ButtonStates, ButtonEvents>(buttonConfig);
+			const machine = createStateMachine<ButtonStates, ButtonEvents>(buttonConfig);
 			machine.send('focus');
 			const events = machine.validEvents();
 
@@ -322,7 +322,7 @@ describe('StateMachine', () => {
 				enabled: boolean;
 			}
 
-			const machine = new StateMachine<ToggleStates, ToggleEvents, Context>({
+			const machine = createStateMachine<ToggleStates, ToggleEvents, Context>({
 				initial: 'off',
 				context: { enabled: false },
 				states: {
@@ -344,7 +344,7 @@ describe('StateMachine', () => {
 
 	describe('reset()', () => {
 		it('returns to initial state', () => {
-			const machine = new StateMachine<ButtonStates, ButtonEvents>(buttonConfig);
+			const machine = createStateMachine<ButtonStates, ButtonEvents>(buttonConfig);
 			machine.send('focus');
 			machine.send('press');
 			expect(machine.current).toBe('active');
@@ -356,7 +356,7 @@ describe('StateMachine', () => {
 		it('runs exit actions on current state', () => {
 			const exitAction = vi.fn();
 
-			const machine = new StateMachine<ToggleStates, ToggleEvents>({
+			const machine = createStateMachine<ToggleStates, ToggleEvents>({
 				initial: 'off',
 				states: {
 					off: { on: { toggle: 'on' } },
@@ -374,7 +374,7 @@ describe('StateMachine', () => {
 		it('runs entry actions on initial state', () => {
 			const entryAction = vi.fn();
 
-			const machine = new StateMachine<ToggleStates, ToggleEvents>({
+			const machine = createStateMachine<ToggleStates, ToggleEvents>({
 				initial: 'off',
 				states: {
 					off: { entry: [entryAction], on: { toggle: 'on' } },
@@ -393,7 +393,7 @@ describe('StateMachine', () => {
 		});
 
 		it('notifies listeners of state change', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 			const listener = vi.fn();
 
 			machine.send('toggle');
@@ -404,7 +404,7 @@ describe('StateMachine', () => {
 		});
 
 		it('does not notify if already in initial state', () => {
-			const machine = new StateMachine<ToggleStates, ToggleEvents>(toggleConfig);
+			const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 			const listener = vi.fn();
 
 			machine.subscribe(listener);
@@ -420,7 +420,7 @@ describe('StateMachine', () => {
 				count: number;
 			}
 
-			const machine = new StateMachine<ToggleStates, ToggleEvents, Context>({
+			const machine = createStateMachine<ToggleStates, ToggleEvents, Context>({
 				initial: 'off',
 				context: { count: 0 },
 				states: {
@@ -446,7 +446,7 @@ describe('StateMachine', () => {
 				count: number;
 			}
 
-			const machine = new StateMachine<ToggleStates, ToggleEvents, Context>({
+			const machine = createStateMachine<ToggleStates, ToggleEvents, Context>({
 				initial: 'off',
 				context: { count: 0 },
 				states: {
@@ -476,10 +476,11 @@ describe('StateMachine', () => {
 describe('createStateMachine()', () => {
 	it('creates a new StateMachine instance', () => {
 		const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
-		expect(machine).toBeInstanceOf(StateMachine);
+		expect(machine.current).toBeDefined();
+		expect(machine.send).toBeTypeOf('function');
 	});
 
-	it('is equivalent to new StateMachine()', () => {
+	it('works as expected', () => {
 		const machine = createStateMachine<ToggleStates, ToggleEvents>(toggleConfig);
 		expect(machine.current).toBe('off');
 		machine.send('toggle');

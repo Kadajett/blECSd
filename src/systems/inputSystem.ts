@@ -34,7 +34,7 @@ import {
 } from '../components/interactive';
 import { Position } from '../components/position';
 import { hasComponent, query } from '../core/ecs';
-import { EventBus, type UIEventMap } from '../core/events';
+import { createEventBus, type EventBus, type UIEventMap } from '../core/events';
 import type { Scheduler } from '../core/scheduler';
 import type { Entity, System, World } from '../core/types';
 import type { KeyEvent as ParsedKeyEvent } from '../terminal/keyParser';
@@ -112,7 +112,7 @@ export const inputState: InputSystemState = {
 	lastMouseX: 0,
 	lastMouseY: 0,
 	lastHoveredEntity: null,
-	eventBus: new EventBus<UIEventMap>(),
+	eventBus: createEventBus<UIEventMap>(),
 };
 
 /**

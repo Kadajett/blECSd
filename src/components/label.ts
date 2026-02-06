@@ -37,59 +37,44 @@ export enum LabelPosition {
 	Right = 7,
 }
 
+// =============================================================================
+// LABEL STORE (module-level state, no class)
+// =============================================================================
+
+const labelTexts = new Map<number, string>();
+let nextLabelId = 1;
+
 /**
- * Label store for managing label text strings.
+ * Label store: functional interface for managing label text strings.
  * Since bitecs uses typed arrays, strings must be stored separately.
  */
-class LabelStore {
-	private labels: Map<number, string> = new Map();
-	private nextId = 1;
-
-	/**
-	 * Sets label text and returns the label ID.
-	 */
+export const labelStore = {
+	/** Sets label text and returns the label ID. */
 	set(text: string): number {
-		const id = this.nextId++;
-		this.labels.set(id, text);
+		const id = nextLabelId++;
+		labelTexts.set(id, text);
 		return id;
-	}
-
-	/**
-	 * Updates existing label text by ID.
-	 */
+	},
+	/** Updates existing label text by ID. */
 	update(id: number, text: string): void {
 		if (id > 0) {
-			this.labels.set(id, text);
+			labelTexts.set(id, text);
 		}
-	}
-
-	/**
-	 * Gets label text by ID.
-	 */
+	},
+	/** Gets label text by ID. */
 	get(id: number): string {
-		return this.labels.get(id) ?? '';
-	}
-
-	/**
-	 * Deletes label by ID.
-	 */
+		return labelTexts.get(id) ?? '';
+	},
+	/** Deletes label by ID. */
 	delete(id: number): void {
-		this.labels.delete(id);
-	}
-
-	/**
-	 * Clears all labels.
-	 */
+		labelTexts.delete(id);
+	},
+	/** Clears all labels. */
 	clear(): void {
-		this.labels.clear();
-		this.nextId = 1;
-	}
-}
-
-/**
- * Global label store instance.
- */
-export const labelStore = new LabelStore();
+		labelTexts.clear();
+		nextLabelId = 1;
+	},
+};
 
 /**
  * Resets the label store. Primarily used for testing.

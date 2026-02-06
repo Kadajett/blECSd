@@ -1,5 +1,5 @@
 /**
- * Program Class
+ * Program Module
  *
  * Main terminal control interface. Manages input/output streams,
  * terminal dimensions, cursor position, and event handling.
@@ -13,8 +13,10 @@ import type { Readable, Writable } from 'node:stream';
 import type * as tty from 'node:tty';
 import { z } from 'zod';
 import { cursor, screen, style } from './ansi';
-import { OutputBuffer } from './outputBuffer';
-import { ScreenBuffer } from './screenBuffer';
+import type { OutputBuffer } from './outputBuffer';
+import { createOutputBuffer } from './outputBuffer';
+import type { ScreenBuffer } from './screenBuffer';
+import { createScreenBuffer } from './screenBuffer';
 
 // =============================================================================
 // SCHEMAS
@@ -122,48 +124,47 @@ export interface ProgramEvents {
 }
 
 // =============================================================================
-// TYPED EVENT EMITTER
+// TYPED EVENT EMITTER (functional wrapper)
 // =============================================================================
 
 type EventMap = Record<string, unknown[]>;
 
-/**
- * Type-safe event emitter wrapper
- */
-class TypedEventEmitter<T extends EventMap> {
-	private emitter = new EventEmitter();
+interface TypedEmitter<T extends EventMap> {
+	on<K extends keyof T & string>(event: K, listener: (...args: T[K]) => void): void;
+	off<K extends keyof T & string>(event: K, listener: (...args: T[K]) => void): void;
+	once<K extends keyof T & string>(event: K, listener: (...args: T[K]) => void): void;
+	emit<K extends keyof T & string>(event: K, ...args: T[K]): boolean;
+	removeAllListeners<K extends keyof T & string>(event?: K): void;
+}
 
-	on<K extends keyof T & string>(event: K, listener: (...args: T[K]) => void): this {
-		this.emitter.on(event, listener as (...args: unknown[]) => void);
-		return this;
-	}
+function createTypedEmitter<T extends EventMap>(): TypedEmitter<T> {
+	const emitter = new EventEmitter();
 
-	off<K extends keyof T & string>(event: K, listener: (...args: T[K]) => void): this {
-		this.emitter.off(event, listener as (...args: unknown[]) => void);
-		return this;
-	}
-
-	once<K extends keyof T & string>(event: K, listener: (...args: T[K]) => void): this {
-		this.emitter.once(event, listener as (...args: unknown[]) => void);
-		return this;
-	}
-
-	emit<K extends keyof T & string>(event: K, ...args: T[K]): boolean {
-		return this.emitter.emit(event, ...args);
-	}
-
-	removeAllListeners<K extends keyof T & string>(event?: K): this {
-		this.emitter.removeAllListeners(event);
-		return this;
-	}
+	return {
+		on<K extends keyof T & string>(event: K, listener: (...args: T[K]) => void): void {
+			emitter.on(event, listener as (...args: unknown[]) => void);
+		},
+		off<K extends keyof T & string>(event: K, listener: (...args: T[K]) => void): void {
+			emitter.off(event, listener as (...args: unknown[]) => void);
+		},
+		once<K extends keyof T & string>(event: K, listener: (...args: T[K]) => void): void {
+			emitter.once(event, listener as (...args: unknown[]) => void);
+		},
+		emit<K extends keyof T & string>(event: K, ...args: T[K]): boolean {
+			return emitter.emit(event, ...args);
+		},
+		removeAllListeners<K extends keyof T & string>(event?: K): void {
+			emitter.removeAllListeners(event);
+		},
+	};
 }
 
 // =============================================================================
-// PROGRAM CLASS
+// PROGRAM INTERFACE
 // =============================================================================
 
 /**
- * Program provides the main interface for terminal control.
+ * Program interface for type-safe access.
  *
  * Manages:
  * - Input/output streams
@@ -172,10 +173,63 @@ class TypedEventEmitter<T extends EventMap> {
  * - Buffered output
  * - Alternate screen buffer
  * - Event handling (key, mouse, resize)
+ */
+export interface Program {
+	readonly input: Readable;
+	readonly output: Writable;
+	readonly cols: number;
+	readonly rows: number;
+	readonly x: number;
+	readonly y: number;
+	readonly initialized: boolean;
+	on<K extends keyof ProgramEvents & string>(
+		event: K,
+		listener: (...args: ProgramEvents[K]) => void,
+	): void;
+	off<K extends keyof ProgramEvents & string>(
+		event: K,
+		listener: (...args: ProgramEvents[K]) => void,
+	): void;
+	once<K extends keyof ProgramEvents & string>(
+		event: K,
+		listener: (...args: ProgramEvents[K]) => void,
+	): void;
+	removeAllListeners<K extends keyof ProgramEvents & string>(event?: K): void;
+	init(): Promise<void>;
+	destroy(): void;
+	write(data: string): void;
+	rawWrite(data: string): void;
+	flush(): void;
+	clear(): void;
+	move(x: number, y: number): void;
+	cursorTo(x: number, y: number): void;
+	showCursor(): void;
+	hideCursor(): void;
+	setTitle(title: string): void;
+	resetStyle(): void;
+}
+
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+function isTTY(stream: Readable | Writable): stream is tty.ReadStream | tty.WriteStream {
+	return 'isTTY' in stream && stream.isTTY === true;
+}
+
+// =============================================================================
+// FACTORY FUNCTION
+// =============================================================================
+
+/**
+ * Creates a new Program instance.
+ *
+ * @param config - Program configuration
+ * @returns A new Program instance
  *
  * @example
  * ```typescript
- * const program = new Program();
+ * const program = createProgram();
  * await program.init();
  *
  * program.on('key', (event) => {
@@ -189,392 +243,225 @@ class TypedEventEmitter<T extends EventMap> {
  * program.flush();
  * ```
  */
-export class Program extends TypedEventEmitter<ProgramEvents> {
-	private config: ResolvedProgramConfig;
-	private _input: Readable;
-	private _output: Writable;
-	private outputBuffer: OutputBuffer;
-	private screenBuffer: ScreenBuffer;
-	private _cols = 80;
-	private _rows = 24;
-	private _initialized = false;
-	private cursorHidden = false;
-	private rawModeEnabled = false;
-	private boundResizeHandler: () => void;
+export function createProgram(config: ProgramConfig = {}): Program {
+	const resolvedConfig = ProgramConfigSchema.parse(config);
+	const _input = resolvedConfig.input ?? process.stdin;
+	const _output = resolvedConfig.output ?? process.stdout;
+	const outputBuffer: OutputBuffer = createOutputBuffer({ trackCursor: true });
+	const screenBuffer: ScreenBuffer = createScreenBuffer(_output);
+	const emitter = createTypedEmitter<ProgramEvents>();
 
-	/**
-	 * Create a new Program instance.
-	 *
-	 * @param config - Program configuration
-	 */
-	constructor(config: ProgramConfig = {}) {
-		super();
-		this.config = ProgramConfigSchema.parse(config);
-		this._input = this.config.input ?? process.stdin;
-		this._output = this.config.output ?? process.stdout;
-		this.outputBuffer = new OutputBuffer({ trackCursor: true });
-		this.screenBuffer = new ScreenBuffer(this._output);
-		this.boundResizeHandler = this.handleResize.bind(this);
-	}
+	let _cols = 80;
+	let _rows = 24;
+	let _initialized = false;
+	let cursorHidden = false;
+	let rawModeEnabled = false;
 
-	// =========================================================================
-	// PROPERTIES
-	// =========================================================================
-
-	/**
-	 * Input stream (usually process.stdin)
-	 */
-	get input(): Readable {
-		return this._input;
-	}
-
-	/**
-	 * Output stream (usually process.stdout)
-	 */
-	get output(): Writable {
-		return this._output;
-	}
-
-	/**
-	 * Terminal width in columns
-	 */
-	get cols(): number {
-		return this._cols;
-	}
-
-	/**
-	 * Terminal height in rows
-	 */
-	get rows(): number {
-		return this._rows;
-	}
-
-	/**
-	 * Current cursor X position (1-indexed)
-	 */
-	get x(): number {
-		return this.outputBuffer.cursorX;
-	}
-
-	/**
-	 * Current cursor Y position (1-indexed)
-	 */
-	get y(): number {
-		return this.outputBuffer.cursorY;
-	}
-
-	/**
-	 * Whether the program is initialized
-	 */
-	get initialized(): boolean {
-		return this._initialized;
-	}
-
-	// =========================================================================
-	// LIFECYCLE
-	// =========================================================================
-
-	/**
-	 * Initialize the terminal.
-	 *
-	 * - Detects terminal dimensions
-	 * - Enters alternate screen buffer (if configured)
-	 * - Hides cursor (if configured)
-	 * - Sets up resize listener
-	 * - Enables raw mode for input
-	 *
-	 * @example
-	 * ```typescript
-	 * const program = new Program();
-	 * await program.init();
-	 * // Terminal is now ready for use
-	 * ```
-	 */
-	async init(): Promise<void> {
-		if (this._initialized) {
+	function updateDimensions(): void {
+		if (resolvedConfig.forceWidth && resolvedConfig.forceHeight) {
+			_cols = resolvedConfig.forceWidth;
+			_rows = resolvedConfig.forceHeight;
 			return;
 		}
 
-		// Detect dimensions
-		this.updateDimensions();
-
-		// Enter alternate screen
-		if (this.config.useAlternateScreen) {
-			this.screenBuffer.enterAlternateScreen();
+		const outputTTY = _output as tty.WriteStream;
+		if (isTTY(_output)) {
+			_cols = outputTTY.columns ?? 80;
+			_rows = outputTTY.rows ?? 24;
 		}
-
-		// Hide cursor
-		if (this.config.hideCursor) {
-			this.rawWrite(cursor.hide());
-			this.cursorHidden = true;
-		}
-
-		// Set title
-		if (this.config.title) {
-			this.setTitle(this.config.title);
-		}
-
-		// Clear screen and move to top-left
-		this.rawWrite(screen.clear());
-		this.rawWrite(cursor.home());
-
-		// Setup resize handler
-		if (this.isTTY(this._output)) {
-			this._output.on('resize', this.boundResizeHandler);
-		}
-
-		// Enable raw mode for input
-		this.enableRawMode();
-
-		// Register cleanup handler
-		this.screenBuffer.onCleanup(() => {
-			this.restoreTerminal();
-		});
-
-		this._initialized = true;
 	}
 
-	/**
-	 * Destroy the program and restore terminal state.
-	 *
-	 * - Exits alternate screen buffer
-	 * - Shows cursor
-	 * - Disables raw mode
-	 * - Removes event listeners
-	 *
-	 * @example
-	 * ```typescript
-	 * program.destroy();
-	 * // Terminal is restored to normal state
-	 * ```
-	 */
-	destroy(): void {
-		if (!this._initialized) {
+	function handleResize(): void {
+		const oldCols = _cols;
+		const oldRows = _rows;
+		updateDimensions();
+
+		if (_cols !== oldCols || _rows !== oldRows) {
+			emitter.emit('resize', { cols: _cols, rows: _rows });
+		}
+	}
+
+	function enableRawMode(): void {
+		if (rawModeEnabled) {
 			return;
 		}
 
-		this.restoreTerminal();
-		this.screenBuffer.destroy();
-		this.removeAllListeners();
-
-		// Remove resize handler
-		if (this.isTTY(this._output)) {
-			this._output.off('resize', this.boundResizeHandler);
+		if (isTTY(_input) && 'setRawMode' in _input) {
+			(_input as tty.ReadStream).setRawMode(true);
+			rawModeEnabled = true;
 		}
-
-		this._initialized = false;
 	}
 
-	// =========================================================================
-	// OUTPUT
-	// =========================================================================
-
-	/**
-	 * Write data to the output buffer.
-	 * Call flush() to send buffered data to the terminal.
-	 *
-	 * @param data - String data to write
-	 *
-	 * @example
-	 * ```typescript
-	 * program.write('Hello');
-	 * program.write(style.fg('red'));
-	 * program.write('Red text');
-	 * program.flush();
-	 * ```
-	 */
-	write(data: string): void {
-		this.outputBuffer.write(data);
-	}
-
-	/**
-	 * Write data directly to output, bypassing the buffer.
-	 * Use sparingly - prefer write() + flush() for batched output.
-	 *
-	 * @param data - String data to write
-	 */
-	rawWrite(data: string): void {
-		this._output.write(data);
-	}
-
-	/**
-	 * Flush buffered output to the terminal.
-	 *
-	 * @example
-	 * ```typescript
-	 * program.write('Hello');
-	 * program.flush(); // Now 'Hello' appears on screen
-	 * ```
-	 */
-	flush(): void {
-		this.outputBuffer.flush(this._output);
-	}
-
-	/**
-	 * Clear the screen.
-	 *
-	 * @example
-	 * ```typescript
-	 * program.clear();
-	 * program.flush();
-	 * ```
-	 */
-	clear(): void {
-		this.write(screen.clear());
-		this.write(cursor.home());
-		this.outputBuffer.resetCursor();
-	}
-
-	// =========================================================================
-	// CURSOR
-	// =========================================================================
-
-	/**
-	 * Move cursor to absolute position.
-	 *
-	 * @param x - Column (1-indexed)
-	 * @param y - Row (1-indexed)
-	 *
-	 * @example
-	 * ```typescript
-	 * program.move(10, 5);
-	 * program.write('At position 10,5');
-	 * program.flush();
-	 * ```
-	 */
-	move(x: number, y: number): void {
-		this.write(cursor.move(x, y));
-	}
-
-	/**
-	 * Alias for move().
-	 *
-	 * @param x - Column (1-indexed)
-	 * @param y - Row (1-indexed)
-	 */
-	cursorTo(x: number, y: number): void {
-		this.move(x, y);
-	}
-
-	/**
-	 * Show the cursor.
-	 */
-	showCursor(): void {
-		this.write(cursor.show());
-		this.cursorHidden = false;
-	}
-
-	/**
-	 * Hide the cursor.
-	 */
-	hideCursor(): void {
-		this.write(cursor.hide());
-		this.cursorHidden = true;
-	}
-
-	// =========================================================================
-	// TERMINAL
-	// =========================================================================
-
-	/**
-	 * Set the terminal title.
-	 *
-	 * @param title - Title text
-	 */
-	setTitle(title: string): void {
-		this.rawWrite(`\x1b]2;${title}\x07`);
-	}
-
-	/**
-	 * Reset all text attributes.
-	 */
-	resetStyle(): void {
-		this.write(style.reset());
-	}
-
-	// =========================================================================
-	// PRIVATE METHODS
-	// =========================================================================
-
-	/**
-	 * Update terminal dimensions.
-	 */
-	private updateDimensions(): void {
-		if (this.config.forceWidth && this.config.forceHeight) {
-			this._cols = this.config.forceWidth;
-			this._rows = this.config.forceHeight;
+	function disableRawMode(): void {
+		if (!rawModeEnabled) {
 			return;
 		}
 
-		const outputTTY = this._output as tty.WriteStream;
-		if (this.isTTY(this._output)) {
-			this._cols = outputTTY.columns ?? 80;
-			this._rows = outputTTY.rows ?? 24;
+		if (isTTY(_input) && 'setRawMode' in _input) {
+			(_input as tty.ReadStream).setRawMode(false);
+			rawModeEnabled = false;
 		}
 	}
 
-	/**
-	 * Handle terminal resize.
-	 */
-	private handleResize(): void {
-		const oldCols = this._cols;
-		const oldRows = this._rows;
-		this.updateDimensions();
-
-		if (this._cols !== oldCols || this._rows !== oldRows) {
-			this.emit('resize', { cols: this._cols, rows: this._rows });
+	function restoreTerminal(): void {
+		if (cursorHidden) {
+			_output.write(cursor.show());
+			cursorHidden = false;
 		}
+		_output.write(style.reset());
+		disableRawMode();
 	}
 
-	/**
-	 * Enable raw mode on stdin.
-	 */
-	private enableRawMode(): void {
-		if (this.rawModeEnabled) {
-			return;
-		}
+	const program: Program = {
+		get input(): Readable {
+			return _input;
+		},
 
-		if (this.isTTY(this._input) && 'setRawMode' in this._input) {
-			(this._input as tty.ReadStream).setRawMode(true);
-			this.rawModeEnabled = true;
-		}
-	}
+		get output(): Writable {
+			return _output;
+		},
 
-	/**
-	 * Disable raw mode on stdin.
-	 */
-	private disableRawMode(): void {
-		if (!this.rawModeEnabled) {
-			return;
-		}
+		get cols(): number {
+			return _cols;
+		},
 
-		if (this.isTTY(this._input) && 'setRawMode' in this._input) {
-			(this._input as tty.ReadStream).setRawMode(false);
-			this.rawModeEnabled = false;
-		}
-	}
+		get rows(): number {
+			return _rows;
+		},
 
-	/**
-	 * Restore terminal to normal state.
-	 */
-	private restoreTerminal(): void {
-		// Show cursor if hidden
-		if (this.cursorHidden) {
-			this.rawWrite(cursor.show());
-			this.cursorHidden = false;
-		}
+		get x(): number {
+			return outputBuffer.cursorX;
+		},
 
-		// Reset styles
-		this.rawWrite(style.reset());
+		get y(): number {
+			return outputBuffer.cursorY;
+		},
 
-		// Disable raw mode
-		this.disableRawMode();
-	}
+		get initialized(): boolean {
+			return _initialized;
+		},
 
-	/**
-	 * Check if stream is a TTY.
-	 */
-	private isTTY(stream: Readable | Writable): stream is tty.ReadStream | tty.WriteStream {
-		return 'isTTY' in stream && stream.isTTY === true;
-	}
+		on<K extends keyof ProgramEvents & string>(
+			event: K,
+			listener: (...args: ProgramEvents[K]) => void,
+		): void {
+			emitter.on(event, listener);
+		},
+
+		off<K extends keyof ProgramEvents & string>(
+			event: K,
+			listener: (...args: ProgramEvents[K]) => void,
+		): void {
+			emitter.off(event, listener);
+		},
+
+		once<K extends keyof ProgramEvents & string>(
+			event: K,
+			listener: (...args: ProgramEvents[K]) => void,
+		): void {
+			emitter.once(event, listener);
+		},
+
+		removeAllListeners<K extends keyof ProgramEvents & string>(event?: K): void {
+			emitter.removeAllListeners(event);
+		},
+
+		async init(): Promise<void> {
+			if (_initialized) {
+				return;
+			}
+
+			updateDimensions();
+
+			if (resolvedConfig.useAlternateScreen) {
+				screenBuffer.enterAlternateScreen();
+			}
+
+			if (resolvedConfig.hideCursor) {
+				_output.write(cursor.hide());
+				cursorHidden = true;
+			}
+
+			if (resolvedConfig.title) {
+				program.setTitle(resolvedConfig.title);
+			}
+
+			_output.write(screen.clear());
+			_output.write(cursor.home());
+
+			if (isTTY(_output)) {
+				_output.on('resize', handleResize);
+			}
+
+			enableRawMode();
+
+			screenBuffer.onCleanup(() => {
+				restoreTerminal();
+			});
+
+			_initialized = true;
+		},
+
+		destroy(): void {
+			if (!_initialized) {
+				return;
+			}
+
+			restoreTerminal();
+			screenBuffer.destroy();
+			emitter.removeAllListeners();
+
+			if (isTTY(_output)) {
+				_output.off('resize', handleResize);
+			}
+
+			_initialized = false;
+		},
+
+		write(data: string): void {
+			outputBuffer.write(data);
+		},
+
+		rawWrite(data: string): void {
+			_output.write(data);
+		},
+
+		flush(): void {
+			outputBuffer.flush(_output);
+		},
+
+		clear(): void {
+			program.write(screen.clear());
+			program.write(cursor.home());
+			outputBuffer.resetCursor();
+		},
+
+		move(x: number, y: number): void {
+			program.write(cursor.move(x, y));
+		},
+
+		cursorTo(x: number, y: number): void {
+			program.move(x, y);
+		},
+
+		showCursor(): void {
+			program.write(cursor.show());
+			cursorHidden = false;
+		},
+
+		hideCursor(): void {
+			program.write(cursor.hide());
+			cursorHidden = true;
+		},
+
+		setTitle(title: string): void {
+			_output.write(`\x1b]2;${title}\x07`);
+		},
+
+		resetStyle(): void {
+			program.write(style.reset());
+		},
+	};
+
+	return program;
 }
