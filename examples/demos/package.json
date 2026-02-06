@@ -26,7 +26,18 @@
 		"resize-handling": "tsx resize-handling-demo.ts",
 		"kitty-protocol": "tsx kitty-protocol-demo.ts",
 		"terminfo-tput": "tsx terminfo-tput-demo.ts",
-		"terminal-focus": "tsx terminal-focus-demo.ts"
+		"terminal-focus": "tsx terminal-focus-demo.ts",
+		"mouse-input": "tsx mouse-input-demo.ts",
+		"border-styles": "tsx border-styles-demo.ts",
+		"list": "tsx list-demo.ts",
+		"button": "tsx button-demo.ts",
+		"streaming-renderer": "tsx streaming-renderer-demo.ts",
+		"ansi-sequences": "tsx ansi-sequences-demo.ts",
+		"textinput": "tsx textinput-demo.ts",
+		"double-buffering": "tsx double-buffering-demo.ts",
+		"buffer-output": "tsx buffer-output-demo.ts",
+		"radiobutton": "tsx radiobutton-demo.ts",
+		"input-actions": "tsx input-actions-demo.ts"
 	},
 	"dependencies": {
 		"blecsd": "workspace:*"
