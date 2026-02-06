@@ -79,7 +79,8 @@
     "format": "biome format --write .",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build",
+    "doccheck": "tsx scripts/doccheck.ts"
   },
   "keywords": [
     "terminal",

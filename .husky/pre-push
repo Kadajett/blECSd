@@ -2,3 +2,5 @@
 set -e
 
 pnpm test
+pnpm build
+pnpm doccheck
