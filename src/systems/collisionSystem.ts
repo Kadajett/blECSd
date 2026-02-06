@@ -65,24 +65,49 @@ export interface CollisionEventMap {
 /**
  * Multiplier for encoding entity pair as a single number.
  * Supports entity IDs up to 2^26 (~67 million) without collision.
+ * Both entity IDs must be non-negative integers below this bound.
  */
 const ENTITY_BOUND = 0x4000000;
 
 /**
- * Computes a numeric key for a normalized collision pair.
+ * Computes a collision-free numeric key for a normalized collision pair.
  * Eliminates string allocation compared to template-literal keys.
+ *
+ * The key is unique as long as both entity IDs are non-negative integers
+ * below ENTITY_BOUND (2^26 = 67,108,864). If an entity ID exceeds this
+ * bound, the key may collide with another pair's key, causing incorrect
+ * collision tracking. A runtime assertion guards against this.
  *
  * @param entityA - Lower entity ID (pair must be normalized: entityA < entityB)
  * @param entityB - Higher entity ID
  * @returns Unique numeric key for the pair
+ * @throws {RangeError} If either entity ID is >= ENTITY_BOUND
  */
 function pairNumericKey(entityA: number, entityB: number): number {
+	if (entityA >= ENTITY_BOUND || entityB >= ENTITY_BOUND) {
+		throw new RangeError(
+			`Entity IDs must be below ${ENTITY_BOUND} for collision-free pair keys. Got: ${entityA}, ${entityB}`,
+		);
+	}
 	return entityA * ENTITY_BOUND + entityB;
 }
 
 // =============================================================================
 // COLLISION SYSTEM STATE
 // =============================================================================
+
+/**
+ * Readonly view of active collision/trigger pairs.
+ * Provides dense data for cache-friendly iteration without
+ * exposing mutable store internals. Do not cache this view
+ * across frames, as the underlying data may be reallocated.
+ */
+export interface ActivePairsView {
+	/** Dense array of active pairs. Read-only; do not mutate elements or indices. */
+	readonly data: ReadonlyArray<CollisionPair>;
+	/** Number of live pairs in the data array (iterate data[0..size-1]). */
+	readonly size: number;
+}
 
 /**
  * Collision system state.
@@ -148,13 +173,16 @@ export function getActiveCollisionCount(): number {
 }
 
 /**
- * Gets the current active collision pairs store.
- * Returns a packed store for cache-friendly dense iteration.
+ * Gets the current active collision pairs as a readonly view.
+ * Iterate data[0..size-1] for dense, cache-friendly access.
  *
- * @returns Readonly packed store of active collision pairs
+ * The returned view is a snapshot reference into the live store.
+ * Do not cache it across frames or mutate its contents.
+ *
+ * @returns Readonly view of active collision pairs
  */
-export function getActiveCollisions(): Readonly<PackedStore<CollisionPair>> {
-	return collisionState.activePairs;
+export function getActiveCollisions(): ActivePairsView {
+	return { data: collisionState.activePairs.data, size: collisionState.activePairs.size };
 }
 
 /**
@@ -175,13 +203,16 @@ export function getActiveTriggerCount(): number {
 }
 
 /**
- * Gets the current active trigger pairs store.
- * Returns a packed store for cache-friendly dense iteration.
+ * Gets the current active trigger pairs as a readonly view.
+ * Iterate data[0..size-1] for dense, cache-friendly access.
  *
- * @returns Readonly packed store of active trigger pairs
+ * The returned view is a snapshot reference into the live store.
+ * Do not cache it across frames or mutate its contents.
+ *
+ * @returns Readonly view of active trigger pairs
  */
-export function getActiveTriggers(): Readonly<PackedStore<CollisionPair>> {
-	return collisionState.activeTriggers;
+export function getActiveTriggers(): ActivePairsView {
+	return { data: collisionState.activeTriggers.data, size: collisionState.activeTriggers.size };
 }
 
 /**
@@ -289,6 +320,7 @@ export function detectCollisions(world: World): CollisionPair[] {
 /**
  * Emits end events for pairs that are no longer active.
  * Iterates the dense PackedStore data backwards for safe swap-and-pop removal.
+ * Looks up existing handles from handleMap rather than reconstructing from store internals.
  */
 function emitEndedEvents(
 	store: PackedStore<CollisionPair>,
@@ -296,7 +328,7 @@ function emitEndedEvents(
 	currentKeys: Set<number>,
 	eventName: 'collisionEnd' | 'triggerExit',
 ): void {
-	const { data, id, generations } = store;
+	const { data } = store;
 
 	// Iterate backwards so swap-and-pop doesn't skip elements
 	for (let i = store.size - 1; i >= 0; i--) {
@@ -306,14 +338,10 @@ function emitEndedEvents(
 		const key = pairNumericKey(pair.entityA, pair.entityB);
 		if (currentKeys.has(key)) continue;
 
-		// This pair ended: build handle from dense array metadata and remove
-		const handleIndex = id[i];
-		if (handleIndex === undefined || handleIndex < 0) continue;
+		// This pair ended: look up its handle and remove
+		const handle = handleMap.get(key);
+		if (!handle) continue;
 
-		const gen = generations[handleIndex];
-		if (gen === undefined) continue;
-
-		const handle: PackedHandle = { index: handleIndex, gen };
 		handleMap.delete(key);
 		removeFromStore(store, handle);
 

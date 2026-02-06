@@ -29,6 +29,7 @@ export {
 } from './cameraSystem';
 // Collision system
 export type {
+	ActivePairsView,
 	CollisionEventData,
 	CollisionEventMap,
 	CollisionSystemState,
