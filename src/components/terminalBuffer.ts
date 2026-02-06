@@ -403,6 +403,71 @@ export function getTerminalBuffer(eid: Entity):
 }
 
 /**
+ * Handles newline character.
+ */
+function handleNewline(
+	world: World,
+	eid: Entity,
+	state: TerminalState,
+	width: number,
+	height: number,
+): void {
+	let cursorY = (TerminalBuffer.cursorY[eid] ?? 0) + 1;
+	if (cursorY >= height) {
+		scrollUp(state, width, height);
+		cursorY = height - 1;
+	}
+	TerminalBuffer.cursorX[eid] = 0;
+	TerminalBuffer.cursorY[eid] = cursorY;
+	markDirty(world, eid);
+}
+
+/**
+ * Handles tab character.
+ */
+function handleTab(world: World, eid: Entity, width: number): void {
+	const cursorX = TerminalBuffer.cursorX[eid] ?? 0;
+	const nextTab = Math.min((Math.floor(cursorX / 8) + 1) * 8, width - 1);
+	TerminalBuffer.cursorX[eid] = nextTab;
+	markDirty(world, eid);
+}
+
+/**
+ * Writes a printable character and advances cursor.
+ */
+function writePrintableChar(
+	world: World,
+	eid: Entity,
+	state: TerminalState,
+	char: string,
+	width: number,
+	height: number,
+): void {
+	const cursorX = TerminalBuffer.cursorX[eid] ?? 0;
+	let cursorY = TerminalBuffer.cursorY[eid] ?? 0;
+
+	// Write the character to the buffer
+	const { fg, bg, attrs } = attrToCell(state.currentAttr);
+	const idx = cellIndex(width, cursorX, cursorY);
+	state.buffer.cells[idx] = createCell(char, fg, bg, attrs);
+
+	// Advance cursor
+	let newCursorX = cursorX + 1;
+	if (newCursorX >= width) {
+		newCursorX = 0;
+		cursorY++;
+		if (cursorY >= height) {
+			scrollUp(state, width, height);
+			cursorY = height - 1;
+		}
+	}
+
+	TerminalBuffer.cursorX[eid] = newCursorX;
+	TerminalBuffer.cursorY[eid] = cursorY;
+	markDirty(world, eid);
+}
+
+/**
  * Writes a character to the terminal at the current cursor position.
  *
  * @param world - The ECS world
@@ -415,20 +480,10 @@ export function writeChar(world: World, eid: Entity, char: string): void {
 
 	const width = TerminalBuffer.width[eid] ?? 0;
 	const height = TerminalBuffer.height[eid] ?? 0;
-	let cursorX = TerminalBuffer.cursorX[eid] ?? 0;
-	let cursorY = TerminalBuffer.cursorY[eid] ?? 0;
 
 	// Handle special characters
 	if (char === '\n') {
-		cursorX = 0; // Reset to column 0 (newline mode)
-		cursorY++;
-		if (cursorY >= height) {
-			scrollUp(state, width, height);
-			cursorY = height - 1;
-		}
-		TerminalBuffer.cursorX[eid] = cursorX;
-		TerminalBuffer.cursorY[eid] = cursorY;
-		markDirty(world, eid);
+		handleNewline(world, eid, state, width, height);
 		return;
 	}
 
@@ -439,6 +494,7 @@ export function writeChar(world: World, eid: Entity, char: string): void {
 	}
 
 	if (char === '\b') {
+		const cursorX = TerminalBuffer.cursorX[eid] ?? 0;
 		if (cursorX > 0) {
 			TerminalBuffer.cursorX[eid] = cursorX - 1;
 		}
@@ -447,32 +503,12 @@ export function writeChar(world: World, eid: Entity, char: string): void {
 	}
 
 	if (char === '\t') {
-		// Move to next tab stop (every 8 columns)
-		const nextTab = Math.min((Math.floor(cursorX / 8) + 1) * 8, width - 1);
-		TerminalBuffer.cursorX[eid] = nextTab;
-		markDirty(world, eid);
+		handleTab(world, eid, width);
 		return;
 	}
 
-	// Write the character to the buffer
-	const { fg, bg, attrs } = attrToCell(state.currentAttr);
-	const idx = cellIndex(width, cursorX, cursorY);
-	state.buffer.cells[idx] = createCell(char, fg, bg, attrs);
-
-	// Advance cursor
-	cursorX++;
-	if (cursorX >= width) {
-		cursorX = 0;
-		cursorY++;
-		if (cursorY >= height) {
-			scrollUp(state, width, height);
-			cursorY = height - 1;
-		}
-	}
-
-	TerminalBuffer.cursorX[eid] = cursorX;
-	TerminalBuffer.cursorY[eid] = cursorY;
-	markDirty(world, eid);
+	// Write printable character
+	writePrintableChar(world, eid, state, char, width, height);
 }
 
 /**
@@ -670,6 +706,59 @@ function processCsiSequence(world: World, eid: Entity, state: TerminalState, seq
 }
 
 /**
+ * Handles cursor visibility mode.
+ */
+function handleCursorVisibilityMode(world: World, eid: Entity, enable: boolean): void {
+	TerminalBuffer.cursorVisible[eid] = enable ? 1 : 0;
+	markDirty(world, eid);
+}
+
+/**
+ * Handles alternate screen buffer with cursor save/restore (mode 1049).
+ */
+function handleAltScreenWithCursorMode(
+	world: World,
+	eid: Entity,
+	state: TerminalState,
+	enable: boolean,
+): void {
+	if (enable) {
+		// Save cursor and switch to alternate buffer
+		state.savedCursorX = TerminalBuffer.cursorX[eid] ?? 0;
+		state.savedCursorY = TerminalBuffer.cursorY[eid] ?? 0;
+		switchToAlternateBuffer(world, eid, state);
+	} else {
+		// Switch back to main buffer and restore cursor
+		switchToMainBuffer(world, eid, state);
+		TerminalBuffer.cursorX[eid] = state.savedCursorX;
+		TerminalBuffer.cursorY[eid] = state.savedCursorY;
+	}
+	markDirty(world, eid);
+}
+
+/**
+ * Handles alternate screen buffer modes (47, 1047).
+ */
+function handleAltScreenMode(
+	world: World,
+	eid: Entity,
+	state: TerminalState,
+	mode: string,
+	enable: boolean,
+): void {
+	if (enable) {
+		switchToAlternateBuffer(world, eid, state);
+		if (mode === '1047') {
+			// Clear the alternate buffer
+			clearCellRange(state, 0, state.buffer.cells.length);
+		}
+	} else {
+		switchToMainBuffer(world, eid, state);
+	}
+	markDirty(world, eid);
+}
+
+/**
  * Handles DEC Private Mode sequences (CSI ? Ps h/l).
  */
 function handleDecPrivateMode(
@@ -682,53 +771,26 @@ function handleDecPrivateMode(
 	// Remove leading '?' if present
 	const mode = params.startsWith('?') ? params.slice(1) : params;
 
-	switch (mode) {
-		case '25': // Cursor visibility
-			TerminalBuffer.cursorVisible[eid] = enable ? 1 : 0;
-			markDirty(world, eid);
-			break;
-
-		case '1049': // Alternate screen buffer with cursor save/restore
-			if (enable) {
-				// Save cursor and switch to alternate buffer
-				state.savedCursorX = TerminalBuffer.cursorX[eid] ?? 0;
-				state.savedCursorY = TerminalBuffer.cursorY[eid] ?? 0;
-				switchToAlternateBuffer(world, eid, state);
-			} else {
-				// Switch back to main buffer and restore cursor
-				switchToMainBuffer(world, eid, state);
-				TerminalBuffer.cursorX[eid] = state.savedCursorX;
-				TerminalBuffer.cursorY[eid] = state.savedCursorY;
-			}
-			markDirty(world, eid);
-			break;
-
-		case '47': // Alternate screen buffer (no cursor save)
-		case '1047': // Alternate screen buffer (clear on switch)
-			if (enable) {
-				switchToAlternateBuffer(world, eid, state);
-				if (mode === '1047') {
-					// Clear the alternate buffer
-					const clearCell = createCell();
-					for (let i = 0; i < state.buffer.cells.length; i++) {
-						state.buffer.cells[i] = cloneCell(clearCell);
-					}
-				}
-			} else {
-				switchToMainBuffer(world, eid, state);
-			}
-			markDirty(world, eid);
-			break;
-
-		case '7': // Wraparound mode (we always wrap, so this is a no-op for now)
-			break;
-
-		// Other modes we don't handle yet but shouldn't error on
-		case '1': // Application cursor keys
-		case '12': // Start blinking cursor
-		case '2004': // Bracketed paste mode
-			break;
+	if (mode === '25') {
+		handleCursorVisibilityMode(world, eid, enable);
+		return;
 	}
+
+	if (mode === '1049') {
+		handleAltScreenWithCursorMode(world, eid, state, enable);
+		return;
+	}
+
+	if (mode === '47' || mode === '1047') {
+		handleAltScreenMode(world, eid, state, mode, enable);
+		return;
+	}
+
+	// Other modes we don't handle yet but shouldn't error on
+	// '7': Wraparound mode (we always wrap, so this is a no-op for now)
+	// '1': Application cursor keys
+	// '12': Start blinking cursor
+	// '2004': Bracketed paste mode
 }
 
 /**
@@ -831,6 +893,77 @@ function moveCursorBack(world: World, eid: Entity, n: number): void {
 }
 
 /**
+ * Clears cells in a range.
+ */
+function clearCellRange(state: TerminalState, startIdx: number, endIdx: number): void {
+	const clearCell = createCell();
+	for (let i = startIdx; i < endIdx; i++) {
+		state.buffer.cells[i] = cloneCell(clearCell);
+	}
+}
+
+/**
+ * Clears a line segment.
+ */
+function clearLineSegment(
+	state: TerminalState,
+	width: number,
+	y: number,
+	startX: number,
+	endX: number,
+): void {
+	const clearCell = createCell();
+	for (let x = startX; x <= endX; x++) {
+		const idx = y * width + x;
+		state.buffer.cells[idx] = cloneCell(clearCell);
+	}
+}
+
+/**
+ * Clears entire lines.
+ */
+function clearLines(state: TerminalState, width: number, startY: number, endY: number): void {
+	const clearCell = createCell();
+	for (let y = startY; y < endY; y++) {
+		for (let x = 0; x < width; x++) {
+			const idx = y * width + x;
+			state.buffer.cells[idx] = cloneCell(clearCell);
+		}
+	}
+}
+
+/**
+ * Erases from cursor to end of display.
+ */
+function eraseCursorToEnd(
+	state: TerminalState,
+	width: number,
+	height: number,
+	cursorX: number,
+	cursorY: number,
+): void {
+	// Clear current line from cursor
+	clearLineSegment(state, width, cursorY, cursorX, width - 1);
+	// Clear lines below
+	clearLines(state, width, cursorY + 1, height);
+}
+
+/**
+ * Erases from start to cursor.
+ */
+function eraseStartToCursor(
+	state: TerminalState,
+	width: number,
+	cursorX: number,
+	cursorY: number,
+): void {
+	// Clear lines above
+	clearLines(state, width, 0, cursorY);
+	// Clear current line up to cursor
+	clearLineSegment(state, width, cursorY, 0, cursorX);
+}
+
+/**
  * Erases part of the display.
  */
 function eraseInDisplay(world: World, eid: Entity, state: TerminalState, mode: number): void {
@@ -838,47 +971,21 @@ function eraseInDisplay(world: World, eid: Entity, state: TerminalState, mode: n
 	const height = TerminalBuffer.height[eid] ?? 0;
 	const cursorX = TerminalBuffer.cursorX[eid] ?? 0;
 	const cursorY = TerminalBuffer.cursorY[eid] ?? 0;
-	const clearCell = createCell();
 
-	switch (mode) {
-		case 0: // Clear from cursor to end
-			// Clear current line from cursor
-			for (let x = cursorX; x < width; x++) {
-				const idx = cursorY * width + x;
-				state.buffer.cells[idx] = cloneCell(clearCell);
-			}
-			// Clear lines below
-			for (let y = cursorY + 1; y < height; y++) {
-				for (let x = 0; x < width; x++) {
-					const idx = y * width + x;
-					state.buffer.cells[idx] = cloneCell(clearCell);
-				}
-			}
-			break;
-		case 1: // Clear from start to cursor
-			// Clear lines above
-			for (let y = 0; y < cursorY; y++) {
-				for (let x = 0; x < width; x++) {
-					const idx = y * width + x;
-					state.buffer.cells[idx] = cloneCell(clearCell);
-				}
-			}
-			// Clear current line up to cursor
-			for (let x = 0; x <= cursorX; x++) {
-				const idx = cursorY * width + x;
-				state.buffer.cells[idx] = cloneCell(clearCell);
-			}
-			break;
-		case 2: // Clear entire display
-		case 3: // Clear entire display including scrollback
-			for (let i = 0; i < state.buffer.cells.length; i++) {
-				state.buffer.cells[i] = cloneCell(clearCell);
-			}
-			if (mode === 3) {
-				clearScrollback(state.scrollback);
-			}
-			break;
+	if (mode === 0) {
+		// Clear from cursor to end
+		eraseCursorToEnd(state, width, height, cursorX, cursorY);
+	} else if (mode === 1) {
+		// Clear from start to cursor
+		eraseStartToCursor(state, width, cursorX, cursorY);
+	} else if (mode === 2 || mode === 3) {
+		// Clear entire display
+		clearCellRange(state, 0, state.buffer.cells.length);
+		if (mode === 3) {
+			clearScrollback(state.scrollback);
+		}
 	}
+
 	markDirty(world, eid);
 }
 
@@ -915,120 +1022,186 @@ function eraseInLine(world: World, eid: Entity, state: TerminalState, mode: numb
 }
 
 /**
+ * SGR handler function type.
+ * Returns the number of args consumed.
+ */
+type SgrHandler = (state: TerminalState, args: number[], i: number) => number;
+
+/**
+ * Handles reset (code 0).
+ */
+function handleSgrReset(state: TerminalState): number {
+	state.currentAttr = createAttribute();
+	return 1;
+}
+
+/**
+ * Handles style codes (1-9).
+ */
+function handleSgrStyle(state: TerminalState, _args: number[], i: number): number {
+	const code = _args[i] ?? 0;
+	state.currentAttr.styles |= 1 << (code - 1);
+	return 1;
+}
+
+/**
+ * Handles style resets (22-29).
+ */
+function handleSgrStyleReset(state: TerminalState, _args: number[], i: number): number {
+	const code = _args[i] ?? 0;
+	state.currentAttr.styles &= ~(1 << (code - 22 + 1));
+	return 1;
+}
+
+/**
+ * Handles basic foreground colors (30-37).
+ */
+function handleSgrFgBasic(state: TerminalState, _args: number[], i: number): number {
+	const code = _args[i] ?? 0;
+	state.currentAttr.fg = { type: 1, value: code - 30 };
+	return 1;
+}
+
+/**
+ * Handles default foreground (39).
+ */
+function handleSgrFgDefault(state: TerminalState): number {
+	state.currentAttr.fg = { type: 0, value: 0 };
+	return 1;
+}
+
+/**
+ * Handles basic background colors (40-47).
+ */
+function handleSgrBgBasic(state: TerminalState, _args: number[], i: number): number {
+	const code = _args[i] ?? 0;
+	state.currentAttr.bg = { type: 1, value: code - 40 };
+	return 1;
+}
+
+/**
+ * Handles default background (49).
+ */
+function handleSgrBgDefault(state: TerminalState): number {
+	state.currentAttr.bg = { type: 0, value: 0 };
+	return 1;
+}
+
+/**
+ * Handles bright foreground colors (90-97).
+ */
+function handleSgrFgBright(state: TerminalState, _args: number[], i: number): number {
+	const code = _args[i] ?? 0;
+	state.currentAttr.fg = { type: 1, value: code - 90 + 8 };
+	return 1;
+}
+
+/**
+ * Handles bright background colors (100-107).
+ */
+function handleSgrBgBright(state: TerminalState, _args: number[], i: number): number {
+	const code = _args[i] ?? 0;
+	state.currentAttr.bg = { type: 1, value: code - 100 + 8 };
+	return 1;
+}
+
+/**
+ * Determines which handler to use for an SGR code.
+ * Uses early returns to reduce complexity.
+ */
+function getSgrHandler(code: number): SgrHandler | null {
+	// Reset
+	if (code === 0) return handleSgrReset;
+
+	// Styles and resets
+	if (code >= 1 && code <= 9) return handleSgrStyle;
+	if (code >= 22 && code <= 29) return handleSgrStyleReset;
+
+	// Foreground colors
+	if (code >= 30 && code <= 37) return handleSgrFgBasic;
+	if (code === 39) return handleSgrFgDefault;
+	if (code >= 90 && code <= 97) return handleSgrFgBright;
+
+	// Background colors
+	if (code >= 40 && code <= 47) return handleSgrBgBasic;
+	if (code === 49) return handleSgrBgDefault;
+	if (code >= 100 && code <= 107) return handleSgrBgBright;
+
+	// Extended colors handled separately, unknown codes return null
+	return null;
+}
+
+/**
+ * Applies a single SGR code and returns the number of args consumed.
+ */
+function applySingleSgr(state: TerminalState, args: number[], i: number): number {
+	const code = args[i] ?? 0;
+
+	// Extended foreground (38;5;N or 38;2;R;G;B)
+	if (code === 38) {
+		const consumed = applyExtendedColor(state, args, i, 'fg');
+		if (consumed > 0) return consumed;
+		return 1; // Invalid extended color, skip
+	}
+
+	// Extended background (48;5;N or 48;2;R;G;B)
+	if (code === 48) {
+		const consumed = applyExtendedColor(state, args, i, 'bg');
+		if (consumed > 0) return consumed;
+		return 1; // Invalid extended color, skip
+	}
+
+	// Standard SGR codes
+	const handler = getSgrHandler(code);
+	if (handler) {
+		return handler(state, args, i);
+	}
+
+	// Unknown code, skip
+	return 1;
+}
+
+/**
+ * Applies extended color codes (256-color or RGB).
+ * Returns the number of args consumed, or 0 if invalid.
+ */
+function applyExtendedColor(
+	state: TerminalState,
+	args: number[],
+	i: number,
+	target: 'fg' | 'bg',
+): number {
+	if (i + 1 >= args.length) return 0;
+
+	const subCode = args[i + 1];
+
+	// 256-color mode (38;5;N or 48;5;N)
+	if (subCode === 5 && i + 2 < args.length) {
+		const colorIdx = args[i + 2] ?? 0;
+		state.currentAttr[target] = { type: 2, value: colorIdx };
+		return 3;
+	}
+
+	// RGB mode (38;2;R;G;B or 48;2;R;G;B)
+	if (subCode === 2 && i + 4 < args.length) {
+		const r = args[i + 2] ?? 0;
+		const g = args[i + 3] ?? 0;
+		const b = args[i + 4] ?? 0;
+		state.currentAttr[target] = { type: 3, value: (r << 16) | (g << 8) | b };
+		return 5;
+	}
+
+	return 0;
+}
+
+/**
  * Applies SGR (Select Graphic Rendition) codes.
  */
 function applySgr(state: TerminalState, args: number[]): void {
 	let i = 0;
 	while (i < args.length) {
-		const code = args[i] ?? 0;
-
-		// Reset
-		if (code === 0) {
-			state.currentAttr = createAttribute();
-			i++;
-			continue;
-		}
-
-		// Styles
-		if (code >= 1 && code <= 9) {
-			state.currentAttr.styles |= 1 << (code - 1);
-			i++;
-			continue;
-		}
-
-		// Style resets (22-29)
-		if (code >= 22 && code <= 29) {
-			state.currentAttr.styles &= ~(1 << (code - 22 + 1));
-			i++;
-			continue;
-		}
-
-		// Basic foreground colors (30-37)
-		if (code >= 30 && code <= 37) {
-			state.currentAttr.fg = { type: 1, value: code - 30 };
-			i++;
-			continue;
-		}
-
-		// Default foreground (39)
-		if (code === 39) {
-			state.currentAttr.fg = { type: 0, value: 0 };
-			i++;
-			continue;
-		}
-
-		// Basic background colors (40-47)
-		if (code >= 40 && code <= 47) {
-			state.currentAttr.bg = { type: 1, value: code - 40 };
-			i++;
-			continue;
-		}
-
-		// Default background (49)
-		if (code === 49) {
-			state.currentAttr.bg = { type: 0, value: 0 };
-			i++;
-			continue;
-		}
-
-		// Bright foreground colors (90-97)
-		if (code >= 90 && code <= 97) {
-			state.currentAttr.fg = { type: 1, value: code - 90 + 8 };
-			i++;
-			continue;
-		}
-
-		// Bright background colors (100-107)
-		if (code >= 100 && code <= 107) {
-			state.currentAttr.bg = { type: 1, value: code - 100 + 8 };
-			i++;
-			continue;
-		}
-
-		// Extended foreground (38;5;N or 38;2;R;G;B)
-		if (code === 38 && i + 1 < args.length) {
-			const subCode = args[i + 1];
-			if (subCode === 5 && i + 2 < args.length) {
-				// 256-color
-				const colorIdx = args[i + 2] ?? 0;
-				state.currentAttr.fg = { type: 2, value: colorIdx };
-				i += 3;
-				continue;
-			}
-			if (subCode === 2 && i + 4 < args.length) {
-				// RGB
-				const r = args[i + 2] ?? 0;
-				const g = args[i + 3] ?? 0;
-				const b = args[i + 4] ?? 0;
-				state.currentAttr.fg = { type: 3, value: (r << 16) | (g << 8) | b };
-				i += 5;
-				continue;
-			}
-		}
-
-		// Extended background (48;5;N or 48;2;R;G;B)
-		if (code === 48 && i + 1 < args.length) {
-			const subCode = args[i + 1];
-			if (subCode === 5 && i + 2 < args.length) {
-				// 256-color
-				const colorIdx = args[i + 2] ?? 0;
-				state.currentAttr.bg = { type: 2, value: colorIdx };
-				i += 3;
-				continue;
-			}
-			if (subCode === 2 && i + 4 < args.length) {
-				// RGB
-				const r = args[i + 2] ?? 0;
-				const g = args[i + 3] ?? 0;
-				const b = args[i + 4] ?? 0;
-				state.currentAttr.bg = { type: 3, value: (r << 16) | (g << 8) | b };
-				i += 5;
-				continue;
-			}
-		}
-
-		// Unknown code, skip
-		i++;
+		const consumed = applySingleSgr(state, args, i);
+		i += consumed;
 	}
 }
 
@@ -1234,6 +1407,45 @@ export function removeTerminalBuffer(eid: Entity): void {
 }
 
 /**
+ * Renders scrollback lines to ANSI string.
+ */
+function renderScrollbackLines(state: TerminalState, height: number, scrollOffset: number): string {
+	const scrollbackLines = getLineRange(
+		state.scrollback,
+		state.scrollback.totalLines - scrollOffset,
+		state.scrollback.totalLines - scrollOffset + height,
+	);
+
+	let output = '';
+	for (const line of scrollbackLines.lines) {
+		output += line.ansi ?? line.text;
+		output += '\n';
+	}
+	return output;
+}
+
+/**
+ * Renders a single cell with color tracking.
+ */
+function renderCell(
+	cell: Cell,
+	lastColors: { fg: number; bg: number },
+): { output: string; fg: number; bg: number } {
+	let output = '';
+
+	// Only emit color codes if they changed
+	if (cell.fg !== lastColors.fg || cell.bg !== lastColors.bg) {
+		output += '\x1b[0m'; // Reset
+		// Would add full color conversion here
+		lastColors.fg = cell.fg;
+		lastColors.bg = cell.bg;
+	}
+
+	output += cell.char;
+	return { output, fg: lastColors.fg, bg: lastColors.bg };
+}
+
+/**
  * Renders terminal buffer to an ANSI string (for display).
  *
  * @param eid - Entity ID
@@ -1247,41 +1459,25 @@ export function renderTerminalToAnsi(eid: Entity): string {
 	const height = TerminalBuffer.height[eid] ?? 0;
 	const scrollOffset = TerminalBuffer.scrollOffset[eid] ?? 0;
 
-	let output = '';
-	let lastFg = -1;
-	let lastBg = -1;
-
 	// If scrolled back, show scrollback content
 	if (scrollOffset > 0) {
-		const scrollbackLines = getLineRange(
-			state.scrollback,
-			state.scrollback.totalLines - scrollOffset,
-			state.scrollback.totalLines - scrollOffset + height,
-		);
-
-		for (const line of scrollbackLines.lines) {
-			output += line.ansi ?? line.text;
-			output += '\n';
-		}
-		return output;
+		return renderScrollbackLines(state, height, scrollOffset);
 	}
 
 	// Normal view: render buffer
+	let output = '';
+	const lastColors = { fg: -1, bg: -1 };
+
 	for (let y = 0; y < height; y++) {
 		for (let x = 0; x < width; x++) {
 			const idx = y * width + x;
 			const cell = state.buffer.cells[idx];
 			if (!cell) continue;
 
-			// Only emit color codes if they changed
-			if (cell.fg !== lastFg || cell.bg !== lastBg) {
-				output += '\x1b[0m'; // Reset
-				// Would add full color conversion here
-				lastFg = cell.fg;
-				lastBg = cell.bg;
-			}
-
-			output += cell.char;
+			const result = renderCell(cell, lastColors);
+			output += result.output;
+			lastColors.fg = result.fg;
+			lastColors.bg = result.bg;
 		}
 		if (y < height - 1) {
 			output += '\n';

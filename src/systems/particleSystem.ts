@@ -229,65 +229,91 @@ export function killParticle(world: World, eid: Entity): void {
  * particleSystem(world);
  * ```
  */
+function shouldProcessEmitter(world: World, emitterId: Entity): boolean {
+	if (!hasComponent(world, emitterId, ParticleEmitter)) {
+		return false;
+	}
+	if ((ParticleEmitter.active[emitterId] as number) !== 1) {
+		return false;
+	}
+	return true;
+}
+
+function processEmitterSpawning(
+	world: World,
+	emitterId: Entity,
+	delta: number,
+	maxParticles: number,
+	currentCount: number,
+): number {
+	const appearance = getEmitterAppearance(emitterId);
+	if (!appearance) return currentCount;
+
+	const rate = ParticleEmitter.rate[emitterId] as number;
+	if (rate <= 0) return currentCount;
+
+	// Accumulate time
+	ParticleEmitter.accumulator[emitterId] =
+		(ParticleEmitter.accumulator[emitterId] as number) + delta;
+
+	const interval = 1 / rate;
+	let spawned = currentCount;
+
+	while ((ParticleEmitter.accumulator[emitterId] as number) >= interval && spawned < maxParticles) {
+		ParticleEmitter.accumulator[emitterId] =
+			(ParticleEmitter.accumulator[emitterId] as number) - interval;
+		const eid = spawnParticle(world, emitterId, appearance);
+		if (eid !== -1) {
+			spawned++;
+		}
+	}
+
+	return spawned;
+}
+
+function processEmitters(
+	world: World,
+	emitters: ReadonlyArray<Entity>,
+	delta: number,
+	maxParticles: number,
+	currentCount: number,
+): number {
+	let count = currentCount;
+
+	for (const emitterId of emitters) {
+		if (!shouldProcessEmitter(world, emitterId)) continue;
+
+		count = processEmitterSpawning(world, emitterId, delta, maxParticles, count);
+	}
+
+	return count;
+}
+
+function updateParticle(world: World, eid: Entity, delta: number): void {
+	if (!hasParticle(world, eid)) return;
+
+	ageParticle(world, eid, delta);
+	moveParticle(world, eid, delta);
+
+	if (isParticleDead(world, eid)) {
+		killParticle(world, eid);
+	}
+}
+
 export function createParticleSystem(config: ParticleSystemConfig): System {
 	const maxParticles = config.maxParticles ?? 1000;
 
 	return (world: World): World => {
-		const delta = 1 / 60; // Default delta, can be overridden via world metadata
+		const delta = 1 / 60;
 		const emitters = config.emitters(world);
 		const particles = config.particles(world);
 
-		let currentParticleCount = particles.length;
-
 		// Process emitters (rate-based spawning)
-		for (const emitterId of emitters) {
-			if (!hasComponent(world, emitterId, ParticleEmitter)) {
-				continue;
-			}
-			if ((ParticleEmitter.active[emitterId] as number) !== 1) {
-				continue;
-			}
-
-			const appearance = getEmitterAppearance(emitterId);
-			if (!appearance) {
-				continue;
-			}
-
-			const rate = ParticleEmitter.rate[emitterId] as number;
-			if (rate <= 0) {
-				continue;
-			}
-
-			// Accumulate time and spawn particles
-			ParticleEmitter.accumulator[emitterId] =
-				(ParticleEmitter.accumulator[emitterId] as number) + delta;
-
-			const interval = 1 / rate;
-			while (
-				(ParticleEmitter.accumulator[emitterId] as number) >= interval &&
-				currentParticleCount < maxParticles
-			) {
-				ParticleEmitter.accumulator[emitterId] =
-					(ParticleEmitter.accumulator[emitterId] as number) - interval;
-				const eid = spawnParticle(world, emitterId, appearance);
-				if (eid !== -1) {
-					currentParticleCount++;
-				}
-			}
-		}
+		processEmitters(world, emitters, delta, maxParticles, particles.length);
 
 		// Update and remove dead particles
 		for (const eid of particles) {
-			if (!hasParticle(world, eid)) {
-				continue;
-			}
-
-			ageParticle(world, eid, delta);
-			moveParticle(world, eid, delta);
-
-			if (isParticleDead(world, eid)) {
-				killParticle(world, eid);
-			}
+			updateParticle(world, eid, delta);
 		}
 
 		return world;

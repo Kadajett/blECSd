@@ -565,7 +565,8 @@ function findFoldedRangeAt(ranges: readonly FoldedRange[], line: number): Folded
 
 	while (lo <= hi) {
 		const mid = (lo + hi) >>> 1;
-		const range = ranges[mid]!;
+		const range = ranges[mid];
+		if (!range) break;
 		if (line < range.startLine) {
 			hi = mid - 1;
 		} else if (line > range.endLine) {

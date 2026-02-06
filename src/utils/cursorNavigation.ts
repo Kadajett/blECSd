@@ -130,7 +130,7 @@ export function buildLineIndexFromLengths(lineLengths: readonly number[]): LineI
 	const offsets: number[] = [0];
 	let offset = 0;
 	for (let i = 0; i < lineLengths.length - 1; i++) {
-		offset += lineLengths[i]!;
+		offset += lineLengths[i] ?? 0;
 		offsets.push(offset);
 	}
 	return { offsets, lineCount: lineLengths.length };
@@ -159,7 +159,7 @@ export function lineForOffset(index: LineIndex, offset: number): number {
 
 	while (lo <= hi) {
 		const mid = (lo + hi) >>> 1;
-		const midVal = offsets[mid]!;
+		const midVal = offsets[mid] ?? 0;
 		if (midVal <= offset) {
 			lo = mid + 1;
 		} else {
@@ -179,7 +179,7 @@ export function lineForOffset(index: LineIndex, offset: number): number {
  */
 export function offsetForLine(index: LineIndex, line: number): number {
 	if (line < 0 || line >= index.lineCount) return -1;
-	return index.offsets[line]!;
+	return index.offsets[line] ?? -1;
 }
 
 // =============================================================================

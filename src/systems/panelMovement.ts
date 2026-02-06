@@ -375,6 +375,100 @@ export function updateMove(
  * @param constraints - Panel constraints
  * @returns Move result with new dimensions and dirty rects
  */
+function applyResizeByHandle(
+	handle: ResizeHandle,
+	startX: number,
+	startY: number,
+	startWidth: number,
+	startHeight: number,
+	dx: number,
+	dy: number,
+): { x: number; y: number; w: number; h: number } {
+	let x = startX;
+	let y = startY;
+	let w = startWidth;
+	let h = startHeight;
+
+	if (handle.includes('right') || handle === 'right') w += dx;
+	if (handle.includes('bottom') || handle === 'bottom') h += dy;
+	if (handle.includes('left') || handle === 'left') {
+		x += dx;
+		w -= dx;
+	}
+	if (handle.includes('top') || handle === 'top') {
+		y += dy;
+		h -= dy;
+	}
+
+	return { x, y, w, h };
+}
+
+function applyDimensionConstraints(
+	width: number,
+	height: number,
+	constraints: PanelConstraints,
+): { width: number; height: number; clamped: boolean } {
+	let w = width;
+	let h = height;
+	let clamped = false;
+
+	if (w < constraints.minWidth) {
+		w = constraints.minWidth;
+		clamped = true;
+	}
+	if (h < constraints.minHeight) {
+		h = constraints.minHeight;
+		clamped = true;
+	}
+	if (constraints.maxWidth > 0 && w > constraints.maxWidth) {
+		w = constraints.maxWidth;
+		clamped = true;
+	}
+	if (constraints.maxHeight > 0 && h > constraints.maxHeight) {
+		h = constraints.maxHeight;
+		clamped = true;
+	}
+
+	return { width: w, height: h, clamped };
+}
+
+function applyGridSnap(
+	x: number,
+	y: number,
+	w: number,
+	h: number,
+	gridSize: number,
+): { x: number; y: number; w: number; h: number } {
+	if (gridSize <= 0) return { x, y, w, h };
+
+	return {
+		x: Math.round(x / gridSize) * gridSize,
+		y: Math.round(y / gridSize) * gridSize,
+		w: Math.round(w / gridSize) * gridSize,
+		h: Math.round(h / gridSize) * gridSize,
+	};
+}
+
+function applyScreenConstraints(
+	x: number,
+	y: number,
+	w: number,
+	h: number,
+	constraints: PanelConstraints,
+): { x: number; y: number; w: number; h: number } {
+	if (!constraints.constrainToScreen) return { x, y, w, h };
+
+	const newX = Math.max(0, x);
+	const newY = Math.max(0, y);
+	let newW = w;
+	let newH = h;
+
+	if (newX + newW > constraints.screenWidth) newW = constraints.screenWidth - newX;
+	if (newY + newH > constraints.screenHeight) newH = constraints.screenHeight - newY;
+
+	return { x: newX, y: newY, w: newW, h: newH };
+}
+
 export function updateResize(
 	state: PanelMoveState,
 	mouseX: number,
@@ -396,75 +490,40 @@ export function updateResize(
 	const dx = mouseX - state.startX;
 	const dy = mouseY - state.startY;
 
-	let x = state.panelStartX;
-	let y = state.panelStartY;
-	let w = state.panelStartWidth;
-	let h = state.panelStartHeight;
+	// Apply resize transformation
+	let result = applyResizeByHandle(
+		state.resizeHandle,
+		state.panelStartX,
+		state.panelStartY,
+		state.panelStartWidth,
+		state.panelStartHeight,
+		dx,
+		dy,
+	);
 
-	// Apply resize based on handle
-	const handle = state.resizeHandle;
-	if (handle.includes('right') || handle === 'right') w += dx;
-	if (handle.includes('bottom') || handle === 'bottom') h += dy;
-	if (handle.includes('left') || handle === 'left') {
-		x += dx;
-		w -= dx;
-	}
-	if (handle.includes('top') || handle === 'top') {
-		y += dy;
-		h -= dy;
-	}
-	if (handle.includes('Left') || handle.includes('Right')) {
-		// Already handled above for compound handles
-	}
+	// Apply size constraints
+	const constrained = applyDimensionConstraints(result.w, result.h, c);
+	result.w = constrained.width;
+	result.h = constrained.height;
+	const clamped = constrained.clamped;
 
-	// Apply constraints
-	let clamped = false;
-	if (w < c.minWidth) {
-		w = c.minWidth;
-		clamped = true;
-	}
-	if (h < c.minHeight) {
-		h = c.minHeight;
-		clamped = true;
-	}
-	if (c.maxWidth > 0 && w > c.maxWidth) {
-		w = c.maxWidth;
-		clamped = true;
-	}
-	if (c.maxHeight > 0 && h > c.maxHeight) {
-		h = c.maxHeight;
-		clamped = true;
-	}
-
-	// Snap to grid
-	if (c.snapGrid > 0) {
-		w = Math.round(w / c.snapGrid) * c.snapGrid;
-		h = Math.round(h / c.snapGrid) * c.snapGrid;
-		x = Math.round(x / c.snapGrid) * c.snapGrid;
-		y = Math.round(y / c.snapGrid) * c.snapGrid;
-	}
+	// Apply grid snap
+	result = applyGridSnap(result.x, result.y, result.w, result.h, c.snapGrid);
 
 	// Constrain position to screen
-	if (c.constrainToScreen) {
-		x = Math.max(0, x);
-		y = Math.max(0, y);
-		if (x + w > c.screenWidth) w = c.screenWidth - x;
-		if (y + h > c.screenHeight) h = c.screenHeight - y;
-	}
+	result = applyScreenConstraints(result.x, result.y, result.w, result.h, c);
 
 	const dirtyRects: DirtyRect[] = [
-		// Old bounds
 		{
 			x: state.panelStartX,
 			y: state.panelStartY,
 			width: state.panelStartWidth,
 			height: state.panelStartHeight,
 		},
-		// New bounds
-		{ x, y, width: w, height: h },
+		{ x: result.x, y: result.y, width: result.w, height: result.h },
 	];
 
-	return { x, y, width: w, height: h, dirtyRects, clamped };
+	return { x: result.x, y: result.y, width: result.w, height: result.h, dirtyRects, clamped };
 }
 
 /**

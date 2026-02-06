@@ -167,7 +167,7 @@ export function createTypedArrayPool(): TypedArrayPool {
 		const bucket = buckets.get(bucketSize);
 		if (bucket && bucket.arrays.length > 0) {
 			totalFree -= bucketSize;
-			return bucket.arrays.pop()!;
+			return bucket.arrays.pop() as ArrayBuffer;
 		}
 		totalAllocated += bucketSize;
 		return new ArrayBuffer(bucketSize);

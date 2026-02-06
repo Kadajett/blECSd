@@ -207,7 +207,9 @@ export function flushChanges(state: MutableCoalescingState): FlushResult | undef
 
 	const dirtyRegion = computeDirtyRegion(changes);
 	const timeSpanMs =
-		changes.length > 1 ? changes[changes.length - 1]!.timestamp - changes[0]!.timestamp : 0;
+		changes.length > 1
+			? (changes[changes.length - 1]?.timestamp ?? 0) - (changes[0]?.timestamp ?? 0)
+			: 0;
 
 	const result: FlushResult = {
 		dirtyRegion,

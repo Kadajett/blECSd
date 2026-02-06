@@ -206,14 +206,10 @@ export function createMemoryProfiler(config?: Partial<MemoryProfilerConfig>): Me
 		return snap;
 	}
 
-	function computeDiff(older: MemorySnapshot, newer: MemorySnapshot): MemoryDiff {
-		const elapsed = newer.timestamp - older.timestamp;
-		const elapsedSec = elapsed / 1000;
-
-		const entityCountDelta = newer.entityCount - older.entityCount;
-		const heapUsedDelta = newer.heapUsed - older.heapUsed;
-		const rssDelta = newer.rss - older.rss;
-
+	function computeComponentDeltas(
+		older: MemorySnapshot,
+		newer: MemorySnapshot,
+	): Record<string, number> {
 		const componentDeltas: Record<string, number> = {};
 		const allKeys = new Set([
 			...Object.keys(older.componentCounts),
@@ -222,39 +218,76 @@ export function createMemoryProfiler(config?: Partial<MemoryProfilerConfig>): Me
 		for (const key of allKeys) {
 			componentDeltas[key] = (newer.componentCounts[key] ?? 0) - (older.componentCounts[key] ?? 0);
 		}
+		return componentDeltas;
+	}
+
+	function detectEntityLeaks(
+		entityCountDelta: number,
+		elapsedSec: number,
+		older: MemorySnapshot,
+		newer: MemorySnapshot,
+	): LeakWarning | null {
+		const entityGrowthRate = entityCountDelta / elapsedSec;
+		if (entityGrowthRate <= cfg.entityLeakThreshold) return null;
+
+		return {
+			type: 'entity',
+			message: `Entity count growing at ${entityGrowthRate.toFixed(1)}/sec (${older.entityCount} -> ${newer.entityCount})`,
+			growthRate: entityGrowthRate,
+		};
+	}
+
+	function detectHeapLeaks(heapUsedDelta: number, elapsedSec: number): LeakWarning | null {
+		const heapGrowthRate = heapUsedDelta / elapsedSec;
+		if (heapGrowthRate <= cfg.heapLeakThreshold) return null;
+
+		return {
+			type: 'heap',
+			message: `Heap growing at ${(heapGrowthRate / 1024).toFixed(1)}KB/sec`,
+			growthRate: heapGrowthRate,
+		};
+	}
+
+	function detectComponentLeaks(
+		componentDeltas: Record<string, number>,
+		elapsedSec: number,
+	): LeakWarning[] {
+		const leaks: LeakWarning[] = [];
+		for (const [name, delta] of Object.entries(componentDeltas)) {
+			const componentGrowthRate = delta / elapsedSec;
+			if (componentGrowthRate > cfg.entityLeakThreshold) {
+				leaks.push({
+					type: 'component',
+					message: `${name} component growing at ${componentGrowthRate.toFixed(1)}/sec`,
+					growthRate: componentGrowthRate,
+				});
+			}
+		}
+		return leaks;
+	}
+
+	function computeDiff(older: MemorySnapshot, newer: MemorySnapshot): MemoryDiff {
+		const elapsed = newer.timestamp - older.timestamp;
+		const elapsedSec = elapsed / 1000;
+
+		const entityCountDelta = newer.entityCount - older.entityCount;
+		const heapUsedDelta = newer.heapUsed - older.heapUsed;
+		const rssDelta = newer.rss - older.rss;
+
+		const componentDeltas = computeComponentDeltas(older, newer);
 
 		// Leak detection
 		const possibleLeaks: LeakWarning[] = [];
 
 		if (elapsedSec > 0) {
-			const entityGrowthRate = entityCountDelta / elapsedSec;
-			if (entityGrowthRate > cfg.entityLeakThreshold) {
-				possibleLeaks.push({
-					type: 'entity',
-					message: `Entity count growing at ${entityGrowthRate.toFixed(1)}/sec (${older.entityCount} -> ${newer.entityCount})`,
-					growthRate: entityGrowthRate,
-				});
-			}
+			const entityLeak = detectEntityLeaks(entityCountDelta, elapsedSec, older, newer);
+			if (entityLeak) possibleLeaks.push(entityLeak);
 
-			const heapGrowthRate = heapUsedDelta / elapsedSec;
-			if (heapGrowthRate > cfg.heapLeakThreshold) {
-				possibleLeaks.push({
-					type: 'heap',
-					message: `Heap growing at ${(heapGrowthRate / 1024).toFixed(1)}KB/sec`,
-					growthRate: heapGrowthRate,
-				});
-			}
+			const heapLeak = detectHeapLeaks(heapUsedDelta, elapsedSec);
+			if (heapLeak) possibleLeaks.push(heapLeak);
 
-			for (const [name, delta] of Object.entries(componentDeltas)) {
-				const componentGrowthRate = delta / elapsedSec;
-				if (componentGrowthRate > cfg.entityLeakThreshold) {
-					possibleLeaks.push({
-						type: 'component',
-						message: `${name} component growing at ${componentGrowthRate.toFixed(1)}/sec`,
-						growthRate: componentGrowthRate,
-					});
-				}
-			}
+			const componentLeaks = detectComponentLeaks(componentDeltas, elapsedSec);
+			possibleLeaks.push(...componentLeaks);
 		}
 
 		return {
@@ -271,6 +304,49 @@ export function createMemoryProfiler(config?: Partial<MemoryProfilerConfig>): Me
 		if (Math.abs(bytes) < 1024) return `${bytes}B`;
 		if (Math.abs(bytes) < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
 		return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+	}
+
+	function addBasicMetrics(lines: string[], current: MemorySnapshot): void {
+		lines.push('Memory Profile Report');
+		lines.push('═'.repeat(40));
+		lines.push(`Entities: ${current.entityCount}`);
+		lines.push(`Heap Used: ${formatBytes(current.heapUsed)}`);
+		lines.push(`Heap Total: ${formatBytes(current.heapTotal)}`);
+		lines.push(`RSS: ${formatBytes(current.rss)}`);
+		lines.push(`External: ${formatBytes(current.external)}`);
+	}
+
+	function addComponentCounts(lines: string[], current: MemorySnapshot): void {
+		if (Object.keys(current.componentCounts).length === 0) return;
+
+		lines.push('');
+		lines.push('Component Counts:');
+		for (const [name, count] of Object.entries(current.componentCounts)) {
+			lines.push(`  ${name}: ${count}`);
+		}
+	}
+
+	function addTrendsAndLeaks(lines: string[], current: MemorySnapshot): void {
+		if (snapshots.length < 2) return;
+
+		const oldest = snapshots[0];
+		if (!oldest) return;
+
+		const diff = computeDiff(oldest, current);
+		lines.push('');
+		lines.push(`Trends (over ${(diff.elapsed / 1000).toFixed(0)}s):`);
+		lines.push(`  Entity delta: ${diff.entityCountDelta > 0 ? '+' : ''}${diff.entityCountDelta}`);
+		lines.push(
+			`  Heap delta: ${diff.heapUsedDelta > 0 ? '+' : ''}${formatBytes(diff.heapUsedDelta)}`,
+		);
+
+		if (diff.possibleLeaks.length > 0) {
+			lines.push('');
+			lines.push('WARNINGS:');
+			for (const leak of diff.possibleLeaks) {
+				lines.push(`  [${leak.type}] ${leak.message}`);
+			}
+		}
 	}
 
 	return {
@@ -294,42 +370,9 @@ export function createMemoryProfiler(config?: Partial<MemoryProfilerConfig>): Me
 			const current = takeSnapshot(world);
 			const lines: string[] = [];
 
-			lines.push('Memory Profile Report');
-			lines.push('═'.repeat(40));
-			lines.push(`Entities: ${current.entityCount}`);
-			lines.push(`Heap Used: ${formatBytes(current.heapUsed)}`);
-			lines.push(`Heap Total: ${formatBytes(current.heapTotal)}`);
-			lines.push(`RSS: ${formatBytes(current.rss)}`);
-			lines.push(`External: ${formatBytes(current.external)}`);
-
-			if (Object.keys(current.componentCounts).length > 0) {
-				lines.push('');
-				lines.push('Component Counts:');
-				for (const [name, count] of Object.entries(current.componentCounts)) {
-					lines.push(`  ${name}: ${count}`);
-				}
-			}
-
-			if (snapshots.length >= 2) {
-				const oldest = snapshots[0]!;
-				const diff = computeDiff(oldest, current);
-				lines.push('');
-				lines.push(`Trends (over ${(diff.elapsed / 1000).toFixed(0)}s):`);
-				lines.push(
-					`  Entity delta: ${diff.entityCountDelta > 0 ? '+' : ''}${diff.entityCountDelta}`,
-				);
-				lines.push(
-					`  Heap delta: ${diff.heapUsedDelta > 0 ? '+' : ''}${formatBytes(diff.heapUsedDelta)}`,
-				);
-
-				if (diff.possibleLeaks.length > 0) {
-					lines.push('');
-					lines.push('WARNINGS:');
-					for (const leak of diff.possibleLeaks) {
-						lines.push(`  [${leak.type}] ${leak.message}`);
-					}
-				}
-			}
+			addBasicMetrics(lines, current);
+			addComponentCounts(lines, current);
+			addTrendsAndLeaks(lines, current);
 
 			return lines.join('\n');
 		},

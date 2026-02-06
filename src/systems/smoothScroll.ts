@@ -344,6 +344,69 @@ function clampScroll(state: ScrollAnimationState, physics: ScrollPhysicsConfig):
  * @param physics - Physics configuration
  * @returns True if the scroll position changed
  */
+function updateScrollToTarget(state: ScrollAnimationState): void {
+	if (state.targetX === null && state.targetY === null) return;
+
+	if (state.targetX !== null) {
+		const diff = state.targetX - state.scrollX;
+		if (Math.abs(diff) < 0.5) {
+			state.scrollX = state.targetX;
+			state.targetX = null;
+			state.velocityX = 0;
+		} else {
+			state.velocityX = diff * 0.15;
+		}
+	}
+
+	if (state.targetY !== null) {
+		const diff = state.targetY - state.scrollY;
+		if (Math.abs(diff) < 0.5) {
+			state.scrollY = state.targetY;
+			state.targetY = null;
+			state.velocityY = 0;
+		} else {
+			state.velocityY = diff * 0.15;
+		}
+	}
+}
+
+function applyVelocity(state: ScrollAnimationState, dt: number): void {
+	state.scrollX += state.velocityX * dt * 60;
+	state.scrollY += state.velocityY * dt * 60;
+}
+
+function applyFriction(state: ScrollAnimationState, cfg: ScrollPhysicsConfig): void {
+	if (!cfg.enableMomentum || state.isUserScrolling) return;
+
+	state.velocityX *= cfg.friction;
+	state.velocityY *= cfg.friction;
+}
+
+function shouldStopAnimation(state: ScrollAnimationState, cfg: ScrollPhysicsConfig): boolean {
+	return (
+		Math.abs(state.velocityX) < cfg.minVelocity &&
+		Math.abs(state.velocityY) < cfg.minVelocity &&
+		state.targetX === null &&
+		state.targetY === null
+	);
+}
+
+function finalizeScrollPosition(state: ScrollAnimationState): void {
+	state.velocityX = 0;
+	state.velocityY = 0;
+	state.isAnimating = false;
+
+	// Snap to nearest integer when stopped
+	state.scrollX = Math.round(state.scrollX);
+	state.scrollY = Math.round(state.scrollY);
+
+	// Final clamp
+	const maxX = Math.max(0, state.contentWidth - state.viewportWidth);
+	const maxY = Math.max(0, state.contentHeight - state.viewportHeight);
+	state.scrollX = Math.max(0, Math.min(maxX, state.scrollX));
+	state.scrollY = Math.max(0, Math.min(maxY, state.scrollY));
+}
+
 export function updateScrollPhysics(
 	state: ScrollAnimationState,
 	dt: number,
@@ -357,63 +420,20 @@ export function updateScrollPhysics(
 	const prevY = state.scrollY;
 
 	// Handle smooth scroll to target
-	if (state.targetX !== null || state.targetY !== null) {
-		if (state.targetX !== null) {
-			const diff = state.targetX - state.scrollX;
-			if (Math.abs(diff) < 0.5) {
-				state.scrollX = state.targetX;
-				state.targetX = null;
-				state.velocityX = 0;
-			} else {
-				state.velocityX = diff * 0.15;
-			}
-		}
-
-		if (state.targetY !== null) {
-			const diff = state.targetY - state.scrollY;
-			if (Math.abs(diff) < 0.5) {
-				state.scrollY = state.targetY;
-				state.targetY = null;
-				state.velocityY = 0;
-			} else {
-				state.velocityY = diff * 0.15;
-			}
-		}
-	}
+	updateScrollToTarget(state);
 
 	// Apply velocity
-	state.scrollX += state.velocityX * dt * 60;
-	state.scrollY += state.velocityY * dt * 60;
+	applyVelocity(state, dt);
 
 	// Apply friction (momentum decay)
-	if (cfg.enableMomentum && !state.isUserScrolling) {
-		state.velocityX *= cfg.friction;
-		state.velocityY *= cfg.friction;
-	}
+	applyFriction(state, cfg);
 
 	// Clamp and bounce
 	clampScroll(state, cfg);
 
 	// Stop animation when velocity is negligible
-	if (
-		Math.abs(state.velocityX) < cfg.minVelocity &&
-		Math.abs(state.velocityY) < cfg.minVelocity &&
-		state.targetX === null &&
-		state.targetY === null
-	) {
-		state.velocityX = 0;
-		state.velocityY = 0;
-		state.isAnimating = false;
-
-		// Snap to nearest integer when stopped
-		state.scrollX = Math.round(state.scrollX);
-		state.scrollY = Math.round(state.scrollY);
-
-		// Final clamp
-		const maxX = Math.max(0, state.contentWidth - state.viewportWidth);
-		const maxY = Math.max(0, state.contentHeight - state.viewportHeight);
-		state.scrollX = Math.max(0, Math.min(maxX, state.scrollX));
-		state.scrollY = Math.max(0, Math.min(maxY, state.scrollY));
+	if (shouldStopAnimation(state, cfg)) {
+		finalizeScrollPosition(state);
 	}
 
 	return state.scrollX !== prevX || state.scrollY !== prevY;
