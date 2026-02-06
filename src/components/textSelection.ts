@@ -336,10 +336,12 @@ export function hasActiveSelection(state: TextSelectionState): boolean {
  * @param lineLength - Length of the line in characters
  */
 export function selectLine(state: TextSelectionState, line: number, lineLength: number): void {
-	state.anchorLine = line;
+	const safeLine = Math.max(0, Math.trunc(line) || 0);
+	const safeLength = Math.max(0, Math.trunc(lineLength) || 0);
+	state.anchorLine = safeLine;
 	state.anchorCol = 0;
-	state.focusLine = line;
-	state.focusCol = lineLength;
+	state.focusLine = safeLine;
+	state.focusCol = safeLength;
 	state.active = true;
 	state.mode = 'stream';
 }
@@ -360,10 +362,13 @@ export function selectLineRange(
 	endLine: number,
 	endLineLength: number,
 ): void {
-	state.anchorLine = startLine;
+	const safeStart = Math.max(0, Math.trunc(startLine) || 0);
+	const safeEnd = Math.max(0, Math.trunc(endLine) || 0);
+	const safeLength = Math.max(0, Math.trunc(endLineLength) || 0);
+	state.anchorLine = safeStart;
 	state.anchorCol = 0;
-	state.focusLine = endLine;
-	state.focusCol = endLineLength;
+	state.focusLine = safeEnd;
+	state.focusCol = safeLength;
 	state.active = true;
 	state.mode = 'stream';
 }
@@ -380,13 +385,15 @@ export function selectAll(
 	totalLines: number,
 	lastLineLength: number,
 ): void {
-	if (totalLines === 0) {
+	const safeTotal = Math.max(0, Math.trunc(totalLines) || 0);
+	if (safeTotal === 0) {
 		return;
 	}
+	const safeLength = Math.max(0, Math.trunc(lastLineLength) || 0);
 	state.anchorLine = 0;
 	state.anchorCol = 0;
-	state.focusLine = totalLines - 1;
-	state.focusCol = lastLineLength;
+	state.focusLine = safeTotal - 1;
+	state.focusCol = safeLength;
 	state.active = true;
 	state.mode = 'stream';
 }
