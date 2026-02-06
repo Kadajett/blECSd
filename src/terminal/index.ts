@@ -195,18 +195,20 @@ export {
 	isXterm,
 } from './detection';
 // GPM mouse client (Linux console mouse support)
-export type { GpmClientConfig, GpmClientState } from './gpmClient';
+export type { GpmClient, GpmClientConfig, GpmClientState, GpmRawEvent } from './gpmClient';
 export {
-	buildConnectPacket,
-	connectGpm,
+	buildGpmConnectPacket,
 	createGpmClient,
 	detectVirtualConsole,
-	disconnectGpm,
+	GpmButton,
 	GpmClientConfigSchema,
+	GpmEventType,
+	gpmButtonToMouseButton,
+	gpmEventToMouseEvent,
+	gpmTypeToMouseAction,
 	isGpmAvailable,
-	isGpmConnected,
-	onGpmMouse,
-	parseGpmEvent,
+	parseGpmEventBuffer,
+	parseGpmModifiers,
 } from './gpmClient';
 // Input control
 export type {

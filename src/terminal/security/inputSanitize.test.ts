@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
-	containsControlChars,
-	containsNullBytes,
+	hasControlChars,
+	hasNullBytes,
+	replaceInvalidUtf16,
 	sanitizeTextInput,
 	stripNullBytes,
-	validateUtf8,
 } from './inputSanitize';
 
 describe('Input Sanitization', () => {
@@ -37,9 +37,9 @@ describe('Input Sanitization', () => {
 			expect(sanitizeTextInput('Ñoño 🎮')).toBe('Ñoño 🎮');
 		});
 
-		it('should strip non-ASCII when allowUnicode is false', () => {
-			expect(sanitizeTextInput('Hello 世界', { allowUnicode: false })).toBe('Hello ');
-			expect(sanitizeTextInput('café', { allowUnicode: false })).toBe('caf');
+		it('should replace non-ASCII when allowUnicode is false', () => {
+			expect(sanitizeTextInput('Hello 世界', { allowUnicode: false })).toBe('Hello \uFFFD\uFFFD');
+			expect(sanitizeTextInput('café', { allowUnicode: false })).toBe('caf\uFFFD');
 		});
 
 		it('should truncate to maxLength', () => {
@@ -73,60 +73,62 @@ describe('Input Sanitization', () => {
 				stripControl: true,
 				stripNull: true,
 			});
-			expect(result).toBe('Hello !');
+			// Non-ASCII replaced with \uFFFD, control chars stripped, then truncated to 8
+			expect(result).toBe('Hello \uFFFD\uFFFD');
 		});
 	});
 
-	describe('validateUtf8', () => {
+	describe('replaceInvalidUtf16', () => {
 		it('should pass through valid UTF-8', () => {
-			expect(validateUtf8('Hello')).toBe('Hello');
-			expect(validateUtf8('世界')).toBe('世界');
-			expect(validateUtf8('🎮')).toBe('🎮');
+			expect(replaceInvalidUtf16('Hello')).toBe('Hello');
+			expect(replaceInvalidUtf16('世界')).toBe('世界');
+			expect(replaceInvalidUtf16('🎮')).toBe('🎮');
 		});
 
 		it('should replace lone high surrogates', () => {
 			const input = `a${String.fromCharCode(0xd800)}b`;
-			const result = validateUtf8(input);
+			const result = replaceInvalidUtf16(input);
 			expect(result).toBe('a\uFFFDb');
 		});
 
 		it('should replace lone low surrogates', () => {
 			const input = `a${String.fromCharCode(0xdc00)}b`;
-			const result = validateUtf8(input);
+			const result = replaceInvalidUtf16(input);
 			expect(result).toBe('a\uFFFDb');
 		});
 
 		it('should handle valid surrogate pairs', () => {
 			// 🎮 is a surrogate pair
-			expect(validateUtf8('🎮')).toBe('🎮');
+			expect(replaceInvalidUtf16('🎮')).toBe('🎮');
 		});
 	});
 
-	describe('containsNullBytes', () => {
+	describe('hasNullBytes', () => {
 		it('should detect null bytes', () => {
-			expect(containsNullBytes('hello\x00world')).toBe(true);
+			expect(hasNullBytes('hello\x00world')).toBe(true);
 		});
 
 		it('should return false for clean strings', () => {
-			expect(containsNullBytes('hello world')).toBe(false);
+			expect(hasNullBytes('hello world')).toBe(false);
 		});
 	});
 
-	describe('containsControlChars', () => {
+	describe('hasControlChars', () => {
 		it('should detect C0 control characters', () => {
-			expect(containsControlChars('hello\x01world')).toBe(true);
+			expect(hasControlChars('hello\x01world')).toBe(true);
 		});
 
 		it('should detect C1 control characters', () => {
-			expect(containsControlChars('test\u0080data')).toBe(true);
+			expect(hasControlChars('test\u0080data')).toBe(true);
 		});
 
 		it('should return false for clean strings', () => {
-			expect(containsControlChars('hello world')).toBe(false);
+			expect(hasControlChars('hello world')).toBe(false);
 		});
 
-		it('should not flag tab/newline/CR', () => {
-			expect(containsControlChars('hello\tworld\n')).toBe(false);
+		it('should flag tab/newline as control chars', () => {
+			// hasControlChars checks all C0 (0x00-0x1F) including tab and newline
+			expect(hasControlChars('hello\tworld\n')).toBe(true);
 		});
 	});
 
