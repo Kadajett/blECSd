@@ -19,3 +19,23 @@ export {
 	PositionValueSchema,
 	PositiveIntSchema,
 } from './common';
+
+export {
+	AnimationFrameSchema,
+	AnimationOptionsSchema,
+	DimensionConstraintsSchema,
+	DimensionValueSchema,
+	ListBehaviorOptionsSchema,
+	ListItemSchema,
+	PaddingOptionsSchema,
+	PaddingValueSchema,
+	ScrollableOptionsSchema,
+	SetDimensionsSchema,
+	SetPositionSchema,
+	SliderPercentageSchema,
+	SliderRangeSchema,
+	SliderStepSchema,
+	StyleColorSchema,
+	StyleOptionsSchema,
+	ZIndexSchema,
+} from './components';

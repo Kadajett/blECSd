@@ -5,6 +5,7 @@
 
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { StyleOptionsSchema } from '../schemas/components';
 import { getAncestors, hasHierarchy, isRoot } from './hierarchy';
 
 /** Default entity capacity for typed arrays */
@@ -284,6 +285,7 @@ function ensureRenderable(world: World, eid: Entity): void {
  * ```
  */
 export function setStyle(world: World, eid: Entity, style: StyleOptions): Entity {
+	StyleOptionsSchema.parse(style);
 	ensureRenderable(world, eid);
 	applyStyleOptions(eid, style);
 	Renderable.dirty[eid] = 1;

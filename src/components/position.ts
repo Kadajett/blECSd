@@ -5,6 +5,7 @@
 
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { SetPositionSchema, ZIndexSchema } from '../schemas/components';
 
 /** Default entity capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;
@@ -76,6 +77,7 @@ export interface PositionData {
  * ```
  */
 export function setPosition(world: World, eid: Entity, x: number, y: number, z = 0): Entity {
+	SetPositionSchema.parse({ x, y, z });
 	if (!hasComponent(world, eid, Position)) {
 		addComponent(world, eid, Position);
 		// Initialize all values to defaults when component is first added
@@ -239,6 +241,7 @@ export function moveBy(world: World, eid: Entity, dx: number, dy: number): Entit
  * ```
  */
 export function setZIndex(world: World, eid: Entity, z: number): Entity {
+	ZIndexSchema.parse(z);
 	if (!hasComponent(world, eid, Position)) {
 		addComponent(world, eid, Position);
 		// Initialize all values to 0 when component is first added

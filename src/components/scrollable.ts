@@ -5,6 +5,7 @@
 
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { ScrollableOptionsSchema } from '../schemas/components';
 
 /** Default entity capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;
@@ -252,6 +253,7 @@ function applyScrollableOptions(eid: Entity, options: ScrollableOptions): void {
  * ```
  */
 export function setScrollable(world: World, eid: Entity, options: ScrollableOptions): Entity {
+	ScrollableOptionsSchema.parse(options);
 	ensureScrollable(world, eid);
 	applyScrollableOptions(eid, options);
 	return eid;

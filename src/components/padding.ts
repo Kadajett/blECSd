@@ -5,6 +5,7 @@
 
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { PaddingOptionsSchema, PaddingValueSchema } from '../schemas/components';
 
 /** Default entity capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;
@@ -108,6 +109,7 @@ function ensurePadding(world: World, eid: Entity): void {
  * ```
  */
 export function setPadding(world: World, eid: Entity, options: PaddingOptions): Entity {
+	PaddingOptionsSchema.parse(options);
 	ensurePadding(world, eid);
 
 	if (options.left !== undefined) Padding.left[eid] = options.left;
@@ -136,6 +138,7 @@ export function setPadding(world: World, eid: Entity, options: PaddingOptions): 
  * ```
  */
 export function setPaddingAll(world: World, eid: Entity, value: number): Entity {
+	PaddingValueSchema.parse(value);
 	ensurePadding(world, eid);
 	Padding.left[eid] = value;
 	Padding.top[eid] = value;
@@ -168,6 +171,8 @@ export function setPaddingHV(
 	horizontal: number,
 	vertical: number,
 ): Entity {
+	PaddingValueSchema.parse(horizontal);
+	PaddingValueSchema.parse(vertical);
 	ensurePadding(world, eid);
 	Padding.left[eid] = horizontal;
 	Padding.right[eid] = horizontal;

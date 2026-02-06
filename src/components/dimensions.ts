@@ -5,6 +5,7 @@
 
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { DimensionConstraintsSchema, DimensionValueSchema } from '../schemas/components';
 
 /** Default entity capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;
@@ -180,6 +181,8 @@ export function setDimensions(
 	width: DimensionValue,
 	height: DimensionValue,
 ): Entity {
+	DimensionValueSchema.parse(width);
+	DimensionValueSchema.parse(height);
 	if (!hasComponent(world, eid, Dimensions)) {
 		addComponent(world, eid, Dimensions);
 		// Initialize all values to defaults
@@ -251,6 +254,7 @@ export function setConstraints(
 	eid: Entity,
 	constraints: DimensionConstraints,
 ): Entity {
+	DimensionConstraintsSchema.parse(constraints);
 	if (!hasComponent(world, eid, Dimensions)) {
 		addComponent(world, eid, Dimensions);
 		// Initialize all values to defaults

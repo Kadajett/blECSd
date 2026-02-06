@@ -6,8 +6,10 @@
  * @module components/slider
  */
 
+import { z } from 'zod';
 import type { StateMachineConfig } from '../core/stateMachine';
 import type { Entity, World } from '../core/types';
+import { SliderRangeSchema, SliderStepSchema } from '../schemas/components';
 import { markDirty } from './renderable';
 import { attachStateMachine, getState, hasStateMachine, sendEvent } from './stateMachine';
 
@@ -524,6 +526,7 @@ export function getSliderStep(eid: Entity): number {
  * @param max - Maximum value
  */
 export function setSliderRange(world: World, eid: Entity, min: number, max: number): void {
+	SliderRangeSchema.parse({ min, max });
 	sliderStore.min[eid] = min;
 	sliderStore.max[eid] = max;
 
@@ -545,6 +548,7 @@ export function setSliderRange(world: World, eid: Entity, min: number, max: numb
  * @param step - Step value
  */
 export function setSliderStep(world: World, eid: Entity, step: number): void {
+	SliderStepSchema.parse(step);
 	sliderStore.step[eid] = step;
 
 	// Round current value to new step
@@ -584,6 +588,7 @@ export function getSliderPercentage(eid: Entity): number {
  * @param percentage - Value as percentage (0-1)
  */
 export function setSliderFromPercentage(world: World, eid: Entity, percentage: number): void {
+	z.number().finite().parse(percentage);
 	const min = sliderStore.min[eid] ?? 0;
 	const max = sliderStore.max[eid] ?? 100;
 	const clampedPct = Math.max(0, Math.min(1, percentage));

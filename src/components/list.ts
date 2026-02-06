@@ -6,8 +6,10 @@
  * @module components/list
  */
 
+import { z } from 'zod';
 import type { StateMachineConfig } from '../core/stateMachine';
 import type { Entity, World } from '../core/types';
+import { ListBehaviorOptionsSchema, ListItemSchema } from '../schemas/components';
 import { markDirty } from './renderable';
 import { attachStateMachine, getState, hasStateMachine, sendEvent } from './stateMachine';
 
@@ -331,6 +333,8 @@ export function attachListBehavior(
 		visibleCount?: number;
 	} = {},
 ): void {
+	z.array(ListItemSchema).parse(items);
+	ListBehaviorOptionsSchema.parse(options);
 	listStore.isList[eid] = 1;
 	listStore.selectedIndex[eid] = options.selectedIndex ?? -1;
 	listStore.itemCount[eid] = items.length;
