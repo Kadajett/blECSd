@@ -7,6 +7,15 @@
  * @module testing
  */
 
+export type { IntegrationTestContext } from './integration';
+export {
+	createInteractiveEntity,
+	createTestScreen,
+	simulateClick,
+	simulateKey,
+	simulateMouse,
+	teardownTestScreen,
+} from './integration';
 export type { TestBufferContext } from './snapshot';
 export {
 	captureTestScreen,
