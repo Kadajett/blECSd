@@ -1,6 +1,10 @@
 /**
  * Collision system for detecting entity collisions.
  * Processes all entities with Collider component.
+ *
+ * Uses PackedStore for cache-friendly dense iteration of active pairs,
+ * with numeric pair keys to eliminate per-frame string allocation.
+ *
  * @module systems/collisionSystem
  */
 
@@ -8,7 +12,6 @@ import {
 	Collider,
 	type CollisionPair,
 	canLayersCollide,
-	collisionPairKey,
 	createCollisionPair,
 	isTrigger,
 	testCollision,
@@ -17,6 +20,14 @@ import { Position } from '../components/position';
 import { hasComponent, query } from '../core/ecs';
 import { createEventBus, type EventBus } from '../core/events';
 import type { Scheduler } from '../core/scheduler';
+import {
+	addToStore,
+	clearStore,
+	createPackedStore,
+	type PackedHandle,
+	type PackedStore,
+	removeFromStore,
+} from '../core/storage';
 import { LoopPhase, type System, type World } from '../core/types';
 
 // =============================================================================
@@ -48,26 +59,81 @@ export interface CollisionEventMap {
 }
 
 // =============================================================================
+// NUMERIC PAIR KEY
+// =============================================================================
+
+/**
+ * Multiplier for encoding entity pair as a single number.
+ * Supports entity IDs up to 2^26 (~67 million) without collision.
+ * Both entity IDs must be non-negative integers below this bound.
+ */
+const ENTITY_BOUND = 0x4000000;
+
+/**
+ * Computes a collision-free numeric key for a normalized collision pair.
+ * Eliminates string allocation compared to template-literal keys.
+ *
+ * The key is unique as long as both entity IDs are non-negative integers
+ * below ENTITY_BOUND (2^26 = 67,108,864). If an entity ID exceeds this
+ * bound, the key may collide with another pair's key, causing incorrect
+ * collision tracking. A runtime assertion guards against this.
+ *
+ * @param entityA - Lower entity ID (pair must be normalized: entityA < entityB)
+ * @param entityB - Higher entity ID
+ * @returns Unique numeric key for the pair
+ * @throws {RangeError} If either entity ID is >= ENTITY_BOUND
+ */
+function pairNumericKey(entityA: number, entityB: number): number {
+	if (entityA >= ENTITY_BOUND || entityB >= ENTITY_BOUND) {
+		throw new RangeError(
+			`Entity IDs must be below ${ENTITY_BOUND} for collision-free pair keys. Got: ${entityA}, ${entityB}`,
+		);
+	}
+	return entityA * ENTITY_BOUND + entityB;
+}
+
+// =============================================================================
 // COLLISION SYSTEM STATE
 // =============================================================================
 
 /**
+ * Readonly view of active collision/trigger pairs.
+ * Provides dense data for cache-friendly iteration without
+ * exposing mutable store internals. Do not cache this view
+ * across frames, as the underlying data may be reallocated.
+ */
+export interface ActivePairsView {
+	/** Dense array of active pairs. Read-only; do not mutate elements or indices. */
+	readonly data: ReadonlyArray<CollisionPair>;
+	/** Number of live pairs in the data array (iterate data[0..size-1]). */
+	readonly size: number;
+}
+
+/**
  * Collision system state.
+ * Uses PackedStore for cache-friendly dense storage and iteration
+ * of active collision and trigger pairs.
  */
 export interface CollisionSystemState {
 	/** Event bus for collision events */
 	readonly eventBus: EventBus<CollisionEventMap>;
-	/** Currently active collision pairs */
-	readonly activePairs: Map<string, CollisionPair>;
-	/** Currently active trigger pairs */
-	readonly activeTriggers: Map<string, CollisionPair>;
+	/** Currently active collision pairs (dense packed storage) */
+	readonly activePairs: PackedStore<CollisionPair>;
+	/** Currently active trigger pairs (dense packed storage) */
+	readonly activeTriggers: PackedStore<CollisionPair>;
+	/** Maps numeric pair key to handle in activePairs for O(1) lookup */
+	readonly pairHandles: Map<number, PackedHandle>;
+	/** Maps numeric pair key to handle in activeTriggers for O(1) lookup */
+	readonly triggerHandles: Map<number, PackedHandle>;
 }
 
 // Global collision system state
 const collisionState: CollisionSystemState = {
 	eventBus: createEventBus<CollisionEventMap>(),
-	activePairs: new Map(),
-	activeTriggers: new Map(),
+	activePairs: createPackedStore<CollisionPair>(),
+	activeTriggers: createPackedStore<CollisionPair>(),
+	pairHandles: new Map(),
+	triggerHandles: new Map(),
 };
 
 /**
@@ -90,21 +156,63 @@ export function getCollisionEventBus(): EventBus<CollisionEventMap> {
 }
 
 /**
- * Gets the current active collision pairs.
+ * Gets the current number of active collision pairs.
  *
- * @returns Map of active collision pairs
+ * @returns Number of active solid collision pairs
+ *
+ * @example
+ * ```typescript
+ * import { getActiveCollisionCount } from 'blecsd';
+ *
+ * const count = getActiveCollisionCount();
+ * console.log(`${count} active collisions`);
+ * ```
  */
-export function getActiveCollisions(): ReadonlyMap<string, CollisionPair> {
-	return collisionState.activePairs;
+export function getActiveCollisionCount(): number {
+	return collisionState.activePairs.size;
 }
 
 /**
- * Gets the current active trigger pairs.
+ * Gets the current active collision pairs as a readonly view.
+ * Iterate data[0..size-1] for dense, cache-friendly access.
  *
- * @returns Map of active trigger pairs
+ * The returned view is a snapshot reference into the live store.
+ * Do not cache it across frames or mutate its contents.
+ *
+ * @returns Readonly view of active collision pairs
  */
-export function getActiveTriggers(): ReadonlyMap<string, CollisionPair> {
-	return collisionState.activeTriggers;
+export function getActiveCollisions(): ActivePairsView {
+	return { data: collisionState.activePairs.data, size: collisionState.activePairs.size };
+}
+
+/**
+ * Gets the current number of active trigger pairs.
+ *
+ * @returns Number of active trigger pairs
+ *
+ * @example
+ * ```typescript
+ * import { getActiveTriggerCount } from 'blecsd';
+ *
+ * const count = getActiveTriggerCount();
+ * console.log(`${count} active triggers`);
+ * ```
+ */
+export function getActiveTriggerCount(): number {
+	return collisionState.activeTriggers.size;
+}
+
+/**
+ * Gets the current active trigger pairs as a readonly view.
+ * Iterate data[0..size-1] for dense, cache-friendly access.
+ *
+ * The returned view is a snapshot reference into the live store.
+ * Do not cache it across frames or mutate its contents.
+ *
+ * @returns Readonly view of active trigger pairs
+ */
+export function getActiveTriggers(): ActivePairsView {
+	return { data: collisionState.activeTriggers.data, size: collisionState.activeTriggers.size };
 }
 
 /**
@@ -112,8 +220,10 @@ export function getActiveTriggers(): ReadonlyMap<string, CollisionPair> {
  * Useful for testing or scene changes.
  */
 export function resetCollisionState(): void {
-	collisionState.activePairs.clear();
-	collisionState.activeTriggers.clear();
+	clearStore(collisionState.activePairs);
+	clearStore(collisionState.activeTriggers);
+	collisionState.pairHandles.clear();
+	collisionState.triggerHandles.clear();
 }
 
 // =============================================================================
@@ -209,37 +319,54 @@ export function detectCollisions(world: World): CollisionPair[] {
 
 /**
  * Emits end events for pairs that are no longer active.
+ * Iterates the dense PackedStore data backwards for safe swap-and-pop removal.
+ * Looks up existing handles from handleMap rather than reconstructing from store internals.
  */
 function emitEndedEvents(
-	activeMap: Map<string, CollisionPair>,
-	currentKeys: Set<string>,
+	store: PackedStore<CollisionPair>,
+	handleMap: Map<number, PackedHandle>,
+	currentKeys: Set<number>,
 	eventName: 'collisionEnd' | 'triggerExit',
 ): void {
-	for (const [key, pair] of activeMap) {
-		if (!currentKeys.has(key)) {
-			activeMap.delete(key);
-			collisionState.eventBus.emit(eventName, {
-				entityA: pair.entityA,
-				entityB: pair.entityB,
-			});
-		}
+	const { data } = store;
+
+	// Iterate backwards so swap-and-pop doesn't skip elements
+	for (let i = store.size - 1; i >= 0; i--) {
+		const pair = data[i];
+		if (!pair) continue;
+
+		const key = pairNumericKey(pair.entityA, pair.entityB);
+		if (currentKeys.has(key)) continue;
+
+		// This pair ended: look up its handle and remove
+		const handle = handleMap.get(key);
+		if (!handle) continue;
+
+		handleMap.delete(key);
+		removeFromStore(store, handle);
+
+		collisionState.eventBus.emit(eventName, {
+			entityA: pair.entityA,
+			entityB: pair.entityB,
+		});
 	}
 }
 
 /**
- * Processes a single collision pair and tracks it.
+ * Processes a single collision pair and tracks it in the appropriate packed store.
  */
 function processPair(
 	pair: CollisionPair,
-	currentSolidKeys: Set<string>,
-	currentTriggerKeys: Set<string>,
+	currentSolidKeys: Set<number>,
+	currentTriggerKeys: Set<number>,
 ): void {
-	const key = collisionPairKey(pair);
+	const key = pairNumericKey(pair.entityA, pair.entityB);
 
 	if (pair.isTrigger) {
 		currentTriggerKeys.add(key);
-		if (!collisionState.activeTriggers.has(key)) {
-			collisionState.activeTriggers.set(key, pair);
+		if (!collisionState.triggerHandles.has(key)) {
+			const handle = addToStore(collisionState.activeTriggers, pair);
+			collisionState.triggerHandles.set(key, handle);
 			collisionState.eventBus.emit('triggerEnter', {
 				entityA: pair.entityA,
 				entityB: pair.entityB,
@@ -247,8 +374,9 @@ function processPair(
 		}
 	} else {
 		currentSolidKeys.add(key);
-		if (!collisionState.activePairs.has(key)) {
-			collisionState.activePairs.set(key, pair);
+		if (!collisionState.pairHandles.has(key)) {
+			const handle = addToStore(collisionState.activePairs, pair);
+			collisionState.pairHandles.set(key, handle);
 			collisionState.eventBus.emit('collisionStart', {
 				entityA: pair.entityA,
 				entityB: pair.entityB,
@@ -263,15 +391,25 @@ function processPair(
  * @param currentPairs - Currently detected collision pairs
  */
 function processCollisionEvents(currentPairs: CollisionPair[]): void {
-	const currentSolidKeys = new Set<string>();
-	const currentTriggerKeys = new Set<string>();
+	const currentSolidKeys = new Set<number>();
+	const currentTriggerKeys = new Set<number>();
 
 	for (const pair of currentPairs) {
 		processPair(pair, currentSolidKeys, currentTriggerKeys);
 	}
 
-	emitEndedEvents(collisionState.activePairs, currentSolidKeys, 'collisionEnd');
-	emitEndedEvents(collisionState.activeTriggers, currentTriggerKeys, 'triggerExit');
+	emitEndedEvents(
+		collisionState.activePairs,
+		collisionState.pairHandles,
+		currentSolidKeys,
+		'collisionEnd',
+	);
+	emitEndedEvents(
+		collisionState.activeTriggers,
+		collisionState.triggerHandles,
+		currentTriggerKeys,
+		'triggerExit',
+	);
 }
 
 // =============================================================================
@@ -358,6 +496,7 @@ export function registerCollisionSystem(scheduler: Scheduler, priority = 10): vo
 
 /**
  * Checks if an entity is currently colliding with any other entity.
+ * Uses dense iteration over the packed collision store.
  *
  * @param eid - The entity to check
  * @returns true if entity is in any active collision
@@ -372,8 +511,10 @@ export function registerCollisionSystem(scheduler: Scheduler, priority = 10): vo
  * ```
  */
 export function isColliding(eid: number): boolean {
-	for (const pair of collisionState.activePairs.values()) {
-		if (pair.entityA === eid || pair.entityB === eid) {
+	const { data } = collisionState.activePairs;
+	for (let i = 0; i < collisionState.activePairs.size; i++) {
+		const pair = data[i];
+		if (pair && (pair.entityA === eid || pair.entityB === eid)) {
 			return true;
 		}
 	}
@@ -382,6 +523,7 @@ export function isColliding(eid: number): boolean {
 
 /**
  * Checks if an entity is currently in any trigger zone.
+ * Uses dense iteration over the packed trigger store.
  *
  * @param eid - The entity to check
  * @returns true if entity is in any active trigger
@@ -396,8 +538,10 @@ export function isColliding(eid: number): boolean {
  * ```
  */
 export function isInTrigger(eid: number): boolean {
-	for (const pair of collisionState.activeTriggers.values()) {
-		if (pair.entityA === eid || pair.entityB === eid) {
+	const { data } = collisionState.activeTriggers;
+	for (let i = 0; i < collisionState.activeTriggers.size; i++) {
+		const pair = data[i];
+		if (pair && (pair.entityA === eid || pair.entityB === eid)) {
 			return true;
 		}
 	}
@@ -406,6 +550,7 @@ export function isInTrigger(eid: number): boolean {
 
 /**
  * Gets all entities currently colliding with a specific entity.
+ * Uses dense iteration over the packed collision store.
  *
  * @param eid - The entity to check
  * @returns Array of entity IDs colliding with this entity
@@ -422,7 +567,10 @@ export function isInTrigger(eid: number): boolean {
  */
 export function getCollidingEntities(eid: number): number[] {
 	const colliding: number[] = [];
-	for (const pair of collisionState.activePairs.values()) {
+	const { data } = collisionState.activePairs;
+	for (let i = 0; i < collisionState.activePairs.size; i++) {
+		const pair = data[i];
+		if (!pair) continue;
 		if (pair.entityA === eid) {
 			colliding.push(pair.entityB);
 		} else if (pair.entityB === eid) {
@@ -434,6 +582,7 @@ export function getCollidingEntities(eid: number): number[] {
 
 /**
  * Gets all trigger zones an entity is currently in.
+ * Uses dense iteration over the packed trigger store.
  *
  * @param eid - The entity to check
  * @returns Array of entity IDs of triggers this entity is in
@@ -450,7 +599,10 @@ export function getCollidingEntities(eid: number): number[] {
  */
 export function getTriggerZones(eid: number): number[] {
 	const triggers: number[] = [];
-	for (const pair of collisionState.activeTriggers.values()) {
+	const { data } = collisionState.activeTriggers;
+	for (let i = 0; i < collisionState.activeTriggers.size; i++) {
+		const pair = data[i];
+		if (!pair) continue;
 		if (pair.entityA === eid) {
 			triggers.push(pair.entityB);
 		} else if (pair.entityB === eid) {
@@ -462,6 +614,7 @@ export function getTriggerZones(eid: number): number[] {
 
 /**
  * Checks if two specific entities are currently colliding.
+ * Uses handle-based O(1) lookup via numeric pair key.
  *
  * @param eidA - First entity
  * @param eidB - Second entity
@@ -477,7 +630,8 @@ export function getTriggerZones(eid: number): number[] {
  * ```
  */
 export function areColliding(eidA: number, eidB: number): boolean {
-	const pair = createCollisionPair(eidA, eidB, false);
-	const key = collisionPairKey(pair);
-	return collisionState.activePairs.has(key) || collisionState.activeTriggers.has(key);
+	const a = Math.min(eidA, eidB);
+	const b = Math.max(eidA, eidB);
+	const key = pairNumericKey(a, b);
+	return collisionState.pairHandles.has(key) || collisionState.triggerHandles.has(key);
 }

@@ -6,7 +6,9 @@ import {
 	areColliding,
 	collisionSystem,
 	detectCollisions,
+	getActiveCollisionCount,
 	getActiveCollisions,
+	getActiveTriggerCount,
 	getActiveTriggers,
 	getCollidingEntities,
 	getCollisionEventBus,
@@ -267,8 +269,9 @@ describe('Collision System', () => {
 	});
 
 	describe('getActiveCollisions', () => {
-		it('should return empty map when no collisions', () => {
+		it('should return store with size 0 when no collisions', () => {
 			expect(getActiveCollisions().size).toBe(0);
+			expect(getActiveCollisionCount()).toBe(0);
 		});
 
 		it('should track active collisions', () => {
@@ -282,12 +285,32 @@ describe('Collision System', () => {
 			collisionSystem(world);
 
 			expect(getActiveCollisions().size).toBe(1);
+			expect(getActiveCollisionCount()).toBe(1);
+		});
+
+		it('should provide dense data array for iteration', () => {
+			const e1 = addEntity(world);
+			const e2 = addEntity(world);
+			setPosition(world, e1, 0, 0);
+			setPosition(world, e2, 0, 0);
+			setCollider(world, e1, { width: 2, height: 2 });
+			setCollider(world, e2, { width: 2, height: 2 });
+
+			collisionSystem(world);
+
+			const store = getActiveCollisions();
+			expect(store.data.length).toBeGreaterThanOrEqual(1);
+			const pair = store.data[0];
+			expect(pair).toBeDefined();
+			expect(pair?.entityA).toBe(Math.min(e1, e2));
+			expect(pair?.entityB).toBe(Math.max(e1, e2));
 		});
 	});
 
 	describe('getActiveTriggers', () => {
-		it('should return empty map when no triggers', () => {
+		it('should return store with size 0 when no triggers', () => {
 			expect(getActiveTriggers().size).toBe(0);
+			expect(getActiveTriggerCount()).toBe(0);
 		});
 
 		it('should track active triggers', () => {
@@ -301,6 +324,7 @@ describe('Collision System', () => {
 			collisionSystem(world);
 
 			expect(getActiveTriggers().size).toBe(1);
+			expect(getActiveTriggerCount()).toBe(1);
 		});
 	});
 
@@ -455,6 +479,128 @@ describe('Collision System', () => {
 
 			expect(getActiveCollisions().size).toBe(0);
 			expect(getActiveTriggers().size).toBe(0);
+		});
+	});
+
+	describe('PackedStore collision lifecycle', () => {
+		it('should correctly handle add-remove-add cycle for same pair', () => {
+			const bus = getCollisionEventBus();
+			const startHandler = vi.fn();
+			const endHandler = vi.fn();
+			bus.on('collisionStart', startHandler);
+			bus.on('collisionEnd', endHandler);
+
+			const e1 = addEntity(world);
+			const e2 = addEntity(world);
+			setPosition(world, e1, 0, 0);
+			setPosition(world, e2, 0, 0);
+			setCollider(world, e1, { width: 2, height: 2 });
+			setCollider(world, e2, { width: 2, height: 2 });
+
+			// Frame 1: collision starts
+			collisionSystem(world);
+			expect(startHandler).toHaveBeenCalledTimes(1);
+			expect(getActiveCollisionCount()).toBe(1);
+
+			// Frame 2: entities separate
+			setPosition(world, e2, 100, 100);
+			collisionSystem(world);
+			expect(endHandler).toHaveBeenCalledTimes(1);
+			expect(getActiveCollisionCount()).toBe(0);
+
+			// Frame 3: entities collide again (reuses freed slot in PackedStore)
+			setPosition(world, e2, 0, 0);
+			collisionSystem(world);
+			expect(startHandler).toHaveBeenCalledTimes(2);
+			expect(getActiveCollisionCount()).toBe(1);
+
+			bus.off('collisionStart', startHandler);
+			bus.off('collisionEnd', endHandler);
+		});
+
+		it('should correctly handle multiple pairs with interleaved removal', () => {
+			const bus = getCollisionEventBus();
+			const endHandler = vi.fn();
+			bus.on('collisionEnd', endHandler);
+
+			const e1 = addEntity(world);
+			const e2 = addEntity(world);
+			const e3 = addEntity(world);
+			setPosition(world, e1, 0, 0);
+			setPosition(world, e2, 0, 0);
+			setPosition(world, e3, 0, 0);
+			setCollider(world, e1, { width: 2, height: 2 });
+			setCollider(world, e2, { width: 2, height: 2 });
+			setCollider(world, e3, { width: 2, height: 2 });
+
+			// Frame 1: all three pairs active
+			collisionSystem(world);
+			expect(getActiveCollisionCount()).toBe(3);
+
+			// Frame 2: e2 moves away (e1-e2 and e2-e3 end, e1-e3 stays)
+			setPosition(world, e2, 100, 100);
+			collisionSystem(world);
+			expect(endHandler).toHaveBeenCalledTimes(2);
+			expect(getActiveCollisionCount()).toBe(1);
+			expect(areColliding(e1, e3)).toBe(true);
+			expect(areColliding(e1, e2)).toBe(false);
+
+			bus.off('collisionEnd', endHandler);
+		});
+
+		it('should handle mixed trigger and solid pairs correctly', () => {
+			const bus = getCollisionEventBus();
+			const collisionStart = vi.fn();
+			const triggerEnter = vi.fn();
+			bus.on('collisionStart', collisionStart);
+			bus.on('triggerEnter', triggerEnter);
+
+			const solid1 = addEntity(world);
+			const solid2 = addEntity(world);
+			const trigger1 = addEntity(world);
+			setPosition(world, solid1, 0, 0);
+			setPosition(world, solid2, 0, 0);
+			setPosition(world, trigger1, 0, 0);
+			setCollider(world, solid1, { width: 2, height: 2 });
+			setCollider(world, solid2, { width: 2, height: 2 });
+			setCollider(world, trigger1, { width: 2, height: 2, isTrigger: true });
+
+			collisionSystem(world);
+
+			// solid1-solid2 is a solid collision
+			expect(collisionStart).toHaveBeenCalledTimes(1);
+			// solid1-trigger1 and solid2-trigger1 are triggers
+			expect(triggerEnter).toHaveBeenCalledTimes(2);
+			expect(getActiveCollisionCount()).toBe(1);
+			expect(getActiveTriggerCount()).toBe(2);
+
+			bus.off('collisionStart', collisionStart);
+			bus.off('triggerEnter', triggerEnter);
+		});
+
+		it('should provide dense data for cache-friendly iteration', () => {
+			const e1 = addEntity(world);
+			const e2 = addEntity(world);
+			const e3 = addEntity(world);
+			setPosition(world, e1, 0, 0);
+			setPosition(world, e2, 0, 0);
+			setPosition(world, e3, 0, 0);
+			setCollider(world, e1, { width: 2, height: 2 });
+			setCollider(world, e2, { width: 2, height: 2 });
+			setCollider(world, e3, { width: 2, height: 2 });
+
+			collisionSystem(world);
+
+			const store = getActiveCollisions();
+			// Dense data array should contain exactly 3 pairs (no gaps)
+			expect(store.size).toBe(3);
+			for (let i = 0; i < store.size; i++) {
+				const pair = store.data[i];
+				expect(pair).toBeDefined();
+				expect(pair?.entityA).toBeDefined();
+				expect(pair?.entityB).toBeDefined();
+				expect(pair?.isTrigger).toBe(false);
+			}
 		});
 	});
 });

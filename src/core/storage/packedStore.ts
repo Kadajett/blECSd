@@ -153,12 +153,12 @@ export function addToStore<T>(store: PackedStore<T>, value: T): PackedHandle {
 	data.push(value);
 	store.dataIndex[newIndex] = dataPos;
 	store.id[dataPos] = newIndex;
-	// Generation starts at 0 (already initialized)
 
 	store.size++;
 	store.capacity = Math.max(store.capacity, store.size);
 
-	return { index: newIndex, gen: 0 };
+	// Use actual generation (may be >0 after clearStore preserved generations)
+	return { index: newIndex, gen: safeGet(generations, newIndex, 0) };
 }
 
 /**
