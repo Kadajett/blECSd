@@ -5,6 +5,7 @@
 
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { parseColor } from '../utils/color';
 
 /** Default entity capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;
@@ -192,51 +193,6 @@ export interface BorderData {
 	readonly charBottomRight: number;
 	readonly charHorizontal: number;
 	readonly charVertical: number;
-}
-
-/**
- * Parses a color value (hex string or number) to a packed color.
- */
-function parseColor(color: string | number): number {
-	if (typeof color === 'string') {
-		return hexToColor(color);
-	}
-	return color;
-}
-
-/**
- * Converts a hex color string to a packed 32-bit color.
- */
-function hexToColor(hex: string): number {
-	const clean = hex.replace('#', '');
-	let r: number;
-	let g: number;
-	let b: number;
-	let a = 255;
-
-	if (clean.length === 3 || clean.length === 4) {
-		const c0 = clean.charAt(0);
-		const c1 = clean.charAt(1);
-		const c2 = clean.charAt(2);
-		r = Number.parseInt(c0 + c0, 16);
-		g = Number.parseInt(c1 + c1, 16);
-		b = Number.parseInt(c2 + c2, 16);
-		if (clean.length === 4) {
-			const c3 = clean.charAt(3);
-			a = Number.parseInt(c3 + c3, 16);
-		}
-	} else if (clean.length === 6 || clean.length === 8) {
-		r = Number.parseInt(clean.slice(0, 2), 16);
-		g = Number.parseInt(clean.slice(2, 4), 16);
-		b = Number.parseInt(clean.slice(4, 6), 16);
-		if (clean.length === 8) {
-			a = Number.parseInt(clean.slice(6, 8), 16);
-		}
-	} else {
-		return 0;
-	}
-
-	return ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
 }
 
 /**

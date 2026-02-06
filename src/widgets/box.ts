@@ -21,9 +21,10 @@ import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
 import { setPadding } from '../components/padding';
 import { moveBy, setPosition } from '../components/position';
-import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
+import { markDirty, setStyle, setVisible } from '../components/renderable';
 import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { parseColor } from '../utils/color';
 
 // =============================================================================
 // TYPES
@@ -263,16 +264,6 @@ export const Box = {
 // =============================================================================
 // INTERNAL HELPERS
 // =============================================================================
-
-/**
- * Parses a color value to a packed 32-bit color.
- */
-function parseColor(color: string | number): number {
-	if (typeof color === 'string') {
-		return hexToColor(color);
-	}
-	return color;
-}
 
 /**
  * Converts align string to TextAlign enum.

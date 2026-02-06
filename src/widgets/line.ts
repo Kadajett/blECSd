@@ -12,9 +12,10 @@ import { setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
 import { moveBy, setPosition } from '../components/position';
-import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
+import { markDirty, setStyle, setVisible } from '../components/renderable';
 import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { parseColor } from '../utils/color';
 
 // =============================================================================
 // TYPES
@@ -176,16 +177,6 @@ const lineCharStore = new Map<Entity, string>();
 // =============================================================================
 // INTERNAL HELPERS
 // =============================================================================
-
-/**
- * Parses a color value to a packed 32-bit color.
- */
-function parseColor(color: string | number): number {
-	if (typeof color === 'string') {
-		return hexToColor(color);
-	}
-	return color;
-}
 
 /**
  * Parses a position value to a number.

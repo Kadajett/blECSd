@@ -48,7 +48,7 @@ import {
 import { setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { setPosition } from '../components/position';
-import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
+import { markDirty, setStyle, setVisible } from '../components/renderable';
 import {
 	type CursorShape,
 	clearTerminal,
@@ -72,6 +72,7 @@ import {
 import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import type { Cell } from '../terminal/screen/cell';
+import { parseColor } from '../utils/color';
 
 // =============================================================================
 // TYPES
@@ -369,16 +370,6 @@ const ptyStateMap = new Map<Entity, PtyState>();
 // =============================================================================
 // INTERNAL HELPERS
 // =============================================================================
-
-/**
- * Parses a color value to a packed 32-bit color.
- */
-function parseColor(color: string | number): number {
-	if (typeof color === 'string') {
-		return hexToColor(color);
-	}
-	return color;
-}
 
 /**
  * Parses a position value to a number.

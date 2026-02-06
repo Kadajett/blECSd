@@ -13,9 +13,10 @@ import { setDimensions, setShrink } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
 import { moveBy, setPosition } from '../components/position';
-import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
+import { markDirty, setStyle, setVisible } from '../components/renderable';
 import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { parseColor } from '../utils/color';
 import {
 	type BitmapFont,
 	BitmapFontSchema,
@@ -190,16 +191,6 @@ export const BigText = {
 const DEFAULT_FONT_NAME = 'terminus-14-bold';
 const fontPathCache = new Map<string, FontDefinition>();
 const sourceTextStore = new Map<Entity, string>();
-
-/**
- * Parses a color value to a packed 32-bit color.
- */
-function parseColor(color: string | number): number {
-	if (typeof color === 'string') {
-		return hexToColor(color);
-	}
-	return color;
-}
 
 /**
  * Parses a position string into a numeric value (defaults to 0).
