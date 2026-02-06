@@ -23,9 +23,10 @@ import { setContent, TextAlign, TextVAlign } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { setPadding } from '../components/padding';
 import { moveBy, setPosition } from '../components/position';
-import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
+import { markDirty, setStyle, setVisible } from '../components/renderable';
 import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { parseColor } from '../utils/color';
 
 // =============================================================================
 // TYPES
@@ -266,16 +267,6 @@ const modalStack: Entity[] = [];
 // =============================================================================
 // INTERNAL HELPERS
 // =============================================================================
-
-/**
- * Parses a color value to a packed 32-bit color.
- */
-function parseColor(color: string | number): number {
-	if (typeof color === 'string') {
-		return hexToColor(color);
-	}
-	return color;
-}
 
 /**
  * Converts border charset name to actual charset.

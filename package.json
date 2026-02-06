@@ -1,7 +1,7 @@
 {
   "name": "blecsd",
-  "version": "0.0.1",
-  "description": "A modern terminal game library built on TypeScript and ECS architecture",
+  "version": "0.1.0",
+  "description": "A modern, high-performance terminal UI library built on TypeScript and ECS architecture",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -60,6 +60,7 @@
   },
   "files": [
     "dist",
+    "!dist/**/*.map",
     "README.md",
     "LICENSE",
     "templates"
@@ -83,22 +84,28 @@
   "keywords": [
     "terminal",
     "tui",
-    "game",
     "ecs",
-    "curses",
     "cli",
-    "console"
+    "ui",
+    "ncurses",
+    "curses",
+    "console",
+    "dashboard",
+    "widget",
+    "game",
+    "blessed"
   ],
+  "sideEffects": false,
   "author": "Jeremy Stover",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kadajett/blessed.git"
+    "url": "git+https://github.com/Kadajett/blECSd.git"
   },
   "bugs": {
-    "url": "https://github.com/kadajett/blessed/issues"
+    "url": "https://github.com/Kadajett/blECSd/issues"
   },
-  "homepage": "https://github.com/kadajett/blessed#readme",
+  "homepage": "https://github.com/Kadajett/blECSd#readme",
   "engines": {
     "node": ">=22.0.0"
   },

@@ -39,6 +39,8 @@ export {
 	queueChange,
 	replaceChange,
 } from './changeCoalescing';
+// Color utilities
+export { colorToHex, hexToColor, packColor, parseColor, unpackColor } from './color';
 // Component storage
 export type {
 	ComponentMemoryReport,

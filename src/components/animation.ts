@@ -6,6 +6,7 @@
 
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { AnimationOptionsSchema } from '../schemas/components';
 import { Sprite, setFrame } from './sprite';
 
 /** Default entity capacity for typed arrays */
@@ -127,6 +128,7 @@ export function resetAnimationStore(): void {
  * ```
  */
 export function registerAnimation(options: AnimationOptions): number {
+	AnimationOptionsSchema.parse(options);
 	const id = nextAnimationId++;
 
 	// Calculate total duration
