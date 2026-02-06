@@ -112,6 +112,8 @@ export interface DividerState {
 	dragStartPos: number;
 	/** Ratio at drag start */
 	dragStartRatio: number;
+	/** Snapshot of all ratios at drag start, used for absolute delta calculation */
+	dragStartRatios: readonly number[];
 }
 
 /**
@@ -345,7 +347,20 @@ function parseColor(color: string | number): number {
 function parsePositionToNumber(value: string | number | undefined): number {
 	if (value === undefined) return 0;
 	if (typeof value === 'number') return value;
+
+	// Handle keyword positions
 	if (value === 'left' || value === 'top') return 0;
+	if (value === 'center') return 50;
+	if (value === 'right' || value === 'bottom') return 100;
+
+	// Handle percentage strings like "50%"
+	if (typeof value === 'string' && value.endsWith('%')) {
+		const numericPortion = Number.parseFloat(value.slice(0, -1));
+		if (!Number.isNaN(numericPortion)) {
+			return numericPortion;
+		}
+	}
+
 	return 0;
 }
 
@@ -399,9 +414,14 @@ function computeViewports(
 	const clampedSpace = Math.max(0, availableSpace);
 	const viewports: PaneViewport[] = [];
 	let offset = 0;
+	let usedPaneSpace = 0;
 
 	for (let i = 0; i < paneCount; i++) {
-		const paneSize = Math.max(1, Math.round(clampedSpace * (ratios[i] ?? 0)));
+		const isLastPane = i === paneCount - 1;
+		// Last pane fills remaining pane space to avoid rounding gaps
+		const paneSize = isLastPane
+			? Math.max(1, clampedSpace - usedPaneSpace)
+			: Math.max(1, Math.round(clampedSpace * (ratios[i] ?? 0)));
 
 		if (direction === 'horizontal') {
 			viewports.push({
@@ -420,7 +440,8 @@ function computeViewports(
 		}
 
 		offset += paneSize;
-		if (i < paneCount - 1) {
+		usedPaneSpace += paneSize;
+		if (!isLastPane) {
 			offset += dividerSize;
 		}
 	}
@@ -734,6 +755,7 @@ export function createSplitPane(
 				dragging: false,
 				dragStartPos: 0,
 				dragStartRatio: 0,
+				dragStartRatios: [],
 			});
 			dividerStateStore.set(eid, dividers);
 		}
@@ -924,6 +946,7 @@ export function createSplitPane(
 			divider.dragging = true;
 			divider.dragStartPos = position;
 			divider.dragStartRatio = divider.ratio;
+			divider.dragStartRatios = [...currentRatios];
 			return widget;
 		},
 
@@ -938,12 +961,14 @@ export function createSplitPane(
 			const totalDividerSpace = dividerSize * (currentRatios.length - 1);
 			const availableSpace = Math.max(1, totalSpace - totalDividerSpace);
 
+			// Apply absolute delta from start position to the original ratios
+			// to prevent compounding on multiple updateDrag calls
 			const posDelta = position - divider.dragStartPos;
 			const ratioDelta = posDelta / availableSpace;
 
 			const oldViewports = (paneStateStore.get(eid) ?? []).map((p) => p.viewport);
 			currentRatios = clampRatioChange(
-				currentRatios,
+				divider.dragStartRatios,
 				dividerIndex,
 				ratioDelta,
 				minPaneSize,
@@ -981,6 +1006,7 @@ export function createSplitPane(
 			divider.dragging = false;
 			divider.dragStartPos = 0;
 			divider.dragStartRatio = 0;
+			divider.dragStartRatios = [];
 			return widget;
 		},
 
@@ -1119,11 +1145,16 @@ export function getSplitDirection(_world: World, eid: Entity): SplitDirection {
 }
 
 /**
- * Creates a shared text buffer for memory-efficient content sharing.
+ * Creates or retrieves a shared text buffer for memory-efficient content sharing.
+ *
+ * If a buffer with the given ID already exists, the existing buffer is returned
+ * without modifying its refCount. New buffers are created with refCount = 0.
+ * The caller is responsible for incrementing refCount via `attachBuffer()` on
+ * the split pane widget.
  *
  * @param id - Unique buffer identifier
- * @param lines - Initial lines of text
- * @returns The shared text buffer
+ * @param lines - Initial lines of text (ignored if buffer already exists)
+ * @returns The shared text buffer (new or existing)
  *
  * @example
  * ```typescript
