@@ -575,6 +575,7 @@ export type {
 	EmitterOptions,
 	ParticleData,
 	ParticleOptions,
+	TrackedParticle,
 } from './particle';
 export {
 	activateEmitter,
@@ -584,6 +585,7 @@ export {
 	getParticle,
 	getParticleColor,
 	getParticleProgress,
+	getParticleTrackingStore,
 	hasEmitter,
 	hasParticle,
 	interpolateColor,

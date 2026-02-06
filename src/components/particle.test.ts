@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
+import { getStoreData } from '../core/storage/packedStore';
 import type { Entity, World } from '../core/types';
 import {
 	activateEmitter,
@@ -9,6 +10,7 @@ import {
 	getParticle,
 	getParticleColor,
 	getParticleProgress,
+	getParticleTrackingStore,
 	hasEmitter,
 	hasParticle,
 	interpolateColor,
@@ -413,6 +415,60 @@ describe('ParticleEmitter component', () => {
 
 		it('returns empty set for entity without tracked particles', () => {
 			expect(getEmitterParticles(eid).size).toBe(0);
+		});
+
+		it('getParticleTrackingStore exposes dense data for iteration', () => {
+			const p1 = addEntity(world);
+			const p2 = addEntity(world);
+
+			trackParticle(eid, p1);
+			trackParticle(eid, p2);
+
+			const store = getParticleTrackingStore();
+			expect(store.size).toBe(2);
+
+			const data = getStoreData(store);
+			const ids = new Set<number>();
+			for (let i = 0; i < store.size; i++) {
+				const entry = data[i];
+				if (entry) ids.add(entry.particleId);
+			}
+			expect(ids.has(p1)).toBe(true);
+			expect(ids.has(p2)).toBe(true);
+		});
+
+		it('generation-based handles invalidate after removal', () => {
+			const p1 = addEntity(world);
+			const p2 = addEntity(world);
+
+			trackParticle(eid, p1);
+			trackParticle(eid, p2);
+			expect(getEmitterParticles(eid).size).toBe(2);
+
+			// Remove p1, then add a new particle to reuse the slot
+			untrackParticle(eid, p1);
+			expect(getEmitterParticles(eid).size).toBe(1);
+
+			// Add a new particle that may reuse the freed slot
+			const p3 = addEntity(world);
+			trackParticle(eid, p3);
+			expect(getEmitterParticles(eid).size).toBe(2);
+			expect(getEmitterParticles(eid).has(p3)).toBe(true);
+			expect(getEmitterParticles(eid).has(p1)).toBe(false);
+		});
+
+		it('tracks particles from multiple emitters independently', () => {
+			const emitter2 = addEntity(world);
+			const p1 = addEntity(world);
+			const p2 = addEntity(world);
+
+			trackParticle(eid, p1);
+			trackParticle(emitter2, p2);
+
+			expect(getEmitterParticles(eid).size).toBe(1);
+			expect(getEmitterParticles(eid).has(p1)).toBe(true);
+			expect(getEmitterParticles(emitter2).size).toBe(1);
+			expect(getEmitterParticles(emitter2).has(p2)).toBe(true);
 		});
 	});
 });

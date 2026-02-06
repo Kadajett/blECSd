@@ -10,18 +10,21 @@
 import {
 	type EmitterAppearance,
 	getEmitterAppearance,
+	getParticleTrackingStore,
 	hasEmitter,
 	hasParticle,
 	isParticleDead,
 	Particle,
 	ParticleEmitter,
 	setParticle,
+	type TrackedParticle,
 	trackParticle,
 	untrackParticle,
 } from '../components/particle';
 import { hasPosition, Position, setPosition } from '../components/position';
 import { hasVelocity, setVelocity, Velocity } from '../components/velocity';
 import { addEntity, hasComponent, removeEntity } from '../core/ecs';
+import { getStoreData } from '../core/storage/packedStore';
 import type { Entity, System, World } from '../core/types';
 
 // =============================================================================
@@ -300,19 +303,77 @@ function updateParticle(world: World, eid: Entity, delta: number): void {
 	}
 }
 
+/**
+ * Ages and moves all tracked particles using the store's dense data array.
+ * Returns a set of processed particle IDs to avoid double-processing.
+ */
+function updateTrackedParticles(
+	world: World,
+	storeData: readonly TrackedParticle[],
+	storeSize: number,
+	delta: number,
+	processedIds: Set<number>,
+): void {
+	for (let i = 0; i < storeSize; i++) {
+		const entry = storeData[i];
+		if (!entry) continue;
+		const eid = entry.particleId as Entity;
+		if (!hasParticle(world, eid)) continue;
+		processedIds.add(eid);
+		ageParticle(world, eid, delta);
+		moveParticle(world, eid, delta);
+	}
+}
+
+/**
+ * Kills dead tracked particles. Iterates backward for swap-and-pop safety.
+ */
+function killDeadTrackedParticles(
+	world: World,
+	storeData: readonly TrackedParticle[],
+	storeSize: number,
+): void {
+	for (let i = storeSize - 1; i >= 0; i--) {
+		const entry = storeData[i];
+		if (!entry) continue;
+		const eid = entry.particleId as Entity;
+		if (hasParticle(world, eid)) {
+			if (isParticleDead(world, eid)) {
+				killParticle(world, eid);
+			}
+		} else {
+			// Stale entry: particle lost its component, just untrack
+			untrackParticle(entry.emitterId as Entity, eid);
+		}
+	}
+}
+
 export function createParticleSystem(config: ParticleSystemConfig): System {
 	const maxParticles = config.maxParticles ?? 1000;
+	const processedIds = new Set<number>();
 
 	return (world: World): World => {
 		const delta = 1 / 60;
 		const emitters = config.emitters(world);
-		const particles = config.particles(world);
+		const store = getParticleTrackingStore();
+		const storeData = getStoreData(store) as readonly TrackedParticle[];
 
-		// Process emitters (rate-based spawning)
-		processEmitters(world, emitters, delta, maxParticles, particles.length);
+		// Get all particles up-front so we count both tracked and untracked
+		const providedParticles = config.particles(world);
 
-		// Update and remove dead particles
-		for (const eid of particles) {
+		// Process emitters (rate-based spawning) with total particle count
+		processEmitters(world, emitters, delta, maxParticles, providedParticles.length);
+
+		// Phase 1: Age and move tracked particles (linear for-loop, cache-friendly)
+		processedIds.clear();
+		updateTrackedParticles(world, storeData, store.size, delta, processedIds);
+
+		// Phase 2: Kill dead tracked particles (backward for swap-and-pop safety)
+		killDeadTrackedParticles(world, storeData, store.size);
+
+		// Phase 3: Process any untracked particles from the EntityProvider
+		for (const eid of providedParticles) {
+			if (processedIds.has(eid)) continue;
 			updateParticle(world, eid, delta);
 		}
 

@@ -9,6 +9,13 @@
  */
 
 import { addComponent, hasComponent, removeComponent } from '../core/ecs';
+import type { PackedHandle, PackedStore } from '../core/storage/packedStore';
+import {
+	addToStore,
+	createPackedStore,
+	getStoreData,
+	removeFromStore,
+} from '../core/storage/packedStore';
 import type { Entity, World } from '../core/types';
 
 /** Default entity capacity for typed arrays */
@@ -194,14 +201,42 @@ export interface EmitterAppearance {
 }
 
 // =============================================================================
+// TYPES (tracked particle)
+// =============================================================================
+
+/**
+ * Data stored per tracked particle in the packed store.
+ * Associates a particle entity with the emitter that spawned it.
+ *
+ * @example
+ * ```typescript
+ * import { getParticleTrackingStore, getStoreData } from 'blecsd';
+ *
+ * const store = getParticleTrackingStore();
+ * const data = getStoreData(store);
+ * for (let i = 0; i < store.size; i++) {
+ *   const entry = data[i];
+ *   if (entry) console.log(entry.particleId, entry.emitterId);
+ * }
+ * ```
+ */
+export interface TrackedParticle {
+	readonly particleId: number;
+	readonly emitterId: number;
+}
+
+// =============================================================================
 // SIDE STORES
 // =============================================================================
 
 /** Map of emitter entity ID to appearance config */
 const emitterAppearances = new Map<number, EmitterAppearance>();
 
-/** Map of emitter entity ID to spawned particle entity IDs */
-const emitterParticles = new Map<number, Set<number>>();
+/** Packed store of all tracked particles (dense, cache-friendly iteration) */
+let particleTrackingStore: PackedStore<TrackedParticle> = createPackedStore<TrackedParticle>(256);
+
+/** Index from particle entity ID to its PackedHandle (for O(1) removal) */
+const particleHandleIndex = new Map<number, PackedHandle>();
 
 // =============================================================================
 // PARTICLE HELPERS
@@ -289,13 +324,11 @@ export function hasParticle(world: World, eid: Entity): boolean {
  */
 export function removeParticle(world: World, eid: Entity): Entity {
 	if (hasComponent(world, eid, Particle)) {
-		// Remove from emitter tracking
-		const emitterId = Particle.emitter[eid] as number;
-		if (emitterId > 0) {
-			const particles = emitterParticles.get(emitterId);
-			if (particles) {
-				particles.delete(eid);
-			}
+		// Remove from packed tracking store
+		const handle = particleHandleIndex.get(eid);
+		if (handle) {
+			removeFromStore(particleTrackingStore, handle);
+			particleHandleIndex.delete(eid);
 		}
 		removeComponent(world, eid, Particle);
 	}
@@ -470,7 +503,24 @@ export function removeEmitter(world: World, eid: Entity): Entity {
 	if (hasComponent(world, eid, ParticleEmitter)) {
 		removeComponent(world, eid, ParticleEmitter);
 		emitterAppearances.delete(eid);
-		emitterParticles.delete(eid);
+
+		// Remove all tracked particles belonging to this emitter from the store.
+		// Collect handles first, then remove (swap-and-pop safe).
+		const data = getStoreData(particleTrackingStore);
+		const toRemove: Array<{ handle: PackedHandle; particleId: number }> = [];
+		for (let i = 0; i < particleTrackingStore.size; i++) {
+			const entry = data[i];
+			if (entry && entry.emitterId === eid) {
+				const handle = particleHandleIndex.get(entry.particleId);
+				if (handle) {
+					toRemove.push({ handle, particleId: entry.particleId });
+				}
+			}
+		}
+		for (const item of toRemove) {
+			removeFromStore(particleTrackingStore, item.handle);
+			particleHandleIndex.delete(item.particleId);
+		}
 	}
 	return eid;
 }
@@ -494,30 +544,87 @@ export function getEmitterAppearance(eid: Entity): EmitterAppearance | undefined
 
 /**
  * Gets the set of particle entity IDs spawned by an emitter.
+ *
+ * Iterates the packed store's dense data array using a linear for-loop
+ * and collects particles matching the given emitter.
+ *
+ * @param eid - The emitter entity ID
+ * @returns ReadonlySet of particle entity IDs belonging to this emitter
+ *
+ * @example
+ * ```typescript
+ * import { getEmitterParticles } from 'blecsd';
+ *
+ * const particles = getEmitterParticles(emitterEntity);
+ * for (const pid of particles) {
+ *   console.log('tracked particle:', pid);
+ * }
+ * ```
  */
 export function getEmitterParticles(eid: Entity): ReadonlySet<number> {
-	return emitterParticles.get(eid) ?? new Set();
+	const result = new Set<number>();
+	const data = getStoreData(particleTrackingStore);
+	for (let i = 0; i < particleTrackingStore.size; i++) {
+		const entry = data[i];
+		if (entry && entry.emitterId === eid) {
+			result.add(entry.particleId);
+		}
+	}
+	return result;
 }
 
 /**
  * Tracks a particle as belonging to an emitter.
+ *
+ * Adds the particle to the packed store and records the handle
+ * in the index for O(1) removal later.
+ *
+ * @param emitterId - The emitter entity ID
+ * @param particleId - The particle entity ID
+ *
+ * @example
+ * ```typescript
+ * import { trackParticle } from 'blecsd';
+ *
+ * trackParticle(emitterEntity, particleEntity);
+ * ```
  */
 export function trackParticle(emitterId: Entity, particleId: Entity): void {
-	let particles = emitterParticles.get(emitterId);
-	if (!particles) {
-		particles = new Set();
-		emitterParticles.set(emitterId, particles);
+	// Remove old entry if already tracked (prevent duplicates)
+	const existing = particleHandleIndex.get(particleId);
+	if (existing) {
+		removeFromStore(particleTrackingStore, existing);
+		particleHandleIndex.delete(particleId);
 	}
-	particles.add(particleId);
+
+	const handle = addToStore(particleTrackingStore, {
+		particleId,
+		emitterId,
+	});
+	particleHandleIndex.set(particleId, handle);
 }
 
 /**
  * Untracks a particle from its emitter.
+ *
+ * Removes the particle from the packed store using its handle.
+ * The generation is bumped so any outstanding handles become invalid.
+ *
+ * @param _emitterId - The emitter entity ID (unused, kept for API compat)
+ * @param particleId - The particle entity ID
+ *
+ * @example
+ * ```typescript
+ * import { untrackParticle } from 'blecsd';
+ *
+ * untrackParticle(emitterEntity, particleEntity);
+ * ```
  */
-export function untrackParticle(emitterId: Entity, particleId: Entity): void {
-	const particles = emitterParticles.get(emitterId);
-	if (particles) {
-		particles.delete(particleId);
+export function untrackParticle(_emitterId: Entity, particleId: Entity): void {
+	const handle = particleHandleIndex.get(particleId);
+	if (handle) {
+		removeFromStore(particleTrackingStore, handle);
+		particleHandleIndex.delete(particleId);
 	}
 }
 
@@ -577,9 +684,39 @@ export function setEmitterGravity(world: World, eid: Entity, gravity: number): v
 }
 
 /**
+ * Returns the packed store used for particle tracking.
+ *
+ * The store's dense data array can be iterated with a linear for-loop
+ * via `getStoreData()` for cache-friendly per-frame processing.
+ *
+ * @returns The packed store of tracked particles
+ *
+ * @example
+ * ```typescript
+ * import { getParticleTrackingStore, getStoreData } from 'blecsd';
+ *
+ * const store = getParticleTrackingStore();
+ * const data = getStoreData(store);
+ * for (let i = 0; i < store.size; i++) {
+ *   const entry = data[i];
+ *   if (entry) {
+ *     // Process entry.particleId, entry.emitterId
+ *   }
+ * }
+ * ```
+ */
+export function getParticleTrackingStore(): Readonly<PackedStore<TrackedParticle>> {
+	return particleTrackingStore;
+}
+
+/**
  * Resets all particle/emitter side stores. Useful for testing.
+ *
+ * Creates a fresh PackedStore rather than clearing, to ensure
+ * generation counters start at zero for clean test isolation.
  */
 export function resetParticleStore(): void {
 	emitterAppearances.clear();
-	emitterParticles.clear();
+	particleTrackingStore = createPackedStore<TrackedParticle>(256);
+	particleHandleIndex.clear();
 }
