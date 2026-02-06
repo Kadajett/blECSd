@@ -11,16 +11,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Changed
-- Font loading is now async via dynamic imports, saving ~3.2 MB from the main bundle
-- `createBigText()` returns `Promise<BigTextWidget>` (was synchronous)
-- `loadFont()` from `blecsd/widgets/fonts` returns `Promise<BitmapFont>` (was synchronous)
-- Root barrel simplified from 2,079 lines to ~60 lines using `export *` with disambiguations
-- Examples moved to [blECSd-Examples](https://github.com/Kadajett/blECSd-Examples) repository
-- `prepublishOnly` now uses `build:publish` (minified, no sourcemaps)
-- CLI init tool now fetches templates from `blECSd-Examples` repository
+## [0.2.0] - 2026-02-06
 
 ### Added
+
+#### PackedStore Performance Layer
+- `PackedStore<T>` data structure using the three-vector pattern (data[], dataIndex[], id[], generations[]) for O(1) add/remove with cache-friendly dense iteration
+- `createComponentStore<T>()` utility wrapping PackedStore with a Map-like API; supports iterable mode (PackedStore-backed, for hot paths) and non-iterable mode (Map-backed, for point lookups)
+- System performance benchmark suite for measuring iteration throughput across storage strategies
+
+#### PackedStore System Migrations
+- `particleSystem`: emitter tracking migrated from Map to PackedStore for faster particle tick iteration (#914)
+- `collisionSystem`: active collision/trigger pair storage migrated from Map to PackedStore with `ActivePairsView` read-only API (#912)
+- `spatialHash`: incremental update dirty set backed by PackedStore; only re-hashes moved entities instead of full rebuild every frame (#915)
+- `archetypePool`: entity recycling pool migrated to PackedStore for zero-allocation reuse (#917)
+
+#### Widget Hot Path Migrations
+- Tabs, Tree, and List widget `stateMap` stores migrated to iterable `ComponentStore` for faster per-frame iteration (#913)
+
+#### World Adapter
+- `worldAdapter` extended with `PackedQueryAdapter` for PackedStore-backed query result caching (#919)
+
+#### Publishing & Build
 - Sub-path exports: `blecsd/core`, `blecsd/debug`, `blecsd/errors`, `blecsd/input`
 - `typesVersions` fallback for older TypeScript versions
 - `getCachedFont()` for synchronous access to previously loaded fonts
@@ -30,6 +42,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - CI publish workflow (`.github/workflows/publish.yml`)
 - Pack verification script (`scripts/verify-pack.sh`)
 - Sub-module barrels now re-export deep modules (smoothScroll, visibilityCulling, bracketedPaste, clipboardManager, throttledResize, memoryProfiler, overlay, streamingText, viewport3d, widthHarness, lazyInit, archetypePool)
+- PackedStore documentation and performance notes added to README
+
+### Changed
+- Font loading is now async via dynamic imports, saving ~3.2 MB from the main bundle
+- `createBigText()` returns `Promise<BigTextWidget>` (was synchronous)
+- `loadFont()` from `blecsd/widgets/fonts` returns `Promise<BitmapFont>` (was synchronous)
+- Root barrel simplified from 2,079 lines to ~60 lines using `export *` with disambiguations
+- Examples moved to [blECSd-Examples](https://github.com/Kadajett/blECSd-Examples) repository
+- `prepublishOnly` now uses `build:publish` (minified, no sourcemaps)
+- CLI init tool now fetches templates from `blECSd-Examples` repository
+
+### Fixed
+- `addToStore` in `packedStore.ts` now reads the current generation counter instead of hardcoding `gen: 0` for new-index allocations, preventing stale handles after `clearStore` preserved bumped generations
+- `collisionSystem` `emitEndedEvents` looks up handles from `handleMap` instead of reconstructing from store internals
+- `pairNumericKey` validates entity IDs are below the 2^26 bound at runtime
+- `spatialHash` `incrementalSpatialUpdate` guards against entities missing Position/Collider components
+- `spatialHash` `setSpatialHashGrid` clears prev position caches when swapping grids
+- `spatialHash` `removeStaleEntities` simplified (Map deletion during iteration is well-defined in JS)
+- `spatialHash` `createSpatialHashSystemState` clamps `dirtyThreshold` to 0.0-1.0
 
 ### Removed
 - `examples/` directory (moved to external repo)
@@ -196,5 +227,6 @@ Initial release of blECSd, a modern terminal UI library built on ECS architectur
 - File Manager
 - Telnet Server
 
-[unreleased]: https://github.com/Kadajett/blECSd/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/Kadajett/blECSd/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Kadajett/blECSd/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Kadajett/blECSd/releases/tag/v0.1.0
