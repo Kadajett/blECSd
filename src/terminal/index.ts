@@ -236,6 +236,32 @@ export type {
 	Unsubscribe,
 } from './inputStream';
 export { createInputHandler, InputHandler, InputHandlerConfigSchema } from './inputStream';
+// Keyboard protocols
+export type {
+	KittyConfig,
+	KittyEventType,
+	KittyKeyEvent,
+	KittyModifiers,
+	KittyProtocolLevel,
+	KittyProtocolState,
+} from './keyboardProtocols';
+export {
+	activateProtocol,
+	createKittyConfig,
+	createKittyProtocolState,
+	deactivateProtocol,
+	generatePopSequence,
+	generatePushSequence,
+	generateQuerySequence,
+	isKittyKeyEvent,
+	isKittyResponse,
+	isKittySupported,
+	KittyFlags,
+	kittyKeyToName,
+	parseKittyKeyEvent,
+	parseKittyQueryResponse,
+	updateProtocolState,
+} from './keyboardProtocols';
 // Key parsing
 export type { KeyEvent as ParsedKeyEvent, KeyName } from './keyParser';
 export { isMouseSequence, KeyEventSchema, parseKeyBuffer, parseKeySequence } from './keyParser';
@@ -393,6 +419,22 @@ export {
 // Screen buffer management (internal)
 export type { CleanupCallback } from './screenBuffer';
 export { ScreenBuffer } from './screenBuffer';
+// Input sanitization
+export type { InputSanitizeOptions, SanitizeResult } from './security/inputSanitize';
+export {
+	DEFAULT_INPUT_SANITIZE_OPTIONS,
+	hasControlChars,
+	hasNullBytes,
+	InputSanitizeOptionsSchema,
+	isValidUtf8String,
+	replaceInvalidUtf16,
+	restrictToAscii,
+	sanitizeTextInput,
+	sanitizeTextInputDetailed,
+	stripC1Controls,
+	stripControlChars,
+	stripNullBytes,
+} from './security/inputSanitize';
 // Security utilities (internal)
 export type { SanitizeOptions } from './security/sanitize';
 export {

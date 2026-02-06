@@ -1305,6 +1305,23 @@ export type {
 } from './game';
 export { createGame, GameConfigSchema } from './game';
 // =============================================================================
+// INPUT - Vi Navigation Mode
+// =============================================================================
+export type {
+	ViAction,
+	ViModeConfig,
+	ViModeState,
+	ViState,
+} from './input';
+export {
+	createViConfig,
+	createViState,
+	isViKey,
+	processViKey,
+	resolveJumpTarget,
+	resolvePageAmount,
+} from './input';
+// =============================================================================
 // SCHEMAS - Zod Validation
 // =============================================================================
 export type { ColorString, Dimension, NonNegativeInt, Percentage, PositiveInt } from './schemas';
@@ -1323,6 +1340,8 @@ export type {
 	BehaviorSystemConfig,
 	// Frame budget
 	BudgetAlert,
+	// Panel movement
+	DirtyRect,
 	// Particle system
 	EntityProvider,
 	FrameBudgetConfig,
@@ -1332,6 +1351,10 @@ export type {
 	InputEventType,
 	InputSystemState,
 	MovementApplier,
+	MoveResult,
+	PanelConstraints,
+	PanelMoveConfig,
+	PanelMoveState,
 	ParticleSystemConfig,
 	PoolStats,
 	PoolTask,
@@ -1339,6 +1362,7 @@ export type {
 	QueuedInputEvent,
 	QueuedKeyEvent,
 	QueuedMouseEvent,
+	ResizeHandle,
 	SyncHandler,
 	SystemTiming,
 	TaskPriority,
@@ -1353,9 +1377,13 @@ export type {
 } from './systems';
 export {
 	ageParticle,
+	// Panel movement
+	beginMove,
+	beginResize,
 	burstParticles,
 	// Worker pool
 	cancelAllOfType,
+	cancelMoveOrResize,
 	cancelTask,
 	// Input system
 	captureMouseTo,
@@ -1381,6 +1409,9 @@ export {
 	createLayoutSystem,
 	createOutputState,
 	createOutputSystem,
+	createPanelConstraints,
+	createPanelMoveConfig,
+	createPanelMoveState,
 	// Particle system
 	createParticleSystem,
 	createRenderSystem,
@@ -1392,6 +1423,8 @@ export {
 	// Frame budget manager
 	destroyFrameBudgetManager,
 	destroyWorkerPool,
+	detectResizeHandle,
+	endMoveOrResize,
 	enterAlternateScreen,
 	exportFrameBudgetMetrics,
 	generateOutput,
@@ -1419,10 +1452,13 @@ export {
 	invalidateAllLayouts,
 	invalidateLayout,
 	isMouseCaptured,
+	keyboardMove,
+	keyboardResize,
 	killParticle,
 	layoutSystem,
 	leaveAlternateScreen,
 	markAllDirty,
+	mergeDirtyRects,
 	moveParticle,
 	onBudgetAlert,
 	outputSystem,
@@ -1462,6 +1498,8 @@ export {
 	stateMachineSystem,
 	submitTask,
 	tilemapRenderSystem,
+	updateMove,
+	updateResize,
 	updateStateAges,
 	writeRaw,
 } from './systems';
@@ -1510,24 +1548,61 @@ export {
 // =============================================================================
 export type {
 	FocusEvent,
+	// Input sanitization
+	InputSanitizeOptions,
 	KeyEvent,
 	KeyName,
+	// Kitty keyboard protocol
+	KittyConfig,
+	KittyEventType,
+	KittyKeyEvent,
+	KittyModifiers,
+	KittyProtocolLevel,
+	KittyProtocolState,
 	MouseAction,
 	MouseButton,
 	MouseEvent,
 	MouseProtocol,
 	ParsedMouseEvent,
 	ParseMouseResult,
+	SanitizeResult,
 } from './terminal';
 export {
+	activateProtocol,
+	createKittyConfig,
+	createKittyProtocolState,
+	DEFAULT_INPUT_SANITIZE_OPTIONS,
+	deactivateProtocol,
 	FocusEventSchema,
+	generatePopSequence,
+	generatePushSequence,
+	generateQuerySequence,
+	hasControlChars,
+	hasNullBytes,
+	InputSanitizeOptionsSchema,
+	isKittyKeyEvent,
+	isKittyResponse,
+	isKittySupported,
 	isMouseBuffer,
 	isMouseSequence,
+	isValidUtf8String,
 	KeyEventSchema,
+	KittyFlags,
+	kittyKeyToName,
 	MouseEventSchema,
 	parseKeyBuffer,
 	parseKeySequence,
+	parseKittyKeyEvent,
+	parseKittyQueryResponse,
 	parseMouseSequence,
+	replaceInvalidUtf16,
+	restrictToAscii,
+	sanitizeTextInput,
+	sanitizeTextInputDetailed,
+	stripC1Controls,
+	stripControlChars,
+	stripNullBytes,
+	updateProtocolState,
 } from './terminal';
 // =============================================================================
 // PERFORMANCE - Efficient Clipboard Operations

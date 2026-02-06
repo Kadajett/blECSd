@@ -5,6 +5,22 @@
  * @internal
  */
 
+// Input sanitization for untrusted text
+export type { InputSanitizeOptions, SanitizeResult } from './inputSanitize';
+export {
+	DEFAULT_INPUT_SANITIZE_OPTIONS,
+	hasControlChars,
+	hasNullBytes,
+	InputSanitizeOptionsSchema,
+	isValidUtf8String,
+	replaceInvalidUtf16,
+	restrictToAscii,
+	sanitizeTextInput,
+	sanitizeTextInputDetailed,
+	stripC1Controls,
+	stripControlChars,
+	stripNullBytes,
+} from './inputSanitize';
 export type { SanitizeOptions } from './sanitize';
 export {
 	categorizeEscapeSequences,
