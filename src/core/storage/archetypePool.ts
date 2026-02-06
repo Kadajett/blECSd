@@ -10,6 +10,15 @@
 
 import { addComponent, addEntity, hasComponent, removeComponent } from '../ecs';
 import type { Entity, World } from '../types';
+import {
+	addToStore,
+	clearStore,
+	createPackedStore,
+	getStoreData,
+	type PackedHandle,
+	type PackedStore,
+	removeFromStore,
+} from './packedStore';
 
 // =============================================================================
 // TYPES
@@ -83,8 +92,10 @@ export interface RecyclingSystemStats {
 interface ArchetypePoolState {
 	readonly definition: ArchetypeDefinition;
 	readonly config: ArchetypePoolConfig;
-	readonly freeEntities: Entity[];
-	readonly activeEntities: Set<Entity>;
+	readonly freeStore: PackedStore<Entity>;
+	readonly freeHandles: Map<number, PackedHandle>;
+	readonly activeStore: PackedStore<Entity>;
+	readonly activeHandles: Map<number, PackedHandle>;
 	totalAllocations: number;
 	totalRecycles: number;
 	maxPoolSize: number;
@@ -137,8 +148,10 @@ export function registerArchetype(
 	pools.set(definition.name, {
 		definition,
 		config: { ...DEFAULT_POOL_CONFIG, ...config },
-		freeEntities: [],
-		activeEntities: new Set(),
+		freeStore: createPackedStore<Entity>(),
+		freeHandles: new Map(),
+		activeStore: createPackedStore<Entity>(),
+		activeHandles: new Map(),
 		totalAllocations: 0,
 		totalRecycles: 0,
 		maxPoolSize: 0,
@@ -167,9 +180,10 @@ export function preallocateEntities(world: World, archetypeName: string, count?:
 		for (const comp of pool.definition.components) {
 			addComponent(world, eid, comp);
 		}
-		pool.freeEntities.push(eid);
+		const handle = addToStore(pool.freeStore, eid);
+		pool.freeHandles.set(eid, handle);
 	}
-	pool.maxPoolSize = Math.max(pool.maxPoolSize, pool.freeEntities.length);
+	pool.maxPoolSize = Math.max(pool.maxPoolSize, pool.freeStore.size);
 }
 
 /**
@@ -195,17 +209,31 @@ export function acquireEntity(world: World, archetypeName: string): Entity | nul
 	pool.totalAllocations++;
 
 	// Try to reuse from pool
-	const recycled = pool.freeEntities.pop();
-	if (recycled !== undefined) {
-		pool.totalRecycles++;
-		// Reset component data
-		if (pool.definition.resetFns) {
-			for (const resetFn of pool.definition.resetFns) {
-				resetFn(world, recycled);
+	if (pool.freeStore.size > 0) {
+		const freeData = getStoreData(pool.freeStore);
+		const recycled = freeData[pool.freeStore.size - 1];
+		if (recycled !== undefined) {
+			pool.totalRecycles++;
+
+			// Remove from free store
+			const freeHandle = pool.freeHandles.get(recycled);
+			if (freeHandle) {
+				removeFromStore(pool.freeStore, freeHandle);
+				pool.freeHandles.delete(recycled);
 			}
+
+			// Reset component data
+			if (pool.definition.resetFns) {
+				for (const resetFn of pool.definition.resetFns) {
+					resetFn(world, recycled);
+				}
+			}
+
+			// Add to active store
+			const activeHandle = addToStore(pool.activeStore, recycled);
+			pool.activeHandles.set(recycled, activeHandle);
+			return recycled;
 		}
-		pool.activeEntities.add(recycled);
-		return recycled;
 	}
 
 	// Create new entity
@@ -213,7 +241,8 @@ export function acquireEntity(world: World, archetypeName: string): Entity | nul
 	for (const comp of pool.definition.components) {
 		addComponent(world, eid, comp);
 	}
-	pool.activeEntities.add(eid);
+	const activeHandle = addToStore(pool.activeStore, eid);
+	pool.activeHandles.set(eid, activeHandle);
 	return eid;
 }
 
@@ -235,12 +264,15 @@ export function releaseEntity(world: World, archetypeName: string, eid: Entity):
 	const pool = pools.get(archetypeName);
 	if (!pool) return false;
 
-	if (!pool.activeEntities.has(eid)) return false;
+	const activeHandle = pool.activeHandles.get(eid);
+	if (!activeHandle) return false;
 
-	pool.activeEntities.delete(eid);
+	// Remove from active store
+	removeFromStore(pool.activeStore, activeHandle);
+	pool.activeHandles.delete(eid);
 
 	// Check pool size limit
-	if (pool.config.maxSize > 0 && pool.freeEntities.length >= pool.config.maxSize) {
+	if (pool.config.maxSize > 0 && pool.freeStore.size >= pool.config.maxSize) {
 		// Pool is full, actually remove the entity's components
 		for (const comp of pool.definition.components) {
 			if (hasComponent(world, eid, comp)) {
@@ -257,8 +289,9 @@ export function releaseEntity(world: World, archetypeName: string, eid: Entity):
 		}
 	}
 
-	pool.freeEntities.push(eid);
-	pool.maxPoolSize = Math.max(pool.maxPoolSize, pool.freeEntities.length);
+	const freeHandle = addToStore(pool.freeStore, eid);
+	pool.freeHandles.set(eid, freeHandle);
+	pool.maxPoolSize = Math.max(pool.maxPoolSize, pool.freeStore.size);
 	return true;
 }
 
@@ -280,8 +313,8 @@ export function getArchetypePoolStats(archetypeName: string): ArchetypePoolStats
 
 	return {
 		name: archetypeName,
-		pooled: pool.freeEntities.length,
-		active: pool.activeEntities.size,
+		pooled: pool.freeStore.size,
+		active: pool.activeStore.size,
 		totalAllocations: pool.totalAllocations,
 		totalRecycles: pool.totalRecycles,
 		hitRate: pool.totalAllocations > 0 ? pool.totalRecycles / pool.totalAllocations : 0,
@@ -336,8 +369,10 @@ export function clearArchetypePool(archetypeName: string): void {
 	const pool = pools.get(archetypeName);
 	if (!pool) return;
 
-	pool.freeEntities.length = 0;
-	pool.activeEntities.clear();
+	clearStore(pool.freeStore);
+	pool.freeHandles.clear();
+	clearStore(pool.activeStore);
+	pool.activeHandles.clear();
 }
 
 /**
@@ -349,8 +384,10 @@ export function unregisterArchetype(archetypeName: string): void {
 	const pool = pools.get(archetypeName);
 	if (!pool) return;
 
-	pool.freeEntities.length = 0;
-	pool.activeEntities.clear();
+	clearStore(pool.freeStore);
+	pool.freeHandles.clear();
+	clearStore(pool.activeStore);
+	pool.activeHandles.clear();
 	pools.delete(archetypeName);
 }
 
@@ -360,8 +397,10 @@ export function unregisterArchetype(archetypeName: string): void {
  */
 export function clearAllArchetypePools(): void {
 	for (const pool of pools.values()) {
-		pool.freeEntities.length = 0;
-		pool.activeEntities.clear();
+		clearStore(pool.freeStore);
+		pool.freeHandles.clear();
+		clearStore(pool.activeStore);
+		pool.activeHandles.clear();
 	}
 	pools.clear();
 }

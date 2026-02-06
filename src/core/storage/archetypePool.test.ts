@@ -7,6 +7,7 @@ import { createWorld } from '../world';
 import {
 	acquireEntity,
 	clearAllArchetypePools,
+	clearArchetypePool,
 	getArchetypePoolStats,
 	getRecyclingStats,
 	preallocateEntities,
@@ -183,6 +184,238 @@ describe('ArchetypePool', () => {
 			unregisterArchetype('test');
 
 			expect(getArchetypePoolStats('test')).toBeNull();
+		});
+	});
+
+	// =========================================================================
+	// PackedStore-backed behavior tests
+	// =========================================================================
+
+	describe('PackedStore integration', () => {
+		it('handles rapid acquire/release cycles without leaking handles', () => {
+			registerArchetype({
+				name: 'bullet',
+				components: [Position],
+				resetFns: [
+					(_w, e) => {
+						Position.x[e] = 0;
+						Position.y[e] = 0;
+					},
+				],
+			});
+
+			for (let cycle = 0; cycle < 50; cycle++) {
+				const eid = acquireEntity(world, 'bullet')!;
+				Position.x[eid] = cycle;
+				releaseEntity(world, 'bullet', eid);
+			}
+
+			const stats = getArchetypePoolStats('bullet')!;
+			expect(stats.pooled).toBe(1);
+			expect(stats.active).toBe(0);
+			expect(stats.totalAllocations).toBe(50);
+			expect(stats.totalRecycles).toBe(49); // First allocation is fresh
+		});
+
+		it('supports multiple concurrent entities from same pool', () => {
+			registerArchetype({ name: 'bullet', components: [Position, Velocity] });
+
+			const entities: Entity[] = [];
+			for (let i = 0; i < 20; i++) {
+				const eid = acquireEntity(world, 'bullet')!;
+				Position.x[eid] = i;
+				entities.push(eid);
+			}
+
+			const stats = getArchetypePoolStats('bullet')!;
+			expect(stats.active).toBe(20);
+			expect(stats.pooled).toBe(0);
+
+			// Release half
+			for (let i = 0; i < 10; i++) {
+				releaseEntity(world, 'bullet', entities[i]!);
+			}
+
+			const stats2 = getArchetypePoolStats('bullet')!;
+			expect(stats2.active).toBe(10);
+			expect(stats2.pooled).toBe(10);
+		});
+
+		it('recycles entities in dense order from PackedStore', () => {
+			registerArchetype({
+				name: 'bullet',
+				components: [Position],
+				resetFns: [
+					(_w, e) => {
+						Position.x[e] = 0;
+					},
+				],
+			});
+
+			// Acquire 3 entities
+			const e1 = acquireEntity(world, 'bullet')!;
+			const e2 = acquireEntity(world, 'bullet')!;
+			const e3 = acquireEntity(world, 'bullet')!;
+
+			// Release in non-sequential order
+			releaseEntity(world, 'bullet', e2);
+			releaseEntity(world, 'bullet', e1);
+			releaseEntity(world, 'bullet', e3);
+
+			const stats = getArchetypePoolStats('bullet')!;
+			expect(stats.pooled).toBe(3);
+			expect(stats.active).toBe(0);
+
+			// Re-acquire all 3 - they should come from the pool
+			const r1 = acquireEntity(world, 'bullet')!;
+			const r2 = acquireEntity(world, 'bullet')!;
+			const r3 = acquireEntity(world, 'bullet')!;
+
+			// All recycled entities should be from the original 3
+			const originalIds = new Set([e1, e2, e3]);
+			expect(originalIds.has(r1)).toBe(true);
+			expect(originalIds.has(r2)).toBe(true);
+			expect(originalIds.has(r3)).toBe(true);
+
+			const stats2 = getArchetypePoolStats('bullet')!;
+			expect(stats2.pooled).toBe(0);
+			expect(stats2.active).toBe(3);
+			expect(stats2.totalRecycles).toBe(3);
+		});
+
+		it('preallocated entities are reusable via PackedStore', () => {
+			registerArchetype({
+				name: 'bullet',
+				components: [Position],
+				resetFns: [
+					(_w, e) => {
+						Position.x[e] = 0;
+					},
+				],
+			});
+
+			preallocateEntities(world, 'bullet', 5);
+
+			const stats = getArchetypePoolStats('bullet')!;
+			expect(stats.pooled).toBe(5);
+
+			// Acquire all preallocated
+			const entities: Entity[] = [];
+			for (let i = 0; i < 5; i++) {
+				entities.push(acquireEntity(world, 'bullet')!);
+			}
+
+			const stats2 = getArchetypePoolStats('bullet')!;
+			expect(stats2.pooled).toBe(0);
+			expect(stats2.active).toBe(5);
+			expect(stats2.totalRecycles).toBe(5);
+		});
+
+		it('clearArchetypePool resets PackedStore state', () => {
+			registerArchetype({ name: 'bullet', components: [Position] });
+
+			const eid = acquireEntity(world, 'bullet')!;
+			releaseEntity(world, 'bullet', eid);
+
+			clearArchetypePool('bullet');
+
+			const stats = getArchetypePoolStats('bullet')!;
+			expect(stats.pooled).toBe(0);
+			expect(stats.active).toBe(0);
+		});
+
+		it('handles release of double-released entity gracefully', () => {
+			registerArchetype({ name: 'bullet', components: [Position] });
+
+			const eid = acquireEntity(world, 'bullet')!;
+			expect(releaseEntity(world, 'bullet', eid)).toBe(true);
+			expect(releaseEntity(world, 'bullet', eid)).toBe(false);
+
+			const stats = getArchetypePoolStats('bullet')!;
+			expect(stats.pooled).toBe(1);
+		});
+
+		it('maxPoolSize stat tracks the high watermark', () => {
+			registerArchetype({ name: 'bullet', components: [Position] });
+
+			const entities: Entity[] = [];
+			for (let i = 0; i < 10; i++) {
+				entities.push(acquireEntity(world, 'bullet')!);
+			}
+
+			// Release all to pool
+			for (const eid of entities) {
+				releaseEntity(world, 'bullet', eid);
+			}
+
+			const stats = getArchetypePoolStats('bullet')!;
+			expect(stats.maxPoolSize).toBe(10);
+
+			// Acquire some back
+			acquireEntity(world, 'bullet');
+			acquireEntity(world, 'bullet');
+
+			const stats2 = getArchetypePoolStats('bullet')!;
+			expect(stats2.maxPoolSize).toBe(10); // High watermark unchanged
+		});
+
+		it('maxSize limit removes components when pool is full', () => {
+			registerArchetype({ name: 'bullet', components: [Position] }, { maxSize: 1 });
+
+			const e1 = acquireEntity(world, 'bullet')!;
+			const e2 = acquireEntity(world, 'bullet')!;
+
+			releaseEntity(world, 'bullet', e1); // Goes to pool (size 1)
+			const released = releaseEntity(world, 'bullet', e2); // Pool full
+
+			expect(released).toBe(false);
+			expect(hasComponent(world, e2, Position)).toBe(false);
+
+			const stats = getArchetypePoolStats('bullet')!;
+			expect(stats.pooled).toBe(1);
+		});
+
+		it('interleaved acquire/release maintains consistent state', () => {
+			registerArchetype({
+				name: 'bullet',
+				components: [Position, Velocity],
+				resetFns: [
+					(_w, e) => {
+						Position.x[e] = 0;
+						Position.y[e] = 0;
+					},
+					(_w, e) => {
+						Velocity.x[e] = 0;
+						Velocity.y[e] = 0;
+					},
+				],
+			});
+
+			// Simulate a game loop: acquire some, release some, acquire more
+			const active = new Set<Entity>();
+
+			// Frame 1: spawn 5
+			for (let i = 0; i < 5; i++) {
+				active.add(acquireEntity(world, 'bullet')!);
+			}
+			expect(getArchetypePoolStats('bullet')!.active).toBe(5);
+
+			// Frame 2: kill 2, spawn 3
+			let count = 0;
+			for (const eid of active) {
+				if (count < 2) {
+					releaseEntity(world, 'bullet', eid);
+					active.delete(eid);
+				}
+				count++;
+			}
+			for (let i = 0; i < 3; i++) {
+				active.add(acquireEntity(world, 'bullet')!);
+			}
+
+			const stats = getArchetypePoolStats('bullet')!;
+			expect(stats.active).toBe(6); // 5 - 2 + 3
+			expect(stats.pooled).toBe(0); // 2 released, 2 reused by the 3 spawns
 		});
 	});
 });

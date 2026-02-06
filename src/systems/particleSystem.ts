@@ -23,7 +23,8 @@ import {
 } from '../components/particle';
 import { hasPosition, Position, setPosition } from '../components/position';
 import { hasVelocity, setVelocity, Velocity } from '../components/velocity';
-import { addEntity, hasComponent, removeEntity } from '../core/ecs';
+import { addEntity, hasComponent, removeComponent, removeEntity } from '../core/ecs';
+import { acquireEntity, releaseEntity } from '../core/storage/archetypePool';
 import { getStoreData } from '../core/storage/packedStore';
 import type { Entity, System, World } from '../core/types';
 
@@ -47,6 +48,8 @@ export interface ParticleSystemConfig {
 	readonly particles: EntityProvider;
 	/** Maximum concurrent particles (default: 1000) */
 	readonly maxParticles?: number;
+	/** Archetype pool name for zero-alloc entity recycling (optional) */
+	readonly archetypeName?: string;
 }
 
 /**
@@ -55,18 +58,27 @@ export interface ParticleSystemConfig {
  * @param world - The ECS world
  * @param emitterId - The emitter entity ID
  * @param appearance - Visual appearance config
+ * @param archetypeName - Optional archetype pool name for entity recycling
  * @returns The spawned particle entity ID, or -1 if spawn failed
  */
 export function spawnParticle(
 	world: World,
 	emitterId: Entity,
 	appearance: EmitterAppearance,
+	archetypeName?: string,
 ): Entity {
 	if (!hasComponent(world, emitterId, ParticleEmitter)) {
 		return -1 as Entity;
 	}
 
-	const eid = addEntity(world);
+	let eid: Entity;
+	if (archetypeName) {
+		const acquired = acquireEntity(world, archetypeName);
+		if (acquired === null) return -1 as Entity;
+		eid = acquired;
+	} else {
+		eid = addEntity(world);
+	}
 
 	// Pick a random character from the appearance chars
 	const charIndex = Math.floor(Math.random() * appearance.chars.length);
@@ -196,15 +208,25 @@ export function moveParticle(world: World, eid: Entity, delta: number): void {
 /**
  * Removes a dead particle and cleans up tracking.
  *
+ * When an archetype name is provided, the entity is returned to the pool
+ * instead of being fully removed from the world.
+ *
  * @param world - The ECS world
  * @param eid - The particle entity ID
+ * @param archetypeName - Optional archetype pool name for entity recycling
  */
-export function killParticle(world: World, eid: Entity): void {
+export function killParticle(world: World, eid: Entity, archetypeName?: string): void {
 	const emitterId = Particle.emitter[eid] as number;
 	if (emitterId > 0) {
 		untrackParticle(emitterId as Entity, eid);
 	}
-	removeEntity(world, eid);
+	if (archetypeName) {
+		// Remove Particle component so the entity is not returned by particle queries
+		removeComponent(world, eid, Particle);
+		releaseEntity(world, archetypeName, eid);
+	} else {
+		removeEntity(world, eid);
+	}
 }
 
 /**
@@ -248,6 +270,7 @@ function processEmitterSpawning(
 	delta: number,
 	maxParticles: number,
 	currentCount: number,
+	archetypeName?: string,
 ): number {
 	const appearance = getEmitterAppearance(emitterId);
 	if (!appearance) return currentCount;
@@ -265,7 +288,7 @@ function processEmitterSpawning(
 	while ((ParticleEmitter.accumulator[emitterId] as number) >= interval && spawned < maxParticles) {
 		ParticleEmitter.accumulator[emitterId] =
 			(ParticleEmitter.accumulator[emitterId] as number) - interval;
-		const eid = spawnParticle(world, emitterId, appearance);
+		const eid = spawnParticle(world, emitterId, appearance, archetypeName);
 		if (eid !== -1) {
 			spawned++;
 		}
@@ -280,26 +303,27 @@ function processEmitters(
 	delta: number,
 	maxParticles: number,
 	currentCount: number,
+	archetypeName?: string,
 ): number {
 	let count = currentCount;
 
 	for (const emitterId of emitters) {
 		if (!shouldProcessEmitter(world, emitterId)) continue;
 
-		count = processEmitterSpawning(world, emitterId, delta, maxParticles, count);
+		count = processEmitterSpawning(world, emitterId, delta, maxParticles, count, archetypeName);
 	}
 
 	return count;
 }
 
-function updateParticle(world: World, eid: Entity, delta: number): void {
+function updateParticle(world: World, eid: Entity, delta: number, archetypeName?: string): void {
 	if (!hasParticle(world, eid)) return;
 
 	ageParticle(world, eid, delta);
 	moveParticle(world, eid, delta);
 
 	if (isParticleDead(world, eid)) {
-		killParticle(world, eid);
+		killParticle(world, eid, archetypeName);
 	}
 }
 
@@ -332,6 +356,7 @@ function killDeadTrackedParticles(
 	world: World,
 	storeData: readonly TrackedParticle[],
 	storeSize: number,
+	archetypeName?: string,
 ): void {
 	for (let i = storeSize - 1; i >= 0; i--) {
 		const entry = storeData[i];
@@ -339,7 +364,7 @@ function killDeadTrackedParticles(
 		const eid = entry.particleId as Entity;
 		if (hasParticle(world, eid)) {
 			if (isParticleDead(world, eid)) {
-				killParticle(world, eid);
+				killParticle(world, eid, archetypeName);
 			}
 		} else {
 			// Stale entry: particle lost its component, just untrack
@@ -350,6 +375,7 @@ function killDeadTrackedParticles(
 
 export function createParticleSystem(config: ParticleSystemConfig): System {
 	const maxParticles = config.maxParticles ?? 1000;
+	const archetypeName = config.archetypeName;
 	const processedIds = new Set<number>();
 
 	return (world: World): World => {
@@ -362,19 +388,19 @@ export function createParticleSystem(config: ParticleSystemConfig): System {
 		const providedParticles = config.particles(world);
 
 		// Process emitters (rate-based spawning) with total particle count
-		processEmitters(world, emitters, delta, maxParticles, providedParticles.length);
+		processEmitters(world, emitters, delta, maxParticles, providedParticles.length, archetypeName);
 
 		// Phase 1: Age and move tracked particles (linear for-loop, cache-friendly)
 		processedIds.clear();
 		updateTrackedParticles(world, storeData, store.size, delta, processedIds);
 
 		// Phase 2: Kill dead tracked particles (backward for swap-and-pop safety)
-		killDeadTrackedParticles(world, storeData, store.size);
+		killDeadTrackedParticles(world, storeData, store.size, archetypeName);
 
 		// Phase 3: Process any untracked particles from the EntityProvider
 		for (const eid of providedParticles) {
 			if (processedIds.has(eid)) continue;
-			updateParticle(world, eid, delta);
+			updateParticle(world, eid, delta, archetypeName);
 		}
 
 		return world;
