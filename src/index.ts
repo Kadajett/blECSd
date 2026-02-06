@@ -2048,6 +2048,34 @@ export {
 	TabsConfigSchema,
 } from './widgets';
 // =============================================================================
+// WIDGETS - Split Pane
+// =============================================================================
+export type {
+	DimensionValue as SplitPaneDimensionValue,
+	DividerState,
+	PaneScrollState,
+	PaneState,
+	PaneViewport,
+	PositionValue as SplitPanePositionValue,
+	SharedTextBuffer,
+	SplitDirection,
+	SplitPaneConfig,
+	SplitPaneWidget,
+	SplitResizeEvent,
+} from './widgets/splitPane';
+export {
+	createSharedTextBuffer,
+	createSplitPane,
+	getDividerRenderInfo,
+	getSharedTextBuffer,
+	getSplitDirection,
+	hitTestDivider,
+	isSplitPane,
+	resetSplitPaneStore,
+	SplitPane,
+	SplitPaneConfigSchema,
+} from './widgets/splitPane';
+// =============================================================================
 // WIDGETS - Streaming Text Renderer
 // =============================================================================
 export type {
