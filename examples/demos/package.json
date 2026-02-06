@@ -1,0 +1,25 @@
+{
+	"name": "blecsd-demos",
+	"version": "0.0.1",
+	"description": "Widget and feature demos for blECSd",
+	"type": "module",
+	"scripts": {
+		"box-widget": "tsx box-widget-demo.ts",
+		"hover-tooltips": "tsx hover-tooltips-demo.ts",
+		"box-drawing": "tsx box-drawing-demo.ts",
+		"scrollable": "tsx scrollable-demo.ts",
+		"auto-padding": "tsx auto-padding-demo.ts",
+		"style-inheritance": "tsx style-inheritance-demo.ts",
+		"scrollable-box": "tsx scrollable-box-demo.ts",
+		"markdown-rendering": "tsx markdown-rendering-demo.ts",
+		"dimensions": "tsx dimensions-demo.ts",
+		"fast-word-wrap": "tsx fast-word-wrap-demo.ts"
+	},
+	"dependencies": {
+		"blecsd": "workspace:*"
+	},
+	"devDependencies": {
+		"tsx": "^4.19.3",
+		"typescript": "^5.8.2"
+	}
+}
