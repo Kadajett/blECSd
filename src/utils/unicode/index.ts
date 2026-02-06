@@ -77,6 +77,30 @@ export {
 	truncateByWidth,
 	truncateWithEllipsis,
 } from './stringWidth';
+export type {
+	KnownBadSequence,
+	TerminalWidthProfile,
+	WidthOverride,
+	WidthTestCase,
+	WidthTestCategory,
+	WidthTestFailure,
+	WidthTestResult,
+} from './widthHarness';
+export {
+	buildTestCorpus,
+	clearWidthOverrides,
+	filterByCategory,
+	formatTestReport,
+	getCategories,
+	getKnownBadSequences,
+	getOverrideCount,
+	getOverrideWidth,
+	installWidthOverrides,
+	measureWidthWithOverrides,
+	runWidthTests,
+	TerminalWidthProfileSchema,
+	WidthOverrideSchema,
+} from './widthHarness';
 export type { CodePointRange } from './widthTables';
 export {
 	AMBIGUOUS_RANGES,
