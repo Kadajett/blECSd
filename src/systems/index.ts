@@ -98,6 +98,26 @@ export {
 	rewindFocus,
 	saveFocus,
 } from './focusSystem';
+// Frame budget manager
+export type {
+	BudgetAlert,
+	FrameBudgetConfig,
+	FrameBudgetManager,
+	FrameStats,
+	SystemTiming,
+} from './frameBudget';
+export {
+	createFrameBudgetManager,
+	destroyFrameBudgetManager,
+	exportFrameBudgetMetrics,
+	getFrameBudgetStats,
+	onBudgetAlert,
+	profiledSystem,
+	recordFrameBudgetSystemTime,
+	recordFrameTime,
+	recordPhaseTime,
+	resetFrameBudget,
+} from './frameBudget';
 // Input system
 export type {
 	HitTestResult,
@@ -277,3 +297,22 @@ export {
 	updateLineStore,
 	virtualizedRenderSystem,
 } from './virtualizedRenderSystem';
+// Worker pool
+export type {
+	PoolStats,
+	PoolTask,
+	SyncHandler,
+	TaskPriority,
+	TaskResult,
+	WorkerPoolConfig,
+	WorkerPoolState,
+} from './workerPool';
+export {
+	cancelAllOfType,
+	cancelTask,
+	createWorkerPool,
+	destroyWorkerPool,
+	getWorkerPoolState,
+	registerTaskHandler,
+	submitTask,
+} from './workerPool';
