@@ -57,6 +57,25 @@ import {
 import { createMenuState, updateMenu, isMenuActive } from './game/menu.js';
 import { loadTitlePic, drawTitleScreen } from './render/titleScreen.js';
 import { tickProjectiles } from './game/projectiles.js';
+import {
+	createTransitionState,
+	createLevelStats,
+	triggerExit,
+	advanceToIntermission,
+	tickIntermission,
+	canSkipIntermission,
+	skipCounts,
+	advanceToLoading,
+	completeTransition,
+	isInTransition,
+	isEpisodeComplete,
+	doLoadLevel,
+	carryOverPlayerState,
+	mapExists,
+	TransitionPhase,
+} from './game/levelTransition.js';
+import { createSpecialsState, useLines, checkWalkTriggers, runSectorThinkers } from './game/specials.js';
+import { drawIntermission } from './render/intermission.js';
 
 // ─── Configuration ─────────────────────────────────────────────────
 
@@ -96,7 +115,7 @@ function main(): void {
 
 	// Load map
 	console.log(`Loading map: ${mapName}`);
-	const map = loadMap(wad, mapName);
+	let map = loadMap(wad, mapName);
 	console.log(
 		`Map loaded: ${map.vertexes.length} vertices, ${map.linedefs.length} linedefs, ` +
 		`${map.nodes.length} nodes, ${map.sectors.length} sectors, ${map.things.length} things`,
@@ -129,7 +148,7 @@ function main(): void {
 	console.log(`Sprites: ${spriteStore.sprites.size} sprite definitions`);
 
 	// Spawn map things
-	const mobjs = spawnMapThings(map, 2);
+	let mobjs = spawnMapThings(map, 2);
 	console.log(`Spawned ${mobjs.length} things`);
 
 	// Initialize enemy AI
@@ -167,6 +186,16 @@ function main(): void {
 
 	// Create menu state (game starts on title screen)
 	const menuState = createMenuState();
+
+	// Create level transition state
+	const transitionState = createTransitionState(mapName);
+	transitionState.stats = createLevelStats(mobjs);
+
+	// Create specials state (sector movers + exit detection)
+	let specialsState = createSpecialsState(player);
+	specialsState.onExit = (secret: boolean) => {
+		triggerExit(transitionState, mobjs, secret);
+	};
 
 	// Enter alt screen, hide cursor
 	process.stdout.write('\x1b[?1049h'); // alt screen
@@ -227,6 +256,117 @@ function main(): void {
 			return;
 		}
 
+		// ─── Transition: Exiting ────────────────────────────────
+		if (transitionState.phase === TransitionPhase.EXITING) {
+			advanceToIntermission(transitionState);
+		}
+
+		// ─── Transition: Intermission ───────────────────────────
+		if (transitionState.phase === TransitionPhase.INTERMISSION) {
+			tickIntermission(transitionState);
+
+			// Space skips count animation or advances past intermission
+			if (input.keys.has('space')) {
+				if (!transitionState.countsFinished) {
+					skipCounts(transitionState);
+				} else if (canSkipIntermission(transitionState)) {
+					advanceToLoading(transitionState);
+				}
+			}
+
+			// Draw intermission screen
+			drawIntermission(fb, palette, transitionState);
+
+			// Encode and output
+			const encoded = backend.encode(fb, 0, 0);
+			if (encoded.escape) {
+				process.stdout.write(`\x1b[1;1H${encoded.escape}`);
+			}
+
+			// Schedule next frame (skip gameplay rendering)
+			const elapsed = Date.now() - frameStart;
+			const delay = Math.max(1, FRAME_TIME - elapsed);
+			setTimeout(frame, delay);
+			return;
+		}
+
+		// ─── Transition: Loading ────────────────────────────────
+		if (transitionState.phase === TransitionPhase.LOADING) {
+			const nextMapName = transitionState.nextMap;
+
+			if (!nextMapName || isEpisodeComplete(transitionState) || !mapExists(wad, nextMapName)) {
+				// Episode complete or no next map: reset to title
+				completeTransition(transitionState, transitionState.currentMap, mobjs);
+				shutdown();
+				return;
+			}
+
+			// Save current player state for carryover
+			const oldHealth = player.health;
+			const oldArmor = player.armor;
+			const oldAmmo = player.ammo;
+			const oldMaxAmmo = player.maxAmmo;
+			const oldWeaponCurrent = weaponState.current;
+			const oldWeaponOwned = [...weaponState.owned];
+			const oldWeaponAmmo = [...weaponState.ammo];
+			const oldWeaponMaxAmmo = [...weaponState.maxAmmo];
+
+			// Load the new level
+			const result = doLoadLevel(wad, nextMapName, 2);
+			map = result.map;
+			mobjs = result.mobjs;
+
+			// Reset player to new map start
+			const freshPlayer = createPlayer(map);
+			player.x = freshPlayer.x;
+			player.y = freshPlayer.y;
+			player.z = freshPlayer.z;
+			player.angle = freshPlayer.angle;
+			player.viewz = freshPlayer.viewz;
+			player.viewheight = freshPlayer.viewheight;
+			player.deltaviewheight = freshPlayer.deltaviewheight;
+			player.momx = 0;
+			player.momy = 0;
+			player.sectorIndex = freshPlayer.sectorIndex;
+
+			// Carry over persistent stats
+			player.health = oldHealth;
+			player.armor = oldArmor;
+			player.ammo = oldAmmo;
+			player.maxAmmo = oldMaxAmmo;
+
+			// Carry over weapons
+			weaponState.current = oldWeaponCurrent;
+			weaponState.owned = oldWeaponOwned;
+			weaponState.ammo = oldWeaponAmmo;
+			weaponState.maxAmmo = oldWeaponMaxAmmo;
+			weaponState.pendingWeapon = -1;
+			weaponState.state = 0; // WS_RAISE
+			weaponState.tics = 6;
+			weaponState.frame = 0;
+			weaponState.ready = false;
+			weaponState.bobX = 0;
+			weaponState.bobY = 0;
+			weaponState.flashTics = 0;
+
+			// Reset game state to playing
+			gameState.phase = 0; // GamePhase.PLAYING
+			gameState.deathTics = 0;
+
+			// Reset specials state for new map
+			specialsState = createSpecialsState(player);
+			specialsState.onExit = (secret: boolean) => {
+				triggerExit(transitionState, mobjs, secret);
+			};
+
+			// Complete transition
+			completeTransition(transitionState, nextMapName, mobjs);
+
+			console.log(`Loaded map: ${nextMapName}`);
+		}
+
+		// ─── Gameplay ───────────────────────────────────────────
+
 		// Handle respawn input (USE key while dead)
 		if (isAwaitingRespawn(gameState) && input.keys.has('space')) {
 			respawnPlayer(gameState, player, weaponState, map);
@@ -237,9 +377,17 @@ function main(): void {
 
 		// Update player and weapons only when alive
 		let extralight = 0;
-		if (canPlayerAct(gameState)) {
+		if (canPlayerAct(gameState) && !isInTransition(transitionState)) {
 			updatePlayer(player, input, map);
 			updateHud(hudState, input);
+
+			// Check for USE key (interact with specials)
+			if (input.keys.has('e') || input.keys.has('space')) {
+				useLines(player, map, specialsState);
+			}
+
+			// Check walk triggers
+			checkWalkTriggers(player, map, specialsState);
 
 			// Process weapon input and tick
 			const firing = processWeaponInput(weaponState, input.keys);
@@ -268,6 +416,9 @@ function main(): void {
 
 		// Move projectiles and check collisions
 		tickProjectiles(mobjs, player, map);
+
+		// Run sector movers (doors, lifts, platforms, crushers)
+		runSectorThinkers(specialsState, map);
 
 		// Set up render state
 		const rs = createRenderState(fb, map, textures, palette, colormap);

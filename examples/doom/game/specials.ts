@@ -74,6 +74,8 @@ export interface SpecialsState {
 	/** Previous player position for walk-trigger crossing detection. */
 	prevPlayerX: number;
 	prevPlayerY: number;
+	/** Callback invoked when an exit linedef is triggered. */
+	onExit: ((secret: boolean) => void) | null;
 }
 
 // ─── Constants ───────────────────────────────────────────────────
@@ -124,6 +126,7 @@ export function createSpecialsState(player: PlayerState): SpecialsState {
 		firedWalkLines: new Set(),
 		prevPlayerX: player.x,
 		prevPlayerY: player.y,
+		onExit: null,
 	};
 }
 
@@ -536,6 +539,28 @@ function activateSpecial(
 			break;
 		}
 
+		// W1 Exit level (normal)
+		case 11:
+		// S1 Exit level (normal)
+		case 52:
+		{
+			if (state.onExit) {
+				state.onExit(false);
+			}
+			break;
+		}
+
+		// W1 Secret exit
+		case 51:
+		// S1 Secret exit
+		case 124:
+		{
+			if (state.onExit) {
+				state.onExit(true);
+			}
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -756,9 +781,11 @@ function isWalkTrigger(special: number): boolean {
 		case 5:   // W1 Floor raise to nearest
 		case 6:   // W1 Crusher
 		case 10:  // W1 Lift
+		case 11:  // W1 Exit level
 		case 16:  // W1 Door close stay
 		case 36:  // W1 Floor lower to nearest
 		case 38:  // W1 Floor lower to lowest
+		case 51:  // W1 Secret exit
 		case 58:  // W1 Floor raise by 24
 		case 77:  // W1 Fast crusher
 		case 141: // W1 Silent crusher
@@ -778,8 +805,8 @@ function isWalkTrigger(special: number): boolean {
 function isOneShotWalk(special: number): boolean {
 	switch (special) {
 		case 2: case 3: case 4: case 5: case 6:
-		case 10: case 16: case 36: case 38: case 58:
-		case 77: case 141:
+		case 10: case 11: case 16: case 36: case 38:
+		case 51: case 58: case 77: case 141:
 			return true;
 		default:
 			return false;
