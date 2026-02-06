@@ -14,6 +14,7 @@ export default defineConfig({
 		'src/utils/index.ts',
 		'src/game/index.ts',
 		'src/audio/index.ts',
+		'src/cli/init.ts',
 	],
 	format: ['esm'],
 	dts: true,

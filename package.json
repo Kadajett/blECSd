@@ -5,6 +5,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "blecsd": "./dist/cli/init.js"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -58,7 +61,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "templates"
   ],
   "scripts": {
     "dev": "tsx watch src/index.ts",

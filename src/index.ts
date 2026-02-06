@@ -1984,6 +1984,33 @@ export {
 	wrapWithTags,
 } from './utils';
 // =============================================================================
+// UTILS - Terminal Width Testing Harness
+// =============================================================================
+export type {
+	KnownBadSequence,
+	TerminalWidthProfile,
+	WidthOverride,
+	WidthTestCase,
+	WidthTestCategory,
+	WidthTestFailure,
+	WidthTestResult,
+} from './utils/unicode/widthHarness';
+export {
+	buildTestCorpus,
+	clearWidthOverrides,
+	filterByCategory,
+	formatTestReport,
+	getCategories,
+	getKnownBadSequences,
+	getOverrideCount,
+	getOverrideWidth,
+	installWidthOverrides,
+	measureWidthWithOverrides,
+	runWidthTests,
+	TerminalWidthProfileSchema,
+	WidthOverrideSchema,
+} from './utils/unicode/widthHarness';
+// =============================================================================
 // WIDGETS - High-level UI Widgets
 // =============================================================================
 export type {
