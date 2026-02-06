@@ -903,7 +903,10 @@ export function createSplitPane(
 			if (!sharedBufferRegistry.has(buffer.id)) {
 				sharedBufferRegistry.set(buffer.id, buffer);
 			}
-			buffer.refCount++;
+			const registryBuffer = sharedBufferRegistry.get(buffer.id);
+			if (registryBuffer) {
+				registryBuffer.refCount++;
+			}
 
 			pane.scroll.contentHeight = buffer.lines.length;
 			pane.dirty = true;
