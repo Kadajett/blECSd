@@ -514,6 +514,14 @@ export {
 	sortByTabIndex,
 	// sortByZIndex is exported from ./zOrder (uses dedicated ZOrder component)
 } from './queries';
+// Scene management
+export type { Scene, SceneManager, SceneTransition, TransitionState } from './scene';
+export {
+	createFadeTransition,
+	createSceneManager,
+	createSceneSystem,
+	createSlideTransition,
+} from './scene';
 export { createScheduler, getDeltaTime, Scheduler } from './scheduler';
 // Serialization
 export type {
