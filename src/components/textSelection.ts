@@ -59,6 +59,20 @@ export const SYNC_COPY_LINE_LIMIT = 50_000;
 /** Chunk size for background copy operations */
 export const BACKGROUND_COPY_CHUNK_SIZE = 10_000;
 
+/** Maximum safe coordinate value to prevent infinite loops from Infinity inputs */
+const MAX_SAFE_COORD = 2 ** 31 - 1;
+
+/**
+ * Sanitize a numeric input: truncate to integer, reject NaN/Infinity, clamp to [0, MAX_SAFE_COORD].
+ */
+function sanitizeCoord(value: number): number {
+	if (!Number.isFinite(value)) {
+		return 0;
+	}
+	const truncated = Math.trunc(value);
+	return Math.max(0, Math.min(truncated, MAX_SAFE_COORD));
+}
+
 // =============================================================================
 // ZOD SCHEMAS
 // =============================================================================
@@ -273,8 +287,8 @@ export function startSelection(
 	col: number,
 	mode: SelectionMode = 'stream',
 ): void {
-	const safeLine = Math.max(0, Math.trunc(line) || 0);
-	const safeCol = Math.max(0, Math.trunc(col) || 0);
+	const safeLine = sanitizeCoord(line);
+	const safeCol = sanitizeCoord(col);
 	state.anchorLine = safeLine;
 	state.anchorCol = safeCol;
 	state.focusLine = safeLine;
@@ -295,8 +309,8 @@ export function updateSelection(state: TextSelectionState, line: number, col: nu
 	if (!state.active) {
 		return;
 	}
-	state.focusLine = Math.max(0, Math.trunc(line) || 0);
-	state.focusCol = Math.max(0, Math.trunc(col) || 0);
+	state.focusLine = sanitizeCoord(line);
+	state.focusCol = sanitizeCoord(col);
 }
 
 /**
@@ -336,8 +350,8 @@ export function hasActiveSelection(state: TextSelectionState): boolean {
  * @param lineLength - Length of the line in characters
  */
 export function selectLine(state: TextSelectionState, line: number, lineLength: number): void {
-	const safeLine = Math.max(0, Math.trunc(line) || 0);
-	const safeLength = Math.max(0, Math.trunc(lineLength) || 0);
+	const safeLine = sanitizeCoord(line);
+	const safeLength = sanitizeCoord(lineLength);
 	state.anchorLine = safeLine;
 	state.anchorCol = 0;
 	state.focusLine = safeLine;
@@ -362,9 +376,9 @@ export function selectLineRange(
 	endLine: number,
 	endLineLength: number,
 ): void {
-	const safeStart = Math.max(0, Math.trunc(startLine) || 0);
-	const safeEnd = Math.max(0, Math.trunc(endLine) || 0);
-	const safeLength = Math.max(0, Math.trunc(endLineLength) || 0);
+	const safeStart = sanitizeCoord(startLine);
+	const safeEnd = sanitizeCoord(endLine);
+	const safeLength = sanitizeCoord(endLineLength);
 	state.anchorLine = safeStart;
 	state.anchorCol = 0;
 	state.focusLine = safeEnd;
@@ -385,11 +399,11 @@ export function selectAll(
 	totalLines: number,
 	lastLineLength: number,
 ): void {
-	const safeTotal = Math.max(0, Math.trunc(totalLines) || 0);
+	const safeTotal = sanitizeCoord(totalLines);
 	if (safeTotal === 0) {
 		return;
 	}
-	const safeLength = Math.max(0, Math.trunc(lastLineLength) || 0);
+	const safeLength = sanitizeCoord(lastLineLength);
 	state.anchorLine = 0;
 	state.anchorCol = 0;
 	state.focusLine = safeTotal - 1;
@@ -624,11 +638,32 @@ export function getSelectedText(state: TextSelectionState, store: VirtualizedLin
 		return '';
 	}
 
-	if (range.mode === 'rectangular') {
-		return getRectangularSelectedText(range, store);
+	// Clamp selection range to store bounds
+	const maxLine = store.lineCount - 1;
+	if (maxLine < 0) {
+		return '';
+	}
+	const clampedRange: SelectionRange = {
+		start: {
+			line: Math.max(0, Math.min(range.start.line, maxLine)),
+			col: range.start.col,
+		},
+		end: {
+			line: Math.max(0, Math.min(range.end.line, maxLine)),
+			col: range.end.col,
+		},
+		mode: range.mode,
+	};
+
+	if (clampedRange.start.line > clampedRange.end.line) {
+		return '';
 	}
 
-	return getStreamSelectedText(range, store);
+	if (clampedRange.mode === 'rectangular') {
+		return getRectangularSelectedText(clampedRange, store);
+	}
+
+	return getStreamSelectedText(clampedRange, store);
 }
 
 /**
@@ -711,6 +746,110 @@ function getRectangularSelectedText(range: SelectionRange, store: VirtualizedLin
  * }
  * ```
  */
+/**
+ * Clamps a selection range to the store's actual line count.
+ * Returns null if the store is empty or the clamped range is invalid.
+ */
+function clampRangeToStore(
+	range: SelectionRange,
+	store: VirtualizedLineStore,
+): { startLine: number; endLine: number; totalLines: number } | null {
+	const maxLine = store.lineCount - 1;
+	if (maxLine < 0) {
+		return null;
+	}
+	const startLine = Math.max(0, Math.min(range.start.line, maxLine));
+	const endLine = Math.max(0, Math.min(range.end.line, maxLine));
+	if (startLine > endLine) {
+		return null;
+	}
+	return { startLine, endLine, totalLines: endLine - startLine + 1 };
+}
+
+/**
+ * Chunked rectangular copy: iterates line ranges in chunks, slicing columns.
+ */
+function* chunkedRectangularCopy(
+	range: SelectionRange,
+	store: VirtualizedLineStore,
+	startLine: number,
+	endLine: number,
+	totalLines: number,
+	chunkSize: number,
+): Generator<CopyProgress, void, undefined> {
+	const leftCol = Math.min(range.start.col, range.end.col);
+	const rightCol = Math.max(range.start.col, range.end.col);
+	const parts: string[] = [];
+	let linesProcessed = 0;
+
+	for (let chunkStart = startLine; chunkStart <= endLine; chunkStart += chunkSize) {
+		const chunkEnd = Math.min(chunkStart + chunkSize, endLine + 1);
+		const lineData = getLineRange(store, chunkStart, chunkEnd);
+		for (const line of lineData.lines) {
+			const sliceStart = Math.min(leftCol, line.length);
+			const sliceEnd = Math.min(rightCol, line.length);
+			parts.push(line.slice(sliceStart, sliceEnd));
+		}
+		linesProcessed += chunkEnd - chunkStart;
+		if (chunkEnd <= endLine) {
+			yield { done: false, linesProcessed, totalLines, text: '' };
+		}
+	}
+	yield { done: true, linesProcessed, totalLines, text: parts.join('\n') };
+}
+
+/**
+ * Chunked stream copy: processes first line, middle chunks, and last line.
+ */
+function* chunkedStreamCopy(
+	range: SelectionRange,
+	store: VirtualizedLineStore,
+	startLine: number,
+	endLine: number,
+	totalLines: number,
+	chunkSize: number,
+): Generator<CopyProgress, void, undefined> {
+	const parts: string[] = [];
+	let linesProcessed = 0;
+
+	// Process first line
+	const firstLine = getLineAtIndex(store, startLine);
+	if (firstLine !== undefined) {
+		if (startLine === endLine) {
+			parts.push(firstLine.slice(range.start.col, range.end.col));
+			yield { done: true, linesProcessed: 1, totalLines, text: parts[0] ?? '' };
+			return;
+		}
+		parts.push(firstLine.slice(range.start.col));
+	}
+	linesProcessed = 1;
+
+	// Process middle lines in chunks
+	const middleStart = startLine + 1;
+	const middleEnd = endLine;
+
+	for (let chunk = middleStart; chunk < middleEnd; chunk += chunkSize) {
+		const chunkEnd = Math.min(chunk + chunkSize, middleEnd);
+		const lineData = getLineRange(store, chunk, chunkEnd);
+		for (const line of lineData.lines) {
+			parts.push(line);
+		}
+		linesProcessed += chunkEnd - chunk;
+		if (chunkEnd < middleEnd) {
+			yield { done: false, linesProcessed, totalLines, text: '' };
+		}
+	}
+
+	// Process last line
+	const lastLine = getLineAtIndex(store, endLine);
+	if (lastLine !== undefined) {
+		parts.push(lastLine.slice(0, range.end.col));
+	}
+	linesProcessed = totalLines;
+
+	yield { done: true, linesProcessed, totalLines, text: parts.join('\n') };
+}
+
 export function* createBackgroundCopy(
 	state: TextSelectionState,
 	store: VirtualizedLineStore,
@@ -722,72 +861,88 @@ export function* createBackgroundCopy(
 		return;
 	}
 
-	const totalLines = range.end.line - range.start.line + 1;
-
-	if (range.mode === 'rectangular') {
-		// For rectangular, fall back to sync since it's simpler
-		const text = getRectangularSelectedText(range, store);
-		yield { done: true, linesProcessed: totalLines, totalLines, text };
+	const clamped = clampRangeToStore(range, store);
+	if (!clamped) {
+		yield { done: true, linesProcessed: 0, totalLines: 0, text: '' };
 		return;
 	}
 
-	const parts: string[] = [];
-	let linesProcessed = 0;
+	const { startLine, endLine, totalLines } = clamped;
 
-	// Process first line
-	const firstLine = getLineAtIndex(store, range.start.line);
-	if (firstLine !== undefined) {
-		if (range.start.line === range.end.line) {
-			parts.push(firstLine.slice(range.start.col, range.end.col));
-			yield { done: true, linesProcessed: 1, totalLines, text: parts[0] ?? '' };
-			return;
-		}
-		parts.push(firstLine.slice(range.start.col));
-	}
-	linesProcessed = 1;
-
-	// Process middle lines in chunks
-	const middleStart = range.start.line + 1;
-	const middleEnd = range.end.line;
-
-	for (let chunk = middleStart; chunk < middleEnd; chunk += chunkSize) {
-		const chunkEnd = Math.min(chunk + chunkSize, middleEnd);
-		const lineData = getLineRange(store, chunk, chunkEnd);
-
-		for (const line of lineData.lines) {
-			parts.push(line);
-		}
-
-		linesProcessed += chunkEnd - chunk;
-
-		if (chunkEnd < middleEnd) {
-			yield {
-				done: false,
-				linesProcessed,
-				totalLines,
-				text: '',
-			};
-		}
+	if (range.mode === 'rectangular') {
+		yield* chunkedRectangularCopy(range, store, startLine, endLine, totalLines, chunkSize);
+		return;
 	}
 
-	// Process last line
-	const lastLine = getLineAtIndex(store, range.end.line);
-	if (lastLine !== undefined) {
-		parts.push(lastLine.slice(0, range.end.col));
-	}
-	linesProcessed = totalLines;
-
-	yield {
-		done: true,
-		linesProcessed,
-		totalLines,
-		text: parts.join('\n'),
-	};
+	yield* chunkedStreamCopy(range, store, startLine, endLine, totalLines, chunkSize);
 }
 
 // =============================================================================
 // SELECTION DIFFING (FOR DIRTY TRACKING)
 // =============================================================================
+
+/**
+ * Collects dirty ranges from the non-overlapping regions (above and below the overlap).
+ */
+function collectBoundaryDirtyRanges(
+	oldRange: SelectionRange,
+	newRange: SelectionRange,
+	overlapStart: number,
+	overlapEnd: number,
+): [number, number][] {
+	const ranges: [number, number][] = [];
+
+	// Top dirty region (above overlap)
+	const topStart = Math.min(oldRange.start.line, newRange.start.line);
+	if (topStart < overlapStart) {
+		ranges.push([topStart, overlapStart - 1]);
+	}
+
+	// Bottom dirty region (below overlap)
+	const bottomEnd = Math.max(oldRange.end.line, newRange.end.line);
+	if (overlapEnd < bottomEnd) {
+		ranges.push([overlapEnd + 1, bottomEnd]);
+	}
+
+	return ranges;
+}
+
+/**
+ * Collects dirty ranges caused by column changes within the overlapping region.
+ */
+function collectColumnDirtyRanges(
+	oldRange: SelectionRange,
+	newRange: SelectionRange,
+	overlapStart: number,
+	overlapEnd: number,
+): [number, number][] {
+	if (overlapStart > overlapEnd) {
+		return [];
+	}
+
+	if (oldRange.mode === 'rectangular') {
+		// In rectangular mode, a column change affects ALL lines in the overlap
+		const colsChanged =
+			oldRange.start.col !== newRange.start.col || oldRange.end.col !== newRange.end.col;
+		return colsChanged ? [[overlapStart, overlapEnd]] : [];
+	}
+
+	// Stream mode: only boundary lines are affected by column changes
+	const ranges: [number, number][] = [];
+	const startLineSame = oldRange.start.line === newRange.start.line;
+	const startColChanged = oldRange.start.col !== newRange.start.col;
+	if (startLineSame && startColChanged) {
+		ranges.push([oldRange.start.line, oldRange.start.line]);
+	}
+
+	const endLineSame = oldRange.end.line === newRange.end.line;
+	const endColChanged = oldRange.end.col !== newRange.end.col;
+	if (endLineSame && endColChanged) {
+		ranges.push([oldRange.end.line, oldRange.end.line]);
+	}
+
+	return ranges;
+}
 
 /**
  * Computes dirty ranges when both old and new selections exist.
@@ -807,31 +962,13 @@ function computeOverlapDirtyRanges(
 		];
 	}
 
-	const ranges: [number, number][] = [];
 	const overlapStart = Math.max(oldRange.start.line, newRange.start.line);
 	const overlapEnd = Math.min(oldRange.end.line, newRange.end.line);
 
-	// Top dirty region (above overlap)
-	const topStart = Math.min(oldRange.start.line, newRange.start.line);
-	if (topStart < overlapStart) {
-		ranges.push([topStart, overlapStart - 1]);
-	}
-
-	// Bottom dirty region (below overlap)
-	const bottomEnd = Math.max(oldRange.end.line, newRange.end.line);
-	if (overlapEnd < bottomEnd) {
-		ranges.push([overlapEnd + 1, bottomEnd]);
-	}
-
-	// Start/end lines are dirty if columns changed
-	if (overlapStart <= overlapEnd) {
-		if (oldRange.start.line === newRange.start.line && oldRange.start.col !== newRange.start.col) {
-			ranges.push([oldRange.start.line, oldRange.start.line]);
-		}
-		if (oldRange.end.line === newRange.end.line && oldRange.end.col !== newRange.end.col) {
-			ranges.push([oldRange.end.line, oldRange.end.line]);
-		}
-	}
+	const ranges: [number, number][] = [
+		...collectBoundaryDirtyRanges(oldRange, newRange, overlapStart, overlapEnd),
+		...collectColumnDirtyRanges(oldRange, newRange, overlapStart, overlapEnd),
+	];
 
 	return mergeRanges(ranges);
 }

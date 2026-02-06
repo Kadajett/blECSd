@@ -598,6 +598,48 @@ describe('textSelection', () => {
 			expect(state.anchorLine).toBe(3);
 			expect(state.anchorCol).toBe(8);
 		});
+
+		it('clamps Infinity to zero in startSelection', () => {
+			const state = createSelectionState();
+			startSelection(state, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY);
+			expect(state.anchorLine).toBe(0);
+			expect(state.anchorCol).toBe(0);
+		});
+
+		it('clamps Infinity in updateSelection', () => {
+			const state = createSelectionState();
+			startSelection(state, 5, 5);
+			updateSelection(state, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+			expect(state.focusLine).toBe(0);
+			expect(state.focusCol).toBe(0);
+		});
+
+		it('clamps Infinity in selectLine', () => {
+			const state = createSelectionState();
+			selectLine(state, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+			expect(state.anchorLine).toBe(0);
+			expect(state.focusCol).toBe(0);
+		});
+
+		it('clamps Infinity in selectLineRange', () => {
+			const state = createSelectionState();
+			selectLineRange(
+				state,
+				Number.POSITIVE_INFINITY,
+				Number.POSITIVE_INFINITY,
+				Number.POSITIVE_INFINITY,
+			);
+			expect(state.anchorLine).toBe(0);
+			expect(state.focusLine).toBe(0);
+			expect(state.focusCol).toBe(0);
+		});
+
+		it('clamps Infinity in selectAll', () => {
+			const state = createSelectionState();
+			selectAll(state, Number.POSITIVE_INFINITY, 10);
+			// Infinity is not finite, so safeTotal becomes 0, and selectAll returns early
+			expect(state.active).toBe(false);
+		});
 	});
 
 	describe('clearTextSelection resets mode', () => {
@@ -620,6 +662,111 @@ describe('textSelection', () => {
 
 		it('returns undefined for unregistered entity', () => {
 			expect(getSelectionState(999)).toBeUndefined();
+		});
+	});
+
+	describe('store bounds clamping', () => {
+		it('getSelectedText returns empty when selection exceeds store bounds', () => {
+			const store = createLineStore('Line0\nLine1\nLine2');
+			const state = createSelectionState();
+			startSelection(state, 0, 0);
+			updateSelection(state, 100, 5);
+			const text = getSelectedText(state, store);
+			// Should clamp to store bounds (3 lines: 0-2)
+			expect(text).toContain('Line0');
+			expect(text).toContain('Line2');
+		});
+
+		it('getSelectedText returns empty for empty store', () => {
+			const store = createLineStore('');
+			const state = createSelectionState();
+			startSelection(state, 5, 0);
+			updateSelection(state, 10, 5);
+			// Store has 1 line (empty string), so it should clamp and return something
+			const text = getSelectedText(state, store);
+			expect(text).toBe('');
+		});
+
+		it('createBackgroundCopy clamps to store bounds', () => {
+			const store = createLineStore('A\nB\nC');
+			const state = createSelectionState();
+			startSelection(state, 0, 0);
+			updateSelection(state, 100, 5);
+			const results = [...createBackgroundCopy(state, store)];
+			const last = results[results.length - 1]!;
+			expect(last.done).toBe(true);
+			// Should only process 3 lines, not 101
+			expect(last.totalLines).toBe(3);
+		});
+
+		it('createBackgroundCopy handles empty store', () => {
+			const store = createLineStore('');
+			const state = createSelectionState();
+			startSelection(state, 5, 0);
+			updateSelection(state, 10, 5);
+			const results = [...createBackgroundCopy(state, store)];
+			const last = results[results.length - 1]!;
+			expect(last.done).toBe(true);
+			// Empty store has lineCount 0, so clamped range is empty
+			expect(last.totalLines).toBe(0);
+			expect(last.text).toBe('');
+		});
+	});
+
+	describe('chunked rectangular background copy', () => {
+		it('yields progress for large rectangular selections', () => {
+			const lines: string[] = [];
+			for (let i = 0; i < 100; i++) {
+				lines.push(`Line_${String(i).padStart(3, '0')}_content`);
+			}
+			const store = createLineStore(lines.join('\n'));
+			const state = createSelectionState();
+			startSelection(state, 0, 0, 'rectangular');
+			updateSelection(state, 99, 4);
+
+			const results = [...createBackgroundCopy(state, store, 20)];
+			// Should have progress updates + final
+			expect(results.length).toBeGreaterThan(1);
+			const last = results[results.length - 1]!;
+			expect(last.done).toBe(true);
+			expect(last.totalLines).toBe(100);
+			// Each line should contribute columns 0-4 ("Line")
+			expect(last.text.split('\n').length).toBe(100);
+			expect(last.text.split('\n')[0]).toBe('Line');
+		});
+	});
+
+	describe('rectangular dirty ranges', () => {
+		it('marks all overlap lines dirty when columns change in rectangular mode', () => {
+			const old = createSelectionState();
+			startSelection(old, 5, 3, 'rectangular');
+			updateSelection(old, 10, 8);
+
+			const current = createSelectionState();
+			startSelection(current, 5, 5, 'rectangular');
+			updateSelection(current, 10, 8);
+
+			const ranges = getSelectionDirtyRanges(old, current);
+			// All lines 5-10 should be dirty because start col changed
+			expect(ranges.some(([s, e]) => s <= 5 && e >= 10)).toBe(true);
+		});
+
+		it('does not mark overlap dirty when columns are the same in rectangular mode', () => {
+			const old = createSelectionState();
+			startSelection(old, 5, 3, 'rectangular');
+			updateSelection(old, 10, 8);
+
+			const current = createSelectionState();
+			startSelection(current, 5, 3, 'rectangular');
+			updateSelection(current, 12, 8);
+
+			const ranges = getSelectionDirtyRanges(old, current);
+			// Lines 11-12 should be dirty (new extension), but overlap 5-10 should NOT be dirty
+			// since columns are the same
+			const hasOverlapDirty = ranges.some(([s, e]) => s <= 5 && e >= 10);
+			expect(hasOverlapDirty).toBe(false);
+			// But the new lines should be dirty
+			expect(ranges.some(([s, e]) => s === 11 && e === 12)).toBe(true);
 		});
 	});
 
