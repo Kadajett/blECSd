@@ -1,0 +1,9 @@
+{
+	"name": "3d-backends",
+	"version": "0.0.1",
+	"description": "Rotating cube rendered with all 5 backends side-by-side",
+	"category": "3d",
+	"tags": ["3d", "backends", "comparison", "rendering"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}

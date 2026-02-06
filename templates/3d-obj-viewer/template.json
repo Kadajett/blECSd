@@ -1,0 +1,9 @@
+{
+	"name": "3d-obj-viewer",
+	"version": "0.0.1",
+	"description": "OBJ model viewer rendered in the terminal",
+	"category": "3d",
+	"tags": ["3d", "obj", "model-viewer", "rendering"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}

@@ -1,0 +1,10 @@
+{
+	"name": "form-builder",
+	"version": "0.0.1",
+	"description": "Interactive form builder with validation and custom fields",
+	"category": "app",
+	"tags": ["forms", "input", "validation"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0",
+	"placeholder": true
+}

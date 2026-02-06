@@ -1,0 +1,9 @@
+{
+	"name": "dvd-bounce",
+	"version": "0.0.1",
+	"description": "Thousands of floating panels with physics and z-order shuffling",
+	"category": "demo",
+	"tags": ["demo", "physics", "animation", "performance"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}
