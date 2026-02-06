@@ -175,6 +175,16 @@ export {
 	showCursor,
 	writeRaw,
 } from './outputSystem';
+// Particle system
+export type { EntityProvider, ParticleSystemConfig } from './particleSystem';
+export {
+	ageParticle,
+	burstParticles,
+	createParticleSystem,
+	killParticle,
+	moveParticle,
+	spawnParticle,
+} from './particleSystem';
 // Render system
 export type { RenderContext } from './renderSystem';
 export {
