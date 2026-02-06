@@ -194,6 +194,20 @@ export {
 	isWindowsTerminal,
 	isXterm,
 } from './detection';
+// GPM mouse client (Linux console mouse support)
+export type { GpmClientConfig, GpmClientState } from './gpmClient';
+export {
+	buildConnectPacket,
+	connectGpm,
+	createGpmClient,
+	detectVirtualConsole,
+	disconnectGpm,
+	GpmClientConfigSchema,
+	isGpmAvailable,
+	isGpmConnected,
+	onGpmMouse,
+	parseGpmEvent,
+} from './gpmClient';
 // Input control
 export type {
 	InputControlEventData,
