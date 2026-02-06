@@ -448,6 +448,33 @@ export type {
 	TreeWidgetConfig,
 } from './tree';
 export { createTree, isTreeWidget, resetTreeStore, TreeWidgetConfigSchema } from './tree';
+// Video widget
+export type {
+	VideoConfig,
+	VideoOutputDriver,
+	VideoPlaybackState,
+	VideoPlayer,
+	VideoProcessHandle,
+	VideoProcessSpawner,
+	VideoWidget,
+} from './video';
+export {
+	buildMplayerArgs,
+	buildMpvArgs,
+	buildPlayerArgs,
+	createVideo,
+	detectVideoPlayer,
+	getVideoPlaybackState,
+	getVideoPlayer,
+	isVideo,
+	MPLAYER_SEARCH_PATHS,
+	MPV_SEARCH_PATHS,
+	resetVideoStore,
+	sendPauseCommand,
+	sendSeekCommand,
+	Video,
+	VideoConfigSchema,
+} from './video';
 // VirtualizedList widget
 export type {
 	VirtualizedList,
