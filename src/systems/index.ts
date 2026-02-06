@@ -195,6 +195,30 @@ export {
 	showCursor,
 	writeRaw,
 } from './outputSystem';
+// Panel movement
+export type {
+	DirtyRect,
+	MoveResult,
+	PanelConstraints,
+	PanelMoveConfig,
+	PanelMoveState,
+	ResizeHandle,
+} from './panelMovement';
+export {
+	beginMove,
+	beginResize,
+	cancelMoveOrResize,
+	createPanelConstraints,
+	createPanelMoveConfig,
+	createPanelMoveState,
+	detectResizeHandle,
+	endMoveOrResize,
+	keyboardMove,
+	keyboardResize,
+	mergeDirtyRects,
+	updateMove,
+	updateResize,
+} from './panelMovement';
 // Particle system
 export type { EntityProvider, ParticleSystemConfig } from './particleSystem';
 export {
