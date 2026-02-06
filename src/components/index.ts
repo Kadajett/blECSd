@@ -36,6 +36,48 @@ export {
 	unregisterAnimation,
 	updateAnimationEntity,
 } from './animation';
+// Behavior component
+export type {
+	BehaviorData,
+	BehaviorDirection,
+	BehaviorOptions,
+	BehaviorStateValue,
+	BehaviorTypeValue,
+	CustomBehaviorCallback,
+	PatrolRoute,
+	Point2D,
+} from './behavior';
+export {
+	Behavior,
+	BehaviorState,
+	BehaviorType,
+	computeChaseDirection,
+	computeFleeDirection,
+	computePatrolDirection,
+	executeCustomBehavior,
+	getBehavior,
+	getBehaviorState,
+	getBehaviorTarget,
+	getBehaviorType,
+	getCurrentPatrolPoint,
+	getPatrolRoute,
+	hasBehavior,
+	isBehaviorActive,
+	isBehaviorCompleted,
+	isBehaviorWaiting,
+	removeBehavior,
+	resetBehaviorStore,
+	setBehavior,
+	setBehaviorSpeed,
+	setBehaviorTarget,
+	setChase,
+	setCustomBehavior,
+	setDetectionRange,
+	setFlee,
+	setIdle,
+	setPatrol,
+	updateBehaviorTimer,
+} from './behavior';
 // Border component
 export type { BorderCharset, BorderData, BorderOptions } from './border';
 export {
