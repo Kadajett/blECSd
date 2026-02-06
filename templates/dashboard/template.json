@@ -1,0 +1,10 @@
+{
+	"name": "dashboard",
+	"version": "0.0.1",
+	"description": "Multi-widget dashboard with charts, tables, and live data",
+	"category": "app",
+	"tags": ["dashboard", "charts", "layout"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0",
+	"placeholder": true
+}

@@ -1,0 +1,9 @@
+{
+	"name": "terminal",
+	"version": "0.0.1",
+	"description": "Terminal widget with ANSI rendering, scrollback, and optional PTY",
+	"category": "app",
+	"tags": ["terminal", "ansi", "pty", "scrollback"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}

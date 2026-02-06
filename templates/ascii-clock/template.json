@@ -1,0 +1,9 @@
+{
+	"name": "ascii-clock",
+	"version": "0.0.1",
+	"description": "ASCII art clock using the BigText widget",
+	"category": "demo",
+	"tags": ["demo", "ascii-art", "time", "bigtext"],
+	"entry": "src/index.ts",
+	"blecsdVersion": "^0.1.0"
+}

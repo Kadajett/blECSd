@@ -1,0 +1,9 @@
+{
+	"name": "multiplexer",
+	"version": "0.0.1",
+	"description": "tmux-like multi-pane terminal with shell support",
+	"category": "app",
+	"tags": ["terminal", "multiplexer", "panes", "pty"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}

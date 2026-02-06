@@ -1,0 +1,23 @@
+{
+	"name": "blecsd-template-balatro",
+	"version": "0.0.1",
+	"description": "Balatro-style poker card game demonstrating blECSd animations and input handling",
+	"private": true,
+	"type": "module",
+	"main": "./dist/index.js",
+	"scripts": {
+		"start": "tsx index.ts",
+		"dev": "tsx index.ts",
+		"dev:watch": "tsx watch index.ts",
+		"build": "tsup index.ts --format esm --dts",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"blecsd": "^0.1.0"
+	},
+	"devDependencies": {
+		"tsup": "^8.5.1",
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3"
+	}
+}

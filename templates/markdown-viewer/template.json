@@ -1,0 +1,10 @@
+{
+	"name": "markdown-viewer",
+	"version": "0.0.1",
+	"description": "Terminal markdown renderer with syntax highlighting",
+	"category": "app",
+	"tags": ["markdown", "rendering", "syntax-highlighting"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0",
+	"placeholder": true
+}

@@ -1,0 +1,21 @@
+{
+	"name": "blecsd-template-telnet-server",
+	"version": "0.0.1",
+	"description": "Telnet server demo - serve blECSd UIs to remote clients",
+	"private": true,
+	"type": "module",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "tsup index.ts --format esm --dts",
+		"start": "node dist/index.js",
+		"dev": "tsx index.ts"
+	},
+	"dependencies": {
+		"blecsd": "^0.1.0"
+	},
+	"devDependencies": {
+		"tsup": "^8.5.1",
+		"tsx": "^4.19.3",
+		"typescript": "^5.8.2"
+	}
+}
