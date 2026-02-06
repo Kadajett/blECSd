@@ -177,6 +177,44 @@ layoutSystem(world);
 renderSystem(world);
 ```
 
+## PackedStore: Cache-Friendly Storage
+
+blECSd includes a `PackedStore<T>` primitive for systems that iterate over entities in hot paths (rendering, animation, collision). It provides O(1) add/remove/get with dense, cache-friendly iteration.
+
+### The Three-Vector Pattern
+
+PackedStore uses four parallel arrays to keep live data contiguous:
+
+```
+data[]        Dense values, packed into [0, size) with no gaps
+dataIndex[]   Maps handle.index -> position in data[]
+id[]          Maps data position -> handle.index (inverse of dataIndex)
+generations[] Generation counter per slot for stale handle detection
+```
+
+Removals use swap-and-pop: the last element fills the gap, so `data[]` is always contiguous. This means iterating `data[0..size]` hits sequential memory with no pointer chasing, which is 2-5x faster than `Map.forEach` for iteration-heavy workloads.
+
+### createComponentStore\<T\>()
+
+For most code, use `createComponentStore<T>()` instead of PackedStore directly. It provides a Map-like API (`get`, `set`, `has`, `delete`, `forEach`) with two backing modes:
+
+```typescript
+import { createComponentStore } from 'blecsd';
+
+// Iterable mode: backed by PackedStore, dense iteration via forEach/data()
+// Use for stores iterated in hot paths (widget rendering, layout, animation)
+const renderData = createComponentStore<RenderInfo>({ iterable: true });
+
+// Non-iterable mode (default): backed by a plain Map
+// Use for point lookups like callback registries or config
+const callbacks = createComponentStore<() => void>({ iterable: false });
+```
+
+| Mode | Backing | Iteration | Best for |
+|------|---------|-----------|----------|
+| `iterable: true` | PackedStore | Dense, cache-friendly | Hot paths (render, animate, layout) |
+| `iterable: false` | Map | Standard Map iteration | Callbacks, config, point lookups |
+
 ## Use Cases
 
 - **Dashboards**: System monitors, log viewers, status displays
@@ -189,7 +227,7 @@ renderSystem(world);
 
 | Feature | blECSd | Ink | blessed | Textual |
 |---------|--------|-----|---------|---------|
-| Architecture | ECS (data-oriented) | React (component) | Class-based | Widget classes |
+| Architecture | ECS + PackedStore (data-oriented) | React (component) | Class-based | Widget classes |
 | Language | TypeScript | TypeScript/JSX | JavaScript | Python |
 | Widgets | 18 built-in | Few built-in | Many built-in | Many built-in |
 | Animation | Physics-based | Manual | Manual | CSS-like |
