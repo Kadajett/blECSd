@@ -44,11 +44,14 @@ export { colorToHex, hexToColor, packColor, parseColor, unpackColor } from './co
 // Component storage
 export type {
 	ComponentMemoryReport,
+	ComponentStore,
+	ComponentStoreConfig,
 	SparseStorageConfig,
 	SparseStore,
 	TypedArrayPool,
 } from './componentStorage';
 export {
+	createComponentStore,
 	createSparseStore,
 	createTypedArrayPool,
 	estimateMemoryUsage,
