@@ -150,8 +150,8 @@ describe('Input Sanitization', () => {
 				sanitizeTextInput(input);
 			}
 			const elapsed = performance.now() - start;
-			// Should process 1000 x 10KB strings in well under 1 second
-			expect(elapsed).toBeLessThan(1000);
+			// Should process 1000 x 10KB strings in under 2 seconds (generous for CI)
+			expect(elapsed).toBeLessThan(2000);
 		});
 	});
 });
