@@ -1605,6 +1605,31 @@ export {
 	updateProtocolState,
 } from './terminal';
 // =============================================================================
+// TERMINAL - Bracketed Paste Mode
+// =============================================================================
+export type {
+	PasteConfig,
+	PasteEvent,
+	PasteHandler,
+	PasteParseResult,
+	PasteProcessResult,
+	PasteState,
+} from './terminal/bracketedPaste';
+export {
+	createPasteState,
+	disableBracketedPaste,
+	enableBracketedPaste,
+	extractPasteContent,
+	findPasteEnd,
+	isPasteStart,
+	mightBePasteStart,
+	PasteConfigSchema,
+	PasteEventSchema,
+	processPasteBuffer,
+	sanitizePastedText,
+	truncatePaste,
+} from './terminal/bracketedPaste';
+// =============================================================================
 // PERFORMANCE - Efficient Clipboard Operations
 // =============================================================================
 export type {
@@ -1633,6 +1658,29 @@ export {
 	dumpRaw,
 	LogLevel,
 } from './terminal/debug';
+// =============================================================================
+// TERMINAL - GPM Mouse Client
+// =============================================================================
+export type {
+	GpmClient,
+	GpmClientConfig,
+	GpmClientState,
+	GpmRawEvent,
+} from './terminal/gpmClient';
+export {
+	buildGpmConnectPacket,
+	createGpmClient,
+	detectVirtualConsole,
+	GpmButton,
+	GpmClientConfigSchema,
+	GpmEventType,
+	gpmButtonToMouseButton,
+	gpmEventToMouseEvent,
+	gpmTypeToMouseAction,
+	isGpmAvailable,
+	parseGpmEventBuffer,
+	parseGpmModifiers,
+} from './terminal/gpmClient';
 export type { InputHandler } from './terminal/inputStream';
 export { createInputHandler, InputHandlerConfigSchema } from './terminal/inputStream';
 export { setupSigwinchHandler, triggerResize } from './terminal/resize';
@@ -1972,6 +2020,28 @@ export {
 	ListWidgetConfigSchema,
 	TabsConfigSchema,
 } from './widgets';
+// =============================================================================
+// WIDGETS - Streaming Text Renderer
+// =============================================================================
+export type {
+	StreamDirtyRegion,
+	StreamingTextConfig,
+	StreamingTextState,
+	StreamingTextWidget,
+	StreamProgress,
+} from './widgets/streamingText';
+export {
+	appendToState,
+	clearState,
+	createStreamingState,
+	createStreamingText,
+	getStreamVisibleLines,
+	StreamingTextConfigSchema,
+	scrollByLines,
+	scrollToLine,
+	stripAnsiSequences,
+	wrapLine,
+} from './widgets/streamingText';
 export type { Viewport3DWidget } from './widgets/viewport3d';
 // Direct exports for commonly used 3D functions
 export {
