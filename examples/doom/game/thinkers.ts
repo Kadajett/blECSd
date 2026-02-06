@@ -123,7 +123,7 @@ function callAction(
 	player: PlayerState,
 	gameState: GameState,
 	map: MapData,
-	mobjs: readonly Mobj[],
+	mobjs: Mobj[],
 ): void {
 	const fn = actionRegistry[name];
 	if (!fn) return;

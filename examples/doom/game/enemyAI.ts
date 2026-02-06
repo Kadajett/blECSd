@@ -23,6 +23,7 @@ import { FRACBITS, FRACUNIT, fixedMul } from '../math/fixed.js';
 import type { MapData } from '../wad/types.js';
 import { damagePlayer } from './death.js';
 import { type Mobj, MobjFlags, MobjType, damageMobj } from './mobj.js';
+import { spawnMissile } from './projectiles.js';
 import type { PlayerState } from './player.js';
 import { findSectorAt } from './player.js';
 import { checkSight } from './sight.js';
@@ -229,9 +230,9 @@ function actionSPosAttack(ctx: ActionContext): void {
 	mobj.flags |= MobjFlags.MF_JUSTATTACKED;
 }
 
-/** Imp attack: melee claw if close, otherwise fireball (simplified as hitscan). */
+/** Imp attack: melee claw if close, otherwise fireball projectile. */
 function actionTroopAttack(ctx: ActionContext): void {
-	const { mobj, player, gameState } = ctx;
+	const { mobj, player, gameState, mobjs } = ctx;
 	if (!mobj.target) return;
 
 	actionFaceTarget(ctx);
@@ -242,10 +243,16 @@ function actionTroopAttack(ctx: ActionContext): void {
 		// Melee: claw attack
 		const damage = ((Math.random() * 8 | 0) + 1) * 3;
 		damagePlayer(gameState, player, damage);
-	} else if (checkSight(mobj, player, ctx.map)) {
-		// Ranged: fireball (simplified as direct damage for now)
-		const damage = ((Math.random() * 8 | 0) + 1) * 3;
-		damagePlayer(gameState, player, damage);
+	} else {
+		// Ranged: spawn fireball projectile toward player
+		spawnMissile(
+			mobj,
+			player.x,
+			player.y,
+			player.z + (32 << FRACBITS), // aim at player's chest
+			MobjType.MT_TROOPSHOT,
+			mobjs,
+		);
 	}
 
 	mobj.flags |= MobjFlags.MF_JUSTATTACKED;

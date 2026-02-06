@@ -67,6 +67,8 @@ export const MobjType = {
 	MT_YELLOWKEY: 15,
 	MT_MISC0: 16,
 	MT_MISC1: 17,
+	/** Imp fireball projectile. */
+	MT_TROOPSHOT: 18,
 } as const;
 
 // ─── Mobj Info ─────────────────────────────────────────────────────
@@ -264,6 +266,15 @@ export const MOBJINFO: Record<number, MobjInfo> = {
 		speed: 0,
 		flags: MF_SOLID,
 		spriteName: 'BON2',
+	},
+	[MobjType.MT_TROOPSHOT]: {
+		doomEdNum: -1, // not placed in maps
+		spawnHealth: 1000,
+		radius: 6,
+		height: 8,
+		speed: 10,
+		flags: MobjFlags.MF_MISSILE | MobjFlags.MF_NOBLOCKMAP,
+		spriteName: 'BAL1',
 	},
 };
 

@@ -21,7 +21,8 @@ export interface ActionContext {
 	readonly player: PlayerState;
 	readonly gameState: GameState;
 	readonly map: MapData;
-	readonly mobjs: readonly Mobj[];
+	/** Mutable: action functions may spawn new mobjs (e.g. projectiles). */
+	readonly mobjs: Mobj[];
 }
 
 /** An action function called during state transitions. */
@@ -68,6 +69,10 @@ export const S_SARG_RUN1 = 43;
 export const S_SARG_ATK1 = 51;
 export const S_SARG_PAIN = 54;
 export const S_SARG_DIE1 = 56;
+
+// Imp fireball (Troopshot) states
+export const S_TBALL1 = 82;
+export const S_TBALL_DIE1 = 84;
 
 // Shotgun Guy states
 export const S_SPOS_STND = 62;
@@ -204,6 +209,15 @@ function buildStateTable(): StateEntry[] {
 	st('SPOS', 10, 5, null, 81);
 	st('SPOS', 11, -1, null, 81);          // S_SPOS_DIE5 (81)
 
+	// ─── Imp Fireball (BAL1) ─────────────────────────────────
+	// Flying (states 82-83)
+	st('BAL1', 0, 4, null, 83);            // S_TBALL1 (82)
+	st('BAL1', 1, 4, null, 82);            // S_TBALL2 (83)
+	// Death/explosion (states 84-86)
+	st('BAL1', 2, 6, null, 85);            // S_TBALL_DIE1 (84)
+	st('BAL1', 3, 6, null, 86);            // S_TBALL_DIE2 (85)
+	st('BAL1', 4, 6, null, 0);             // S_TBALL_DIE3 (86) -> S_NULL
+
 	return s;
 }
 
@@ -217,6 +231,7 @@ export const SPAWN_STATE: Record<number, number> = {
 	[MobjType.MT_SHOTGUY]: S_SPOS_STND,
 	[MobjType.MT_IMP]: S_TROO_STND,
 	[MobjType.MT_DEMON]: S_SARG_STND,
+	[MobjType.MT_TROOPSHOT]: S_TBALL1,
 };
 
 /** Maps MobjType to its see (chase) state. */
@@ -249,6 +264,7 @@ export const DEATH_STATE: Record<number, number> = {
 	[MobjType.MT_SHOTGUY]: S_SPOS_DIE1,
 	[MobjType.MT_IMP]: S_TROO_DIE1,
 	[MobjType.MT_DEMON]: S_SARG_DIE1,
+	[MobjType.MT_TROOPSHOT]: S_TBALL_DIE1,
 };
 
 // ─── State Transition ─────────────────────────────────────────────
