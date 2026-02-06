@@ -15,7 +15,7 @@
 
 import { Collider } from '../components/collision';
 import { Position } from '../components/position';
-import { query } from '../core/ecs';
+import { hasComponent, query } from '../core/ecs';
 import { addToStore, clearStore, createPackedStore, type PackedStore } from '../core/storage';
 import type { Entity, System, World } from '../core/types';
 
@@ -510,7 +510,7 @@ export function createSpatialHashSystemState(
 		prevW: new Map(),
 		prevH: new Map(),
 		initialized: false,
-		dirtyThreshold,
+		dirtyThreshold: Math.max(0, Math.min(1, dirtyThreshold)),
 	};
 }
 
@@ -541,6 +541,10 @@ let systemState: SpatialHashSystemState = createSpatialHashSystemState();
 export function setSpatialHashGrid(grid: SpatialHashGrid): void {
 	if (grid !== systemGrid) {
 		systemState.initialized = false;
+		systemState.prevX.clear();
+		systemState.prevY.clear();
+		systemState.prevW.clear();
+		systemState.prevH.clear();
 	}
 	systemGrid = grid;
 }
@@ -677,20 +681,14 @@ function removeStaleEntities(
 	state: SpatialHashSystemState,
 	currentEntities: ReadonlySet<number>,
 ): void {
-	// Collect IDs to remove (cannot delete from Map during iteration in all engines safely)
-	const toRemove: number[] = [];
 	for (const id of state.prevX.keys()) {
 		if (!currentEntities.has(id)) {
-			toRemove.push(id);
+			removeEntityFromGrid(grid, id as Entity);
+			state.prevX.delete(id);
+			state.prevY.delete(id);
+			state.prevW.delete(id);
+			state.prevH.delete(id);
 		}
-	}
-
-	for (const id of toRemove) {
-		removeEntityFromGrid(grid, id as Entity);
-		state.prevX.delete(id);
-		state.prevY.delete(id);
-		state.prevW.delete(id);
-		state.prevH.delete(id);
 	}
 }
 
@@ -785,6 +783,8 @@ export function incrementalSpatialUpdate(
 				const id = data[i];
 				if (id === undefined) continue;
 				const eid = id as Entity;
+				// Skip entities that no longer have the required components
+				if (!hasComponent(world, eid, Position) || !hasComponent(world, eid, Collider)) continue;
 				const { x, y, w, h } = readEntityBounds(eid);
 				insertEntity(grid, eid, x, y, w, h);
 			}
