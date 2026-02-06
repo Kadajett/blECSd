@@ -1,4 +1,3 @@
-#!/usr/bin/env npx tsx
 /**
  * System Performance Benchmark
  *
@@ -6,19 +5,17 @@
  * widget rendering, spatial hashing, and mixed workloads.
  */
 
-import { addComponent, addEntity, query } from '../src/core/ecs';
+import { addEntity } from '../src/core/ecs';
 import type { Entity, World } from '../src/core/types';
 import { createWorld } from '../src/core/world';
 
-import { setCollider, Collider } from '../src/components/collision';
+import { setCollider } from '../src/components/collision';
 import { attachListBehavior, renderListItems } from '../src/components/list';
 import {
 	type EmitterAppearance,
-	Particle,
-	ParticleEmitter,
+	resetParticleStore,
 	setEmitter,
 	setEmitterAppearance,
-	setParticle,
 } from '../src/components/particle';
 import { Position, setPosition } from '../src/components/position';
 import { Velocity, setVelocity } from '../src/components/velocity';
@@ -30,14 +27,11 @@ import {
 import {
 	ageParticle,
 	createParticleSystem,
-	killParticle,
 	moveParticle,
 	spawnParticle,
 } from '../src/systems/particleSystem';
 import {
-	clearSpatialHash,
 	createSpatialHash,
-	insertEntity as insertSpatialEntity,
 	queryArea,
 	rebuildSpatialHash,
 } from '../src/systems/spatialHash';
@@ -132,6 +126,7 @@ function benchParticleSystem(emitterCount: number, particlesPerEmitter: number, 
 
 	// --- Spawn benchmark ---
 	{
+		resetParticleStore();
 		const world = createWorld();
 		const emitters: Entity[] = [];
 		for (let i = 0; i < emitterCount; i++) {
@@ -158,6 +153,7 @@ function benchParticleSystem(emitterCount: number, particlesPerEmitter: number, 
 
 	// --- Update benchmark (age + move) ---
 	{
+		resetParticleStore();
 		const world = createWorld();
 		const emitters: Entity[] = [];
 		for (let i = 0; i < emitterCount; i++) {
@@ -197,6 +193,7 @@ function benchParticleSystem(emitterCount: number, particlesPerEmitter: number, 
 
 	// --- Full system benchmark ---
 	{
+		resetParticleStore();
 		const world = createWorld();
 		const emitterEntities: Entity[] = [];
 		const particleEntities: Entity[] = [];
@@ -205,7 +202,7 @@ function benchParticleSystem(emitterCount: number, particlesPerEmitter: number, 
 			const eid = addEntity(world);
 			setPosition(world, eid, Math.random() * 100, Math.random() * 100);
 			setEmitter(world, eid, {
-				rate: particlesPerEmitter / 2, // Continuous spawn rate
+				rate: 0, // No continuous spawning; spawn is benchmarked separately
 				lifetime: 999,
 				speed: 5,
 				spread: Math.PI * 2,
@@ -226,7 +223,7 @@ function benchParticleSystem(emitterCount: number, particlesPerEmitter: number, 
 		const system = createParticleSystem({
 			emitters: () => emitterEntities,
 			particles: () => particleEntities,
-			maxParticles: totalParticles * 2,
+			maxParticles: totalParticles,
 		});
 
 		const systemResult = bench(`createParticleSystem full frame`, frames, () => {
@@ -373,13 +370,21 @@ function benchSpatialHash(entityCounts: number[], frames: number): void {
 
 		// --- Query benchmark ---
 		rebuildSpatialHash(grid, world);
+		const queriesPerFrame = 100;
+		const totalQueries = queriesPerFrame * (frames + 100); // +100 for warmup
+		const queryXs = new Float64Array(totalQueries);
+		const queryYs = new Float64Array(totalQueries);
+		for (let i = 0; i < totalQueries; i++) {
+			queryXs[i] = Math.random() * worldSize;
+			queryYs[i] = Math.random() * worldSize;
+		}
 		let querySum = 0;
-		const queryResult = bench(`queryArea (${count} entities, 100 queries)`, frames, () => {
-			for (let i = 0; i < 100; i++) {
-				const x = Math.random() * worldSize;
-				const y = Math.random() * worldSize;
-				const result = queryArea(grid, x, y, 8, 8);
+		let queryIdx = 0;
+		const queryResult = bench(`queryArea (${count} entities, ${queriesPerFrame} queries)`, frames, () => {
+			for (let i = 0; i < queriesPerFrame; i++) {
+				const result = queryArea(grid, queryXs[queryIdx]!, queryYs[queryIdx]!, 8, 8);
 				querySum += result.size;
+				queryIdx++;
 			}
 		});
 		printResult(queryResult);
@@ -414,6 +419,7 @@ function benchMixedWorkload(
 		`\n=== MIXED WORKLOAD (${particleCount} particles, ${colliderCount} colliders, ${widgetItemCount} widget items, ${frames} frames) ===`,
 	);
 
+	resetParticleStore();
 	const world = createWorld();
 
 	// --- Set up particles ---
@@ -443,12 +449,11 @@ function benchMixedWorkload(
 	}
 
 	// --- Set up colliders ---
-	const colliderEntities: Entity[] = [];
 	const gridSize = Math.ceil(Math.sqrt(colliderCount));
 	for (let i = 0; i < colliderCount; i++) {
 		const x = (i % gridSize) * 2 + Math.random();
 		const y = Math.floor(i / gridSize) * 2 + Math.random();
-		colliderEntities.push(createColliderEntity(world, x, y, 1.5, 1.5));
+		createColliderEntity(world, x, y, 1.5, 1.5);
 	}
 
 	// --- Set up spatial hash ---
