@@ -380,6 +380,33 @@ export {
 // ScrollableText widget
 export type { ScrollableTextConfig, ScrollableTextWidget } from './scrollableText';
 export { createScrollableText, isScrollableText } from './scrollableText';
+// SplitPane widget
+export type {
+	DimensionValue as SplitPaneDimensionValue,
+	DirtyRect,
+	DividerState,
+	PaneScrollState,
+	PaneState,
+	PaneViewport,
+	PositionValue as SplitPanePositionValue,
+	SharedTextBuffer,
+	SplitDirection,
+	SplitPaneConfig,
+	SplitPaneWidget,
+	SplitResizeEvent,
+} from './splitPane';
+export {
+	createSharedTextBuffer,
+	createSplitPane,
+	getDividerRenderInfo,
+	getSharedTextBuffer,
+	getSplitDirection,
+	hitTestDivider,
+	isSplitPane,
+	resetSplitPaneStore,
+	SplitPane,
+	SplitPaneConfigSchema,
+} from './splitPane';
 // Table widget
 export type { TableStyleConfig, TableWidget, TableWidgetConfig } from './table';
 export { createTable, isTableWidget, TableWidgetConfigSchema } from './table';
