@@ -8,6 +8,16 @@
  * @module utils/componentStorage
  */
 
+import type { PackedHandle } from '../core/storage/packedStore';
+import {
+	addToStore,
+	createPackedStore,
+	forEachInStore,
+	getFromStore,
+	getStoreData,
+	removeFromStore,
+	setInStore,
+} from '../core/storage/packedStore';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -83,6 +93,229 @@ export interface TypedArrayPool {
 	readonly totalFree: number;
 	/** Clears the pool */
 	reset(): void;
+}
+
+/**
+ * Configuration for creating a component store.
+ */
+export interface ComponentStoreConfig {
+	/**
+	 * When true, the store is backed by a PackedStore for cache-friendly
+	 * dense iteration via forEach/data(). Use this for stores iterated in
+	 * hot paths (widget rendering, systems).
+	 *
+	 * When false (default), the store is backed by a plain Map for
+	 * point-lookup access with no iteration overhead.
+	 */
+	readonly iterable: boolean;
+	/** Initial capacity hint for iterable stores (default: 64) */
+	readonly initialCapacity?: number;
+}
+
+/**
+ * A Map-like store that maps Entity to a value of type T.
+ *
+ * Depending on configuration, the backing store is either:
+ * - PackedStore (iterable mode): cache-friendly dense iteration, ideal for hot paths
+ * - Map (non-iterable mode): simple point lookups with minimal overhead
+ *
+ * The API is intentionally Map-compatible so existing `Map<Entity, T>` usage
+ * can be migrated with minimal changes.
+ */
+export interface ComponentStore<T> {
+	/** Gets the value for an entity, or undefined if not present. */
+	get(eid: Entity): T | undefined;
+	/** Sets (or replaces) the value for an entity. */
+	set(eid: Entity, value: T): void;
+	/** Returns true if the entity has a value in this store. */
+	has(eid: Entity): boolean;
+	/** Removes the value for an entity. Returns true if it was present. */
+	delete(eid: Entity): boolean;
+	/** Number of entities in the store. */
+	readonly size: number;
+	/** Removes all entries. */
+	clear(): void;
+	/**
+	 * Iterates over all entries, calling fn for each.
+	 * In iterable mode, iteration traverses the dense PackedStore data array
+	 * for cache-friendly access. In non-iterable mode, iterates the Map.
+	 */
+	forEach(fn: (value: T, eid: Entity) => void): void;
+	/**
+	 * Returns a readonly view of the dense data array for fastest iteration.
+	 * Only meaningful in iterable mode. In non-iterable mode, returns an
+	 * empty frozen array.
+	 *
+	 * WARNING: Only elements at indices `0` through `size - 1` are live.
+	 * Elements beyond `size` are stale leftovers from swap-and-pop removals.
+	 * Do not modify the array structure (push/pop/splice).
+	 */
+	data(): readonly T[];
+}
+
+/** Shared frozen empty array returned by non-iterable data(). */
+const EMPTY_ARRAY: readonly never[] = Object.freeze([]) as readonly never[];
+
+// =============================================================================
+// COMPONENT STORE
+// =============================================================================
+
+/**
+ * Creates a component store that maps Entity to a value of type T.
+ *
+ * Use `iterable: true` for stores that need cache-friendly iteration
+ * (backed by PackedStore). Use `iterable: false` (default) for stores
+ * that only need point lookups (backed by Map).
+ *
+ * The Entity-to-PackedHandle mapping is fully internal; callers never
+ * touch handles directly.
+ *
+ * @param config - Store configuration (iterable mode, initial capacity)
+ * @returns A new component store
+ *
+ * @example
+ * ```typescript
+ * import { createComponentStore } from 'blecsd';
+ *
+ * // Iterable store for hot-path iteration (e.g., rendering)
+ * interface TabData { label: string; active: boolean; }
+ * const tabStore = createComponentStore<TabData>({ iterable: true });
+ * tabStore.set(eid, { label: 'Home', active: true });
+ * tabStore.forEach((data, eid) => {
+ *   // Dense iteration backed by PackedStore
+ * });
+ *
+ * // Non-iterable store for point lookups (e.g., callbacks, config)
+ * const callbacks = createComponentStore<() => void>({ iterable: false });
+ * callbacks.set(eid, () => console.log('clicked'));
+ * const cb = callbacks.get(eid);
+ * ```
+ */
+export function createComponentStore<T>(
+	config: ComponentStoreConfig = { iterable: false },
+): ComponentStore<T> {
+	if (config.iterable) {
+		return createIterableStore<T>(config.initialCapacity);
+	}
+	return createMapStore<T>();
+}
+
+/**
+ * Internal: creates a PackedStore-backed component store with dense iteration.
+ */
+function createIterableStore<T>(initialCapacity?: number): ComponentStore<T> {
+	const packed = createPackedStore<T>(initialCapacity);
+	const handleMap = new Map<Entity, PackedHandle>();
+	// Reverse index: handle.index -> Entity, maintained incrementally
+	// so forEach never needs to rebuild it.
+	const entityByIndex = new Map<number, Entity>();
+
+	return {
+		get(eid: Entity): T | undefined {
+			const handle = handleMap.get(eid);
+			if (!handle) {
+				return undefined;
+			}
+			return getFromStore(packed, handle);
+		},
+
+		set(eid: Entity, value: T): void {
+			const existing = handleMap.get(eid);
+			if (existing) {
+				setInStore(packed, existing, value);
+				return;
+			}
+			const handle = addToStore(packed, value);
+			handleMap.set(eid, handle);
+			entityByIndex.set(handle.index, eid);
+		},
+
+		has(eid: Entity): boolean {
+			return handleMap.has(eid);
+		},
+
+		delete(eid: Entity): boolean {
+			const handle = handleMap.get(eid);
+			if (!handle) {
+				return false;
+			}
+			const removed = removeFromStore(packed, handle);
+			if (removed) {
+				handleMap.delete(eid);
+				entityByIndex.delete(handle.index);
+			}
+			return removed;
+		},
+
+		get size(): number {
+			return handleMap.size;
+		},
+
+		clear(): void {
+			// Remove each entry so PackedStore generations stay correct
+			for (const [, handle] of handleMap) {
+				removeFromStore(packed, handle);
+			}
+			handleMap.clear();
+			entityByIndex.clear();
+		},
+
+		forEach(fn: (value: T, eid: Entity) => void): void {
+			forEachInStore(packed, (value, handle) => {
+				const eid = entityByIndex.get(handle.index);
+				if (eid !== undefined) {
+					fn(value, eid);
+				}
+			});
+		},
+
+		data(): readonly T[] {
+			return getStoreData(packed);
+		},
+	};
+}
+
+/**
+ * Internal: creates a Map-backed component store for point lookups.
+ */
+function createMapStore<T>(): ComponentStore<T> {
+	const store = new Map<Entity, T>();
+
+	return {
+		get(eid: Entity): T | undefined {
+			return store.get(eid);
+		},
+
+		set(eid: Entity, value: T): void {
+			store.set(eid, value);
+		},
+
+		has(eid: Entity): boolean {
+			return store.has(eid);
+		},
+
+		delete(eid: Entity): boolean {
+			return store.delete(eid);
+		},
+
+		get size(): number {
+			return store.size;
+		},
+
+		clear(): void {
+			store.clear();
+		},
+
+		forEach(fn: (value: T, eid: Entity) => void): void {
+			store.forEach((value, eid) => {
+				fn(value, eid);
+			});
+		},
+
+		data(): readonly T[] {
+			return EMPTY_ARRAY as readonly T[];
+		},
+	};
 }
 
 // =============================================================================
