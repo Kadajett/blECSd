@@ -590,6 +590,13 @@ export function getEmitterParticles(eid: Entity): ReadonlySet<number> {
  * ```
  */
 export function trackParticle(emitterId: Entity, particleId: Entity): void {
+	// Remove old entry if already tracked (prevent duplicates)
+	const existing = particleHandleIndex.get(particleId);
+	if (existing) {
+		removeFromStore(particleTrackingStore, existing);
+		particleHandleIndex.delete(particleId);
+	}
+
 	const handle = addToStore(particleTrackingStore, {
 		particleId,
 		emitterId,
@@ -698,7 +705,7 @@ export function setEmitterGravity(world: World, eid: Entity, gravity: number): v
  * }
  * ```
  */
-export function getParticleTrackingStore(): PackedStore<TrackedParticle> {
+export function getParticleTrackingStore(): Readonly<PackedStore<TrackedParticle>> {
 	return particleTrackingStore;
 }
 

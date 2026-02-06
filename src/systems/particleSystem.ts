@@ -318,8 +318,8 @@ function updateTrackedParticles(
 		const entry = storeData[i];
 		if (!entry) continue;
 		const eid = entry.particleId as Entity;
-		processedIds.add(eid);
 		if (!hasParticle(world, eid)) continue;
+		processedIds.add(eid);
 		ageParticle(world, eid, delta);
 		moveParticle(world, eid, delta);
 	}
@@ -336,8 +336,14 @@ function killDeadTrackedParticles(
 	for (let i = storeSize - 1; i >= 0; i--) {
 		const entry = storeData[i];
 		if (!entry) continue;
-		if (isParticleDead(world, entry.particleId as Entity)) {
-			killParticle(world, entry.particleId as Entity);
+		const eid = entry.particleId as Entity;
+		if (hasParticle(world, eid)) {
+			if (isParticleDead(world, eid)) {
+				killParticle(world, eid);
+			}
+		} else {
+			// Stale entry: particle lost its component, just untrack
+			untrackParticle(entry.emitterId as Entity, eid);
 		}
 	}
 }
@@ -352,8 +358,11 @@ export function createParticleSystem(config: ParticleSystemConfig): System {
 		const store = getParticleTrackingStore();
 		const storeData = getStoreData(store) as readonly TrackedParticle[];
 
-		// Process emitters (rate-based spawning)
-		processEmitters(world, emitters, delta, maxParticles, store.size);
+		// Get all particles up-front so we count both tracked and untracked
+		const providedParticles = config.particles(world);
+
+		// Process emitters (rate-based spawning) with total particle count
+		processEmitters(world, emitters, delta, maxParticles, providedParticles.length);
 
 		// Phase 1: Age and move tracked particles (linear for-loop, cache-friendly)
 		processedIds.clear();
@@ -363,7 +372,6 @@ export function createParticleSystem(config: ParticleSystemConfig): System {
 		killDeadTrackedParticles(world, storeData, store.size);
 
 		// Phase 3: Process any untracked particles from the EntityProvider
-		const providedParticles = config.particles(world);
 		for (const eid of providedParticles) {
 			if (processedIds.has(eid)) continue;
 			updateParticle(world, eid, delta);

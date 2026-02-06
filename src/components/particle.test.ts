@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
+import { getStoreData } from '../core/storage/packedStore';
 import type { Entity, World } from '../core/types';
 import {
 	activateEmitter,
@@ -426,7 +427,7 @@ describe('ParticleEmitter component', () => {
 			const store = getParticleTrackingStore();
 			expect(store.size).toBe(2);
 
-			const data = store.data;
+			const data = getStoreData(store);
 			const ids = new Set<number>();
 			for (let i = 0; i < store.size; i++) {
 				const entry = data[i];
