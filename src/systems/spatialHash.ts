@@ -5,12 +5,18 @@
  * which entities overlap it. Enables efficient broad-phase collision
  * detection by only checking entities in the same or adjacent cells.
  *
+ * Supports incremental updates: tracks which entities have moved since
+ * the last frame via a PackedStore dirty set, and only re-hashes those
+ * entities. Falls back to full rebuild when the dirty fraction exceeds
+ * a configurable threshold.
+ *
  * @module systems/spatialHash
  */
 
 import { Collider } from '../components/collision';
 import { Position } from '../components/position';
-import { query } from '../core/ecs';
+import { hasComponent, query } from '../core/ecs';
+import { addToStore, clearStore, createPackedStore, type PackedStore } from '../core/storage';
 import type { Entity, System, World } from '../core/types';
 
 // =============================================================================
@@ -57,12 +63,39 @@ export interface SpatialHashStats {
 	readonly maxEntitiesInCell: number;
 }
 
+/**
+ * Internal state for the incremental spatial hash system.
+ * Tracks which entities need re-hashing via a PackedStore dirty set,
+ * and caches previous positions for change detection.
+ */
+export interface SpatialHashSystemState {
+	/** Dense packed store of dirty entity IDs for cache-friendly iteration */
+	readonly dirtyEntities: PackedStore<number>;
+	/** O(1) dedup: entity IDs currently in the dirty store */
+	readonly dirtyLookup: Set<number>;
+	/** Previous effective X position (with offset) per entity */
+	readonly prevX: Map<number, number>;
+	/** Previous effective Y position (with offset) per entity */
+	readonly prevY: Map<number, number>;
+	/** Previous collider width per entity */
+	readonly prevW: Map<number, number>;
+	/** Previous collider height per entity */
+	readonly prevH: Map<number, number>;
+	/** Whether the system has run at least once (first frame needs full rebuild) */
+	initialized: boolean;
+	/** Fraction of entities that must be dirty to trigger full rebuild (0.0-1.0) */
+	dirtyThreshold: number;
+}
+
 // =============================================================================
 // GRID CREATION
 // =============================================================================
 
 /** Default cell size */
 export const DEFAULT_CELL_SIZE = 8;
+
+/** Default dirty threshold: rebuild fully when >50% of entities moved */
+const DEFAULT_DIRTY_THRESHOLD = 0.5;
 
 /**
  * Creates a new spatial hash grid.
@@ -450,14 +483,50 @@ export function rebuildSpatialHash(grid: SpatialHashGrid, world: World): void {
 }
 
 // =============================================================================
+// INCREMENTAL UPDATE STATE
+// =============================================================================
+
+/**
+ * Creates a fresh spatial hash system state for incremental updates.
+ *
+ * @param dirtyThreshold - Fraction of entities above which full rebuild is used (default: 0.5)
+ * @returns New system state
+ *
+ * @example
+ * ```typescript
+ * import { createSpatialHashSystemState } from 'blecsd';
+ *
+ * const state = createSpatialHashSystemState(0.3);
+ * ```
+ */
+export function createSpatialHashSystemState(
+	dirtyThreshold: number = DEFAULT_DIRTY_THRESHOLD,
+): SpatialHashSystemState {
+	return {
+		dirtyEntities: createPackedStore<number>(64),
+		dirtyLookup: new Set(),
+		prevX: new Map(),
+		prevY: new Map(),
+		prevW: new Map(),
+		prevH: new Map(),
+		initialized: false,
+		dirtyThreshold: Math.max(0, Math.min(1, dirtyThreshold)),
+	};
+}
+
+// =============================================================================
 // SYSTEM
 // =============================================================================
 
 /** Module-level grid reference for the system */
 let systemGrid: SpatialHashGrid | null = null;
 
+/** Module-level incremental update state */
+let systemState: SpatialHashSystemState = createSpatialHashSystemState();
+
 /**
  * Sets the spatial hash grid for the system to use.
+ * Resets incremental state so the next tick performs a full rebuild.
  *
  * @param grid - The spatial hash grid
  *
@@ -470,6 +539,13 @@ let systemGrid: SpatialHashGrid | null = null;
  * ```
  */
 export function setSpatialHashGrid(grid: SpatialHashGrid): void {
+	if (grid !== systemGrid) {
+		systemState.initialized = false;
+		systemState.prevX.clear();
+		systemState.prevY.clear();
+		systemState.prevW.clear();
+		systemState.prevH.clear();
+	}
 	systemGrid = grid;
 }
 
@@ -483,7 +559,253 @@ export function getSpatialHashGrid(): SpatialHashGrid | null {
 }
 
 /**
- * Spatial hash system that rebuilds the grid each frame.
+ * Gets the current incremental update system state.
+ *
+ * @returns The system state
+ */
+export function getSpatialHashSystemState(): SpatialHashSystemState {
+	return systemState;
+}
+
+/**
+ * Marks an entity as needing re-hashing on the next system tick.
+ * Use this when an external system knows an entity's position or
+ * collider changed, to avoid waiting for the position comparison scan.
+ *
+ * @param eid - Entity to mark dirty
+ *
+ * @example
+ * ```typescript
+ * import { markSpatialDirty } from 'blecsd';
+ *
+ * // After teleporting an entity, mark it dirty
+ * Position.x[entity] = 100;
+ * Position.y[entity] = 200;
+ * markSpatialDirty(entity);
+ * ```
+ */
+export function markSpatialDirty(eid: Entity): void {
+	const id = eid as number;
+	if (!systemState.dirtyLookup.has(id)) {
+		addToStore(systemState.dirtyEntities, id);
+		systemState.dirtyLookup.add(id);
+	}
+}
+
+/**
+ * Gets the number of entities currently marked as dirty.
+ *
+ * @returns Count of dirty entities awaiting re-hash
+ *
+ * @example
+ * ```typescript
+ * import { getSpatialDirtyCount } from 'blecsd';
+ *
+ * console.log(`${getSpatialDirtyCount()} entities need re-hashing`);
+ * ```
+ */
+export function getSpatialDirtyCount(): number {
+	return systemState.dirtyEntities.size;
+}
+
+/**
+ * Resets the incremental spatial hash system state.
+ * Clears dirty entities, position cache, and forces a full rebuild on next tick.
+ * Useful for testing or scene transitions.
+ *
+ * @example
+ * ```typescript
+ * import { resetSpatialHashState } from 'blecsd';
+ *
+ * resetSpatialHashState();
+ * ```
+ */
+export function resetSpatialHashState(): void {
+	systemState = createSpatialHashSystemState(systemState.dirtyThreshold);
+}
+
+/**
+ * Sets the dirty threshold for the incremental update system.
+ * When the fraction of dirty entities exceeds this value,
+ * a full rebuild is used instead of incremental updates.
+ *
+ * @param threshold - Fraction between 0.0 and 1.0 (default: 0.5)
+ *
+ * @example
+ * ```typescript
+ * import { setSpatialDirtyThreshold } from 'blecsd';
+ *
+ * // Use full rebuild when more than 30% of entities moved
+ * setSpatialDirtyThreshold(0.3);
+ * ```
+ */
+export function setSpatialDirtyThreshold(threshold: number): void {
+	systemState.dirtyThreshold = Math.max(0, Math.min(1, threshold));
+}
+
+// =============================================================================
+// INCREMENTAL UPDATE
+// =============================================================================
+
+/**
+ * Reads the effective position and size of an entity (position + collider offset).
+ */
+function readEntityBounds(eid: Entity): { x: number; y: number; w: number; h: number } {
+	const x = (Position.x[eid] as number) + (Collider.offsetX[eid] as number);
+	const y = (Position.y[eid] as number) + (Collider.offsetY[eid] as number);
+	const w = Collider.width[eid] as number;
+	const h = Collider.height[eid] as number;
+	return { x, y, w, h };
+}
+
+/**
+ * Populates the position cache from all current entities.
+ */
+function populatePrevCache(state: SpatialHashSystemState, entities: readonly Entity[]): void {
+	for (const eid of entities) {
+		const id = eid as number;
+		const { x, y, w, h } = readEntityBounds(eid);
+		state.prevX.set(id, x);
+		state.prevY.set(id, y);
+		state.prevW.set(id, w);
+		state.prevH.set(id, h);
+	}
+}
+
+/**
+ * Detects entities that were removed since last frame and removes them
+ * from the grid and position cache.
+ */
+function removeStaleEntities(
+	grid: SpatialHashGrid,
+	state: SpatialHashSystemState,
+	currentEntities: ReadonlySet<number>,
+): void {
+	for (const id of state.prevX.keys()) {
+		if (!currentEntities.has(id)) {
+			removeEntityFromGrid(grid, id as Entity);
+			state.prevX.delete(id);
+			state.prevY.delete(id);
+			state.prevW.delete(id);
+			state.prevH.delete(id);
+		}
+	}
+}
+
+/**
+ * Scans all entities for position/size changes and marks dirty ones.
+ * Updates the position cache for all entities.
+ */
+function detectDirtyEntities(state: SpatialHashSystemState, entities: readonly Entity[]): void {
+	for (const eid of entities) {
+		const id = eid as number;
+		const { x, y, w, h } = readEntityBounds(eid);
+
+		const px = state.prevX.get(id);
+		const py = state.prevY.get(id);
+		const pw = state.prevW.get(id);
+		const ph = state.prevH.get(id);
+
+		// New entity or position/size changed
+		if (px === undefined || x !== px || y !== py || w !== pw || h !== ph) {
+			if (!state.dirtyLookup.has(id)) {
+				addToStore(state.dirtyEntities, id);
+				state.dirtyLookup.add(id);
+			}
+		}
+
+		// Always update the cache
+		state.prevX.set(id, x);
+		state.prevY.set(id, y);
+		state.prevW.set(id, w);
+		state.prevH.set(id, h);
+	}
+}
+
+/**
+ * Performs an incremental update of the spatial hash grid.
+ * Only re-inserts entities that were marked dirty (moved, resized, or new).
+ * Falls back to full rebuild when dirty count exceeds the threshold.
+ *
+ * @param grid - The spatial hash grid
+ * @param state - The incremental update state
+ * @param world - The ECS world
+ *
+ * @example
+ * ```typescript
+ * import { createSpatialHash, createSpatialHashSystemState, incrementalSpatialUpdate } from 'blecsd';
+ *
+ * const grid = createSpatialHash({ cellSize: 4 });
+ * const state = createSpatialHashSystemState();
+ * incrementalSpatialUpdate(grid, state, world);
+ * ```
+ */
+export function incrementalSpatialUpdate(
+	grid: SpatialHashGrid,
+	state: SpatialHashSystemState,
+	world: World,
+): void {
+	const entities = query(world, [Position, Collider]) as unknown as readonly Entity[];
+
+	// First frame: full rebuild and populate cache
+	if (!state.initialized) {
+		rebuildSpatialHash(grid, world);
+		populatePrevCache(state, entities);
+		clearStore(state.dirtyEntities);
+		state.dirtyLookup.clear();
+		state.initialized = true;
+		return;
+	}
+
+	// Build set of current entities for stale detection
+	const currentEntities = new Set<number>();
+	for (const eid of entities) {
+		currentEntities.add(eid as number);
+	}
+
+	// Remove entities that no longer have Position+Collider
+	removeStaleEntities(grid, state, currentEntities);
+
+	// Detect position/size changes
+	detectDirtyEntities(state, entities);
+
+	// Process dirty entities
+	const dirtyCount = state.dirtyEntities.size;
+	if (dirtyCount > 0) {
+		const totalCount = entities.length;
+		if (totalCount > 0 && dirtyCount > state.dirtyThreshold * totalCount) {
+			// Too many dirty entities: full rebuild is faster
+			rebuildSpatialHash(grid, world);
+		} else {
+			// Incremental: only re-insert dirty entities
+			const { data } = state.dirtyEntities;
+			for (let i = 0; i < dirtyCount; i++) {
+				const id = data[i];
+				if (id === undefined) continue;
+				const eid = id as Entity;
+				// Skip entities that no longer have the required components
+				if (!hasComponent(world, eid, Position) || !hasComponent(world, eid, Collider)) continue;
+				const { x, y, w, h } = readEntityBounds(eid);
+				insertEntity(grid, eid, x, y, w, h);
+			}
+		}
+	}
+
+	// Clear dirty set for next frame
+	clearStore(state.dirtyEntities);
+	state.dirtyLookup.clear();
+}
+
+// =============================================================================
+// SYSTEM FUNCTION
+// =============================================================================
+
+/**
+ * Spatial hash system with incremental updates.
+ *
+ * On the first frame, performs a full rebuild. On subsequent frames,
+ * detects which entities moved and only re-hashes those. Falls back
+ * to full rebuild when the dirty fraction exceeds the configured threshold.
  *
  * Register this in the EARLY_UPDATE phase to ensure collision queries
  * use up-to-date spatial data.
@@ -501,7 +823,7 @@ export function getSpatialHashGrid(): SpatialHashGrid | null {
  */
 export const spatialHashSystem: System = (world: World): World => {
 	if (systemGrid) {
-		rebuildSpatialHash(systemGrid, world);
+		incrementalSpatialUpdate(systemGrid, systemState, world);
 	}
 	return world;
 };

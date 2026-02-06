@@ -6,31 +6,62 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Collider } from '../components/collision';
 import { Position } from '../components/position';
-import { addComponent, addEntity, createWorld } from '../core/ecs';
-import type { Entity } from '../core/types';
+import { addComponent, addEntity, createWorld, removeEntity } from '../core/ecs';
+import type { Entity, World } from '../core/types';
 import {
 	clearSpatialHash,
 	createSpatialHash,
+	createSpatialHashSystemState,
 	DEFAULT_CELL_SIZE,
 	getEntitiesAtPoint,
 	getEntitiesInCell,
 	getNearbyEntities,
+	getSpatialDirtyCount,
 	getSpatialHashStats,
+	getSpatialHashSystemState,
+	incrementalSpatialUpdate,
 	insertEntity,
+	markSpatialDirty,
 	queryArea,
 	rebuildSpatialHash,
 	removeEntityFromGrid,
+	resetSpatialHashState,
 	type SpatialHashGrid,
+	type SpatialHashSystemState,
+	setSpatialDirtyThreshold,
 	setSpatialHashGrid,
 	spatialHashSystem,
 	worldToCell,
 } from './spatialHash';
+
+/** Helper: create an entity with Position + Collider at a given position/size. */
+function createCollidable(
+	world: World,
+	x: number,
+	y: number,
+	w = 1,
+	h = 1,
+	ox = 0,
+	oy = 0,
+): Entity {
+	const eid = addEntity(world);
+	addComponent(world, eid, Position);
+	addComponent(world, eid, Collider);
+	Position.x[eid] = x;
+	Position.y[eid] = y;
+	Collider.width[eid] = w;
+	Collider.height[eid] = h;
+	Collider.offsetX[eid] = ox;
+	Collider.offsetY[eid] = oy;
+	return eid as Entity;
+}
 
 describe('spatialHash', () => {
 	let grid: SpatialHashGrid;
 
 	beforeEach(() => {
 		grid = createSpatialHash({ cellSize: 8 });
+		resetSpatialHashState();
 	});
 
 	// =========================================================================
@@ -89,8 +120,7 @@ describe('spatialHash', () => {
 		});
 
 		it('inserts entity spanning multiple cells', () => {
-			// Entity from (6,6) to (18,18) with cell size 8
-			// Spans cells (0,0), (0,1), (1,0), (1,1), (2,0), (2,1), (0,2), (1,2), (2,2)
+			// Entity from (0,0) to (17,17) with cell size 8
 			insertEntity(grid, 1 as Entity, 0, 0, 17, 17);
 
 			const stats = getSpatialHashStats(grid);
@@ -284,7 +314,7 @@ describe('spatialHash', () => {
 	});
 
 	// =========================================================================
-	// spatialHashSystem
+	// spatialHashSystem (uses incremental updates)
 	// =========================================================================
 
 	describe('spatialHashSystem', () => {
@@ -306,6 +336,300 @@ describe('spatialHash', () => {
 
 			const stats = getSpatialHashStats(grid);
 			expect(stats.entityCount).toBe(1);
+		});
+	});
+
+	// =========================================================================
+	// Incremental update system state
+	// =========================================================================
+
+	describe('createSpatialHashSystemState', () => {
+		it('creates state with default threshold', () => {
+			const state = createSpatialHashSystemState();
+			expect(state.dirtyEntities.size).toBe(0);
+			expect(state.dirtyLookup.size).toBe(0);
+			expect(state.prevX.size).toBe(0);
+			expect(state.initialized).toBe(false);
+			expect(state.dirtyThreshold).toBe(0.5);
+		});
+
+		it('creates state with custom threshold', () => {
+			const state = createSpatialHashSystemState(0.25);
+			expect(state.dirtyThreshold).toBe(0.25);
+		});
+	});
+
+	describe('markSpatialDirty / getSpatialDirtyCount', () => {
+		it('marks an entity as dirty', () => {
+			expect(getSpatialDirtyCount()).toBe(0);
+			markSpatialDirty(42 as Entity);
+			expect(getSpatialDirtyCount()).toBe(1);
+		});
+
+		it('deduplicates repeated marks for the same entity', () => {
+			markSpatialDirty(10 as Entity);
+			markSpatialDirty(10 as Entity);
+			markSpatialDirty(10 as Entity);
+			expect(getSpatialDirtyCount()).toBe(1);
+		});
+
+		it('tracks multiple distinct entities', () => {
+			markSpatialDirty(1 as Entity);
+			markSpatialDirty(2 as Entity);
+			markSpatialDirty(3 as Entity);
+			expect(getSpatialDirtyCount()).toBe(3);
+		});
+	});
+
+	describe('resetSpatialHashState', () => {
+		it('clears dirty entities and position cache', () => {
+			markSpatialDirty(1 as Entity);
+			markSpatialDirty(2 as Entity);
+			const state = getSpatialHashSystemState();
+			state.prevX.set(1, 10);
+			state.initialized = true;
+
+			resetSpatialHashState();
+
+			expect(getSpatialDirtyCount()).toBe(0);
+			const newState = getSpatialHashSystemState();
+			expect(newState.prevX.size).toBe(0);
+			expect(newState.initialized).toBe(false);
+		});
+
+		it('preserves the dirty threshold across resets', () => {
+			setSpatialDirtyThreshold(0.25);
+			resetSpatialHashState();
+			const state = getSpatialHashSystemState();
+			expect(state.dirtyThreshold).toBe(0.25);
+		});
+	});
+
+	describe('setSpatialDirtyThreshold', () => {
+		it('sets the threshold', () => {
+			setSpatialDirtyThreshold(0.3);
+			expect(getSpatialHashSystemState().dirtyThreshold).toBe(0.3);
+		});
+
+		it('clamps threshold to [0, 1]', () => {
+			setSpatialDirtyThreshold(-0.5);
+			expect(getSpatialHashSystemState().dirtyThreshold).toBe(0);
+
+			setSpatialDirtyThreshold(2.0);
+			expect(getSpatialHashSystemState().dirtyThreshold).toBe(1);
+		});
+	});
+
+	// =========================================================================
+	// incrementalSpatialUpdate
+	// =========================================================================
+
+	describe('incrementalSpatialUpdate', () => {
+		let world: World;
+		let state: SpatialHashSystemState;
+
+		beforeEach(() => {
+			world = createWorld();
+			state = createSpatialHashSystemState();
+		});
+
+		it('performs full rebuild on first frame (uninitialized)', () => {
+			const eid = createCollidable(world, 4, 4, 2, 2);
+
+			incrementalSpatialUpdate(grid, state, world);
+
+			expect(state.initialized).toBe(true);
+			const stats = getSpatialHashStats(grid);
+			expect(stats.entityCount).toBe(1);
+			// Position cache populated
+			expect(state.prevX.has(eid as number)).toBe(true);
+		});
+
+		it('detects moved entities and re-hashes them incrementally', () => {
+			const eid = createCollidable(world, 4, 4, 1, 1);
+
+			// First frame: full rebuild
+			incrementalSpatialUpdate(grid, state, world);
+
+			// Verify entity is at original position
+			let at44 = getEntitiesAtPoint(grid, 4, 4);
+			expect(at44.has(eid as number)).toBe(true);
+
+			// Move entity
+			Position.x[eid] = 20;
+			Position.y[eid] = 20;
+
+			// Second frame: incremental update
+			incrementalSpatialUpdate(grid, state, world);
+
+			// Entity should be at new position
+			at44 = getEntitiesAtPoint(grid, 4, 4);
+			expect(at44.has(eid as number)).toBe(false);
+
+			const at2020 = getEntitiesAtPoint(grid, 20, 20);
+			expect(at2020.has(eid as number)).toBe(true);
+		});
+
+		it('does not re-hash entities that did not move', () => {
+			const eid1 = createCollidable(world, 4, 4, 1, 1);
+			const eid2 = createCollidable(world, 20, 20, 1, 1);
+
+			// First frame
+			incrementalSpatialUpdate(grid, state, world);
+
+			// Second frame: nothing moved
+			incrementalSpatialUpdate(grid, state, world);
+
+			// Dirty set should be clear (was cleared at end of frame)
+			expect(state.dirtyEntities.size).toBe(0);
+
+			// Both still in the grid
+			expect(getEntitiesAtPoint(grid, 4, 4).has(eid1 as number)).toBe(true);
+			expect(getEntitiesAtPoint(grid, 20, 20).has(eid2 as number)).toBe(true);
+		});
+
+		it('detects new entities added after initialization', () => {
+			const eid1 = createCollidable(world, 4, 4, 1, 1);
+
+			// First frame
+			incrementalSpatialUpdate(grid, state, world);
+			expect(getSpatialHashStats(grid).entityCount).toBe(1);
+
+			// Add a new entity
+			const eid2 = createCollidable(world, 16, 16, 1, 1);
+
+			// Second frame: should detect new entity
+			incrementalSpatialUpdate(grid, state, world);
+
+			expect(getSpatialHashStats(grid).entityCount).toBe(2);
+			expect(getEntitiesAtPoint(grid, 16, 16).has(eid2 as number)).toBe(true);
+			expect(getEntitiesAtPoint(grid, 4, 4).has(eid1 as number)).toBe(true);
+		});
+
+		it('removes stale entities that lost Position+Collider', () => {
+			const eid1 = createCollidable(world, 4, 4, 1, 1);
+			const eid2 = createCollidable(world, 20, 20, 1, 1);
+
+			// First frame
+			incrementalSpatialUpdate(grid, state, world);
+			expect(getSpatialHashStats(grid).entityCount).toBe(2);
+
+			// Remove eid2 from the world
+			removeEntity(world, eid2);
+
+			// Second frame: should detect stale entity
+			incrementalSpatialUpdate(grid, state, world);
+
+			expect(getSpatialHashStats(grid).entityCount).toBe(1);
+			expect(getEntitiesAtPoint(grid, 20, 20).has(eid2 as number)).toBe(false);
+			expect(getEntitiesAtPoint(grid, 4, 4).has(eid1 as number)).toBe(true);
+		});
+
+		it('falls back to full rebuild when dirty fraction exceeds threshold', () => {
+			// Set very low threshold: any dirty entity triggers rebuild
+			state.dirtyThreshold = 0.0;
+
+			const eid1 = createCollidable(world, 4, 4, 1, 1);
+			createCollidable(world, 20, 20, 1, 1);
+
+			// First frame: full rebuild (init)
+			incrementalSpatialUpdate(grid, state, world);
+
+			// Move one entity
+			Position.x[eid1] = 12;
+
+			// Second frame: dirty fraction (1/2 = 0.5) > threshold (0.0) => full rebuild
+			incrementalSpatialUpdate(grid, state, world);
+
+			// Still correctly placed after rebuild
+			const stats = getSpatialHashStats(grid);
+			expect(stats.entityCount).toBe(2);
+			expect(getEntitiesAtPoint(grid, 12, 4).has(eid1 as number)).toBe(true);
+		});
+
+		it('uses incremental update when dirty fraction is below threshold', () => {
+			// High threshold: never rebuild
+			state.dirtyThreshold = 1.0;
+
+			const eid1 = createCollidable(world, 4, 4, 1, 1);
+			createCollidable(world, 20, 20, 1, 1);
+
+			// First frame
+			incrementalSpatialUpdate(grid, state, world);
+
+			// Move one entity
+			Position.x[eid1] = 12;
+
+			// Second frame: dirty fraction (1/2 = 0.5) < threshold (1.0) => incremental
+			incrementalSpatialUpdate(grid, state, world);
+
+			// Entity should be at new position
+			expect(getEntitiesAtPoint(grid, 12, 4).has(eid1 as number)).toBe(true);
+			expect(getEntitiesAtPoint(grid, 4, 4).has(eid1 as number)).toBe(false);
+		});
+
+		it('pre-marked dirty entities are included in the update', () => {
+			const eid = createCollidable(world, 4, 4, 1, 1);
+
+			// First frame
+			setSpatialHashGrid(grid);
+			spatialHashSystem(world);
+
+			// Move entity and mark dirty via external API
+			Position.x[eid] = 20;
+			markSpatialDirty(eid);
+
+			// The system tick should pick up the pre-marked dirty entity
+			spatialHashSystem(world);
+
+			expect(getEntitiesAtPoint(grid, 20, 4).has(eid as number)).toBe(true);
+			expect(getEntitiesAtPoint(grid, 4, 4).has(eid as number)).toBe(false);
+		});
+
+		it('detects size changes as dirty', () => {
+			const eid = createCollidable(world, 0, 0, 2, 2);
+
+			// First frame
+			incrementalSpatialUpdate(grid, state, world);
+
+			// Change collider size
+			Collider.width[eid] = 10;
+			Collider.height[eid] = 10;
+
+			// Second frame: should detect size change
+			incrementalSpatialUpdate(grid, state, world);
+
+			// Entity should now span more cells
+			const stats = getSpatialHashStats(grid);
+			expect(stats.entityCount).toBe(1);
+			// With size 10 at origin with cellSize 8, spans cells (0,0) and (1,1)
+			expect(stats.cellCount).toBeGreaterThan(1);
+		});
+
+		it('clears dirty set at end of each frame', () => {
+			createCollidable(world, 4, 4, 1, 1);
+
+			// First frame
+			incrementalSpatialUpdate(grid, state, world);
+			expect(state.dirtyEntities.size).toBe(0);
+			expect(state.dirtyLookup.size).toBe(0);
+		});
+
+		it('handles setSpatialHashGrid resetting initialized flag', () => {
+			const eid = createCollidable(world, 4, 4, 1, 1);
+
+			// Initialize with first grid
+			setSpatialHashGrid(grid);
+			spatialHashSystem(world);
+			expect(getSpatialHashStats(grid).entityCount).toBe(1);
+
+			// Switch to new grid: should trigger full rebuild
+			const grid2 = createSpatialHash({ cellSize: 4 });
+			setSpatialHashGrid(grid2);
+			spatialHashSystem(world);
+
+			expect(getSpatialHashStats(grid2).entityCount).toBe(1);
+			expect(getEntitiesAtPoint(grid2, 4, 4).has(eid as number)).toBe(true);
 		});
 	});
 });
