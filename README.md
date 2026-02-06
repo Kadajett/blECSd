@@ -3,6 +3,8 @@
 [![CI](https://github.com/Kadajett/blECSd/actions/workflows/ci.yml/badge.svg)](https://github.com/Kadajett/blECSd/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/blecsd.svg)](https://www.npmjs.com/package/blecsd)
 
+![dvdBounce](https://github.com/user-attachments/assets/ba80c94a-4fe6-45d8-acb0-f147f25529d2)
+
 A high-performance terminal UI library built on TypeScript and bitECS.
 
 blECSd provides a complete toolkit for building terminal applications: dashboards, file managers, system monitors, CLI tools, and games. It combines the performance of an Entity Component System with production-ready widgets and form controls.
