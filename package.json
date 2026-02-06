@@ -10,6 +10,14 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./components": {
+      "import": "./dist/components/index.js",
+      "types": "./dist/components/index.d.ts"
+    },
+    "./systems": {
+      "import": "./dist/systems/index.js",
+      "types": "./dist/systems/index.d.ts"
+    },
     "./widgets": {
       "import": "./dist/widgets/index.js",
       "types": "./dist/widgets/index.d.ts"
@@ -21,6 +29,30 @@
     "./widgets/fonts": {
       "import": "./dist/widgets/fonts/index.js",
       "types": "./dist/widgets/fonts/index.d.ts"
+    },
+    "./terminal": {
+      "import": "./dist/terminal/index.js",
+      "types": "./dist/terminal/index.d.ts"
+    },
+    "./3d": {
+      "import": "./dist/3d/index.js",
+      "types": "./dist/3d/index.d.ts"
+    },
+    "./schemas": {
+      "import": "./dist/schemas/index.js",
+      "types": "./dist/schemas/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./game": {
+      "import": "./dist/game/index.js",
+      "types": "./dist/game/index.d.ts"
+    },
+    "./audio": {
+      "import": "./dist/audio/index.js",
+      "types": "./dist/audio/index.d.ts"
     }
   },
   "files": [
