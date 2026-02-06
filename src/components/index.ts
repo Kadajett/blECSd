@@ -568,6 +568,42 @@ export {
 	setPaddingAll,
 	setPaddingHV,
 } from './padding';
+// Particle and ParticleEmitter components
+export type {
+	EmitterAppearance,
+	EmitterData,
+	EmitterOptions,
+	ParticleData,
+	ParticleOptions,
+} from './particle';
+export {
+	activateEmitter,
+	getEmitter,
+	getEmitterAppearance,
+	getEmitterParticles,
+	getParticle,
+	getParticleColor,
+	getParticleProgress,
+	hasEmitter,
+	hasParticle,
+	interpolateColor,
+	isEmitterActive,
+	isParticleDead,
+	Particle,
+	ParticleEmitter,
+	pauseEmitter,
+	removeEmitter,
+	removeParticle,
+	resetParticleStore,
+	setEmitter,
+	setEmitterAppearance,
+	setEmitterGravity,
+	setEmitterRate,
+	setEmitterSpeed,
+	setParticle,
+	trackParticle,
+	untrackParticle,
+} from './particle';
 // Position component
 export type { PositionData } from './position';
 export {
