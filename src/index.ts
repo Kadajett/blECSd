@@ -1116,6 +1116,50 @@ export {
 	ZOrder,
 } from './core';
 // =============================================================================
+// PERFORMANCE - Startup Time Optimization
+// =============================================================================
+export type {
+	InitPriorityLevel,
+	LazyInitFn,
+	LazyValue,
+	StartupReport,
+	SubsystemEntry,
+	TerminalCapabilities,
+} from './core/lazyInit';
+export {
+	clearCapabilityCache,
+	detectCapabilities,
+	formatStartupReport,
+	getStartupReport,
+	InitPriority,
+	initSubsystem,
+	initSubsystemsUpTo,
+	lazy,
+	registerSubsystem,
+	resetSubsystems,
+} from './core/lazyInit';
+// =============================================================================
+// PERFORMANCE - Entity Pooling and Recycling
+// =============================================================================
+export type {
+	ArchetypeDefinition,
+	ArchetypePoolConfig,
+	ArchetypePoolStats,
+	ComponentResetFn,
+	RecyclingSystemStats,
+} from './core/storage/archetypePool';
+export {
+	acquireEntity,
+	clearAllArchetypePools,
+	clearArchetypePool,
+	getArchetypePoolStats,
+	getRecyclingStats,
+	preallocateEntities,
+	registerArchetype,
+	releaseEntity,
+	unregisterArchetype,
+} from './core/storage/archetypePool';
+// =============================================================================
 // DEBUG - Debugging and Profiling Utilities
 // =============================================================================
 export type {
@@ -1146,6 +1190,18 @@ export {
 	resetSystemTimings,
 	timedSystem,
 } from './debug';
+// =============================================================================
+// PERFORMANCE - Memory Profiling and Leak Detection
+// =============================================================================
+export type {
+	AllocationTracker,
+	LeakWarning,
+	MemoryDiff,
+	MemoryProfiler,
+	MemoryProfilerConfig,
+	MemorySnapshot,
+} from './debug/memoryProfiler';
+export { createMemoryProfiler } from './debug/memoryProfiler';
 export type {
 	DebugOverlay,
 	DebugOverlayConfig,
@@ -1376,6 +1432,46 @@ export {
 	writeRaw,
 } from './systems';
 // =============================================================================
+// PERFORMANCE - Smooth Animated Scrolling
+// =============================================================================
+export type {
+	ScrollAnimationState,
+	ScrollEvent,
+	ScrollPhysicsConfig,
+} from './systems/smoothScroll';
+export {
+	applyScrollImpulse,
+	clearAllScrollStates,
+	createSmoothScrollSystem,
+	endUserScroll,
+	getScrollPosition,
+	getScrollState,
+	isScrolling,
+	removeScrollState,
+	setScrollImmediate,
+	smoothScrollTo,
+	startUserScroll,
+	updateScrollPhysics,
+} from './systems/smoothScroll';
+// =============================================================================
+// PERFORMANCE - Visibility Culling with Spatial Indexing
+// =============================================================================
+export type {
+	CullingResult,
+	PositionCache,
+	Viewport,
+} from './systems/visibilityCulling';
+export {
+	clearPositionCache,
+	createIncrementalSpatialSystem,
+	createPositionCache,
+	createVisibilityCullingSystem,
+	performCulling,
+	queryVisibleEntities,
+	removeFromCache,
+	updateEntityIfMoved,
+} from './systems/visibilityCulling';
+// =============================================================================
 // TERMINAL - Input Parsing
 // =============================================================================
 export type {
@@ -1400,6 +1496,20 @@ export {
 	parseMouseSequence,
 } from './terminal';
 // =============================================================================
+// PERFORMANCE - Efficient Clipboard Operations
+// =============================================================================
+export type {
+	ClipboardManager,
+	ClipboardManagerConfig,
+	ClipboardProgress,
+	ClipboardResult,
+} from './terminal/clipboardManager';
+export {
+	chunkText,
+	createClipboardManager,
+	streamPaste,
+} from './terminal/clipboardManager';
+// =============================================================================
 // TERMINAL - Debug Logging
 // =============================================================================
 export type {
@@ -1423,6 +1533,19 @@ export { clearBuffer, writeString } from './terminal/screen/cell';
 // =============================================================================
 export type { DoubleBufferData } from './terminal/screen/doubleBuffer';
 export { createDoubleBuffer } from './terminal/screen/doubleBuffer';
+// =============================================================================
+// PERFORMANCE - Throttled Resize Handling
+// =============================================================================
+export type {
+	ResizeCallback,
+	ThrottledResizeConfig,
+	ThrottledResizeState,
+} from './terminal/throttledResize';
+export {
+	createThrottledResize,
+	debounceResize,
+	throttleResize,
+} from './terminal/throttledResize';
 // =============================================================================
 // TYPES - TypeScript Utility Types and Re-exports
 // =============================================================================
