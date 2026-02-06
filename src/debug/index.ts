@@ -773,3 +773,28 @@ export function logWorld(world: World): void {
 // =============================================================================
 
 export { KNOWN_COMPONENTS };
+
+// Memory profiler
+export type {
+	AllocationTracker,
+	LeakWarning,
+	MemoryDiff,
+	MemoryProfiler,
+	MemoryProfilerConfig,
+	MemorySnapshot,
+} from './memoryProfiler';
+export { createMemoryProfiler } from './memoryProfiler';
+
+// Debug overlay
+export type {
+	DebugOverlay,
+	DebugOverlayConfig,
+	FrameRateGraph,
+	MiniProfiler,
+} from './overlay';
+export {
+	createDebugOverlay,
+	createFrameRateGraph,
+	createInputLogger,
+	createMiniProfiler,
+} from './overlay';

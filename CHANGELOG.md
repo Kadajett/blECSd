@@ -11,6 +11,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- Font loading is now async via dynamic imports, saving ~3.2 MB from the main bundle
+- `createBigText()` returns `Promise<BigTextWidget>` (was synchronous)
+- `loadFont()` from `blecsd/widgets/fonts` returns `Promise<BitmapFont>` (was synchronous)
+- Root barrel simplified from 2,079 lines to ~60 lines using `export *` with disambiguations
+- Examples moved to [blECSd-Examples](https://github.com/Kadajett/blECSd-Examples) repository
+- `prepublishOnly` now uses `build:publish` (minified, no sourcemaps)
+- CLI init tool now fetches templates from `blECSd-Examples` repository
+
+### Added
+- Sub-path exports: `blecsd/core`, `blecsd/debug`, `blecsd/errors`, `blecsd/input`
+- `typesVersions` fallback for older TypeScript versions
+- `getCachedFont()` for synchronous access to previously loaded fonts
+- `build:publish` script with minification and no sourcemaps
+- Size monitoring with `size-limit`
+- Tree-shake verification script (`scripts/check-treeshake.ts`)
+- CI publish workflow (`.github/workflows/publish.yml`)
+- Pack verification script (`scripts/verify-pack.sh`)
+- Sub-module barrels now re-export deep modules (smoothScroll, visibilityCulling, bracketedPaste, clipboardManager, throttledResize, memoryProfiler, overlay, streamingText, viewport3d, widthHarness, lazyInit, archetypePool)
+
+### Removed
+- `examples/` directory (moved to external repo)
+- `templates` from npm package files list
+- Static font JSON imports (replaced with dynamic `import()`)
+
 ## [0.1.0] - 2026-02-05
 
 Initial release of blECSd, a modern terminal UI library built on ECS architecture.

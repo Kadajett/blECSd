@@ -560,6 +560,50 @@ interface ValidatedSplitPaneConfig {
 // FACTORY
 // =============================================================================
 
+function initSplitPaneComponents(
+	world: World,
+	eid: Entity,
+	validated: ValidatedSplitPaneConfig,
+	direction: SplitDirection,
+	minPaneSize: number,
+	dividerSize: number,
+	resizable: boolean,
+): void {
+	SplitPane.isSplitPane[eid] = 1;
+	SplitPane.direction[eid] = direction === 'horizontal' ? 0 : 1;
+	SplitPane.paneCount[eid] = 0;
+	SplitPane.minPaneSize[eid] = minPaneSize;
+	SplitPane.dividerSize[eid] = dividerSize;
+	SplitPane.resizable[eid] = resizable ? 1 : 0;
+
+	paneStateStore.set(eid, []);
+	dividerStateStore.set(eid, []);
+	dirtyRectStore.set(eid, []);
+
+	dividerStyleStore.set(eid, {
+		fg: validated.dividerFg !== undefined ? parseColor(validated.dividerFg) : undefined,
+		bg: validated.dividerBg !== undefined ? parseColor(validated.dividerBg) : undefined,
+		char: validated.dividerChar ?? (direction === 'horizontal' ? '│' : '─'),
+	});
+
+	const x = parsePositionToNumber(validated.left);
+	const y = parsePositionToNumber(validated.top);
+	setPosition(world, eid, x, y);
+
+	const width = parseDimension(validated.width);
+	const height = parseDimension(validated.height);
+	setDimensions(world, eid, width, height);
+
+	if (validated.fg !== undefined || validated.bg !== undefined) {
+		setStyle(world, eid, {
+			fg: validated.fg !== undefined ? parseColor(validated.fg) : undefined,
+			bg: validated.bg !== undefined ? parseColor(validated.bg) : undefined,
+		});
+	}
+
+	setFocusable(world, eid, { focusable: true });
+}
+
 /**
  * Creates a SplitPane widget with the given configuration.
  *
@@ -611,49 +655,19 @@ export function createSplitPane(
 	const dividerSize = validated.dividerSize ?? 1;
 	const resizable = validated.resizable !== false;
 
-	// Set component tag
-	SplitPane.isSplitPane[eid] = 1;
-	SplitPane.direction[eid] = direction === 'horizontal' ? 0 : 1;
-	SplitPane.paneCount[eid] = 0;
-	SplitPane.minPaneSize[eid] = minPaneSize;
-	SplitPane.dividerSize[eid] = dividerSize;
-	SplitPane.resizable[eid] = resizable ? 1 : 0;
-
-	// Initialize stores
-	paneStateStore.set(eid, []);
-	dividerStateStore.set(eid, []);
-	dirtyRectStore.set(eid, []);
-
-	// Store divider style
-	dividerStyleStore.set(eid, {
-		fg: validated.dividerFg !== undefined ? parseColor(validated.dividerFg) : undefined,
-		bg: validated.dividerBg !== undefined ? parseColor(validated.dividerBg) : undefined,
-		char: validated.dividerChar ?? (direction === 'horizontal' ? '│' : '─'),
-	});
+	initSplitPaneComponents(world, eid, validated, direction, minPaneSize, dividerSize, resizable);
 
 	// Set initial ratios if provided
 	let currentRatios: number[] = validated.ratios ? normalizeRatios(validated.ratios) : [];
 
-	// Set position
-	const x = parsePositionToNumber(validated.left);
-	const y = parsePositionToNumber(validated.top);
-	setPosition(world, eid, x, y);
-
-	// Set dimensions
-	const width = parseDimension(validated.width);
-	const height = parseDimension(validated.height);
-	setDimensions(world, eid, width, height);
-
-	// Set style
-	if (validated.fg !== undefined || validated.bg !== undefined) {
-		setStyle(world, eid, {
-			fg: validated.fg !== undefined ? parseColor(validated.fg) : undefined,
-			bg: validated.bg !== undefined ? parseColor(validated.bg) : undefined,
-		});
+	function releaseBufferRef(bufferId: string): void {
+		const buf = sharedBufferRegistry.get(bufferId);
+		if (!buf) return;
+		buf.refCount--;
+		if (buf.refCount <= 0) {
+			sharedBufferRegistry.delete(bufferId);
+		}
 	}
-
-	// Make focusable
-	setFocusable(world, eid, { focusable: true });
 
 	/**
 	 * Gets container dimensions from the ECS.
@@ -666,6 +680,40 @@ export function createSplitPane(
 			width: dims?.width ?? 80,
 			height: dims?.height ?? 24,
 		};
+	}
+
+	function applyViewportsToPanes(panes: PaneState[], viewports: PaneViewport[]): void {
+		for (let i = 0; i < panes.length; i++) {
+			const pane = panes[i];
+			const vp = viewports[i];
+			if (!pane || !vp) continue;
+			pane.viewport = vp;
+			clampScroll(pane.scroll, vp);
+			pane.dirty = true;
+		}
+	}
+
+	function updateDividerRatios(ratios: number[]): void {
+		const dividers = dividerStateStore.get(eid) ?? [];
+		for (let i = 0; i < dividers.length; i++) {
+			const divider = dividers[i];
+			if (!divider) continue;
+			let cumulative = 0;
+			for (let j = 0; j <= i; j++) {
+				cumulative += ratios[j] ?? 0;
+			}
+			divider.ratio = cumulative;
+		}
+	}
+
+	function syncChildEntities(panes: PaneState[], viewports: PaneViewport[]): void {
+		for (let i = 0; i < panes.length; i++) {
+			const pane = panes[i];
+			const vp = viewports[i];
+			if (!pane || !vp) continue;
+			setPosition(world, pane.entity, vp.x, vp.y);
+			setDimensions(world, pane.entity, vp.width, vp.height);
+		}
 	}
 
 	/**
@@ -686,38 +734,9 @@ export function createSplitPane(
 			dividerSize,
 		);
 
-		for (let i = 0; i < panes.length; i++) {
-			const pane = panes[i];
-			if (!pane) continue;
-			const vp = viewports[i];
-			if (!vp) continue;
-			pane.viewport = vp;
-			clampScroll(pane.scroll, vp);
-			pane.dirty = true;
-		}
-
-		// Update divider states
-		const dividers = dividerStateStore.get(eid) ?? [];
-		for (let i = 0; i < dividers.length; i++) {
-			const divider = dividers[i];
-			if (!divider) continue;
-			// Cumulative ratio up to this divider
-			let cumulative = 0;
-			for (let j = 0; j <= i; j++) {
-				cumulative += currentRatios[j] ?? 0;
-			}
-			divider.ratio = cumulative;
-		}
-
-		// Update child entity dimensions to match viewports
-		for (let i = 0; i < panes.length; i++) {
-			const pane = panes[i];
-			if (!pane) continue;
-			const vp = viewports[i];
-			if (!vp) continue;
-			setPosition(world, pane.entity, vp.x, vp.y);
-			setDimensions(world, pane.entity, vp.width, vp.height);
-		}
+		applyViewportsToPanes(panes, viewports);
+		updateDividerRatios(currentRatios);
+		syncChildEntities(panes, viewports);
 
 		SplitPane.paneCount[eid] = panes.length;
 		markDirty(world, eid);
@@ -889,13 +908,7 @@ export function createSplitPane(
 
 			// Detach existing buffer if any
 			if (pane.sharedBufferId) {
-				const existing = sharedBufferRegistry.get(pane.sharedBufferId);
-				if (existing) {
-					existing.refCount--;
-					if (existing.refCount <= 0) {
-						sharedBufferRegistry.delete(pane.sharedBufferId);
-					}
-				}
+				releaseBufferRef(pane.sharedBufferId);
 			}
 
 			// Attach new buffer
@@ -919,13 +932,7 @@ export function createSplitPane(
 			const pane = panes[paneIndex];
 			if (!pane || !pane.sharedBufferId) return widget;
 
-			const buffer = sharedBufferRegistry.get(pane.sharedBufferId);
-			if (buffer) {
-				buffer.refCount--;
-				if (buffer.refCount <= 0) {
-					sharedBufferRegistry.delete(pane.sharedBufferId);
-				}
-			}
+			releaseBufferRef(pane.sharedBufferId);
 			pane.sharedBufferId = undefined;
 			pane.dirty = true;
 			markDirty(world, eid);
@@ -1083,13 +1090,7 @@ export function createSplitPane(
 			const panes = paneStateStore.get(eid) ?? [];
 			for (const pane of panes) {
 				if (pane.sharedBufferId) {
-					const buffer = sharedBufferRegistry.get(pane.sharedBufferId);
-					if (buffer) {
-						buffer.refCount--;
-						if (buffer.refCount <= 0) {
-							sharedBufferRegistry.delete(pane.sharedBufferId);
-						}
-					}
+					releaseBufferRef(pane.sharedBufferId);
 				}
 			}
 
@@ -1190,6 +1191,29 @@ export function getSharedTextBuffer(id: string): SharedTextBuffer | undefined {
 	return sharedBufferRegistry.get(id);
 }
 
+function findDividerAtPosition(
+	panes: PaneState[],
+	isHorizontal: boolean,
+	dvSize: number,
+	posX: number,
+	posY: number,
+): number {
+	for (let i = 0; i < panes.length - 1; i++) {
+		const pane = panes[i];
+		if (!pane) continue;
+
+		const divStart = isHorizontal
+			? pane.viewport.x + pane.viewport.width
+			: pane.viewport.y + pane.viewport.height;
+		const pos = isHorizontal ? posX : posY;
+
+		if (pos >= divStart && pos < divStart + dvSize) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 /**
  * Computes which divider (if any) is at the given position within a split pane.
  *
@@ -1215,27 +1239,10 @@ export function hitTestDivider(_world: World, eid: Entity, posX: number, posY: n
 	const panes = paneStateStore.get(eid);
 	if (!panes || panes.length < 2) return -1;
 
-	const dir = SplitPane.direction[eid] === 0 ? 'horizontal' : 'vertical';
+	const isHorizontal = SplitPane.direction[eid] === 0;
 	const dvSize = SplitPane.dividerSize[eid] ?? 1;
 
-	for (let i = 0; i < panes.length - 1; i++) {
-		const pane = panes[i];
-		if (!pane) continue;
-
-		if (dir === 'horizontal') {
-			const divStart = pane.viewport.x + pane.viewport.width;
-			if (posX >= divStart && posX < divStart + dvSize) {
-				return i;
-			}
-		} else {
-			const divStart = pane.viewport.y + pane.viewport.height;
-			if (posY >= divStart && posY < divStart + dvSize) {
-				return i;
-			}
-		}
-	}
-
-	return -1;
+	return findDividerAtPosition(panes, isHorizontal, dvSize, posX, posY);
 }
 
 /**

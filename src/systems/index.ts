@@ -245,6 +245,26 @@ export {
 	renderText,
 	setRenderBuffer,
 } from './renderSystem';
+// Smooth scroll system
+export type {
+	ScrollAnimationState,
+	ScrollEvent,
+	ScrollPhysicsConfig,
+} from './smoothScroll';
+export {
+	applyScrollImpulse,
+	clearAllScrollStates,
+	createSmoothScrollSystem,
+	endUserScroll,
+	getScrollPosition,
+	getScrollState,
+	isScrolling,
+	removeScrollState,
+	setScrollImmediate,
+	smoothScrollTo,
+	startUserScroll,
+	updateScrollPhysics,
+} from './smoothScroll';
 // Spatial hash system
 export type {
 	CellCoord,
@@ -321,6 +341,22 @@ export {
 	updateLineStore,
 	virtualizedRenderSystem,
 } from './virtualizedRenderSystem';
+// Visibility culling system
+export type {
+	CullingResult,
+	PositionCache,
+	Viewport,
+} from './visibilityCulling';
+export {
+	clearPositionCache,
+	createIncrementalSpatialSystem,
+	createPositionCache,
+	createVisibilityCullingSystem,
+	performCulling,
+	queryVisibleEntities,
+	removeFromCache,
+	updateEntityIfMoved,
+} from './visibilityCulling';
 // Worker pool
 export type {
 	PoolStats,
