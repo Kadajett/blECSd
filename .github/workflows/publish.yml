@@ -60,4 +60,9 @@ jobs:
           npm config list
 
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: |
+          npm publish --provenance --access public 2>&1 || {
+            echo "=== npm debug log ==="
+            cat /home/runner/.npm/_logs/*-debug-0.log 2>/dev/null || echo "No debug log found"
+            exit 1
+          }
