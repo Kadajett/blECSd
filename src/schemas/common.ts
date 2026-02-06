@@ -6,25 +6,58 @@
 import { z } from 'zod';
 
 /**
- * Positive integer (1, 2, 3, ...)
+ * Schema for positive integers (1, 2, 3, ...).
+ *
+ * @example
+ * ```typescript
+ * import { PositiveIntSchema } from 'blecsd';
+ *
+ * const count = PositiveIntSchema.parse(5); // OK
+ * PositiveIntSchema.parse(0); // throws
+ * ```
  */
 export const PositiveIntSchema = z.number().int().positive();
 export type PositiveInt = z.infer<typeof PositiveIntSchema>;
 
 /**
- * Non-negative integer (0, 1, 2, 3, ...)
+ * Schema for non-negative integers (0, 1, 2, 3, ...).
+ *
+ * @example
+ * ```typescript
+ * import { NonNegativeIntSchema } from 'blecsd';
+ *
+ * const index = NonNegativeIntSchema.parse(0); // OK
+ * NonNegativeIntSchema.parse(-1); // throws
+ * ```
  */
 export const NonNegativeIntSchema = z.number().int().nonnegative();
 export type NonNegativeInt = z.infer<typeof NonNegativeIntSchema>;
 
 /**
- * Percentage value (0-100)
+ * Schema for percentage values (0-100).
+ *
+ * @example
+ * ```typescript
+ * import { PercentageSchema } from 'blecsd';
+ *
+ * const pct = PercentageSchema.parse(75); // OK
+ * PercentageSchema.parse(101); // throws
+ * ```
  */
 export const PercentageSchema = z.number().min(0).max(100);
 export type Percentage = z.infer<typeof PercentageSchema>;
 
 /**
- * Color string - hex (#fff, #ffffff, #ffffffff), rgb(), hsl(), or named
+ * Schema for color strings — hex (#fff, #ffffff, #ffffffff), rgb(), hsl(), or named colors.
+ *
+ * @example
+ * ```typescript
+ * import { ColorStringSchema } from 'blecsd';
+ *
+ * ColorStringSchema.parse('#ff0000'); // OK
+ * ColorStringSchema.parse('rgb(255, 0, 0)'); // OK
+ * ColorStringSchema.parse('red'); // OK
+ * ```
  */
 export const ColorStringSchema = z.string().refine(
 	(val) => {
@@ -43,7 +76,15 @@ export const ColorStringSchema = z.string().refine(
 export type ColorString = z.infer<typeof ColorStringSchema>;
 
 /**
- * Dimension - number (absolute) or percentage string ("50%")
+ * Schema for dimensions — number (absolute cells) or percentage string ("50%").
+ *
+ * @example
+ * ```typescript
+ * import { DimensionSchema } from 'blecsd';
+ *
+ * DimensionSchema.parse(80); // OK
+ * DimensionSchema.parse('50%'); // OK
+ * ```
  */
 export const DimensionSchema = z.union([
 	z.number(),
@@ -52,7 +93,16 @@ export const DimensionSchema = z.union([
 export type Dimension = z.infer<typeof DimensionSchema>;
 
 /**
- * Position value - number, percentage string, or keyword
+ * Schema for position values — number, percentage string, or keyword.
+ *
+ * @example
+ * ```typescript
+ * import { PositionValueSchema } from 'blecsd';
+ *
+ * PositionValueSchema.parse(10); // OK
+ * PositionValueSchema.parse('50%'); // OK
+ * PositionValueSchema.parse('center'); // OK
+ * ```
  */
 export const PositionValueSchema = z.union([
 	z.number(),

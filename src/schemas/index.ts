@@ -39,7 +39,11 @@ export {
 	StyleOptionsSchema,
 	ZIndexSchema,
 } from './components';
-
+export {
+	FixedTimestepConfigSchema,
+	GameLoopOptionsSchema,
+	LoopStatsSchema,
+} from './gameLoop';
 export {
 	ComputedLayoutSchema,
 	DragConstraintsSchema,
@@ -51,7 +55,12 @@ export {
 	QueuedMouseEventSchema,
 	SnapToGridSchema,
 } from './systems';
-
+export {
+	BufferEncodingSchema,
+	EditorOptionsSchema,
+	ExecOptionsSchema,
+	SpawnOptionsSchema,
+} from './terminal';
 export {
 	FilePathSchema,
 	IntervalSchema,

@@ -10,7 +10,14 @@ import { z } from 'zod';
 // =============================================================================
 
 /**
- * Schema for grid snap configuration.
+ * Schema for grid snap configuration (positive x/y step sizes).
+ *
+ * @example
+ * ```typescript
+ * import { SnapToGridSchema } from 'blecsd';
+ *
+ * const snap = SnapToGridSchema.parse({ x: 10, y: 10 });
+ * ```
  */
 export const SnapToGridSchema = z
 	.object({
@@ -20,7 +27,18 @@ export const SnapToGridSchema = z
 	.nullable();
 
 /**
- * Schema for drag constraint configuration.
+ * Schema for drag constraint configuration with axis locking, bounds, and grid snapping.
+ *
+ * @example
+ * ```typescript
+ * import { DragConstraintsSchema } from 'blecsd';
+ *
+ * const constraints = DragConstraintsSchema.parse({
+ *   constrainToParent: true,
+ *   constrainAxis: 'x',
+ *   minX: 0, maxX: 100,
+ * });
+ * ```
  */
 export const DragConstraintsSchema = z
 	.object({
@@ -59,6 +77,13 @@ export const DragConstraintsSchema = z
 
 /**
  * Schema for queued key event data.
+ *
+ * @example
+ * ```typescript
+ * import { QueuedKeyEventSchema } from 'blecsd';
+ *
+ * const event = QueuedKeyEventSchema.parse({ type: 'key', key: 'enter' });
+ * ```
  */
 export const QueuedKeyEventSchema = z.object({
 	type: z.literal('key'),
@@ -68,6 +93,15 @@ export const QueuedKeyEventSchema = z.object({
 
 /**
  * Schema for queued mouse event data.
+ *
+ * @example
+ * ```typescript
+ * import { QueuedMouseEventSchema } from 'blecsd';
+ *
+ * const event = QueuedMouseEventSchema.parse({
+ *   type: 'mouse', action: 'click', x: 10, y: 20,
+ * });
+ * ```
  */
 export const QueuedMouseEventSchema = z.object({
 	type: z.literal('mouse'),
@@ -78,7 +112,14 @@ export const QueuedMouseEventSchema = z.object({
 });
 
 /**
- * Schema for queued input events (union).
+ * Schema for queued input events — discriminated union of key and mouse events.
+ *
+ * @example
+ * ```typescript
+ * import { QueuedInputEventSchema } from 'blecsd';
+ *
+ * const event = QueuedInputEventSchema.parse({ type: 'key', key: 'a' });
+ * ```
  */
 export const QueuedInputEventSchema = z.discriminatedUnion('type', [
 	QueuedKeyEventSchema,
@@ -90,7 +131,18 @@ export const QueuedInputEventSchema = z.discriminatedUnion('type', [
 // =============================================================================
 
 /**
- * Schema for output state tracking.
+ * Schema for output state tracking (cursor position, colors, screen mode).
+ *
+ * @example
+ * ```typescript
+ * import { OutputStateSchema } from 'blecsd';
+ *
+ * const state = OutputStateSchema.parse({
+ *   lastX: 0, lastY: 0,
+ *   lastFg: 0xffffffff, lastBg: 0x000000ff,
+ *   lastAttrs: 0, alternateScreen: false,
+ * });
+ * ```
  */
 export const OutputStateSchema = z.object({
 	lastX: z.number().int().nonnegative(),
@@ -106,7 +158,14 @@ export const OutputStateSchema = z.object({
 // =============================================================================
 
 /**
- * Schema for computed layout data.
+ * Schema for computed layout data (position + dimensions).
+ *
+ * @example
+ * ```typescript
+ * import { ComputedLayoutSchema } from 'blecsd';
+ *
+ * const layout = ComputedLayoutSchema.parse({ x: 10, y: 5, width: 80, height: 24 });
+ * ```
  */
 export const ComputedLayoutSchema = z.object({
 	x: z.number().finite(),
@@ -120,7 +179,14 @@ export const ComputedLayoutSchema = z.object({
 // =============================================================================
 
 /**
- * Schema for entity bounds used in rendering.
+ * Schema for entity bounds used in rendering (position, size, z-order).
+ *
+ * @example
+ * ```typescript
+ * import { EntityBoundsSchema } from 'blecsd';
+ *
+ * const bounds = EntityBoundsSchema.parse({ x: 0, y: 0, width: 40, height: 12, z: 10 });
+ * ```
  */
 export const EntityBoundsSchema = z.object({
 	x: z.number().finite(),
@@ -135,6 +201,13 @@ export const EntityBoundsSchema = z.object({
 // =============================================================================
 
 /**
- * Schema for focus event types.
+ * Schema for focus event types ('focus' | 'blur').
+ *
+ * @example
+ * ```typescript
+ * import { FocusEventTypeSchema } from 'blecsd';
+ *
+ * const type = FocusEventTypeSchema.parse('focus');
+ * ```
  */
 export const FocusEventTypeSchema = z.enum(['focus', 'blur']);
