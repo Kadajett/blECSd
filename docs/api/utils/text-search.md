@@ -270,6 +270,7 @@ function getMatchStatus(cache: SearchCache): { current: number; total: number; c
 
 ## Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   search, searchLiteral, createSearchCache,

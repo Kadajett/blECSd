@@ -232,6 +232,7 @@ function trimToLineCount(store: VirtualizedLineStore, maxLines: number): Virtual
 
 ## Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createLineStore, getLineAtIndex, getLineRange,

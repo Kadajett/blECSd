@@ -37,6 +37,7 @@ process.stdout.write(mouse.enableNormal());
 
 ### SGR (Select Graphic Rendition) Codes
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SGR } from 'blecsd/terminal';
 
@@ -81,6 +82,7 @@ parseSgrString('\x1b[1;38;5;196m', attr);
 
 Useful helpers:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { applySgrCodes, extractSgrCodes } from 'blecsd/terminal';
 
@@ -98,6 +100,7 @@ Functions for cursor positioning and visibility.
 
 ### Movement
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cursor } from 'blecsd/terminal';
 
@@ -237,6 +240,7 @@ Functions for screen management.
 
 ### Clearing
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { screen } from 'blecsd/terminal';
 
@@ -327,6 +331,7 @@ MouseMode.URXVT         // urxvt extended mode
 
 ### Enable/Disable
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { mouse } from 'blecsd/terminal';
 
@@ -345,6 +350,7 @@ mouse.disableAll()      // Disable all mouse modes
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { mouse, screen } from 'blecsd/terminal';
 
@@ -426,6 +432,7 @@ ClipboardSelection.CUT0       // '0' - Cut buffer 0
 
 ### Operations
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clipboard, ClipboardSelection } from 'blecsd/terminal';
 

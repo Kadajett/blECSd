@@ -36,6 +36,7 @@ In this tutorial, you'll build a simple snake-like game that demonstrates blECSd
 
 Create `snake.ts`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, removeEntity, hasComponent } from 'blecsd';
 import {

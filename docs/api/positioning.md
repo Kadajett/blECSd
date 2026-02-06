@@ -38,6 +38,7 @@ Valid string formats:
 
 Zod schema for validating position values.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { PositionValueSchema } from 'blecsd';
 

@@ -4,6 +4,7 @@ Sanitizes user-provided or network-received text by stripping C0/C1 control char
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   sanitizeTextInput,
@@ -82,6 +83,7 @@ Sanitizes untrusted text input by removing control characters, null bytes, and i
 function sanitizeTextInput(input: string, options?: Partial<InputSanitizeOptions>): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sanitizeTextInput } from 'blecsd';
 
@@ -104,6 +106,7 @@ function sanitizeTextInputDetailed(
 ): SanitizeResult
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sanitizeTextInputDetailed } from 'blecsd';
 

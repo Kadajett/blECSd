@@ -35,6 +35,7 @@ In this tutorial, you'll build a simple todo list application that demonstrates 
 
 Create a new file `todo.ts`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -105,6 +106,7 @@ let nextId = 4;
 
 ## Step 3: Create the UI Layout
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createPanel,

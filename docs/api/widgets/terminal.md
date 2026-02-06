@@ -4,6 +4,7 @@ The Terminal widget provides a terminal emulator with ANSI rendering and optiona
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld } from 'blecsd';
 import { createTerminal } from 'blecsd/widgets';
@@ -136,6 +137,7 @@ terminal.destroy(): void;
 
 Use `handleTerminalKey` to route keyboard input:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleTerminalKey } from 'blecsd/widgets';
 
@@ -192,6 +194,7 @@ program.on('key', (event) => {
 
 ### ANSI Art Viewer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { encoding } from 'blecsd';
 

@@ -1,6 +1,6 @@
 {
   "name": "blecsd",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A modern, high-performance terminal UI library built on TypeScript and ECS architecture",
   "type": "module",
   "main": "./dist/index.js",
@@ -147,7 +147,8 @@
     "build:publish": "tsup --no-sourcemap --minify",
     "size": "size-limit",
     "size:check": "size-limit --check",
-    "verify-pack": "./scripts/verify-pack.sh"
+    "verify-pack": "./scripts/verify-pack.sh",
+    "doccheck": "tsx scripts/doccheck.ts"
   },
   "size-limit": [
     {

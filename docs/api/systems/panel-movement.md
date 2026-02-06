@@ -14,6 +14,7 @@ The panel movement system handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createPanelMoveState,
@@ -272,6 +273,7 @@ function detectResizeHandle(
 ): ResizeHandle | undefined
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectResizeHandle, beginResize } from 'blecsd';
 

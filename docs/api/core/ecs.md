@@ -156,6 +156,7 @@ This module re-exports for convenience:
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

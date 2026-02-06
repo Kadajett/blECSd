@@ -4,6 +4,7 @@ A text input dialog with submit/cancel key bindings, optional validation, and a 
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPrompt, prompt } from 'blecsd';
 
@@ -59,6 +60,7 @@ Returns `true` if valid, or a string error message if invalid. Returning `false`
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { PromptConfigSchema } from 'blecsd';
 
@@ -76,6 +78,7 @@ const config = PromptConfigSchema.parse({
 
 Creates a Prompt widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPrompt } from 'blecsd';
 
@@ -212,6 +215,7 @@ Destroys the prompt widget and cleans up all state.
 
 A Promise-based API that creates a prompt and resolves with the result.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { prompt } from 'blecsd';
 
@@ -242,6 +246,7 @@ if (value !== null) {
 
 ### isPrompt
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPrompt } from 'blecsd';
 
@@ -257,6 +262,7 @@ if (isPrompt(entity)) {
 
 ### handlePromptKey
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handlePromptKey } from 'blecsd';
 
@@ -276,6 +282,7 @@ handlePromptKey(promptWidget, 'escape');  // triggers cancel
 
 ### With Validation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPrompt } from 'blecsd';
 
@@ -298,6 +305,7 @@ p.onSubmit((value) => {
 
 ### Centered Dialog
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPrompt } from 'blecsd';
 

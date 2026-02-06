@@ -210,6 +210,7 @@ Current serialization format version (currently `1`).
 
 ### Save/Load with Custom Serializers
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   registerSerializable,

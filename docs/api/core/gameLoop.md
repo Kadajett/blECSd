@@ -51,6 +51,7 @@ loop.registerSystem(LoopPhase.RENDER, renderSystem);
 
 ## Creating a Game Loop
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, createWorld, LoopPhase } from 'blecsd';
 
@@ -215,6 +216,7 @@ const loop = createGameLoop(world, {
 
 The PhaseManager allows adding custom phases between built-in phases.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { PhaseManager, LoopPhase } from 'blecsd';
 
@@ -249,6 +251,7 @@ enum LoopPhase {
 
 ## Helper Functions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isLoopRunning, isLoopPaused } from 'blecsd';
 
@@ -261,6 +264,7 @@ isLoopPaused(loop);     // true/false
 
 ## Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, createWorld, LoopPhase } from 'blecsd';
 

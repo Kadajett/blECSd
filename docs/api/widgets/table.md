@@ -10,6 +10,7 @@ import { createTable, isTableWidget } from 'blecsd';
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTable } from 'blecsd';
@@ -297,6 +298,7 @@ const table = createTable(world, eid, {
 
 ## Type Guard
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTableWidget } from 'blecsd';
 
@@ -318,6 +320,7 @@ Destroying a table removes the entity and detaches all table behavior.
 
 Configuration is validated using Zod:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TableWidgetConfigSchema } from 'blecsd';
 

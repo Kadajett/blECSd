@@ -4,6 +4,7 @@ Converts termcap parameterized strings to terminfo format. This is used when par
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captoinfo, convertTermcapStrings, needsConversion } from 'blecsd';
 
@@ -29,6 +30,7 @@ if (needsConversion('%d;%dH')) {
 
 Converts a termcap parameterized string to terminfo format.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captoinfo } from 'blecsd';
 
@@ -96,6 +98,7 @@ interface CaptoInfoOptions {
 
 Converts all string capabilities in a record.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { convertTermcapStrings } from 'blecsd';
 
@@ -127,6 +130,7 @@ const terminfoStrings = convertTermcapStrings(termcapStrings);
 
 Checks if a string contains termcap-style % codes that need conversion.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { needsConversion } from 'blecsd';
 
@@ -155,6 +159,7 @@ needsConversion('%i');          // false (same in both)
 
 Termcap strings often start with padding specifications like `50\E[H` meaning 50ms delay. By default, captoinfo strips these:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captoinfo } from 'blecsd';
 
@@ -204,6 +209,7 @@ captoinfo('%d%b%d');    // '%p1%d%p1%d'
 
 ### Cursor Positioning
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captoinfo } from 'blecsd';
 
@@ -220,6 +226,7 @@ const cm2 = captoinfo('\\E[%i%+ ;%+ H');
 
 ### With Termcap Parser
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseTermcap, termcapToTerminfo, captoinfo } from 'blecsd';
 
@@ -240,6 +247,7 @@ if (entry) {
 
 ### Conditional Conversion
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captoinfo, needsConversion } from 'blecsd';
 

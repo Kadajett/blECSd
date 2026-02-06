@@ -252,6 +252,7 @@ onFormSubmit(loginForm, async (values) => {
 
 ## Example: Settings Form
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachFormBehavior,

@@ -58,10 +58,10 @@ Content.parseTags  // Uint8Array  - Parse markup tags (0=no, 1=yes)
 Checks if an entity has a Content component.
 
 ```typescript
-import { createWorld, hasContent, setContent } from 'blecsd';
+import { createWorld, addEntity, hasContent, setContent } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 hasContent(world, eid); // false
 
@@ -76,10 +76,10 @@ hasContent(world, eid); // true
 Sets or updates text content on an entity. Adds the Content component if not already present.
 
 ```typescript
-import { createWorld, setContent, TextAlign, TextVAlign } from 'blecsd';
+import { createWorld, addEntity, setContent, TextAlign, TextVAlign } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 // Set simple text content
 setContent(world, eid, 'Hello, World!');
@@ -115,10 +115,10 @@ setContent(world, eid, 'New text');
 Gets the text content for an entity.
 
 ```typescript
-import { createWorld, setContent, getContent } from 'blecsd';
+import { createWorld, addEntity, setContent, getContent } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 getContent(world, eid); // '' (no content)
 
@@ -133,10 +133,10 @@ getContent(world, eid); // 'Hello, World!'
 Sets text content, stripping any ANSI escape codes. Use this when you want to store plain text without formatting codes.
 
 ```typescript
-import { createWorld, setText, getText } from 'blecsd';
+import { createWorld, addEntity, setText, getText, TextAlign } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 // ANSI codes are stripped
 setText(world, eid, '\x1b[31mRed Text\x1b[0m');
@@ -158,10 +158,10 @@ setText(world, eid, '\x1b[32mGreen\x1b[0m', {
 Gets text content with ANSI codes stripped. Use this to get plain text for display width calculations or logging.
 
 ```typescript
-import { createWorld, setContent, getText } from 'blecsd';
+import { createWorld, addEntity, setContent, getText } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 getText(world, eid); // '' (no content)
 
@@ -177,10 +177,10 @@ getText(world, eid); // 'Red and Green'
 Gets full content data for an entity.
 
 ```typescript
-import { createWorld, setContent, getContentData, TextAlign, TextVAlign } from 'blecsd';
+import { createWorld, addEntity, setContent, getContentData, TextAlign, TextVAlign } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 getContentData(world, eid); // undefined (no content)
 
@@ -212,10 +212,10 @@ const data = getContentData(world, eid);
 Appends text to an entity's existing content.
 
 ```typescript
-import { createWorld, setContent, appendContent, getContent } from 'blecsd';
+import { createWorld, addEntity, setContent, appendContent, getContent } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setContent(world, eid, 'Hello');
 appendContent(world, eid, ', World!');
@@ -232,10 +232,10 @@ getContent(world, eid); // 'Hello, World!'
 Clears the content of an entity. Removes the text but keeps the component.
 
 ```typescript
-import { createWorld, setContent, clearContent, getContent, hasContent } from 'blecsd';
+import { createWorld, addEntity, setContent, clearContent, getContent, hasContent } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setContent(world, eid, 'Some text');
 clearContent(world, eid);
@@ -253,10 +253,10 @@ hasContent(world, eid);  // true (component still exists)
 Gets the content length in characters.
 
 ```typescript
-import { createWorld, setContent, getContentLength } from 'blecsd';
+import { createWorld, addEntity, setContent, getContentLength } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 getContentLength(world, eid); // 0 (no content)
 
@@ -271,10 +271,10 @@ getContentLength(world, eid); // 5
 Gets the content hash for change detection. Uses the djb2 algorithm.
 
 ```typescript
-import { createWorld, setContent, getContentHash } from 'blecsd';
+import { createWorld, addEntity, setContent, getContentHash } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 const hash1 = getContentHash(world, eid); // 0 (no content)
 
@@ -295,10 +295,10 @@ const hash4 = getContentHash(world, eid); // Different from hash2
 Sets the horizontal text alignment.
 
 ```typescript
-import { createWorld, setContent, setTextAlign, TextAlign } from 'blecsd';
+import { createWorld, addEntity, setContent, setTextAlign, TextAlign } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setContent(world, eid, 'Centered text');
 setTextAlign(world, eid, TextAlign.Center);
@@ -313,10 +313,10 @@ setTextAlign(world, eid, TextAlign.Center);
 Sets the vertical text alignment.
 
 ```typescript
-import { createWorld, setContent, setTextVAlign, TextVAlign } from 'blecsd';
+import { createWorld, addEntity, setContent, setTextVAlign, TextVAlign } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setContent(world, eid, 'Middle-aligned text');
 setTextVAlign(world, eid, TextVAlign.Middle);
@@ -331,10 +331,10 @@ setTextVAlign(world, eid, TextVAlign.Middle);
 Sets whether text should wrap at container boundaries.
 
 ```typescript
-import { createWorld, setContent, setTextWrap } from 'blecsd';
+import { createWorld, addEntity, setContent, setTextWrap } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setContent(world, eid, 'Long text that might need wrapping');
 setTextWrap(world, eid, true);
@@ -349,10 +349,10 @@ setTextWrap(world, eid, true);
 Checks if text wrapping is enabled for an entity.
 
 ```typescript
-import { createWorld, setContent, setTextWrap, isTextWrapped } from 'blecsd';
+import { createWorld, addEntity, setContent, setTextWrap, isTextWrapped } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 isTextWrapped(world, eid); // false (no content)
 
@@ -370,10 +370,10 @@ isTextWrapped(world, eid); // true
 Sets whether to parse markup tags in content.
 
 ```typescript
-import { createWorld, setContent, setParseTags } from 'blecsd';
+import { createWorld, addEntity, setContent, setParseTags } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 setContent(world, eid, '{bold}Important{/bold}');
 setParseTags(world, eid, true);
@@ -388,10 +388,10 @@ setParseTags(world, eid, true);
 Checks if tag parsing is enabled for an entity.
 
 ```typescript
-import { createWorld, setContent, setParseTags, isParsingTags } from 'blecsd';
+import { createWorld, addEntity, setContent, setParseTags, isParsingTags } from 'blecsd';
 
 const world = createWorld();
-const eid = 1;
+const eid = addEntity(world);
 
 isParsingTags(world, eid); // false (no content)
 
@@ -407,6 +407,8 @@ isParsingTags(world, eid); // true
 ### resetContentStore
 
 Resets the content store. Primarily used for testing.
+
+<!-- blecsd-doccheck:ignore -->
 
 ```typescript
 import { resetContentStore } from 'blecsd';

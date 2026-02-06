@@ -4,6 +4,7 @@ Plays video files in the terminal using external video players (mpv, mplayer) wi
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createVideo } from 'blecsd';
 
@@ -51,6 +52,7 @@ video.play();
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { VideoConfigSchema } from 'blecsd';
 
@@ -68,6 +70,7 @@ const result = VideoConfigSchema.safeParse({
 
 Creates a Video widget. Accepts an optional `VideoProcessSpawner` for dependency injection (useful for testing).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createVideo } from 'blecsd';
 
@@ -272,6 +275,7 @@ Kills any running process and removes the entity from the world.
 
 Finds the best available video player binary on the system.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectVideoPlayer } from 'blecsd';
 
@@ -296,6 +300,7 @@ Search paths checked:
 
 ### buildMpvArgs
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { buildMpvArgs } from 'blecsd';
 
@@ -308,6 +313,7 @@ const args = buildMpvArgs(
 
 ### buildMplayerArgs
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { buildMplayerArgs } from 'blecsd';
 
@@ -320,6 +326,7 @@ const args = buildMplayerArgs(
 
 ### buildPlayerArgs
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { buildPlayerArgs } from 'blecsd';
 
@@ -332,6 +339,7 @@ const args = buildPlayerArgs('mpv', videoState, 80, 24);
 
 ### isVideo
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isVideo } from 'blecsd';
 
@@ -342,6 +350,7 @@ if (isVideo(world, entity)) {
 
 ### getVideoPlaybackState
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getVideoPlaybackState } from 'blecsd';
 
@@ -351,6 +360,7 @@ const state = getVideoPlaybackState(entity);
 
 ### getVideoPlayer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getVideoPlayer } from 'blecsd';
 
@@ -362,6 +372,7 @@ const player = getVideoPlayer(entity);
 
 Low-level functions for sending commands to player processes.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sendPauseCommand, sendSeekCommand } from 'blecsd';
 
@@ -375,6 +386,7 @@ sendSeekCommand(processHandle, 'mplayer', 30);
 
 ### Basic Video Playback
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createVideo } from 'blecsd';
 
@@ -400,6 +412,7 @@ video.onError((err) => {
 
 ### Looping Background Video
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createVideo } from 'blecsd';
 

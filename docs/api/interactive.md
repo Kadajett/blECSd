@@ -242,6 +242,7 @@ interface InteractiveOptions {
 
 ### Mouse Events
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setInteractive,
@@ -301,6 +302,7 @@ function onMouseUp(world) {
 
 ### Hover Styling
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setInteractive, isHovered, getStyle, getInteractive } from 'blecsd';
 

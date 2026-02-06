@@ -14,6 +14,7 @@ The behavior system handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createBehaviorSystem } from 'blecsd';
 

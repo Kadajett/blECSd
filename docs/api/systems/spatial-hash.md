@@ -14,6 +14,7 @@ The spatial hash system handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createSpatialHash,
@@ -96,6 +97,7 @@ Creates a new spatial hash grid.
 function createSpatialHash(config?: Partial<SpatialHashConfig>): SpatialHashGrid
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash } from 'blecsd';
 
@@ -110,6 +112,7 @@ Gets the cell coordinate for a world position.
 function worldToCell(grid: SpatialHashGrid, x: number, y: number): CellCoord
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, worldToCell } from 'blecsd';
 
@@ -155,6 +158,7 @@ function queryArea(
 ): ReadonlySet<number>
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { queryArea } from 'blecsd';
 
@@ -172,6 +176,7 @@ Gets potential collision candidates for an entity. Returns all entities in the s
 function getNearbyEntities(grid: SpatialHashGrid, eid: Entity): ReadonlySet<number>
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getNearbyEntities } from 'blecsd';
 
@@ -213,6 +218,7 @@ Gets statistics about the spatial hash grid.
 function getSpatialHashStats(grid: SpatialHashGrid): SpatialHashStats
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getSpatialHashStats } from 'blecsd';
 
@@ -265,6 +271,7 @@ function createSpatialHashSystem(): System
 
 Complete collision detection setup:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

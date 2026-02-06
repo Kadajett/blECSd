@@ -15,6 +15,7 @@ The Entity Component System pattern originated in game development. Benefits for
 
 For games, you'll typically want a continuous update loop:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScheduler, LoopPhase } from 'blecsd';
@@ -35,6 +36,7 @@ scheduler.start(world, { fixedTimestep: 16 });
 
 The Velocity component enables smooth movement:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setPosition, setVelocity, getVelocity } from 'blecsd';
 
@@ -84,6 +86,7 @@ function checkCollision(world: World, a: number, b: number): boolean {
 
 Use state machines for game states:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { attachStateMachine, sendEvent, getState } from 'blecsd';
 

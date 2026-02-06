@@ -6,6 +6,7 @@ The Tput module provides access to terminal capabilities through the terminfo da
 
 ### createTput
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTput } from 'blecsd';
 
@@ -36,6 +37,7 @@ const custom = createTput({
 
 Gets the shared default Tput instance. Creates one on first call using $TERM.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDefaultTput } from 'blecsd';
 
@@ -47,6 +49,7 @@ console.log(`Terminal: ${tput.terminal}`);
 
 Resets the default instance. Useful when terminal changes or for testing.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetDefaultTput } from 'blecsd';
 
@@ -57,6 +60,7 @@ resetDefaultTput();
 
 Gets xterm-256color data as a fallback.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDefaultXtermData } from 'blecsd';
 
@@ -323,6 +327,7 @@ The `tparm` method processes terminfo parameter strings:
 
 ### Basic Terminal Control
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTput } from 'blecsd';
 
@@ -344,6 +349,7 @@ process.stdout.write(tput.getString('orig_pair') ?? '');  // Reset
 
 ### Alternate Screen Buffer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTput } from 'blecsd';
 
@@ -360,6 +366,7 @@ process.stdout.write(tput.getString('exit_ca_mode') ?? '');
 
 ### Cursor Visibility
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTput } from 'blecsd';
 
@@ -372,6 +379,7 @@ process.stdout.write(tput.getString('cursor_normal') ?? '');
 
 ### Checking Capabilities
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTput } from 'blecsd';
 

@@ -4,6 +4,7 @@ Configurable state machine framework with typed states, events, guard conditions
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createStateMachine } from 'blecsd';
 
@@ -123,6 +124,7 @@ Zod schemas for validating state machine configurations at runtime, useful for l
 
 ### With Guards and Actions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createStateMachine } from 'blecsd';
 
@@ -168,6 +170,7 @@ turnstile.validEvents();      // ['push']
 
 ### With Subscriptions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createStateMachine } from 'blecsd';
 

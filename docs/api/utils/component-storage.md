@@ -154,6 +154,7 @@ function isWithinMemoryBounds(
 
 ## Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSparseStore, createTypedArrayPool, estimateMemoryUsage } from 'blecsd';
 

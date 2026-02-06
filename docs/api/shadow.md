@@ -102,6 +102,7 @@ setShadow(world, entity, {
 
 Gets the shadow data of an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setShadow, getShadow } from 'blecsd';
 

@@ -4,6 +4,7 @@ Complete terminfo capability name arrays, termcap-to-terminfo alias mappings, an
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   BOOLEAN_CAPS,
@@ -34,6 +35,7 @@ if (isCapabilityName('cm')) {
 
 Complete list of boolean capability names in terminfo order.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { BOOLEAN_CAPS } from 'blecsd';
 
@@ -48,6 +50,7 @@ console.log(`${BOOLEAN_CAPS.length} boolean capabilities`);
 
 Complete list of numeric capability names in terminfo order.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { NUMBER_CAPS } from 'blecsd';
 
@@ -62,6 +65,7 @@ console.log(`${NUMBER_CAPS.length} numeric capabilities`);
 
 Complete list of string capability names in terminfo order.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { STRING_CAPS } from 'blecsd';
 
@@ -79,6 +83,7 @@ console.log(`${STRING_CAPS.length} string capabilities`);
 
 Maps termcap short names to terminfo long names.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { CAPABILITY_ALIASES } from 'blecsd';
 
@@ -97,6 +102,7 @@ CAPABILITY_ALIASES['km']  // 'has_meta_key'
 
 Maps terminfo long names to termcap short names.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { CAPABILITY_REVERSE_ALIASES } from 'blecsd';
 
@@ -112,6 +118,7 @@ CAPABILITY_REVERSE_ALIASES['clear_screen']    // 'cl'
 
 Resolves a capability name, handling termcap aliases.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resolveCapabilityName } from 'blecsd';
 
@@ -131,6 +138,7 @@ resolveCapabilityName('unknown');         // 'unknown' (unchanged)
 
 Gets the termcap short name for a terminfo capability.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTermcapName } from 'blecsd';
 
@@ -150,6 +158,7 @@ getTermcapName('unknown');         // null
 
 Gets the type of a capability.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCapabilityType } from 'blecsd';
 
@@ -171,6 +180,7 @@ getCapabilityType('unknown');           // null
 
 Checks if a name is a valid capability name.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isCapabilityName } from 'blecsd';
 
@@ -188,6 +198,7 @@ isCapabilityName('invalid');         // false
 
 ### Type Guards
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   isBooleanCapability,
@@ -217,6 +228,7 @@ isStringCapability('cm');                  // true
 
 Gets the index of a capability in its category array. Useful for binary format parsing.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCapabilityIndex } from 'blecsd';
 
@@ -237,6 +249,7 @@ getCapabilityIndex('unknown');         // -1
 
 Gets all capability names of a given type.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCapabilitiesByType } from 'blecsd';
 
@@ -333,6 +346,7 @@ type StringCapName = typeof STRING_CAPS[number];
 
 ### Building a Capability Lookup Table
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   BOOLEAN_CAPS,
@@ -362,6 +376,7 @@ function lookupCapability(name: string) {
 
 ### Validating Terminfo Data
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getCapabilityType,

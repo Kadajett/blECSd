@@ -10,6 +10,7 @@ In synchronized output mode (DEC 2026), the terminal buffers all output until th
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SynchronizedOutput } from 'blecsd/terminal';
 
@@ -168,6 +169,7 @@ function isSyncOutputSupported(): boolean
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SynchronizedOutput, isSyncOutputSupported } from 'blecsd/terminal';
 
@@ -180,6 +182,7 @@ const syncOut = new SynchronizedOutput(process.stdout, {
 
 ### Game Loop
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SynchronizedOutput, isSyncOutputSupported, screen } from 'blecsd/terminal';
 
@@ -248,6 +251,7 @@ syncOut.renderFrame(() => {
 
 ### Building Frames with OutputBuffer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { OutputBuffer, SynchronizedOutput } from 'blecsd/terminal';
 

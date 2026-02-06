@@ -4,6 +4,7 @@ The Layout widget is an auto-layout container that arranges children using diffe
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLayout, createBox } from 'blecsd';
@@ -41,6 +42,7 @@ layout.recalculate();
 
 Creates a new Layout widget with the specified configuration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLayout } from 'blecsd';
@@ -311,6 +313,7 @@ These functions can be used independently of the widget for custom layout calcul
 
 Calculates inline (flow) layout positions.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { calculateInlineLayout, type ChildLayoutData } from 'blecsd';
 
@@ -342,6 +345,7 @@ const positions = calculateInlineLayout(
 
 Calculates grid layout positions.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { calculateGridLayout, type ChildLayoutData } from 'blecsd';
 
@@ -370,6 +374,7 @@ const positions = calculateGridLayout(
 
 Calculates flex layout positions.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { calculateFlexLayout, type ChildLayoutData } from 'blecsd';
 
@@ -406,6 +411,7 @@ const positions = calculateFlexLayout(
 
 Checks if an entity is a layout widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isLayout } from 'blecsd';
 
@@ -422,6 +428,7 @@ if (isLayout(world, entity)) {
 
 Gets the layout mode of a layout entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getLayoutMode } from 'blecsd';
 
@@ -563,6 +570,7 @@ interface LayoutWidget {
 
 ## Zod Schemas
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { LayoutConfigSchema } from 'blecsd';
 
@@ -585,6 +593,7 @@ if (result.success) {
 
 ### Dashboard Layout
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLayout, createBox } from 'blecsd';
@@ -617,6 +626,7 @@ dashboard.recalculate();
 
 ### Toolbar Layout
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLayout, createBox } from 'blecsd';
@@ -650,6 +660,7 @@ toolbar.recalculate();
 
 ### Centered Content
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLayout, createBox } from 'blecsd';
@@ -680,6 +691,7 @@ container.recalculate();
 
 ### Method Chaining
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createLayout, createBox } from 'blecsd';

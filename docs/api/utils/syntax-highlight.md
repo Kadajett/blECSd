@@ -287,6 +287,7 @@ function getGrammarByName(name: string): Grammar
 
 ## Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createHighlightCache, highlightVisibleFirst, continueHighlight,

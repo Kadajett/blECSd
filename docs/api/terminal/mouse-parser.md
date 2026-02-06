@@ -179,6 +179,7 @@ Mouse modifier bits follow the X10 convention:
 
 ## Zod Schemas
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { MouseEventSchema, FocusEventSchema } from 'blecsd';
 

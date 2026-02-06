@@ -39,6 +39,7 @@ In this tutorial, you'll build a system monitoring dashboard that displays CPU, 
 
 Create `dashboard.ts`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

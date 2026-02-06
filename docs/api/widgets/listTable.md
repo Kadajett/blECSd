@@ -10,6 +10,7 @@ import { createListTable, isListTableWidget } from 'blecsd';
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createListTable } from 'blecsd';
@@ -247,6 +248,7 @@ table.destroy();  // Remove entity and cleanup
 
 ## Example: Process List
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createListTable, createPanel } from 'blecsd';

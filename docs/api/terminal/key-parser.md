@@ -137,6 +137,7 @@ Modifier values follow the standard encoding: `1 + (shift * 1) + (alt * 2) + (ct
 
 ## Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { KeyEventSchema } from 'blecsd';
 

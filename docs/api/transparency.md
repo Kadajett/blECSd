@@ -12,6 +12,7 @@ The transparency system provides:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setStyle,
@@ -65,6 +66,7 @@ setStyle(world, entity, { opacity: 0.5 });  // 50% opaque
 
 Check if an entity has a transparent background.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTransparent } from 'blecsd';
 
@@ -77,6 +79,7 @@ if (isTransparent(world, entity)) {
 
 Check if an entity has opacity less than 1.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasPartialOpacity } from 'blecsd';
 
@@ -89,6 +92,7 @@ if (hasPartialOpacity(world, entity)) {
 
 Set or clear transparent background flag.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setTransparent } from 'blecsd';
 
@@ -102,6 +106,7 @@ setTransparent(world, entity, false);  // Make opaque
 
 Get or set entity opacity (0-1 scale).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getOpacity, setOpacity } from 'blecsd';
 
@@ -115,6 +120,7 @@ Get the effective opacity considering parent hierarchy.
 
 Opacity compounds through ancestors: a 50% opaque entity in a 50% opaque parent has an effective opacity of 25%.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getEffectiveOpacity } from 'blecsd';
 
@@ -128,6 +134,7 @@ const effective = getEffectiveOpacity(world, entity);
 
 Blend two colors using alpha compositing.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { blendColors, packColor } from 'blecsd';
 
@@ -142,6 +149,7 @@ const purple = blendColors(red, blue, 0.5);
 
 Blend foreground and background colors for a cell with opacity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { blendCellColors, packColor } from 'blecsd';
 
@@ -158,6 +166,7 @@ const { fg: blendedFg, bg: blendedBg } = blendCellColors(
 
 Get the background color to use for transparent elements.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getParentBackground } from 'blecsd';
 
@@ -171,6 +180,7 @@ const parentBg = getParentBackground(world, entity);
 
 Check if alpha blending is needed for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { needsBlending } from 'blecsd';
 
@@ -189,6 +199,7 @@ For performance-critical rendering, use premultiplied alpha.
 
 Convert between straight and premultiplied alpha formats.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { toPremultiplied, fromPremultiplied, packColor } from 'blecsd';
 
@@ -201,6 +212,7 @@ const straight = fromPremultiplied(premult); // RGB restored
 
 Fast blend for premultiplied colors.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { blendPremultiplied, toPremultiplied, packColor } from 'blecsd';
 
@@ -240,6 +252,7 @@ interface ColorWithAlpha {
 
 ## Example: Semi-Transparent Dialog
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setStyle,

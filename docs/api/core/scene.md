@@ -117,6 +117,7 @@ function createFadeTransition(
 ): SceneTransition;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFadeTransition } from 'blecsd';
 
@@ -135,6 +136,7 @@ function createSlideTransition(
 ): SceneTransition;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSlideTransition } from 'blecsd';
 
@@ -149,6 +151,7 @@ Creates a system that updates the scene manager each frame. Advances transitions
 function createSceneSystem(sceneManager: SceneManager, getDelta: () => number): System;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSceneManager, createSceneSystem } from 'blecsd';
 
@@ -159,6 +162,7 @@ scheduler.registerSystem(LoopPhase.UPDATE, sceneSystem);
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSceneManager, createFadeTransition, createWorld } from 'blecsd';
 

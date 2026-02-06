@@ -13,6 +13,7 @@ The input system handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScheduler,
@@ -99,6 +100,7 @@ clearEventQueue();
 
 Find all entities at a screen position, sorted by z-index.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hitTest } from 'blecsd';
 
@@ -120,6 +122,7 @@ if (hits.length > 0) {
 
 Test if a point is inside an entity's bounds.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { pointInEntity } from 'blecsd';
 
@@ -132,6 +135,7 @@ if (pointInEntity(world, entity, x, y)) {
 
 Get the topmost interactive entity at a position.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInteractiveEntityAt } from 'blecsd';
 
@@ -149,6 +153,7 @@ Capture directs all mouse events to a specific entity (for drag operations).
 
 Start capturing mouse events to an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captureMouseTo } from 'blecsd';
 

@@ -4,6 +4,7 @@ Frame-aware input state tracking for keyboard and mouse. Provides queries like `
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputState, getMovementDirection } from 'blecsd';
 
@@ -150,6 +151,7 @@ function createInputState(config?: InputStateConfig): InputState;
 
 **Returns:** A new InputState instance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputState } from 'blecsd';
 
@@ -167,6 +169,7 @@ Checks if any of the specified keys are pressed.
 function isAnyKeyDown(inputState: InputState, keys: readonly (KeyName | string)[]): boolean;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isAnyKeyDown } from 'blecsd';
 
@@ -183,6 +186,7 @@ Checks if all specified keys are pressed.
 function isAllKeysDown(inputState: InputState, keys: readonly (KeyName | string)[]): boolean;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isAllKeysDown } from 'blecsd';
 
@@ -209,6 +213,7 @@ function getMovementDirection(inputState: InputState): { x: number; y: number };
 
 **Returns:** Object with `x` (-1, 0, or 1) and `y` (-1, 0, or 1).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getMovementDirection } from 'blecsd';
 
@@ -219,6 +224,7 @@ player.y += dir.y * speed;
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputState, createInputEventBuffer, drainKeys, drainMouse } from 'blecsd';
 

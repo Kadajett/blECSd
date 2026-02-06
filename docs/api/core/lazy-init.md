@@ -4,6 +4,7 @@ Startup time optimization through lazy loading and deferred initialization. Subs
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { lazy, registerSubsystem, InitPriority, initSubsystemsUpTo } from 'blecsd';
 
@@ -106,6 +107,7 @@ Creates a lazily initialized value that is computed on first access.
 function lazy<T>(factory: LazyInitFn<T>): LazyValue<T>;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { lazy } from 'blecsd';
 
@@ -210,6 +212,7 @@ function detectCapabilities(maxAge?: number): TerminalCapabilities;
 **Parameters:**
 - `maxAge` - Maximum cache age in ms (default: 60000)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectCapabilities } from 'blecsd';
 
@@ -230,6 +233,7 @@ function clearCapabilityCache(): void;
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   lazy,

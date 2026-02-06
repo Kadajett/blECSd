@@ -62,6 +62,7 @@ const Particle = {
 
 Creates or updates a particle on an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setParticle } from 'blecsd';
 
@@ -217,6 +218,7 @@ const appearance = getEmitterAppearance(entity);
 
 ### Particle Tracking
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { trackParticle, untrackParticle, getEmitterParticles } from 'blecsd';
 

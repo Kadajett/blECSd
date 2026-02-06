@@ -452,6 +452,7 @@ const actualWidth = getResolvedWidth(world, panel, terminalWidth); // 80
 
 ### Creating a Content-Sized Element
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions, setShrink } from 'blecsd';

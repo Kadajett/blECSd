@@ -132,6 +132,7 @@ The state machine system uses a Structure of Arrays (SoA) pattern:
 
 ## Example: Enemy AI
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   registerStateMachineSystem,

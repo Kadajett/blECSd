@@ -14,6 +14,7 @@ The resize module handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createResizeHandler,
@@ -48,6 +49,7 @@ disableResizeHandling(program, handler);
 
 Creates a resize handler for the given world.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createResizeHandler } from 'blecsd';
 
@@ -67,6 +69,7 @@ The handler will automatically:
 
 Enables resize handling on a Program instance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableResizeHandling } from 'blecsd';
 
@@ -78,6 +81,7 @@ enableResizeHandling(program, handler);
 
 Disables resize handling on a Program instance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { disableResizeHandling } from 'blecsd';
 
@@ -88,6 +92,7 @@ disableResizeHandling(program, handler);
 
 Gets the active resize handler for a world.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getResizeHandler } from 'blecsd';
 
@@ -135,6 +140,7 @@ The SIGWINCH signal is sent by the operating system when the terminal is resized
 
 Gets the resize event bus for subscribing to resize events.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getResizeEventBus } from 'blecsd';
 
@@ -154,6 +160,7 @@ bus.on('resize', ({ width, height, previousWidth, previousHeight }) => {
 
 Resets the resize event bus (for testing).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetResizeEventBus } from 'blecsd';
 
@@ -196,6 +203,7 @@ interface ResizeEventMap {
 
 Complete example with Program and game loop:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

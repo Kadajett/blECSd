@@ -4,6 +4,7 @@ Efficient, async clipboard operations that never block the UI. Supports large te
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createClipboardManager,
@@ -85,6 +86,7 @@ Creates a clipboard manager for efficient copy/paste operations.
 function createClipboardManager(config?: Partial<ClipboardManagerConfig>): ClipboardManager
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createClipboardManager } from 'blecsd';
 
@@ -115,6 +117,7 @@ Splits text into chunks for streaming paste.
 function chunkText(text: string, chunkSize: number): readonly string[]
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { chunkText } from 'blecsd';
 
@@ -136,6 +139,7 @@ function streamPaste(
 ): Promise<void>
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { streamPaste } from 'blecsd';
 

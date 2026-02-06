@@ -102,6 +102,7 @@ const text = createTextEntity(world, {
 
 blECSd does not include a renderer. You write your own or use the Program class for low-level terminal control:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cursor, style, screen } from 'blecsd/terminal';
 

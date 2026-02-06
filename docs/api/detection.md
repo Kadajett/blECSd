@@ -270,6 +270,7 @@ function isMouseSupported(): boolean
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isMouseSupported, mouse } from 'blecsd/terminal';
 

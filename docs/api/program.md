@@ -12,6 +12,7 @@ Program provides a high-level API for terminal applications:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Program } from 'blecsd/terminal';
 
@@ -336,6 +337,7 @@ program.on('blur', () => {
 
 ### Basic Application
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Program } from 'blecsd/terminal';
 
@@ -370,6 +372,7 @@ main();
 
 ### Game Loop
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Program, style } from 'blecsd/terminal';
 
@@ -415,6 +418,7 @@ class Game {
 
 The config is validated using Zod:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ProgramConfigSchema } from 'blecsd/terminal';
 

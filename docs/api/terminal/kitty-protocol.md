@@ -6,6 +6,7 @@ See the [Kitty keyboard protocol specification](https://sw.kovidgoyal.net/kitty/
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   KittyFlags,
@@ -175,6 +176,7 @@ Parses a query response to extract supported flags.
 function parseKittyQueryResponse(buffer: Uint8Array): number | undefined
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKittyQueryResponse, KittyFlags } from 'blecsd';
 
@@ -200,6 +202,7 @@ Parses a Kitty keyboard event from a buffer.
 function parseKittyKeyEvent(buffer: Uint8Array): KittyKeyEvent | undefined
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKittyKeyEvent } from 'blecsd';
 
@@ -217,6 +220,7 @@ Converts a Kitty key event to a human-readable key name. Handles special keys, f
 function kittyKeyToName(event: KittyKeyEvent): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKittyKeyEvent, kittyKeyToName } from 'blecsd';
 

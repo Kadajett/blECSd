@@ -110,6 +110,7 @@ See the [VirtualizedList widget](./api/widgets/virtualizedList.md) for built-in 
 
 ### How do I check terminal capabilities?
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectTerminal, getCapabilities } from 'blecsd';
 

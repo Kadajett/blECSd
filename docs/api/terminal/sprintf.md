@@ -4,6 +4,7 @@ Provides printf-style string formatting for terminal capabilities and general ou
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sprintf, createFormatter, parseFormat } from 'blecsd';
 
@@ -26,6 +27,7 @@ fmt(10, 20);  // 'Point(10, 20)'
 
 Printf-style string formatting with support for common format specifiers.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sprintf } from 'blecsd';
 
@@ -80,6 +82,7 @@ sprintf('%X', 255);        // 'FF'
 
 ### Width and Precision
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sprintf } from 'blecsd';
 
@@ -112,6 +115,7 @@ sprintf('%8.5d', 42);      // '   00042'
 
 Creates a reusable formatter function for a format string. More efficient when formatting the same pattern multiple times.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFormatter } from 'blecsd';
 
@@ -138,6 +142,7 @@ hexFmt(255);         // '0x000000FF'
 
 Parses a format string and returns information about its specifiers. Useful for analyzing format strings or validating arguments.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseFormat } from 'blecsd';
 
@@ -190,6 +195,7 @@ interface FormatFlags {
 
 Counts the number of format specifiers in a format string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { countFormatArgs } from 'blecsd';
 
@@ -210,6 +216,7 @@ countFormatArgs('[%d;%dH');       // 2
 
 Checks if a format string contains only valid specifiers.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isValidFormat } from 'blecsd';
 
@@ -232,6 +239,7 @@ isValidFormat('%');        // false (incomplete specifier)
 
 ### Terminal Escape Sequences
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sprintf, createFormatter } from 'blecsd';
 
@@ -255,6 +263,7 @@ fgRgb(255, 128, 0);  // Orange foreground
 
 ### Formatted Output
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sprintf } from 'blecsd';
 
@@ -278,6 +287,7 @@ formatHexLine(0, [0x48, 0x65, 0x6c, 0x6c, 0x6f]);
 
 ### Time Formatting
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFormatter } from 'blecsd';
 
@@ -298,6 +308,7 @@ formatDate(2026, 2, 2);   // '2026-02-02'
 
 ### Debugging Output
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sprintf } from 'blecsd';
 

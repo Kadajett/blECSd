@@ -252,6 +252,8 @@ function parseMarkdown(source: string): MarkdownParseResult
 **Returns:** Parse result with blocks and timing.
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseMarkdown } from 'blecsd';
 
@@ -269,6 +271,8 @@ function parseInline(text: string): readonly InlineElement[]
 ```
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseInline } from 'blecsd';
 
@@ -359,6 +363,7 @@ function getMarkdownStats(result: MarkdownParseResult): MarkdownStats
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   parseMarkdownCached,

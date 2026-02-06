@@ -4,6 +4,7 @@ The Panel widget is a container with a title bar at the top. It supports optiona
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
@@ -40,6 +41,7 @@ const toolWindow = createPanel(world, addEntity(world), {
 
 Creates a new Panel widget with the specified configuration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
@@ -346,6 +348,7 @@ panel.destroy();
 
 Checks if an entity is a panel widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPanel } from 'blecsd';
 
@@ -362,6 +365,7 @@ if (isPanel(world, entity)) {
 
 Gets the title of a panel entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getPanelTitle } from 'blecsd';
 
@@ -376,6 +380,7 @@ const title = getPanelTitle(world, panelEntity);
 
 Sets the title of a panel entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setPanelTitle } from 'blecsd';
 
@@ -390,6 +395,7 @@ setPanelTitle(world, panelEntity, 'New Title');
 
 Gets the collapsed state of a panel entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPanelCollapsed } from 'blecsd';
 
@@ -404,6 +410,7 @@ const collapsed = isPanelCollapsed(world, panelEntity);
 
 Gets the title alignment of a panel entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getPanelTitleAlign } from 'blecsd';
 
@@ -419,6 +426,7 @@ const align = getPanelTitleAlign(world, panelEntity);
 
 Renders the panel title bar as a string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderPanelTitleBar } from 'blecsd';
 
@@ -585,6 +593,7 @@ interface PanelWidget {
 
 ## Zod Schemas
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { PanelConfigSchema } from 'blecsd';
 
@@ -606,6 +615,7 @@ if (result.success) {
 
 ### Dialog Panel
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
@@ -631,6 +641,7 @@ if (dialog.isClosable()) {
 
 ### Collapsible Section
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
@@ -658,6 +669,7 @@ if (section.isCollapsed()) {
 
 ### Styled Tool Window
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
@@ -690,6 +702,7 @@ const toolWindow = createPanel(world, addEntity(world), {
 
 ### Method Chaining
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';

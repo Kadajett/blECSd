@@ -16,6 +16,7 @@ The screen buffer provides efficient storage and manipulation of these cells.
 
 ### Creating Cells
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCell, Attr, DEFAULT_FG, DEFAULT_BG } from 'blecsd';
 
@@ -48,6 +49,7 @@ interface Cell {
 
 Attributes can be combined using bitwise OR:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Attr } from 'blecsd';
 
@@ -71,6 +73,7 @@ const isBold = (attrs & Attr.BOLD) !== 0;
 
 ### Cell Utilities
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   cloneCell,
@@ -106,6 +109,7 @@ const notBold = withoutAttr(cell, Attr.BOLD);
 
 ### Creating a Buffer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScreenBuffer, createCell } from 'blecsd';
 
@@ -128,6 +132,7 @@ interface ScreenBufferData {
 
 ### Reading and Writing Cells
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getCell,
@@ -161,6 +166,7 @@ if (idx >= 0) {
 
 ### Buffer Operations
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   clearBuffer,
@@ -200,6 +206,7 @@ const larger = resizeBuffer(buffer, 120, 40);
 
 For efficient terminal updates, compare buffers and only output changed cells:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScreenBuffer, setCell, createCell, diffBuffers } from 'blecsd';
 

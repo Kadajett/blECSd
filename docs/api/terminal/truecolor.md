@@ -6,6 +6,7 @@ First-class 24-bit RGB color support with automatic downgrade for terminals with
 
 The truecolor module provides a unified interface for color output that automatically adapts to terminal capabilities. It creates `Color` objects that contain representations for all color depths, enabling seamless fallback.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTruecolorSupport, rgb, fg, isTruecolor } from 'blecsd';
 
@@ -26,6 +27,7 @@ if (isTruecolor()) {
 
 ## Color Depth Levels
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ColorDepthLevel } from 'blecsd';
 
@@ -42,6 +44,7 @@ ColorDepthLevel.TRUECOLOR   // 16777216 - 24-bit (16.7M colors)
 
 Creates a TruecolorSupport instance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTruecolorSupport } from 'blecsd';
 
@@ -212,6 +215,7 @@ Module-level functions use the default TruecolorSupport instance.
 
 ### rgb / rgba
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rgb, rgba } from 'blecsd';
 
@@ -221,6 +225,7 @@ const semiRed = rgba(255, 0, 0, 0.5);
 
 ### hex
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hex } from 'blecsd';
 
@@ -230,6 +235,7 @@ const blue = hex('#00f');
 
 ### color
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { color } from 'blecsd';
 
@@ -240,6 +246,7 @@ const c3 = color(0xff0000);
 
 ### fg / bg
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rgb, fg, bg } from 'blecsd';
 
@@ -250,6 +257,7 @@ process.stdout.write(bg(red) + 'Red background' + '\x1b[0m');
 
 ### isTruecolor
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTruecolor } from 'blecsd';
 
@@ -260,6 +268,7 @@ if (isTruecolor()) {
 
 ### getColorDepthLevel
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getColorDepthLevel, ColorDepthLevel } from 'blecsd';
 
@@ -330,6 +339,7 @@ interface TruecolorSupport {
 
 ### Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rgb, fg, bg } from 'blecsd';
 
@@ -343,6 +353,7 @@ console.log(bg(blue) + 'Blue background' + '\x1b[0m');
 
 ### Gradient Progress Bar
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTruecolorSupport } from 'blecsd';
 
@@ -374,6 +385,7 @@ renderProgressBar(75);
 
 ### Forced Color Depth
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTruecolorSupport, ColorDepthLevel } from 'blecsd';
 
@@ -388,6 +400,7 @@ console.log(truecolor.fg(color));  // Will use 38;5;N format
 
 ### Color Blending UI
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTruecolorSupport } from 'blecsd';
 

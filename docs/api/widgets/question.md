@@ -4,6 +4,7 @@ A yes/no confirmation dialog with customizable button text, keyboard bindings, a
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createQuestion, ask, confirm } from 'blecsd';
 
@@ -54,6 +55,7 @@ q.onConfirm((answer) => {
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { QuestionConfigSchema } from 'blecsd';
 
@@ -72,6 +74,7 @@ const config = QuestionConfigSchema.parse({
 
 Creates a Question widget for yes/no confirmation dialogs.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createQuestion } from 'blecsd';
 
@@ -217,6 +220,7 @@ Destroys the question widget and cleans up all state.
 
 Displays a question dialog and returns a Promise resolving to the user's answer.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ask } from 'blecsd';
 
@@ -241,6 +245,7 @@ if (answer) {
 
 Shorthand for a simple yes/no dialog with default button text.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { confirm } from 'blecsd';
 
@@ -261,6 +266,7 @@ if (await confirm(world, 'Delete this file?')) {
 
 ### isQuestion
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isQuestion } from 'blecsd';
 
@@ -273,6 +279,7 @@ if (isQuestion(world, entity)) {
 
 Handles keyboard input for a question widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleQuestionKey } from 'blecsd';
 
@@ -296,6 +303,7 @@ handleQuestionKey(questionWidget, 'escape');  // Cancels
 
 ### Confirmation Before Destructive Action
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ask } from 'blecsd';
 
@@ -314,6 +322,7 @@ async function handleDelete(world, filename) {
 
 ### Centered Question Dialog
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createQuestion } from 'blecsd';
 

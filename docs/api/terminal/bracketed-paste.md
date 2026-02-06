@@ -4,6 +4,7 @@ Distinguishes pasted text from typed input by detecting ESC[200~ / ESC[201~ mark
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createPasteState,
@@ -251,6 +252,7 @@ function disableBracketedPaste(): string
 
 ### PasteEventSchema / PasteConfigSchema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { PasteEventSchema, PasteConfigSchema } from 'blecsd';
 

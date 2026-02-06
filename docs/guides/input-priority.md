@@ -91,6 +91,7 @@ handler.start();
 
 For games and complex UIs, register input as a system:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, LoopPhase } from 'blecsd';
 
@@ -118,6 +119,7 @@ loop.registerSystem(LoopPhase.UPDATE, (world) => {
 
 For complex input handling with key combinations:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputHandler } from 'blecsd';
 
@@ -205,6 +207,7 @@ loop.registerSystem(LoopPhase.INPUT, (world) => {
 
 Use the `step()` method to verify input processing:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop } from 'blecsd';
 

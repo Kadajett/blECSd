@@ -295,6 +295,7 @@ function updateStage(stageIndex: number, progress: number) {
 
 ## Example: Vertical Health Bar
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ProgressOrientation } from 'blecsd';
 

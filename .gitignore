@@ -10,3 +10,6 @@ references/
 
 # DOOM WAD files (licensed content)
 *.wad
+
+# doccheck temp files
+.doccheck-tmp/

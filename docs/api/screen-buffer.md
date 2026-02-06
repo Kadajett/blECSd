@@ -10,6 +10,7 @@ ScreenBuffer handles the alternate screen buffer mode used by full-screen termin
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ScreenBuffer } from 'blecsd/terminal';
 
@@ -157,6 +158,7 @@ ScreenBuffer automatically handles these signals:
 
 ### Full-Screen Application
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ScreenBuffer, cursor, screen } from 'blecsd/terminal';
 
@@ -194,6 +196,7 @@ class Application {
 
 ### Game with State Save on Exit
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ScreenBuffer } from 'blecsd/terminal';
 

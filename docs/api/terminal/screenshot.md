@@ -13,6 +13,7 @@ The screenshot system provides:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScreenBuffer,
@@ -47,6 +48,7 @@ console.log(text);
 
 Capture the entire screen buffer.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captureScreen } from 'blecsd';
 
@@ -64,6 +66,7 @@ const noColors = captureScreen(buffer, {
 
 Capture a rectangular region.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captureRegion } from 'blecsd';
 
@@ -80,6 +83,7 @@ console.log(region.offsetY);  // 5
 
 Capture a single row.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captureRow } from 'blecsd';
 
@@ -90,6 +94,7 @@ const row = captureRow(buffer, 5);
 
 Create an empty screenshot with specified dimensions.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEmptyScreenshot } from 'blecsd';
 
@@ -112,6 +117,7 @@ interface CaptureOptions {
 
 Convert to plain text, stripping colors and attributes.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { screenshotToText } from 'blecsd';
 
@@ -128,6 +134,7 @@ const withSpaces = screenshotToText(screenshot, {
 
 Convert to ANSI escape sequences for terminal display.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { screenshotToAnsi } from 'blecsd';
 
@@ -146,6 +153,7 @@ const ansi256 = screenshotToAnsi(screenshot, {
 
 Convert to JSON-serializable format.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { screenshotToJson, screenshotFromJson } from 'blecsd';
 
@@ -179,6 +187,7 @@ interface Screenshot {
 
 Compare two screenshots for equality.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { screenshotsEqual } from 'blecsd';
 
@@ -195,6 +204,7 @@ if (!screenshotsEqual(before, after)) {
 
 Compute cell-level differences between screenshots.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { diffScreenshots } from 'blecsd';
 
@@ -227,6 +237,7 @@ interface CellDiff {
 
 Get a cell from a screenshot.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getScreenshotCell } from 'blecsd';
 
@@ -240,6 +251,7 @@ if (cell) {
 
 Get row content as text.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getScreenshotRow } from 'blecsd';
 
@@ -251,6 +263,7 @@ console.log(`Row 5: ${rowText}`);
 
 Get column content as text.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getScreenshotColumn } from 'blecsd';
 
@@ -262,6 +275,7 @@ console.log(`Column 10: ${colText}`);
 
 Extract a sub-region from a screenshot.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { extractRegion } from 'blecsd';
 
@@ -273,6 +287,7 @@ const region = extractRegion(full, 10, 5, 20, 10);
 
 Check if screenshot contains only empty cells.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isScreenshotEmpty } from 'blecsd';
 
@@ -283,6 +298,7 @@ const isEmpty = isScreenshotEmpty(screenshot);
 
 Count cells with non-space characters.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { countNonEmptyCells } from 'blecsd';
 
@@ -294,6 +310,7 @@ console.log(`${count} cells have content`);
 
 ### Testing
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captureScreen, screenshotsEqual } from 'blecsd';
 
@@ -310,6 +327,7 @@ function testRenderer() {
 
 ### Debug Snapshots
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captureScreen, screenshotToText } from 'blecsd';
 
@@ -325,6 +343,7 @@ function debugDump(buffer: ScreenBufferData, label: string) {
 
 ### Recording for Replay
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   captureScreen,
@@ -354,6 +373,7 @@ for (const frame of savedFrames) {
 
 ### Change Detection
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captureScreen, diffScreenshots } from 'blecsd';
 

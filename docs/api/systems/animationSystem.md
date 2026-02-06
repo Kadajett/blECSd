@@ -17,6 +17,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -121,6 +122,7 @@ The animation system uses a Structure of Arrays (SoA) pattern for cache efficien
 
 ## Example: Character Animation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -175,6 +177,7 @@ function gameLoop(dt: number) {
 
 ## Example: Animated UI Elements
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachAnimation,

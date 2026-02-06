@@ -24,6 +24,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -297,6 +298,7 @@ onRadioSelect(sizeSet, (value) => {
 
 ## Example: Form with Radio Buttons
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachFormBehavior,

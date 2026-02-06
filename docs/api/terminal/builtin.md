@@ -4,6 +4,7 @@ Provides hardcoded terminal capabilities for common terminals when terminfo data
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getBuiltinTerminfo,
@@ -31,6 +32,7 @@ if (hasBuiltinTerminfo(process.env.TERM ?? '')) {
 
 Map of terminal names to their builtin terminfo data.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { BUILTIN_TERMINALS } from 'blecsd';
 
@@ -80,6 +82,7 @@ Many terminal emulators are xterm-compatible. The following aliases map to xterm
 
 Gets builtin terminfo data for an exact terminal name match.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getBuiltinTerminfo } from 'blecsd';
 
@@ -104,6 +107,7 @@ const unknown = getBuiltinTerminfo('unknown-terminal');
 
 Gets the best matching builtin terminfo, with intelligent fallback.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getBestBuiltinTerminfo } from 'blecsd';
 
@@ -135,6 +139,7 @@ getBestBuiltinTerminfo('totally-unknown-terminal');
 
 Checks if builtin terminfo data exists for a terminal.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasBuiltinTerminfo } from 'blecsd';
 
@@ -154,6 +159,7 @@ hasBuiltinTerminfo('unknown');         // false
 
 Lists all supported builtin terminal names.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { listBuiltinTerminals } from 'blecsd';
 
@@ -173,6 +179,7 @@ for (const name of terminals) {
 
 You can also import individual terminal definitions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   XTERM,
@@ -198,6 +205,7 @@ console.log(LINUX.numbers.max_colors);           // 8
 
 Combine builtin data with Tput for terminal operations:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTput, getBestBuiltinTerminfo } from 'blecsd';
 
@@ -250,6 +258,7 @@ process.stdout.write(tput.getString('orig_pair') ?? '');  // Reset colors
 
 ### Automatic Fallback
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   findTerminfo,
@@ -276,6 +285,7 @@ function createTputWithFallback(): Tput {
 
 ### Checking Terminal Features
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getBuiltinTerminfo } from 'blecsd';
 

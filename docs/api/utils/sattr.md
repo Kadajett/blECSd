@@ -227,6 +227,7 @@ const decoded = decodeStyleAttr(encoded);
 
 ### Style Comparison for Rendering
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattr, sattrEqual, sattrFromStyleData, getStyle } from 'blecsd';
 

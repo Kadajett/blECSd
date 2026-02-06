@@ -156,6 +156,8 @@ function computeDiff(
 **Returns:** Diff result with chunks and stats.
 
 **Example:**
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { computeDiff } from 'blecsd';
 
@@ -292,6 +294,7 @@ function getDiffStats(result: DiffResult): {
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   computeDiffCached,

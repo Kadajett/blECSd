@@ -13,6 +13,7 @@ The animation system handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScheduler,
@@ -44,6 +45,7 @@ For each playing animation, the system:
 const animationSystem: System
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { animationSystem, LoopPhase } from 'blecsd';
 
@@ -58,6 +60,7 @@ Factory function that returns the animationSystem.
 function createAnimationSystem(): System
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createAnimationSystem, createScheduler, LoopPhase } from 'blecsd';
 
@@ -78,6 +81,7 @@ function registerAnimationSystem(scheduler: Scheduler, priority?: number): void
 - `scheduler` - The scheduler to register with
 - `priority` - Optional priority within the UPDATE phase (default: 0)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, registerAnimationSystem } from 'blecsd';
 
@@ -113,6 +117,7 @@ function updateAnimations(
 ): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { updateAnimations, queryAnimation } from 'blecsd';
 
@@ -124,6 +129,7 @@ updateAnimations(world, entities, 0.016); // ~60fps frame
 
 Complete sprite animation setup:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
