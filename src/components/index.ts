@@ -264,6 +264,26 @@ export {
 	submitForm,
 	unregisterFormField,
 } from './form';
+// Health component
+export type { HealthData, HealthOptions } from './health';
+export {
+	clearInvulnerable,
+	damage,
+	getHealth,
+	getHealthPercent,
+	Health,
+	hasHealth,
+	heal,
+	isDead,
+	isInvulnerable,
+	removeHealth,
+	setCurrentHealth,
+	setHealth,
+	setInvulnerable,
+	setMaxHealth,
+	setRegen,
+	updateHealth,
+} from './health';
 // Hierarchy component
 export type { HierarchyData, TraversalCallback } from './hierarchy';
 export {
