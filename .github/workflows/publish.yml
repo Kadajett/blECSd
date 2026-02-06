@@ -48,21 +48,5 @@ jobs:
       - name: Verify pack contents
         run: pnpm verify-pack
 
-      - name: Debug OIDC and auth
-        run: |
-          echo "Node: $(node -v)"
-          echo "npm: $(npm -v)"
-          echo "OIDC URL set: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && echo 'yes' || echo 'NO - OIDC not available')"
-          echo "npmrc locations:"
-          cat ~/.npmrc 2>/dev/null || echo "  No ~/.npmrc"
-          cat .npmrc 2>/dev/null || echo "  No ./.npmrc"
-          echo "npm config:"
-          npm config list
-
       - name: Publish to npm
-        run: |
-          npm publish --provenance --access public 2>&1 || {
-            echo "=== npm debug log ==="
-            cat /home/runner/.npm/_logs/*-debug-0.log 2>/dev/null || echo "No debug log found"
-            exit 1
-          }
+        run: npm publish --provenance --access public
