@@ -643,12 +643,22 @@ export {
 export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
 export { createWorld, resetWorld } from './world';
-export type { WorldAdapter, WorldAdapterType } from './worldAdapter';
+export type {
+	PackedQueryAdapter,
+	PackedQueryAdapterConfig,
+	PackedQueryRegistration,
+	WorldAdapter,
+	WorldAdapterType,
+} from './worldAdapter';
 export {
 	clearWorldAdapter,
+	createPackedQueryAdapter,
 	createWorldAdapter,
 	DEFAULT_WORLD_ADAPTER,
 	getWorldAdapter,
+	isPackedQueryAdapter,
+	PackedQueryAdapterConfigSchema,
+	PackedQueryRegistrationSchema,
 	setWorldAdapter,
 } from './worldAdapter';
 // Z-order management
