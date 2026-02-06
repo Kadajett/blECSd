@@ -4,6 +4,10 @@ export default defineConfig({
 	entry: [
 		'src/index.ts',
 		'src/components/index.ts',
+		'src/core/index.ts',
+		'src/debug/index.ts',
+		'src/errors/index.ts',
+		'src/input/index.ts',
 		'src/systems/index.ts',
 		'src/widgets/index.ts',
 		'src/widgets/bigText.ts',

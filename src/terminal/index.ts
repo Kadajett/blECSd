@@ -85,6 +85,29 @@ export {
 	unpackRgb,
 	visibleLength,
 } from './ansi/parser';
+// Bracketed paste mode
+export type {
+	PasteConfig,
+	PasteEvent,
+	PasteHandler,
+	PasteParseResult,
+	PasteProcessResult,
+	PasteState,
+} from './bracketedPaste';
+export {
+	createPasteState,
+	disableBracketedPaste,
+	enableBracketedPaste,
+	extractPasteContent,
+	findPasteEnd,
+	isPasteStart,
+	mightBePasteStart,
+	PasteConfigSchema,
+	PasteEventSchema,
+	processPasteBuffer,
+	sanitizePastedText,
+	truncatePaste,
+} from './bracketedPaste';
 // Capability negotiation (internal)
 export type {
 	CapabilityNegotiator,
@@ -117,6 +140,18 @@ export {
 	registerForCleanup,
 	unregisterFromCleanup,
 } from './cleanup';
+// Clipboard manager
+export type {
+	ClipboardManager,
+	ClipboardManagerConfig,
+	ClipboardProgress,
+	ClipboardResult,
+} from './clipboardManager';
+export {
+	chunkText,
+	createClipboardManager,
+	streamPaste,
+} from './clipboardManager';
 // Artificial cursor
 export type {
 	ArtificialCursor,
@@ -432,6 +467,9 @@ export {
 	withoutAttr,
 	writeString,
 } from './screen';
+// Double buffer (from screen/doubleBuffer, not included in ./screen cherry-picks above)
+export type { DoubleBufferData } from './screen/doubleBuffer';
+export { createDoubleBuffer } from './screen/doubleBuffer';
 // Screen buffer management (internal)
 export type { CleanupCallback, ScreenBuffer } from './screenBuffer';
 // Input sanitization
@@ -478,3 +516,14 @@ export type {
 	TputConfig,
 } from './terminfo';
 export { createTput, getDefaultTput, getDefaultXtermData, resetDefaultTput } from './terminfo';
+// Throttled resize
+export type {
+	ResizeCallback,
+	ThrottledResizeConfig,
+	ThrottledResizeState,
+} from './throttledResize';
+export {
+	createThrottledResize,
+	debounceResize,
+	throttleResize,
+} from './throttledResize';

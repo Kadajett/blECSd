@@ -499,6 +499,31 @@ export {
 	WIDE_RANGES,
 	ZERO_WIDTH_RANGES,
 } from './unicode';
+// Unicode width testing harness
+export type {
+	KnownBadSequence,
+	TerminalWidthProfile,
+	WidthOverride,
+	WidthTestCase,
+	WidthTestCategory,
+	WidthTestFailure,
+	WidthTestResult,
+} from './unicode/widthHarness';
+export {
+	buildTestCorpus,
+	clearWidthOverrides,
+	filterByCategory,
+	formatTestReport,
+	getCategories,
+	getKnownBadSequences,
+	getOverrideCount,
+	getOverrideWidth,
+	installWidthOverrides,
+	measureWidthWithOverrides,
+	runWidthTests,
+	TerminalWidthProfileSchema,
+	WidthOverrideSchema,
+} from './unicode/widthHarness';
 // Virtualized line store for large text content
 export type {
 	LineInfo as VirtualizedLineInfo,

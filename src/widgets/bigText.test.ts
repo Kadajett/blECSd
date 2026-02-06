@@ -8,7 +8,8 @@ import { getContent } from '../components/content';
 import { resetFocusState } from '../components/focusable';
 import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
-import { createBigText, loadFont, resetBigTextStore, setText } from './bigText';
+import { createBigText, loadFontFromPath, resetBigTextStore, setText } from './bigText';
+import { loadFont } from './fonts';
 
 describe('BigText widget', () => {
 	let world: World;
@@ -21,16 +22,16 @@ describe('BigText widget', () => {
 
 	it('loads a font from disk', () => {
 		const path = fileURLToPath(new URL('./fonts/terminus-14-bold.json', import.meta.url));
-		const font = loadFont(path);
+		const font = loadFontFromPath(path);
 
 		expect(font.name).toBe('Terminus');
 		expect(font.charWidth).toBe(8);
 		expect(font.charHeight).toBe(14);
 	});
 
-	it('renders text using built-in fonts', () => {
+	it('renders text using built-in fonts', async () => {
 		const eid = addEntity(world);
-		createBigText(world, eid, { text: 'A', font: 'terminus-14-bold' });
+		await createBigText(world, eid, { text: 'A', font: 'terminus-14-bold' });
 
 		const content = getContent(world, eid);
 		const lines = content.split('\n');
@@ -38,9 +39,9 @@ describe('BigText widget', () => {
 		expect(lines).toMatchSnapshot();
 	});
 
-	it('renders multi-line text', () => {
+	it('renders multi-line text', async () => {
 		const eid = addEntity(world);
-		createBigText(world, eid, { text: 'A\nB', font: 'terminus-14-bold' });
+		await createBigText(world, eid, { text: 'A\nB', font: 'terminus-14-bold' });
 
 		const content = getContent(world, eid);
 		const lines = content.split('\n');
@@ -49,9 +50,12 @@ describe('BigText widget', () => {
 		expect(lines[16]).toContain('█');
 	});
 
-	it('updates text content', () => {
+	it('updates text content', async () => {
 		const eid = addEntity(world);
-		createBigText(world, eid, { text: 'A', font: 'terminus-14-bold' });
+		await createBigText(world, eid, { text: 'A', font: 'terminus-14-bold' });
+
+		// Font is now cached from createBigText, so setText works synchronously
+		await loadFont('terminus-14-bold');
 		setText(world, eid, 'B', 'terminus-14-bold');
 
 		const content = getContent(world, eid);

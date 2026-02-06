@@ -56,14 +56,78 @@
     "./audio": {
       "import": "./dist/audio/index.js",
       "types": "./dist/audio/index.d.ts"
+    },
+    "./core": {
+      "import": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./debug": {
+      "import": "./dist/debug/index.js",
+      "types": "./dist/debug/index.d.ts"
+    },
+    "./errors": {
+      "import": "./dist/errors/index.js",
+      "types": "./dist/errors/index.d.ts"
+    },
+    "./input": {
+      "import": "./dist/input/index.js",
+      "types": "./dist/input/index.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "components": [
+        "dist/components/index.d.ts"
+      ],
+      "core": [
+        "dist/core/index.d.ts"
+      ],
+      "debug": [
+        "dist/debug/index.d.ts"
+      ],
+      "errors": [
+        "dist/errors/index.d.ts"
+      ],
+      "game": [
+        "dist/game/index.d.ts"
+      ],
+      "input": [
+        "dist/input/index.d.ts"
+      ],
+      "schemas": [
+        "dist/schemas/index.d.ts"
+      ],
+      "systems": [
+        "dist/systems/index.d.ts"
+      ],
+      "terminal": [
+        "dist/terminal/index.d.ts"
+      ],
+      "utils": [
+        "dist/utils/index.d.ts"
+      ],
+      "widgets": [
+        "dist/widgets/index.d.ts"
+      ],
+      "widgets/bigText": [
+        "dist/widgets/bigText.d.ts"
+      ],
+      "widgets/fonts": [
+        "dist/widgets/fonts/index.d.ts"
+      ],
+      "3d": [
+        "dist/3d/index.d.ts"
+      ],
+      "audio": [
+        "dist/audio/index.d.ts"
+      ]
     }
   },
   "files": [
     "dist",
     "!dist/**/*.map",
     "README.md",
-    "LICENSE",
-    "templates"
+    "LICENSE"
   ],
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -79,8 +143,29 @@
     "format": "biome format --write .",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build:publish",
+    "build:publish": "tsup --no-sourcemap --minify",
+    "size": "size-limit",
+    "size:check": "size-limit --check",
+    "verify-pack": "./scripts/verify-pack.sh"
   },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "500 KB",
+      "ignore": ["fs", "path", "os", "util", "child_process", "net", "tty", "stream", "events", "readline", "module", "url", "https", "node:fs", "node:path", "node:os", "node:util", "node:child_process", "node:net", "node:tty", "node:stream", "node:events", "node:readline", "node:module", "node:url", "node:https"]
+    },
+    {
+      "path": "dist/core/index.js",
+      "limit": "100 KB",
+      "ignore": ["fs", "path", "os", "util", "child_process", "net", "tty", "stream", "events", "readline", "module", "url", "https", "node:fs", "node:path", "node:os", "node:util", "node:child_process", "node:net", "node:tty", "node:stream", "node:events", "node:readline", "node:module", "node:url", "node:https"]
+    },
+    {
+      "path": "dist/components/index.js",
+      "limit": "200 KB",
+      "ignore": ["fs", "path", "os", "util", "child_process", "net", "tty", "stream", "events", "readline", "module", "url", "https", "node:fs", "node:path", "node:os", "node:util", "node:child_process", "node:net", "node:tty", "node:stream", "node:events", "node:readline", "node:module", "node:url", "node:https"]
+    }
+  ],
   "keywords": [
     "terminal",
     "tui",
@@ -111,9 +196,11 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.13",
+    "@size-limit/preset-small-lib": "^12.0.0",
     "@types/node": "^25.2.0",
     "@vitest/coverage-v8": "^4.0.18",
     "husky": "^9.0.0",
+    "size-limit": "^12.0.0",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
