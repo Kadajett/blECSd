@@ -380,6 +380,53 @@ export {
 // ScrollableText widget
 export type { ScrollableTextConfig, ScrollableTextWidget } from './scrollableText';
 export { createScrollableText, isScrollableText } from './scrollableText';
+// SplitPane widget
+export type {
+	DimensionValue as SplitPaneDimensionValue,
+	DirtyRect,
+	DividerState,
+	PaneScrollState,
+	PaneState,
+	PaneViewport,
+	PositionValue as SplitPanePositionValue,
+	SharedTextBuffer,
+	SplitDirection,
+	SplitPaneConfig,
+	SplitPaneWidget,
+	SplitResizeEvent,
+} from './splitPane';
+export {
+	createSharedTextBuffer,
+	createSplitPane,
+	getDividerRenderInfo,
+	getSharedTextBuffer,
+	getSplitDirection,
+	hitTestDivider,
+	isSplitPane,
+	resetSplitPaneStore,
+	SplitPane,
+	SplitPaneConfigSchema,
+} from './splitPane';
+// Streaming text
+export type {
+	StreamDirtyRegion,
+	StreamingTextConfig,
+	StreamingTextState,
+	StreamingTextWidget,
+	StreamProgress,
+} from './streamingText';
+export {
+	appendToState,
+	clearState,
+	createStreamingState,
+	createStreamingText,
+	getStreamVisibleLines,
+	StreamingTextConfigSchema,
+	scrollByLines,
+	scrollToLine,
+	stripAnsiSequences,
+	wrapLine,
+} from './streamingText';
 // Table widget
 export type { TableStyleConfig, TableWidget, TableWidgetConfig } from './table';
 export { createTable, isTableWidget, TableWidgetConfigSchema } from './table';
@@ -475,6 +522,13 @@ export {
 	Video,
 	VideoConfigSchema,
 } from './video';
+// Viewport 3D
+export type { Viewport3DWidget } from './viewport3d';
+export {
+	createViewport3D,
+	isViewport3DWidget,
+	Viewport3DTag,
+} from './viewport3d';
 // VirtualizedList widget
 export type {
 	VirtualizedList,

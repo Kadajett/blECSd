@@ -73,7 +73,7 @@ done
 echo "PASS: All required files present"
 
 # 6. Check type definitions exist for all entry points
-for ENTRY in "dist/index.d.ts" "dist/components/index.d.ts" "dist/systems/index.d.ts" "dist/widgets/index.d.ts" "dist/terminal/index.d.ts" "dist/schemas/index.d.ts" "dist/utils/index.d.ts"; do
+for ENTRY in "dist/index.d.ts" "dist/components/index.d.ts" "dist/core/index.d.ts" "dist/debug/index.d.ts" "dist/errors/index.d.ts" "dist/input/index.d.ts" "dist/systems/index.d.ts" "dist/widgets/index.d.ts" "dist/terminal/index.d.ts" "dist/schemas/index.d.ts" "dist/utils/index.d.ts" "dist/game/index.d.ts"; do
   if ! echo "$CONTENTS" | grep -q "$ENTRY"; then
     echo "FAIL: Type definitions missing for entry point: $ENTRY"
     rm -f "$TARBALL"

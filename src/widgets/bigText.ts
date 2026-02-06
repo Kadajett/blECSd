@@ -20,6 +20,8 @@ import { parseColor } from '../utils/color';
 import {
 	type BitmapFont,
 	BitmapFontSchema,
+	type FontName,
+	getCachedFont,
 	getCharBitmap,
 	loadFont as loadBuiltinFont,
 	renderChar,
@@ -225,9 +227,11 @@ function parseDimension(value: string | number | undefined): number | `${number}
 }
 
 /**
- * Resolves a font definition from a config value.
+ * Resolves a font definition from a config value (async for dynamic font loading).
  */
-function resolveFont(font: string | FontDefinition | undefined): FontDefinition {
+async function resolveFontAsync(
+	font: string | FontDefinition | undefined,
+): Promise<FontDefinition> {
 	if (!font) {
 		return loadBuiltinFont(DEFAULT_FONT_NAME);
 	}
@@ -237,7 +241,24 @@ function resolveFont(font: string | FontDefinition | undefined): FontDefinition 
 	if (font === 'terminus-14-bold' || font === 'terminus-14-normal') {
 		return loadBuiltinFont(font);
 	}
-	return loadFont(font);
+	return loadFontFromPath(font);
+}
+
+/**
+ * Resolves a font definition synchronously using the cache.
+ * Falls back to a placeholder if the font hasn't been loaded yet.
+ */
+function resolveFontSync(font: string | FontDefinition | undefined): FontDefinition | undefined {
+	if (!font) {
+		return getCachedFont(DEFAULT_FONT_NAME as FontName);
+	}
+	if (typeof font !== 'string') {
+		return font;
+	}
+	if (font === 'terminus-14-bold' || font === 'terminus-14-normal') {
+		return getCachedFont(font);
+	}
+	return fontPathCache.get(font);
 }
 
 function renderEmptyGlyph(width: number, height: number): readonly string[] {
@@ -287,12 +308,12 @@ function renderText(font: FontDefinition, text: string): string {
  *
  * @example
  * ```typescript
- * import { loadFont } from 'blecsd/widgets/bigText';
+ * import { loadFontFromPath } from 'blecsd/widgets/bigText';
  *
- * const font = loadFont('./fonts/terminus-14-bold.json');
+ * const font = loadFontFromPath('./fonts/terminus-14-bold.json');
  * ```
  */
-export function loadFont(path: string): FontDefinition {
+export function loadFontFromPath(path: string): FontDefinition {
 	const cached = fontPathCache.get(path);
 	if (cached) {
 		return cached;
@@ -304,6 +325,9 @@ export function loadFont(path: string): FontDefinition {
 	fontPathCache.set(path, font);
 	return font;
 }
+
+/** @deprecated Use `loadFontFromPath` instead */
+export const loadFont = loadFontFromPath;
 
 // =============================================================================
 // FACTORY
@@ -349,8 +373,12 @@ function setupStyle(world: World, eid: Entity, config: ValidatedBigTextConfig): 
 	});
 }
 
-function setupContent(world: World, eid: Entity, config: ValidatedBigTextConfig): void {
-	const font = resolveFont(config.font);
+async function setupContent(
+	world: World,
+	eid: Entity,
+	config: ValidatedBigTextConfig,
+): Promise<void> {
+	const font = await resolveFontAsync(config.font);
 	const rendered = renderText(font, config.text);
 	sourceTextStore.set(eid, config.text);
 	setContent(world, eid, rendered);
@@ -359,10 +387,13 @@ function setupContent(world: World, eid: Entity, config: ValidatedBigTextConfig)
 /**
  * Creates a BigText widget with the given configuration.
  *
+ * Returns a Promise because font data is loaded lazily to avoid bundling
+ * ~3.2 MB of font JSON into the main entry point.
+ *
  * @param world - The ECS world
  * @param entity - The entity to wrap
  * @param config - Widget configuration
- * @returns The BigText widget instance
+ * @returns Promise resolving to the BigText widget instance
  *
  * @example
  * ```typescript
@@ -372,13 +403,17 @@ function setupContent(world: World, eid: Entity, config: ValidatedBigTextConfig)
  * const world = createWorld();
  * const eid = addEntity(world);
  *
- * const bigText = createBigText(world, eid, {
+ * const bigText = await createBigText(world, eid, {
  *   text: 'HELLO',
  *   font: 'terminus-14-bold',
  * });
  * ```
  */
-export function createBigText(world: World, entity: Entity, config: BigTextConfig): BigTextWidget {
+export async function createBigText(
+	world: World,
+	entity: Entity,
+	config: BigTextConfig,
+): Promise<BigTextWidget> {
 	const validated = BigTextConfigSchema.parse(config) as ValidatedBigTextConfig;
 	const eid = entity;
 
@@ -386,7 +421,7 @@ export function createBigText(world: World, entity: Entity, config: BigTextConfi
 
 	setupPositionAndDimensions(world, eid, validated);
 	setupStyle(world, eid, validated);
-	setupContent(world, eid, validated);
+	await setupContent(world, eid, validated);
 
 	setFocusable(world, eid, { focusable: true });
 
@@ -464,6 +499,10 @@ export function createBigText(world: World, entity: Entity, config: BigTextConfi
 /**
  * Sets the text content of a BigText entity.
  *
+ * Uses the cached font if available (synchronous), otherwise falls back
+ * to async font loading. For best performance, pre-load fonts with
+ * `loadFont()` from `blecsd/widgets/fonts` before calling this.
+ *
  * @param world - The ECS world
  * @param eid - The entity ID
  * @param text - The text content
@@ -482,11 +521,21 @@ export function setText(
 	text: string,
 	font?: string | FontDefinition,
 ): void {
-	const resolvedFont = resolveFont(font);
-	const rendered = renderText(resolvedFont, text);
-	sourceTextStore.set(eid, text);
-	setContent(world, eid, rendered);
-	markDirty(world, eid);
+	const resolvedFont = resolveFontSync(font);
+	if (resolvedFont) {
+		const rendered = renderText(resolvedFont, text);
+		sourceTextStore.set(eid, text);
+		setContent(world, eid, rendered);
+		markDirty(world, eid);
+		return;
+	}
+	// Font not cached yet, load async and update when ready
+	void resolveFontAsync(font).then((loadedFont) => {
+		const rendered = renderText(loadedFont, text);
+		sourceTextStore.set(eid, text);
+		setContent(world, eid, rendered);
+		markDirty(world, eid);
+	});
 }
 
 function setTextContent(

@@ -22,9 +22,9 @@ describe('bitmap fonts', () => {
 	});
 
 	describe('loadFont', () => {
-		it('loads built-in fonts', () => {
-			const bold = loadFont('terminus-14-bold');
-			const normal = loadFont('terminus-14-normal');
+		it('loads built-in fonts', async () => {
+			const bold = await loadFont('terminus-14-bold');
+			const normal = await loadFont('terminus-14-normal');
 
 			expect(bold.name).toBe('Terminus');
 			expect(bold.weight).toBe('bold');
@@ -37,15 +37,15 @@ describe('bitmap fonts', () => {
 			const error = createFontNotFoundError('terminus-14-mono');
 			expect(error.name).toBe('FontNotFoundError');
 
-			expect(() => loadFont('terminus-14-mono' as never)).toThrowError(
+			expect(loadFont('terminus-14-mono' as never)).rejects.toThrowError(
 				/Font 'terminus-14-mono' not found/,
 			);
 		});
 	});
 
 	describe('getCharBitmap', () => {
-		it('returns bitmap data for known characters', () => {
-			const font = loadFont('terminus-14-bold');
+		it('returns bitmap data for known characters', async () => {
+			const font = await loadFont('terminus-14-bold');
 			const bitmap = getCharBitmap(font, 'A');
 
 			expect(bitmap).toBeDefined();
@@ -53,8 +53,8 @@ describe('bitmap fonts', () => {
 			expect(bitmap?.height).toBe(14);
 		});
 
-		it('returns undefined for missing characters', () => {
-			const font = loadFont('terminus-14-bold');
+		it('returns undefined for missing characters', async () => {
+			const font = await loadFont('terminus-14-bold');
 			const bitmap = getCharBitmap(font, '😀');
 
 			expect(bitmap).toBeUndefined();
@@ -62,16 +62,16 @@ describe('bitmap fonts', () => {
 	});
 
 	describe('renderChar', () => {
-		it('renders using default block characters', () => {
-			const font = loadFont('terminus-14-bold');
+		it('renders using default block characters', async () => {
+			const font = await loadFont('terminus-14-bold');
 			const lines = renderChar(font, 'A');
 
 			expect(lines.length).toBe(14);
 			expect(lines).toMatchSnapshot();
 		});
 
-		it('renders with custom fill and empty characters', () => {
-			const font = loadFont('terminus-14-bold');
+		it('renders with custom fill and empty characters', async () => {
+			const font = await loadFont('terminus-14-bold');
 			const lines = renderChar(font, 'A', { fillChar: '#', emptyChar: '.' });
 
 			expect(lines.length).toBe(14);

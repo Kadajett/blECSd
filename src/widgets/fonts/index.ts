@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import terminus14Bold from './terminus-14-bold.json';
-import terminus14Normal from './terminus-14-normal.json';
 
 /**
  * Schema for a single character's bitmap data.
@@ -179,24 +177,25 @@ const BUILTIN_FONT_NAMES = ['terminus-14-bold', 'terminus-14-normal'] as const;
 
 const fontCache: Partial<Record<FontName, BitmapFont>> = {};
 
-const loadBuiltinFont = (name: FontName): BitmapFont => {
+const loadBuiltinFontAsync = async (name: FontName): Promise<BitmapFont> => {
 	const cached = fontCache[name];
 	if (cached) {
 		return cached;
 	}
 
-	let font: BitmapFont;
+	let fontModule: { default: BitmapFont };
 	switch (name) {
 		case 'terminus-14-bold':
-			font = terminus14Bold as BitmapFont;
+			fontModule = (await import('./terminus-14-bold.json')) as { default: BitmapFont };
 			break;
 		case 'terminus-14-normal':
-			font = terminus14Normal as BitmapFont;
+			fontModule = (await import('./terminus-14-normal.json')) as { default: BitmapFont };
 			break;
 		default:
 			throw createFontNotFoundError(name);
 	}
 
+	const font = fontModule.default;
 	fontCache[name] = font;
 	return font;
 };
@@ -237,20 +236,42 @@ export const createFontNotFoundError = (name: string): FontNotFoundError => {
 /**
  * Loads a built-in bitmap font by name.
  *
+ * Font data is loaded lazily via dynamic import to avoid bundling ~3.2 MB
+ * of font JSON into the main entry point.
+ *
  * @param name - Font identifier ('terminus-14-bold' | 'terminus-14-normal')
- * @returns The loaded bitmap font
+ * @returns Promise resolving to the loaded bitmap font
  * @throws {FontNotFoundError} If font name is not recognized
  *
  * @example
  * ```typescript
  * import { loadFont } from 'blecsd/widgets/fonts';
  *
- * const font = loadFont('terminus-14-bold');
+ * const font = await loadFont('terminus-14-bold');
  * console.log(font.charWidth, font.charHeight); // 8, 14
  * ```
  */
-export const loadFont = (name: FontName): BitmapFont => {
-	return loadBuiltinFont(name);
+export const loadFont = (name: FontName): Promise<BitmapFont> => {
+	return loadBuiltinFontAsync(name);
+};
+
+/**
+ * Returns a cached font if previously loaded, or undefined.
+ * Use this for synchronous access after an initial `loadFont` call.
+ *
+ * @param name - Font identifier
+ * @returns The cached font, or undefined if not yet loaded
+ *
+ * @example
+ * ```typescript
+ * import { loadFont, getCachedFont } from 'blecsd/widgets/fonts';
+ *
+ * await loadFont('terminus-14-bold');
+ * const font = getCachedFont('terminus-14-bold'); // synchronous
+ * ```
+ */
+export const getCachedFont = (name: FontName): BitmapFont | undefined => {
+	return fontCache[name];
 };
 
 /**

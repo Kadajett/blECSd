@@ -321,7 +321,7 @@ console.log('Use arrow keys to navigate, Enter to select.');
 // =============================================================================
 
 const MANIFEST_URL =
-	'https://raw.githubusercontent.com/Kadajett/blECSd/main/templates/manifest.json';
+	'https://raw.githubusercontent.com/Kadajett/blECSd-Examples/main/manifest.json';
 
 /**
  * Fetches the remote template manifest from GitHub.

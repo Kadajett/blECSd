@@ -425,6 +425,27 @@ export {
 	shouldBlockKeyEvent,
 	unlockAllKeys,
 } from './keyLock';
+// Lazy initialization
+export type {
+	InitPriorityLevel,
+	LazyInitFn,
+	LazyValue,
+	StartupReport,
+	SubsystemEntry,
+	TerminalCapabilities,
+} from './lazyInit';
+export {
+	clearCapabilityCache,
+	detectCapabilities,
+	formatStartupReport,
+	getStartupReport,
+	InitPriority,
+	initSubsystem,
+	initSubsystemsUpTo,
+	lazy,
+	registerSubsystem,
+	resetSubsystems,
+} from './lazyInit';
 // Lifecycle events
 export type {
 	AdoptEvent,
@@ -579,6 +600,25 @@ export {
 	resetEntityPool,
 	setInStore,
 } from './storage';
+// Archetype pool
+export type {
+	ArchetypeDefinition,
+	ArchetypePoolConfig,
+	ArchetypePoolStats,
+	ComponentResetFn,
+	RecyclingSystemStats,
+} from './storage/archetypePool';
+export {
+	acquireEntity,
+	clearAllArchetypePools,
+	clearArchetypePool,
+	getArchetypePoolStats,
+	getRecyclingStats,
+	preallocateEntities,
+	registerArchetype,
+	releaseEntity,
+	unregisterArchetype,
+} from './storage/archetypePool';
 // Style inheritance
 export {
 	clearStyleCache,
