@@ -13,6 +13,7 @@ import { Position, setPosition } from '../components/position';
 import { markDirty, setVisible } from '../components/renderable';
 import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { createComponentStore } from '../utils/componentStorage';
 
 // =============================================================================
 // CONSTANTS
@@ -338,8 +339,12 @@ const treeStore = {
 	visibleCount: new Uint32Array(MAX_ENTITIES),
 };
 
-/** Store for tree nodes */
-const nodesStore = new Map<Entity, InternalTreeNode[]>();
+/**
+ * Store for tree nodes.
+ * Uses iterable ComponentStore backed by PackedStore for cache-friendly
+ * dense iteration when rendering all tree entities.
+ */
+const nodesStore = createComponentStore<InternalTreeNode[]>({ iterable: true });
 
 /** Store for selected path */
 const selectedPathStore = new Map<Entity, string>();
