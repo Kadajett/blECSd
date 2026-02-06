@@ -438,6 +438,49 @@ interface NodePtyModule {
 }
 
 /**
+ * Parsed spawn options for PTY creation.
+ */
+interface ParsedSpawnOptions {
+	readonly shell: string;
+	readonly args: string[];
+	readonly env: Record<string, string>;
+	readonly cwd: string | undefined;
+}
+
+/**
+ * Parses spawn options into a normalized format.
+ */
+function parseSpawnOptions(options?: PtyOptions | string): ParsedSpawnOptions {
+	const defaultShell = process.env.SHELL ?? '/bin/sh';
+	const defaultEnv = { ...process.env } as Record<string, string>;
+
+	if (typeof options === 'string') {
+		return {
+			shell: options,
+			args: [],
+			env: defaultEnv,
+			cwd: undefined,
+		};
+	}
+
+	if (!options) {
+		return {
+			shell: defaultShell,
+			args: [],
+			env: defaultEnv,
+			cwd: undefined,
+		};
+	}
+
+	return {
+		shell: options.shell ?? defaultShell,
+		args: options.args ? [...options.args] : [],
+		env: options.env ? ({ ...process.env, ...options.env } as Record<string, string>) : defaultEnv,
+		cwd: options.cwd,
+	};
+}
+
+/**
  * Tries to load node-pty dynamically from multiple locations.
  * Returns null if not available.
  */
@@ -467,6 +510,66 @@ function tryLoadNodePty(): NodePtyModule | null {
 	}
 
 	return null;
+}
+
+// =============================================================================
+// FACTORY HELPERS
+// =============================================================================
+
+/**
+ * Sets up the border configuration for a terminal widget.
+ */
+function setupTerminalBorder(
+	world: World,
+	eid: Entity,
+	borderConfig: BorderConfig | undefined,
+): void {
+	if (!borderConfig) {
+		return;
+	}
+
+	const borderType = borderConfig.type ? borderTypeToEnum(borderConfig.type) : BorderType.Line;
+
+	setBorder(world, eid, {
+		type: borderType,
+		fg: borderConfig.fg !== undefined ? parseColor(borderConfig.fg) : undefined,
+		bg: borderConfig.bg !== undefined ? parseColor(borderConfig.bg) : undefined,
+	});
+
+	if (borderConfig.ch) {
+		const charset =
+			typeof borderConfig.ch === 'string' ? getBorderCharset(borderConfig.ch) : borderConfig.ch;
+		setBorderChars(world, eid, charset);
+	}
+}
+
+/**
+ * Sets up the style configuration for a terminal widget.
+ */
+function setupTerminalStyle(world: World, eid: Entity, style: TerminalStyle | undefined): void {
+	if (!style) {
+		return;
+	}
+
+	setStyle(world, eid, {
+		fg: style.fg !== undefined ? parseColor(style.fg) : undefined,
+		bg: style.bg !== undefined ? parseColor(style.bg) : undefined,
+	});
+}
+
+/**
+ * Calculates display dimensions including border if present.
+ */
+function calculateDisplayDimensions(
+	width: number,
+	height: number,
+	borderConfig: BorderConfig | undefined,
+): { displayWidth: number; displayHeight: number } {
+	const hasBorder = borderConfig !== undefined && borderConfig.type !== 'none';
+	return {
+		displayWidth: width + (hasBorder ? 2 : 0),
+		displayHeight: height + (hasBorder ? 2 : 0),
+	};
 }
 
 // =============================================================================
@@ -514,10 +617,12 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 	const y = parsePositionToNumber(validated.top);
 	setPosition(world, eid, x, y);
 
-	// Calculate dimensions (add 2 for border if present)
-	const hasBorder = validated.border !== undefined && validated.border.type !== 'none';
-	const displayWidth = validated.width + (hasBorder ? 2 : 0);
-	const displayHeight = validated.height + (hasBorder ? 2 : 0);
+	// Calculate and set dimensions
+	const { displayWidth, displayHeight } = calculateDisplayDimensions(
+		validated.width,
+		validated.height,
+		validated.border,
+	);
 	setDimensions(world, eid, displayWidth, displayHeight);
 
 	// Set up terminal buffer
@@ -531,35 +636,12 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 	};
 	setTerminalBuffer(world, eid, bufferConfig);
 
-	// Set style
-	if (validated.style) {
-		setStyle(world, eid, {
-			fg: validated.style.fg !== undefined ? parseColor(validated.style.fg) : undefined,
-			bg: validated.style.bg !== undefined ? parseColor(validated.style.bg) : undefined,
-		});
-	}
+	// Set style and visibility
+	setupTerminalStyle(world, eid, validated.style);
 	setVisible(world, eid, true);
 
 	// Set border
-	if (validated.border) {
-		const borderType = validated.border.type
-			? borderTypeToEnum(validated.border.type)
-			: BorderType.Line;
-
-		setBorder(world, eid, {
-			type: borderType,
-			fg: validated.border.fg !== undefined ? parseColor(validated.border.fg) : undefined,
-			bg: validated.border.bg !== undefined ? parseColor(validated.border.bg) : undefined,
-		});
-
-		if (validated.border.ch) {
-			const charset =
-				typeof validated.border.ch === 'string'
-					? getBorderCharset(validated.border.ch)
-					: validated.border.ch;
-			setBorderChars(world, eid, charset);
-		}
-	}
+	setupTerminalBorder(world, eid, validated.border);
 
 	// Make focusable
 	setFocusable(world, eid, { focusable: true });
@@ -648,21 +730,7 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 			}
 
 			// Parse options
-			let shell: string;
-			let args: string[] = [];
-			let env: Record<string, string> = { ...process.env } as Record<string, string>;
-			let cwd: string | undefined;
-
-			if (typeof options === 'string') {
-				shell = options;
-			} else if (options) {
-				shell = options.shell ?? process.env.SHELL ?? '/bin/sh';
-				args = options.args ? [...options.args] : [];
-				env = options.env ? ({ ...process.env, ...options.env } as Record<string, string>) : env;
-				cwd = options.cwd;
-			} else {
-				shell = process.env.SHELL ?? '/bin/sh';
-			}
+			const { shell, args, env, cwd } = parseSpawnOptions(options);
 
 			// Get terminal dimensions
 			const buffer = getTerminalBuffer(eid);
@@ -833,6 +901,133 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 }
 
 // =============================================================================
+// KEYBOARD HANDLER HELPERS
+// =============================================================================
+
+/**
+ * Lookup table for special key escape sequences.
+ */
+const SPECIAL_KEY_SEQUENCES: Record<string, string> = {
+	return: '\r',
+	enter: '\r',
+	backspace: '\x7f',
+	tab: '\t',
+	escape: '\x1b',
+	up: '\x1b[A',
+	down: '\x1b[B',
+	right: '\x1b[C',
+	left: '\x1b[D',
+	home: '\x1b[H',
+	end: '\x1b[F',
+	pageup: '\x1b[5~',
+	pagedown: '\x1b[6~',
+	delete: '\x1b[3~',
+	insert: '\x1b[2~',
+} as const;
+
+/**
+ * Handles special key input for PTY.
+ */
+function handleSpecialKey(widget: TerminalWidget, key: string): boolean {
+	const sequence = SPECIAL_KEY_SEQUENCES[key];
+	if (sequence) {
+		widget.input(sequence);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Handles control key combinations.
+ */
+function handleCtrlKey(widget: TerminalWidget, char: string | undefined): boolean {
+	if (!char) {
+		return false;
+	}
+
+	const code = char.toUpperCase().charCodeAt(0) - 64;
+	if (code >= 0 && code <= 31) {
+		widget.input(String.fromCharCode(code));
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Handles alt key combinations.
+ */
+function handleAltKey(widget: TerminalWidget, char: string | undefined): boolean {
+	if (!char) {
+		return false;
+	}
+
+	widget.input(`\x1b${char}`);
+	return true;
+}
+
+/**
+ * Handles PTY input for running terminal.
+ */
+function handlePtyInput(
+	widget: TerminalWidget,
+	key: string,
+	char: string | undefined,
+	ctrl: boolean,
+	alt: boolean,
+): boolean {
+	// Special keys
+	if (handleSpecialKey(widget, key)) {
+		return true;
+	}
+
+	// Ctrl combinations
+	if (ctrl && handleCtrlKey(widget, char)) {
+		return true;
+	}
+
+	// Alt combinations
+	if (alt && handleAltKey(widget, char)) {
+		return true;
+	}
+
+	// Regular character
+	if (char && !ctrl && !alt) {
+		widget.input(char);
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Handles scroll navigation when PTY is not running.
+ */
+function handleScrollKeys(widget: TerminalWidget, key: string, ctrl: boolean): boolean {
+	if (key === 'pageup') {
+		widget.scrollUp(widget.getDimensions().height);
+		return true;
+	}
+
+	if (key === 'pagedown') {
+		widget.scrollDown(widget.getDimensions().height);
+		return true;
+	}
+
+	if (key === 'home' && ctrl) {
+		widget.scrollToTop();
+		return true;
+	}
+
+	if (key === 'end' && ctrl) {
+		widget.scrollToBottom();
+		return true;
+	}
+
+	return false;
+}
+
+// =============================================================================
 // KEYBOARD HANDLER
 // =============================================================================
 
@@ -869,119 +1064,11 @@ export function handleTerminalKey(
 ): boolean {
 	// If PTY is running, forward input
 	if (widget.isRunning()) {
-		// Handle special keys
-		if (key === 'return' || key === 'enter') {
-			widget.input('\r');
-			return true;
-		}
-		if (key === 'backspace') {
-			widget.input('\x7f');
-			return true;
-		}
-		if (key === 'tab') {
-			widget.input('\t');
-			return true;
-		}
-		if (key === 'escape') {
-			widget.input('\x1b');
-			return true;
-		}
-
-		// Arrow keys
-		if (key === 'up') {
-			widget.input('\x1b[A');
-			return true;
-		}
-		if (key === 'down') {
-			widget.input('\x1b[B');
-			return true;
-		}
-		if (key === 'right') {
-			widget.input('\x1b[C');
-			return true;
-		}
-		if (key === 'left') {
-			widget.input('\x1b[D');
-			return true;
-		}
-
-		// Home/End
-		if (key === 'home') {
-			widget.input('\x1b[H');
-			return true;
-		}
-		if (key === 'end') {
-			widget.input('\x1b[F');
-			return true;
-		}
-
-		// Page up/down
-		if (key === 'pageup') {
-			widget.input('\x1b[5~');
-			return true;
-		}
-		if (key === 'pagedown') {
-			widget.input('\x1b[6~');
-			return true;
-		}
-
-		// Delete/Insert
-		if (key === 'delete') {
-			widget.input('\x1b[3~');
-			return true;
-		}
-		if (key === 'insert') {
-			widget.input('\x1b[2~');
-			return true;
-		}
-
-		// Ctrl+key combinations
-		if (ctrl && char) {
-			const code = char.toUpperCase().charCodeAt(0) - 64;
-			if (code >= 0 && code <= 31) {
-				widget.input(String.fromCharCode(code));
-				return true;
-			}
-		}
-
-		// Alt+key combinations
-		if (alt && char) {
-			widget.input(`\x1b${char}`);
-			return true;
-		}
-
-		// Regular character
-		if (char && !ctrl && !alt) {
-			widget.input(char);
-			return true;
-		}
-
-		return false;
+		return handlePtyInput(widget, key, char, ctrl, alt);
 	}
 
 	// PTY not running - handle scroll keys
-	switch (key) {
-		case 'pageup':
-			widget.scrollUp(widget.getDimensions().height);
-			return true;
-		case 'pagedown':
-			widget.scrollDown(widget.getDimensions().height);
-			return true;
-		case 'home':
-			if (ctrl) {
-				widget.scrollToTop();
-				return true;
-			}
-			break;
-		case 'end':
-			if (ctrl) {
-				widget.scrollToBottom();
-				return true;
-			}
-			break;
-	}
-
-	return false;
+	return handleScrollKeys(widget, key, ctrl);
 }
 
 // =============================================================================

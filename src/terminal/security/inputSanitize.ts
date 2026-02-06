@@ -247,7 +247,7 @@ export function stripNullBytes(input: string): string {
 export function stripControlChars(input: string, allowTab = true, allowNewline = true): string {
 	let result = '';
 	for (let i = 0; i < input.length; i++) {
-		const code = input.charCodeAt(i)!;
+		const code = input.charCodeAt(i);
 		if (isNull(code)) {
 			continue; // Always strip null
 		}
@@ -283,7 +283,7 @@ export function stripControlChars(input: string, allowTab = true, allowNewline =
 export function stripC1Controls(input: string): string {
 	let result = '';
 	for (let i = 0; i < input.length; i++) {
-		const code = input.charCodeAt(i)!;
+		const code = input.charCodeAt(i);
 		if (!isC1Control(code)) {
 			result += input[i];
 		}
@@ -301,10 +301,10 @@ export function stripC1Controls(input: string): string {
 export function replaceInvalidUtf16(input: string, replacement = '\uFFFD'): string {
 	let result = '';
 	for (let i = 0; i < input.length; i++) {
-		const code = input.charCodeAt(i)!;
+		const code = input.charCodeAt(i);
 		// High surrogate
 		if (code >= 0xd800 && code <= 0xdbff) {
-			const next = i + 1 < input.length ? input.charCodeAt(i + 1)! : 0;
+			const next = i + 1 < input.length ? input.charCodeAt(i + 1) : 0;
 			// Valid surrogate pair
 			if (next >= 0xdc00 && next <= 0xdfff) {
 				result += input[i];
@@ -340,7 +340,7 @@ export function replaceInvalidUtf16(input: string, replacement = '\uFFFD'): stri
 export function restrictToAscii(input: string, replacement = '\uFFFD'): string {
 	let result = '';
 	for (let i = 0; i < input.length; i++) {
-		const code = input.charCodeAt(i)!;
+		const code = input.charCodeAt(i);
 		if (
 			(code >= 0x20 && code <= 0x7e) || // Printable ASCII
 			code === 0x09 || // Tab
@@ -372,10 +372,10 @@ export function restrictToAscii(input: string, replacement = '\uFFFD'): string {
  */
 export function isValidUtf8String(input: string): boolean {
 	for (let i = 0; i < input.length; i++) {
-		const code = input.charCodeAt(i)!;
+		const code = input.charCodeAt(i);
 		if (code >= 0xd800 && code <= 0xdbff) {
 			// High surrogate - must be followed by low surrogate
-			const next = i + 1 < input.length ? input.charCodeAt(i + 1)! : 0;
+			const next = i + 1 < input.length ? input.charCodeAt(i + 1) : 0;
 			if (next < 0xdc00 || next > 0xdfff) return false;
 			i++; // Skip low surrogate
 		} else if (code >= 0xdc00 && code <= 0xdfff) {
@@ -394,7 +394,7 @@ export function isValidUtf8String(input: string): boolean {
  */
 export function hasControlChars(input: string): boolean {
 	for (let i = 0; i < input.length; i++) {
-		const code = input.charCodeAt(i)!;
+		const code = input.charCodeAt(i);
 		if (isC0Control(code) || isC1Control(code)) return true;
 	}
 	return false;

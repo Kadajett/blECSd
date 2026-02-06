@@ -111,37 +111,30 @@ export function createThrottledResize(
 
 	const minInterval = 1000 / cfg.maxRate;
 
-	function handleResize(): void {
-		if (disposed) return;
+	function shouldProcessResize(newWidth: number, newHeight: number): boolean {
+		if (disposed) return false;
+		if (newWidth === lastWidth && newHeight === lastHeight) return false;
+		return true;
+	}
 
-		const newWidth = process.stdout.columns ?? 80;
-		const newHeight = process.stdout.rows ?? 24;
-
-		if (newWidth === lastWidth && newHeight === lastHeight) return;
-
-		isResizing = true;
-		lastWidth = newWidth;
-		lastHeight = newHeight;
-
-		const now = performance.now();
+	function handleThrottledUpdate(newWidth: number, newHeight: number, now: number): void {
 		const elapsed = now - lastThrottleTime;
+		if (elapsed < minInterval) return;
 
-		// Throttle: only process if enough time has passed
-		if (elapsed >= minInterval) {
-			lastThrottleTime = now;
+		lastThrottleTime = now;
 
-			// Quick update: dimensions only
-			const screen = getScreen(world);
-			if (screen) {
-				resizeScreen(world, screen, newWidth, newHeight);
-			}
-
-			if (cfg.showIntermediate) {
-				onResize(newWidth, newHeight, false);
-			}
+		// Quick update: dimensions only
+		const screen = getScreen(world);
+		if (screen) {
+			resizeScreen(world, screen, newWidth, newHeight);
 		}
 
-		// Debounce: schedule full relayout after resize stops
+		if (cfg.showIntermediate) {
+			onResize(newWidth, newHeight, false);
+		}
+	}
+
+	function scheduleFinalResize(): void {
 		if (debounceTimer !== null) {
 			clearTimeout(debounceTimer);
 		}
@@ -169,6 +162,25 @@ export function createThrottledResize(
 				previousHeight: lastHeight,
 			} satisfies ResizeEventData);
 		}, cfg.debounceMs);
+	}
+
+	function handleResize(): void {
+		const newWidth = process.stdout.columns ?? 80;
+		const newHeight = process.stdout.rows ?? 24;
+
+		if (!shouldProcessResize(newWidth, newHeight)) return;
+
+		isResizing = true;
+		lastWidth = newWidth;
+		lastHeight = newHeight;
+
+		const now = performance.now();
+
+		// Throttle: only process if enough time has passed
+		handleThrottledUpdate(newWidth, newHeight, now);
+
+		// Debounce: schedule full relayout after resize stops
+		scheduleFinalResize();
 	}
 
 	// Set up SIGWINCH listener

@@ -195,14 +195,10 @@ export function isViKey(key: KeyEvent, state: ViState, config: ViModeConfig): bo
 // INTERNAL HANDLERS
 // =============================================================================
 
-function processNormalModeKey(
-	key: KeyEvent,
-	state: ViState,
-	config: ViModeConfig,
-): [ViAction, ViState] {
+function handleCountPrefix(key: KeyEvent, state: ViState): [ViAction, ViState] | null {
 	const name = key.name;
 
-	// Handle count prefix (e.g., "5j" = move down 5)
+	// Handle digit 1-9 for count prefix
 	if (!key.ctrl && !key.meta && !key.shift && name >= '1' && name <= '9') {
 		const digit = Number(name);
 		return [
@@ -210,34 +206,52 @@ function processNormalModeKey(
 			{ ...state, countPrefix: state.countPrefix * 10 + digit, gPending: false },
 		];
 	}
+
+	// Handle 0 for existing count prefix
 	if (state.countPrefix > 0 && name === '0' && !key.ctrl && !key.meta) {
 		return [{ type: 'none' }, { ...state, countPrefix: state.countPrefix * 10 }];
 	}
 
-	const count = state.countPrefix > 0 ? state.countPrefix : 1;
-	const resetState = { ...state, countPrefix: 0, gPending: false };
+	return null;
+}
 
-	// j/k: up/down scrolling
-	if (name === 'j' && !key.ctrl && !key.meta && !key.shift) {
+function handleBasicNavigation(
+	key: KeyEvent,
+	count: number,
+	config: ViModeConfig,
+	resetState: ViState,
+): [ViAction, ViState] | null {
+	const name = key.name;
+	const noMods = !key.ctrl && !key.meta && !key.shift;
+
+	if (name === 'j' && noMods) {
 		return [{ type: 'scroll', direction: 'down', amount: count * config.scrollStep }, resetState];
 	}
-	if (name === 'k' && !key.ctrl && !key.meta && !key.shift) {
+	if (name === 'k' && noMods) {
 		return [{ type: 'scroll', direction: 'up', amount: count * config.scrollStep }, resetState];
 	}
-
-	// h/l: left/right scrolling
-	if (name === 'h' && !key.ctrl && !key.meta && !key.shift) {
+	if (name === 'h' && noMods) {
 		return [
 			{ type: 'scroll', direction: 'left', amount: count * config.horizontalStep },
 			resetState,
 		];
 	}
-	if (name === 'l' && !key.ctrl && !key.meta && !key.shift) {
+	if (name === 'l' && noMods) {
 		return [
 			{ type: 'scroll', direction: 'right', amount: count * config.horizontalStep },
 			resetState,
 		];
 	}
+
+	return null;
+}
+
+function handleJumpCommands(
+	key: KeyEvent,
+	state: ViState,
+	resetState: ViState,
+): [ViAction, ViState] | null {
+	const name = key.name;
 
 	// g: first press sets pending, gg = go to top
 	if (name === 'g' && !key.ctrl && !key.meta && !key.shift) {
@@ -252,22 +266,6 @@ function processNormalModeKey(
 		return [{ type: 'jump', target: 'bottom' }, resetState];
 	}
 
-	// Ctrl+d/u: half page down/up
-	if (key.ctrl && name === 'd') {
-		return [{ type: 'page', direction: 'down', amount: 'half' }, resetState];
-	}
-	if (key.ctrl && name === 'u') {
-		return [{ type: 'page', direction: 'up', amount: 'half' }, resetState];
-	}
-
-	// Ctrl+f/b: full page down/up
-	if (key.ctrl && name === 'f') {
-		return [{ type: 'page', direction: 'down', amount: 'full' }, resetState];
-	}
-	if (key.ctrl && name === 'b') {
-		return [{ type: 'page', direction: 'up', amount: 'full' }, resetState];
-	}
-
 	// H/M/L: high/middle/low of visible area
 	if (key.shift && name === 'h') {
 		return [{ type: 'jump', target: 'high' }, resetState];
@@ -278,6 +276,35 @@ function processNormalModeKey(
 	if (key.shift && name === 'l') {
 		return [{ type: 'jump', target: 'low' }, resetState];
 	}
+
+	return null;
+}
+
+function handlePageNavigation(key: KeyEvent, resetState: ViState): [ViAction, ViState] | null {
+	const name = key.name;
+
+	if (key.ctrl && name === 'd') {
+		return [{ type: 'page', direction: 'down', amount: 'half' }, resetState];
+	}
+	if (key.ctrl && name === 'u') {
+		return [{ type: 'page', direction: 'up', amount: 'half' }, resetState];
+	}
+	if (key.ctrl && name === 'f') {
+		return [{ type: 'page', direction: 'down', amount: 'full' }, resetState];
+	}
+	if (key.ctrl && name === 'b') {
+		return [{ type: 'page', direction: 'up', amount: 'full' }, resetState];
+	}
+
+	return null;
+}
+
+function handleSearchCommands(
+	key: KeyEvent,
+	state: ViState,
+	resetState: ViState,
+): [ViAction, ViState] | null {
+	const name = key.name;
 
 	// /: enter search mode
 	if (name === '/' && !key.ctrl && !key.meta && !key.shift) {
@@ -296,6 +323,34 @@ function processNormalModeKey(
 		const dir = state.lastSearchDirection === 'forward' ? 'backward' : 'forward';
 		return [{ type: 'searchNext', direction: dir }, resetState];
 	}
+
+	return null;
+}
+
+function processNormalModeKey(
+	key: KeyEvent,
+	state: ViState,
+	config: ViModeConfig,
+): [ViAction, ViState] {
+	// Handle count prefix first
+	const countResult = handleCountPrefix(key, state);
+	if (countResult) return countResult;
+
+	const count = state.countPrefix > 0 ? state.countPrefix : 1;
+	const resetState = { ...state, countPrefix: 0, gPending: false };
+
+	// Try each command type in sequence
+	const basicNav = handleBasicNavigation(key, count, config, resetState);
+	if (basicNav) return basicNav;
+
+	const jumpCmd = handleJumpCommands(key, state, resetState);
+	if (jumpCmd) return jumpCmd;
+
+	const pageNav = handlePageNavigation(key, resetState);
+	if (pageNav) return pageNav;
+
+	const searchCmd = handleSearchCommands(key, state, resetState);
+	if (searchCmd) return searchCmd;
 
 	return [{ type: 'none' }, resetState];
 }

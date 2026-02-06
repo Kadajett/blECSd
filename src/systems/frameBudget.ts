@@ -128,7 +128,7 @@ function createSamples(windowSize: number): MutableTimingSamples {
 }
 
 function addSample(s: MutableTimingSamples, value: number): void {
-	const old = s.samples[s.idx % s.samples.length]!;
+	const old = s.samples[s.idx % s.samples.length] ?? 0;
 	s.samples[s.idx % s.samples.length] = value;
 	s.idx++;
 	if (s.count < s.samples.length) {
@@ -145,7 +145,7 @@ function getPercentile(s: MutableTimingSamples, percentile: number): number {
 	if (s.count === 0) return 0;
 	const sorted = s.samples.slice(0, s.count).sort((a, b) => a - b);
 	const idx = Math.min(Math.floor(sorted.length * percentile), sorted.length - 1);
-	return sorted[idx]!;
+	return sorted[idx] ?? 0;
 }
 
 function getAvg(s: MutableTimingSamples): number {
@@ -292,7 +292,8 @@ export function getFrameBudgetStats(): FrameBudgetManager {
 			name,
 			lastMs:
 				samples.count > 0
-					? samples.samples[(samples.idx - 1 + samples.samples.length) % samples.samples.length]!
+					? (samples.samples[(samples.idx - 1 + samples.samples.length) % samples.samples.length] ??
+						0)
 					: 0,
 			avgMs: getAvg(samples),
 			minMs: samples.min === Number.POSITIVE_INFINITY ? 0 : samples.min,
@@ -305,13 +306,13 @@ export function getFrameBudgetStats(): FrameBudgetManager {
 	}
 
 	const phaseTimings: Record<string, number> = {};
-	for (const [phase, time] of s.phaseTotals) phaseTimings[LoopPhase[phase]!] = time;
+	for (const [phase, time] of s.phaseTotals) phaseTimings[LoopPhase[phase] ?? 'unknown'] = time;
 
 	const lastFrame =
 		s.frameSamples.count > 0
-			? s.frameSamples.samples[
+			? (s.frameSamples.samples[
 					(s.frameSamples.idx - 1 + s.frameSamples.samples.length) % s.frameSamples.samples.length
-				]!
+				] ?? 0)
 			: 0;
 	const avgFrame = getAvg(s.frameSamples);
 

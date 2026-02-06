@@ -204,7 +204,7 @@ export function parseKittyQueryResponse(buffer: Uint8Array): number | undefined 
 	// Extract digits between '?' and 'u'
 	let digits = '';
 	for (let i = 3; i < buffer.length - 1; i++) {
-		const ch = buffer[i]!;
+		const ch = buffer[i] ?? 0;
 		if (ch >= 0x30 && ch <= 0x39) {
 			digits += String.fromCharCode(ch);
 		} else {
@@ -227,13 +227,13 @@ export function isKittyKeyEvent(buffer: Uint8Array): boolean {
 	if (buffer.length < 3) return false;
 	if (buffer[0] !== 0x1b || buffer[1] !== 0x5b) return false;
 
-	const last = buffer[buffer.length - 1]!;
+	const last = buffer[buffer.length - 1];
 	// Must end with 'u' (0x75) or '~' (0x7e)
 	if (last !== 0x75 && last !== 0x7e) return false;
 
 	// Must contain digits (the keycode)
 	for (let i = 2; i < buffer.length - 1; i++) {
-		const ch = buffer[i]!;
+		const ch = buffer[i] ?? 0;
 		if (ch >= 0x30 && ch <= 0x39) return true; // Found a digit
 		if (ch === 0x3b || ch === 0x3a) continue; // Separator
 	}
@@ -260,29 +260,31 @@ export function isKittyKeyEvent(buffer: Uint8Array): boolean {
  * }
  * ```
  */
-export function parseKittyKeyEvent(buffer: Uint8Array): KittyKeyEvent | undefined {
-	if (!isKittyKeyEvent(buffer)) return undefined;
-
-	// Extract the parameter string (between CSI and final byte)
+function extractParamString(buffer: Uint8Array): string {
 	let params = '';
 	for (let i = 2; i < buffer.length - 1; i++) {
-		params += String.fromCharCode(buffer[i]!);
+		params += String.fromCharCode(buffer[i] ?? 0);
 	}
+	return params;
+}
 
-	const rawParams = params;
-
-	// Split by ';' to get major sections
-	const sections = params.split(';');
-
-	// First section: keycode[:shifted_key[:base_key]]
-	const keycodeSection = sections[0] ?? '';
+function parseKeyCodeSection(keycodeSection: string): {
+	keyCode: number;
+	shiftedKey: number | undefined;
+	baseKey: number | undefined;
+} {
 	const keycodeParts = keycodeSection.split(':');
 	const keyCode = Number.parseInt(keycodeParts[0] ?? '0', 10);
 	const shiftedKey = keycodeParts[1] ? Number.parseInt(keycodeParts[1], 10) : undefined;
 	const baseKey = keycodeParts[2] ? Number.parseInt(keycodeParts[2], 10) : undefined;
 
-	// Second section: modifiers[:event_type]
-	const modSection = sections[1] ?? '';
+	return { keyCode, shiftedKey, baseKey };
+}
+
+function parseModifiersSection(modSection: string): {
+	modifiers: KittyModifiers;
+	eventType: KittyEventType;
+} {
 	const modParts = modSection.split(':');
 	const modValue = modParts[0] ? Number.parseInt(modParts[0], 10) - 1 : 0; // 1-based in protocol
 	const eventTypeValue = modParts[1] ? Number.parseInt(modParts[1], 10) : 1;
@@ -290,17 +292,33 @@ export function parseKittyKeyEvent(buffer: Uint8Array): KittyKeyEvent | undefine
 	const modifiers = decodeModifiers(Math.max(0, modValue));
 	const eventType = decodeEventType(eventTypeValue);
 
-	// Third section: associated text (Unicode codepoints separated by ':')
+	return { modifiers, eventType };
+}
+
+function parseTextSection(textSection: string | undefined): string {
+	if (!textSection) return '';
+
 	let text = '';
-	if (sections[2]) {
-		const textParts = sections[2].split(':');
-		for (const p of textParts) {
-			const cp = Number.parseInt(p, 10);
-			if (!Number.isNaN(cp) && cp > 0) {
-				text += String.fromCodePoint(cp);
-			}
+	const textParts = textSection.split(':');
+	for (const p of textParts) {
+		const cp = Number.parseInt(p, 10);
+		if (!Number.isNaN(cp) && cp > 0) {
+			text += String.fromCodePoint(cp);
 		}
 	}
+	return text;
+}
+
+export function parseKittyKeyEvent(buffer: Uint8Array): KittyKeyEvent | undefined {
+	if (!isKittyKeyEvent(buffer)) return undefined;
+
+	const params = extractParamString(buffer);
+	const rawParams = params;
+	const sections = params.split(';');
+
+	const { keyCode, shiftedKey, baseKey } = parseKeyCodeSection(sections[0] ?? '');
+	const { modifiers, eventType } = parseModifiersSection(sections[1] ?? '');
+	const text = parseTextSection(sections[2]);
 
 	return {
 		keyCode,
@@ -460,7 +478,7 @@ export function kittyKeyToName(event: KittyKeyEvent): string {
 		57452: 'rmeta',
 	};
 
-	if (specialMap[code]) return specialMap[code]!;
+	if (specialMap[code]) return specialMap[code] as string;
 
 	// Functional keys encoded with ~
 	const functionalMap: Record<number, string> = {
@@ -483,7 +501,7 @@ export function kittyKeyToName(event: KittyKeyEvent): string {
 		23: 'f11',
 		24: 'f12',
 	};
-	if (functionalMap[code]) return functionalMap[code]!;
+	if (functionalMap[code]) return functionalMap[code] as string;
 
 	// Arrow keys
 	if (code === 57352) return 'up';

@@ -216,6 +216,65 @@ export function createInputActionManager(
 	const callbacks = new Map<string, Set<ActionCallback>>();
 	const globalCallbacks = new Set<ActionCallback>();
 
+	function handleActivation(
+		state: MutableActionState,
+		action: string,
+		inputState: InputState,
+	): void {
+		state.active = true;
+		state.justActivated = true;
+		state.activeTime = 0;
+		state.value = 1;
+		fireCallbacks(action, state, inputState);
+	}
+
+	function handleDeactivation(
+		state: MutableActionState,
+		action: string,
+		inputState: InputState,
+	): void {
+		state.active = false;
+		state.justDeactivated = true;
+		state.value = 0;
+		fireCallbacks(action, state, inputState);
+	}
+
+	function handleContinuousActive(
+		state: MutableActionState,
+		binding: InternalBinding,
+		action: string,
+		deltaMs: number,
+		inputState: InputState,
+	): void {
+		state.activeTime += deltaMs;
+		state.value = 1;
+		if (binding.continuous) {
+			fireCallbacks(action, state, inputState);
+		}
+	}
+
+	function updateSingleAction(
+		action: string,
+		binding: InternalBinding,
+		state: MutableActionState,
+		deltaMs: number,
+		inputState: InputState,
+	): void {
+		state.justActivated = false;
+		state.justDeactivated = false;
+
+		const wasActive = state.active;
+		const isNowActive = checkBindingActive(binding, inputState);
+
+		if (isNowActive && !wasActive) {
+			handleActivation(state, action, inputState);
+		} else if (!isNowActive && wasActive) {
+			handleDeactivation(state, action, inputState);
+		} else if (isNowActive) {
+			handleContinuousActive(state, binding, action, deltaMs, inputState);
+		}
+	}
+
 	function fireCallbacks(action: string, state: ActionState, inputState: InputState): void {
 		// Fire action-specific callbacks
 		const actionCallbacks = callbacks.get(action);
@@ -294,39 +353,7 @@ export function createInputActionManager(
 			for (const [action, binding] of bindings) {
 				const state = states.get(action);
 				if (!state) continue;
-
-				// Clear transient flags
-				state.justActivated = false;
-				state.justDeactivated = false;
-
-				// Check if any bound input is active
-				const wasActive = state.active;
-				const isNowActive = checkBindingActive(binding, inputState);
-
-				// Update state
-				if (isNowActive && !wasActive) {
-					// Just activated
-					state.active = true;
-					state.justActivated = true;
-					state.activeTime = 0;
-					state.value = 1;
-					fireCallbacks(action, state, inputState);
-				} else if (!isNowActive && wasActive) {
-					// Just deactivated
-					state.active = false;
-					state.justDeactivated = true;
-					state.value = 0;
-					fireCallbacks(action, state, inputState);
-				} else if (isNowActive) {
-					// Still active
-					state.activeTime += deltaMs;
-					state.value = 1;
-
-					// Fire callback for continuous actions
-					if (binding.continuous) {
-						fireCallbacks(action, state, inputState);
-					}
-				}
+				updateSingleAction(action, binding, state, deltaMs, inputState);
 			}
 		},
 

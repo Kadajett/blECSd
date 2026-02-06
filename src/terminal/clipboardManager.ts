@@ -114,6 +114,87 @@ export function createClipboardManager(config?: Partial<ClipboardManagerConfig>)
 	let buffer = '';
 	let cancelled = false;
 
+	function validateSize(text: string, startTime: number): ClipboardResult | null {
+		if (text.length <= cfg.maxSize) return null;
+
+		return {
+			success: false,
+			error: `Content too large (${text.length} bytes, max ${cfg.maxSize})`,
+			bytesProcessed: 0,
+			elapsedMs: performance.now() - startTime,
+		};
+	}
+
+	function writeToClipboard(text: string): void {
+		if (!cfg.useOSC52) return;
+
+		const seq = clipboard.write(text, ClipboardSelection.CLIPBOARD, cfg.maxSize);
+		if (seq) {
+			process.stdout.write(seq);
+		}
+	}
+
+	function copySmallText(
+		text: string,
+		startTime: number,
+		onProgress?: (progress: ClipboardProgress) => void,
+	): ClipboardResult {
+		writeToClipboard(text);
+
+		onProgress?.({
+			processed: text.length,
+			total: text.length,
+			percentage: 100,
+			complete: true,
+		});
+
+		return {
+			success: true,
+			bytesProcessed: text.length,
+			elapsedMs: performance.now() - startTime,
+		};
+	}
+
+	async function copyLargeText(
+		text: string,
+		startTime: number,
+		onProgress?: (progress: ClipboardProgress) => void,
+	): Promise<ClipboardResult> {
+		let processed = 0;
+		const total = text.length;
+
+		while (processed < total && !cancelled) {
+			const end = Math.min(processed + cfg.chunkSize, total);
+			processed = end;
+
+			onProgress?.({
+				processed,
+				total,
+				percentage: Math.round((processed / total) * 100),
+				complete: processed >= total,
+			});
+
+			await new Promise<void>((resolve) => setTimeout(resolve, 0));
+		}
+
+		if (cancelled) {
+			return {
+				success: false,
+				error: 'Operation cancelled',
+				bytesProcessed: processed,
+				elapsedMs: performance.now() - startTime,
+			};
+		}
+
+		writeToClipboard(text);
+
+		return {
+			success: true,
+			bytesProcessed: total,
+			elapsedMs: performance.now() - startTime,
+		};
+	}
+
 	return {
 		async copy(
 			text: string,
@@ -122,81 +203,18 @@ export function createClipboardManager(config?: Partial<ClipboardManagerConfig>)
 			const startTime = performance.now();
 			cancelled = false;
 
-			if (text.length > cfg.maxSize) {
-				return {
-					success: false,
-					error: `Content too large (${text.length} bytes, max ${cfg.maxSize})`,
-					bytesProcessed: 0,
-					elapsedMs: performance.now() - startTime,
-				};
-			}
+			const sizeError = validateSize(text, startTime);
+			if (sizeError) return sizeError;
 
 			buffer = text;
 
 			// Small text: write directly
 			if (text.length <= cfg.chunkSize) {
-				if (cfg.useOSC52) {
-					const seq = clipboard.write(text, ClipboardSelection.CLIPBOARD, cfg.maxSize);
-					if (seq) {
-						process.stdout.write(seq);
-					}
-				}
-
-				onProgress?.({
-					processed: text.length,
-					total: text.length,
-					percentage: 100,
-					complete: true,
-				});
-
-				return {
-					success: true,
-					bytesProcessed: text.length,
-					elapsedMs: performance.now() - startTime,
-				};
+				return copySmallText(text, startTime, onProgress);
 			}
 
 			// Large text: process in chunks with yielding
-			let processed = 0;
-			const total = text.length;
-
-			while (processed < total && !cancelled) {
-				const end = Math.min(processed + cfg.chunkSize, total);
-				processed = end;
-
-				onProgress?.({
-					processed,
-					total,
-					percentage: Math.round((processed / total) * 100),
-					complete: processed >= total,
-				});
-
-				// Yield to event loop between chunks
-				await new Promise<void>((resolve) => setTimeout(resolve, 0));
-			}
-
-			if (cancelled) {
-				return {
-					success: false,
-					error: 'Operation cancelled',
-					bytesProcessed: processed,
-					elapsedMs: performance.now() - startTime,
-				};
-			}
-
-			// Write full content via OSC 52
-			if (cfg.useOSC52) {
-				const seq = clipboard.write(text, ClipboardSelection.CLIPBOARD, cfg.maxSize);
-				if (seq) {
-					process.stdout.write(seq);
-				}
-			}
-
-			return {
-				success: true,
-				bytesProcessed: total,
-				elapsedMs: performance.now() - startTime,
-			};
+			return copyLargeText(text, startTime, onProgress);
 		},
 
 		writeToTerminal(text: string): ClipboardResult {

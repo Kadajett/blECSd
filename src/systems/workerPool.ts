@@ -244,7 +244,19 @@ export function submitTask<TInput = unknown, TOutput = unknown>(
 	const task: PoolTask = { id, type, input, priority, queuedAt: Date.now() };
 
 	return new Promise<TaskResult<TOutput>>((resolve) => {
-		const handler = poolState!.handlers.get(type);
+		if (!poolState) {
+			resolve({
+				id,
+				type,
+				output: undefined,
+				cancelled: false,
+				error: 'Worker pool not initialized',
+				durationMs: 0,
+			});
+			return;
+		}
+
+		const handler = poolState.handlers.get(type);
 		if (!handler) {
 			resolve({
 				id,
@@ -267,14 +279,15 @@ export function submitTask<TInput = unknown, TOutput = unknown>(
 		// Insert by priority
 		const priorityOrder = { high: 0, normal: 1, low: 2 };
 		const entryPri = priorityOrder[priority];
-		let insertIdx = poolState!.queue.length;
-		for (let i = 0; i < poolState!.queue.length; i++) {
-			if (priorityOrder[poolState!.queue[i]!.task.priority] > entryPri) {
+		let insertIdx = poolState.queue.length;
+		for (let i = 0; i < poolState.queue.length; i++) {
+			const queueEntry = poolState.queue[i];
+			if (queueEntry && priorityOrder[queueEntry.task.priority] > entryPri) {
 				insertIdx = i;
 				break;
 			}
 		}
-		poolState!.queue.splice(insertIdx, 0, entry);
+		poolState.queue.splice(insertIdx, 0, entry);
 
 		// Process queue on next microtask
 		queueMicrotask(() => processQueue());
@@ -292,7 +305,8 @@ export function cancelTask(taskId: string): boolean {
 
 	const queueIdx = poolState.queue.findIndex((e) => e.task.id === taskId);
 	if (queueIdx >= 0) {
-		const entry = poolState.queue.splice(queueIdx, 1)[0]!;
+		const [entry] = poolState.queue.splice(queueIdx, 1);
+		if (!entry) return false;
 		entry.resolve({
 			id: taskId,
 			type: entry.task.type,
@@ -450,67 +464,86 @@ function executeSynchronously<TInput, TOutput>(
 	}
 }
 
+function setupTaskTimeout(entry: TaskEntry, timeout: number): void {
+	if (timeout <= 0) return;
+
+	entry.timerHandle = setTimeout(() => {
+		if (!poolState) return;
+		poolState.running.delete(entry.task.id);
+		poolState.failedCount++;
+		entry.resolve({
+			id: entry.task.id,
+			type: entry.task.type,
+			output: undefined,
+			cancelled: false,
+			error: `Task timed out after ${timeout}ms`,
+			durationMs: timeout,
+		});
+	}, timeout);
+}
+
+function completeTaskSuccessfully(entry: TaskEntry, output: unknown, duration: number): void {
+	if (!poolState) return;
+	if (!poolState.running.has(entry.task.id)) return;
+
+	if (entry.timerHandle) clearTimeout(entry.timerHandle);
+
+	poolState.running.delete(entry.task.id);
+	poolState.completedCount++;
+	poolState.totalDurationMs += duration;
+	entry.resolve({
+		id: entry.task.id,
+		type: entry.task.type,
+		output,
+		cancelled: false,
+		error: undefined,
+		durationMs: duration,
+	});
+}
+
+function completeTaskWithError(entry: TaskEntry, err: unknown, duration: number): void {
+	if (!poolState) return;
+	if (!poolState.running.has(entry.task.id)) return;
+
+	if (entry.timerHandle) clearTimeout(entry.timerHandle);
+
+	poolState.running.delete(entry.task.id);
+	poolState.failedCount++;
+	poolState.totalDurationMs += duration;
+	entry.resolve({
+		id: entry.task.id,
+		type: entry.task.type,
+		output: undefined,
+		cancelled: false,
+		error: err instanceof Error ? err.message : String(err),
+		durationMs: duration,
+	});
+}
+
+function executeTask(entry: TaskEntry): void {
+	if (!poolState) return;
+
+	setupTaskTimeout(entry, poolState.config.taskTimeout);
+
+	const start = performance.now();
+	try {
+		const output = entry.handler(entry.task.input);
+		const duration = performance.now() - start;
+		completeTaskSuccessfully(entry, output, duration);
+	} catch (err) {
+		const duration = performance.now() - start;
+		completeTaskWithError(entry, err, duration);
+	}
+}
+
 function processQueue(): void {
 	if (!poolState) return;
 
 	while (poolState.queue.length > 0 && poolState.running.size < poolState.config.maxWorkers) {
-		const entry = poolState.queue.shift()!;
+		const entry = poolState.queue.shift();
+		if (!entry) break;
+
 		poolState.running.set(entry.task.id, entry);
-
-		// Set timeout
-		if (poolState.config.taskTimeout > 0) {
-			entry.timerHandle = setTimeout(() => {
-				if (!poolState) return;
-				poolState.running.delete(entry.task.id);
-				poolState.failedCount++;
-				entry.resolve({
-					id: entry.task.id,
-					type: entry.task.type,
-					output: undefined,
-					cancelled: false,
-					error: `Task timed out after ${poolState.config.taskTimeout}ms`,
-					durationMs: poolState.config.taskTimeout,
-				});
-			}, poolState.config.taskTimeout);
-		}
-
-		// Execute synchronously (simulates worker)
-		const start = performance.now();
-		try {
-			const output = entry.handler(entry.task.input);
-			const duration = performance.now() - start;
-			if (entry.timerHandle) clearTimeout(entry.timerHandle);
-
-			if (poolState.running.has(entry.task.id)) {
-				poolState.running.delete(entry.task.id);
-				poolState.completedCount++;
-				poolState.totalDurationMs += duration;
-				entry.resolve({
-					id: entry.task.id,
-					type: entry.task.type,
-					output,
-					cancelled: false,
-					error: undefined,
-					durationMs: duration,
-				});
-			}
-		} catch (err) {
-			const duration = performance.now() - start;
-			if (entry.timerHandle) clearTimeout(entry.timerHandle);
-
-			if (poolState.running.has(entry.task.id)) {
-				poolState.running.delete(entry.task.id);
-				poolState.failedCount++;
-				poolState.totalDurationMs += duration;
-				entry.resolve({
-					id: entry.task.id,
-					type: entry.task.type,
-					output: undefined,
-					cancelled: false,
-					error: err instanceof Error ? err.message : String(err),
-					durationMs: duration,
-				});
-			}
-		}
+		executeTask(entry);
 	}
 }

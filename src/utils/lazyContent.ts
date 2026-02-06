@@ -178,7 +178,8 @@ export function getLazyLines(
 		const localEnd = Math.min(chunk.lines.length, clamped.end - chunkStartLine);
 
 		for (let i = localStart; i < localEnd; i++) {
-			result.push(chunk.lines[i]!);
+			const line = chunk.lines[i];
+			if (line !== undefined) result.push(line);
 		}
 	}
 
@@ -229,7 +230,8 @@ export function evictChunks(state: MutableLazyState, targetChunks?: number): num
 	let evicted = 0;
 
 	while (state.chunks.size > max && state.accessOrder.length > 0) {
-		const oldest = state.accessOrder.shift()!;
+		const oldest = state.accessOrder.shift();
+		if (oldest === undefined) break;
 		if (state.chunks.has(oldest)) {
 			state.chunks.delete(oldest);
 			evicted++;

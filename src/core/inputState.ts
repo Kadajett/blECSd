@@ -301,6 +301,25 @@ export function createInputState(config: InputStateConfig = {}): InputState {
 		}
 	}
 
+	function isDebounced(state: MutableKeyState, timestamp: number): boolean {
+		if (resolvedConfig.debounceTime <= 0 || state.lastEventTime <= 0) return false;
+		return timestamp - state.lastEventTime < resolvedConfig.debounceTime;
+	}
+
+	function handleKeyRepeat(state: MutableKeyState): void {
+		if (resolvedConfig.trackRepeats) {
+			state.repeatCount++;
+		}
+	}
+
+	function handleNewKeyPress(state: MutableKeyState): void {
+		state.pressed = true;
+		state.justPressed = true;
+		state.justReleased = false;
+		state.heldTime = 0;
+		state.repeatCount = 0;
+	}
+
 	function processKeyEvent(event: KeyEvent, timestamp: number): void {
 		const key = normalizeKeyName(event.name, event);
 		let state = keyStates.get(key);
@@ -310,44 +329,19 @@ export function createInputState(config: InputStateConfig = {}): InputState {
 			keyStates.set(key, state);
 		}
 
-		// Handle debouncing (only if there was a previous event)
-		if (resolvedConfig.debounceTime > 0 && state.lastEventTime > 0) {
-			const timeSinceLastEvent = timestamp - state.lastEventTime;
-			if (timeSinceLastEvent < resolvedConfig.debounceTime) {
-				return; // Ignore debounced event
-			}
-		}
+		if (isDebounced(state, timestamp)) return;
 
-		// Detect if this is a repeat event (key already pressed, no release in between)
-		const isRepeat = state.pressed;
-
-		if (isRepeat) {
-			// This is a key repeat event
-			if (resolvedConfig.trackRepeats) {
-				state.repeatCount++;
-			}
-			// Don't set justPressed again for repeats
+		if (state.pressed) {
+			handleKeyRepeat(state);
 		} else {
-			// This is a new key press
-			state.pressed = true;
-			state.justPressed = true;
-			state.justReleased = false;
-			state.heldTime = 0;
-			state.repeatCount = 0;
+			handleNewKeyPress(state);
 		}
 
 		state.lastEventTime = timestamp;
 
-		// Update modifier tracking from event flags
-		if (event.ctrl && !state.pressed) {
-			ctrlDown = true;
-		}
-		if (event.meta && !state.pressed) {
-			altDown = true;
-		}
-		if (event.shift && !state.pressed) {
-			shiftDown = true;
-		}
+		if (event.ctrl && !state.pressed) ctrlDown = true;
+		if (event.meta && !state.pressed) altDown = true;
+		if (event.shift && !state.pressed) shiftDown = true;
 	}
 
 	function processKeyRelease(key: string, timestamp: number): void {
@@ -373,44 +367,43 @@ export function createInputState(config: InputStateConfig = {}): InputState {
 		}
 	}
 
-	function processMouseEvent(event: MouseEvent, timestamp: number): void {
-		// Update position
+	function updateMousePosition(event: MouseEvent): void {
 		const prevX = mouseState.x;
 		const prevY = mouseState.y;
 		mouseState.x = event.x;
 		mouseState.y = event.y;
 		mouseState.deltaX += event.x - prevX;
 		mouseState.deltaY += event.y - prevY;
+	}
 
-		// Handle wheel events
-		if (event.button === 'wheelUp') {
-			mouseState.wheelDelta += 1;
-		} else if (event.button === 'wheelDown') {
-			mouseState.wheelDelta -= 1;
+	function updateMouseButtonState(
+		button: MutableMouseButtonState,
+		action: string,
+		timestamp: number,
+	): void {
+		if (action === 'press' && !button.pressed) {
+			button.pressed = true;
+			button.justPressed = true;
+			button.justReleased = false;
+			button.heldTime = 0;
+		} else if (action === 'release' && button.pressed) {
+			button.pressed = false;
+			button.justPressed = false;
+			button.justReleased = true;
 		}
+		button.lastEventTime = timestamp;
+	}
 
-		// Update button state
+	function processMouseEvent(event: MouseEvent, timestamp: number): void {
+		updateMousePosition(event);
+
+		if (event.button === 'wheelUp') mouseState.wheelDelta += 1;
+		else if (event.button === 'wheelDown') mouseState.wheelDelta -= 1;
+
 		const button = mouseState.buttons[event.button];
-		if (!button) {
-			return;
-		}
+		if (!button) return;
 
-		if (event.action === 'press') {
-			if (!button.pressed) {
-				button.pressed = true;
-				button.justPressed = true;
-				button.justReleased = false;
-				button.heldTime = 0;
-			}
-			button.lastEventTime = timestamp;
-		} else if (event.action === 'release') {
-			if (button.pressed) {
-				button.pressed = false;
-				button.justPressed = false;
-				button.justReleased = true;
-			}
-			button.lastEventTime = timestamp;
-		}
+		updateMouseButtonState(button, event.action, timestamp);
 	}
 
 	return {
