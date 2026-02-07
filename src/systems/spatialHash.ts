@@ -18,6 +18,7 @@ import { Position } from '../components/position';
 import { hasComponent, query } from '../core/ecs';
 import { addToStore, clearStore, createPackedStore, type PackedStore } from '../core/storage';
 import type { Entity, System, World } from '../core/types';
+import { type ComponentStore, createComponentStore } from '../utils/componentStorage';
 
 // =============================================================================
 // TYPES
@@ -64,6 +65,16 @@ export interface SpatialHashStats {
 }
 
 /**
+ * Cached bounds for a single entity (position + collider offset + size).
+ */
+export interface PrevBounds {
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+}
+
+/**
  * Internal state for the incremental spatial hash system.
  * Tracks which entities need re-hashing via a PackedStore dirty set,
  * and caches previous positions for change detection.
@@ -73,14 +84,8 @@ export interface SpatialHashSystemState {
 	readonly dirtyEntities: PackedStore<number>;
 	/** O(1) dedup: entity IDs currently in the dirty store */
 	readonly dirtyLookup: Set<number>;
-	/** Previous effective X position (with offset) per entity */
-	readonly prevX: Map<number, number>;
-	/** Previous effective Y position (with offset) per entity */
-	readonly prevY: Map<number, number>;
-	/** Previous collider width per entity */
-	readonly prevW: Map<number, number>;
-	/** Previous collider height per entity */
-	readonly prevH: Map<number, number>;
+	/** Previous bounds per entity, backed by PackedStore for cache-friendly iteration */
+	readonly prevBounds: ComponentStore<PrevBounds>;
 	/** Whether the system has run at least once (first frame needs full rebuild) */
 	initialized: boolean;
 	/** Fraction of entities that must be dirty to trigger full rebuild (0.0-1.0) */
@@ -505,10 +510,7 @@ export function createSpatialHashSystemState(
 	return {
 		dirtyEntities: createPackedStore<number>(64),
 		dirtyLookup: new Set(),
-		prevX: new Map(),
-		prevY: new Map(),
-		prevW: new Map(),
-		prevH: new Map(),
+		prevBounds: createComponentStore<PrevBounds>({ iterable: true }),
 		initialized: false,
 		dirtyThreshold: Math.max(0, Math.min(1, dirtyThreshold)),
 	};
@@ -541,10 +543,7 @@ let systemState: SpatialHashSystemState = createSpatialHashSystemState();
 export function setSpatialHashGrid(grid: SpatialHashGrid): void {
 	if (grid !== systemGrid) {
 		systemState.initialized = false;
-		systemState.prevX.clear();
-		systemState.prevY.clear();
-		systemState.prevW.clear();
-		systemState.prevH.clear();
+		systemState.prevBounds.clear();
 	}
 	systemGrid = grid;
 }
@@ -663,12 +662,16 @@ function readEntityBounds(eid: Entity): { x: number; y: number; w: number; h: nu
  */
 function populatePrevCache(state: SpatialHashSystemState, entities: readonly Entity[]): void {
 	for (const eid of entities) {
-		const id = eid as number;
 		const { x, y, w, h } = readEntityBounds(eid);
-		state.prevX.set(id, x);
-		state.prevY.set(id, y);
-		state.prevW.set(id, w);
-		state.prevH.set(id, h);
+		const prev = state.prevBounds.get(eid);
+		if (prev) {
+			prev.x = x;
+			prev.y = y;
+			prev.w = w;
+			prev.h = h;
+		} else {
+			state.prevBounds.set(eid, { x, y, w, h });
+		}
 	}
 }
 
@@ -681,14 +684,15 @@ function removeStaleEntities(
 	state: SpatialHashSystemState,
 	currentEntities: ReadonlySet<number>,
 ): void {
-	for (const id of state.prevX.keys()) {
-		if (!currentEntities.has(id)) {
-			removeEntityFromGrid(grid, id as Entity);
-			state.prevX.delete(id);
-			state.prevY.delete(id);
-			state.prevW.delete(id);
-			state.prevH.delete(id);
+	const toRemove: Entity[] = [];
+	state.prevBounds.forEach((_bounds, eid) => {
+		if (!currentEntities.has(eid as number)) {
+			toRemove.push(eid);
 		}
+	});
+	for (const eid of toRemove) {
+		removeEntityFromGrid(grid, eid);
+		state.prevBounds.delete(eid);
 	}
 }
 
@@ -701,24 +705,25 @@ function detectDirtyEntities(state: SpatialHashSystemState, entities: readonly E
 		const id = eid as number;
 		const { x, y, w, h } = readEntityBounds(eid);
 
-		const px = state.prevX.get(id);
-		const py = state.prevY.get(id);
-		const pw = state.prevW.get(id);
-		const ph = state.prevH.get(id);
+		const prev = state.prevBounds.get(eid);
 
 		// New entity or position/size changed
-		if (px === undefined || x !== px || y !== py || w !== pw || h !== ph) {
+		if (!prev || x !== prev.x || y !== prev.y || w !== prev.w || h !== prev.h) {
 			if (!state.dirtyLookup.has(id)) {
 				addToStore(state.dirtyEntities, id);
 				state.dirtyLookup.add(id);
 			}
 		}
 
-		// Always update the cache
-		state.prevX.set(id, x);
-		state.prevY.set(id, y);
-		state.prevW.set(id, w);
-		state.prevH.set(id, h);
+		// Update the cache in-place when possible to avoid allocation
+		if (prev) {
+			prev.x = x;
+			prev.y = y;
+			prev.w = w;
+			prev.h = h;
+		} else {
+			state.prevBounds.set(eid, { x, y, w, h });
+		}
 	}
 }
 

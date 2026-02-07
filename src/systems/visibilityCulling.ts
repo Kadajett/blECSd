@@ -12,6 +12,7 @@ import { Dimensions } from '../components/dimensions';
 import { Position } from '../components/position';
 import { hasComponent, query } from '../core/ecs';
 import type { Entity, System, World } from '../core/types';
+import { type ComponentStore, createComponentStore } from '../utils/componentStorage';
 import { insertEntity, queryArea, type SpatialHashGrid } from './spatialHash';
 
 // =============================================================================
@@ -45,17 +46,23 @@ export interface CullingResult {
 }
 
 /**
+ * Cached bounds for a single entity in the position cache.
+ */
+export interface CachedBounds {
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+}
+
+/**
  * Entity position cache for incremental updates.
+ * Uses a single ComponentStore instead of 4 separate Maps,
+ * reducing hash lookups from 4 to 1 per entity per frame.
  */
 export interface PositionCache {
-	/** Previous x position per entity */
-	readonly prevX: Map<number, number>;
-	/** Previous y position per entity */
-	readonly prevY: Map<number, number>;
-	/** Previous width per entity */
-	readonly prevW: Map<number, number>;
-	/** Previous height per entity */
-	readonly prevH: Map<number, number>;
+	/** Previous bounds per entity */
+	readonly bounds: ComponentStore<CachedBounds>;
 }
 
 // =============================================================================
@@ -76,10 +83,7 @@ export interface PositionCache {
  */
 export function createPositionCache(): PositionCache {
 	return {
-		prevX: new Map(),
-		prevY: new Map(),
-		prevW: new Map(),
-		prevH: new Map(),
+		bounds: createComponentStore<CachedBounds>({ iterable: false }),
 	};
 }
 
@@ -105,24 +109,24 @@ export function updateEntityIfMoved(
 	w: number,
 	h: number,
 ): boolean {
-	const id = eid as number;
-	const px = cache.prevX.get(id);
-	const py = cache.prevY.get(id);
-	const pw = cache.prevW.get(id);
-	const ph = cache.prevH.get(id);
+	const prev = cache.bounds.get(eid);
 
-	if (px === x && py === y && pw === w && ph === h) {
+	if (prev && prev.x === x && prev.y === y && prev.w === w && prev.h === h) {
 		return false;
 	}
 
 	// Entity moved - update in grid
 	insertEntity(grid, eid, x, y, w, h);
 
-	// Update cache
-	cache.prevX.set(id, x);
-	cache.prevY.set(id, y);
-	cache.prevW.set(id, w);
-	cache.prevH.set(id, h);
+	// Update cache in-place when possible to avoid allocation
+	if (prev) {
+		prev.x = x;
+		prev.y = y;
+		prev.w = w;
+		prev.h = h;
+	} else {
+		cache.bounds.set(eid, { x, y, w, h });
+	}
 
 	return true;
 }
@@ -134,11 +138,7 @@ export function updateEntityIfMoved(
  * @param eid - Entity to remove
  */
 export function removeFromCache(cache: PositionCache, eid: Entity): void {
-	const id = eid as number;
-	cache.prevX.delete(id);
-	cache.prevY.delete(id);
-	cache.prevW.delete(id);
-	cache.prevH.delete(id);
+	cache.bounds.delete(eid);
 }
 
 /**
@@ -147,10 +147,7 @@ export function removeFromCache(cache: PositionCache, eid: Entity): void {
  * @param cache - Position cache to clear
  */
 export function clearPositionCache(cache: PositionCache): void {
-	cache.prevX.clear();
-	cache.prevY.clear();
-	cache.prevW.clear();
-	cache.prevH.clear();
+	cache.bounds.clear();
 }
 
 // =============================================================================
