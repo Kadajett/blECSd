@@ -33,6 +33,7 @@
  */
 
 import { ComputedLayout, hasComputedLayout } from '../systems/layoutSystem';
+import { type ComponentStore, createComponentStore } from '../utils/componentStorage';
 import type { Entity, World } from './types';
 
 // =============================================================================
@@ -81,8 +82,8 @@ export interface DirtyTrackerData {
 	readonly dirtyCells: Uint8Array;
 	/** Set of dirty entity IDs */
 	readonly dirtyEntities: Set<Entity>;
-	/** Previous bounds for each entity */
-	readonly entityBounds: Map<Entity, EntityBoundsEntry>;
+	/** Previous bounds for each entity, backed by ComponentStore for cache-friendly iteration */
+	readonly entityBounds: ComponentStore<EntityBoundsEntry>;
 	/** Coalesced dirty regions */
 	readonly dirtyRegions: DirtyRect[];
 	/** Whether regions need recalculation */
@@ -139,7 +140,7 @@ export function createDirtyTracker(width: number, height: number): DirtyTrackerD
 		height,
 		dirtyCells: new Uint8Array(byteCount),
 		dirtyEntities: new Set(),
-		entityBounds: new Map(),
+		entityBounds: createComponentStore<EntityBoundsEntry>({ iterable: true }),
 		dirtyRegions: [],
 		regionsStale: true,
 		forceFullRedraw: true, // First frame needs full draw
@@ -168,11 +169,11 @@ export function resizeDirtyTracker(
 	const newTracker = createDirtyTracker(newWidth, newHeight);
 
 	// Copy entity bounds that still fit
-	for (const [eid, bounds] of tracker.entityBounds) {
+	tracker.entityBounds.forEach((bounds, eid) => {
 		if (bounds.prevX < newWidth && bounds.prevY < newHeight) {
 			newTracker.entityBounds.set(eid, { ...bounds });
 		}
-	}
+	});
 
 	// Force full redraw after resize
 	newTracker.forceFullRedraw = true;
@@ -789,9 +790,9 @@ export function forceFullRedrawFlag(tracker: DirtyTrackerData): void {
  * @param world - The ECS world
  */
 export function markAllEntitiesDirty(tracker: DirtyTrackerData, world: World): void {
-	for (const eid of tracker.entityBounds.keys()) {
+	tracker.entityBounds.forEach((_bounds, eid) => {
 		markEntityDirty(tracker, world, eid);
-	}
+	});
 }
 
 // =============================================================================

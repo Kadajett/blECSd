@@ -14,7 +14,7 @@ describe('VisibilityCulling', () => {
 	describe('PositionCache', () => {
 		it('creates an empty cache', () => {
 			const cache = createPositionCache();
-			expect(cache.prevX.size).toBe(0);
+			expect(cache.bounds.size).toBe(0);
 		});
 
 		it('detects entity movement', () => {
@@ -56,7 +56,7 @@ describe('VisibilityCulling', () => {
 			updateEntityIfMoved(grid, cache, 2 as Entity, 30, 40, 4, 4);
 
 			clearPositionCache(cache);
-			expect(cache.prevX.size).toBe(0);
+			expect(cache.bounds.size).toBe(0);
 		});
 	});
 

@@ -271,6 +271,7 @@ export {
 // Spatial hash system
 export type {
 	CellCoord,
+	PrevBounds,
 	SpatialHashConfig,
 	SpatialHashGrid,
 	SpatialHashStats,
@@ -354,6 +355,7 @@ export {
 } from './virtualizedRenderSystem';
 // Visibility culling system
 export type {
+	CachedBounds,
 	CullingResult,
 	PositionCache,
 	Viewport,

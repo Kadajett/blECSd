@@ -348,7 +348,7 @@ describe('spatialHash', () => {
 			const state = createSpatialHashSystemState();
 			expect(state.dirtyEntities.size).toBe(0);
 			expect(state.dirtyLookup.size).toBe(0);
-			expect(state.prevX.size).toBe(0);
+			expect(state.prevBounds.size).toBe(0);
 			expect(state.initialized).toBe(false);
 			expect(state.dirtyThreshold).toBe(0.5);
 		});
@@ -386,14 +386,14 @@ describe('spatialHash', () => {
 			markSpatialDirty(1 as Entity);
 			markSpatialDirty(2 as Entity);
 			const state = getSpatialHashSystemState();
-			state.prevX.set(1, 10);
+			state.prevBounds.set(1 as Entity, { x: 10, y: 0, w: 0, h: 0 });
 			state.initialized = true;
 
 			resetSpatialHashState();
 
 			expect(getSpatialDirtyCount()).toBe(0);
 			const newState = getSpatialHashSystemState();
-			expect(newState.prevX.size).toBe(0);
+			expect(newState.prevBounds.size).toBe(0);
 			expect(newState.initialized).toBe(false);
 		});
 
@@ -442,7 +442,7 @@ describe('spatialHash', () => {
 			const stats = getSpatialHashStats(grid);
 			expect(stats.entityCount).toBe(1);
 			// Position cache populated
-			expect(state.prevX.has(eid as number)).toBe(true);
+			expect(state.prevBounds.has(eid)).toBe(true);
 		});
 
 		it('detects moved entities and re-hashes them incrementally', () => {

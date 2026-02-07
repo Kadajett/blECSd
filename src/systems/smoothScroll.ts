@@ -9,6 +9,7 @@
  */
 
 import type { Entity, System, World } from '../core/types';
+import { createComponentStore } from '../utils/componentStorage';
 
 // =============================================================================
 // TYPES
@@ -101,8 +102,8 @@ const DEFAULT_PHYSICS: ScrollPhysicsConfig = {
 // STATE MANAGEMENT
 // =============================================================================
 
-/** Active scroll animations */
-const scrollStates = new Map<number, ScrollAnimationState>();
+/** Active scroll animations backed by PackedStore for cache-friendly iteration */
+const scrollStates = createComponentStore<ScrollAnimationState>({ iterable: true });
 
 /**
  * Creates or gets scroll animation state for an entity.
@@ -126,8 +127,7 @@ export function getScrollState(
 	viewportWidth: number,
 	viewportHeight: number,
 ): ScrollAnimationState {
-	const id = eid as number;
-	let state = scrollStates.get(id);
+	let state = scrollStates.get(eid);
 
 	if (!state) {
 		state = {
@@ -144,7 +144,7 @@ export function getScrollState(
 			targetX: null,
 			targetY: null,
 		};
-		scrollStates.set(id, state);
+		scrollStates.set(eid, state);
 	} else {
 		state.contentWidth = contentWidth;
 		state.contentHeight = contentHeight;
@@ -161,7 +161,7 @@ export function getScrollState(
  * @param eid - Entity ID
  */
 export function removeScrollState(eid: Entity): void {
-	scrollStates.delete(eid as number);
+	scrollStates.delete(eid);
 }
 
 /**
@@ -200,7 +200,7 @@ export function applyScrollImpulse(
 	physics?: Partial<ScrollPhysicsConfig>,
 ): void {
 	const cfg = { ...DEFAULT_PHYSICS, ...physics };
-	const state = scrollStates.get(eid as number);
+	const state = scrollStates.get(eid);
 	if (!state) return;
 
 	state.velocityX += deltaX * cfg.sensitivity;
@@ -232,7 +232,7 @@ export function applyScrollImpulse(
  * ```
  */
 export function smoothScrollTo(eid: Entity, targetX: number | null, targetY: number | null): void {
-	const state = scrollStates.get(eid as number);
+	const state = scrollStates.get(eid);
 	if (!state) return;
 
 	state.targetX = targetX;
@@ -248,7 +248,7 @@ export function smoothScrollTo(eid: Entity, targetX: number | null, targetY: num
  * @param y - Y scroll position
  */
 export function setScrollImmediate(eid: Entity, x: number, y: number): void {
-	const state = scrollStates.get(eid as number);
+	const state = scrollStates.get(eid);
 	if (!state) return;
 
 	state.scrollX = x;
@@ -266,7 +266,7 @@ export function setScrollImmediate(eid: Entity, x: number, y: number): void {
  * @param eid - Entity being scrolled
  */
 export function startUserScroll(eid: Entity): void {
-	const state = scrollStates.get(eid as number);
+	const state = scrollStates.get(eid);
 	if (!state) return;
 
 	state.isUserScrolling = true;
@@ -282,7 +282,7 @@ export function startUserScroll(eid: Entity): void {
  * @param velocityY - Release velocity Y
  */
 export function endUserScroll(eid: Entity, velocityX: number, velocityY: number): void {
-	const state = scrollStates.get(eid as number);
+	const state = scrollStates.get(eid);
 	if (!state) return;
 
 	state.isUserScrolling = false;
@@ -446,7 +446,7 @@ export function updateScrollPhysics(
  * @returns True if the entity is currently scrolling
  */
 export function isScrolling(eid: Entity): boolean {
-	const state = scrollStates.get(eid as number);
+	const state = scrollStates.get(eid);
 	return state?.isAnimating ?? false;
 }
 
@@ -457,7 +457,7 @@ export function isScrolling(eid: Entity): boolean {
  * @returns Scroll position or null if no scroll state
  */
 export function getScrollPosition(eid: Entity): { x: number; y: number } | null {
-	const state = scrollStates.get(eid as number);
+	const state = scrollStates.get(eid);
 	if (!state) return null;
 	return { x: state.scrollX, y: state.scrollY };
 }
@@ -493,9 +493,9 @@ export function createSmoothScrollSystem(physics?: Partial<ScrollPhysicsConfig>)
 		const dt = Math.min((now - lastTime) / 1000, 1 / 15); // Cap at ~15fps minimum
 		lastTime = now;
 
-		for (const [, state] of scrollStates) {
+		scrollStates.forEach((state) => {
 			updateScrollPhysics(state, dt, physics);
-		}
+		});
 
 		return world;
 	};
