@@ -244,6 +244,7 @@ Choose blECSd if you want data-oriented design, physics-based animations, or gam
 - [API Reference](./docs/api/index.md): Components, widgets, systems, terminal I/O
 - [Terminal Widget](./docs/api/widgets/terminal.md): ANSI rendering and PTY shell support
 - [Examples](./docs/examples/index.md): File manager, multiplexer, system monitor, ANSI viewer, telnet server
+- [Examples Repository](https://github.com/Kadajett/blECSd-Examples): Standalone runnable examples
 - [Guides](./docs/guides/): Animations, forms, layouts, and more
 
 ## Development
