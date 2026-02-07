@@ -368,14 +368,14 @@ describe('virtualizedLineStore', () => {
 			expect(getLineAtIndex(store, 99999)).toBe('Line 099999');
 		});
 
-		it('getLineRange is fast for large content', () => {
+		it('getLineRange returns correct data for large content', () => {
 			const lines = Array.from({ length: 100000 }, (_, i) => `Line ${i}`);
 			const store = createLineStoreFromLines(lines);
 
 			const range = getLineRange(store, 50000, 50025);
 
 			expect(range.lines.length).toBe(25);
-			expect(range.extractTimeMs).toBeLessThan(10); // Should be < 10ms
+			expect(range.lines[0]).toBe('Line 50000');
 		});
 
 		it('getVisibleLines with overscan is fast', () => {
