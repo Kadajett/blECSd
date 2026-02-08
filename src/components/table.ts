@@ -332,20 +332,22 @@ export function setData(
 /**
  * Gets the table data.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns Table data as array of rows
  */
-export function getData(eid: Entity): TableData {
+export function getData(_world: World, eid: Entity): TableData {
 	return dataStore.get(eid) ?? [];
 }
 
 /**
  * Gets the table data as a string array.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns Table data as string[][]
  */
-export function getDataAsStrings(eid: Entity): string[][] {
+export function getDataAsStrings(_world: World, eid: Entity): string[][] {
 	const data = dataStore.get(eid) ?? [];
 	return data.map((row) => row.map((cell) => cell.value));
 }
@@ -411,12 +413,18 @@ export function setCell(
 /**
  * Gets a single cell value.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @param row - Row index (0-based)
  * @param col - Column index (0-based)
  * @returns Cell data or undefined if out of bounds
  */
-export function getCell(eid: Entity, row: number, col: number): TableCell | undefined {
+export function getCell(
+	_world: World,
+	eid: Entity,
+	row: number,
+	col: number,
+): TableCell | undefined {
 	const data = dataStore.get(eid);
 	if (!data || row < 0 || col < 0) {
 		return undefined;
@@ -427,23 +435,30 @@ export function getCell(eid: Entity, row: number, col: number): TableCell | unde
 /**
  * Gets a cell's string value.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @param row - Row index (0-based)
  * @param col - Column index (0-based)
  * @returns Cell value string or undefined if out of bounds
  */
-export function getCellValue(eid: Entity, row: number, col: number): string | undefined {
-	return getCell(eid, row, col)?.value;
+export function getCellValue(
+	world: World,
+	eid: Entity,
+	row: number,
+	col: number,
+): string | undefined {
+	return getCell(world, eid, row, col)?.value;
 }
 
 /**
  * Gets a specific row.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @param row - Row index (0-based)
  * @returns Row data or undefined if out of bounds
  */
-export function getRow(eid: Entity, row: number): TableRow | undefined {
+export function getRow(_world: World, eid: Entity, row: number): TableRow | undefined {
 	const data = dataStore.get(eid);
 	return data?.[row];
 }
@@ -451,11 +466,12 @@ export function getRow(eid: Entity, row: number): TableRow | undefined {
 /**
  * Gets a specific column.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @param col - Column index (0-based)
  * @returns Column data as array of cells
  */
-export function getColumn(eid: Entity, col: number): readonly TableCell[] {
+export function getColumn(_world: World, eid: Entity, col: number): readonly TableCell[] {
 	const data = dataStore.get(eid) ?? [];
 	return data.map((row) => row[col] ?? { value: '' });
 }
@@ -463,20 +479,22 @@ export function getColumn(eid: Entity, col: number): readonly TableCell[] {
 /**
  * Gets the number of rows.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns Number of rows
  */
-export function getRowCount(eid: Entity): number {
+export function getRowCount(_world: World, eid: Entity): number {
 	return tableStore.rowCount[eid] ?? 0;
 }
 
 /**
  * Gets the number of columns.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns Number of columns
  */
-export function getColCount(eid: Entity): number {
+export function getColCount(_world: World, eid: Entity): number {
 	return tableStore.colCount[eid] ?? 0;
 }
 
@@ -612,20 +630,22 @@ export function setHeaders(world: World, eid: Entity, columns: readonly TableCol
 /**
  * Gets the column configuration.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns Column configuration
  */
-export function getColumns(eid: Entity): readonly TableColumn[] {
+export function getColumns(_world: World, eid: Entity): readonly TableColumn[] {
 	return columnStore.get(eid) ?? [];
 }
 
 /**
  * Gets the header row(s).
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns Header row data
  */
-export function getHeaderRows(eid: Entity): readonly TableRow[] {
+export function getHeaderRows(_world: World, eid: Entity): readonly TableRow[] {
 	const data = dataStore.get(eid) ?? [];
 	const headerRowCount = tableStore.headerRows[eid] ?? 1;
 	return data.slice(0, headerRowCount);
@@ -634,10 +654,11 @@ export function getHeaderRows(eid: Entity): readonly TableRow[] {
 /**
  * Gets the data rows (excluding headers).
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns Data rows
  */
-export function getDataRows(eid: Entity): readonly TableRow[] {
+export function getDataRows(_world: World, eid: Entity): readonly TableRow[] {
 	const data = dataStore.get(eid) ?? [];
 	const headerRowCount = tableStore.headerRows[eid] ?? 1;
 	return data.slice(headerRowCount);
@@ -658,10 +679,11 @@ export function setHeaderRowCount(world: World, eid: Entity, count: number): voi
 /**
  * Gets the number of header rows.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns Number of header rows
  */
-export function getHeaderRowCount(eid: Entity): number {
+export function getHeaderRowCount(_world: World, eid: Entity): number {
 	return tableStore.headerRows[eid] ?? 1;
 }
 
@@ -672,10 +694,11 @@ export function getHeaderRowCount(eid: Entity): number {
 /**
  * Sets the table display configuration.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @param options - Display options
  */
-export function setTableDisplay(eid: Entity, options: TableDisplayOptions): void {
+export function setTableDisplay(_world: World, eid: Entity, options: TableDisplayOptions): void {
 	const existing = displayStore.get(eid);
 	const altRowBg = options.altRowBg ?? existing?.altRowBg;
 	const selectedFg = options.selectedFg ?? existing?.selectedFg;
@@ -698,10 +721,11 @@ export function setTableDisplay(eid: Entity, options: TableDisplayOptions): void
 /**
  * Gets the table display configuration.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns Display configuration
  */
-export function getTableDisplay(eid: Entity): TableDisplay {
+export function getTableDisplay(_world: World, eid: Entity): TableDisplay {
 	return (
 		displayStore.get(eid) ?? {
 			headerFg: DEFAULT_HEADER_FG,
@@ -717,9 +741,10 @@ export function getTableDisplay(eid: Entity): TableDisplay {
 /**
  * Clears the table display configuration.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  */
-export function clearTableDisplay(eid: Entity): void {
+export function clearTableDisplay(_world: World, eid: Entity): void {
 	displayStore.delete(eid);
 }
 
@@ -730,10 +755,11 @@ export function clearTableDisplay(eid: Entity): void {
 /**
  * Gets the cell padding.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns Cell padding (spaces)
  */
-export function getCellPadding(eid: Entity): number {
+export function getCellPadding(_world: World, eid: Entity): number {
 	return tableStore.pad[eid] ?? 1;
 }
 
@@ -752,10 +778,11 @@ export function setCellPadding(world: World, eid: Entity, padding: number): void
 /**
  * Checks if cell borders are enabled.
  *
+ * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  * @returns true if cell borders are enabled
  */
-export function hasCellBorders(eid: Entity): boolean {
+export function hasCellBorders(_world: World, eid: Entity): boolean {
 	return tableStore.cellBorders[eid] === 1;
 }
 
@@ -822,7 +849,19 @@ function scaleWidthsToFit(widths: number[], maxTotalWidth: number): void {
 	}
 }
 
-export function calculateColumnWidths(eid: Entity, maxTotalWidth?: number): number[] {
+/**
+ * Calculates column widths based on content.
+ *
+ * @param world - The ECS world (unused, kept for API consistency)
+ * @param eid - The entity ID
+ * @param maxTotalWidth - Maximum total width (optional)
+ * @returns Array of column widths
+ */
+export function calculateColumnWidths(
+	_world: World,
+	eid: Entity,
+	maxTotalWidth?: number,
+): number[] {
 	const data = dataStore.get(eid) ?? [];
 	const columns = columnStore.get(eid) ?? [];
 	const colCount = tableStore.colCount[eid] ?? 0;
@@ -842,13 +881,6 @@ export function calculateColumnWidths(eid: Entity, maxTotalWidth?: number): numb
 // RENDERING HELPERS
 // =============================================================================
 
-/**
- * Renders table as an array of strings (one per line).
- *
- * @param eid - The entity ID
- * @param width - Available width
- * @returns Array of rendered line strings
- */
 /** Align text within a content width */
 function alignText(text: string, contentWidth: number, align: 'left' | 'right' | 'center'): string {
 	if (align === 'right') return text.padStart(contentWidth);
@@ -890,9 +922,17 @@ function renderRow(
 	return line;
 }
 
-export function renderTableLines(eid: Entity, width: number): string[] {
+/**
+ * Renders table as an array of strings (one per line).
+ *
+ * @param world - The ECS world (unused, kept for API consistency)
+ * @param eid - The entity ID
+ * @param width - Available width
+ * @returns Array of rendered line strings
+ */
+export function renderTableLines(world: World, eid: Entity, width: number): string[] {
 	const data = dataStore.get(eid) ?? [];
-	const colWidths = calculateColumnWidths(eid, width);
+	const colWidths = calculateColumnWidths(world, eid, width);
 	const padding = tableStore.pad[eid] ?? 1;
 	const cellBorders = tableStore.cellBorders[eid] === 1;
 	const headerRowCount = tableStore.headerRows[eid] ?? 1;

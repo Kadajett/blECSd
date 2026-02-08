@@ -274,29 +274,29 @@ describe('TextInput Component', () => {
 		});
 
 		it('should get cursor position', () => {
-			expect(getCursorPos(eid)).toBe(0);
+			expect(getCursorPos(world, eid)).toBe(0);
 		});
 
 		it('should set cursor position', () => {
 			setCursorPos(world, eid, 5);
-			expect(getCursorPos(eid)).toBe(5);
+			expect(getCursorPos(world, eid)).toBe(5);
 		});
 
 		it('should not set negative cursor position', () => {
 			setCursorPos(world, eid, -1);
-			expect(getCursorPos(eid)).toBe(0);
+			expect(getCursorPos(world, eid)).toBe(0);
 		});
 
 		it('should move cursor by delta', () => {
 			setCursorPos(world, eid, 5);
 			moveCursor(world, eid, 3);
-			expect(getCursorPos(eid)).toBe(8);
+			expect(getCursorPos(world, eid)).toBe(8);
 		});
 
 		it('should move cursor left', () => {
 			setCursorPos(world, eid, 5);
 			moveCursor(world, eid, -2);
-			expect(getCursorPos(eid)).toBe(3);
+			expect(getCursorPos(world, eid)).toBe(3);
 		});
 	});
 
@@ -306,24 +306,24 @@ describe('TextInput Component', () => {
 		});
 
 		it('should return null when no selection', () => {
-			expect(getSelection(eid)).toBeNull();
+			expect(getSelection(world, eid)).toBeNull();
 		});
 
 		it('should set and get selection', () => {
 			setSelection(world, eid, 2, 5);
-			expect(getSelection(eid)).toEqual([2, 5]);
+			expect(getSelection(world, eid)).toEqual([2, 5]);
 		});
 
 		it('should clear selection', () => {
 			setSelection(world, eid, 2, 5);
 			clearSelection(world, eid);
-			expect(getSelection(eid)).toBeNull();
+			expect(getSelection(world, eid)).toBeNull();
 		});
 
 		it('should check if has selection', () => {
-			expect(hasSelection(eid)).toBe(false);
+			expect(hasSelection(world, eid)).toBe(false);
 			setSelection(world, eid, 0, 3);
-			expect(hasSelection(eid)).toBe(true);
+			expect(hasSelection(world, eid)).toBe(true);
 		});
 	});
 
@@ -333,7 +333,7 @@ describe('TextInput Component', () => {
 		});
 
 		it('should have default configuration', () => {
-			const config = getTextInputConfig(eid);
+			const config = getTextInputConfig(world, eid);
 			expect(config.secret).toBe(false);
 			expect(config.censor).toBe(DEFAULT_CENSOR_CHAR);
 			expect(config.placeholder).toBe(DEFAULT_PLACEHOLDER);
@@ -341,30 +341,30 @@ describe('TextInput Component', () => {
 		});
 
 		it('should set secret mode', () => {
-			setTextInputConfig(eid, { secret: true });
-			expect(isSecretMode(eid)).toBe(true);
+			setTextInputConfig(world, eid, { secret: true });
+			expect(isSecretMode(world, eid)).toBe(true);
 		});
 
 		it('should set censor character', () => {
-			setTextInputConfig(eid, { censor: '#' });
-			expect(getCensorChar(eid)).toBe('#');
+			setTextInputConfig(world, eid, { censor: '#' });
+			expect(getCensorChar(world, eid)).toBe('#');
 		});
 
 		it('should set placeholder', () => {
-			setTextInputConfig(eid, { placeholder: 'Enter text...' });
-			expect(getPlaceholder(eid)).toBe('Enter text...');
+			setTextInputConfig(world, eid, { placeholder: 'Enter text...' });
+			expect(getPlaceholder(world, eid)).toBe('Enter text...');
 		});
 
 		it('should set max length', () => {
-			setTextInputConfig(eid, { maxLength: 50 });
-			expect(getMaxLength(eid)).toBe(50);
+			setTextInputConfig(world, eid, { maxLength: 50 });
+			expect(getMaxLength(world, eid)).toBe(50);
 		});
 
 		it('should preserve other config when updating one', () => {
-			setTextInputConfig(eid, { secret: true, censor: '#' });
-			setTextInputConfig(eid, { maxLength: 100 });
+			setTextInputConfig(world, eid, { secret: true, censor: '#' });
+			setTextInputConfig(world, eid, { maxLength: 100 });
 
-			const config = getTextInputConfig(eid);
+			const config = getTextInputConfig(world, eid);
 			expect(config.secret).toBe(true);
 			expect(config.censor).toBe('#');
 			expect(config.maxLength).toBe(100);
@@ -377,17 +377,17 @@ describe('TextInput Component', () => {
 		});
 
 		it('should not mask when not in secret mode', () => {
-			expect(maskValue(eid, 'hello')).toBe('hello');
+			expect(maskValue(world, eid, 'hello')).toBe('hello');
 		});
 
 		it('should mask when in secret mode', () => {
-			setTextInputConfig(eid, { secret: true });
-			expect(maskValue(eid, 'hello')).toBe('*****');
+			setTextInputConfig(world, eid, { secret: true });
+			expect(maskValue(world, eid, 'hello')).toBe('*****');
 		});
 
 		it('should use custom censor character', () => {
-			setTextInputConfig(eid, { secret: true, censor: '#' });
-			expect(maskValue(eid, 'hello')).toBe('#####');
+			setTextInputConfig(world, eid, { secret: true, censor: '#' });
+			expect(maskValue(world, eid, 'hello')).toBe('#####');
 		});
 	});
 
@@ -399,19 +399,19 @@ describe('TextInput Component', () => {
 		describe('onTextInputChange', () => {
 			it('should register and call callback', () => {
 				const callback = vi.fn();
-				onTextInputChange(eid, callback);
+				onTextInputChange(world, eid, callback);
 
-				emitValueChange(eid, 'test');
+				emitValueChange(world, eid, 'test');
 
 				expect(callback).toHaveBeenCalledWith('test');
 			});
 
 			it('should return unsubscribe function', () => {
 				const callback = vi.fn();
-				const unsubscribe = onTextInputChange(eid, callback);
+				const unsubscribe = onTextInputChange(world, eid, callback);
 
 				unsubscribe();
-				emitValueChange(eid, 'test');
+				emitValueChange(world, eid, 'test');
 
 				expect(callback).not.toHaveBeenCalled();
 			});
@@ -420,9 +420,9 @@ describe('TextInput Component', () => {
 		describe('onTextInputSubmit', () => {
 			it('should register and call callback', () => {
 				const callback = vi.fn();
-				onTextInputSubmit(eid, callback);
+				onTextInputSubmit(world, eid, callback);
 
-				emitSubmit(eid, 'submitted value');
+				emitSubmit(world, eid, 'submitted value');
 
 				expect(callback).toHaveBeenCalledWith('submitted value');
 			});
@@ -431,9 +431,9 @@ describe('TextInput Component', () => {
 		describe('onTextInputCancel', () => {
 			it('should register and call callback', () => {
 				const callback = vi.fn();
-				onTextInputCancel(eid, callback);
+				onTextInputCancel(world, eid, callback);
 
-				emitCancel(eid);
+				emitCancel(world, eid);
 
 				expect(callback).toHaveBeenCalled();
 			});
@@ -445,15 +445,15 @@ describe('TextInput Component', () => {
 				const submitCallback = vi.fn();
 				const cancelCallback = vi.fn();
 
-				onTextInputChange(eid, changeCallback);
-				onTextInputSubmit(eid, submitCallback);
-				onTextInputCancel(eid, cancelCallback);
+				onTextInputChange(world, eid, changeCallback);
+				onTextInputSubmit(world, eid, submitCallback);
+				onTextInputCancel(world, eid, cancelCallback);
 
-				clearTextInputCallbacks(eid);
+				clearTextInputCallbacks(world, eid);
 
-				emitValueChange(eid, 'test');
-				emitSubmit(eid, 'test');
-				emitCancel(eid);
+				emitValueChange(world, eid, 'test');
+				emitSubmit(world, eid, 'test');
+				emitCancel(world, eid);
 
 				expect(changeCallback).not.toHaveBeenCalled();
 				expect(submitCallback).not.toHaveBeenCalled();
@@ -568,7 +568,7 @@ describe('TextInput Component', () => {
 		});
 
 		it('should return null for printable characters at max length', () => {
-			setTextInputConfig(eid, { maxLength: 5 });
+			setTextInputConfig(world, eid, { maxLength: 5 });
 			setCursorPos(world, eid, 5);
 			const action = handleTextInputKeyPress(world, eid, 'a', 'hello');
 			expect(action).toBeNull();
@@ -585,7 +585,7 @@ describe('TextInput Component', () => {
 			attachTextInputBehavior(world, eid);
 			setCursorPos(world, eid, 5);
 			setSelection(world, eid, 1, 3);
-			setTextInputConfig(eid, { secret: true });
+			setTextInputConfig(world, eid, { secret: true });
 
 			resetTextInputStore();
 
@@ -593,7 +593,7 @@ describe('TextInput Component', () => {
 			expect(textInputStore.cursorPos[eid]).toBe(0);
 			expect(textInputStore.selectionStart[eid]).toBe(-1);
 			expect(textInputStore.selectionEnd[eid]).toBe(-1);
-			expect(getTextInputConfig(eid).secret).toBe(false);
+			expect(getTextInputConfig(world, eid).secret).toBe(false);
 		});
 	});
 
@@ -608,43 +608,43 @@ describe('TextInput Component', () => {
 
 		describe('getCursorMode / setCursorMode', () => {
 			it('should default to line mode', () => {
-				expect(getCursorMode(eid)).toBe(CursorMode.Line);
+				expect(getCursorMode(world, eid)).toBe(CursorMode.Line);
 			});
 
 			it('should set block mode', () => {
 				setCursorMode(world, eid, CursorMode.Block);
-				expect(getCursorMode(eid)).toBe(CursorMode.Block);
+				expect(getCursorMode(world, eid)).toBe(CursorMode.Block);
 			});
 
 			it('should toggle between modes', () => {
 				expect(toggleCursorMode(world, eid)).toBe(CursorMode.Block);
-				expect(getCursorMode(eid)).toBe(CursorMode.Block);
+				expect(getCursorMode(world, eid)).toBe(CursorMode.Block);
 				expect(toggleCursorMode(world, eid)).toBe(CursorMode.Line);
-				expect(getCursorMode(eid)).toBe(CursorMode.Line);
+				expect(getCursorMode(world, eid)).toBe(CursorMode.Line);
 			});
 		});
 
 		describe('isCursorBlinkEnabled / setCursorBlinkEnabled', () => {
 			it('should default to blink enabled', () => {
-				expect(isCursorBlinkEnabled(eid)).toBe(true);
+				expect(isCursorBlinkEnabled(world, eid)).toBe(true);
 			});
 
 			it('should disable blink', () => {
 				setCursorBlinkEnabled(world, eid, false);
-				expect(isCursorBlinkEnabled(eid)).toBe(false);
+				expect(isCursorBlinkEnabled(world, eid)).toBe(false);
 			});
 
 			it('should re-enable blink', () => {
 				setCursorBlinkEnabled(world, eid, false);
 				setCursorBlinkEnabled(world, eid, true);
-				expect(isCursorBlinkEnabled(eid)).toBe(true);
+				expect(isCursorBlinkEnabled(world, eid)).toBe(true);
 			});
 		});
 
 		describe('resetCursorBlink', () => {
 			it('should reset blink timer to current time', () => {
 				const before = Date.now();
-				resetCursorBlink(eid);
+				resetCursorBlink(world, eid);
 				const blinkStart = textInputStore.cursorBlinkStart[eid];
 				expect(blinkStart).toBeGreaterThanOrEqual(before);
 				expect(blinkStart).toBeLessThanOrEqual(Date.now());
@@ -653,7 +653,7 @@ describe('TextInput Component', () => {
 
 		describe('getCursorConfig / setCursorConfig', () => {
 			it('should return default config', () => {
-				const config = getCursorConfig(eid);
+				const config = getCursorConfig(world, eid);
 				expect(config.blink).toBe(true);
 				expect(config.blinkIntervalMs).toBe(DEFAULT_CURSOR_BLINK_MS);
 				expect(config.lineChar).toBe(DEFAULT_CURSOR_LINE_CHAR);
@@ -661,13 +661,13 @@ describe('TextInput Component', () => {
 			});
 
 			it('should set custom config', () => {
-				setCursorConfig(eid, {
+				setCursorConfig(world, eid, {
 					blink: false,
 					blinkIntervalMs: 250,
 					lineChar: '|',
 					blockChar: '▓',
 				});
-				const config = getCursorConfig(eid);
+				const config = getCursorConfig(world, eid);
 				expect(config.blink).toBe(false);
 				expect(config.blinkIntervalMs).toBe(250);
 				expect(config.lineChar).toBe('|');
@@ -675,8 +675,8 @@ describe('TextInput Component', () => {
 			});
 
 			it('should merge partial config', () => {
-				setCursorConfig(eid, { lineChar: '|' });
-				const config = getCursorConfig(eid);
+				setCursorConfig(world, eid, { lineChar: '|' });
+				const config = getCursorConfig(world, eid);
 				expect(config.blink).toBe(true); // Default
 				expect(config.lineChar).toBe('|'); // Changed
 			});
@@ -685,17 +685,17 @@ describe('TextInput Component', () => {
 		describe('getCursorChar', () => {
 			it('should return line char in line mode', () => {
 				setCursorMode(world, eid, CursorMode.Line);
-				expect(getCursorChar(eid)).toBe(DEFAULT_CURSOR_LINE_CHAR);
+				expect(getCursorChar(world, eid)).toBe(DEFAULT_CURSOR_LINE_CHAR);
 			});
 
 			it('should return block char in block mode', () => {
 				setCursorMode(world, eid, CursorMode.Block);
-				expect(getCursorChar(eid)).toBe(DEFAULT_CURSOR_BLOCK_CHAR);
+				expect(getCursorChar(world, eid)).toBe(DEFAULT_CURSOR_BLOCK_CHAR);
 			});
 
 			it('should return custom char', () => {
-				setCursorConfig(eid, { lineChar: '|' });
-				expect(getCursorChar(eid)).toBe('|');
+				setCursorConfig(world, eid, { lineChar: '|' });
+				expect(getCursorChar(world, eid)).toBe('|');
 			});
 		});
 
@@ -718,7 +718,7 @@ describe('TextInput Component', () => {
 
 		describe('getCursorDisplayText', () => {
 			it('should return placeholder when value is empty', () => {
-				setTextInputConfig(eid, { placeholder: 'Type here...' });
+				setTextInputConfig(world, eid, { placeholder: 'Type here...' });
 				const result = getCursorDisplayText(world, eid, '');
 				expect(result.displayText).toBe('Type here...');
 				expect(result.cursorVisible).toBe(false);
@@ -744,7 +744,7 @@ describe('TextInput Component', () => {
 
 			it('should mask password with censor char', () => {
 				setCursorBlinkEnabled(world, eid, false);
-				setTextInputConfig(eid, { secret: true, censor: '*' });
+				setTextInputConfig(world, eid, { secret: true, censor: '*' });
 				setCursorPos(world, eid, 3);
 				const result = getCursorDisplayText(world, eid, 'pass');
 				expect(result.displayText).toBe(`***${DEFAULT_CURSOR_LINE_CHAR}*`);
@@ -760,18 +760,18 @@ describe('TextInput Component', () => {
 
 		describe('getNormalizedSelection', () => {
 			it('should return null when no selection', () => {
-				expect(getNormalizedSelection(eid)).toBeNull();
+				expect(getNormalizedSelection(world, eid)).toBeNull();
 			});
 
 			it('should normalize selection (start < end)', () => {
 				setSelection(world, eid, 5, 2);
-				const result = getNormalizedSelection(eid);
+				const result = getNormalizedSelection(world, eid);
 				expect(result).toEqual({ start: 2, end: 5 });
 			});
 
 			it('should keep already normalized selection', () => {
 				setSelection(world, eid, 2, 5);
-				const result = getNormalizedSelection(eid);
+				const result = getNormalizedSelection(world, eid);
 				expect(result).toEqual({ start: 2, end: 5 });
 			});
 		});
@@ -877,155 +877,155 @@ describe('TextInput Component', () => {
 
 		describe('validateTextInput', () => {
 			it('should return true when no validator is set', () => {
-				const isValid = validateTextInput(eid, 'any value');
+				const isValid = validateTextInput(world, eid, 'any value');
 				expect(isValid).toBe(true);
-				expect(hasValidationError(eid)).toBe(false);
+				expect(hasValidationError(world, eid)).toBe(false);
 			});
 
 			it('should return true when validator returns true', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => value.length >= 5,
 				});
 
-				const isValid = validateTextInput(eid, 'hello');
+				const isValid = validateTextInput(world, eid, 'hello');
 				expect(isValid).toBe(true);
-				expect(hasValidationError(eid)).toBe(false);
+				expect(hasValidationError(world, eid)).toBe(false);
 			});
 
 			it('should return false when validator returns false', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => value.length >= 5,
 				});
 
-				const isValid = validateTextInput(eid, 'hi');
+				const isValid = validateTextInput(world, eid, 'hi');
 				expect(isValid).toBe(false);
-				expect(hasValidationError(eid)).toBe(true);
-				expect(getValidationError(eid)).toBe('Invalid input');
+				expect(hasValidationError(world, eid)).toBe(true);
+				expect(getValidationError(world, eid)).toBe('Invalid input');
 			});
 
 			it('should store error message when validator returns string', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => (value.length >= 5 ? true : 'Must be at least 5 characters'),
 				});
 
-				const isValid = validateTextInput(eid, 'hi');
+				const isValid = validateTextInput(world, eid, 'hi');
 				expect(isValid).toBe(false);
-				expect(hasValidationError(eid)).toBe(true);
-				expect(getValidationError(eid)).toBe('Must be at least 5 characters');
+				expect(hasValidationError(world, eid)).toBe(true);
+				expect(getValidationError(world, eid)).toBe('Must be at least 5 characters');
 			});
 
 			it('should clear error when validation passes', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => value.length >= 5 || 'Too short',
 				});
 
-				validateTextInput(eid, 'hi');
-				expect(hasValidationError(eid)).toBe(true);
+				validateTextInput(world, eid, 'hi');
+				expect(hasValidationError(world, eid)).toBe(true);
 
-				validateTextInput(eid, 'hello');
-				expect(hasValidationError(eid)).toBe(false);
-				expect(getValidationError(eid)).toBe(null);
+				validateTextInput(world, eid, 'hello');
+				expect(hasValidationError(world, eid)).toBe(false);
+				expect(getValidationError(world, eid)).toBe(null);
 			});
 		});
 
 		describe('clearValidationError', () => {
 			it('should clear validation error', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => value.length >= 5 || 'Too short',
 				});
 
-				validateTextInput(eid, 'hi');
-				expect(hasValidationError(eid)).toBe(true);
+				validateTextInput(world, eid, 'hi');
+				expect(hasValidationError(world, eid)).toBe(true);
 
-				clearValidationError(eid);
-				expect(hasValidationError(eid)).toBe(false);
-				expect(getValidationError(eid)).toBe(null);
+				clearValidationError(world, eid);
+				expect(hasValidationError(world, eid)).toBe(false);
+				expect(getValidationError(world, eid)).toBe(null);
 			});
 		});
 
 		describe('validation timing - onChange', () => {
 			it('should validate on value change when timing is onChange', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => value.length >= 3 || 'Too short',
 					validationTiming: 'onChange',
 				});
 
-				emitValueChange(eid, 'hi');
-				expect(hasValidationError(eid)).toBe(true);
+				emitValueChange(world, eid, 'hi');
+				expect(hasValidationError(world, eid)).toBe(true);
 
-				emitValueChange(eid, 'hello');
-				expect(hasValidationError(eid)).toBe(false);
+				emitValueChange(world, eid, 'hello');
+				expect(hasValidationError(world, eid)).toBe(false);
 			});
 
 			it('should not validate on submit when timing is onChange', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => value.length >= 3 || 'Too short',
 					validationTiming: 'onChange',
 				});
 
-				const submitted = emitSubmit(eid, 'hi');
+				const submitted = emitSubmit(world, eid, 'hi');
 				expect(submitted).toBe(true);
 			});
 		});
 
 		describe('validation timing - onSubmit', () => {
 			it('should validate on submit when timing is onSubmit', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => value.length >= 3 || 'Too short',
 					validationTiming: 'onSubmit',
 				});
 
-				const submitted = emitSubmit(eid, 'hi');
+				const submitted = emitSubmit(world, eid, 'hi');
 				expect(submitted).toBe(false);
-				expect(hasValidationError(eid)).toBe(true);
+				expect(hasValidationError(world, eid)).toBe(true);
 
-				const submitted2 = emitSubmit(eid, 'hello');
+				const submitted2 = emitSubmit(world, eid, 'hello');
 				expect(submitted2).toBe(true);
-				expect(hasValidationError(eid)).toBe(false);
+				expect(hasValidationError(world, eid)).toBe(false);
 			});
 
 			it('should not validate on value change when timing is onSubmit', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => value.length >= 3 || 'Too short',
 					validationTiming: 'onSubmit',
 				});
 
-				emitValueChange(eid, 'hi');
-				expect(hasValidationError(eid)).toBe(false);
+				emitValueChange(world, eid, 'hi');
+				expect(hasValidationError(world, eid)).toBe(false);
 			});
 		});
 
 		describe('validation timing - both', () => {
 			it('should validate on both value change and submit when timing is both', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => value.length >= 3 || 'Too short',
 					validationTiming: 'both',
 				});
 
-				emitValueChange(eid, 'hi');
-				expect(hasValidationError(eid)).toBe(true);
+				emitValueChange(world, eid, 'hi');
+				expect(hasValidationError(world, eid)).toBe(true);
 
-				clearValidationError(eid);
+				clearValidationError(world, eid);
 
-				const submitted = emitSubmit(eid, 'hi');
+				const submitted = emitSubmit(world, eid, 'hi');
 				expect(submitted).toBe(false);
-				expect(hasValidationError(eid)).toBe(true);
+				expect(hasValidationError(world, eid)).toBe(true);
 			});
 		});
 
 		describe('complex validators', () => {
 			it('should validate email format', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || 'Invalid email',
 				});
 
-				expect(validateTextInput(eid, 'invalid')).toBe(false);
-				expect(validateTextInput(eid, 'test@')).toBe(false);
-				expect(validateTextInput(eid, 'test@example.com')).toBe(true);
+				expect(validateTextInput(world, eid, 'invalid')).toBe(false);
+				expect(validateTextInput(world, eid, 'test@')).toBe(false);
+				expect(validateTextInput(world, eid, 'test@example.com')).toBe(true);
 			});
 
 			it('should validate number range', () => {
-				setTextInputConfig(eid, {
+				setTextInputConfig(world, eid, {
 					validator: (value) => {
 						const num = Number.parseFloat(value);
 						if (Number.isNaN(num)) return 'Must be a number';
@@ -1034,14 +1034,14 @@ describe('TextInput Component', () => {
 					},
 				});
 
-				expect(validateTextInput(eid, 'abc')).toBe(false);
-				expect(getValidationError(eid)).toBe('Must be a number');
+				expect(validateTextInput(world, eid, 'abc')).toBe(false);
+				expect(getValidationError(world, eid)).toBe('Must be a number');
 
-				expect(validateTextInput(eid, '150')).toBe(false);
-				expect(getValidationError(eid)).toBe('Must be between 0 and 100');
+				expect(validateTextInput(world, eid, '150')).toBe(false);
+				expect(getValidationError(world, eid)).toBe('Must be between 0 and 100');
 
-				expect(validateTextInput(eid, '50')).toBe(true);
-				expect(hasValidationError(eid)).toBe(false);
+				expect(validateTextInput(world, eid, '50')).toBe(true);
+				expect(hasValidationError(world, eid)).toBe(false);
 			});
 		});
 	});

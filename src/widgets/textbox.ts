@@ -183,7 +183,7 @@ export function createTextbox(world: World, config: TextboxConfig = {}): Textbox
 		});
 	}
 
-	setTextInputConfig(eid, {
+	setTextInputConfig(world, eid, {
 		secret: validated.secret,
 		censor: validated.censor,
 		placeholder: validated.placeholder ?? '',
@@ -220,7 +220,7 @@ export function createTextbox(world: World, config: TextboxConfig = {}): Textbox
 				state.value = value;
 				state.cursorColumn = value.length;
 				setCursorPos(world, eid, state.cursorColumn);
-				emitValueChange(eid, value);
+				emitValueChange(world, eid, value);
 			}
 			return widget;
 		},
@@ -239,7 +239,7 @@ export function createTextbox(world: World, config: TextboxConfig = {}): Textbox
 					state.value = result.text;
 					state.cursorColumn = result.cursor.column;
 					setCursorPos(world, eid, state.cursorColumn);
-					emitValueChange(eid, state.value);
+					emitValueChange(world, eid, state.value);
 					return true;
 				}
 
@@ -250,7 +250,7 @@ export function createTextbox(world: World, config: TextboxConfig = {}): Textbox
 					state.value = state.value.slice(0, startOffset) + state.value.slice(endOffset);
 					state.cursorColumn = startOffset;
 					setCursorPos(world, eid, state.cursorColumn);
-					emitValueChange(eid, state.value);
+					emitValueChange(world, eid, state.value);
 					return true;
 				}
 
@@ -283,7 +283,7 @@ export function createTextbox(world: World, config: TextboxConfig = {}): Textbox
 					state.value = result.text;
 					state.cursorColumn = result.cursor.column;
 					setCursorPos(world, eid, state.cursorColumn);
-					emitValueChange(eid, state.value);
+					emitValueChange(world, eid, state.value);
 					return true;
 				}
 
@@ -293,12 +293,12 @@ export function createTextbox(world: World, config: TextboxConfig = {}): Textbox
 					state.value = result.text;
 					state.cursorColumn = result.cursor.column;
 					setCursorPos(world, eid, state.cursorColumn);
-					emitValueChange(eid, state.value);
+					emitValueChange(world, eid, state.value);
 					return true;
 				}
 
 				case 'submit': {
-					emitSubmit(eid, action.value);
+					emitSubmit(world, eid, action.value);
 					return true;
 				}
 
@@ -322,11 +322,11 @@ export function createTextbox(world: World, config: TextboxConfig = {}): Textbox
 		},
 
 		onSubmit(callback: (value: string) => void): () => void {
-			return onTextInputSubmit(eid, callback);
+			return onTextInputSubmit(world, eid, callback);
 		},
 
 		onChange(callback: (value: string) => void): () => void {
-			return onTextInputChange(eid, callback);
+			return onTextInputChange(world, eid, callback);
 		},
 
 		destroy(): void {

@@ -380,7 +380,7 @@ export function createTable(
 
 	// Apply display styles if provided
 	if (validated.style) {
-		setTableDisplay(eid, styleConfigToDisplayOptions(validated.style));
+		setTableDisplay(world, eid, styleConfigToDisplayOptions(validated.style));
 	}
 
 	// Create the widget object with chainable methods
@@ -418,11 +418,11 @@ export function createTable(
 		},
 
 		getData(): string[][] {
-			return getDataAsStrings(eid);
+			return getDataAsStrings(world, eid);
 		},
 
 		getFullData(): TableData {
-			return getData(eid);
+			return getData(world, eid);
 		},
 
 		clearData(): TableWidget {
@@ -437,16 +437,16 @@ export function createTable(
 		},
 
 		getCell(row: number, col: number): TableCell | undefined {
-			return getCell(eid, row, col);
+			return getCell(world, eid, row, col);
 		},
 
 		getCellValue(row: number, col: number): string | undefined {
-			return getCellValue(eid, row, col);
+			return getCellValue(world, eid, row, col);
 		},
 
 		// Rows
 		getRow(row: number): TableRow | undefined {
-			return getRow(eid, row);
+			return getRow(world, eid, row);
 		},
 
 		appendRow(row: readonly string[]): TableWidget {
@@ -465,7 +465,7 @@ export function createTable(
 		},
 
 		getRowCount(): number {
-			return getRowCount(eid);
+			return getRowCount(world, eid);
 		},
 
 		// Columns
@@ -475,15 +475,15 @@ export function createTable(
 		},
 
 		getColumns(): readonly TableColumn[] {
-			return getColumns(eid);
+			return getColumns(world, eid);
 		},
 
 		getColCount(): number {
-			return getColCount(eid);
+			return getColCount(world, eid);
 		},
 
 		calculateColumnWidths(maxWidth?: number): number[] {
-			return calculateColumnWidths(eid, maxWidth);
+			return calculateColumnWidths(world, eid, maxWidth);
 		},
 
 		// Headers
@@ -493,15 +493,15 @@ export function createTable(
 		},
 
 		getHeaderRowCount(): number {
-			return getHeaderRowCount(eid);
+			return getHeaderRowCount(world, eid);
 		},
 
 		getHeaderRows(): readonly TableRow[] {
-			return getHeaderRows(eid);
+			return getHeaderRows(world, eid);
 		},
 
 		getDataRows(): readonly TableRow[] {
-			return getDataRows(eid);
+			return getDataRows(world, eid);
 		},
 
 		// Display
@@ -511,7 +511,7 @@ export function createTable(
 		},
 
 		getCellPadding(): number {
-			return getCellPadding(eid);
+			return getCellPadding(world, eid);
 		},
 
 		setCellBorders(enabled: boolean): TableWidget {
@@ -520,22 +520,22 @@ export function createTable(
 		},
 
 		hasCellBorders(): boolean {
-			return hasCellBorders(eid);
+			return hasCellBorders(world, eid);
 		},
 
 		setStyle(style: TableStyleConfig): TableWidget {
-			setTableDisplay(eid, styleConfigToDisplayOptions(style));
+			setTableDisplay(world, eid, styleConfigToDisplayOptions(style));
 			markDirty(world, eid);
 			return widget;
 		},
 
 		getDisplay(): TableDisplay {
-			return getTableDisplay(eid);
+			return getTableDisplay(world, eid);
 		},
 
 		// Rendering
 		renderLines(width: number): string[] {
-			return renderTableLines(eid, width);
+			return renderTableLines(world, eid, width);
 		},
 
 		// Lifecycle

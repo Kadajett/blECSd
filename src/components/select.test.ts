@@ -74,8 +74,8 @@ describe('Select Component', () => {
 			];
 			attachSelectBehavior(world, eid, options);
 
-			expect(getOptionCount(eid)).toBe(2);
-			expect(getSelectOptions(eid)).toEqual(options);
+			expect(getOptionCount(world, eid)).toBe(2);
+			expect(getSelectOptions(world, eid)).toEqual(options);
 		});
 
 		it('initializes with selected index', () => {
@@ -86,8 +86,8 @@ describe('Select Component', () => {
 			];
 			attachSelectBehavior(world, eid, options, 1);
 
-			expect(getSelectedIndex(eid)).toBe(1);
-			expect(getHighlightedIndex(eid)).toBe(1);
+			expect(getSelectedIndex(world, eid)).toBe(1);
+			expect(getHighlightedIndex(world, eid)).toBe(1);
 		});
 
 		it('defaults to closed state', () => {
@@ -181,9 +181,9 @@ describe('Select Component', () => {
 			];
 			attachSelectBehavior(world, eid, options);
 
-			expect(getOptionAt(eid, 0)).toEqual({ label: 'A', value: 'a' });
-			expect(getOptionAt(eid, 1)).toEqual({ label: 'B', value: 'b' });
-			expect(getOptionAt(eid, 2)).toBeUndefined();
+			expect(getOptionAt(world, eid, 0)).toEqual({ label: 'A', value: 'a' });
+			expect(getOptionAt(world, eid, 1)).toEqual({ label: 'B', value: 'b' });
+			expect(getOptionAt(world, eid, 2)).toBeUndefined();
 		});
 
 		it('sets new options', () => {
@@ -196,8 +196,8 @@ describe('Select Component', () => {
 			];
 			setSelectOptions(world, eid, newOptions);
 
-			expect(getOptionCount(eid)).toBe(2);
-			expect(getSelectOptions(eid)).toEqual(newOptions);
+			expect(getOptionCount(world, eid)).toBe(2);
+			expect(getSelectOptions(world, eid)).toEqual(newOptions);
 		});
 
 		it('resets selection when options change', () => {
@@ -211,7 +211,7 @@ describe('Select Component', () => {
 			setSelectOptions(world, eid, [{ label: 'Only', value: 'only' }]);
 
 			// Should reset to 0 since previous selection (1) is out of bounds
-			expect(getSelectedIndex(eid)).toBe(0);
+			expect(getSelectedIndex(world, eid)).toBe(0);
 		});
 	});
 
@@ -226,10 +226,10 @@ describe('Select Component', () => {
 
 			selectOptionByIndex(world, eid, 1);
 
-			expect(getSelectedIndex(eid)).toBe(1);
-			expect(getSelectedOption(eid)).toEqual({ label: 'B', value: 'b' });
-			expect(getSelectedValue(eid)).toBe('b');
-			expect(getSelectedLabel(eid)).toBe('B');
+			expect(getSelectedIndex(world, eid)).toBe(1);
+			expect(getSelectedOption(world, eid)).toEqual({ label: 'B', value: 'b' });
+			expect(getSelectedValue(world, eid)).toBe('b');
+			expect(getSelectedLabel(world, eid)).toBe('B');
 		});
 
 		it('selects option by value', () => {
@@ -242,7 +242,7 @@ describe('Select Component', () => {
 
 			selectOptionByValue(world, eid, 'b');
 
-			expect(getSelectedIndex(eid)).toBe(1);
+			expect(getSelectedIndex(world, eid)).toBe(1);
 		});
 
 		it('returns false for invalid selection', () => {
@@ -260,8 +260,8 @@ describe('Select Component', () => {
 
 			clearSelection(world, eid);
 
-			expect(getSelectedIndex(eid)).toBe(-1);
-			expect(getSelectedOption(eid)).toBeUndefined();
+			expect(getSelectedIndex(world, eid)).toBe(-1);
+			expect(getSelectedOption(world, eid)).toBeUndefined();
 		});
 
 		it('closes dropdown after selection', () => {
@@ -290,7 +290,7 @@ describe('Select Component', () => {
 			attachSelectBehavior(world, eid, options);
 
 			setHighlightedIndex(world, eid, 2);
-			expect(getHighlightedIndex(eid)).toBe(2);
+			expect(getHighlightedIndex(world, eid)).toBe(2);
 		});
 
 		it('clamps highlighted index to valid range', () => {
@@ -301,10 +301,10 @@ describe('Select Component', () => {
 			]);
 
 			setHighlightedIndex(world, eid, 10);
-			expect(getHighlightedIndex(eid)).toBe(1);
+			expect(getHighlightedIndex(world, eid)).toBe(1);
 
 			setHighlightedIndex(world, eid, -5);
-			expect(getHighlightedIndex(eid)).toBe(0);
+			expect(getHighlightedIndex(world, eid)).toBe(0);
 		});
 
 		it('highlights next option', () => {
@@ -315,9 +315,9 @@ describe('Select Component', () => {
 				{ label: 'C', value: 'c' },
 			]);
 
-			expect(getHighlightedIndex(eid)).toBe(0);
+			expect(getHighlightedIndex(world, eid)).toBe(0);
 			highlightNext(world, eid);
-			expect(getHighlightedIndex(eid)).toBe(1);
+			expect(getHighlightedIndex(world, eid)).toBe(1);
 		});
 
 		it('wraps around when highlighting next at end', () => {
@@ -329,7 +329,7 @@ describe('Select Component', () => {
 
 			setHighlightedIndex(world, eid, 1);
 			highlightNext(world, eid, true);
-			expect(getHighlightedIndex(eid)).toBe(0);
+			expect(getHighlightedIndex(world, eid)).toBe(0);
 		});
 
 		it('does not wrap when wrap is false', () => {
@@ -341,7 +341,7 @@ describe('Select Component', () => {
 
 			setHighlightedIndex(world, eid, 1);
 			highlightNext(world, eid, false);
-			expect(getHighlightedIndex(eid)).toBe(1);
+			expect(getHighlightedIndex(world, eid)).toBe(1);
 		});
 
 		it('highlights previous option', () => {
@@ -354,7 +354,7 @@ describe('Select Component', () => {
 
 			setHighlightedIndex(world, eid, 2);
 			highlightPrev(world, eid);
-			expect(getHighlightedIndex(eid)).toBe(1);
+			expect(getHighlightedIndex(world, eid)).toBe(1);
 		});
 
 		it('wraps around when highlighting prev at start', () => {
@@ -365,7 +365,7 @@ describe('Select Component', () => {
 			]);
 
 			highlightPrev(world, eid, true);
-			expect(getHighlightedIndex(eid)).toBe(1);
+			expect(getHighlightedIndex(world, eid)).toBe(1);
 		});
 
 		it('selects highlighted option', () => {
@@ -378,7 +378,7 @@ describe('Select Component', () => {
 			setHighlightedIndex(world, eid, 1);
 			selectHighlighted(world, eid);
 
-			expect(getSelectedIndex(eid)).toBe(1);
+			expect(getSelectedIndex(world, eid)).toBe(1);
 		});
 	});
 
@@ -387,7 +387,7 @@ describe('Select Component', () => {
 			const eid = addEntity(world) as Entity;
 			attachSelectBehavior(world, eid);
 
-			const display = getSelectDisplay(eid);
+			const display = getSelectDisplay(world, eid);
 			expect(display.closedIndicator).toBe(DEFAULT_CLOSED_INDICATOR);
 			expect(display.openIndicator).toBe(DEFAULT_OPEN_INDICATOR);
 			expect(display.selectedMark).toBe(DEFAULT_SELECTED_MARK);
@@ -398,14 +398,14 @@ describe('Select Component', () => {
 			const eid = addEntity(world) as Entity;
 			attachSelectBehavior(world, eid);
 
-			setSelectDisplay(eid, {
+			setSelectDisplay(world, eid, {
 				closedIndicator: 'v',
 				openIndicator: '^',
 				selectedMark: '*',
 				separator: ' | ',
 			});
 
-			const display = getSelectDisplay(eid);
+			const display = getSelectDisplay(world, eid);
 			expect(display.closedIndicator).toBe('v');
 			expect(display.openIndicator).toBe('^');
 			expect(display.selectedMark).toBe('*');
@@ -425,11 +425,11 @@ describe('Select Component', () => {
 		it('clears display configuration', () => {
 			const eid = addEntity(world) as Entity;
 			attachSelectBehavior(world, eid);
-			setSelectDisplay(eid, { closedIndicator: 'X' });
+			setSelectDisplay(world, eid, { closedIndicator: 'X' });
 
-			clearSelectDisplay(eid);
+			clearSelectDisplay(world, eid);
 
-			const display = getSelectDisplay(eid);
+			const display = getSelectDisplay(world, eid);
 			expect(display.closedIndicator).toBe(DEFAULT_CLOSED_INDICATOR);
 		});
 	});
@@ -444,7 +444,7 @@ describe('Select Component', () => {
 			attachSelectBehavior(world, eid, options);
 
 			const callback = vi.fn();
-			onSelectChange(eid, callback);
+			onSelectChange(world, eid, callback);
 
 			selectOptionByIndex(world, eid, 1);
 
@@ -456,7 +456,7 @@ describe('Select Component', () => {
 			attachSelectBehavior(world, eid);
 
 			const callback = vi.fn();
-			onSelectOpen(eid, callback);
+			onSelectOpen(world, eid, callback);
 
 			openSelect(world, eid);
 
@@ -468,7 +468,7 @@ describe('Select Component', () => {
 			attachSelectBehavior(world, eid);
 
 			const callback = vi.fn();
-			onSelectClose(eid, callback);
+			onSelectClose(world, eid, callback);
 
 			openSelect(world, eid);
 			closeSelect(world, eid);
@@ -481,7 +481,7 @@ describe('Select Component', () => {
 			attachSelectBehavior(world, eid, [{ label: 'A', value: 'a' }]);
 
 			const callback = vi.fn();
-			const unsubscribe = onSelectChange(eid, callback);
+			const unsubscribe = onSelectChange(world, eid, callback);
 
 			unsubscribe();
 			selectOptionByIndex(world, eid, 0);
@@ -495,10 +495,10 @@ describe('Select Component', () => {
 
 			const changeCallback = vi.fn();
 			const openCallback = vi.fn();
-			onSelectChange(eid, changeCallback);
-			onSelectOpen(eid, openCallback);
+			onSelectChange(world, eid, changeCallback);
+			onSelectOpen(world, eid, openCallback);
 
-			clearSelectCallbacks(eid);
+			clearSelectCallbacks(world, eid);
 
 			openSelect(world, eid);
 			selectOptionByIndex(world, eid, 0);
@@ -601,14 +601,14 @@ describe('Select Component', () => {
 		it('resets all select data', () => {
 			const eid = addEntity(world) as Entity;
 			attachSelectBehavior(world, eid, [{ label: 'A', value: 'a' }], 0);
-			setSelectDisplay(eid, { closedIndicator: 'X' });
-			onSelectChange(eid, vi.fn());
+			setSelectDisplay(world, eid, { closedIndicator: 'X' });
+			onSelectChange(world, eid, vi.fn());
 
 			resetSelectStore();
 
 			expect(selectStore.isSelect[eid]).toBe(0);
 			expect(selectStore.selectedIndex[eid]).toBe(-1);
-			expect(getSelectOptions(eid)).toEqual([]);
+			expect(getSelectOptions(world, eid)).toEqual([]);
 		});
 	});
 });

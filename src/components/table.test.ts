@@ -62,11 +62,11 @@ describe('Table Component', () => {
 			attachTableBehavior(world, eid);
 
 			expect(isTable(world, eid)).toBe(true);
-			expect(getRowCount(eid)).toBe(0);
-			expect(getColCount(eid)).toBe(0);
-			expect(getHeaderRowCount(eid)).toBe(1);
-			expect(getCellPadding(eid)).toBe(1);
-			expect(hasCellBorders(eid)).toBe(false);
+			expect(getRowCount(world, eid)).toBe(0);
+			expect(getColCount(world, eid)).toBe(0);
+			expect(getHeaderRowCount(world, eid)).toBe(1);
+			expect(getCellPadding(world, eid)).toBe(1);
+			expect(hasCellBorders(world, eid)).toBe(false);
 		});
 
 		it('should initialize with custom options', () => {
@@ -76,9 +76,9 @@ describe('Table Component', () => {
 				cellBorders: true,
 			});
 
-			expect(getHeaderRowCount(eid)).toBe(2);
-			expect(getCellPadding(eid)).toBe(2);
-			expect(hasCellBorders(eid)).toBe(true);
+			expect(getHeaderRowCount(world, eid)).toBe(2);
+			expect(getCellPadding(world, eid)).toBe(2);
+			expect(hasCellBorders(world, eid)).toBe(true);
 		});
 	});
 
@@ -94,8 +94,8 @@ describe('Table Component', () => {
 				['Bob', '25', 'LA'],
 			]);
 
-			expect(getRowCount(eid)).toBe(3);
-			expect(getColCount(eid)).toBe(3);
+			expect(getRowCount(world, eid)).toBe(3);
+			expect(getColCount(world, eid)).toBe(3);
 		});
 
 		it('should set data from TableCell arrays', () => {
@@ -104,8 +104,8 @@ describe('Table Component', () => {
 				[{ value: 'Alice', fg: 0xff0000ff }, { value: '30' }],
 			]);
 
-			expect(getRowCount(eid)).toBe(2);
-			const cell = getCell(eid, 1, 0);
+			expect(getRowCount(world, eid)).toBe(2);
+			const cell = getCell(world, eid, 1, 0);
 			expect(cell?.fg).toBe(0xff0000ff);
 		});
 
@@ -115,7 +115,7 @@ describe('Table Component', () => {
 				['C', 'D'],
 			]);
 
-			const data = getData(eid);
+			const data = getData(world, eid);
 			expect(data).toHaveLength(2);
 			expect(data[0]?.[0]?.value).toBe('A');
 		});
@@ -126,7 +126,7 @@ describe('Table Component', () => {
 				['C', 'D'],
 			]);
 
-			const strings = getDataAsStrings(eid);
+			const strings = getDataAsStrings(world, eid);
 			expect(strings).toEqual([
 				['A', 'B'],
 				['C', 'D'],
@@ -137,9 +137,9 @@ describe('Table Component', () => {
 			setData(world, eid, [['A', 'B']]);
 			clearData(world, eid);
 
-			expect(getRowCount(eid)).toBe(0);
-			expect(getColCount(eid)).toBe(0);
-			expect(getData(eid)).toEqual([]);
+			expect(getRowCount(world, eid)).toBe(0);
+			expect(getColCount(world, eid)).toBe(0);
+			expect(getData(world, eid)).toEqual([]);
 		});
 	});
 
@@ -154,38 +154,38 @@ describe('Table Component', () => {
 		});
 
 		it('should get cell by position', () => {
-			const cell = getCell(eid, 1, 2);
+			const cell = getCell(world, eid, 1, 2);
 			expect(cell?.value).toBe('F');
 		});
 
 		it('should get cell value by position', () => {
-			const value = getCellValue(eid, 1, 2);
+			const value = getCellValue(world, eid, 1, 2);
 			expect(value).toBe('F');
 		});
 
 		it('should return undefined for out of bounds', () => {
-			expect(getCell(eid, 10, 10)).toBeUndefined();
-			expect(getCell(eid, -1, 0)).toBeUndefined();
-			expect(getCellValue(eid, 10, 10)).toBeUndefined();
+			expect(getCell(world, eid, 10, 10)).toBeUndefined();
+			expect(getCell(world, eid, -1, 0)).toBeUndefined();
+			expect(getCellValue(world, eid, 10, 10)).toBeUndefined();
 		});
 
 		it('should set cell value', () => {
 			setCell(world, eid, 1, 1, 'NEW');
-			expect(getCellValue(eid, 1, 1)).toBe('NEW');
+			expect(getCellValue(world, eid, 1, 1)).toBe('NEW');
 		});
 
 		it('should set cell with TableCell object', () => {
 			setCell(world, eid, 1, 1, { value: 'STYLED', fg: 0x00ff00ff });
-			const cell = getCell(eid, 1, 1);
+			const cell = getCell(world, eid, 1, 1);
 			expect(cell?.value).toBe('STYLED');
 			expect(cell?.fg).toBe(0x00ff00ff);
 		});
 
 		it('should expand data when setting cell beyond bounds', () => {
 			setCell(world, eid, 5, 5, 'EXPANDED');
-			expect(getRowCount(eid)).toBe(6);
-			expect(getColCount(eid)).toBe(6);
-			expect(getCellValue(eid, 5, 5)).toBe('EXPANDED');
+			expect(getRowCount(world, eid)).toBe(6);
+			expect(getColCount(world, eid)).toBe(6);
+			expect(getCellValue(world, eid, 5, 5)).toBe('EXPANDED');
 		});
 	});
 
@@ -199,17 +199,17 @@ describe('Table Component', () => {
 		});
 
 		it('should get row by index', () => {
-			const row = getRow(eid, 1);
+			const row = getRow(world, eid, 1);
 			expect(row).toHaveLength(3);
 			expect(row?.[0]?.value).toBe('D');
 		});
 
 		it('should return undefined for invalid row index', () => {
-			expect(getRow(eid, 10)).toBeUndefined();
+			expect(getRow(world, eid, 10)).toBeUndefined();
 		});
 
 		it('should get column by index', () => {
-			const col = getColumn(eid, 1);
+			const col = getColumn(world, eid, 1);
 			expect(col).toHaveLength(2);
 			expect(col[0]?.value).toBe('B');
 			expect(col[1]?.value).toBe('E');
@@ -227,22 +227,22 @@ describe('Table Component', () => {
 
 		it('should append row', () => {
 			appendRow(world, eid, ['E', 'F']);
-			expect(getRowCount(eid)).toBe(3);
-			expect(getCellValue(eid, 2, 0)).toBe('E');
+			expect(getRowCount(world, eid)).toBe(3);
+			expect(getCellValue(world, eid, 2, 0)).toBe('E');
 		});
 
 		it('should insert row at index', () => {
 			insertRow(world, eid, 1, ['X', 'Y']);
-			expect(getRowCount(eid)).toBe(3);
-			expect(getCellValue(eid, 1, 0)).toBe('X');
-			expect(getCellValue(eid, 2, 0)).toBe('C');
+			expect(getRowCount(world, eid)).toBe(3);
+			expect(getCellValue(world, eid, 1, 0)).toBe('X');
+			expect(getCellValue(world, eid, 2, 0)).toBe('C');
 		});
 
 		it('should remove row', () => {
 			const removed = removeRow(world, eid, 0);
 			expect(removed?.[0]?.value).toBe('A');
-			expect(getRowCount(eid)).toBe(1);
-			expect(getCellValue(eid, 0, 0)).toBe('C');
+			expect(getRowCount(world, eid)).toBe(1);
+			expect(getCellValue(world, eid, 0, 0)).toBe('C');
 		});
 
 		it('should return undefined when removing invalid row', () => {
@@ -263,7 +263,7 @@ describe('Table Component', () => {
 				{ header: 'City', width: 15 },
 			]);
 
-			const columns = getColumns(eid);
+			const columns = getColumns(world, eid);
 			expect(columns).toHaveLength(3);
 			expect(columns[0]?.header).toBe('Name');
 			expect(columns[1]?.align).toBe('right');
@@ -272,7 +272,7 @@ describe('Table Component', () => {
 		it('should get header rows', () => {
 			setHeaders(world, eid, [{ header: 'Col1' }, { header: 'Col2' }]);
 
-			const headers = getHeaderRows(eid);
+			const headers = getHeaderRows(world, eid);
 			expect(headers).toHaveLength(1);
 			expect(headers[0]?.[0]?.value).toBe('Col1');
 		});
@@ -284,14 +284,14 @@ describe('Table Component', () => {
 				['Data3', 'Data4'],
 			]);
 
-			const dataRows = getDataRows(eid);
+			const dataRows = getDataRows(world, eid);
 			expect(dataRows).toHaveLength(2);
 			expect(dataRows[0]?.[0]?.value).toBe('Data1');
 		});
 
 		it('should set header row count', () => {
 			setHeaderRowCount(world, eid, 2);
-			expect(getHeaderRowCount(eid)).toBe(2);
+			expect(getHeaderRowCount(world, eid)).toBe(2);
 		});
 	});
 
@@ -301,7 +301,7 @@ describe('Table Component', () => {
 		});
 
 		it('should get default display configuration', () => {
-			const display = getTableDisplay(eid);
+			const display = getTableDisplay(world, eid);
 			expect(display.headerFg).toBe(DEFAULT_HEADER_FG);
 			expect(display.headerBg).toBe(DEFAULT_HEADER_BG);
 			expect(display.cellFg).toBe(DEFAULT_CELL_FG);
@@ -311,21 +311,21 @@ describe('Table Component', () => {
 		});
 
 		it('should set display configuration', () => {
-			setTableDisplay(eid, {
+			setTableDisplay(world, eid, {
 				headerFg: 0xaabbccff,
 				selectedBg: 0x0066ffff,
 			});
 
-			const display = getTableDisplay(eid);
+			const display = getTableDisplay(world, eid);
 			expect(display.headerFg).toBe(0xaabbccff);
 			expect(display.selectedBg).toBe(0x0066ffff);
 		});
 
 		it('should clear display configuration', () => {
-			setTableDisplay(eid, { headerFg: 0x123456ff });
-			clearTableDisplay(eid);
+			setTableDisplay(world, eid, { headerFg: 0x123456ff });
+			clearTableDisplay(world, eid);
 
-			const display = getTableDisplay(eid);
+			const display = getTableDisplay(world, eid);
 			expect(display.headerFg).toBe(DEFAULT_HEADER_FG);
 		});
 	});
@@ -337,25 +337,25 @@ describe('Table Component', () => {
 
 		it('should get and set cell padding', () => {
 			setCellPadding(world, eid, 3);
-			expect(getCellPadding(eid)).toBe(3);
+			expect(getCellPadding(world, eid)).toBe(3);
 		});
 
 		it('should clamp cell padding', () => {
 			setCellPadding(world, eid, 300);
-			expect(getCellPadding(eid)).toBe(255);
+			expect(getCellPadding(world, eid)).toBe(255);
 
 			setCellPadding(world, eid, -5);
-			expect(getCellPadding(eid)).toBe(0);
+			expect(getCellPadding(world, eid)).toBe(0);
 		});
 
 		it('should get and set cell borders', () => {
-			expect(hasCellBorders(eid)).toBe(false);
+			expect(hasCellBorders(world, eid)).toBe(false);
 
 			setCellBorders(world, eid, true);
-			expect(hasCellBorders(eid)).toBe(true);
+			expect(hasCellBorders(world, eid)).toBe(true);
 
 			setCellBorders(world, eid, false);
-			expect(hasCellBorders(eid)).toBe(false);
+			expect(hasCellBorders(world, eid)).toBe(false);
 		});
 	});
 
@@ -370,7 +370,7 @@ describe('Table Component', () => {
 				['A', 'B'],
 			]);
 
-			const widths = calculateColumnWidths(eid);
+			const widths = calculateColumnWidths(world, eid);
 			expect(widths[0]).toBe('Short'.length + 2); // +2 for padding
 			expect(widths[1]).toBe('Longer Text'.length + 2);
 		});
@@ -382,7 +382,7 @@ describe('Table Component', () => {
 				{ header: 'Col2', minWidth: 15 },
 			]);
 
-			const widths = calculateColumnWidths(eid);
+			const widths = calculateColumnWidths(world, eid);
 			expect(widths[0]).toBe(20);
 			expect(widths[1]).toBeGreaterThanOrEqual(15);
 		});
@@ -390,7 +390,7 @@ describe('Table Component', () => {
 		it('should scale down to max width', () => {
 			setData(world, eid, [['Very Long Content', 'Also Long Content']]);
 
-			const widths = calculateColumnWidths(eid, 20);
+			const widths = calculateColumnWidths(world, eid, 20);
 			const total = widths.reduce((sum, w) => sum + w, 0);
 			expect(total).toBeLessThanOrEqual(20);
 		});
@@ -407,7 +407,7 @@ describe('Table Component', () => {
 				['C', 'D'],
 			]);
 
-			const lines = renderTableLines(eid, 80);
+			const lines = renderTableLines(world, eid, 80);
 			expect(lines).toHaveLength(2);
 		});
 
@@ -418,14 +418,14 @@ describe('Table Component', () => {
 				['Data1', 'Data2'],
 			]);
 
-			const lines = renderTableLines(eid, 80);
+			const lines = renderTableLines(world, eid, 80);
 			expect(lines.length).toBeGreaterThan(2); // Should have separator line
 		});
 
 		it('should truncate long content', () => {
 			setData(world, eid, [['This is a very long string that should be truncated']]);
 
-			const lines = renderTableLines(eid, 20);
+			const lines = renderTableLines(world, eid, 20);
 			expect(lines[0]?.includes('…')).toBe(true);
 		});
 	});

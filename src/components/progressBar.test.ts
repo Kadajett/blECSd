@@ -53,10 +53,10 @@ describe('ProgressBar Component', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid);
 
-			expect(getProgress(eid)).toBe(0);
-			expect(getProgressMin(eid)).toBe(0);
-			expect(getProgressMax(eid)).toBe(100);
-			expect(getProgressOrientation(eid)).toBe(ProgressOrientation.Horizontal);
+			expect(getProgress(world, eid)).toBe(0);
+			expect(getProgressMin(world, eid)).toBe(0);
+			expect(getProgressMax(world, eid)).toBe(100);
+			expect(getProgressOrientation(world, eid)).toBe(ProgressOrientation.Horizontal);
 		});
 
 		it('respects custom values', () => {
@@ -68,17 +68,17 @@ describe('ProgressBar Component', () => {
 				orientation: ProgressOrientation.Vertical,
 			});
 
-			expect(getProgress(eid)).toBe(25);
-			expect(getProgressMin(eid)).toBe(10);
-			expect(getProgressMax(eid)).toBe(50);
-			expect(getProgressOrientation(eid)).toBe(ProgressOrientation.Vertical);
+			expect(getProgress(world, eid)).toBe(25);
+			expect(getProgressMin(world, eid)).toBe(10);
+			expect(getProgressMax(world, eid)).toBe(50);
+			expect(getProgressOrientation(world, eid)).toBe(ProgressOrientation.Vertical);
 		});
 
 		it('enables show percentage when specified', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { showPercentage: true });
 
-			expect(isShowingPercentage(eid)).toBe(true);
+			expect(isShowingPercentage(world, eid)).toBe(true);
 		});
 	});
 
@@ -102,7 +102,7 @@ describe('ProgressBar Component', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { value: 42 });
 
-			expect(getProgress(eid)).toBe(42);
+			expect(getProgress(world, eid)).toBe(42);
 		});
 
 		it('sets progress value', () => {
@@ -111,7 +111,7 @@ describe('ProgressBar Component', () => {
 
 			setProgress(world, eid, 50);
 
-			expect(getProgress(eid)).toBe(50);
+			expect(getProgress(world, eid)).toBe(50);
 		});
 
 		it('clamps value to min', () => {
@@ -120,7 +120,7 @@ describe('ProgressBar Component', () => {
 
 			setProgress(world, eid, 5);
 
-			expect(getProgress(eid)).toBe(10);
+			expect(getProgress(world, eid)).toBe(10);
 		});
 
 		it('clamps value to max', () => {
@@ -129,28 +129,28 @@ describe('ProgressBar Component', () => {
 
 			setProgress(world, eid, 150);
 
-			expect(getProgress(eid)).toBe(100);
+			expect(getProgress(world, eid)).toBe(100);
 		});
 
 		it('calculates percentage correctly', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { value: 50, min: 0, max: 100 });
 
-			expect(getProgressPercentage(eid)).toBe(50);
+			expect(getProgressPercentage(world, eid)).toBe(50);
 		});
 
 		it('calculates percentage with custom range', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { value: 30, min: 20, max: 40 });
 
-			expect(getProgressPercentage(eid)).toBe(50); // (30-20) / (40-20) * 100
+			expect(getProgressPercentage(world, eid)).toBe(50); // (30-20) / (40-20) * 100
 		});
 
 		it('handles zero range gracefully', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { value: 0, min: 0, max: 0 });
 
-			expect(getProgressPercentage(eid)).toBe(0);
+			expect(getProgressPercentage(world, eid)).toBe(0);
 		});
 	});
 
@@ -161,7 +161,7 @@ describe('ProgressBar Component', () => {
 
 			incrementProgress(world, eid);
 
-			expect(getProgress(eid)).toBe(11);
+			expect(getProgress(world, eid)).toBe(11);
 		});
 
 		it('increments by custom amount', () => {
@@ -170,7 +170,7 @@ describe('ProgressBar Component', () => {
 
 			incrementProgress(world, eid, 5);
 
-			expect(getProgress(eid)).toBe(15);
+			expect(getProgress(world, eid)).toBe(15);
 		});
 
 		it('clamps to max', () => {
@@ -179,7 +179,7 @@ describe('ProgressBar Component', () => {
 
 			incrementProgress(world, eid, 10);
 
-			expect(getProgress(eid)).toBe(100);
+			expect(getProgress(world, eid)).toBe(100);
 		});
 	});
 
@@ -190,7 +190,7 @@ describe('ProgressBar Component', () => {
 
 			decrementProgress(world, eid);
 
-			expect(getProgress(eid)).toBe(9);
+			expect(getProgress(world, eid)).toBe(9);
 		});
 
 		it('decrements by custom amount', () => {
@@ -199,7 +199,7 @@ describe('ProgressBar Component', () => {
 
 			decrementProgress(world, eid, 5);
 
-			expect(getProgress(eid)).toBe(5);
+			expect(getProgress(world, eid)).toBe(5);
 		});
 
 		it('clamps to min', () => {
@@ -208,7 +208,7 @@ describe('ProgressBar Component', () => {
 
 			decrementProgress(world, eid, 10);
 
-			expect(getProgress(eid)).toBe(0);
+			expect(getProgress(world, eid)).toBe(0);
 		});
 	});
 
@@ -219,7 +219,7 @@ describe('ProgressBar Component', () => {
 
 			resetProgress(world, eid);
 
-			expect(getProgress(eid)).toBe(10);
+			expect(getProgress(world, eid)).toBe(10);
 		});
 	});
 
@@ -230,7 +230,7 @@ describe('ProgressBar Component', () => {
 
 			completeProgress(world, eid);
 
-			expect(getProgress(eid)).toBe(100);
+			expect(getProgress(world, eid)).toBe(100);
 		});
 	});
 
@@ -239,14 +239,14 @@ describe('ProgressBar Component', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { value: 50, max: 100 });
 
-			expect(isProgressComplete(eid)).toBe(false);
+			expect(isProgressComplete(world, eid)).toBe(false);
 		});
 
 		it('returns true when at max', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { value: 100, max: 100 });
 
-			expect(isProgressComplete(eid)).toBe(true);
+			expect(isProgressComplete(world, eid)).toBe(true);
 		});
 	});
 
@@ -255,7 +255,7 @@ describe('ProgressBar Component', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid);
 
-			const display = getProgressBarDisplay(eid);
+			const display = getProgressBarDisplay(world, eid);
 
 			expect(display.fillChar).toBe(DEFAULT_FILL_CHAR);
 			expect(display.emptyChar).toBe(DEFAULT_EMPTY_CHAR);
@@ -265,13 +265,13 @@ describe('ProgressBar Component', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid);
 
-			setProgressBarDisplay(eid, {
+			setProgressBarDisplay(world, eid, {
 				fillChar: '=',
 				emptyChar: '-',
 				fillFg: 0x00ff00ff,
 			});
 
-			const display = getProgressBarDisplay(eid);
+			const display = getProgressBarDisplay(world, eid);
 			expect(display.fillChar).toBe('=');
 			expect(display.emptyChar).toBe('-');
 			expect(display.fillFg).toBe(0x00ff00ff);
@@ -281,10 +281,10 @@ describe('ProgressBar Component', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid);
 
-			setProgressBarDisplay(eid, { fillChar: '=' });
-			clearProgressBarDisplay(eid);
+			setProgressBarDisplay(world, eid, { fillChar: '=' });
+			clearProgressBarDisplay(world, eid);
 
-			const display = getProgressBarDisplay(eid);
+			const display = getProgressBarDisplay(world, eid);
 			expect(display.fillChar).toBe(DEFAULT_FILL_CHAR);
 		});
 	});
@@ -294,7 +294,7 @@ describe('ProgressBar Component', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { value: 0 });
 
-			const bar = renderProgressString(eid, 10);
+			const bar = renderProgressString(world, eid, 10);
 
 			expect(bar).toBe('░░░░░░░░░░');
 		});
@@ -303,7 +303,7 @@ describe('ProgressBar Component', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { value: 100 });
 
-			const bar = renderProgressString(eid, 10);
+			const bar = renderProgressString(world, eid, 10);
 
 			expect(bar).toBe('██████████');
 		});
@@ -312,7 +312,7 @@ describe('ProgressBar Component', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { value: 50 });
 
-			const bar = renderProgressString(eid, 10);
+			const bar = renderProgressString(world, eid, 10);
 
 			expect(bar).toBe('█████░░░░░');
 		});
@@ -320,9 +320,9 @@ describe('ProgressBar Component', () => {
 		it('renders with custom characters', () => {
 			const eid = createBoxEntity(world);
 			attachProgressBarBehavior(world, eid, { value: 50 });
-			setProgressBarDisplay(eid, { fillChar: '=', emptyChar: '-' });
+			setProgressBarDisplay(world, eid, { fillChar: '=', emptyChar: '-' });
 
-			const bar = renderProgressString(eid, 10);
+			const bar = renderProgressString(world, eid, 10);
 
 			expect(bar).toBe('=====-----');
 		});
@@ -334,7 +334,7 @@ describe('ProgressBar Component', () => {
 			attachProgressBarBehavior(world, eid, { value: 99, max: 100 });
 
 			const callback = vi.fn();
-			onProgressComplete(eid, callback);
+			onProgressComplete(world, eid, callback);
 
 			setProgress(world, eid, 100);
 
@@ -346,7 +346,7 @@ describe('ProgressBar Component', () => {
 			attachProgressBarBehavior(world, eid, { value: 50, max: 100 });
 
 			const callback = vi.fn();
-			onProgressComplete(eid, callback);
+			onProgressComplete(world, eid, callback);
 
 			setProgress(world, eid, 60);
 
@@ -358,7 +358,7 @@ describe('ProgressBar Component', () => {
 			attachProgressBarBehavior(world, eid, { value: 99, max: 100 });
 
 			const callback = vi.fn();
-			const unsubscribe = onProgressComplete(eid, callback);
+			const unsubscribe = onProgressComplete(world, eid, callback);
 			unsubscribe();
 
 			setProgress(world, eid, 100);
@@ -371,7 +371,7 @@ describe('ProgressBar Component', () => {
 			attachProgressBarBehavior(world, eid, { value: 0 });
 
 			const callback = vi.fn();
-			onProgressChange(eid, callback);
+			onProgressChange(world, eid, callback);
 
 			setProgress(world, eid, 50);
 
@@ -383,7 +383,7 @@ describe('ProgressBar Component', () => {
 			attachProgressBarBehavior(world, eid, { value: 50 });
 
 			const callback = vi.fn();
-			onProgressChange(eid, callback);
+			onProgressChange(world, eid, callback);
 
 			setProgress(world, eid, 50);
 
@@ -396,10 +396,10 @@ describe('ProgressBar Component', () => {
 
 			const completeCallback = vi.fn();
 			const changeCallback = vi.fn();
-			onProgressComplete(eid, completeCallback);
-			onProgressChange(eid, changeCallback);
+			onProgressComplete(world, eid, completeCallback);
+			onProgressChange(world, eid, changeCallback);
 
-			clearProgressBarCallbacks(eid);
+			clearProgressBarCallbacks(world, eid);
 
 			setProgress(world, eid, 100);
 
@@ -415,7 +415,7 @@ describe('ProgressBar Component', () => {
 				orientation: ProgressOrientation.Vertical,
 			});
 
-			expect(getProgressOrientation(eid)).toBe(ProgressOrientation.Vertical);
+			expect(getProgressOrientation(world, eid)).toBe(ProgressOrientation.Vertical);
 		});
 
 		it('sets orientation', () => {
@@ -424,7 +424,7 @@ describe('ProgressBar Component', () => {
 
 			setProgressOrientation(world, eid, ProgressOrientation.Vertical);
 
-			expect(getProgressOrientation(eid)).toBe(ProgressOrientation.Vertical);
+			expect(getProgressOrientation(world, eid)).toBe(ProgressOrientation.Vertical);
 		});
 	});
 
@@ -435,8 +435,8 @@ describe('ProgressBar Component', () => {
 
 			setProgressRange(world, eid, 10, 200);
 
-			expect(getProgressMin(eid)).toBe(10);
-			expect(getProgressMax(eid)).toBe(200);
+			expect(getProgressMin(world, eid)).toBe(10);
+			expect(getProgressMax(world, eid)).toBe(200);
 		});
 
 		it('re-clamps current value', () => {
@@ -445,7 +445,7 @@ describe('ProgressBar Component', () => {
 
 			setProgressRange(world, eid, 60, 100);
 
-			expect(getProgress(eid)).toBe(60);
+			expect(getProgress(world, eid)).toBe(60);
 		});
 	});
 
@@ -456,7 +456,7 @@ describe('ProgressBar Component', () => {
 
 			setShowPercentage(world, eid, true);
 
-			expect(isShowingPercentage(eid)).toBe(true);
+			expect(isShowingPercentage(world, eid)).toBe(true);
 		});
 
 		it('disables percentage display', () => {
@@ -465,7 +465,7 @@ describe('ProgressBar Component', () => {
 
 			setShowPercentage(world, eid, false);
 
-			expect(isShowingPercentage(eid)).toBe(false);
+			expect(isShowingPercentage(world, eid)).toBe(false);
 		});
 	});
 

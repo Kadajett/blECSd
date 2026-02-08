@@ -524,10 +524,11 @@ export function clearTextInputError(world: World, eid: Entity): boolean {
 /**
  * Gets the cursor position.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Cursor position
  */
-export function getCursorPos(eid: Entity): number {
+export function getCursorPos(_world: World, eid: Entity): number {
 	return textInputStore.cursorPos[eid] ?? 0;
 }
 
@@ -556,17 +557,18 @@ export function setCursorPos(world: World, eid: Entity, pos: number): void {
  * @param delta - Amount to move (positive = right, negative = left)
  */
 export function moveCursor(world: World, eid: Entity, delta: number): void {
-	const current = getCursorPos(eid);
+	const current = getCursorPos(world, eid);
 	setCursorPos(world, eid, current + delta);
 }
 
 /**
  * Gets the selection range.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Selection range [start, end] or null if no selection
  */
-export function getSelection(eid: Entity): [number, number] | null {
+export function getSelection(_world: World, eid: Entity): [number, number] | null {
 	const start = textInputStore.selectionStart[eid];
 	const end = textInputStore.selectionEnd[eid];
 	if (start === undefined || end === undefined || start < 0 || end < 0) {
@@ -610,11 +612,12 @@ export function clearSelection(world: World, eid: Entity): void {
 /**
  * Checks if there is an active selection.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns true if there is a selection
  */
-export function hasSelection(eid: Entity): boolean {
-	return getSelection(eid) !== null;
+export function hasSelection(world: World, eid: Entity): boolean {
+	return getSelection(world, eid) !== null;
 }
 
 // =============================================================================
@@ -654,10 +657,11 @@ const cursorConfigStore = new Map<Entity, CursorConfig>();
 /**
  * Gets the cursor configuration for a text input.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Cursor configuration
  */
-export function getCursorConfig(eid: Entity): CursorConfig {
+export function getCursorConfig(_world: World, eid: Entity): CursorConfig {
 	return (
 		cursorConfigStore.get(eid) ?? {
 			blink: true,
@@ -685,20 +689,21 @@ export interface CursorConfigOptions {
 /**
  * Sets the cursor configuration for a text input.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param options - Cursor configuration options
  *
  * @example
  * ```typescript
- * setCursorConfig(textbox, {
+ * setCursorConfig(world, textbox, {
  *   blink: true,
  *   blinkIntervalMs: 500,
  *   lineChar: '|',
  * });
  * ```
  */
-export function setCursorConfig(eid: Entity, options: CursorConfigOptions): void {
-	const current = getCursorConfig(eid);
+export function setCursorConfig(world: World, eid: Entity, options: CursorConfigOptions): void {
+	const current = getCursorConfig(world, eid);
 	cursorConfigStore.set(eid, {
 		blink: options.blink ?? current.blink,
 		blinkIntervalMs: options.blinkIntervalMs ?? current.blinkIntervalMs,
@@ -710,10 +715,11 @@ export function setCursorConfig(eid: Entity, options: CursorConfigOptions): void
 /**
  * Gets the cursor visual mode (line or block).
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Cursor mode (0=line, 1=block)
  */
-export function getCursorMode(eid: Entity): CursorModeType {
+export function getCursorMode(_world: World, eid: Entity): CursorModeType {
 	return (textInputStore.cursorMode[eid] ?? 0) as CursorModeType;
 }
 
@@ -746,7 +752,7 @@ export function setCursorMode(world: World, eid: Entity, mode: CursorModeType): 
  * @returns The new cursor mode
  */
 export function toggleCursorMode(world: World, eid: Entity): CursorModeType {
-	const current = getCursorMode(eid);
+	const current = getCursorMode(world, eid);
 	const newMode = current === CursorMode.Line ? CursorMode.Block : CursorMode.Line;
 	setCursorMode(world, eid, newMode);
 	return newMode;
@@ -755,10 +761,11 @@ export function toggleCursorMode(world: World, eid: Entity): CursorModeType {
 /**
  * Checks if cursor blink is enabled for a text input.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns true if blink is enabled
  */
-export function isCursorBlinkEnabled(eid: Entity): boolean {
+export function isCursorBlinkEnabled(_world: World, eid: Entity): boolean {
 	return (textInputStore.cursorBlink[eid] ?? 1) === 1;
 }
 
@@ -785,9 +792,10 @@ export function setCursorBlinkEnabled(world: World, eid: Entity, enabled: boolea
  * Resets the cursor blink timer.
  * Call this when the user types or moves the cursor to show cursor immediately.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  */
-export function resetCursorBlink(eid: Entity): void {
+export function resetCursorBlink(_world: World, eid: Entity): void {
 	textInputStore.cursorBlinkStart[eid] = Date.now();
 }
 
@@ -815,12 +823,12 @@ export function isCursorVisible(world: World, eid: Entity): boolean {
 	}
 
 	// If blink is disabled, cursor is always visible
-	if (!isCursorBlinkEnabled(eid)) {
+	if (!isCursorBlinkEnabled(world, eid)) {
 		return true;
 	}
 
 	// Calculate blink phase
-	const config = getCursorConfig(eid);
+	const config = getCursorConfig(world, eid);
 	const blinkStart = textInputStore.cursorBlinkStart[eid] ?? Date.now();
 	const elapsed = Date.now() - blinkStart;
 	const phase = Math.floor(elapsed / config.blinkIntervalMs) % 2;
@@ -832,12 +840,13 @@ export function isCursorVisible(world: World, eid: Entity): boolean {
 /**
  * Gets the character to display for the cursor based on mode.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Cursor character
  */
-export function getCursorChar(eid: Entity): string {
-	const config = getCursorConfig(eid);
-	const mode = getCursorMode(eid);
+export function getCursorChar(world: World, eid: Entity): string {
+	const config = getCursorConfig(world, eid);
+	const mode = getCursorMode(world, eid);
 	return mode === CursorMode.Block ? config.blockChar : config.lineChar;
 }
 
@@ -865,8 +874,8 @@ export function getCursorDisplayText(
 	cursorVisible: boolean;
 	cursorPosition: number;
 } {
-	const config = getTextInputConfig(eid);
-	const cursorPos = getCursorPos(eid);
+	const config = getTextInputConfig(world, eid);
+	const cursorPos = getCursorPos(world, eid);
 
 	// Handle password masking
 	let displayValue = value;
@@ -895,8 +904,8 @@ export function getCursorDisplayText(
 	}
 
 	// Insert cursor character at position
-	const cursorChar = getCursorChar(eid);
-	const mode = getCursorMode(eid);
+	const cursorChar = getCursorChar(world, eid);
+	const mode = getCursorMode(world, eid);
 
 	let displayText: string;
 	if (mode === CursorMode.Block && cursorPos < displayValue.length) {
@@ -920,11 +929,15 @@ export function getCursorDisplayText(
  * Gets selection range for rendering with highlight.
  * Returns the start and end positions normalized (start < end).
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Normalized selection range or null
  */
-export function getNormalizedSelection(eid: Entity): { start: number; end: number } | null {
-	const selection = getSelection(eid);
+export function getNormalizedSelection(
+	world: World,
+	eid: Entity,
+): { start: number; end: number } | null {
+	const selection = getSelection(world, eid);
 	if (!selection) {
 		return null;
 	}
@@ -963,12 +976,13 @@ export interface TextInputConfigOptions {
 /**
  * Sets the text input configuration.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param options - Configuration options
  *
  * @example
  * ```typescript
- * setTextInputConfig(textbox, {
+ * setTextInputConfig(world, textbox, {
  *   secret: true,
  *   censor: '*',
  *   maxLength: 20,
@@ -977,7 +991,11 @@ export interface TextInputConfigOptions {
  * });
  * ```
  */
-export function setTextInputConfig(eid: Entity, options: TextInputConfigOptions): void {
+export function setTextInputConfig(
+	_world: World,
+	eid: Entity,
+	options: TextInputConfigOptions,
+): void {
 	const current = configStore.get(eid) ?? {
 		secret: false,
 		censor: DEFAULT_CENSOR_CHAR,
@@ -1002,10 +1020,11 @@ export function setTextInputConfig(eid: Entity, options: TextInputConfigOptions)
 /**
  * Gets the text input configuration.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Configuration or defaults
  */
-export function getTextInputConfig(eid: Entity): TextInputConfig {
+export function getTextInputConfig(_world: World, eid: Entity): TextInputConfig {
 	return (
 		configStore.get(eid) ?? {
 			secret: false,
@@ -1022,71 +1041,77 @@ export function getTextInputConfig(eid: Entity): TextInputConfig {
 /**
  * Checks if the text input is in secret/password mode.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns true if in secret mode
  */
-export function isSecretMode(eid: Entity): boolean {
-	return getTextInputConfig(eid).secret;
+export function isSecretMode(world: World, eid: Entity): boolean {
+	return getTextInputConfig(world, eid).secret;
 }
 
 /**
  * Gets the censor character for password display.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Censor character
  */
-export function getCensorChar(eid: Entity): string {
-	return getTextInputConfig(eid).censor;
+export function getCensorChar(world: World, eid: Entity): string {
+	return getTextInputConfig(world, eid).censor;
 }
 
 /**
  * Gets the placeholder text.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Placeholder text
  */
-export function getPlaceholder(eid: Entity): string {
-	return getTextInputConfig(eid).placeholder;
+export function getPlaceholder(world: World, eid: Entity): string {
+	return getTextInputConfig(world, eid).placeholder;
 }
 
 /**
  * Gets the maximum input length.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Maximum length (0 = unlimited)
  */
-export function getMaxLength(eid: Entity): number {
-	return getTextInputConfig(eid).maxLength;
+export function getMaxLength(world: World, eid: Entity): number {
+	return getTextInputConfig(world, eid).maxLength;
 }
 
 /**
  * Checks if the text input is multiline (textarea mode).
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns true if multiline
  */
-export function isMultiline(eid: Entity): boolean {
-	return getTextInputConfig(eid).multiline;
+export function isMultiline(world: World, eid: Entity): boolean {
+	return getTextInputConfig(world, eid).multiline;
 }
 
 /**
  * Masks a string for password display.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param value - The value to mask
  * @returns Masked string
  *
  * @example
  * ```typescript
- * const masked = maskValue(textbox, 'secret');
+ * const masked = maskValue(world, textbox, 'secret');
  * // Returns '******'
  * ```
  */
-export function maskValue(eid: Entity, value: string): string {
-	if (!isSecretMode(eid)) {
+export function maskValue(world: World, eid: Entity, value: string): string {
+	if (!isSecretMode(world, eid)) {
 		return value;
 	}
-	const censor = getCensorChar(eid);
+	const censor = getCensorChar(world, eid);
 	return censor.repeat(value.length);
 }
 
@@ -1097,11 +1122,16 @@ export function maskValue(eid: Entity, value: string): string {
 /**
  * Registers a callback for value changes.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param callback - Function to call on value change
  * @returns Unsubscribe function
  */
-export function onTextInputChange(eid: Entity, callback: (value: string) => void): () => void {
+export function onTextInputChange(
+	_world: World,
+	eid: Entity,
+	callback: (value: string) => void,
+): () => void {
 	let callbacks = valueChangeCallbacks.get(eid);
 	if (!callbacks) {
 		callbacks = [];
@@ -1123,11 +1153,16 @@ export function onTextInputChange(eid: Entity, callback: (value: string) => void
 /**
  * Registers a callback for submit events.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param callback - Function to call on submit
  * @returns Unsubscribe function
  */
-export function onTextInputSubmit(eid: Entity, callback: (value: string) => void): () => void {
+export function onTextInputSubmit(
+	_world: World,
+	eid: Entity,
+	callback: (value: string) => void,
+): () => void {
 	let callbacks = submitCallbacks.get(eid);
 	if (!callbacks) {
 		callbacks = [];
@@ -1149,11 +1184,12 @@ export function onTextInputSubmit(eid: Entity, callback: (value: string) => void
 /**
  * Registers a callback for cancel events.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param callback - Function to call on cancel
  * @returns Unsubscribe function
  */
-export function onTextInputCancel(eid: Entity, callback: () => void): () => void {
+export function onTextInputCancel(_world: World, eid: Entity, callback: () => void): () => void {
 	let callbacks = cancelCallbacks.get(eid);
 	if (!callbacks) {
 		callbacks = [];
@@ -1176,18 +1212,19 @@ export function onTextInputCancel(eid: Entity, callback: () => void): () => void
  * Emits a value change event.
  * Runs validation if validationTiming is 'onChange' or 'both'.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param value - New value
  */
-export function emitValueChange(eid: Entity, value: string): void {
-	const config = getTextInputConfig(eid);
+export function emitValueChange(world: World, eid: Entity, value: string): void {
+	const config = getTextInputConfig(world, eid);
 
 	// Run validation on change if configured
 	if (
 		config.validator &&
 		(config.validationTiming === 'onChange' || config.validationTiming === 'both')
 	) {
-		validateTextInput(eid, value);
+		validateTextInput(world, eid, value);
 	}
 
 	const callbacks = valueChangeCallbacks.get(eid);
@@ -1203,19 +1240,20 @@ export function emitValueChange(eid: Entity, value: string): void {
  * Runs validation if validationTiming is 'onSubmit' or 'both'.
  * If validation fails, the submit event is not emitted.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param value - Submitted value
  * @returns true if submitted, false if validation failed
  */
-export function emitSubmit(eid: Entity, value: string): boolean {
-	const config = getTextInputConfig(eid);
+export function emitSubmit(world: World, eid: Entity, value: string): boolean {
+	const config = getTextInputConfig(world, eid);
 
 	// Run validation on submit if configured
 	if (
 		config.validator &&
 		(config.validationTiming === 'onSubmit' || config.validationTiming === 'both')
 	) {
-		const isValid = validateTextInput(eid, value);
+		const isValid = validateTextInput(world, eid, value);
 		if (!isValid) {
 			// Validation failed - do not emit submit
 			return false;
@@ -1234,9 +1272,10 @@ export function emitSubmit(eid: Entity, value: string): boolean {
 /**
  * Emits a cancel event.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  */
-export function emitCancel(eid: Entity): void {
+export function emitCancel(_world: World, eid: Entity): void {
 	const callbacks = cancelCallbacks.get(eid);
 	if (callbacks) {
 		for (const callback of callbacks) {
@@ -1249,9 +1288,10 @@ export function emitCancel(eid: Entity): void {
  * Clears all callbacks for a text input.
  * Call this when destroying a text input entity.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  */
-export function clearTextInputCallbacks(eid: Entity): void {
+export function clearTextInputCallbacks(_world: World, eid: Entity): void {
 	valueChangeCallbacks.delete(eid);
 	submitCallbacks.delete(eid);
 	cancelCallbacks.delete(eid);
@@ -1266,21 +1306,22 @@ export function clearTextInputCallbacks(eid: Entity): void {
 /**
  * Validates a value against the text input's validator function.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param value - Value to validate
  * @returns true if valid, false if invalid
  *
  * @example
  * ```typescript
- * const isValid = validateTextInput(textbox, 'test@example.com');
+ * const isValid = validateTextInput(world, textbox, 'test@example.com');
  * if (!isValid) {
- *   const error = getValidationError(textbox);
+ *   const error = getValidationError(world, textbox);
  *   console.log('Validation failed:', error);
  * }
  * ```
  */
-export function validateTextInput(eid: Entity, value: string): boolean {
-	const config = getTextInputConfig(eid);
+export function validateTextInput(world: World, eid: Entity, value: string): boolean {
+	const config = getTextInputConfig(world, eid);
 	if (!config.validator) {
 		// No validator = always valid
 		validationErrors.set(eid, null);
@@ -1307,37 +1348,40 @@ export function validateTextInput(eid: Entity, value: string): boolean {
 /**
  * Gets the current validation error message for a text input.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Error message or null if valid
  *
  * @example
  * ```typescript
- * const error = getValidationError(textbox);
+ * const error = getValidationError(world, textbox);
  * if (error) {
  *   console.log('Error:', error);
  * }
  * ```
  */
-export function getValidationError(eid: Entity): string | null {
+export function getValidationError(_world: World, eid: Entity): string | null {
 	return validationErrors.get(eid) ?? null;
 }
 
 /**
  * Checks if a text input currently has a validation error.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns true if there is a validation error
  */
-export function hasValidationError(eid: Entity): boolean {
-	return getValidationError(eid) !== null;
+export function hasValidationError(world: World, eid: Entity): boolean {
+	return getValidationError(world, eid) !== null;
 }
 
 /**
  * Clears the validation error for a text input.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  */
-export function clearValidationError(eid: Entity): void {
+export function clearValidationError(_world: World, eid: Entity): void {
 	validationErrors.set(eid, null);
 }
 
@@ -1473,8 +1517,8 @@ export function handleTextInputKeyPress(
 		return null;
 	}
 
-	const cursorPos = getCursorPos(eid);
-	const config = getTextInputConfig(eid);
+	const cursorPos = getCursorPos(world, eid);
+	const config = getTextInputConfig(world, eid);
 	const valueLength = currentValue.length;
 
 	// Handle special keys

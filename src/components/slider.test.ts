@@ -99,28 +99,28 @@ describe('Slider Component', () => {
 			attachSliderBehavior(world, eid);
 
 			expect(isSlider(world, eid)).toBe(true);
-			expect(getSliderValue(eid)).toBe(0);
-			expect(getSliderMin(eid)).toBe(0);
-			expect(getSliderMax(eid)).toBe(100);
-			expect(getSliderStep(eid)).toBe(1);
+			expect(getSliderValue(world, eid)).toBe(0);
+			expect(getSliderMin(world, eid)).toBe(0);
+			expect(getSliderMax(world, eid)).toBe(100);
+			expect(getSliderStep(world, eid)).toBe(1);
 		});
 
 		it('should initialize slider with custom values', () => {
 			attachSliderBehavior(world, eid, 10, 50, 25, 5);
 
-			expect(getSliderValue(eid)).toBe(25);
-			expect(getSliderMin(eid)).toBe(10);
-			expect(getSliderMax(eid)).toBe(50);
-			expect(getSliderStep(eid)).toBe(5);
+			expect(getSliderValue(world, eid)).toBe(25);
+			expect(getSliderMin(world, eid)).toBe(10);
+			expect(getSliderMax(world, eid)).toBe(50);
+			expect(getSliderStep(world, eid)).toBe(5);
 		});
 
 		it('should clamp initial value to range', () => {
 			attachSliderBehavior(world, eid, 0, 100, 150, 1);
-			expect(getSliderValue(eid)).toBe(100);
+			expect(getSliderValue(world, eid)).toBe(100);
 
 			const eid2 = addEntity(world) as Entity;
 			attachSliderBehavior(world, eid2, 0, 100, -50, 1);
-			expect(getSliderValue(eid2)).toBe(0);
+			expect(getSliderValue(world, eid2)).toBe(0);
 		});
 
 		it('should set initial state to idle', () => {
@@ -197,102 +197,102 @@ describe('Slider Component', () => {
 
 		it('should get and set value', () => {
 			setSliderValue(world, eid, 75);
-			expect(getSliderValue(eid)).toBe(75);
+			expect(getSliderValue(world, eid)).toBe(75);
 		});
 
 		it('should clamp value to range', () => {
 			setSliderValue(world, eid, 150);
-			expect(getSliderValue(eid)).toBe(100);
+			expect(getSliderValue(world, eid)).toBe(100);
 
 			setSliderValue(world, eid, -50);
-			expect(getSliderValue(eid)).toBe(0);
+			expect(getSliderValue(world, eid)).toBe(0);
 		});
 
 		it('should round value to step', () => {
 			setSliderValue(world, eid, 23);
-			expect(getSliderValue(eid)).toBe(25);
+			expect(getSliderValue(world, eid)).toBe(25);
 
 			setSliderValue(world, eid, 22);
-			expect(getSliderValue(eid)).toBe(20);
+			expect(getSliderValue(world, eid)).toBe(20);
 		});
 
 		it('should set range', () => {
 			setSliderRange(world, eid, 10, 50);
-			expect(getSliderMin(eid)).toBe(10);
-			expect(getSliderMax(eid)).toBe(50);
+			expect(getSliderMin(world, eid)).toBe(10);
+			expect(getSliderMax(world, eid)).toBe(50);
 		});
 
 		it('should clamp value when range changes', () => {
 			setSliderValue(world, eid, 80);
 			setSliderRange(world, eid, 0, 50);
-			expect(getSliderValue(eid)).toBe(50);
+			expect(getSliderValue(world, eid)).toBe(50);
 		});
 
 		it('should set step', () => {
 			setSliderStep(world, eid, 10);
-			expect(getSliderStep(eid)).toBe(10);
+			expect(getSliderStep(world, eid)).toBe(10);
 		});
 
 		it('should round value when step changes', () => {
 			setSliderValue(world, eid, 37);
-			expect(getSliderValue(eid)).toBe(35);
+			expect(getSliderValue(world, eid)).toBe(35);
 			setSliderStep(world, eid, 10);
-			expect(getSliderValue(eid)).toBe(40);
+			expect(getSliderValue(world, eid)).toBe(40);
 		});
 
 		it('should calculate percentage', () => {
 			setSliderValue(world, eid, 50);
-			expect(getSliderPercentage(eid)).toBe(0.5);
+			expect(getSliderPercentage(world, eid)).toBe(0.5);
 
 			setSliderValue(world, eid, 0);
-			expect(getSliderPercentage(eid)).toBe(0);
+			expect(getSliderPercentage(world, eid)).toBe(0);
 
 			setSliderValue(world, eid, 100);
-			expect(getSliderPercentage(eid)).toBe(1);
+			expect(getSliderPercentage(world, eid)).toBe(1);
 		});
 
 		it('should set value from percentage', () => {
 			setSliderFromPercentage(world, eid, 0.5);
-			expect(getSliderValue(eid)).toBe(50);
+			expect(getSliderValue(world, eid)).toBe(50);
 
 			setSliderFromPercentage(world, eid, 0.25);
-			expect(getSliderValue(eid)).toBe(25);
+			expect(getSliderValue(world, eid)).toBe(25);
 		});
 
 		it('should increment value', () => {
 			setSliderValue(world, eid, 50);
 			incrementSlider(world, eid);
-			expect(getSliderValue(eid)).toBe(55);
+			expect(getSliderValue(world, eid)).toBe(55);
 		});
 
 		it('should increment value with multiplier', () => {
 			setSliderValue(world, eid, 50);
 			incrementSlider(world, eid, 2);
-			expect(getSliderValue(eid)).toBe(60);
+			expect(getSliderValue(world, eid)).toBe(60);
 		});
 
 		it('should decrement value', () => {
 			setSliderValue(world, eid, 50);
 			decrementSlider(world, eid);
-			expect(getSliderValue(eid)).toBe(45);
+			expect(getSliderValue(world, eid)).toBe(45);
 		});
 
 		it('should decrement value with multiplier', () => {
 			setSliderValue(world, eid, 50);
 			decrementSlider(world, eid, 2);
-			expect(getSliderValue(eid)).toBe(40);
+			expect(getSliderValue(world, eid)).toBe(40);
 		});
 
 		it('should set to minimum', () => {
 			setSliderValue(world, eid, 50);
 			setSliderToMin(world, eid);
-			expect(getSliderValue(eid)).toBe(0);
+			expect(getSliderValue(world, eid)).toBe(0);
 		});
 
 		it('should set to maximum', () => {
 			setSliderValue(world, eid, 50);
 			setSliderToMax(world, eid);
-			expect(getSliderValue(eid)).toBe(100);
+			expect(getSliderValue(world, eid)).toBe(100);
 		});
 	});
 
@@ -302,16 +302,16 @@ describe('Slider Component', () => {
 		});
 
 		it('should default to horizontal orientation', () => {
-			expect(getSliderOrientation(eid)).toBe(SliderOrientation.Horizontal);
-			expect(isSliderHorizontal(eid)).toBe(true);
-			expect(isSliderVertical(eid)).toBe(false);
+			expect(getSliderOrientation(world, eid)).toBe(SliderOrientation.Horizontal);
+			expect(isSliderHorizontal(world, eid)).toBe(true);
+			expect(isSliderVertical(world, eid)).toBe(false);
 		});
 
 		it('should set orientation', () => {
 			setSliderOrientation(world, eid, SliderOrientation.Vertical);
-			expect(getSliderOrientation(eid)).toBe(SliderOrientation.Vertical);
-			expect(isSliderVertical(eid)).toBe(true);
-			expect(isSliderHorizontal(eid)).toBe(false);
+			expect(getSliderOrientation(world, eid)).toBe(SliderOrientation.Vertical);
+			expect(isSliderVertical(world, eid)).toBe(true);
+			expect(isSliderHorizontal(world, eid)).toBe(false);
 		});
 	});
 
@@ -321,15 +321,15 @@ describe('Slider Component', () => {
 		});
 
 		it('should default to not showing value', () => {
-			expect(isShowingSliderValue(eid)).toBe(false);
+			expect(isShowingSliderValue(world, eid)).toBe(false);
 		});
 
 		it('should set show value', () => {
 			setShowSliderValue(world, eid, true);
-			expect(isShowingSliderValue(eid)).toBe(true);
+			expect(isShowingSliderValue(world, eid)).toBe(true);
 
 			setShowSliderValue(world, eid, false);
-			expect(isShowingSliderValue(eid)).toBe(false);
+			expect(isShowingSliderValue(world, eid)).toBe(false);
 		});
 	});
 
@@ -339,41 +339,41 @@ describe('Slider Component', () => {
 		});
 
 		it('should get default display', () => {
-			const display = getSliderDisplay(eid);
+			const display = getSliderDisplay(world, eid);
 			expect(display.trackChar).toBe('─');
 			expect(display.thumbChar).toBe('●');
 			expect(display.fillChar).toBe('━');
 		});
 
 		it('should set display options', () => {
-			setSliderDisplay(eid, {
+			setSliderDisplay(world, eid, {
 				trackChar: '=',
 				thumbChar: 'O',
 				fillChar: '#',
 			});
-			const display = getSliderDisplay(eid);
+			const display = getSliderDisplay(world, eid);
 			expect(display.trackChar).toBe('=');
 			expect(display.thumbChar).toBe('O');
 			expect(display.fillChar).toBe('#');
 		});
 
 		it('should set partial display options', () => {
-			setSliderDisplay(eid, { thumbChar: 'X' });
-			const display = getSliderDisplay(eid);
+			setSliderDisplay(world, eid, { thumbChar: 'X' });
+			const display = getSliderDisplay(world, eid);
 			expect(display.thumbChar).toBe('X');
 			expect(display.trackChar).toBe('─'); // default
 		});
 
 		it('should clear display', () => {
-			setSliderDisplay(eid, { thumbChar: 'X' });
-			clearSliderDisplay(eid);
-			const display = getSliderDisplay(eid);
+			setSliderDisplay(world, eid, { thumbChar: 'X' });
+			clearSliderDisplay(world, eid);
+			const display = getSliderDisplay(world, eid);
 			expect(display.thumbChar).toBe('●'); // back to default
 		});
 
 		it('should use vertical defaults when vertical', () => {
 			setSliderOrientation(world, eid, SliderOrientation.Vertical);
-			const display = getSliderDisplay(eid);
+			const display = getSliderDisplay(world, eid);
 			expect(display.trackChar).toBe('│');
 			expect(display.fillChar).toBe('┃');
 		});
@@ -386,7 +386,7 @@ describe('Slider Component', () => {
 
 		it('should call onChange callback when value changes', () => {
 			const callback = vi.fn();
-			onSliderChange(eid, callback);
+			onSliderChange(world, eid, callback);
 
 			setSliderValue(world, eid, 75);
 			expect(callback).toHaveBeenCalledWith(75);
@@ -394,7 +394,7 @@ describe('Slider Component', () => {
 
 		it('should not call onChange callback when value stays same', () => {
 			const callback = vi.fn();
-			onSliderChange(eid, callback);
+			onSliderChange(world, eid, callback);
 
 			setSliderValue(world, eid, 50); // same as initial
 			expect(callback).not.toHaveBeenCalled();
@@ -402,7 +402,7 @@ describe('Slider Component', () => {
 
 		it('should call onDragStart callback when dragging starts', () => {
 			const callback = vi.fn();
-			onSliderDragStart(eid, callback);
+			onSliderDragStart(world, eid, callback);
 
 			focusSlider(world, eid);
 			startDragging(world, eid);
@@ -411,7 +411,7 @@ describe('Slider Component', () => {
 
 		it('should call onDragEnd callback when dragging ends', () => {
 			const callback = vi.fn();
-			onSliderDragEnd(eid, callback);
+			onSliderDragEnd(world, eid, callback);
 
 			focusSlider(world, eid);
 			startDragging(world, eid);
@@ -421,7 +421,7 @@ describe('Slider Component', () => {
 
 		it('should unsubscribe from callbacks', () => {
 			const callback = vi.fn();
-			const unsubscribe = onSliderChange(eid, callback);
+			const unsubscribe = onSliderChange(world, eid, callback);
 
 			unsubscribe();
 			setSliderValue(world, eid, 75);
@@ -433,11 +433,11 @@ describe('Slider Component', () => {
 			const dragStartCallback = vi.fn();
 			const dragEndCallback = vi.fn();
 
-			onSliderChange(eid, changeCallback);
-			onSliderDragStart(eid, dragStartCallback);
-			onSliderDragEnd(eid, dragEndCallback);
+			onSliderChange(world, eid, changeCallback);
+			onSliderDragStart(world, eid, dragStartCallback);
+			onSliderDragEnd(world, eid, dragEndCallback);
 
-			clearSliderCallbacks(eid);
+			clearSliderCallbacks(world, eid);
 
 			setSliderValue(world, eid, 75);
 			focusSlider(world, eid);
@@ -534,19 +534,19 @@ describe('Slider Component', () => {
 
 		it('should render slider at 0%', () => {
 			setSliderValue(world, eid, 0);
-			const result = renderSliderString(eid, 10);
+			const result = renderSliderString(world, eid, 10);
 			expect(result[0]).toBe('●'); // thumb at start
 		});
 
 		it('should render slider at 100%', () => {
 			setSliderValue(world, eid, 100);
-			const result = renderSliderString(eid, 10);
+			const result = renderSliderString(world, eid, 10);
 			expect(result[result.length - 1]).toBe('●'); // thumb at end
 		});
 
 		it('should render slider at 50%', () => {
 			setSliderValue(world, eid, 50);
-			const result = renderSliderString(eid, 10);
+			const result = renderSliderString(world, eid, 10);
 			// thumb should be roughly in the middle
 			const thumbIndex = result.indexOf('●');
 			expect(thumbIndex).toBeGreaterThan(3);
@@ -556,12 +556,12 @@ describe('Slider Component', () => {
 		it('should render with value when showValue is true', () => {
 			setSliderValue(world, eid, 50);
 			setShowSliderValue(world, eid, true);
-			const result = renderSliderString(eid, 15);
+			const result = renderSliderString(world, eid, 15);
 			expect(result).toContain(' 50');
 		});
 
 		it('should return empty string for zero width', () => {
-			expect(renderSliderString(eid, 0)).toBe('');
+			expect(renderSliderString(world, eid, 0)).toBe('');
 		});
 	});
 
@@ -583,7 +583,7 @@ describe('Slider Component', () => {
 	describe('Edge Cases', () => {
 		it('should handle zero-width range', () => {
 			attachSliderBehavior(world, eid, 50, 50, 50, 1);
-			expect(getSliderPercentage(eid)).toBe(0); // returns 0 to avoid division by zero
+			expect(getSliderPercentage(world, eid)).toBe(0); // returns 0 to avoid division by zero
 		});
 
 		it('should handle step of 0', () => {
@@ -591,16 +591,16 @@ describe('Slider Component', () => {
 			setSliderValue(world, eid, 33.33);
 			// With step 0, value should not be rounded
 			// Note: Float32Array has limited precision
-			expect(getSliderValue(eid)).toBeCloseTo(33.33, 2);
+			expect(getSliderValue(world, eid)).toBeCloseTo(33.33, 2);
 		});
 
 		it('should clamp percentage to 0-1', () => {
 			attachSliderBehavior(world, eid, 0, 100, 0, 1);
 			setSliderFromPercentage(world, eid, 1.5);
-			expect(getSliderValue(eid)).toBe(100);
+			expect(getSliderValue(world, eid)).toBe(100);
 
 			setSliderFromPercentage(world, eid, -0.5);
-			expect(getSliderValue(eid)).toBe(0);
+			expect(getSliderValue(world, eid)).toBe(0);
 		});
 	});
 });

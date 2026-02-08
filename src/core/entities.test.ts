@@ -590,7 +590,7 @@ describe('Entity Factories', () => {
 				placeholder: 'Enter text...',
 			});
 
-			const config = getTextInputConfig(eid);
+			const config = getTextInputConfig(world, eid);
 			expect(config.placeholder).toBe('Enter text...');
 		});
 
@@ -599,7 +599,7 @@ describe('Entity Factories', () => {
 				secret: true,
 			});
 
-			const config = getTextInputConfig(eid);
+			const config = getTextInputConfig(world, eid);
 			expect(config.secret).toBe(true);
 		});
 
@@ -609,7 +609,7 @@ describe('Entity Factories', () => {
 				censor: '#',
 			});
 
-			const config = getTextInputConfig(eid);
+			const config = getTextInputConfig(world, eid);
 			expect(config.censor).toBe('#');
 		});
 
@@ -618,7 +618,7 @@ describe('Entity Factories', () => {
 				maxLength: 50,
 			});
 
-			const config = getTextInputConfig(eid);
+			const config = getTextInputConfig(world, eid);
 			expect(config.maxLength).toBe(50);
 		});
 
@@ -719,7 +719,7 @@ describe('Entity Factories', () => {
 		it('creates a textarea with multiline enabled', () => {
 			const eid = createTextareaEntity(world);
 
-			expect(isMultiline(eid)).toBe(true);
+			expect(isMultiline(world, eid)).toBe(true);
 		});
 
 		it('creates a textarea with empty value by default', () => {
@@ -743,14 +743,14 @@ describe('Entity Factories', () => {
 				placeholder: 'Enter your message...',
 			});
 
-			const config = getTextInputConfig(eid);
+			const config = getTextInputConfig(world, eid);
 			expect(config.placeholder).toBe('Enter your message...');
 		});
 
 		it('creates a textarea without secret mode', () => {
 			const eid = createTextareaEntity(world);
 
-			const config = getTextInputConfig(eid);
+			const config = getTextInputConfig(world, eid);
 			expect(config.secret).toBe(false);
 		});
 
@@ -759,7 +759,7 @@ describe('Entity Factories', () => {
 				maxLength: 500,
 			});
 
-			const config = getTextInputConfig(eid);
+			const config = getTextInputConfig(world, eid);
 			expect(config.maxLength).toBe(500);
 		});
 
@@ -916,8 +916,8 @@ describe('Entity Factories', () => {
 				],
 			});
 
-			expect(getSelectOptions(eid).length).toBe(3);
-			expect(getSelectOptions(eid)[0]).toEqual({ label: 'Red', value: 'red' });
+			expect(getSelectOptions(world, eid).length).toBe(3);
+			expect(getSelectOptions(world, eid)[0]).toEqual({ label: 'Red', value: 'red' });
 		});
 
 		it('creates a select with selected index', () => {
@@ -929,7 +929,7 @@ describe('Entity Factories', () => {
 				selectedIndex: 1,
 			});
 
-			expect(getSelectedIndex(eid)).toBe(1);
+			expect(getSelectedIndex(world, eid)).toBe(1);
 		});
 
 		it('creates a select with placeholder in content when no selection', () => {
@@ -959,7 +959,7 @@ describe('Entity Factories', () => {
 				selectedMark: '*',
 			});
 
-			const display = getSelectDisplay(eid);
+			const display = getSelectDisplay(world, eid);
 			expect(display.closedIndicator).toBe('v');
 			expect(display.openIndicator).toBe('^');
 			expect(display.selectedMark).toBe('*');
@@ -1084,10 +1084,10 @@ describe('Entity Factories', () => {
 		it('creates a slider with default range', () => {
 			const eid = createSliderEntity(world);
 
-			expect(getSliderMin(eid)).toBe(0);
-			expect(getSliderMax(eid)).toBe(100);
-			expect(getSliderValue(eid)).toBe(0);
-			expect(getSliderStep(eid)).toBe(1);
+			expect(getSliderMin(world, eid)).toBe(0);
+			expect(getSliderMax(world, eid)).toBe(100);
+			expect(getSliderValue(world, eid)).toBe(0);
+			expect(getSliderStep(world, eid)).toBe(1);
 		});
 
 		it('creates a slider with custom range', () => {
@@ -1098,10 +1098,10 @@ describe('Entity Factories', () => {
 				step: 5,
 			});
 
-			expect(getSliderMin(eid)).toBe(10);
-			expect(getSliderMax(eid)).toBe(50);
-			expect(getSliderValue(eid)).toBe(25);
-			expect(getSliderStep(eid)).toBe(5);
+			expect(getSliderMin(world, eid)).toBe(10);
+			expect(getSliderMax(world, eid)).toBe(50);
+			expect(getSliderValue(world, eid)).toBe(25);
+			expect(getSliderStep(world, eid)).toBe(5);
 		});
 
 		it('creates a slider with orientation', () => {
@@ -1112,8 +1112,8 @@ describe('Entity Factories', () => {
 				orientation: SliderOrientation.Vertical,
 			});
 
-			expect(getSliderOrientation(horizontal)).toBe(SliderOrientation.Horizontal);
-			expect(getSliderOrientation(vertical)).toBe(SliderOrientation.Vertical);
+			expect(getSliderOrientation(world, horizontal)).toBe(SliderOrientation.Horizontal);
+			expect(getSliderOrientation(world, vertical)).toBe(SliderOrientation.Vertical);
 		});
 
 		it('creates a slider with showValue', () => {
@@ -1121,7 +1121,7 @@ describe('Entity Factories', () => {
 				showValue: true,
 			});
 
-			expect(isShowingSliderValue(eid)).toBe(true);
+			expect(isShowingSliderValue(world, eid)).toBe(true);
 		});
 
 		it('creates a slider with custom display options', () => {
@@ -1131,7 +1131,7 @@ describe('Entity Factories', () => {
 				fillChar: '#',
 			});
 
-			const display = getSliderDisplay(eid);
+			const display = getSliderDisplay(world, eid);
 			expect(display.trackChar).toBe('=');
 			expect(display.thumbChar).toBe('O');
 			expect(display.fillChar).toBe('#');
@@ -1340,15 +1340,15 @@ describe('Entity Factories', () => {
 			const eid = createProgressBarEntity(world);
 
 			expect(isProgressBar(world, eid)).toBe(true);
-			expect(getProgress(eid)).toBe(0);
-			expect(getProgressMin(eid)).toBe(0);
-			expect(getProgressMax(eid)).toBe(100);
+			expect(getProgress(world, eid)).toBe(0);
+			expect(getProgressMin(world, eid)).toBe(0);
+			expect(getProgressMax(world, eid)).toBe(100);
 		});
 
 		it('creates a progress bar with initial value', () => {
 			const eid = createProgressBarEntity(world, { value: 50 });
 
-			expect(getProgress(eid)).toBe(50);
+			expect(getProgress(world, eid)).toBe(50);
 		});
 
 		it('creates a progress bar with custom range', () => {
@@ -1357,8 +1357,8 @@ describe('Entity Factories', () => {
 				max: 200,
 			});
 
-			expect(getProgressMin(eid)).toBe(10);
-			expect(getProgressMax(eid)).toBe(200);
+			expect(getProgressMin(world, eid)).toBe(10);
+			expect(getProgressMax(world, eid)).toBe(200);
 		});
 
 		it('creates a progress bar with vertical orientation', () => {
@@ -1366,7 +1366,7 @@ describe('Entity Factories', () => {
 				orientation: ProgressOrientation.Vertical,
 			});
 
-			expect(getProgressOrientation(eid)).toBe(ProgressOrientation.Vertical);
+			expect(getProgressOrientation(world, eid)).toBe(ProgressOrientation.Vertical);
 		});
 
 		it('creates a progress bar with percentage display', () => {
@@ -1374,7 +1374,7 @@ describe('Entity Factories', () => {
 				showPercentage: true,
 			});
 
-			expect(isShowingPercentage(eid)).toBe(true);
+			expect(isShowingPercentage(world, eid)).toBe(true);
 		});
 
 		it('creates a progress bar with custom display characters', () => {
@@ -1383,7 +1383,7 @@ describe('Entity Factories', () => {
 				emptyChar: '-',
 			});
 
-			const display = getProgressBarDisplay(eid);
+			const display = getProgressBarDisplay(world, eid);
 			expect(display.fillChar).toBe('=');
 			expect(display.emptyChar).toBe('-');
 		});
@@ -1394,7 +1394,7 @@ describe('Entity Factories', () => {
 				fillBg: 0x000000ff,
 			});
 
-			const display = getProgressBarDisplay(eid);
+			const display = getProgressBarDisplay(world, eid);
 			expect(display.fillFg).toBe(0x00ff00ff);
 			expect(display.fillBg).toBe(0x000000ff);
 		});
