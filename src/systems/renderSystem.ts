@@ -465,6 +465,79 @@ function renderEntityTree(ctx: RenderContext, eid: Entity): void {
 */
 
 // =============================================================================
+// VIEWPORT BOUNDS CULLING
+// =============================================================================
+
+/**
+ * Viewport bounds for culling off-screen entities.
+ * Defaults to null (no culling). Set via setViewportBounds().
+ */
+interface ViewportBounds {
+	readonly x: number;
+	readonly y: number;
+	readonly width: number;
+	readonly height: number;
+}
+
+/** Module-level viewport bounds (null = no viewport culling) */
+let viewportBounds: ViewportBounds | null = null;
+
+/**
+ * Sets the viewport bounds for culling.
+ * Entities outside these bounds will be skipped during rendering.
+ *
+ * Pass null to disable viewport culling (default).
+ * Typically set to screen dimensions for scrollable content optimization.
+ *
+ * @param bounds - Viewport bounds or null to disable culling
+ *
+ * @example
+ * ```typescript
+ * import { setViewportBounds } from 'blecsd';
+ *
+ * // Enable viewport culling for 80x24 screen
+ * setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
+ *
+ * // Disable viewport culling
+ * setViewportBounds(null);
+ * ```
+ */
+export function setViewportBounds(bounds: ViewportBounds | null): void {
+	viewportBounds = bounds;
+}
+
+/**
+ * Gets the current viewport bounds.
+ *
+ * @returns Current viewport bounds or null if disabled
+ */
+export function getViewportBounds(): ViewportBounds | null {
+	return viewportBounds;
+}
+
+/**
+ * Checks if an entity is completely outside the viewport bounds.
+ * Returns false if viewport culling is disabled or if entity overlaps viewport.
+ *
+ * @param bounds - Entity bounds to check
+ * @returns True if entity is completely outside viewport
+ */
+function isOutsideViewport(bounds: EntityBounds): boolean {
+	if (!viewportBounds) {
+		return false; // No viewport culling
+	}
+
+	// Check if entity is completely outside viewport (no overlap)
+	const noOverlap =
+		bounds.x + bounds.width <= viewportBounds.x || // Entity is to the left of viewport
+		bounds.x >= viewportBounds.x + viewportBounds.width || // Entity is to the right
+		bounds.y + bounds.height <= viewportBounds.y || // Entity is above viewport
+		bounds.y >= viewportBounds.y + viewportBounds.height; // Entity is below viewport
+
+	return noOverlap;
+}
+
+// =============================================================================
 // Z-ORDER OCCLUSION CULLING
 // =============================================================================
 
@@ -521,33 +594,49 @@ function addOccludedRegion(regions: OcclusionRect[], bounds: EntityBounds): void
 }
 
 /**
- * Processes a single entity for rendering with optional occlusion culling.
+ * Processes a single entity for rendering with viewport and occlusion culling.
  * Returns true if the entity was rendered, false if it was culled.
+ *
+ * Culling order:
+ * 1. Check if entity has computed layout bounds
+ * 2. Viewport bounds check (skip if completely outside viewport)
+ * 3. Occlusion check (skip if fully hidden behind other entities)
+ * 4. Render entity
  */
-function processEntityWithOcclusion(
+function processEntityWithCulling(
 	ctx: RenderContext,
 	eid: Entity,
 	occludedRegions: OcclusionRect[],
 ): boolean {
 	const { world } = ctx;
 
-	// Get bounds once for both occlusion check and tracking
-	const bounds = occlusionCullingEnabled ? getEntityBounds(world, eid) : null;
+	// Get bounds once for all culling checks
+	const bounds = getEntityBounds(world, eid);
+	if (!bounds || bounds.width <= 0 || bounds.height <= 0) {
+		// No layout computed or invalid size - skip but mark clean
+		markClean(world, eid);
+		return false;
+	}
 
-	// Check if entity is fully occluded
-	if (occlusionCullingEnabled && bounds && bounds.width > 0 && bounds.height > 0) {
-		if (isFullyOccluded(bounds, occludedRegions)) {
-			// Entity is completely hidden - skip rendering but mark as clean
-			markClean(world, eid);
-			return false;
-		}
+	// Viewport bounds culling: skip entities completely outside viewport
+	if (isOutsideViewport(bounds)) {
+		// Entity is off-screen - skip rendering but mark as clean
+		markClean(world, eid);
+		return false;
+	}
+
+	// Z-order occlusion culling: skip entities fully hidden behind others
+	if (occlusionCullingEnabled && isFullyOccluded(bounds, occludedRegions)) {
+		// Entity is completely hidden - skip rendering but mark as clean
+		markClean(world, eid);
+		return false;
 	}
 
 	// Render entity normally
 	renderEntity(ctx, eid);
 
 	// Add rendered bounds to occlusion map for subsequent entities
-	if (occlusionCullingEnabled && bounds && bounds.width > 0 && bounds.height > 0) {
+	if (occlusionCullingEnabled) {
 		addOccludedRegion(occludedRegions, bounds);
 	}
 
@@ -636,26 +725,33 @@ export function isOcclusionCullingEnabled(): boolean {
  * 1. Queries all entities with Position and Renderable
  * 2. Filters to visible, dirty entities
  * 3. Sorts by z-index
- * 4. Applies z-order occlusion culling (skips fully hidden entities)
- * 5. Renders each visible entity (background, border, content)
- * 6. Marks entities as clean
+ * 4. Applies viewport bounds culling (skips off-screen entities)
+ * 5. Applies z-order occlusion culling (skips fully hidden entities)
+ * 6. Renders each visible entity (background, border, content)
+ * 7. Marks entities as clean
+ *
+ * Viewport culling: entities completely outside the viewport bounds are skipped
+ * to improve performance in scrollable content with many off-screen entities.
+ * Enable via `setViewportBounds({ x, y, width, height })`.
  *
  * Occlusion culling: entities fully covered by higher z-index entities are
  * skipped to improve performance in layered UIs (modals, dialogs, overlays).
- * Can be disabled via `setOcclusionCulling(false)`.
+ * Enable via `setOcclusionCulling(true)`.
  *
  * @param world - The ECS world
  * @returns The world (unchanged)
  *
  * @example
  * ```typescript
- * import { renderSystem, setRenderBuffer, createScheduler, LoopPhase } from 'blecsd';
+ * import { renderSystem, setRenderBuffer, setViewportBounds, createScheduler, LoopPhase } from 'blecsd';
  *
  * const scheduler = createScheduler();
  * scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
  *
- * // Before running, set the render buffer
+ * // Set render buffer and enable viewport culling
  * setRenderBuffer(doubleBuffer);
+ * setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
+ *
  * scheduler.run(world, deltaTime);
  * ```
  */
@@ -698,12 +794,12 @@ export const renderSystem: System = (world: World): World => {
 	// Sort by z-index (lower renders first, higher renders on top)
 	sortedEntities.sort((a, b) => a.z - b.z);
 
-	// Track occluded regions for culling
+	// Track occluded regions for z-order culling
 	const occludedRegions: OcclusionRect[] = [];
 
-	// Render each entity with occlusion culling
+	// Render each entity with viewport and occlusion culling
 	for (const { eid } of sortedEntities) {
-		processEntityWithOcclusion(ctx, eid, occludedRegions);
+		processEntityWithCulling(ctx, eid, occludedRegions);
 	}
 
 	return world;

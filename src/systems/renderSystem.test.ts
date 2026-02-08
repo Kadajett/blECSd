@@ -23,6 +23,7 @@ import {
 	clearRenderBuffer,
 	createRenderSystem,
 	getRenderBuffer,
+	getViewportBounds,
 	markAllDirty,
 	renderBackground,
 	renderBorder,
@@ -30,6 +31,7 @@ import {
 	renderSystem,
 	renderText,
 	setRenderBuffer,
+	setViewportBounds,
 } from './renderSystem';
 
 describe('renderSystem', () => {
@@ -471,6 +473,274 @@ describe('renderSystem', () => {
 
 			// Should not throw
 			expect(() => renderSystem(world)).not.toThrow();
+		});
+	});
+
+	describe('viewport bounds culling', () => {
+		it('sets and gets viewport bounds', () => {
+			const bounds = { x: 0, y: 0, width: 80, height: 24 };
+			setViewportBounds(bounds);
+
+			expect(getViewportBounds()).toEqual(bounds);
+		});
+
+		it('clears viewport bounds with null', () => {
+			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
+			setViewportBounds(null);
+
+			expect(getViewportBounds()).toBeNull();
+		});
+
+		it('renders entity inside viewport', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 5);
+			setDimensions(world, entity, 20, 10);
+			setStyle(world, entity, { bg: '#ff0000' });
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const buffer = getBackBuffer(db);
+			const cell = getCell(buffer, 10, 5);
+			// Should be rendered (red background)
+			expect(cell?.bg).toBe(0xffff0000);
+		});
+
+		it('skips entity completely outside viewport (left)', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 20, y: 0, width: 60, height: 24 });
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 5, 5); // x=5, viewport starts at x=20
+			setDimensions(world, entity, 10, 10); // Ends at x=15, still left of viewport
+			setStyle(world, entity, { bg: '#ff0000' });
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			// Entity should be marked as clean even though it wasn't rendered
+			expect(Renderable.dirty[entity]).toBe(0);
+		});
+
+		it('skips entity completely outside viewport (right)', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 85, 5); // x=85, viewport ends at x=80
+			setDimensions(world, entity, 10, 10);
+			setStyle(world, entity, { bg: '#ff0000' });
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			// Entity should be marked as clean
+			expect(Renderable.dirty[entity]).toBe(0);
+		});
+
+		it('skips entity completely outside viewport (above)', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 0, y: 10, width: 80, height: 14 });
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 2); // y=2, viewport starts at y=10
+			setDimensions(world, entity, 20, 5); // Ends at y=7, still above viewport
+			setStyle(world, entity, { bg: '#ff0000' });
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			// Entity should be marked as clean
+			expect(Renderable.dirty[entity]).toBe(0);
+		});
+
+		it('skips entity completely outside viewport (below)', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 30); // y=30, viewport ends at y=24
+			setDimensions(world, entity, 20, 10);
+			setStyle(world, entity, { bg: '#ff0000' });
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			// Entity should be marked as clean
+			expect(Renderable.dirty[entity]).toBe(0);
+		});
+
+		it('renders partially visible entity (overlapping left edge)', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 10, y: 0, width: 70, height: 24 });
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 5, 5); // Starts at x=5
+			setDimensions(world, entity, 10, 10); // Ends at x=15, overlaps viewport at x=10
+			setStyle(world, entity, { bg: '#ff0000' });
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const buffer = getBackBuffer(db);
+			// Should be rendered at x=10 (first visible column)
+			const cell = getCell(buffer, 10, 5);
+			expect(cell?.bg).toBe(0xffff0000);
+
+			// Entity should be marked as clean
+			expect(Renderable.dirty[entity]).toBe(0);
+		});
+
+		it('renders partially visible entity (overlapping right edge)', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 75, 5); // Starts at x=75
+			setDimensions(world, entity, 10, 10); // Ends at x=85, overlaps viewport boundary
+			setStyle(world, entity, { bg: '#ff0000' });
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const buffer = getBackBuffer(db);
+			// Should be rendered at x=75
+			const cell = getCell(buffer, 75, 5);
+			expect(cell?.bg).toBe(0xffff0000);
+
+			// Entity should be marked as clean
+			expect(Renderable.dirty[entity]).toBe(0);
+		});
+
+		it('renders partially visible entity (overlapping top edge)', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 0, y: 10, width: 80, height: 14 });
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 8); // Starts at y=8
+			setDimensions(world, entity, 20, 5); // Ends at y=13, overlaps viewport at y=10
+			setStyle(world, entity, { bg: '#ff0000' });
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const buffer = getBackBuffer(db);
+			// Should be rendered at y=10 (first visible row)
+			const cell = getCell(buffer, 10, 10);
+			expect(cell?.bg).toBe(0xffff0000);
+
+			// Entity should be marked as clean
+			expect(Renderable.dirty[entity]).toBe(0);
+		});
+
+		it('renders partially visible entity (overlapping bottom edge)', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 20); // Starts at y=20
+			setDimensions(world, entity, 20, 10); // Ends at y=30, overlaps viewport boundary
+			setStyle(world, entity, { bg: '#ff0000' });
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const buffer = getBackBuffer(db);
+			// Should be rendered at y=20
+			const cell = getCell(buffer, 10, 20);
+			expect(cell?.bg).toBe(0xffff0000);
+
+			// Entity should be marked as clean
+			expect(Renderable.dirty[entity]).toBe(0);
+		});
+
+		it('renders entity exactly at viewport boundary', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 10, y: 10, width: 60, height: 14 });
+
+			// Entity at top-left corner of viewport
+			const entity1 = addEntity(world);
+			setPosition(world, entity1, 10, 10);
+			setDimensions(world, entity1, 10, 5);
+			setStyle(world, entity1, { bg: '#ff0000' });
+
+			// Entity at bottom-right corner of viewport
+			const entity2 = addEntity(world);
+			setPosition(world, entity2, 65, 20);
+			setDimensions(world, entity2, 5, 4);
+			setStyle(world, entity2, { bg: '#00ff00' });
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const buffer = getBackBuffer(db);
+			const cell1 = getCell(buffer, 10, 10);
+			expect(cell1?.bg).toBe(0xffff0000);
+
+			const cell2 = getCell(buffer, 65, 20);
+			expect(cell2?.bg).toBe(0xff00ff00);
+		});
+
+		it('performance: culls many off-screen entities efficiently', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
+
+			// Create 1000 entities scattered across large virtual space
+			const entities: number[] = [];
+			for (let i = 0; i < 1000; i++) {
+				const entity = addEntity(world);
+				setPosition(world, entity, i * 100, i * 50); // Spread far outside viewport
+				setDimensions(world, entity, 10, 10);
+				setStyle(world, entity, { bg: '#ff0000' });
+				entities.push(entity);
+			}
+
+			layoutSystem(world);
+
+			// Measure render time
+			const start = performance.now();
+			renderSystem(world);
+			const elapsed = performance.now() - start;
+
+			// All off-screen entities should be marked as clean (culled)
+			const culledCount = entities.filter((eid) => Renderable.dirty[eid] === 0).length;
+			expect(culledCount).toBeGreaterThan(990); // Most should be culled
+
+			// Performance check: should complete quickly (most entities culled)
+			expect(elapsed).toBeLessThan(100); // Generous threshold for CI
+		});
+
+		it('disables culling when viewport bounds is null', () => {
+			const db = createDoubleBuffer(80, 24);
+			setRenderBuffer(db);
+			setViewportBounds(null); // Disable viewport culling
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 100, 50); // Far outside any reasonable viewport
+			setDimensions(world, entity, 20, 10);
+			setStyle(world, entity, { bg: '#ff0000' });
+
+			layoutSystem(world);
+
+			// Should not throw even with no viewport culling
+			expect(() => renderSystem(world)).not.toThrow();
+
+			// Entity should still be marked as clean (rendered or at least processed)
+			expect(Renderable.dirty[entity]).toBe(0);
 		});
 	});
 });
