@@ -25,7 +25,14 @@ import {
 import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { parseColor } from '../utils/color';
-import { insertAt } from './textEditing';
+import {
+	type CursorPosition,
+	deleteWordBackward,
+	deleteWordForward,
+	findWordEnd,
+	findWordStart,
+	insertAt,
+} from './textEditing';
 
 // =============================================================================
 // TYPES
@@ -72,7 +79,7 @@ export interface TextboxWidget {
 	/** Sets the value */
 	setValue(value: string): TextboxWidget;
 	/** Handles a key press */
-	handleKey(keyName: string): boolean;
+	handleKey(keyName: string, ctrl?: boolean): boolean;
 	/** Focuses the textbox */
 	focus(): TextboxWidget;
 	/** Blurs the textbox */
@@ -218,12 +225,12 @@ export function createTextbox(world: World, config: TextboxConfig = {}): Textbox
 			return widget;
 		},
 
-		handleKey(keyName: string): boolean {
+		handleKey(keyName: string, ctrl = false): boolean {
 			const state = textboxStateMap.get(eid);
 			if (!state) return false;
 
 			const cursor = { line: 0, column: state.cursorColumn };
-			const action = handleTextInputKeyPress(world, eid, keyName, state.value);
+			const action = handleTextInputKeyPress(world, eid, keyName, state.value, ctrl);
 			if (!action) return false;
 
 			switch (action.type) {
@@ -251,6 +258,42 @@ export function createTextbox(world: World, config: TextboxConfig = {}): Textbox
 					// moveCursor action.position is a linear offset
 					state.cursorColumn = action.position;
 					setCursorPos(world, eid, state.cursorColumn);
+					return true;
+				}
+
+				case 'moveWordLeft': {
+					const cursorPos: CursorPosition = { line: 0, column: state.cursorColumn };
+					const wordStart = findWordStart(action.text, cursorPos);
+					state.cursorColumn = wordStart.column;
+					setCursorPos(world, eid, state.cursorColumn);
+					return true;
+				}
+
+				case 'moveWordRight': {
+					const cursorPos: CursorPosition = { line: 0, column: state.cursorColumn };
+					const wordEnd = findWordEnd(action.text, cursorPos);
+					state.cursorColumn = wordEnd.column;
+					setCursorPos(world, eid, state.cursorColumn);
+					return true;
+				}
+
+				case 'deleteWordBackward': {
+					const cursorPos: CursorPosition = { line: 0, column: state.cursorColumn };
+					const result = deleteWordBackward(action.text, cursorPos);
+					state.value = result.text;
+					state.cursorColumn = result.cursor.column;
+					setCursorPos(world, eid, state.cursorColumn);
+					emitValueChange(eid, state.value);
+					return true;
+				}
+
+				case 'deleteWordForward': {
+					const cursorPos: CursorPosition = { line: 0, column: state.cursorColumn };
+					const result = deleteWordForward(action.text, cursorPos);
+					state.value = result.text;
+					state.cursorColumn = result.cursor.column;
+					setCursorPos(world, eid, state.cursorColumn);
+					emitValueChange(eid, state.value);
 					return true;
 				}
 

@@ -154,6 +154,18 @@ function createTextInputStore(capacity = DEFAULT_CAPACITY): TextInputStore {
 export const textInputStore = createTextInputStore();
 
 /**
+ * Validation function type.
+ * Returns true if the value is valid, false otherwise.
+ * Can optionally return an error message string.
+ */
+export type ValidationFunction = (value: string) => boolean | string;
+
+/**
+ * When to run validation.
+ */
+export type ValidationTiming = 'onChange' | 'onSubmit' | 'both';
+
+/**
  * Configuration for text input display and behavior.
  */
 export interface TextInputConfig {
@@ -167,6 +179,10 @@ export interface TextInputConfig {
 	maxLength: number;
 	/** Whether input supports multiple lines (for Textarea) */
 	multiline: boolean;
+	/** Optional validation function */
+	validator?: ValidationFunction;
+	/** When to run validation (default: 'both') */
+	validationTiming?: ValidationTiming;
 }
 
 /**
@@ -204,6 +220,12 @@ const submitCallbacks = new Map<Entity, Array<(value: string) => void>>();
 const cancelCallbacks = new Map<Entity, Array<() => void>>();
 
 /**
+ * Store for validation error messages.
+ * Maps entity ID to error message (null if valid).
+ */
+const validationErrors = new Map<Entity, string | null>();
+
+/**
  * Resets the text input store. Useful for testing.
  */
 export function resetTextInputStore(): void {
@@ -221,6 +243,7 @@ export function resetTextInputStore(): void {
 	submitCallbacks.clear();
 	cancelCallbacks.clear();
 	cursorConfigStore.clear();
+	validationErrors.clear();
 }
 
 // =============================================================================
@@ -931,6 +954,10 @@ export interface TextInputConfigOptions {
 	maxLength?: number;
 	/** Whether input supports multiple lines (for Textarea) */
 	multiline?: boolean;
+	/** Optional validation function */
+	validator?: ValidationFunction;
+	/** When to run validation (default: 'both') */
+	validationTiming?: ValidationTiming;
 }
 
 /**
@@ -945,6 +972,8 @@ export interface TextInputConfigOptions {
  *   secret: true,
  *   censor: '*',
  *   maxLength: 20,
+ *   validator: (value) => value.length >= 8 || 'Password must be at least 8 characters',
+ *   validationTiming: 'onSubmit',
  * });
  * ```
  */
@@ -955,6 +984,8 @@ export function setTextInputConfig(eid: Entity, options: TextInputConfigOptions)
 		placeholder: DEFAULT_PLACEHOLDER,
 		maxLength: 0,
 		multiline: false,
+		validator: undefined,
+		validationTiming: 'both' as ValidationTiming,
 	};
 
 	configStore.set(eid, {
@@ -963,6 +994,8 @@ export function setTextInputConfig(eid: Entity, options: TextInputConfigOptions)
 		placeholder: options.placeholder ?? current.placeholder,
 		maxLength: options.maxLength ?? current.maxLength,
 		multiline: options.multiline ?? current.multiline,
+		validator: options.validator ?? current.validator,
+		validationTiming: options.validationTiming ?? current.validationTiming,
 	});
 }
 
@@ -980,6 +1013,8 @@ export function getTextInputConfig(eid: Entity): TextInputConfig {
 			placeholder: DEFAULT_PLACEHOLDER,
 			maxLength: 0,
 			multiline: false,
+			validator: undefined,
+			validationTiming: 'both',
 		}
 	);
 }
@@ -1139,11 +1174,22 @@ export function onTextInputCancel(eid: Entity, callback: () => void): () => void
 
 /**
  * Emits a value change event.
+ * Runs validation if validationTiming is 'onChange' or 'both'.
  *
  * @param eid - Entity ID
  * @param value - New value
  */
 export function emitValueChange(eid: Entity, value: string): void {
+	const config = getTextInputConfig(eid);
+
+	// Run validation on change if configured
+	if (
+		config.validator &&
+		(config.validationTiming === 'onChange' || config.validationTiming === 'both')
+	) {
+		validateTextInput(eid, value);
+	}
+
 	const callbacks = valueChangeCallbacks.get(eid);
 	if (callbacks) {
 		for (const callback of callbacks) {
@@ -1154,17 +1200,35 @@ export function emitValueChange(eid: Entity, value: string): void {
 
 /**
  * Emits a submit event.
+ * Runs validation if validationTiming is 'onSubmit' or 'both'.
+ * If validation fails, the submit event is not emitted.
  *
  * @param eid - Entity ID
  * @param value - Submitted value
+ * @returns true if submitted, false if validation failed
  */
-export function emitSubmit(eid: Entity, value: string): void {
+export function emitSubmit(eid: Entity, value: string): boolean {
+	const config = getTextInputConfig(eid);
+
+	// Run validation on submit if configured
+	if (
+		config.validator &&
+		(config.validationTiming === 'onSubmit' || config.validationTiming === 'both')
+	) {
+		const isValid = validateTextInput(eid, value);
+		if (!isValid) {
+			// Validation failed - do not emit submit
+			return false;
+		}
+	}
+
 	const callbacks = submitCallbacks.get(eid);
 	if (callbacks) {
 		for (const callback of callbacks) {
 			callback(value);
 		}
 	}
+	return true;
 }
 
 /**
@@ -1192,6 +1256,89 @@ export function clearTextInputCallbacks(eid: Entity): void {
 	submitCallbacks.delete(eid);
 	cancelCallbacks.delete(eid);
 	configStore.delete(eid);
+	validationErrors.delete(eid);
+}
+
+// =============================================================================
+// Validation
+// =============================================================================
+
+/**
+ * Validates a value against the text input's validator function.
+ *
+ * @param eid - Entity ID
+ * @param value - Value to validate
+ * @returns true if valid, false if invalid
+ *
+ * @example
+ * ```typescript
+ * const isValid = validateTextInput(textbox, 'test@example.com');
+ * if (!isValid) {
+ *   const error = getValidationError(textbox);
+ *   console.log('Validation failed:', error);
+ * }
+ * ```
+ */
+export function validateTextInput(eid: Entity, value: string): boolean {
+	const config = getTextInputConfig(eid);
+	if (!config.validator) {
+		// No validator = always valid
+		validationErrors.set(eid, null);
+		return true;
+	}
+
+	const result = config.validator(value);
+
+	if (result === true) {
+		validationErrors.set(eid, null);
+		return true;
+	}
+
+	if (result === false) {
+		validationErrors.set(eid, 'Invalid input');
+		return false;
+	}
+
+	// result is an error message string
+	validationErrors.set(eid, result);
+	return false;
+}
+
+/**
+ * Gets the current validation error message for a text input.
+ *
+ * @param eid - Entity ID
+ * @returns Error message or null if valid
+ *
+ * @example
+ * ```typescript
+ * const error = getValidationError(textbox);
+ * if (error) {
+ *   console.log('Error:', error);
+ * }
+ * ```
+ */
+export function getValidationError(eid: Entity): string | null {
+	return validationErrors.get(eid) ?? null;
+}
+
+/**
+ * Checks if a text input currently has a validation error.
+ *
+ * @param eid - Entity ID
+ * @returns true if there is a validation error
+ */
+export function hasValidationError(eid: Entity): boolean {
+	return getValidationError(eid) !== null;
+}
+
+/**
+ * Clears the validation error for a text input.
+ *
+ * @param eid - Entity ID
+ */
+export function clearValidationError(eid: Entity): void {
+	validationErrors.set(eid, null);
 }
 
 // =============================================================================
@@ -1253,6 +1400,29 @@ function handleDeleteKey(
 	return null;
 }
 
+/** Handle word-level operations (Ctrl+Left/Right/Backspace/Delete) */
+function handleWordOperation(
+	keyName: string,
+	cursorPos: number,
+	currentValue: string,
+): TextInputAction | null {
+	// Word navigation requires position/offset conversion utilities from textEditing
+	// These operations work on linear offsets, not line/column positions
+	if (keyName === 'left') {
+		return { type: 'moveWordLeft', text: currentValue, position: cursorPos };
+	}
+	if (keyName === 'right') {
+		return { type: 'moveWordRight', text: currentValue, position: cursorPos };
+	}
+	if (keyName === 'backspace') {
+		return { type: 'deleteWordBackward', text: currentValue, position: cursorPos };
+	}
+	if (keyName === 'delete') {
+		return { type: 'deleteWordForward', text: currentValue, position: cursorPos };
+	}
+	return null;
+}
+
 /** Handle printable character insertion */
 function handleCharacterInsert(
 	keyName: string,
@@ -1273,6 +1443,7 @@ function handleCharacterInsert(
  * @param eid - Entity ID
  * @param keyName - Name of the key pressed
  * @param currentValue - Current text value
+ * @param ctrl - Whether Ctrl key is pressed (default: false)
  * @returns Action to take or null if not handled
  *
  * @example
@@ -1290,6 +1461,7 @@ export function handleTextInputKeyPress(
 	eid: Entity,
 	keyName: string,
 	currentValue: string,
+	ctrl = false,
 ): TextInputAction | null {
 	if (!isTextInput(world, eid)) return null;
 
@@ -1313,6 +1485,12 @@ export function handleTextInputKeyPress(
 		return handleEscapeKey(config, currentValue);
 	}
 
+	// Handle word-level operations (Ctrl modifier)
+	if (ctrl) {
+		const wordAction = handleWordOperation(keyName, cursorPos, currentValue);
+		if (wordAction) return wordAction;
+	}
+
 	// Handle delete keys
 	const deleteAction = handleDeleteKey(keyName, cursorPos, valueLength);
 	if (deleteAction) return deleteAction;
@@ -1334,4 +1512,8 @@ export type TextInputAction =
 	| { type: 'moveCursor'; position: number }
 	| { type: 'submit'; value: string }
 	| { type: 'cancel' }
-	| { type: 'newline'; position: number };
+	| { type: 'newline'; position: number }
+	| { type: 'moveWordLeft'; text: string; position: number }
+	| { type: 'moveWordRight'; text: string; position: number }
+	| { type: 'deleteWordBackward'; text: string; position: number }
+	| { type: 'deleteWordForward'; text: string; position: number };
