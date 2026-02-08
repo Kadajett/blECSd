@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`List widget snapshots > basic rendering > renders empty list 1`] = `""`;
+
+exports[`List widget snapshots > basic rendering > renders list with long items 1`] = `""`;
+
+exports[`List widget snapshots > basic rendering > renders simple list 1`] = `""`;
+
+exports[`List widget snapshots > basic rendering > renders single-item list 1`] = `""`;
+
+exports[`List widget snapshots > edge cases > renders list at screen origin 1`] = `""`;
+
+exports[`List widget snapshots > edge cases > renders narrow list 1`] = `""`;
+
+exports[`List widget snapshots > scrolling > renders list with more items than visible height 1`] = `""`;
+
+exports[`List widget snapshots > scrolling > renders scrolled list with selection beyond visible area 1`] = `""`;
+
+exports[`List widget snapshots > selection > renders list with first item selected 1`] = `""`;
+
+exports[`List widget snapshots > selection > renders list with last item selected 1`] = `""`;
+
+exports[`List widget snapshots > selection > renders list with middle item selected 1`] = `""`;
+
+exports[`List widget snapshots > styling > renders list with custom item colors 1`] = `""`;
+
+exports[`List widget snapshots > styling > renders list with custom prefixes 1`] = `""`;
+
+exports[`List widget snapshots > styling > renders list with custom selected style 1`] = `""`;
