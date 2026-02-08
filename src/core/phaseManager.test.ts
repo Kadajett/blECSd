@@ -59,7 +59,7 @@ describe('PhaseManager', () => {
 			expect(BUILTIN_PHASE_NAMES[LoopPhase.EARLY_UPDATE]).toBe('EARLY_UPDATE');
 			expect(BUILTIN_PHASE_NAMES[LoopPhase.UPDATE]).toBe('UPDATE');
 			expect(BUILTIN_PHASE_NAMES[LoopPhase.LATE_UPDATE]).toBe('LATE_UPDATE');
-			expect(BUILTIN_PHASE_NAMES[LoopPhase.PHYSICS]).toBe('PHYSICS');
+			expect(BUILTIN_PHASE_NAMES[LoopPhase.ANIMATION]).toBe('PHYSICS');
 			expect(BUILTIN_PHASE_NAMES[LoopPhase.LAYOUT]).toBe('LAYOUT');
 			expect(BUILTIN_PHASE_NAMES[LoopPhase.RENDER]).toBe('RENDER');
 			expect(BUILTIN_PHASE_NAMES[LoopPhase.POST_RENDER]).toBe('POST_RENDER');
@@ -72,7 +72,7 @@ describe('PhaseManager', () => {
 			expect(manager.hasPhase(LoopPhase.EARLY_UPDATE)).toBe(true);
 			expect(manager.hasPhase(LoopPhase.UPDATE)).toBe(true);
 			expect(manager.hasPhase(LoopPhase.LATE_UPDATE)).toBe(true);
-			expect(manager.hasPhase(LoopPhase.PHYSICS)).toBe(true);
+			expect(manager.hasPhase(LoopPhase.ANIMATION)).toBe(true);
 			expect(manager.hasPhase(LoopPhase.LAYOUT)).toBe(true);
 			expect(manager.hasPhase(LoopPhase.RENDER)).toBe(true);
 			expect(manager.hasPhase(LoopPhase.POST_RENDER)).toBe(true);
@@ -95,7 +95,7 @@ describe('PhaseManager', () => {
 			expect(order[1]).toBe(LoopPhase.EARLY_UPDATE);
 			expect(order[2]).toBe(LoopPhase.UPDATE);
 			expect(order[3]).toBe(LoopPhase.LATE_UPDATE);
-			expect(order[4]).toBe(LoopPhase.PHYSICS);
+			expect(order[4]).toBe(LoopPhase.ANIMATION);
 			expect(order[5]).toBe(LoopPhase.LAYOUT);
 			expect(order[6]).toBe(LoopPhase.RENDER);
 			expect(order[7]).toBe(LoopPhase.POST_RENDER);
@@ -267,7 +267,7 @@ describe('PhaseManager', () => {
 
 		it('should return all custom phase IDs', () => {
 			const ai1 = manager.registerPhase('AI1', LoopPhase.UPDATE);
-			const ai2 = manager.registerPhase('AI2', LoopPhase.PHYSICS);
+			const ai2 = manager.registerPhase('AI2', LoopPhase.ANIMATION);
 
 			const custom = manager.getCustomPhases();
 
@@ -280,7 +280,7 @@ describe('PhaseManager', () => {
 	describe('clearCustomPhases', () => {
 		it('should remove all custom phases', () => {
 			manager.registerPhase('AI1', LoopPhase.UPDATE);
-			manager.registerPhase('AI2', LoopPhase.PHYSICS);
+			manager.registerPhase('AI2', LoopPhase.ANIMATION);
 
 			manager.clearCustomPhases();
 
@@ -300,7 +300,7 @@ describe('PhaseManager', () => {
 	describe('reset', () => {
 		it('should restore to initial state', () => {
 			manager.registerPhase('AI1', LoopPhase.UPDATE);
-			manager.registerPhase('AI2', LoopPhase.PHYSICS);
+			manager.registerPhase('AI2', LoopPhase.ANIMATION);
 
 			manager.reset();
 

@@ -112,7 +112,7 @@ export function hasMovementSystem(world: World, eid: number): boolean {
  * import { createScheduler, LoopPhase, movementSystem } from 'blecsd';
  *
  * const scheduler = createScheduler();
- * scheduler.registerSystem(LoopPhase.PHYSICS, movementSystem);
+ * scheduler.registerSystem(LoopPhase.ANIMATION, movementSystem);
  *
  * // In game loop
  * scheduler.run(world, deltaTime);
@@ -156,7 +156,7 @@ export const movementSystem: System = (world: World): World => {
  *
  * const scheduler = createScheduler();
  * const system = createMovementSystem();
- * scheduler.registerSystem(LoopPhase.PHYSICS, system);
+ * scheduler.registerSystem(LoopPhase.ANIMATION, system);
  * ```
  */
 export function createMovementSystem(): System {
@@ -183,7 +183,7 @@ export function createMovementSystem(): System {
  * ```
  */
 export function registerMovementSystem(scheduler: Scheduler, priority = 0): void {
-	scheduler.registerSystem(LoopPhase.PHYSICS, movementSystem, priority);
+	scheduler.registerSystem(LoopPhase.ANIMATION, movementSystem, priority);
 }
 
 /**

@@ -32,7 +32,7 @@ export const BUILTIN_PHASE_NAMES: Record<LoopPhase, string> = {
 	[LoopPhase.EARLY_UPDATE]: 'EARLY_UPDATE',
 	[LoopPhase.UPDATE]: 'UPDATE',
 	[LoopPhase.LATE_UPDATE]: 'LATE_UPDATE',
-	[LoopPhase.PHYSICS]: 'PHYSICS',
+	[LoopPhase.ANIMATION]: 'PHYSICS',
 	[LoopPhase.LAYOUT]: 'LAYOUT',
 	[LoopPhase.RENDER]: 'RENDER',
 	[LoopPhase.POST_RENDER]: 'POST_RENDER',
@@ -93,7 +93,7 @@ function initializeBuiltinPhases(phases: Map<PhaseId, PhaseEntry>): void {
  *
  * // Add custom phases
  * const preRender = manager.registerPhase('PRE_RENDER', LoopPhase.LAYOUT);
- * const postPhysics = manager.registerPhase('POST_PHYSICS', LoopPhase.PHYSICS);
+ * const postPhysics = manager.registerPhase('POST_PHYSICS', LoopPhase.ANIMATION);
  *
  * // Get execution order
  * console.log(manager.getPhaseOrder());

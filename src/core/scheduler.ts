@@ -49,6 +49,30 @@ export interface TelemetryConfig {
 }
 
 /**
+ * Frame budget configuration for adaptive performance.
+ */
+export interface AdaptiveFrameBudgetConfig {
+	/** Enable frame budget enforcement (default: false) */
+	enabled: boolean;
+	/** Target frame time in milliseconds (default: 16.67ms for 60fps) */
+	budgetMs?: number;
+	/** Phases that can be skipped when over budget (default: [ANIMATION]) */
+	skippablePhases?: ReadonlyArray<LoopPhase>;
+}
+
+/**
+ * Frame budget status for the current frame.
+ */
+export interface AdaptiveFrameBudgetStatus {
+	/** Whether budget was exceeded this frame */
+	exceeded: boolean;
+	/** Phases that were skipped this frame */
+	skippedPhases: ReadonlyArray<LoopPhase>;
+	/** Time remaining in budget (negative if exceeded) */
+	remainingMs: number;
+}
+
+/**
  * Current delta time for the frame.
  * Accessed via getDeltaTime() during system execution.
  */
@@ -117,6 +141,10 @@ export interface Scheduler {
 	getTelemetry(): FrameTelemetry | null;
 	getTelemetryHistory(): ReadonlyArray<FrameTelemetry>;
 	isTelemetryEnabled(): boolean;
+	enableFrameBudget(config?: AdaptiveFrameBudgetConfig): void;
+	disableFrameBudget(): void;
+	getAdaptiveFrameBudgetStatus(): AdaptiveFrameBudgetStatus | null;
+	isFrameBudgetEnabled(): boolean;
 }
 
 function sortPhase(systems: SystemEntry[]): void {
@@ -136,7 +164,7 @@ function sortPhase(systems: SystemEntry[]): void {
  *
  * // Register systems
  * scheduler.registerSystem(LoopPhase.UPDATE, movementSystem);
- * scheduler.registerSystem(LoopPhase.PHYSICS, physicsSystem);
+ * scheduler.registerSystem(LoopPhase.ANIMATION, physicsSystem);
  * scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
  *
  * // Run in game loop
@@ -153,6 +181,12 @@ export function createScheduler(): Scheduler {
 	const telemetryHistory: FrameTelemetry[] = [];
 	let currentTelemetry: FrameTelemetry | null = null;
 	let frameCounter = 0;
+
+	// Frame budget state
+	let frameBudgetEnabled = false;
+	let frameBudgetMs = 16.67; // 60fps by default
+	let skippablePhases: Set<LoopPhase> = new Set([LoopPhase.ANIMATION]);
+	let currentBudgetStatus: AdaptiveFrameBudgetStatus | null = null;
 
 	// Initialize all phases
 	for (let phase = LoopPhase.INPUT; phase <= LoopPhase.POST_RENDER; phase++) {
@@ -308,11 +342,16 @@ export function createScheduler(): Scheduler {
 				currentTelemetry = createTelemetryFrame();
 			}
 
+			// Initialize frame budget status
+			const frameStartTime = frameBudgetEnabled || telemetryEnabled ? performance.now() : 0;
+			const skippedPhases: LoopPhase[] = [];
+			let budgetExceeded = false;
+
 			let currentWorld = world;
 
 			// Always run INPUT systems first (internal)
 			// Note: Input systems run before the INPUT phase, so we include them in INPUT phase timing
-			const inputStart = telemetryEnabled ? performance.now() : 0;
+			const inputStart = telemetryEnabled || frameBudgetEnabled ? performance.now() : 0;
 			for (const entry of inputSystems) {
 				currentWorld = entry.system(currentWorld);
 			}
@@ -331,25 +370,59 @@ export function createScheduler(): Scheduler {
 					continue;
 				}
 
+				// Check frame budget before executing phase
+				if (frameBudgetEnabled && budgetExceeded && skippablePhases.has(phase)) {
+					// Skip this phase due to budget exceeded
+					skippedPhases.push(phase);
+					if (telemetryEnabled) {
+						recordPhase(phase, 0, 0);
+					}
+					continue;
+				}
+
 				// Measure phase timing
 				const phaseStart =
-					phase === LoopPhase.INPUT ? inputStart : telemetryEnabled ? performance.now() : 0;
+					phase === LoopPhase.INPUT
+						? inputStart
+						: telemetryEnabled || frameBudgetEnabled
+							? performance.now()
+							: 0;
 
 				for (const entry of systems) {
 					currentWorld = entry.system(currentWorld);
 				}
 
+				const phaseEnd = telemetryEnabled || frameBudgetEnabled ? performance.now() : 0;
+
 				if (telemetryEnabled) {
-					const phaseEnd = performance.now();
 					const systemCount =
 						phase === LoopPhase.INPUT ? inputSystems.length + systems.length : systems.length;
 					recordPhase(phase, phaseEnd - phaseStart, systemCount);
+				}
+
+				// Check if we've exceeded frame budget after this phase
+				if (frameBudgetEnabled && !budgetExceeded) {
+					const elapsed = phaseEnd - frameStartTime;
+					if (elapsed > frameBudgetMs) {
+						budgetExceeded = true;
+					}
 				}
 			}
 
 			// Finalize telemetry
 			if (telemetryEnabled) {
 				finalizeTelemetry();
+			}
+
+			// Finalize frame budget status
+			if (frameBudgetEnabled) {
+				const frameEndTime = performance.now();
+				const totalTime = frameEndTime - frameStartTime;
+				currentBudgetStatus = {
+					exceeded: budgetExceeded,
+					skippedPhases,
+					remainingMs: frameBudgetMs - totalTime,
+				};
 			}
 
 			return currentWorld;
@@ -402,7 +475,7 @@ export function createScheduler(): Scheduler {
 				LoopPhase.EARLY_UPDATE,
 				LoopPhase.UPDATE,
 				LoopPhase.LATE_UPDATE,
-				LoopPhase.PHYSICS,
+				LoopPhase.ANIMATION,
 			];
 
 			for (const phase of fixedPhases) {
@@ -673,6 +746,120 @@ export function createScheduler(): Scheduler {
 		 */
 		isTelemetryEnabled(): boolean {
 			return telemetryEnabled;
+		},
+
+		/**
+		 * Enables adaptive frame budget enforcement.
+		 * When enabled, skippable phases will be skipped if the frame is taking too long.
+		 *
+		 * @param config - Frame budget configuration
+		 *
+		 * @example
+		 * ```typescript
+		 * import { createScheduler, LoopPhase } from 'blecsd';
+		 *
+		 * const scheduler = createScheduler();
+		 *
+		 * // Enable frame budget with 16ms target (60fps)
+		 * scheduler.enableFrameBudget({
+		 *   enabled: true,
+		 *   budgetMs: 16.67,
+		 *   skippablePhases: [LoopPhase.ANIMATION]
+		 * });
+		 *
+		 * // Run frames
+		 * scheduler.run(world, deltaTime);
+		 *
+		 * // Check if phases were skipped
+		 * const status = scheduler.getAdaptiveFrameBudgetStatus();
+		 * if (status?.exceeded) {
+		 *   console.log(`Frame budget exceeded. Skipped phases: ${status.skippedPhases}`);
+		 * }
+		 * ```
+		 */
+		enableFrameBudget(config: AdaptiveFrameBudgetConfig = { enabled: true }): void {
+			frameBudgetEnabled = config.enabled;
+			frameBudgetMs = config.budgetMs ?? 16.67;
+
+			if (config.skippablePhases) {
+				skippablePhases = new Set(config.skippablePhases);
+			} else {
+				skippablePhases = new Set([LoopPhase.ANIMATION]);
+			}
+
+			// INPUT phase is NEVER skippable
+			skippablePhases.delete(LoopPhase.INPUT);
+
+			if (!frameBudgetEnabled) {
+				currentBudgetStatus = null;
+			}
+		},
+
+		/**
+		 * Disables frame budget enforcement.
+		 *
+		 * @example
+		 * ```typescript
+		 * import { createScheduler } from 'blecsd';
+		 *
+		 * const scheduler = createScheduler();
+		 * scheduler.enableFrameBudget();
+		 *
+		 * // ... run frames ...
+		 *
+		 * scheduler.disableFrameBudget();
+		 * ```
+		 */
+		disableFrameBudget(): void {
+			frameBudgetEnabled = false;
+			currentBudgetStatus = null;
+		},
+
+		/**
+		 * Gets the frame budget status for the most recent frame.
+		 * Returns null if frame budget is disabled or no frames have been run yet.
+		 *
+		 * @returns The frame budget status or null
+		 *
+		 * @example
+		 * ```typescript
+		 * import { createScheduler } from 'blecsd';
+		 *
+		 * const scheduler = createScheduler();
+		 * scheduler.enableFrameBudget({ enabled: true, budgetMs: 16.67 });
+		 *
+		 * scheduler.run(world, deltaTime);
+		 *
+		 * const status = scheduler.getAdaptiveFrameBudgetStatus();
+		 * if (status) {
+		 *   console.log(`Budget exceeded: ${status.exceeded}`);
+		 *   console.log(`Skipped phases: ${status.skippedPhases.length}`);
+		 *   console.log(`Remaining budget: ${status.remainingMs.toFixed(2)}ms`);
+		 * }
+		 * ```
+		 */
+		getAdaptiveFrameBudgetStatus(): AdaptiveFrameBudgetStatus | null {
+			return currentBudgetStatus;
+		},
+
+		/**
+		 * Checks if frame budget enforcement is currently enabled.
+		 *
+		 * @returns true if frame budget is enabled
+		 *
+		 * @example
+		 * ```typescript
+		 * import { createScheduler } from 'blecsd';
+		 *
+		 * const scheduler = createScheduler();
+		 * console.log(scheduler.isFrameBudgetEnabled()); // false
+		 *
+		 * scheduler.enableFrameBudget();
+		 * console.log(scheduler.isFrameBudgetEnabled()); // true
+		 * ```
+		 */
+		isFrameBudgetEnabled(): boolean {
+			return frameBudgetEnabled;
 		},
 	};
 }
