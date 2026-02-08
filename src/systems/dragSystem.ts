@@ -384,6 +384,53 @@ function applyConstraints(
 export function createDragSystem(eventBus: EventBus<DragEventMap>) {
 	const state = createDragState();
 
+	/**
+	 * Ends the current drag operation.
+	 *
+	 * @param world - The ECS world
+	 * @param dropTarget - Entity under the drop point (if any)
+	 * @param cancelled - Whether the drag was cancelled
+	 */
+	const endDrag = (world: World, dropTarget: Entity | null = null, cancelled = false): void => {
+		if (state.dragging === null) {
+			return;
+		}
+
+		const eid = state.dragging;
+		const finalPos = getPosition(world, eid);
+		const finalX = finalPos?.x ?? state.lastX;
+		const finalY = finalPos?.y ?? state.lastY;
+
+		eventBus.emit('dragend', {
+			entity: eid,
+			x: finalX,
+			y: finalY,
+			totalDx: finalX - state.startX,
+			totalDy: finalY - state.startY,
+			cancelled,
+		});
+
+		if (!cancelled) {
+			eventBus.emit('drop', {
+				entity: eid,
+				x: finalX,
+				y: finalY,
+				dropTarget,
+			});
+		}
+
+		// Reset state
+		state.dragging = null;
+		state.startX = 0;
+		state.startY = 0;
+		state.offsetX = 0;
+		state.offsetY = 0;
+		state.lastX = 0;
+		state.lastY = 0;
+		state.constraints = {};
+		state.verifyCallback = null;
+	};
+
 	return {
 		/**
 		 * Gets the current drag state.
@@ -523,52 +570,7 @@ export function createDragSystem(eventBus: EventBus<DragEventMap>) {
 			return true;
 		},
 
-		/**
-		 * Ends the current drag operation.
-		 *
-		 * @param world - The ECS world
-		 * @param dropTarget - Entity under the drop point (if any)
-		 * @param cancelled - Whether the drag was cancelled
-		 */
-		endDrag(world: World, dropTarget: Entity | null = null, cancelled = false): void {
-			if (state.dragging === null) {
-				return;
-			}
-
-			const eid = state.dragging;
-			const finalPos = getPosition(world, eid);
-			const finalX = finalPos?.x ?? state.lastX;
-			const finalY = finalPos?.y ?? state.lastY;
-
-			eventBus.emit('dragend', {
-				entity: eid,
-				x: finalX,
-				y: finalY,
-				totalDx: finalX - state.startX,
-				totalDy: finalY - state.startY,
-				cancelled,
-			});
-
-			if (!cancelled) {
-				eventBus.emit('drop', {
-					entity: eid,
-					x: finalX,
-					y: finalY,
-					dropTarget,
-				});
-			}
-
-			// Reset state
-			state.dragging = null;
-			state.startX = 0;
-			state.startY = 0;
-			state.offsetX = 0;
-			state.offsetY = 0;
-			state.lastX = 0;
-			state.lastY = 0;
-			state.constraints = {};
-			state.verifyCallback = null;
-		},
+		endDrag,
 
 		/**
 		 * Cancels the current drag and restores original position.
@@ -585,7 +587,7 @@ export function createDragSystem(eventBus: EventBus<DragEventMap>) {
 			// Restore original position
 			setPosition(world, eid, state.startX, state.startY);
 
-			this.endDrag(world, null, true);
+			endDrag(world, null, true);
 		},
 	};
 }
