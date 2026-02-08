@@ -17,13 +17,17 @@ import {
 	blurList,
 	clearItems,
 	clearListCallbacks,
+	clearListFilter,
 	clearSearchQuery,
+	deselectAllItems,
 	endListSearch,
 	findNextMatch,
 	focusList,
+	getFilteredItems,
 	getItems,
 	getListSearchQuery,
 	getListState,
+	getMultiSelected,
 	getSelectedIndex,
 	getSelectedItem,
 	handleListKeyPress,
@@ -35,18 +39,24 @@ import {
 	type ListSelectCallback,
 	type ListState,
 	onListActivate,
+	onListCancel,
 	onListSearchChange,
 	onListSelect,
 	removeItem,
 	scrollPage,
+	selectAllItems,
 	selectFirst,
 	selectLast,
 	selectNext,
 	selectPrev,
 	setItems,
 	setListDisplay,
+	setListFilter,
+	setListMultiSelect,
 	setSelectedIndex,
 	startListSearch,
+	toggleMultiSelect,
+	triggerListCancel,
 } from '../components/list';
 import { Position, setPosition } from '../components/position';
 import { markDirty, setVisible } from '../components/renderable';
@@ -104,6 +114,8 @@ export interface ListWidgetConfig {
 	readonly keys?: boolean;
 	/** Whether search mode is enabled (default: false) */
 	readonly search?: boolean;
+	/** Whether multi-select mode is enabled (default: false) */
+	readonly multiSelect?: boolean;
 }
 
 /**
@@ -186,8 +198,26 @@ export interface ListWidget {
 	onSelect(callback: ListSelectCallback): () => void;
 	/** Registers callback for item activation */
 	onActivate(callback: ListSelectCallback): () => void;
+	/** Registers callback for cancel event (Escape key) */
+	onCancel(callback: () => void): () => void;
 	/** Registers callback for search query change */
 	onSearchChange(callback: (query: string) => void): () => void;
+
+	// Multi-select
+	/** Gets selected indices (multi-select mode only) */
+	getSelected(): number[];
+	/** Selects all items (multi-select mode only) */
+	selectAll(): ListWidget;
+	/** Deselects all items (multi-select mode only) */
+	deselectAll(): ListWidget;
+
+	// Filter
+	/** Sets filter text to show only matching items */
+	setFilter(text: string): ListWidget;
+	/** Clears the filter */
+	clearFilter(): ListWidget;
+	/** Gets currently visible items (after filtering) */
+	getVisibleItems(): readonly ListItem[];
 
 	// Key handling
 	/** Handles a key press, returns the action taken */
@@ -235,6 +265,7 @@ export const ListWidgetConfigSchema = z.object({
 	mouse: z.boolean().default(true),
 	keys: z.boolean().default(true),
 	search: z.boolean().default(false),
+	multiSelect: z.boolean().default(false),
 });
 
 // =============================================================================
@@ -320,6 +351,11 @@ export function createList(
 		selectedIndex: validated.selected,
 		visibleCount: validated.height,
 	});
+
+	// Enable multi-select if configured
+	if (validated.multiSelect) {
+		setListMultiSelect(eid, true);
+	}
 
 	// Apply display styles if provided
 	if (validated.style) {
@@ -498,8 +534,42 @@ export function createList(
 			return onListActivate(eid, callback);
 		},
 
+		onCancel(callback: () => void): () => void {
+			return onListCancel(eid, callback);
+		},
+
 		onSearchChange(callback: (query: string) => void): () => void {
 			return onListSearchChange(eid, callback);
+		},
+
+		// Multi-select
+		getSelected(): number[] {
+			return getMultiSelected(eid);
+		},
+
+		selectAll(): ListWidget {
+			selectAllItems(eid);
+			return widget;
+		},
+
+		deselectAll(): ListWidget {
+			deselectAllItems(eid);
+			return widget;
+		},
+
+		// Filter
+		setFilter(text: string): ListWidget {
+			setListFilter(world, eid, text);
+			return widget;
+		},
+
+		clearFilter(): ListWidget {
+			clearListFilter(world, eid);
+			return widget;
+		},
+
+		getVisibleItems(): readonly ListItem[] {
+			return getFilteredItems(eid);
 		},
 
 		// Key handling
@@ -531,8 +601,16 @@ export function createList(
 						activateSelected(world, eid);
 						break;
 					case 'cancel':
+						triggerListCancel(eid);
 						blurList(world, eid);
 						break;
+					case 'toggleSelect': {
+						const selectedIdx = getSelectedIndex(eid);
+						if (selectedIdx >= 0) {
+							toggleMultiSelect(eid, selectedIdx);
+						}
+						break;
+					}
 					case 'startSearch':
 						startListSearch(world, eid);
 						break;
