@@ -149,7 +149,8 @@
     "size": "size-limit",
     "size:why": "size-limit --why",
     "verify-pack": "./scripts/verify-pack.sh",
-    "doccheck": "tsx scripts/doccheck.ts"
+    "doccheck": "tsx scripts/doccheck.ts",
+    "playground": "tsx playground/index.ts"
   },
   "size-limit": [
     {
