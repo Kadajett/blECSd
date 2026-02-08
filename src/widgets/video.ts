@@ -780,7 +780,47 @@ function createVideoWidgetInterface(
 	eid: Entity,
 	spawner?: VideoProcessSpawner,
 ): VideoWidget {
-	return {
+	// Define methods that will be referenced by other methods
+	const play = (): VideoWidget => {
+		const state = videoStateStore.get(eid);
+		if (!state) return widget;
+
+		if (tryResumeMplayer(state)) return widget;
+
+		const error = startPlayback(state, spawner, world, eid);
+		if (error) state.onErrorCallback?.(error);
+
+		return widget;
+	};
+
+	const pause = (): VideoWidget => {
+		const state = videoStateStore.get(eid);
+		if (!state) return widget;
+		if (state.playbackState !== 'playing') return widget;
+
+		if (state.process && state.player === 'mplayer') {
+			sendPauseCommand(state.process, 'mplayer');
+		}
+		state.playbackState = 'paused';
+		return widget;
+	};
+
+	const stop = (): VideoWidget => {
+		const state = videoStateStore.get(eid);
+		if (!state) return widget;
+
+		if (state.process) {
+			state.process.kill();
+			state.process = null;
+		}
+		state.playbackState = 'stopped';
+		state.seekPosition = 0;
+		setContent(world, eid, '');
+		markDirty(world, eid);
+		return widget;
+	};
+
+	const widget: VideoWidget = {
 		get eid() {
 			return eid;
 		},
@@ -791,7 +831,7 @@ function createVideoWidgetInterface(
 			if (state) state.visible = true;
 			setVisible(world, eid, true);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		hide() {
@@ -799,7 +839,7 @@ function createVideoWidgetInterface(
 			if (state) state.visible = false;
 			setVisible(world, eid, false);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		isVisible() {
@@ -812,13 +852,13 @@ function createVideoWidgetInterface(
 			const y = Position.y[eid] ?? 0;
 			setPosition(world, eid, x + dx, y + dy);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		setPosition(x: number, y: number) {
 			setPosition(world, eid, x, y);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		getPosition() {
@@ -832,65 +872,32 @@ function createVideoWidgetInterface(
 		setPath(path: string) {
 			const state = videoStateStore.get(eid);
 			if (state) state.path = path;
-			return this;
+			return widget;
 		},
 
 		getPath() {
 			return videoStateStore.get(eid)?.path ?? '';
 		},
 
-		play() {
-			const state = videoStateStore.get(eid);
-			if (!state) return this;
+		play,
 
-			if (tryResumeMplayer(state)) return this;
+		pause,
 
-			const error = startPlayback(state, spawner, world, eid);
-			if (error) state.onErrorCallback?.(error);
-
-			return this;
-		},
-
-		pause() {
-			const state = videoStateStore.get(eid);
-			if (!state) return this;
-			if (state.playbackState !== 'playing') return this;
-
-			if (state.process && state.player === 'mplayer') {
-				sendPauseCommand(state.process, 'mplayer');
-			}
-			state.playbackState = 'paused';
-			return this;
-		},
-
-		stop() {
-			const state = videoStateStore.get(eid);
-			if (!state) return this;
-
-			if (state.process) {
-				state.process.kill();
-				state.process = null;
-			}
-			state.playbackState = 'stopped';
-			state.seekPosition = 0;
-			setContent(world, eid, '');
-			markDirty(world, eid);
-			return this;
-		},
+		stop,
 
 		togglePlayback() {
 			const state = videoStateStore.get(eid);
-			if (!state) return this;
+			if (!state) return widget;
 
 			if (state.playbackState === 'playing') {
-				return this.pause();
+				return pause();
 			}
-			return this.play();
+			return play();
 		},
 
 		seek(seconds: number) {
 			const state = videoStateStore.get(eid);
-			if (!state) return this;
+			if (!state) return widget;
 
 			state.seekPosition = Math.max(0, seconds);
 
@@ -898,12 +905,12 @@ function createVideoWidgetInterface(
 				sendSeekCommand(state.process, 'mplayer', seconds);
 			} else if (state.playbackState === 'playing') {
 				// For mpv or when process needs restart, stop and replay from position
-				this.stop();
+				stop();
 				state.seekPosition = Math.max(0, seconds);
-				this.play();
+				play();
 			}
 
-			return this;
+			return widget;
 		},
 
 		getPlaybackState() {
@@ -914,7 +921,7 @@ function createVideoWidgetInterface(
 		setSpeed(speed: number) {
 			const state = videoStateStore.get(eid);
 			if (state) state.speed = speed;
-			return this;
+			return widget;
 		},
 
 		getSpeed() {
@@ -924,7 +931,7 @@ function createVideoWidgetInterface(
 		setLoop(loop: boolean) {
 			const state = videoStateStore.get(eid);
 			if (state) state.loop = loop;
-			return this;
+			return widget;
 		},
 
 		getLoop() {
@@ -934,7 +941,7 @@ function createVideoWidgetInterface(
 		setMute(mute: boolean) {
 			const state = videoStateStore.get(eid);
 			if (state) state.mute = mute;
-			return this;
+			return widget;
 		},
 
 		getMute() {
@@ -957,26 +964,26 @@ function createVideoWidgetInterface(
 				state.process.resize(width, height);
 			}
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		// Events
 		onEnd(callback: () => void) {
 			const state = videoStateStore.get(eid);
 			if (state) state.onEndCallback = callback;
-			return this;
+			return widget;
 		},
 
 		onError(callback: (error: string) => void) {
 			const state = videoStateStore.get(eid);
 			if (state) state.onErrorCallback = callback;
-			return this;
+			return widget;
 		},
 
 		onData(callback: (data: string) => void) {
 			const state = videoStateStore.get(eid);
 			if (state) state.onDataCallback = callback;
-			return this;
+			return widget;
 		},
 
 		// Lifecycle
@@ -990,6 +997,8 @@ function createVideoWidgetInterface(
 			removeEntity(world, eid);
 		},
 	};
+
+	return widget;
 }
 
 // =============================================================================
