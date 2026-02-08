@@ -13,6 +13,7 @@
  * @module systems/spatialHash
  */
 
+import { z } from 'zod';
 import { Collider } from '../components/collision';
 import { Position } from '../components/position';
 import { hasComponent, query } from '../core/ecs';
@@ -33,6 +34,14 @@ export interface SpatialHashConfig {
 	/** Initial number of cells in the grid (default: 256) */
 	readonly initialCapacity: number;
 }
+
+/**
+ * Zod schema for SpatialHashConfig validation.
+ */
+export const SpatialHashConfigSchema = z.object({
+	cellSize: z.number().positive(),
+	initialCapacity: z.number().int().positive(),
+});
 
 /**
  * A cell coordinate in the spatial hash grid.
@@ -116,8 +125,15 @@ const DEFAULT_DIRTY_THRESHOLD = 0.5;
  * ```
  */
 export function createSpatialHash(config?: Partial<SpatialHashConfig>): SpatialHashGrid {
-	return {
+	const fullConfig = {
 		cellSize: config?.cellSize ?? DEFAULT_CELL_SIZE,
+		initialCapacity: config?.initialCapacity ?? 256,
+	};
+	// Validate configuration
+	const validatedConfig = SpatialHashConfigSchema.parse(fullConfig);
+
+	return {
+		cellSize: validatedConfig.cellSize,
 		cells: new Map(),
 		entityCells: new Map(),
 	};

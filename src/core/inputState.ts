@@ -7,6 +7,7 @@
  * @module core/inputState
  */
 
+import { z } from 'zod';
 import type { KeyEvent, KeyName } from '../terminal/keyParser';
 import type { MouseButton, MouseEvent } from '../terminal/mouseParser';
 import type { TimestampedKeyEvent, TimestampedMouseEvent } from './inputEventBuffer';
@@ -117,6 +118,16 @@ export interface InputStateConfig {
 	 */
 	readonly customRepeatDelay?: number;
 }
+
+/**
+ * Zod schema for InputStateConfig validation.
+ */
+export const InputStateConfigSchema = z.object({
+	trackRepeats: z.boolean().optional(),
+	debounceTime: z.number().nonnegative().optional(),
+	customRepeatRate: z.number().positive().optional(),
+	customRepeatDelay: z.number().positive().optional(),
+});
 
 // =============================================================================
 // DEFAULT VALUES
@@ -264,11 +275,14 @@ function normalizeKeyName(name: KeyName, _event: KeyEvent): string {
  * ```
  */
 export function createInputState(config: InputStateConfig = {}): InputState {
+	// Validate configuration
+	const validatedConfig = InputStateConfigSchema.parse(config);
+
 	const resolvedConfig = {
-		trackRepeats: config.trackRepeats ?? true,
-		debounceTime: config.debounceTime ?? 0,
-		customRepeatRate: config.customRepeatRate ?? 0,
-		customRepeatDelay: config.customRepeatDelay ?? 500,
+		trackRepeats: validatedConfig.trackRepeats ?? true,
+		debounceTime: validatedConfig.debounceTime ?? 0,
+		customRepeatRate: validatedConfig.customRepeatRate ?? 0,
+		customRepeatDelay: validatedConfig.customRepeatDelay ?? 500,
 	};
 
 	const keyStates = new Map<string, MutableKeyState>();
