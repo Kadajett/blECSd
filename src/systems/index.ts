@@ -238,6 +238,7 @@ export {
 	clearRenderBuffer,
 	createRenderSystem,
 	getRenderBuffer,
+	isOcclusionCullingEnabled,
 	markAllDirty,
 	renderBackground,
 	renderBorder,
@@ -246,6 +247,7 @@ export {
 	renderScrollbar,
 	renderSystem,
 	renderText,
+	setOcclusionCulling,
 	setRenderBuffer,
 } from './renderSystem';
 // Smooth scroll system
