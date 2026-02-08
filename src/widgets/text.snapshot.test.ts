@@ -15,7 +15,7 @@ import { createText } from './text';
 describe('Text widget snapshots', () => {
 	describe('basic rendering', () => {
 		it('renders simple text', () => {
-			const { world, db } = createTestBuffer(40, 10);
+			const { world, buffer } = createTestBuffer(40, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -27,14 +27,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders multiline text', () => {
-			const { world, db } = createTestBuffer(40, 10);
+			const { world, buffer } = createTestBuffer(40, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -47,14 +47,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders empty text', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -66,7 +66,7 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -75,7 +75,7 @@ describe('Text widget snapshots', () => {
 
 	describe('alignment', () => {
 		it('renders left-aligned text', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -90,14 +90,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders center-aligned text', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -112,14 +112,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders right-aligned text', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -134,14 +134,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders top-aligned text', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -156,14 +156,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders middle-aligned text', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -178,14 +178,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders bottom-aligned text', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -200,7 +200,7 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -209,7 +209,7 @@ describe('Text widget snapshots', () => {
 
 	describe('colors and styling', () => {
 		it('renders text with foreground color', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -222,14 +222,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders text with background color', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -242,14 +242,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders text with foreground and background colors', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -263,7 +263,7 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -272,7 +272,7 @@ describe('Text widget snapshots', () => {
 
 	describe('edge cases', () => {
 		it('renders text at screen origin', () => {
-			const { world, db } = createTestBuffer(25, 8);
+			const { world, buffer } = createTestBuffer(25, 8);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -284,14 +284,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders single character', () => {
-			const { world, db } = createTestBuffer(10, 10);
+			const { world, buffer } = createTestBuffer(10, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -303,14 +303,14 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders very long text', () => {
-			const { world, db } = createTestBuffer(50, 10);
+			const { world, buffer } = createTestBuffer(50, 10);
 			const entity = addEntity(world);
 
 			createText(world, entity, {
@@ -324,7 +324,7 @@ describe('Text widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();

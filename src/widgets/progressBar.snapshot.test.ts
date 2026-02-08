@@ -14,7 +14,7 @@ import { createProgressBar } from './progressBar';
 describe('ProgressBar widget snapshots', () => {
 	describe('basic rendering', () => {
 		it('renders empty progress bar', () => {
-			const { world, db } = createTestBuffer(30, 8);
+			const { world, buffer } = createTestBuffer(30, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -26,14 +26,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders 25% progress', () => {
-			const { world, db } = createTestBuffer(30, 8);
+			const { world, buffer } = createTestBuffer(30, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -45,14 +45,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders 50% progress', () => {
-			const { world, db } = createTestBuffer(30, 8);
+			const { world, buffer } = createTestBuffer(30, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -64,14 +64,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders 75% progress', () => {
-			const { world, db } = createTestBuffer(30, 8);
+			const { world, buffer } = createTestBuffer(30, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -83,14 +83,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders complete progress bar', () => {
-			const { world, db } = createTestBuffer(30, 8);
+			const { world, buffer } = createTestBuffer(30, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -102,7 +102,7 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -111,7 +111,7 @@ describe('ProgressBar widget snapshots', () => {
 
 	describe('with percentage display', () => {
 		it('renders with percentage at 0%', () => {
-			const { world, db } = createTestBuffer(35, 8);
+			const { world, buffer } = createTestBuffer(35, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -124,14 +124,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders with percentage at 42%', () => {
-			const { world, db } = createTestBuffer(35, 8);
+			const { world, buffer } = createTestBuffer(35, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -144,14 +144,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders with percentage at 100%', () => {
-			const { world, db } = createTestBuffer(35, 8);
+			const { world, buffer } = createTestBuffer(35, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -164,7 +164,7 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -173,7 +173,7 @@ describe('ProgressBar widget snapshots', () => {
 
 	describe('with custom characters', () => {
 		it('renders with custom fill and empty characters', () => {
-			const { world, db } = createTestBuffer(30, 8);
+			const { world, buffer } = createTestBuffer(30, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -187,14 +187,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders with block characters', () => {
-			const { world, db } = createTestBuffer(30, 8);
+			const { world, buffer } = createTestBuffer(30, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -208,14 +208,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders with hashtag characters', () => {
-			const { world, db } = createTestBuffer(30, 8);
+			const { world, buffer } = createTestBuffer(30, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -229,7 +229,7 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -238,7 +238,7 @@ describe('ProgressBar widget snapshots', () => {
 
 	describe('with labels', () => {
 		it('renders with custom label', () => {
-			const { world, db } = createTestBuffer(40, 8);
+			const { world, buffer } = createTestBuffer(40, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -251,14 +251,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders with label and percentage', () => {
-			const { world, db } = createTestBuffer(40, 8);
+			const { world, buffer } = createTestBuffer(40, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -272,7 +272,7 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -281,7 +281,7 @@ describe('ProgressBar widget snapshots', () => {
 
 	describe('size variations', () => {
 		it('renders short progress bar', () => {
-			const { world, db } = createTestBuffer(20, 8);
+			const { world, buffer } = createTestBuffer(20, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -293,14 +293,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders long progress bar', () => {
-			const { world, db } = createTestBuffer(60, 8);
+			const { world, buffer } = createTestBuffer(60, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -312,7 +312,7 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -321,7 +321,7 @@ describe('ProgressBar widget snapshots', () => {
 
 	describe('edge cases', () => {
 		it('renders at screen origin', () => {
-			const { world, db } = createTestBuffer(30, 8);
+			const { world, buffer } = createTestBuffer(30, 8);
 
 			createProgressBar(world, {
 				x: 0,
@@ -333,14 +333,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders with fractional progress', () => {
-			const { world, db } = createTestBuffer(30, 8);
+			const { world, buffer } = createTestBuffer(30, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -352,14 +352,14 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders narrow progress bar', () => {
-			const { world, db } = createTestBuffer(15, 8);
+			const { world, buffer } = createTestBuffer(15, 8);
 
 			createProgressBar(world, {
 				x: 1,
@@ -371,7 +371,7 @@ describe('ProgressBar widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();

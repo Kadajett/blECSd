@@ -8,16 +8,11 @@ import { setDimensions } from '../components/dimensions';
 import { appendChild } from '../components/hierarchy';
 import { setPosition, setZIndex } from '../components/position';
 import { hide, Renderable, setStyle } from '../components/renderable';
+import { clearDirtyTracking, createDirtyTracker, getDirtyRegions } from '../core/dirtyTracking';
 import { addEntity, createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { World } from '../core/types';
-import { createCell, getCell } from '../terminal/screen/cell';
-import {
-	clearDirtyRegions,
-	createDoubleBuffer,
-	getBackBuffer,
-	getDirtyRegions,
-} from '../terminal/screen/doubleBuffer';
+import { createCell, createScreenBuffer, getCell } from '../terminal/screen/cell';
 import { layoutSystem } from './layoutSystem';
 import {
 	clearRenderBuffer,
@@ -45,15 +40,17 @@ describe('renderSystem', () => {
 
 	describe('setRenderBuffer / getRenderBuffer', () => {
 		it('sets and gets the render buffer', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
-			expect(getRenderBuffer()).toBe(db);
+			expect(getRenderBuffer()).toBe(tracker);
 		});
 
 		it('clears the render buffer', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			clearRenderBuffer();
 
 			expect(getRenderBuffer()).toBeNull();
@@ -62,8 +59,9 @@ describe('renderSystem', () => {
 
 	describe('basic rendering', () => {
 		it('renders visible entity to buffer', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const entity = addEntity(world);
 			setPosition(world, entity, 10, 5);
@@ -73,7 +71,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
 			const cell = getCell(buffer, 10, 5);
 			expect(cell).toBeDefined();
 			expect(cell?.char).toBe(' ');
@@ -82,8 +79,9 @@ describe('renderSystem', () => {
 		});
 
 		it('skips hidden entities', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const entity = addEntity(world);
 			setPosition(world, entity, 10, 5);
@@ -94,15 +92,15 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
 			const cell = getCell(buffer, 10, 5);
 			// Should still be default (space with default colors)
 			expect(cell?.bg).not.toBe(0xff0000ff);
 		});
 
 		it('skips clean entities', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const entity = addEntity(world);
 			setPosition(world, entity, 10, 5);
@@ -113,13 +111,13 @@ describe('renderSystem', () => {
 			renderSystem(world);
 
 			// Clear dirty regions and run again
-			clearDirtyRegions(db);
-			const regionsBefore = getDirtyRegions(db).length;
+			clearDirtyTracking(tracker);
+			const regionsBefore = getDirtyRegions(tracker).length;
 
 			renderSystem(world);
 
 			// No new dirty regions should be added
-			expect(getDirtyRegions(db).length).toBe(regionsBefore);
+			expect(getDirtyRegions(tracker).length).toBe(regionsBefore);
 		});
 
 		it('does nothing without render buffer', () => {
@@ -139,8 +137,9 @@ describe('renderSystem', () => {
 
 	describe('z-index ordering', () => {
 		it('renders entities in z-index order (lower first)', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			// Create overlapping entities
 			const back = addEntity(world);
@@ -158,8 +157,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
-
 			// Overlapping area should be blue (higher z-index renders on top)
 			// ARGB format: 0xff0000ff
 			const cell = getCell(buffer, 15, 7);
@@ -174,8 +171,9 @@ describe('renderSystem', () => {
 
 	describe('border rendering', () => {
 		it('renders border around entity', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const entity = addEntity(world);
 			setPosition(world, entity, 10, 5);
@@ -186,8 +184,6 @@ describe('renderSystem', () => {
 
 			layoutSystem(world);
 			renderSystem(world);
-
-			const buffer = getBackBuffer(db);
 
 			// Check corners
 			const topLeft = getCell(buffer, 10, 5);
@@ -212,8 +208,9 @@ describe('renderSystem', () => {
 		});
 
 		it('renders partial borders', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const entity = addEntity(world);
 			setPosition(world, entity, 10, 5);
@@ -230,8 +227,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
-
 			// Top edge should exist
 			const topEdge = getCell(buffer, 15, 5);
 			expect(topEdge?.char).toBe(String.fromCodePoint(BORDER_SINGLE.horizontal));
@@ -242,8 +237,9 @@ describe('renderSystem', () => {
 		});
 
 		it('skips border rendering for BorderType.None', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const entity = addEntity(world);
 			setPosition(world, entity, 10, 5);
@@ -254,8 +250,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
-
 			// All edges should be background color (ARGB format: 0xff0000ff)
 			const topLeft = getCell(buffer, 10, 5);
 			expect(topLeft?.char).toBe(' ');
@@ -265,9 +259,10 @@ describe('renderSystem', () => {
 
 	describe('dirty region tracking', () => {
 		it('marks dirty region when rendering', () => {
-			const db = createDoubleBuffer(80, 24);
-			clearDirtyRegions(db);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			clearDirtyTracking(tracker);
+			setRenderBuffer(tracker, buffer);
 
 			const entity = addEntity(world);
 			setPosition(world, entity, 10, 5);
@@ -277,12 +272,12 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const regions = getDirtyRegions(db);
+			const regions = getDirtyRegions(tracker);
 			expect(regions.length).toBeGreaterThan(0);
 
 			// Should include the entity's bounds
 			const hasEntityRegion = regions.some(
-				(r) => r.x <= 10 && r.y <= 5 && r.x + r.w >= 30 && r.y + r.h >= 15,
+				(r) => r.x <= 10 && r.y <= 5 && r.x + r.width >= 30 && r.y + r.height >= 15,
 			);
 			expect(hasEntityRegion).toBe(true);
 		});
@@ -290,8 +285,9 @@ describe('renderSystem', () => {
 
 	describe('parent-child visibility', () => {
 		it('hides children when parent is hidden', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const parent = addEntity(world);
 			setPosition(world, parent, 10, 5);
@@ -308,8 +304,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
-
 			// Child position would be (15, 8) but should not be rendered
 			const cell = getCell(buffer, 15, 8);
 			expect(cell?.bg).not.toBe(0xff0000ff);
@@ -318,8 +312,7 @@ describe('renderSystem', () => {
 
 	describe('utility functions', () => {
 		it('renderText writes text to buffer', () => {
-			const db = createDoubleBuffer(80, 24);
-			const buffer = getBackBuffer(db);
+			const buffer = createScreenBuffer(80, 24);
 
 			const written = renderText(buffer, 10, 5, 'Hello', 0xffffffff, 0x000000ff);
 
@@ -333,8 +326,7 @@ describe('renderSystem', () => {
 		});
 
 		it('renderRect fills a rectangle', () => {
-			const db = createDoubleBuffer(80, 24);
-			const buffer = getBackBuffer(db);
+			const buffer = createScreenBuffer(80, 24);
 
 			renderRect(buffer, 10, 5, 5, 3, createCell('X', 0xff0000ff, 0x0000ffff));
 
@@ -366,8 +358,9 @@ describe('renderSystem', () => {
 
 	describe('createRenderSystem', () => {
 		it('creates a working render system', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const system = createRenderSystem();
 
@@ -379,7 +372,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			system(world);
 
-			const buffer = getBackBuffer(db);
 			const cell = getCell(buffer, 10, 5);
 			// ARGB format: '#ff0000' -> 0xffff0000
 			expect(cell?.bg).toBe(0xffff0000);
@@ -388,11 +380,11 @@ describe('renderSystem', () => {
 
 	describe('renderBackground', () => {
 		it('skips transparent backgrounds', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			// Pre-fill with a specific color
-			const buffer = getBackBuffer(db);
 			renderRect(buffer, 0, 0, 80, 24, createCell(' ', 0xffffffff, 0x00ff00ff)); // Green
 
 			const entity = addEntity(world);
@@ -405,7 +397,7 @@ describe('renderSystem', () => {
 			const ctx = {
 				world,
 				buffer,
-				doubleBuffer: db,
+				dirtyTracker: tracker,
 			};
 
 			const bounds = { x: 10, y: 5, width: 20, height: 10 };
@@ -419,8 +411,9 @@ describe('renderSystem', () => {
 
 	describe('renderBorder', () => {
 		it('handles small bounds gracefully', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const entity = addEntity(world);
 			setPosition(world, entity, 10, 5);
@@ -430,11 +423,10 @@ describe('renderSystem', () => {
 
 			layoutSystem(world);
 
-			const buffer = getBackBuffer(db);
 			const ctx = {
 				world,
 				buffer,
-				doubleBuffer: db,
+				dirtyTracker: tracker,
 			};
 
 			const bounds = { x: 10, y: 5, width: 1, height: 1 };
@@ -446,8 +438,9 @@ describe('renderSystem', () => {
 
 	describe('edge cases', () => {
 		it('handles entity with no dimensions', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const entity = addEntity(world);
 			setPosition(world, entity, 10, 5);
@@ -461,8 +454,9 @@ describe('renderSystem', () => {
 		});
 
 		it('handles entity outside buffer bounds', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 
 			const entity = addEntity(world);
 			setPosition(world, entity, 100, 50); // Outside 80x24 buffer
@@ -492,8 +486,9 @@ describe('renderSystem', () => {
 		});
 
 		it('renders entity inside viewport', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
 
 			const entity = addEntity(world);
@@ -504,15 +499,15 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
 			const cell = getCell(buffer, 10, 5);
 			// Should be rendered (red background)
 			expect(cell?.bg).toBe(0xffff0000);
 		});
 
 		it('skips entity completely outside viewport (left)', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 20, y: 0, width: 60, height: 24 });
 
 			const entity = addEntity(world);
@@ -528,8 +523,9 @@ describe('renderSystem', () => {
 		});
 
 		it('skips entity completely outside viewport (right)', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
 
 			const entity = addEntity(world);
@@ -545,8 +541,9 @@ describe('renderSystem', () => {
 		});
 
 		it('skips entity completely outside viewport (above)', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 0, y: 10, width: 80, height: 14 });
 
 			const entity = addEntity(world);
@@ -562,8 +559,9 @@ describe('renderSystem', () => {
 		});
 
 		it('skips entity completely outside viewport (below)', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
 
 			const entity = addEntity(world);
@@ -579,8 +577,9 @@ describe('renderSystem', () => {
 		});
 
 		it('renders partially visible entity (overlapping left edge)', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 10, y: 0, width: 70, height: 24 });
 
 			const entity = addEntity(world);
@@ -591,7 +590,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
 			// Should be rendered at x=10 (first visible column)
 			const cell = getCell(buffer, 10, 5);
 			expect(cell?.bg).toBe(0xffff0000);
@@ -601,8 +599,9 @@ describe('renderSystem', () => {
 		});
 
 		it('renders partially visible entity (overlapping right edge)', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
 
 			const entity = addEntity(world);
@@ -613,7 +612,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
 			// Should be rendered at x=75
 			const cell = getCell(buffer, 75, 5);
 			expect(cell?.bg).toBe(0xffff0000);
@@ -623,8 +621,9 @@ describe('renderSystem', () => {
 		});
 
 		it('renders partially visible entity (overlapping top edge)', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 0, y: 10, width: 80, height: 14 });
 
 			const entity = addEntity(world);
@@ -635,7 +634,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
 			// Should be rendered at y=10 (first visible row)
 			const cell = getCell(buffer, 10, 10);
 			expect(cell?.bg).toBe(0xffff0000);
@@ -645,8 +643,9 @@ describe('renderSystem', () => {
 		});
 
 		it('renders partially visible entity (overlapping bottom edge)', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
 
 			const entity = addEntity(world);
@@ -657,7 +656,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
 			// Should be rendered at y=20
 			const cell = getCell(buffer, 10, 20);
 			expect(cell?.bg).toBe(0xffff0000);
@@ -667,8 +665,9 @@ describe('renderSystem', () => {
 		});
 
 		it('renders entity exactly at viewport boundary', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 10, y: 10, width: 60, height: 14 });
 
 			// Entity at top-left corner of viewport
@@ -686,7 +685,6 @@ describe('renderSystem', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const buffer = getBackBuffer(db);
 			const cell1 = getCell(buffer, 10, 10);
 			expect(cell1?.bg).toBe(0xffff0000);
 
@@ -695,8 +693,9 @@ describe('renderSystem', () => {
 		});
 
 		it('performance: culls many off-screen entities efficiently', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
 
 			// Create 1000 entities scattered across large virtual space
@@ -725,8 +724,9 @@ describe('renderSystem', () => {
 		});
 
 		it('disables culling when viewport bounds is null', () => {
-			const db = createDoubleBuffer(80, 24);
-			setRenderBuffer(db);
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
 			setViewportBounds(null); // Disable viewport culling
 
 			const entity = addEntity(world);

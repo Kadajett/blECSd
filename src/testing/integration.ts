@@ -29,6 +29,7 @@ import { setInteractive } from '../components/interactive';
 import { setPosition, setZIndex } from '../components/position';
 import { setStyle } from '../components/renderable';
 import { resetScreenSingleton } from '../components/screen';
+import { createDirtyTracker, type DirtyTracker } from '../core/dirtyTracking';
 import { addEntity, createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { Entity, World } from '../core/types';
@@ -43,9 +44,7 @@ import { layoutSystem } from '../systems/layoutSystem';
 import { clearRenderBuffer, renderSystem, setRenderBuffer } from '../systems/renderSystem';
 import type { KeyEvent, KeyName } from '../terminal/keyParser';
 import type { MouseAction, MouseButton, MouseEvent } from '../terminal/mouseParser';
-import { getCell } from '../terminal/screen/cell';
-import type { DoubleBufferData } from '../terminal/screen/doubleBuffer';
-import { createDoubleBuffer, getBackBuffer } from '../terminal/screen/doubleBuffer';
+import { createScreenBuffer, getCell, type ScreenBufferData } from '../terminal/screen/cell';
 import { captureScreen, screenshotToText } from '../terminal/screen/screenshot';
 
 /**
@@ -54,8 +53,10 @@ import { captureScreen, screenshotToText } from '../terminal/screen/screenshot';
 export interface IntegrationTestContext {
 	/** The ECS world */
 	readonly world: World;
-	/** The double buffer for rendering */
-	readonly db: DoubleBufferData;
+	/** The dirty tracker for rendering */
+	readonly tracker: DirtyTracker;
+	/** The screen buffer for rendering */
+	readonly buffer: ScreenBufferData;
 	/** The screen entity */
 	readonly screenEid: Entity;
 	/** Run a full frame: input -> layout -> render */
@@ -90,14 +91,16 @@ export function createTestScreen(width: number, height: number): IntegrationTest
 	const world = createWorld() as World;
 	resetScreenSingleton(world);
 	const screenEid = createScreenEntity(world, { width, height });
-	const db = createDoubleBuffer(width, height);
-	setRenderBuffer(db);
+	const tracker = createDirtyTracker(width, height);
+	const buffer = createScreenBuffer(width, height);
+	setRenderBuffer(tracker, buffer);
 	resetInputState();
 	resetFocusState();
 
 	return {
 		world,
-		db,
+		tracker,
+		buffer,
 		screenEid,
 		step(): void {
 			inputSystem(world);
@@ -106,7 +109,6 @@ export function createTestScreen(width: number, height: number): IntegrationTest
 			renderSystem(world);
 		},
 		toText(): string {
-			const buffer = getBackBuffer(db);
 			const screenshot = captureScreen(buffer);
 			const text = screenshotToText(screenshot);
 			const lines = text.split('\n');
@@ -116,7 +118,6 @@ export function createTestScreen(width: number, height: number): IntegrationTest
 			return lines.join('\n');
 		},
 		rowText(y: number): string {
-			const buffer = getBackBuffer(db);
 			let text = '';
 			for (let x = 0; x < buffer.width; x++) {
 				const cell = getCell(buffer, x, y);
@@ -125,7 +126,6 @@ export function createTestScreen(width: number, height: number): IntegrationTest
 			return text.trimEnd();
 		},
 		charAt(x: number, y: number): string | undefined {
-			const buffer = getBackBuffer(db);
 			return getCell(buffer, x, y)?.char;
 		},
 	};

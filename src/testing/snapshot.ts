@@ -27,14 +27,13 @@
 import { setDimensions } from '../components/dimensions';
 import { setPosition } from '../components/position';
 import { setStyle } from '../components/renderable';
+import { createDirtyTracker, type DirtyTracker } from '../core/dirtyTracking';
 import { addEntity, createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { Entity, World } from '../core/types';
 import { layoutSystem } from '../systems/layoutSystem';
 import { clearRenderBuffer, renderSystem, setRenderBuffer } from '../systems/renderSystem';
-import { getCell } from '../terminal/screen/cell';
-import type { DoubleBufferData } from '../terminal/screen/doubleBuffer';
-import { createDoubleBuffer, getBackBuffer } from '../terminal/screen/doubleBuffer';
+import { createScreenBuffer, getCell, type ScreenBufferData } from '../terminal/screen/cell';
 import type { Screenshot } from '../terminal/screen/screenshot';
 import { captureRegion, captureScreen, screenshotToText } from '../terminal/screen/screenshot';
 
@@ -44,8 +43,10 @@ import { captureRegion, captureScreen, screenshotToText } from '../terminal/scre
 export interface TestBufferContext {
 	/** The ECS world */
 	readonly world: World;
-	/** The double buffer for rendering */
-	readonly db: DoubleBufferData;
+	/** The dirty tracker for rendering */
+	readonly tracker: DirtyTracker;
+	/** The screen buffer for rendering */
+	readonly buffer: ScreenBufferData;
 	/** The screen entity ID */
 	readonly screenEid: Entity;
 }
@@ -64,39 +65,39 @@ export interface TestBufferContext {
  * ```typescript
  * import { createTestBuffer } from 'blecsd/testing';
  *
- * const { world, db } = createTestBuffer(40, 10);
+ * const { world, buffer } = createTestBuffer(40, 10);
  * ```
  */
 export function createTestBuffer(width: number, height: number): TestBufferContext {
 	const world = createWorld() as World;
 	const screenEid = createScreenEntity(world, { width, height });
-	const db = createDoubleBuffer(width, height);
-	setRenderBuffer(db);
-	return { world, db, screenEid };
+	const tracker = createDirtyTracker(width, height);
+	const buffer = createScreenBuffer(width, height);
+	setRenderBuffer(tracker, buffer);
+	return { world, tracker, buffer, screenEid };
 }
 
 /**
  * Renders the current buffer state to a plain text string.
  *
- * Captures the back buffer as a screenshot and converts it to text,
+ * Captures the buffer as a screenshot and converts it to text,
  * trimming trailing whitespace per line and trailing empty lines.
  *
- * @param db - The double buffer to capture
+ * @param buffer - The screen buffer to capture
  * @returns Plain text representation of the buffer
  *
  * @example
  * ```typescript
  * import { createTestBuffer, renderToString } from 'blecsd/testing';
  *
- * const { world, db } = createTestBuffer(40, 10);
+ * const { world, buffer } = createTestBuffer(40, 10);
  * // ... set up entities, run layout + render ...
  *
- * const text = renderToString(db);
+ * const text = renderToString(buffer);
  * expect(text).toMatchSnapshot();
  * ```
  */
-export function renderToString(db: DoubleBufferData): string {
-	const buffer = getBackBuffer(db);
+export function renderToString(buffer: ScreenBufferData): string {
 	const screenshot = captureScreen(buffer);
 	const text = screenshotToText(screenshot);
 	// Trim trailing empty lines
@@ -110,7 +111,7 @@ export function renderToString(db: DoubleBufferData): string {
 /**
  * Renders a specific region of the buffer to a plain text string.
  *
- * @param db - The double buffer to capture
+ * @param buffer - The screen buffer to capture
  * @param x - Left edge column
  * @param y - Top edge row
  * @param width - Width to capture
@@ -121,62 +122,59 @@ export function renderToString(db: DoubleBufferData): string {
  * ```typescript
  * import { createTestBuffer, renderRegionToString } from 'blecsd/testing';
  *
- * const { world, db } = createTestBuffer(80, 24);
+ * const { world, buffer } = createTestBuffer(80, 24);
  * // ... render ...
  *
- * const region = renderRegionToString(db, 10, 5, 20, 10);
+ * const region = renderRegionToString(buffer, 10, 5, 20, 10);
  * expect(region).toMatchSnapshot();
  * ```
  */
 export function renderRegionToString(
-	db: DoubleBufferData,
+	buffer: ScreenBufferData,
 	x: number,
 	y: number,
 	width: number,
 	height: number,
 ): string {
-	const buffer = getBackBuffer(db);
 	const screenshot = captureRegion(buffer, x, y, width, height);
 	return screenshotToText(screenshot);
 }
 
 /**
- * Captures a Screenshot from the current back buffer state.
+ * Captures a Screenshot from the current buffer state.
  *
- * @param db - The double buffer to capture
+ * @param buffer - The screen buffer to capture
  * @returns A Screenshot object for comparison or serialization
  *
  * @example
  * ```typescript
  * import { createTestBuffer, captureTestScreen } from 'blecsd/testing';
  *
- * const { world, db } = createTestBuffer(40, 10);
+ * const { world, buffer } = createTestBuffer(40, 10);
  * // ... render ...
  *
- * const screenshot = captureTestScreen(db);
+ * const screenshot = captureTestScreen(buffer);
  * expect(screenshot.width).toBe(40);
  * ```
  */
-export function captureTestScreen(db: DoubleBufferData): Screenshot {
-	const buffer = getBackBuffer(db);
+export function captureTestScreen(buffer: ScreenBufferData): Screenshot {
 	return captureScreen(buffer);
 }
 
 /**
  * Gets the text content of a specific row from the buffer.
  *
- * @param db - The double buffer
+ * @param buffer - The screen buffer
  * @param row - Row index (0-based)
  * @returns The text content of the row, trimmed
  *
  * @example
  * ```typescript
- * const row = getRowText(db, 0);
+ * const row = getRowText(buffer, 0);
  * expect(row).toBe('Hello World');
  * ```
  */
-export function getRowText(db: DoubleBufferData, row: number): string {
-	const buffer = getBackBuffer(db);
+export function getRowText(buffer: ScreenBufferData, row: number): string {
 	let text = '';
 	for (let x = 0; x < buffer.width; x++) {
 		const cell = getCell(buffer, x, row);
@@ -188,39 +186,36 @@ export function getRowText(db: DoubleBufferData, row: number): string {
 /**
  * Gets the foreground color of a cell in the buffer.
  *
- * @param db - The double buffer
+ * @param buffer - The screen buffer
  * @param x - Column
  * @param y - Row
  * @returns The packed RGBA foreground color, or undefined if out of bounds
  */
-export function getCellFg(db: DoubleBufferData, x: number, y: number): number | undefined {
-	const buffer = getBackBuffer(db);
+export function getCellFg(buffer: ScreenBufferData, x: number, y: number): number | undefined {
 	return getCell(buffer, x, y)?.fg;
 }
 
 /**
  * Gets the background color of a cell in the buffer.
  *
- * @param db - The double buffer
+ * @param buffer - The screen buffer
  * @param x - Column
  * @param y - Row
  * @returns The packed RGBA background color, or undefined if out of bounds
  */
-export function getCellBg(db: DoubleBufferData, x: number, y: number): number | undefined {
-	const buffer = getBackBuffer(db);
+export function getCellBg(buffer: ScreenBufferData, x: number, y: number): number | undefined {
 	return getCell(buffer, x, y)?.bg;
 }
 
 /**
  * Gets the character at a specific cell in the buffer.
  *
- * @param db - The double buffer
+ * @param buffer - The screen buffer
  * @param x - Column
  * @param y - Row
  * @returns The character, or undefined if out of bounds
  */
-export function getCellChar(db: DoubleBufferData, x: number, y: number): string | undefined {
-	const buffer = getBackBuffer(db);
+export function getCellChar(buffer: ScreenBufferData, x: number, y: number): string | undefined {
 	return getCell(buffer, x, y)?.char;
 }
 

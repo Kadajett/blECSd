@@ -15,7 +15,7 @@ import { createBox } from './box';
 describe('Box widget snapshots', () => {
 	describe('basic rendering', () => {
 		it('renders simple box without border', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -28,14 +28,14 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders box with single line border', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -49,14 +49,14 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders box with double line border', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -70,14 +70,14 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders box with bold border', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -91,14 +91,14 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders box with rounded border', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -112,7 +112,7 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -121,7 +121,7 @@ describe('Box widget snapshots', () => {
 
 	describe('colors and styling', () => {
 		it('renders box with background color', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -135,14 +135,14 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders box with foreground and background colors', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -158,14 +158,14 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders box with bold border', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -180,7 +180,7 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -189,7 +189,7 @@ describe('Box widget snapshots', () => {
 
 	describe('padding', () => {
 		it('renders box with symmetric padding', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -204,14 +204,14 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders box with asymmetric padding', () => {
-			const { world, db } = createTestBuffer(25, 12);
+			const { world, buffer } = createTestBuffer(25, 12);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -226,7 +226,7 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -235,7 +235,7 @@ describe('Box widget snapshots', () => {
 
 	describe('edge cases', () => {
 		it('renders minimal 1x1 box', () => {
-			const { world, db } = createTestBuffer(10, 10);
+			const { world, buffer } = createTestBuffer(10, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -248,14 +248,14 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders box at screen origin', () => {
-			const { world, db } = createTestBuffer(15, 8);
+			const { world, buffer } = createTestBuffer(15, 8);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -269,14 +269,14 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders full-screen box', () => {
-			const { world, db } = createTestBuffer(20, 10);
+			const { world, buffer } = createTestBuffer(20, 10);
 			const entity = addEntity(world);
 
 			createBox(world, entity, {
@@ -290,7 +290,7 @@ describe('Box widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();

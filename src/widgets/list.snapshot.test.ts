@@ -15,7 +15,7 @@ import { createList } from './list';
 describe('List widget snapshots', () => {
 	describe('basic rendering', () => {
 		it('renders simple list', () => {
-			const { world, db } = createTestBuffer(30, 12);
+			const { world, buffer } = createTestBuffer(30, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -29,14 +29,14 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders empty list', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -50,14 +50,14 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders single-item list', () => {
-			const { world, db } = createTestBuffer(30, 10);
+			const { world, buffer } = createTestBuffer(30, 10);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -71,14 +71,14 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders list with long items', () => {
-			const { world, db } = createTestBuffer(40, 12);
+			const { world, buffer } = createTestBuffer(40, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -97,7 +97,7 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -106,7 +106,7 @@ describe('List widget snapshots', () => {
 
 	describe('selection', () => {
 		it('renders list with first item selected', () => {
-			const { world, db } = createTestBuffer(30, 12);
+			const { world, buffer } = createTestBuffer(30, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -121,14 +121,14 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders list with middle item selected', () => {
-			const { world, db } = createTestBuffer(30, 12);
+			const { world, buffer } = createTestBuffer(30, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -143,14 +143,14 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders list with last item selected', () => {
-			const { world, db } = createTestBuffer(30, 12);
+			const { world, buffer } = createTestBuffer(30, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -165,7 +165,7 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -174,7 +174,7 @@ describe('List widget snapshots', () => {
 
 	describe('styling', () => {
 		it('renders list with custom selected style', () => {
-			const { world, db } = createTestBuffer(30, 12);
+			const { world, buffer } = createTestBuffer(30, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -196,14 +196,14 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders list with custom item colors', () => {
-			const { world, db } = createTestBuffer(30, 12);
+			const { world, buffer } = createTestBuffer(30, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -222,14 +222,14 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders list with custom prefixes', () => {
-			const { world, db } = createTestBuffer(30, 12);
+			const { world, buffer } = createTestBuffer(30, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -250,7 +250,7 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -259,7 +259,7 @@ describe('List widget snapshots', () => {
 
 	describe('scrolling', () => {
 		it('renders list with more items than visible height', () => {
-			const { world, db } = createTestBuffer(30, 12);
+			const { world, buffer } = createTestBuffer(30, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -273,14 +273,14 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders scrolled list with selection beyond visible area', () => {
-			const { world, db } = createTestBuffer(30, 12);
+			const { world, buffer } = createTestBuffer(30, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -295,7 +295,7 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
@@ -304,7 +304,7 @@ describe('List widget snapshots', () => {
 
 	describe('edge cases', () => {
 		it('renders list at screen origin', () => {
-			const { world, db } = createTestBuffer(25, 10);
+			const { world, buffer } = createTestBuffer(25, 10);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -318,14 +318,14 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
 		});
 
 		it('renders narrow list', () => {
-			const { world, db } = createTestBuffer(20, 12);
+			const { world, buffer } = createTestBuffer(20, 12);
 			const entity = addEntity(world);
 
 			createList(world, entity, {
@@ -339,7 +339,7 @@ describe('List widget snapshots', () => {
 			layoutSystem(world);
 			renderSystem(world);
 
-			const output = renderToString(db);
+			const output = renderToString(buffer);
 			expect(output).toMatchSnapshot();
 
 			cleanupTestBuffer();
