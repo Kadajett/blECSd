@@ -11,10 +11,10 @@ blECSd provides a complete toolkit for building terminal applications: dashboard
 
 ## Features
 
-- **18 Widgets**: Box, Panel, Tabs, List, Table, Tree, VirtualizedList, and more
-- **Form Controls**: TextInput, Checkbox, RadioButton, Slider, Select, ProgressBar
-- **32 Components**: Position, Renderable, Focusable, Interactive, Animation, Collision, etc.
-- **12 Systems**: Layout, Input, Render, Animation, Collision, Camera, Drag, Focus, etc.
+- **43 Widgets**: Box, Panel, Tabs, List, Table, Tree, Terminal, Video, 3D Viewport, and more
+- **Form Controls**: Textarea, Textbox, Checkbox, RadioButton, Switch, Select, ProgressBar, Form
+- **41 Components**: Position, Renderable, Focusable, Interactive, Animation, Collision, Camera, and more
+- **21 Systems**: Layout, Input, Render, Animation, Collision, SpatialHash, VisibilityCulling, and more
 - **Physics-based Animations**: Velocity, acceleration, friction for smooth transitions
 - **Virtualized Rendering**: Efficiently render 1000s of items
 - **State Machines**: Built-in FSM support for complex UI state
@@ -31,35 +31,33 @@ npm install blecsd
 import {
   createWorld,
   addEntity,
-  setPosition,
-  setDimensions,
-  setBorder,
-  setContent,
-  createPanel,
+  Position,
+  Dimensions,
+  Border,
+  createBox,
   createList,
-  createTextInput,
   createEventBus
 } from 'blecsd';
 
-// Create a world and entities
+// Create a world and entity
 const world = createWorld();
+const entity = addEntity(world);
 
-// Create a panel with a title
-const panel = createPanel(world, {
-  x: 2,
-  y: 1,
-  width: 40,
-  height: 10,
-  title: 'My Application',
-  border: { type: 'rounded' }
+// Set position and dimensions using components
+Position.x[entity] = 2;
+Position.y[entity] = 1;
+Dimensions.width[entity] = 40;
+Dimensions.height[entity] = 10;
+
+// Create a box widget
+const box = createBox(world, entity, {
+  border: { type: 'rounded' },
+  title: 'My Application'
 });
 
-// Create an interactive list
-const list = createList(world, {
-  x: 4,
-  y: 3,
-  width: 36,
-  height: 6,
+// Create a list in another entity
+const listEntity = addEntity(world);
+const list = createList(world, listEntity, {
   items: [
     { label: 'Option 1', value: 'opt1' },
     { label: 'Option 2', value: 'opt2' },
@@ -79,34 +77,63 @@ events.on('item:selected', (e) => console.log(`Selected: ${e.value}`));
 
 | Widget | Description |
 |--------|-------------|
+| BarChart | Bar chart visualization |
+| BigText | Large ASCII art text |
 | Box | Base container with borders, padding, content |
-| Panel | Box with title bar, collapsible, close button |
-| Tabs | Tabbed container with keyboard navigation |
-| Text | Text display with alignment, wrapping |
-| List | Selectable list with keyboard/mouse support |
-| Table | Data table with headers, columns, sorting |
-| Tree | Hierarchical tree view with expand/collapse |
-| VirtualizedList | Efficient list for large datasets |
-| ListTable | Table-style list display |
-| Listbar | Horizontal navigation bar |
+| Button | Clickable button with hover/focus states |
+| Checkbox | Boolean toggle with customizable characters |
+| FileManager | File browser with directory navigation |
+| Form | Form field management, validation, submit |
+| Gauge | Circular/radial gauge display |
+| HoverText | Tooltip/hover text display |
+| Image | Image rendering with various formats |
+| Layout | Flex/grid layout container |
 | Line | Horizontal/vertical separator |
+| LineChart | Line chart visualization |
+| List | Selectable list with keyboard/mouse support |
+| Listbar | Horizontal navigation bar |
+| ListTable | Table-style list display |
 | Loading | Loading indicator with spinner |
+| Log | Scrollable log viewer |
+| Message | Message box with buttons |
+| Modal | Modal dialog overlay |
+| Panel | Box with title bar, collapsible, close button |
+| ProgressBar | Progress indicator, horizontal/vertical |
+| Prompt | Input prompt dialog |
+| Question | Question dialog with yes/no buttons |
+| RadioButton | Single selection from group |
 | ScrollableBox | Container with scroll support |
 | ScrollableText | Scrollable text area |
-| HoverText | Tooltip/hover text display |
-| Layout | Flex/grid layout container |
+| Sparkline | Sparkline chart visualization |
+| SplitPane | Split pane container with resize |
+| StreamingText | Text display with typewriter effect |
+| Switch | Toggle switch control |
+| Table | Data table with headers, columns, sorting |
+| Tabs | Tabbed container with keyboard navigation |
+| Terminal | ANSI terminal emulator with PTY support |
+| Text | Text display with alignment, wrapping |
+| Textarea | Multi-line text editor |
+| Textbox | Single-line text input |
+| TextEditing | Text editing utilities |
+| Toast | Toast notification popup |
+| Tree | Hierarchical tree view with expand/collapse |
+| Video | Video playback widget |
+| Viewport3d | 3D scene renderer |
+| VirtualizedList | Efficient list for large datasets |
 
 ## Form Controls
 
 | Control | Description |
 |---------|-------------|
-| TextInput | Single/multi-line text entry with cursor, selection |
+| Textarea | Multi-line text editor with cursor, selection |
+| Textbox | Single-line text input with cursor support |
 | Checkbox | Boolean toggle with customizable characters |
 | RadioButton | Single selection from group |
-| Slider | Range value selection, horizontal/vertical |
-| Select | Dropdown selection menu |
+| Switch | Toggle switch control |
+| Select | Dropdown selection menu (via List component) |
 | ProgressBar | Progress indicator, horizontal/vertical |
 | Form | Form field management, validation, submit |
+| Button | Clickable button with hover/focus states |
 
 ## Components
 
@@ -114,24 +141,46 @@ blECSd provides ECS components that work with any bitECS world:
 
 | Component | Purpose |
 |-----------|---------|
-| Position | X/Y coordinates, z-index, absolute positioning |
-| Renderable | Colors, visibility, dirty tracking |
-| Dimensions | Width, height, min/max constraints, percentages |
-| Hierarchy | Parent-child relationships, traversal |
-| Focusable | Keyboard focus, tab order |
-| Interactive | Click, hover, drag states |
-| Scrollable | Scroll position, content size, scrollbars |
-| Border | Box borders (single, double, rounded, bold, ascii) |
-| Content | Text content, alignment, wrapping, tag parsing |
-| Padding | Inner spacing |
-| Label | Text labels with positioning |
 | Animation | Frame-based sprite animations |
-| Velocity | Movement with speed, friction, max speed |
-| Collision | AABB/circle collision detection, layers, triggers |
+| Behavior | Behavior tree execution |
+| Border | Box borders (single, double, rounded, bold, ascii) |
+| Button | Button state and configuration |
 | Camera | Viewport, target following, bounds |
-| StateMachine | Finite state machine with events, transitions |
-| Sprite | Sprite sheets, frames |
+| Checkbox | Checkbox state |
+| Collision | AABB/circle collision detection, layers, triggers |
+| Content | Text content, alignment, wrapping, tag parsing |
+| Dimensions | Width, height, min/max constraints, percentages |
+| Focusable | Keyboard focus, tab order |
+| Form | Form field management |
+| Health | Health/damage system |
+| Hierarchy | Parent-child relationships, traversal |
+| Input | Input capture state |
+| Interactive | Click, hover, drag states |
+| Label | Text labels with positioning |
+| List | List widget state |
+| Padding | Inner spacing |
+| Particle | Particle system data |
+| Position | X/Y coordinates, z-index, absolute positioning |
+| ProgressBar | Progress bar state |
+| RadioButton | Radio button state |
+| Renderable | Colors, visibility, dirty tracking |
+| Screen | Screen buffer data |
+| Scrollable | Scroll position, content size, scrollbars |
+| Scrollbar | Scrollbar state |
+| Select | Selection dropdown state |
 | Shadow | Drop shadows with opacity, blending |
+| Slider | Slider state |
+| Spinner | Loading spinner state |
+| Sprite | Sprite sheets, frames |
+| StateMachine | Finite state machine with events, transitions |
+| Table | Table widget state |
+| TerminalBuffer | Terminal emulator buffer |
+| TextInput | Text input state |
+| TextSelection | Text selection state |
+| Tilemap | Tilemap rendering data |
+| Timer | Timer/countdown state |
+| UserData | Custom user data storage |
+| Velocity | Movement with speed, friction, max speed |
 | VirtualViewport | Virtualized content rendering |
 
 See [API Reference](./docs/api/index.md) for the complete list.
@@ -140,18 +189,27 @@ See [API Reference](./docs/api/index.md) for the complete list.
 
 | System | Purpose |
 |--------|---------|
-| inputSystem | Process keyboard/mouse input |
-| focusSystem | Manage focus, tab navigation |
-| layoutSystem | Calculate positions, dimensions |
-| renderSystem | Render entities to screen buffer |
-| virtualizedRenderSystem | Efficient rendering for large datasets |
 | animationSystem | Update sprite animations |
-| movementSystem | Apply velocity to position |
-| collisionSystem | Detect and resolve collisions |
+| behaviorSystem | Execute behavior trees |
 | cameraSystem | Update camera following target |
+| collisionSystem | Detect and resolve collisions |
 | dragSystem | Handle drag and drop |
-| stateMachineSystem | Process state machine transitions |
+| focusSystem | Manage focus, tab navigation |
+| frameBudget | Frame time profiling and budget management |
+| inputSystem | Process keyboard/mouse input |
+| layoutSystem | Calculate positions, dimensions |
+| movementSystem | Apply velocity to position |
 | outputSystem | Write buffer to terminal |
+| panelMovement | Handle panel drag/resize |
+| particleSystem | Update particle effects |
+| renderSystem | Render entities to screen buffer |
+| smoothScroll | Smooth scrolling animations |
+| spatialHash | Spatial partitioning for collision |
+| stateMachineSystem | Process state machine transitions |
+| tilemapRenderer | Render tilemap layers |
+| virtualizedRenderSystem | Efficient rendering for large datasets |
+| visibilityCulling | Frustum/viewport culling |
+| workerPool | Background task processing |
 
 ## Library Design
 
@@ -164,13 +222,22 @@ blECSd is a library, not a framework:
 
 ```typescript
 // Your world, your control
-import { createWorld, addEntity, setPosition, setRenderable, layoutSystem, renderSystem } from 'blecsd';
+import {
+  createWorld,
+  addEntity,
+  Position,
+  Renderable,
+  layoutSystem,
+  renderSystem
+} from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);
 
-// Use components without our update loop
-setPosition(world, eid, 10, 5);
+// Use components directly - no setters needed
+Position.x[eid] = 10;
+Position.y[eid] = 5;
+Renderable.visible[eid] = 1;
 
 // Call systems when you want
 layoutSystem(world);
@@ -229,7 +296,7 @@ const callbacks = createComponentStore<() => void>({ iterable: false });
 |---------|--------|-----|---------|---------|
 | Architecture | ECS + PackedStore (data-oriented) | React (component) | Class-based | Widget classes |
 | Language | TypeScript | TypeScript/JSX | JavaScript | Python |
-| Widgets | 18 built-in | Few built-in | Many built-in | Many built-in |
+| Widgets | 43 built-in | Few built-in | Many built-in | Many built-in |
 | Animation | Physics-based | Manual | Manual | CSS-like |
 | Virtualization | Built-in | Manual | Manual | Built-in |
 | Game support | First-class | Limited | Limited | Limited |
@@ -238,14 +305,26 @@ Choose blECSd if you want data-oriented design, physics-based animations, or gam
 
 ## Documentation
 
+### Getting Started
 - [Installation](./docs/getting-started/installation.md): Requirements, terminal compatibility, setup
 - [Core Concepts](./docs/getting-started/concepts.md): ECS, scheduler, events
 - [Hello World](./docs/getting-started/hello-world.md): Your first blECSd application
+
+### API Reference
 - [API Reference](./docs/api/index.md): Components, widgets, systems, terminal I/O
 - [Terminal Widget](./docs/api/widgets/terminal.md): ANSI rendering and PTY shell support
+
+### Guides
+- [Guides](./docs/guides/): Animations, forms, layouts, and more
+- [Error Handling](./docs/guides/error-handling.md): Error boundaries and recovery
+- [Testing Guide](./docs/guides/testing.md): Unit and integration testing
+- [Performance Optimization](./docs/guides/performance.md): Profiling and optimization
+- [Migration Guide](./docs/guides/migration.md): Migrating from other libraries
+- [Keyboard Shortcuts](./docs/guides/keyboard-shortcuts.md): Custom keybindings
+
+### Examples
 - [Examples](./docs/examples/index.md): File manager, multiplexer, system monitor, ANSI viewer, telnet server
 - [Examples Repository](https://github.com/Kadajett/blECSd-Examples): Standalone runnable examples
-- [Guides](./docs/guides/): Animations, forms, layouts, and more
 
 ## Development
 
