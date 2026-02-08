@@ -362,7 +362,7 @@ export interface TerminalCapabilities {
  */
 export function detectCapabilities(maxAge = 60000): TerminalCapabilities {
 	// Try to use cached value
-	const cached = capabilityCache.get();
+	const cached = capabilityCache.value;
 	if (cached && Date.now() - cached.cachedAt < maxAge) {
 		return cached;
 	}
@@ -392,27 +392,22 @@ export function detectCapabilities(maxAge = 60000): TerminalCapabilities {
 		cachedAt: Date.now(),
 	};
 
-	capabilityCache.set(caps);
+	capabilityCache.value = caps;
 	return caps;
 }
 
 /** Simple capability cache */
-const capabilityCache = {
-	_value: null as TerminalCapabilities | null,
-	get(): TerminalCapabilities | null {
-		return this._value;
-	},
-	set(value: TerminalCapabilities): void {
-		this._value = value;
-	},
-	clear(): void {
-		this._value = null;
-	},
+interface CapabilityCache {
+	value: TerminalCapabilities | null;
+}
+
+const capabilityCache: CapabilityCache = {
+	value: null,
 };
 
 /**
  * Clears the terminal capability cache.
  */
 export function clearCapabilityCache(): void {
-	capabilityCache.clear();
+	capabilityCache.value = null;
 }

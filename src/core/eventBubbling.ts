@@ -110,16 +110,16 @@ export function createBubbleableEvent<T>(options: BubbleableEventOptions<T>): Bu
 		payload,
 
 		stopPropagation() {
-			this.propagationStopped = true;
+			event.propagationStopped = true;
 		},
 
 		stopImmediatePropagation() {
-			this.propagationStopped = true;
-			this.immediatePropagationStopped = true;
+			event.propagationStopped = true;
+			event.immediatePropagationStopped = true;
 		},
 
 		preventDefault() {
-			this.defaultPrevented = true;
+			event.defaultPrevented = true;
 		},
 	};
 

@@ -406,6 +406,30 @@ export function createInputState(config: InputStateConfig = {}): InputState {
 		updateMouseButtonState(button, event.action, timestamp);
 	}
 
+	// Define methods that will be used in the returned object
+	const releaseAllKeys = (): void => {
+		const currentTime = performance.now();
+		for (const [key, state] of keyStates) {
+			if (state.pressed) {
+				processKeyRelease(key, currentTime);
+			}
+		}
+		ctrlDown = false;
+		altDown = false;
+		shiftDown = false;
+	};
+
+	const releaseAllMouseButtons = (): void => {
+		const currentTime = performance.now();
+		for (const button of Object.values(mouseState.buttons)) {
+			if (button.pressed) {
+				button.pressed = false;
+				button.justReleased = true;
+				button.lastEventTime = currentTime;
+			}
+		}
+	};
+
 	return {
 		update(
 			keyEvents: readonly TimestampedKeyEvent[],
@@ -561,32 +585,13 @@ export function createInputState(config: InputStateConfig = {}): InputState {
 			processKeyRelease(key.toLowerCase(), performance.now());
 		},
 
-		releaseAllKeys(): void {
-			const currentTime = performance.now();
-			for (const [key, state] of keyStates) {
-				if (state.pressed) {
-					processKeyRelease(key, currentTime);
-				}
-			}
-			ctrlDown = false;
-			altDown = false;
-			shiftDown = false;
-		},
+		releaseAllKeys,
 
-		releaseAllMouseButtons(): void {
-			const currentTime = performance.now();
-			for (const button of Object.values(mouseState.buttons)) {
-				if (button.pressed) {
-					button.pressed = false;
-					button.justReleased = true;
-					button.lastEventTime = currentTime;
-				}
-			}
-		},
+		releaseAllMouseButtons,
 
 		releaseAll(): void {
-			this.releaseAllKeys();
-			this.releaseAllMouseButtons();
+			releaseAllKeys();
+			releaseAllMouseButtons();
 		},
 
 		getStats(): InputStateStats {
