@@ -161,6 +161,7 @@ export type ListAction =
 	| { type: 'pageDown' }
 	| { type: 'confirm' }
 	| { type: 'cancel' }
+	| { type: 'toggleSelect' }
 	| { type: 'startSearch' }
 	| { type: 'endSearch' }
 	| { type: 'searchChar'; char: string }
@@ -249,6 +250,21 @@ const searchQueryStore = new Map<Entity, string>();
 
 /** Store for search change callbacks */
 const searchChangeCallbacks = new Map<Entity, Array<(query: string) => void>>();
+
+/** Store for cancel callbacks */
+const cancelCallbacks = new Map<Entity, Array<() => void>>();
+
+/** Store for multi-select mode */
+const multiSelectStore = new Map<Entity, boolean>();
+
+/** Store for selected indices in multi-select mode */
+const multiSelectedStore = new Map<Entity, Set<number>>();
+
+/** Store for filter text */
+const filterStore = new Map<Entity, string>();
+
+/** Store for filtered items cache */
+const filteredItemsCache = new Map<Entity, ListItem[]>();
 
 // =============================================================================
 // STATE MACHINE CONFIG
@@ -1705,6 +1721,50 @@ export function onListActivate(eid: Entity, callback: ListSelectCallback): () =>
 }
 
 /**
+ * Registers a callback for cancel events (when Escape is pressed).
+ *
+ * @param eid - The entity ID
+ * @param callback - Callback function to invoke on cancel
+ * @returns Function to unsubscribe the callback
+ *
+ * @example
+ * ```typescript
+ * const unsubscribe = onListCancel(eid, () => {
+ *   console.log('List cancelled');
+ * });
+ * ```
+ */
+export function onListCancel(eid: Entity, callback: () => void): () => void {
+	const callbacks = cancelCallbacks.get(eid) ?? [];
+	callbacks.push(callback);
+	cancelCallbacks.set(eid, callbacks);
+
+	return () => {
+		const cbs = cancelCallbacks.get(eid);
+		if (cbs) {
+			const idx = cbs.indexOf(callback);
+			if (idx !== -1) {
+				cbs.splice(idx, 1);
+			}
+		}
+	};
+}
+
+/**
+ * Triggers cancel callbacks for a list.
+ *
+ * @param eid - The entity ID
+ */
+export function triggerListCancel(eid: Entity): void {
+	const callbacks = cancelCallbacks.get(eid);
+	if (callbacks) {
+		for (const callback of callbacks) {
+			callback();
+		}
+	}
+}
+
+/**
  * Clears all callbacks for a list.
  *
  * @param eid - The entity ID
@@ -1713,6 +1773,224 @@ export function clearListCallbacks(eid: Entity): void {
 	selectCallbacks.delete(eid);
 	activateCallbacks.delete(eid);
 	searchChangeCallbacks.delete(eid);
+	cancelCallbacks.delete(eid);
+}
+
+// =============================================================================
+// MULTI-SELECT
+// =============================================================================
+
+/**
+ * Enables or disables multi-select mode for a list.
+ *
+ * @param eid - The entity ID
+ * @param enabled - Whether multi-select is enabled
+ *
+ * @example
+ * ```typescript
+ * setListMultiSelect(eid, true);
+ * ```
+ */
+export function setListMultiSelect(eid: Entity, enabled: boolean): void {
+	multiSelectStore.set(eid, enabled);
+	if (enabled && !multiSelectedStore.has(eid)) {
+		multiSelectedStore.set(eid, new Set<number>());
+	}
+}
+
+/**
+ * Checks if a list has multi-select enabled.
+ *
+ * @param eid - The entity ID
+ * @returns true if multi-select is enabled
+ */
+export function isListMultiSelect(eid: Entity): boolean {
+	return multiSelectStore.get(eid) ?? false;
+}
+
+/**
+ * Toggles selection of an item in multi-select mode.
+ *
+ * @param eid - The entity ID
+ * @param index - The item index to toggle
+ * @returns true if the item is now selected, false if deselected
+ */
+export function toggleMultiSelect(eid: Entity, index: number): boolean {
+	if (!isListMultiSelect(eid)) {
+		throw new Error('Multi-select is not enabled for this list');
+	}
+
+	const selected = multiSelectedStore.get(eid);
+	if (!selected) {
+		return false;
+	}
+
+	if (selected.has(index)) {
+		selected.delete(index);
+		return false;
+	}
+
+	selected.add(index);
+	return true;
+}
+
+/**
+ * Gets all selected indices in multi-select mode.
+ *
+ * @param eid - The entity ID
+ * @returns Array of selected indices
+ */
+export function getMultiSelected(eid: Entity): number[] {
+	if (!isListMultiSelect(eid)) {
+		throw new Error('Multi-select is not enabled for this list');
+	}
+
+	const selected = multiSelectedStore.get(eid);
+	return selected ? Array.from(selected).sort((a, b) => a - b) : [];
+}
+
+/**
+ * Selects all items in multi-select mode.
+ *
+ * @param eid - The entity ID
+ */
+export function selectAllItems(eid: Entity): void {
+	if (!isListMultiSelect(eid)) {
+		return;
+	}
+
+	const items = getItems(eid);
+	const selected = multiSelectedStore.get(eid);
+	if (selected) {
+		selected.clear();
+		for (let i = 0; i < items.length; i++) {
+			selected.add(i);
+		}
+	}
+}
+
+/**
+ * Deselects all items in multi-select mode.
+ *
+ * @param eid - The entity ID
+ */
+export function deselectAllItems(eid: Entity): void {
+	if (!isListMultiSelect(eid)) {
+		return;
+	}
+
+	const selected = multiSelectedStore.get(eid);
+	if (selected) {
+		selected.clear();
+	}
+}
+
+/**
+ * Checks if an item is selected in multi-select mode.
+ *
+ * @param eid - The entity ID
+ * @param index - The item index
+ * @returns true if the item is selected
+ */
+export function isItemMultiSelected(eid: Entity, index: number): boolean {
+	if (!isListMultiSelect(eid)) {
+		return false;
+	}
+
+	const selected = multiSelectedStore.get(eid);
+	return selected?.has(index) ?? false;
+}
+
+// =============================================================================
+// FILTER
+// =============================================================================
+
+/**
+ * Sets a filter text to show only matching items.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param filterText - The filter text (case-insensitive substring match)
+ *
+ * @example
+ * ```typescript
+ * setListFilter(world, eid, 'app'); // Shows only items containing 'app'
+ * ```
+ */
+export function setListFilter(world: World, eid: Entity, filterText: string): void {
+	const filter = filterText.toLowerCase();
+	filterStore.set(eid, filter);
+
+	// Recalculate filtered items
+	const allItems = getItems(eid);
+	const filtered =
+		filter === ''
+			? [...allItems]
+			: allItems.filter((item) => item.text.toLowerCase().includes(filter));
+
+	filteredItemsCache.set(eid, filtered);
+
+	// Reset selection to first visible item
+	if (filtered.length > 0) {
+		listStore.selectedIndex[eid] = 0;
+	} else {
+		listStore.selectedIndex[eid] = -1;
+	}
+
+	listStore.firstVisible[eid] = 0;
+	markDirty(world, eid);
+}
+
+/**
+ * Gets the current filter text.
+ *
+ * @param eid - The entity ID
+ * @returns The current filter text
+ */
+export function getListFilter(eid: Entity): string {
+	return filterStore.get(eid) ?? '';
+}
+
+/**
+ * Clears the filter, showing all items.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ */
+export function clearListFilter(world: World, eid: Entity): void {
+	filterStore.delete(eid);
+	filteredItemsCache.delete(eid);
+	listStore.firstVisible[eid] = 0;
+	if (getItems(eid).length > 0) {
+		listStore.selectedIndex[eid] = 0;
+	}
+	markDirty(world, eid);
+}
+
+/**
+ * Gets the filtered (visible) items based on current filter.
+ *
+ * @param eid - The entity ID
+ * @returns Array of filtered items
+ */
+export function getFilteredItems(eid: Entity): readonly ListItem[] {
+	const filter = filterStore.get(eid);
+	if (filter === undefined || filter === '') {
+		return getItems(eid);
+	}
+
+	const cached = filteredItemsCache.get(eid);
+	if (cached) {
+		return cached;
+	}
+
+	// Fallback: calculate on the fly
+	const allItems = getItems(eid);
+	const filtered = allItems.filter((item) =>
+		item.text.toLowerCase().includes(filter.toLowerCase()),
+	);
+	filteredItemsCache.set(eid, filtered);
+	return filtered;
 }
 
 // =============================================================================
@@ -1778,7 +2056,14 @@ export function handleListKeyPress(world: World, eid: Entity, key: string): List
 			return { type: 'pageDown' };
 
 		case 'enter':
+			return { type: 'confirm' };
+
+		case ' ':
 		case 'space':
+			// In multi-select mode, space toggles selection instead of activating
+			if (isListMultiSelect(eid)) {
+				return { type: 'toggleSelect' };
+			}
 			return { type: 'confirm' };
 
 		case 'escape':
@@ -1882,6 +2167,11 @@ export function resetListStore(): void {
 	displayStore.clear();
 	selectCallbacks.clear();
 	activateCallbacks.clear();
+	cancelCallbacks.clear();
+	multiSelectStore.clear();
+	multiSelectedStore.clear();
+	filterStore.clear();
+	filteredItemsCache.clear();
 	searchQueryStore.clear();
 	searchChangeCallbacks.clear();
 	lazyLoadCallbacks.clear();

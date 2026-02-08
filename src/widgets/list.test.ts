@@ -314,4 +314,143 @@ describe('List Widget', () => {
 			expect(isListWidget(world, eid)).toBe(false);
 		});
 	});
+
+	describe('onCancel callback', () => {
+		beforeEach(() => {
+			widget = createList(world, eid, { items: ['A', 'B', 'C'] });
+		});
+
+		it('should fire cancel callback when Escape is pressed', () => {
+			const callback = vi.fn();
+			widget.onCancel(callback);
+			widget.focus();
+
+			widget.handleKey('escape');
+			expect(callback).toHaveBeenCalled();
+		});
+
+		it('should return unsubscribe function', () => {
+			const callback = vi.fn();
+			const unsubscribe = widget.onCancel(callback);
+
+			unsubscribe();
+			widget.handleKey('escape');
+			expect(callback).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('multi-select', () => {
+		beforeEach(() => {
+			widget = createList(world, eid, {
+				items: ['A', 'B', 'C', 'D'],
+				multiSelect: true,
+			});
+		});
+
+		it('should toggle selection on Space key', () => {
+			widget.select(0);
+			widget.handleKey(' ');
+
+			const selected = widget.getSelected();
+			expect(selected).toContain(0);
+		});
+
+		it('should support multiple selections', () => {
+			widget.select(0);
+			widget.handleKey(' ');
+			widget.select(2);
+			widget.handleKey(' ');
+
+			const selected = widget.getSelected();
+			expect(selected).toHaveLength(2);
+			expect(selected).toContain(0);
+			expect(selected).toContain(2);
+		});
+
+		it('should deselect on second Space press', () => {
+			widget.select(1);
+			widget.handleKey(' ');
+			widget.handleKey(' ');
+
+			const selected = widget.getSelected();
+			expect(selected).not.toContain(1);
+		});
+
+		it('should select all items', () => {
+			const result = widget.selectAll();
+			expect(result).toBe(widget);
+
+			const selected = widget.getSelected();
+			expect(selected).toHaveLength(4);
+		});
+
+		it('should deselect all items', () => {
+			widget.selectAll();
+			const result = widget.deselectAll();
+			expect(result).toBe(widget);
+
+			const selected = widget.getSelected();
+			expect(selected).toHaveLength(0);
+		});
+
+		it('should not interfere with single-select mode', () => {
+			const singleWidget = createList(world, addEntity(world) as Entity, {
+				items: ['X', 'Y'],
+				multiSelect: false,
+			});
+
+			singleWidget.select(0);
+			singleWidget.handleKey(' ');
+
+			expect(() => singleWidget.getSelected()).toThrow();
+		});
+	});
+
+	describe('fuzzy filter', () => {
+		beforeEach(() => {
+			widget = createList(world, eid, {
+				items: ['Apple', 'Apricot', 'Banana', 'Blueberry', 'Cherry'],
+			});
+		});
+
+		it('should filter items by substring', () => {
+			widget.setFilter('App');
+			const items = widget.getVisibleItems();
+			expect(items).toHaveLength(1);
+			expect(items[0]?.text).toBe('Apple');
+		});
+
+		it('should filter case-insensitively', () => {
+			widget.setFilter('app');
+			const items = widget.getVisibleItems();
+			expect(items).toHaveLength(1);
+			expect(items[0]?.text).toBe('Apple');
+		});
+
+		it('should match multiple items', () => {
+			widget.setFilter('b');
+			const items = widget.getVisibleItems();
+			expect(items.length).toBeGreaterThanOrEqual(2);
+		});
+
+		it('should clear filter', () => {
+			widget.setFilter('App');
+			widget.clearFilter();
+			const items = widget.getVisibleItems();
+			expect(items).toHaveLength(5);
+		});
+
+		it('should return all items when filter is empty', () => {
+			widget.setFilter('');
+			const items = widget.getVisibleItems();
+			expect(items).toHaveLength(5);
+		});
+
+		it('should reset selection when filter changes', () => {
+			widget.select(2);
+			widget.setFilter('App');
+			const selectedIndex = widget.getSelectedIndex();
+			expect(selectedIndex).toBe(0);
+		});
+	});
 });
