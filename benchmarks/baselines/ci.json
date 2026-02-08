@@ -1,0 +1,71 @@
+{
+  "timestamp": "2026-02-08T18:50:00.000Z",
+  "benchmarks": {
+    "create 100 entities": {
+      "name": "create 100 entities",
+      "hz": 145000,
+      "mean": 6896,
+      "variance": 0
+    },
+    "create 100 entities with Position": {
+      "name": "create 100 entities with Position",
+      "hz": 98000,
+      "mean": 10204,
+      "variance": 0
+    },
+    "query 1000 entities": {
+      "name": "query 1000 entities",
+      "hz": 85000,
+      "mean": 11764,
+      "variance": 0
+    },
+    "set Position on 100 entities": {
+      "name": "set Position on 100 entities",
+      "hz": 125000,
+      "mean": 8000,
+      "variance": 0
+    },
+    "set Velocity on 100 entities": {
+      "name": "set Velocity on 100 entities",
+      "hz": 130000,
+      "mean": 7692,
+      "variance": 0
+    },
+    "set Renderable on 100 entities": {
+      "name": "set Renderable on 100 entities",
+      "hz": 95000,
+      "mean": 10526,
+      "variance": 0
+    },
+    "layout 50 entities": {
+      "name": "layout 50 entities",
+      "hz": 22000,
+      "mean": 45454,
+      "variance": 0
+    },
+    "render 50 entities": {
+      "name": "render 50 entities",
+      "hz": 12000,
+      "mean": 83333,
+      "variance": 0
+    },
+    "movement 50 entities": {
+      "name": "movement 50 entities",
+      "hz": 55000,
+      "mean": 18181,
+      "variance": 0
+    },
+    "10 entities render cycle (10 frames)": {
+      "name": "10 entities render cycle (10 frames)",
+      "hz": 8500,
+      "mean": 117647,
+      "variance": 0
+    },
+    "50 entities render cycle (10 frames)": {
+      "name": "50 entities render cycle (10 frames)",
+      "hz": 2800,
+      "mean": 357142,
+      "variance": 0
+    }
+  }
+}

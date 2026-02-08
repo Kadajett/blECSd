@@ -335,6 +335,29 @@ pnpm lint
 pnpm build
 ```
 
+### Benchmarking
+
+Run performance benchmarks to measure system performance:
+
+```bash
+# Run all benchmarks
+pnpm bench
+
+# Run CI benchmarks (fast subset for regression detection)
+pnpm bench:ci
+
+# Run real-world scenario benchmarks
+pnpm bench:scenarios
+
+# Update performance baseline
+pnpm bench:update-baseline
+
+# Check for performance regressions (vs baseline)
+pnpm bench:check-regression
+```
+
+The CI automatically checks for performance regressions on pull requests. If any benchmark regresses by more than 20%, the build will fail.
+
 ## License
 
 MIT
