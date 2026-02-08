@@ -632,4 +632,330 @@ describe('Scheduler', () => {
 			});
 		});
 	});
+
+	describe('frame budget', () => {
+		describe('enableFrameBudget', () => {
+			it('enables frame budget enforcement', () => {
+				expect(scheduler.isFrameBudgetEnabled()).toBe(false);
+
+				scheduler.enableFrameBudget();
+
+				expect(scheduler.isFrameBudgetEnabled()).toBe(true);
+			});
+
+			it('sets custom budget and skippable phases', () => {
+				scheduler.enableFrameBudget({
+					enabled: true,
+					budgetMs: 10,
+					skippablePhases: [LoopPhase.ANIMATION, LoopPhase.RENDER],
+				});
+
+				expect(scheduler.isFrameBudgetEnabled()).toBe(true);
+			});
+
+			it('defaults to ANIMATION phase as skippable', () => {
+				scheduler.enableFrameBudget({ enabled: true });
+				const world = createWorld();
+
+				// Add slow system to UPDATE (not skippable)
+				const slowUpdate: System = (world) => {
+					const start = performance.now();
+					while (performance.now() - start < 20) {
+						// Busy wait to exceed budget
+					}
+					return world;
+				};
+
+				// Add fast system to ANIMATION (skippable)
+				const fastAnimation: System = (world) => world;
+
+				scheduler.registerSystem(LoopPhase.UPDATE, slowUpdate);
+				scheduler.registerSystem(LoopPhase.ANIMATION, fastAnimation);
+
+				scheduler.run(world, 0.016);
+
+				const status = scheduler.getAdaptiveFrameBudgetStatus();
+				expect(status?.exceeded).toBe(true);
+				expect(status?.skippedPhases).toContain(LoopPhase.ANIMATION);
+			});
+
+			it('never allows INPUT phase to be skippable', () => {
+				scheduler.enableFrameBudget({
+					enabled: true,
+					budgetMs: 1,
+					skippablePhases: [LoopPhase.INPUT, LoopPhase.ANIMATION],
+				});
+
+				const world = createWorld();
+
+				const slowInput: System = (world) => {
+					const start = performance.now();
+					while (performance.now() - start < 5) {
+						// Busy wait
+					}
+					return world;
+				};
+
+				scheduler.registerSystem(LoopPhase.UPDATE, slowInput);
+				scheduler.run(world, 0.016);
+
+				const status = scheduler.getAdaptiveFrameBudgetStatus();
+				// INPUT should never be in skipped phases
+				expect(status?.skippedPhases).not.toContain(LoopPhase.INPUT);
+			});
+		});
+
+		describe('disableFrameBudget', () => {
+			it('disables frame budget enforcement', () => {
+				scheduler.enableFrameBudget();
+				expect(scheduler.isFrameBudgetEnabled()).toBe(true);
+
+				scheduler.disableFrameBudget();
+
+				expect(scheduler.isFrameBudgetEnabled()).toBe(false);
+			});
+
+			it('clears budget status when disabled', () => {
+				scheduler.enableFrameBudget({ enabled: true, budgetMs: 1 });
+				const world = createWorld();
+				scheduler.run(world, 0.016);
+				expect(scheduler.getAdaptiveFrameBudgetStatus()).not.toBeNull();
+
+				scheduler.disableFrameBudget();
+
+				expect(scheduler.getAdaptiveFrameBudgetStatus()).toBeNull();
+			});
+		});
+
+		describe('getAdaptiveFrameBudgetStatus', () => {
+			it('returns null when frame budget is disabled', () => {
+				expect(scheduler.getAdaptiveFrameBudgetStatus()).toBeNull();
+			});
+
+			it('returns null when enabled but no frames run', () => {
+				scheduler.enableFrameBudget();
+
+				expect(scheduler.getAdaptiveFrameBudgetStatus()).toBeNull();
+			});
+
+			it('returns status after running a frame', () => {
+				scheduler.enableFrameBudget({ enabled: true, budgetMs: 100 });
+				const world = createWorld();
+
+				scheduler.run(world, 0.016);
+
+				const status = scheduler.getAdaptiveFrameBudgetStatus();
+				expect(status).not.toBeNull();
+				expect(status?.exceeded).toBeDefined();
+				expect(status?.skippedPhases).toBeDefined();
+				expect(status?.remainingMs).toBeDefined();
+			});
+
+			it('reports budget not exceeded for fast frames', () => {
+				scheduler.enableFrameBudget({ enabled: true, budgetMs: 100 });
+				const world = createWorld();
+
+				const fastSystem: System = (world) => world;
+				scheduler.registerSystem(LoopPhase.UPDATE, fastSystem);
+
+				scheduler.run(world, 0.016);
+
+				const status = scheduler.getAdaptiveFrameBudgetStatus();
+				expect(status?.exceeded).toBe(false);
+				expect(status?.skippedPhases).toHaveLength(0);
+				expect(status?.remainingMs).toBeGreaterThan(0);
+			});
+
+			it('reports budget exceeded for slow frames', () => {
+				scheduler.enableFrameBudget({ enabled: true, budgetMs: 1 });
+				const world = createWorld();
+
+				const slowSystem: System = (world) => {
+					const start = performance.now();
+					while (performance.now() - start < 5) {
+						// Busy wait to exceed budget
+					}
+					return world;
+				};
+
+				scheduler.registerSystem(LoopPhase.UPDATE, slowSystem);
+				scheduler.run(world, 0.016);
+
+				const status = scheduler.getAdaptiveFrameBudgetStatus();
+				expect(status?.exceeded).toBe(true);
+				expect(status?.remainingMs).toBeLessThan(0);
+			});
+		});
+
+		describe('phase skipping', () => {
+			it('skips skippable phases when budget exceeded', () => {
+				scheduler.enableFrameBudget({
+					enabled: true,
+					budgetMs: 1,
+					skippablePhases: [LoopPhase.ANIMATION],
+				});
+
+				const world = createWorld();
+
+				const slowUpdate: System = (world) => {
+					const start = performance.now();
+					while (performance.now() - start < 5) {
+						// Exceed budget
+					}
+					return world;
+				};
+
+				let animationRan = false;
+				const animation: System = (world) => {
+					animationRan = true;
+					return world;
+				};
+
+				scheduler.registerSystem(LoopPhase.UPDATE, slowUpdate);
+				scheduler.registerSystem(LoopPhase.ANIMATION, animation);
+
+				scheduler.run(world, 0.016);
+
+				expect(animationRan).toBe(false);
+
+				const status = scheduler.getAdaptiveFrameBudgetStatus();
+				expect(status?.exceeded).toBe(true);
+				expect(status?.skippedPhases).toContain(LoopPhase.ANIMATION);
+			});
+
+			it('runs all phases when budget not exceeded', () => {
+				scheduler.enableFrameBudget({
+					enabled: true,
+					budgetMs: 100,
+					skippablePhases: [LoopPhase.ANIMATION],
+				});
+
+				const world = createWorld();
+
+				let updateRan = false;
+				let animationRan = false;
+
+				const update: System = (world) => {
+					updateRan = true;
+					return world;
+				};
+
+				const animation: System = (world) => {
+					animationRan = true;
+					return world;
+				};
+
+				scheduler.registerSystem(LoopPhase.UPDATE, update);
+				scheduler.registerSystem(LoopPhase.ANIMATION, animation);
+
+				scheduler.run(world, 0.016);
+
+				expect(updateRan).toBe(true);
+				expect(animationRan).toBe(true);
+
+				const status = scheduler.getAdaptiveFrameBudgetStatus();
+				expect(status?.exceeded).toBe(false);
+				expect(status?.skippedPhases).toHaveLength(0);
+			});
+
+			it('skips multiple skippable phases', () => {
+				scheduler.enableFrameBudget({
+					enabled: true,
+					budgetMs: 1,
+					skippablePhases: [LoopPhase.ANIMATION, LoopPhase.RENDER],
+				});
+
+				const world = createWorld();
+
+				const slowUpdate: System = (world) => {
+					const start = performance.now();
+					while (performance.now() - start < 5) {
+						// Exceed budget
+					}
+					return world;
+				};
+
+				let animationRan = false;
+				let renderRan = false;
+
+				const animation: System = (world) => {
+					animationRan = true;
+					return world;
+				};
+
+				const render: System = (world) => {
+					renderRan = true;
+					return world;
+				};
+
+				scheduler.registerSystem(LoopPhase.UPDATE, slowUpdate);
+				scheduler.registerSystem(LoopPhase.ANIMATION, animation);
+				scheduler.registerSystem(LoopPhase.RENDER, render);
+
+				scheduler.run(world, 0.016);
+
+				expect(animationRan).toBe(false);
+				expect(renderRan).toBe(false);
+
+				const status = scheduler.getAdaptiveFrameBudgetStatus();
+				expect(status?.skippedPhases).toContain(LoopPhase.ANIMATION);
+				expect(status?.skippedPhases).toContain(LoopPhase.RENDER);
+			});
+
+			it('does not skip non-skippable phases', () => {
+				scheduler.enableFrameBudget({
+					enabled: true,
+					budgetMs: 1,
+					skippablePhases: [LoopPhase.ANIMATION],
+				});
+
+				const world = createWorld();
+
+				const slowUpdate: System = (world) => {
+					const start = performance.now();
+					while (performance.now() - start < 5) {
+						// Exceed budget
+					}
+					return world;
+				};
+
+				let renderRan = false;
+
+				const render: System = (world) => {
+					renderRan = true;
+					return world;
+				};
+
+				scheduler.registerSystem(LoopPhase.UPDATE, slowUpdate);
+				scheduler.registerSystem(LoopPhase.RENDER, render);
+
+				scheduler.run(world, 0.016);
+
+				// RENDER is not skippable, so it should run
+				expect(renderRan).toBe(true);
+
+				const status = scheduler.getAdaptiveFrameBudgetStatus();
+				expect(status?.skippedPhases).not.toContain(LoopPhase.RENDER);
+			});
+		});
+
+		describe('isFrameBudgetEnabled', () => {
+			it('returns false by default', () => {
+				expect(scheduler.isFrameBudgetEnabled()).toBe(false);
+			});
+
+			it('returns true after enabling', () => {
+				scheduler.enableFrameBudget();
+
+				expect(scheduler.isFrameBudgetEnabled()).toBe(true);
+			});
+
+			it('returns false after disabling', () => {
+				scheduler.enableFrameBudget();
+				scheduler.disableFrameBudget();
+
+				expect(scheduler.isFrameBudgetEnabled()).toBe(false);
+			});
+		});
+	});
 });

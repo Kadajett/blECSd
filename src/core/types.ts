@@ -59,8 +59,8 @@ export enum LoopPhase {
 	UPDATE = 2,
 	/** Post-update logic */
 	LATE_UPDATE = 3,
-	/** Physics calculations */
-	PHYSICS = 4,
+	/** Animation, physics, tweens, and transitions */
+	ANIMATION = 4,
 	/** UI layout calculation */
 	LAYOUT = 5,
 	/** Render to screen buffer */

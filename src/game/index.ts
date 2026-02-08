@@ -526,7 +526,7 @@ export interface Game {
 	 * @example
 	 * ```typescript
 	 * game.registerSystem(LoopPhase.UPDATE, movementSystem);
-	 * game.registerSystem(LoopPhase.PHYSICS, collisionSystem);
+	 * game.registerSystem(LoopPhase.ANIMATION, collisionSystem);
 	 * ```
 	 */
 	registerSystem(phase: LoopPhase, system: System): Unsubscribe;

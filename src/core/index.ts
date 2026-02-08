@@ -565,6 +565,8 @@ export {
 	createSlideTransition,
 } from './scene';
 export type {
+	AdaptiveFrameBudgetConfig,
+	AdaptiveFrameBudgetStatus,
 	FrameTelemetry,
 	PhaseTimingData,
 	Scheduler,
