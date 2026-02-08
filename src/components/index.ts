@@ -1330,6 +1330,18 @@ export {
 	Timer,
 	updateTimers,
 } from './timer';
+// UserData component
+export type { UserDataObject } from './userData';
+export {
+	clearAllUserData,
+	getOrCreateUserData,
+	getUserData,
+	getUserDataCount,
+	hasUserData,
+	removeUserData,
+	setUserData,
+	UserData,
+} from './userData';
 // Velocity and Acceleration components
 export type { AccelerationData, VelocityData, VelocityOptions } from './velocity';
 export {
