@@ -8,6 +8,7 @@
  * @module terminal/clipboardManager
  */
 
+import { z } from 'zod';
 import { ClipboardSelection, clipboard } from './ansi';
 
 // =============================================================================
@@ -53,6 +54,15 @@ export interface ClipboardManagerConfig {
 	/** Whether to use OSC 52 for system clipboard (default: true) */
 	readonly useOSC52: boolean;
 }
+
+/**
+ * Zod schema for ClipboardManagerConfig validation.
+ */
+export const ClipboardManagerConfigSchema = z.object({
+	chunkSize: z.number().int().positive(),
+	maxSize: z.number().int().positive(),
+	useOSC52: z.boolean(),
+});
 
 /**
  * Clipboard manager state.
@@ -109,7 +119,8 @@ const DEFAULT_CONFIG: ClipboardManagerConfig = {
  * ```
  */
 export function createClipboardManager(config?: Partial<ClipboardManagerConfig>): ClipboardManager {
-	const cfg: ClipboardManagerConfig = { ...DEFAULT_CONFIG, ...config };
+	const merged = { ...DEFAULT_CONFIG, ...config };
+	const cfg: ClipboardManagerConfig = ClipboardManagerConfigSchema.parse(merged);
 
 	let buffer = '';
 	let cancelled = false;

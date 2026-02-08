@@ -7,6 +7,7 @@
  * @module systems/particleSystem
  */
 
+import { z } from 'zod';
 import {
 	type EmitterAppearance,
 	getEmitterAppearance,
@@ -51,6 +52,16 @@ export interface ParticleSystemConfig {
 	/** Archetype pool name for zero-alloc entity recycling (optional) */
 	readonly archetypeName?: string;
 }
+
+/**
+ * Zod schema for ParticleSystemConfig validation.
+ */
+export const ParticleSystemConfigSchema = z.object({
+	emitters: z.function(),
+	particles: z.function(),
+	maxParticles: z.number().int().positive().optional(),
+	archetypeName: z.string().optional(),
+});
 
 /**
  * Spawns a single particle from an emitter at a random angle within the spread.
@@ -374,18 +385,19 @@ function killDeadTrackedParticles(
 }
 
 export function createParticleSystem(config: ParticleSystemConfig): System {
-	const maxParticles = config.maxParticles ?? 1000;
-	const archetypeName = config.archetypeName;
+	const validated = ParticleSystemConfigSchema.parse(config) as ParticleSystemConfig;
+	const maxParticles = validated.maxParticles ?? 1000;
+	const archetypeName = validated.archetypeName;
 	const processedIds = new Set<number>();
 
 	return (world: World): World => {
 		const delta = 1 / 60;
-		const emitters = config.emitters(world);
+		const emitters = validated.emitters(world);
 		const store = getParticleTrackingStore();
 		const storeData = getStoreData(store) as readonly TrackedParticle[];
 
 		// Get all particles up-front so we count both tracked and untracked
-		const providedParticles = config.particles(world);
+		const providedParticles = validated.particles(world);
 
 		// Process emitters (rate-based spawning) with total particle count
 		processEmitters(world, emitters, delta, maxParticles, providedParticles.length, archetypeName);

@@ -9,6 +9,21 @@
  * @module systems/workerPool
  */
 
+import { z } from 'zod';
+
+// =============================================================================
+// VALIDATION SCHEMAS
+// =============================================================================
+
+/**
+ * Zod schema for WorkerPoolConfig validation.
+ */
+export const WorkerPoolConfigSchema = z.object({
+	maxWorkers: z.number().int().positive(),
+	taskTimeout: z.number().positive(),
+	enabled: z.boolean(),
+});
+
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -175,8 +190,9 @@ let nextTaskId = 0;
  */
 export function createWorkerPool(config?: Partial<WorkerPoolConfig>): WorkerPoolState {
 	const merged = { ...DEFAULT_POOL_CONFIG, ...config };
+	const validatedConfig = WorkerPoolConfigSchema.parse(merged);
 	poolState = {
-		config: merged,
+		config: validatedConfig,
 		queue: [],
 		running: new Map(),
 		handlers: new Map(),

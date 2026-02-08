@@ -7,6 +7,7 @@
  * @module systems/behaviorSystem
  */
 
+import { z } from 'zod';
 import {
 	Behavior,
 	BehaviorType,
@@ -54,6 +55,15 @@ export interface BehaviorSystemConfig {
 	/** Function to get delta time */
 	getDelta: () => number;
 }
+
+/**
+ * Zod schema for BehaviorSystemConfig validation.
+ */
+export const BehaviorSystemConfigSchema = z.object({
+	getPosition: z.function().optional(),
+	applyMovement: z.function().optional(),
+	getDelta: z.function(),
+});
 
 // =============================================================================
 // DEFAULT IMPLEMENTATIONS
@@ -119,11 +129,12 @@ export function createBehaviorSystem(
 	config: BehaviorSystemConfig,
 	entities: (world: World) => readonly Entity[],
 ): System {
-	const getPos = config.getPosition ?? defaultGetPosition;
-	const applyMove = config.applyMovement ?? defaultApplyMovement;
+	const validated = BehaviorSystemConfigSchema.parse(config) as BehaviorSystemConfig;
+	const getPos = validated.getPosition ?? defaultGetPosition;
+	const applyMove = validated.applyMovement ?? defaultApplyMovement;
 
 	return (world: World): World => {
-		const delta = config.getDelta();
+		const delta = validated.getDelta();
 		const eids = entities(world);
 
 		for (const eid of eids) {
