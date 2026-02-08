@@ -460,4 +460,71 @@ describe('outputSystem', () => {
 			expect(output).toContain('4'); // Underline
 		});
 	});
+
+	describe('performance optimizations', () => {
+		it('skips sorting when skipSort is true', () => {
+			const state = createOutputState();
+			// Provide changes in reverse order
+			const changes: CellChange[] = [
+				{ x: 20, y: 10, cell: createCell('Z', 0xffffffff, 0xff000000) },
+				{ x: 10, y: 5, cell: createCell('X', 0xffffffff, 0xff000000) },
+			];
+
+			const output = generateOutput(state, changes, true);
+
+			// Characters should appear in original order (Z before X) when skipSort is true
+			const zIndex = output.indexOf('Z');
+			const xIndex = output.indexOf('X');
+
+			expect(zIndex).toBeLessThan(xIndex);
+		});
+
+		it('sorts when skipSort is false', () => {
+			const state = createOutputState();
+			// Provide changes in reverse order
+			const changes: CellChange[] = [
+				{ x: 20, y: 10, cell: createCell('Z', 0xffffffff, 0xff000000) },
+				{ x: 10, y: 5, cell: createCell('X', 0xffffffff, 0xff000000) },
+			];
+
+			const output = generateOutput(state, changes, false);
+
+			// Characters should appear in sorted order (X before Z) when skipSort is false
+			const xIndex = output.indexOf('X');
+			const zIndex = output.indexOf('Z');
+
+			expect(xIndex).toBeLessThan(zIndex);
+		});
+
+		it('uses skipSort for full redraws in outputSystem', () => {
+			const { stream, output } = createMockStream();
+			const db = createDoubleBuffer(3, 2);
+
+			setOutputStream(stream);
+			setOutputBuffer(db);
+
+			// Fill entire back buffer (this triggers fullRedraw flag)
+			const back = getBackBuffer(db);
+			setCell(back, 0, 0, createCell('A', 0xffffffff, 0xff000000));
+			setCell(back, 1, 0, createCell('B', 0xffffffff, 0xff000000));
+			setCell(back, 2, 0, createCell('C', 0xffffffff, 0xff000000));
+			setCell(back, 0, 1, createCell('D', 0xffffffff, 0xff000000));
+			setCell(back, 1, 1, createCell('E', 0xffffffff, 0xff000000));
+			setCell(back, 2, 1, createCell('F', 0xffffffff, 0xff000000));
+
+			// The buffer starts with fullRedraw=true
+			expect(db.fullRedraw).toBe(true);
+
+			outputSystem(world);
+
+			// All characters should be present
+			const combined = output.join('');
+			expect(combined).toContain('A');
+			expect(combined).toContain('B');
+			expect(combined).toContain('C');
+			expect(combined).toContain('D');
+			expect(combined).toContain('E');
+			expect(combined).toContain('F');
+		});
+	});
 });

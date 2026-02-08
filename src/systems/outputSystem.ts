@@ -273,6 +273,7 @@ function generateCellOutput(state: OutputState, change: CellChange): string {
  *
  * @param state - Output state
  * @param changes - Array of cell changes
+ * @param skipSort - Skip sorting if changes are already in row-major order
  * @returns ANSI output string
  *
  * @example
@@ -284,7 +285,11 @@ function generateCellOutput(state: OutputState, change: CellChange): string {
  * process.stdout.write(output);
  * ```
  */
-export function generateOutput(state: OutputState, changes: readonly CellChange[]): string {
+export function generateOutput(
+	state: OutputState,
+	changes: readonly CellChange[],
+	skipSort = false,
+): string {
 	if (changes.length === 0) {
 		return '';
 	}
@@ -292,10 +297,13 @@ export function generateOutput(state: OutputState, changes: readonly CellChange[
 	let output = '';
 
 	// Sort changes by row then column for optimal cursor movement
-	const sortedChanges = [...changes].sort((a, b) => {
-		if (a.y !== b.y) return a.y - b.y;
-		return a.x - b.x;
-	});
+	// Skip sort if changes are already in row-major order (e.g., full redraws)
+	const sortedChanges = skipSort
+		? changes
+		: [...changes].sort((a, b) => {
+				if (a.y !== b.y) return a.y - b.y;
+				return a.x - b.x;
+			});
 
 	for (const change of sortedChanges) {
 		output += generateCellOutput(state, change);
@@ -437,6 +445,9 @@ export const outputSystem: System = (_world: World): World => {
 		return _world;
 	}
 
+	// Check if this is a full redraw BEFORE getting updates
+	const isFullRedraw = outputDoubleBuffer.fullRedraw;
+
 	// Get minimal updates
 	const changes = getMinimalUpdates(outputDoubleBuffer);
 
@@ -448,8 +459,9 @@ export const outputSystem: System = (_world: World): World => {
 	}
 
 	// Generate output
+	// Skip sorting for full redraws since collectAllCells() already returns row-major order
 	const state = getOutputState();
-	const output = generateOutput(state, changes);
+	const output = generateOutput(state, changes, isFullRedraw);
 
 	// Write to stream
 	if (output.length > 0) {
