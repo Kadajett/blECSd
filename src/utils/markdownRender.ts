@@ -101,7 +101,7 @@ export interface CodeData {
 export interface ListData {
 	readonly kind: 'list';
 	readonly ordered: boolean;
-	readonly start?: number;
+	readonly start?: number | undefined;
 	readonly items: readonly ListItem[];
 }
 
@@ -109,7 +109,7 @@ export interface ListItem {
 	readonly content: string;
 	readonly inline: readonly InlineElement[];
 	readonly indent: number;
-	readonly checked?: boolean; // For task lists
+	readonly checked?: boolean | undefined; // For task lists
 }
 
 export interface TableData {
@@ -159,12 +159,12 @@ export interface RenderedLine {
  * Line style information.
  */
 export interface LineStyle {
-	readonly fg?: number;
-	readonly bg?: number;
-	readonly bold?: boolean;
-	readonly italic?: boolean;
-	readonly underline?: boolean;
-	readonly dim?: boolean;
+	readonly fg?: number | undefined;
+	readonly bg?: number | undefined;
+	readonly bold?: boolean | undefined;
+	readonly italic?: boolean | undefined;
+	readonly underline?: boolean | undefined;
+	readonly dim?: boolean | undefined;
 }
 
 /**
@@ -728,7 +728,7 @@ function hasNextListItem(lines: readonly string[], index: number, ordered: boole
 	return ordered ? OL_PATTERN.test(nextLine) : UL_PATTERN.test(nextLine);
 }
 
-function getListStartInfo(line: string): { ordered: boolean; start?: number } | null {
+function getListStartInfo(line: string): { ordered: boolean; start?: number | undefined } | null {
 	const ulMatch = line.match(UL_PATTERN);
 	const olMatch = line.match(OL_PATTERN);
 	if (!ulMatch && !olMatch) {

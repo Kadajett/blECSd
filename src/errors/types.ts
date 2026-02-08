@@ -48,19 +48,19 @@ export type BlECSdErrorKind =
  */
 export interface ErrorContext {
 	/** The entity ID involved (if applicable) */
-	readonly entityId?: number;
+	readonly entityId?: number | undefined;
 	/** The component name involved (if applicable) */
-	readonly componentName?: string;
+	readonly componentName?: string | undefined;
 	/** The system name involved (if applicable) */
-	readonly systemName?: string;
+	readonly systemName?: string | undefined;
 	/** The file path involved (if applicable) */
-	readonly filePath?: string;
+	readonly filePath?: string | undefined;
 	/** The function name where error occurred */
-	readonly functionName?: string;
+	readonly functionName?: string | undefined;
 	/** Additional data for debugging */
-	readonly data?: Readonly<Record<string, unknown>>;
+	readonly data?: Readonly<Record<string, unknown>> | undefined;
 	/** Zod validation issues (for validation errors) */
-	readonly zodIssues?: readonly core.$ZodIssue[];
+	readonly zodIssues?: readonly core.$ZodIssue[] | undefined;
 }
 
 // =============================================================================
@@ -80,9 +80,9 @@ export interface BlECSdErrorBase<K extends BlECSdErrorKind, C extends BlECSdErro
 	/** Timestamp when error was created */
 	readonly timestamp: number;
 	/** Original cause (if wrapping another error) */
-	readonly cause?: Error;
+	readonly cause?: Error | undefined;
 	/** Additional context for debugging */
-	readonly context?: ErrorContext;
+	readonly context?: ErrorContext | undefined;
 }
 
 // =============================================================================

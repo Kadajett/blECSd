@@ -87,15 +87,15 @@ export interface ITerm2Size {
  */
 export interface ITerm2ImageConfig {
 	/** Display image inline (true) or as downloadable file (false) */
-	readonly inline?: boolean;
+	readonly inline?: boolean | undefined;
 	/** Image name (for file downloads) */
-	readonly name?: string;
+	readonly name?: string | undefined;
 	/** Image width */
-	readonly width?: ITerm2Size;
+	readonly width?: ITerm2Size | undefined;
 	/** Image height */
-	readonly height?: ITerm2Size;
+	readonly height?: ITerm2Size | undefined;
 	/** Preserve aspect ratio when width/height are specified */
-	readonly preserveAspectRatio?: boolean;
+	readonly preserveAspectRatio?: boolean | undefined;
 }
 
 /**

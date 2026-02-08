@@ -180,9 +180,9 @@ export interface TextInputConfig {
 	/** Whether input supports multiple lines (for Textarea) */
 	multiline: boolean;
 	/** Optional validation function */
-	validator?: ValidationFunction;
+	validator?: ValidationFunction | undefined;
 	/** When to run validation (default: 'both') */
-	validationTiming?: ValidationTiming;
+	validationTiming?: ValidationTiming | undefined;
 }
 
 /**

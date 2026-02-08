@@ -80,12 +80,12 @@ export interface ProgressBarDisplay {
  * Options for progress bar display configuration.
  */
 export interface ProgressBarDisplayOptions {
-	fillChar?: string;
-	emptyChar?: string;
-	fillFg?: number;
-	fillBg?: number;
-	emptyFg?: number;
-	emptyBg?: number;
+	fillChar?: string | undefined;
+	emptyChar?: string | undefined;
+	fillFg?: number | undefined;
+	fillBg?: number | undefined;
+	emptyFg?: number | undefined;
+	emptyBg?: number | undefined;
 }
 
 /** Default fill character for horizontal progress bars */

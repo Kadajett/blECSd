@@ -37,13 +37,13 @@ import { parseColor } from '../utils/color';
  */
 export interface ModalBorderConfig {
 	/** Border type */
-	readonly type?: 'line' | 'bg' | 'none';
+	readonly type?: 'line' | 'bg' | 'none' | undefined;
 	/** Foreground color for border (hex string or packed number) */
-	readonly fg?: string | number;
+	readonly fg?: string | number | undefined;
 	/** Background color for border (hex string or packed number) */
-	readonly bg?: string | number;
+	readonly bg?: string | number | undefined;
 	/** Border charset ('single', 'double', 'rounded', 'bold', 'ascii', or custom) */
-	readonly ch?: 'single' | 'double' | 'rounded' | 'bold' | 'ascii' | BorderCharset;
+	readonly ch?: 'single' | 'double' | 'rounded' | 'bold' | 'ascii' | BorderCharset | undefined;
 }
 
 /**
@@ -52,10 +52,10 @@ export interface ModalBorderConfig {
 export type ModalPaddingConfig =
 	| number
 	| {
-			readonly left?: number;
-			readonly top?: number;
-			readonly right?: number;
-			readonly bottom?: number;
+			readonly left?: number | undefined;
+			readonly top?: number | undefined;
+			readonly right?: number | undefined;
+			readonly bottom?: number | undefined;
 	  };
 
 /**
@@ -305,7 +305,15 @@ function borderTypeToEnum(type: string | undefined): BorderType {
 function applyModalPadding(
 	world: World,
 	eid: Entity,
-	padding: number | { left?: number; top?: number; right?: number; bottom?: number } | undefined,
+	padding:
+		| number
+		| {
+				left?: number | undefined;
+				top?: number | undefined;
+				right?: number | undefined;
+				bottom?: number | undefined;
+		  }
+		| undefined,
 ): void {
 	if (typeof padding === 'number') {
 		setPadding(world, eid, { left: padding, top: padding, right: padding, bottom: padding });
@@ -370,7 +378,12 @@ function applyModalBorder(
 	world: World,
 	eid: Entity,
 	borderConfig:
-		| { type?: string; fg?: string | number; bg?: string | number; ch?: string | object }
+		| {
+				type?: string | undefined;
+				fg?: string | number | undefined;
+				bg?: string | number | undefined;
+				ch?: string | object | undefined;
+		  }
 		| undefined,
 ): void {
 	if (borderConfig?.type !== 'none') {

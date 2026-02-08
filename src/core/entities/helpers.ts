@@ -365,11 +365,11 @@ export function applyScrollableOptions(
 	world: World,
 	eid: Entity,
 	config: {
-		scrollX?: number;
-		scrollY?: number;
-		scrollWidth?: number;
-		scrollHeight?: number;
-		scrollbarVisible?: number;
+		scrollX?: number | undefined;
+		scrollY?: number | undefined;
+		scrollWidth?: number | undefined;
+		scrollHeight?: number | undefined;
+		scrollbarVisible?: number | undefined;
 	},
 ): void {
 	const scrollableOptions: ScrollableOptions = {};
@@ -388,15 +388,15 @@ export function applyScrollableOptions(
 export function applySliderDisplayOptions(
 	eid: Entity,
 	config: {
-		trackChar?: string;
-		thumbChar?: string;
-		fillChar?: string;
-		trackFg?: number;
-		trackBg?: number;
-		thumbFg?: number;
-		thumbBg?: number;
-		fillFg?: number;
-		fillBg?: number;
+		trackChar?: string | undefined;
+		thumbChar?: string | undefined;
+		fillChar?: string | undefined;
+		trackFg?: number | undefined;
+		trackBg?: number | undefined;
+		thumbFg?: number | undefined;
+		thumbBg?: number | undefined;
+		fillFg?: number | undefined;
+		fillBg?: number | undefined;
 	},
 ): void {
 	const options: typeof config = {};

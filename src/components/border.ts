@@ -185,21 +185,21 @@ export const Border = {
  */
 export interface BorderOptions {
 	/** Border type */
-	type?: BorderType;
+	type?: BorderType | undefined;
 	/** Enable left side */
-	left?: boolean;
+	left?: boolean | undefined;
 	/** Enable top side */
-	top?: boolean;
+	top?: boolean | undefined;
 	/** Enable right side */
-	right?: boolean;
+	right?: boolean | undefined;
 	/** Enable bottom side */
-	bottom?: boolean;
+	bottom?: boolean | undefined;
 	/** Foreground color (hex string or packed number) */
-	fg?: string | number;
+	fg?: string | number | undefined;
 	/** Background color (hex string or packed number) */
-	bg?: string | number;
+	bg?: string | number | undefined;
 	/** Preset border charset or custom characters */
-	chars?: BorderCharset;
+	chars?: BorderCharset | undefined;
 }
 
 /**

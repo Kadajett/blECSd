@@ -72,9 +72,9 @@ export interface ArtificialCursor {
 	/** Blink rate in milliseconds (time for one on/off cycle) */
 	readonly blinkRate: number;
 	/** Custom foreground color (packed RGBA, or undefined for inverse) */
-	readonly fgColor?: number;
+	readonly fgColor?: number | undefined;
 	/** Custom background color (packed RGBA, or undefined for inverse) */
-	readonly bgColor?: number;
+	readonly bgColor?: number | undefined;
 	/** Last blink toggle timestamp */
 	readonly lastBlinkTime: number;
 	/** Current blink state (on/off) */
@@ -88,23 +88,23 @@ export interface ArtificialCursor {
  */
 export interface ArtificialCursorOptions {
 	/** Initial X position (default: 0) */
-	readonly x?: number;
+	readonly x?: number | undefined;
 	/** Initial Y position (default: 0) */
-	readonly y?: number;
+	readonly y?: number | undefined;
 	/** Initial visibility (default: true) */
-	readonly visible?: boolean;
+	readonly visible?: boolean | undefined;
 	/** Cursor shape (default: 'block') */
-	readonly shape?: CursorShape;
+	readonly shape?: CursorShape | undefined;
 	/** Enable blinking (default: true) */
-	readonly blink?: boolean;
+	readonly blink?: boolean | undefined;
 	/** Blink rate in milliseconds (default: 530ms, standard terminal rate) */
-	readonly blinkRate?: number;
+	readonly blinkRate?: number | undefined;
 	/** Custom foreground color (packed RGBA) */
-	readonly fgColor?: number;
+	readonly fgColor?: number | undefined;
 	/** Custom background color (packed RGBA) */
-	readonly bgColor?: number;
+	readonly bgColor?: number | undefined;
 	/** Cursor ID for multi-cursor (default: auto-generated) */
-	readonly id?: string;
+	readonly id?: string | undefined;
 }
 
 /**

@@ -60,7 +60,7 @@ export interface TerminalTooSmallMetadata {
  */
 export interface UnsupportedCapabilityMetadata {
 	readonly capability: string;
-	readonly fallback?: string;
+	readonly fallback?: string | undefined;
 }
 
 /**
@@ -79,7 +79,7 @@ export interface PerformanceIssueMetadata {
 	readonly metric: string;
 	readonly value: number;
 	readonly threshold: number;
-	readonly frameTime?: number;
+	readonly frameTime?: number | undefined;
 }
 
 /**

@@ -51,7 +51,7 @@ export interface TemplateFile {
  */
 export interface CliConfig {
 	/** Template to scaffold (undefined = interactive) */
-	readonly template?: string;
+	readonly template?: string | undefined;
 	/** Target directory */
 	readonly dir: string;
 	/** List available templates */

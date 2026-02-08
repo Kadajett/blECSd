@@ -21,11 +21,11 @@ export interface ScrollbackLine {
 	/** The text content of the line */
 	readonly text: string;
 	/** ANSI formatting preserved */
-	readonly ansi?: string;
+	readonly ansi?: string | undefined;
 	/** Timestamp when line was added */
-	readonly timestamp?: number;
+	readonly timestamp?: number | undefined;
 	/** Custom metadata */
-	readonly meta?: Record<string, unknown>;
+	readonly meta?: Record<string, unknown> | undefined;
 }
 
 /**
@@ -43,7 +43,7 @@ export interface Chunk {
 	/** Whether this chunk is compressed */
 	compressed: boolean;
 	/** Compressed data (when compressed=true) */
-	compressedData?: string;
+	compressedData?: string | undefined;
 	/** Approximate memory usage in bytes */
 	memorySize: number;
 	/** Last access time for LRU */

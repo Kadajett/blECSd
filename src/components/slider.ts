@@ -65,15 +65,15 @@ export interface SliderDisplay {
  * Slider display options for configuration.
  */
 export interface SliderDisplayOptions {
-	trackChar?: string;
-	thumbChar?: string;
-	fillChar?: string;
-	trackFg?: number;
-	trackBg?: number;
-	thumbFg?: number;
-	thumbBg?: number;
-	fillFg?: number;
-	fillBg?: number;
+	trackChar?: string | undefined;
+	thumbChar?: string | undefined;
+	fillChar?: string | undefined;
+	trackFg?: number | undefined;
+	trackBg?: number | undefined;
+	thumbFg?: number | undefined;
+	thumbBg?: number | undefined;
+	fillFg?: number | undefined;
+	fillBg?: number | undefined;
 }
 
 /**

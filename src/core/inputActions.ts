@@ -24,11 +24,11 @@ export interface ActionBinding {
 	/** Keys that activate this action */
 	readonly keys: readonly string[];
 	/** Mouse buttons that activate this action */
-	readonly mouseButtons?: readonly MouseButton[];
+	readonly mouseButtons?: readonly MouseButton[] | undefined;
 	/** Whether action fires continuously while held (default: false) */
-	readonly continuous?: boolean;
+	readonly continuous?: boolean | undefined;
 	/** Deadzone for analog inputs (0-1, default: 0.1) */
-	readonly deadzone?: number;
+	readonly deadzone?: number | undefined;
 }
 
 /**
@@ -55,8 +55,8 @@ export interface SerializedBindings {
 	readonly bindings: readonly {
 		readonly action: string;
 		readonly keys: readonly string[];
-		readonly mouseButtons?: readonly string[];
-		readonly continuous?: boolean;
+		readonly mouseButtons?: readonly string[] | undefined;
+		readonly continuous?: boolean | undefined;
 	}[];
 }
 
@@ -473,8 +473,8 @@ export function createInputActionManager(
 			const bindingsArray: Array<{
 				action: string;
 				keys: string[];
-				mouseButtons?: string[];
-				continuous?: boolean;
+				mouseButtons?: string[] | undefined;
+				continuous?: boolean | undefined;
 			}> = [];
 
 			for (const [, binding] of bindings) {

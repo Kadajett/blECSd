@@ -107,15 +107,15 @@ export type RenderMode = 'color' | 'ascii' | 'braille';
  */
 export interface AnsiRenderOptions {
 	/** Target width in terminal columns. Defaults to bitmap width. */
-	readonly width?: number;
+	readonly width?: number | undefined;
 	/** Target height in terminal rows. Defaults to bitmap height. */
-	readonly height?: number;
+	readonly height?: number | undefined;
 	/** Render mode. Defaults to 'color'. */
-	readonly mode?: RenderMode;
+	readonly mode?: RenderMode | undefined;
 	/** Enable Floyd-Steinberg dithering. Defaults to false. */
-	readonly dither?: boolean;
+	readonly dither?: boolean | undefined;
 	/** Background color for alpha blending. Defaults to { r: 0, g: 0, b: 0 }. */
-	readonly background?: RGB;
+	readonly background?: RGB | undefined;
 }
 
 // =============================================================================

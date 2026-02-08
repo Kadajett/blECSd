@@ -45,13 +45,13 @@ export const Padding = {
  */
 export interface PaddingOptions {
 	/** Left padding */
-	left?: number;
+	left?: number | undefined;
 	/** Top padding */
-	top?: number;
+	top?: number | undefined;
 	/** Right padding */
-	right?: number;
+	right?: number | undefined;
 	/** Bottom padding */
-	bottom?: number;
+	bottom?: number | undefined;
 }
 
 /**

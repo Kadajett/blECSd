@@ -370,27 +370,27 @@ export type InputEvent =
  */
 export interface InputContext {
 	/** Current input value */
-	value?: string;
+	value?: string | undefined;
 	/** Validation error message */
-	errorMessage?: string;
+	errorMessage?: string | undefined;
 	/** Called when input gains focus */
-	onFocus?: () => void;
+	onFocus?: (() => void) | undefined;
 	/** Called when input loses focus */
-	onBlur?: () => void;
+	onBlur?: (() => void) | undefined;
 	/** Called when input value changes */
-	onInput?: (value: string) => void;
+	onInput?: ((value: string) => void) | undefined;
 	/** Called when validation starts */
-	onValidate?: () => void;
+	onValidate?: (() => void) | undefined;
 	/** Called when validation succeeds */
-	onValid?: () => void;
+	onValid?: (() => void) | undefined;
 	/** Called when validation fails */
-	onInvalid?: (error: string) => void;
+	onInvalid?: ((error: string) => void) | undefined;
 	/** Called when input is cleared */
-	onClear?: () => void;
+	onClear?: (() => void) | undefined;
 	/** Called when input is disabled */
-	onDisable?: () => void;
+	onDisable?: (() => void) | undefined;
 	/** Called when input is enabled */
-	onEnable?: () => void;
+	onEnable?: (() => void) | undefined;
 }
 
 /**
@@ -518,21 +518,21 @@ export interface SelectContext {
 	/** Currently selected value */
 	selectedValue?: unknown;
 	/** Currently highlighted index (for keyboard navigation) */
-	highlightedIndex?: number;
+	highlightedIndex?: number | undefined;
 	/** Called when dropdown opens */
-	onOpen?: () => void;
+	onOpen?: (() => void) | undefined;
 	/** Called when dropdown closes */
-	onClose?: () => void;
+	onClose?: (() => void) | undefined;
 	/** Called when selection changes */
-	onSelect?: (value: unknown) => void;
+	onSelect?: ((value: unknown) => void) | undefined;
 	/** Called when selection is cancelled */
-	onCancel?: () => void;
+	onCancel?: (() => void) | undefined;
 	/** Called when highlight changes */
-	onHighlight?: (index: number) => void;
+	onHighlight?: ((index: number) => void) | undefined;
 	/** Called when disabled */
-	onDisable?: () => void;
+	onDisable?: (() => void) | undefined;
 	/** Called when enabled */
-	onEnable?: () => void;
+	onEnable?: (() => void) | undefined;
 }
 
 /**

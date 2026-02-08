@@ -32,11 +32,11 @@ export interface ListbarItem {
 	/** Display text for the item */
 	readonly text: string;
 	/** Optional keyboard shortcut key */
-	readonly key?: string;
+	readonly key?: string | undefined;
 	/** Optional callback when item is activated */
-	readonly callback?: () => void;
+	readonly callback?: (() => void) | undefined;
 	/** Optional unique value/identifier */
-	readonly value?: string;
+	readonly value?: string | undefined;
 }
 
 /**
