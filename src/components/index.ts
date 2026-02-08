@@ -83,6 +83,8 @@ export type { BorderCharset, BorderData, BorderOptions } from './border';
 export {
 	BORDER_ASCII,
 	BORDER_BOLD,
+	BORDER_DASHED,
+	BORDER_DASHED_HEAVY,
 	BORDER_DOUBLE,
 	BORDER_ROUNDED,
 	BORDER_SINGLE,
@@ -799,6 +801,32 @@ export {
 	setScrollbarVisibility,
 	setScrollSize,
 } from './scrollable';
+// Scrollbar component
+export type {
+	ScrollbarData,
+	ScrollbarOptions,
+	ScrollbarRenderCell,
+} from './scrollbar';
+export {
+	calculateHorizontalScrollbar,
+	calculateVerticalScrollbar,
+	DEFAULT_THUMB_CHAR as DEFAULT_SCROLLBAR_THUMB_CHAR,
+	DEFAULT_THUMB_COLOR,
+	DEFAULT_TRACK_CHAR as DEFAULT_SCROLLBAR_TRACK_CHAR,
+	DEFAULT_TRACK_CHAR_H,
+	DEFAULT_TRACK_COLOR,
+	disableScrollbar,
+	enableScrollbar,
+	getScrollbar,
+	hasScrollbar,
+	isScrollbarEnabled,
+	Scrollbar,
+	setScrollbar,
+	setScrollbarChars,
+	setScrollbarColors,
+	shouldShowHorizontalScrollbar,
+	shouldShowVerticalScrollbar,
+} from './scrollbar';
 // Select component
 export type {
 	SelectAction,

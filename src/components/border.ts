@@ -97,6 +97,32 @@ export const BORDER_ASCII: BorderCharset = {
 };
 
 /**
+ * Dashed border characters (┄ ┆ + + + +).
+ * Uses light dashed lines with simple corners.
+ */
+export const BORDER_DASHED: BorderCharset = {
+	topLeft: 0x2b, // +
+	topRight: 0x2b, // +
+	bottomLeft: 0x2b, // +
+	bottomRight: 0x2b, // +
+	horizontal: 0x2504, // ┄ (light triple dash horizontal)
+	vertical: 0x2506, // ┆ (light triple dash vertical)
+};
+
+/**
+ * Heavy dashed border characters (┅ ┇ + + + +).
+ * Uses heavy dashed lines with simple corners.
+ */
+export const BORDER_DASHED_HEAVY: BorderCharset = {
+	topLeft: 0x2b, // +
+	topRight: 0x2b, // +
+	bottomLeft: 0x2b, // +
+	bottomRight: 0x2b, // +
+	horizontal: 0x2505, // ┅ (heavy triple dash horizontal)
+	vertical: 0x2507, // ┇ (heavy triple dash vertical)
+};
+
+/**
  * Default foreground color for borders (white).
  */
 export const DEFAULT_BORDER_FG = 0xffffffff;
