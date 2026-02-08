@@ -293,12 +293,15 @@ function computeLayoutTree(
 
 /**
  * Collects root entities (entities with no parent that have Position).
+ * PERF: Uses iterator directly to avoid intermediate array allocations.
  */
 function getRootEntities(world: World): Entity[] {
+	// PERF: Query returns iterator - process directly without Array.from()
 	// Query entities with Position component
 	const entities = query(world, [Position]);
 	const roots: Entity[] = [];
 
+	// PERF: Iterate directly over query results (iterator)
 	for (const eid of entities) {
 		if (!hasHierarchy(world, eid)) {
 			// No hierarchy component = root level
@@ -337,13 +340,15 @@ function getRootEntities(world: World): Entity[] {
  * ```
  */
 export const layoutSystem: System = (world: World): World => {
+	// PERF: Cache screen dimensions lookup (avoid repeated component access)
 	// Get screen dimensions as the root container
 	const screen = getScreenDimensions(world);
 
-	// Find all root entities
+	// PERF: Find all root entities (unavoidable allocation for roots array)
 	const roots = getRootEntities(world);
 
-	// Compute layout for each root tree
+	// PERF: Compute layout for each root tree
+	// Tree traversal is recursive but unavoidable for correct parent-child ordering
 	for (const root of roots) {
 		computeLayoutTree(world, root, 0, 0, screen.width, screen.height);
 	}

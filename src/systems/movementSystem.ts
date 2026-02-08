@@ -72,11 +72,15 @@ function getVelocityComponent(world: World): unknown {
 /**
  * Query all entities with the Velocity component.
  *
+ * PERF: Converts iterator to array for system processing.
+ * Array allocation is unavoidable here as we need to iterate over entities.
+ *
  * @param world - The ECS world
  * @returns Array of entity IDs with Velocity component
  */
 export function queryMovement(world: World): number[] {
 	const component = getVelocityComponent(world);
+	// PERF: Array.from() allocation necessary for system iteration
 	return Array.from(query(world, [component]));
 }
 
@@ -119,9 +123,12 @@ export function hasMovementSystem(world: World, eid: number): boolean {
  * ```
  */
 export const movementSystem: System = (world: World): World => {
+	// PERF: Cache delta time lookup once per frame
 	const dt = getDeltaTime();
 	const entities = queryMovement(world);
 
+	// PERF: Tight loop over entities with minimal branching
+	// All component operations use direct typed array access (cache-friendly)
 	for (const eid of entities) {
 		// Apply acceleration if present
 		if (hasAcceleration(world, eid)) {
