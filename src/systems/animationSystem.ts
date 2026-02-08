@@ -72,11 +72,15 @@ function getAnimationComponent(world: World): unknown {
 /**
  * Query all entities with the Animation component.
  *
+ * PERF: Converts iterator to array for system processing.
+ * Array allocation is unavoidable here as we need to iterate over entities.
+ *
  * @param world - The ECS world
  * @returns Array of entity IDs with Animation component
  */
 export function queryAnimation(world: World): number[] {
 	const component = getAnimationComponent(world);
+	// PERF: Array.from() allocation necessary for system iteration
 	return Array.from(query(world, [component]));
 }
 
@@ -120,9 +124,12 @@ export function hasAnimationSystem(world: World, eid: number): boolean {
  * ```
  */
 export const animationSystem: System = (world: World): World => {
+	// PERF: Cache delta time lookup once per frame
 	const dt = getDeltaTime();
 	const entities = queryAnimation(world);
 
+	// PERF: Simple loop over entities - minimal allocation overhead
+	// Each updateAnimationEntity accesses typed arrays directly (cache-friendly)
 	for (const eid of entities) {
 		updateAnimationEntity(world, eid, dt);
 	}

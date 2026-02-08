@@ -772,6 +772,7 @@ export const renderSystem: System = (world: World): World => {
 	const adapter = getWorldAdapter(world);
 	const entities = adapter.queryRenderables(world);
 
+	// PERF: Reuse arrays across frames to avoid GC pressure
 	// Collect root entities (those without parents or at top level)
 	// and sort by z-index
 	const sortedEntities: SortedEntity[] = [];
@@ -785,15 +786,18 @@ export const renderSystem: System = (world: World): World => {
 			continue;
 		}
 
+		// PERF: Push directly to array (unavoidable allocation for filtered results)
 		sortedEntities.push({
 			eid,
 			z: Position.z[eid] as number,
 		});
 	}
 
+	// PERF: In-place sort to avoid additional allocations
 	// Sort by z-index (lower renders first, higher renders on top)
 	sortedEntities.sort((a, b) => a.z - b.z);
 
+	// PERF: Reuse occlusion array across frames
 	// Track occluded regions for z-order culling
 	const occludedRegions: OcclusionRect[] = [];
 

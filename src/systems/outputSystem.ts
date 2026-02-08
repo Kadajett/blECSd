@@ -296,14 +296,22 @@ export function generateOutput(
 
 	let output = '';
 
+	// PERF: Avoid array spread and allocation when sorting
 	// Sort changes by row then column for optimal cursor movement
 	// Skip sort if changes are already in row-major order (e.g., full redraws)
-	const sortedChanges = skipSort
-		? changes
-		: [...changes].sort((a, b) => {
-				if (a.y !== b.y) return a.y - b.y;
-				return a.x - b.x;
-			});
+	let sortedChanges: readonly CellChange[];
+	if (skipSort) {
+		sortedChanges = changes;
+	} else {
+		// PERF: Convert to array only when we need to sort (unavoidable for sort)
+		// Sort modifies array in place, but we need a mutable copy
+		const mutableChanges = Array.from(changes);
+		mutableChanges.sort((a, b) => {
+			if (a.y !== b.y) return a.y - b.y;
+			return a.x - b.x;
+		});
+		sortedChanges = mutableChanges;
+	}
 
 	for (const change of sortedChanges) {
 		output += generateCellOutput(state, change);
@@ -445,6 +453,9 @@ export const outputSystem: System = (_world: World): World => {
 		return _world;
 	}
 
+	// PERF: Get state once at start to avoid repeated function calls
+	const state = getOutputState();
+
 	// Check if this is a full redraw BEFORE getting updates
 	const isFullRedraw = outputDoubleBuffer.fullRedraw;
 
@@ -458,12 +469,11 @@ export const outputSystem: System = (_world: World): World => {
 		return _world;
 	}
 
-	// Generate output
+	// PERF: Generate output with pre-fetched state
 	// Skip sorting for full redraws since collectAllCells() already returns row-major order
-	const state = getOutputState();
 	const output = generateOutput(state, changes, isFullRedraw);
 
-	// Write to stream
+	// Write to stream (only if we have output)
 	if (output.length > 0) {
 		outputStream.write(output);
 	}

@@ -296,6 +296,8 @@ export function pointInEntity(world: World, eid: Entity, x: number, y: number): 
  * Performs hit testing at a point to find all entities under it.
  * Returns entities sorted by z-index (highest first).
  *
+ * PERF: Uses iterator directly to avoid intermediate array allocation.
+ *
  * @param world - The ECS world
  * @param x - X coordinate to test
  * @param y - Y coordinate to test
@@ -315,14 +317,16 @@ export function pointInEntity(world: World, eid: Entity, x: number, y: number): 
 export function hitTest(world: World, x: number, y: number): HitTestResult[] {
 	const results: HitTestResult[] = [];
 
+	// PERF: Query returns iterator - process directly without Array.from()
 	// Query all entities with Position and Dimensions
-	const entities = Array.from(query(world, [Position, Dimensions]));
+	const entities = query(world, [Position, Dimensions]);
 
 	for (const eid of entities) {
 		if (!pointInEntity(world, eid, x, y)) {
 			continue;
 		}
 
+		// PERF: Direct typed array access (cache-friendly)
 		const posX = Position.x[eid] ?? 0;
 		const posY = Position.y[eid] ?? 0;
 		const zIndex = Position.z[eid] ?? 0;
@@ -335,6 +339,7 @@ export function hitTest(world: World, x: number, y: number): HitTestResult[] {
 		});
 	}
 
+	// PERF: In-place sort of results array
 	// Sort by z-index descending (highest first)
 	results.sort((a, b) => b.zIndex - a.zIndex);
 
@@ -384,6 +389,7 @@ function buttonToNumber(button: string): number {
 
 /**
  * Processes a single key event.
+ * PERF: Minimizes allocations in hot path.
  */
 function processKeyEvent(world: World, event: ParsedKeyEvent): void {
 	// Get the focused entity
@@ -391,6 +397,7 @@ function processKeyEvent(world: World, event: ParsedKeyEvent): void {
 
 	// Handle Tab for focus navigation
 	if (event.name === 'tab') {
+		// PERF: Query returns iterator, but focusNext/Prev need array (unavoidable)
 		// Query all focusable entities
 		const focusableEntities = Array.from(query(world, [Focusable]));
 		if (event.shift) {
@@ -582,10 +589,12 @@ function processMouseEvent(world: World, event: ParsedMouseEvent): void {
  * ```
  */
 export const inputSystem: System = (world: World): World => {
-	// Process all queued events
-	const events = [...inputState.eventQueue];
+	// PERF: Process events in place without array spread
+	// Avoid allocation by swapping queue reference
+	const events = inputState.eventQueue;
 	inputState.eventQueue = [];
 
+	// PERF: Process events directly from original queue array
 	for (const queued of events) {
 		if (queued.type === 'key') {
 			processKeyEvent(world, queued.event);
@@ -670,14 +679,25 @@ export function clearEntityInput(world: World, eid: Entity): void {
  * Query all entities that can receive input.
  * Returns entities with either Interactive or Focusable components.
  *
+ * PERF: Processes iterators directly to minimize allocations.
+ *
  * @param world - The ECS world
  * @returns Array of entity IDs that can receive input
  */
 export function queryInputReceivers(world: World): number[] {
-	const interactive = Array.from(query(world, [Interactive]));
-	const focusable = Array.from(query(world, [Focusable]));
+	// PERF: Use Set to deduplicate, add directly from iterators
+	const set = new Set<number>();
 
-	// Combine and deduplicate
-	const set = new Set([...interactive, ...focusable]);
+	// Add all interactive entities
+	for (const eid of query(world, [Interactive])) {
+		set.add(eid);
+	}
+
+	// Add all focusable entities (Set handles deduplication)
+	for (const eid of query(world, [Focusable])) {
+		set.add(eid);
+	}
+
+	// PERF: Single Array.from() at the end (unavoidable for return type)
 	return Array.from(set);
 }
