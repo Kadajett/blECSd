@@ -1,25 +1,67 @@
 {
   "permissions": {
     "allow": [
-      "Bash(bd:*)",
-      "Bash(pnpm:*)",
-      "Bash(git status:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git pull:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git branch:*)",
-      "Bash(git checkout:*)",
-      "Bash(git worktree:*)",
-      "Bash(ls:*)",
-      "Bash(cat:*)",
-      "Bash(wc:*)",
-      "Bash(head:*)",
-      "Bash(tail:*)",
-      "Bash(find:*)",
-      "Bash(mkdir:*)"
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "NotebookEdit",
+      "WebSearch",
+      "WebFetch",
+      "Bash(*)",
+      "Task",
+      "TaskOutput",
+      "TaskStop",
+      "TaskCreate",
+      "TaskUpdate",
+      "TaskGet",
+      "TaskList",
+      "SendMessage",
+      "TeamCreate",
+      "TeamDelete",
+      "EnterPlanMode",
+      "ExitPlanMode",
+      "AskUserQuestion",
+      "Skill",
+      "mcp__github__*",
+      "mcp__tmux__*",
+      "mcp__trigger__*"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/biome-check.sh"
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/teammate-idle.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/task-completed.sh",
+            "timeout": 120
+          }
+        ]
+      }
     ]
   }
 }

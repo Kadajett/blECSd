@@ -3,6 +3,14 @@
  * @module utils/textWrap
  */
 
+import { z } from 'zod';
+
+/**
+ * Zod schema for tab size validation.
+ * Tab size must be a positive integer between 1 and 16.
+ */
+export const TabSizeSchema = z.number().int().min(1).max(16);
+
 /**
  * Text alignment options.
  */
@@ -44,6 +52,77 @@ const ANSI_CSI_REGEX = /^\x1b\[[0-9;]*[a-zA-Z]/;
  */
 export function stripAnsi(text: string): string {
 	return text.replace(ANSI_REGEX, '');
+}
+
+/**
+ * Expands tab characters (\t) to spaces based on the specified tab size.
+ * Handles ANSI escape sequences correctly and aligns tabs to column boundaries.
+ *
+ * @param text - Text containing tab characters
+ * @param tabSize - Tab character width in spaces (1-16, default: 8)
+ * @returns Text with tabs expanded to spaces
+ *
+ * @example
+ * ```typescript
+ * import { expandTabs } from 'blecsd';
+ *
+ * expandTabs('hello\tworld', 8);     // 'hello   world'
+ * expandTabs('a\tb\tc', 4);          // 'a   b   c'
+ * expandTabs('\x1b[31m\ttext\x1b[0m', 8); // Tabs expanded, ANSI preserved
+ * ```
+ */
+export function expandTabs(text: string, tabSize = 8): string {
+	const validatedTabSize = TabSizeSchema.parse(tabSize);
+
+	let result = '';
+	let column = 0;
+	let i = 0;
+
+	while (i < text.length) {
+		const char = text[i];
+
+		// Handle ANSI escape sequences (don't affect column position)
+		if (char === '\x1b') {
+			const ansi = findAnsiCode(text, i);
+			if (ansi) {
+				result += ansi.code;
+				i += ansi.length;
+				continue;
+			}
+		}
+
+		// Handle newlines (reset column)
+		if (char === '\n') {
+			result += char;
+			column = 0;
+			i++;
+			continue;
+		}
+
+		// Handle carriage returns (reset column)
+		if (char === '\r') {
+			result += char;
+			column = 0;
+			i++;
+			continue;
+		}
+
+		// Handle tab characters (expand to spaces)
+		if (char === '\t') {
+			const spacesToAdd = validatedTabSize - (column % validatedTabSize);
+			result += ' '.repeat(spacesToAdd);
+			column += spacesToAdd;
+			i++;
+			continue;
+		}
+
+		// Regular character
+		result += char;
+		column++;
+		i++;
+	}
+
+	return result;
 }
 
 /**
