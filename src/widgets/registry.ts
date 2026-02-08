@@ -24,6 +24,7 @@
  * ```
  */
 
+import { addEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 // =============================================================================
@@ -223,7 +224,6 @@ export function createWidgetRegistry(): WidgetRegistry {
 		},
 
 		create<TWidget = unknown>(world: World, name: string, config?: unknown): TWidget {
-			const { addEntity } = require('bitecs');
 			const entity = addEntity(world);
 			return registry.createWithEntity<TWidget>(world, entity, name, config);
 		},
