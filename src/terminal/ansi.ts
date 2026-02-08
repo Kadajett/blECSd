@@ -1712,10 +1712,10 @@ export const tmux = {
 		if (!inTmux) {
 			return sequence;
 		}
-		if (this.isWrapped(sequence)) {
+		if (tmux.isWrapped(sequence)) {
 			return sequence;
 		}
-		return this.wrap(sequence);
+		return tmux.wrap(sequence);
 	},
 
 	/**
@@ -2191,14 +2191,14 @@ export const charset = {
 	 * Alias for enterAcs() - enter alternate character set mode.
 	 */
 	smacs(): string {
-		return this.enterAcs();
+		return charset.enterAcs();
 	},
 
 	/**
 	 * Alias for exitAcs() - exit alternate character set mode.
 	 */
 	rmacs(): string {
-		return this.exitAcs();
+		return charset.exitAcs();
 	},
 } as const;
 
@@ -2766,7 +2766,7 @@ export const hyperlink = {
 	 * ```
 	 */
 	link(url: string, text: string, options?: HyperlinkOptions): string {
-		return `${this.start(url, options)}${text}${this.end()}`;
+		return `${hyperlink.start(url, options)}${text}${hyperlink.end()}`;
 	},
 
 	/**
@@ -2852,7 +2852,7 @@ export const hyperlink = {
 		if (!isHyperlinkAllowed(url)) {
 			return text;
 		}
-		return this.link(url, text, options);
+		return hyperlink.link(url, text, options);
 	},
 
 	/**
@@ -2875,7 +2875,7 @@ export const hyperlink = {
 	 * ```
 	 */
 	mailto(email: string, text?: string, options?: HyperlinkOptions): string {
-		return this.link(`mailto:${email}`, text ?? email, options);
+		return hyperlink.link(`mailto:${email}`, text ?? email, options);
 	},
 
 	/**
@@ -2898,7 +2898,7 @@ export const hyperlink = {
 	 * ```
 	 */
 	file(path: string, text?: string, options?: HyperlinkOptions): string {
-		return this.link(`file://${path}`, text ?? path, options);
+		return hyperlink.link(`file://${path}`, text ?? path, options);
 	},
 } as const;
 
