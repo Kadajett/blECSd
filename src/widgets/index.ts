@@ -36,6 +36,24 @@ export {
 	resetBoxStore,
 	setBoxContent,
 } from './box';
+// Button widget
+export type { ButtonConfig as ButtonWidgetConfig, ButtonWidget } from './button';
+export {
+	ButtonConfigSchema as ButtonWidgetConfigSchema,
+	ButtonWidgetComponent,
+	createButton,
+	isButtonWidget,
+	resetButtonWidgetStore,
+} from './button';
+// Checkbox widget
+export type { CheckboxConfig as CheckboxWidgetConfig, CheckboxWidget } from './checkbox';
+export {
+	CheckboxConfigSchema as CheckboxWidgetConfigSchema,
+	CheckboxWidgetComponent,
+	createCheckbox,
+	isCheckboxWidget,
+	resetCheckboxWidgetStore,
+} from './checkbox';
 // Content line manipulation
 export {
 	clearLines,
@@ -351,6 +369,24 @@ export {
 	questionStateMap,
 	resetQuestionStore,
 } from './question';
+// RadioButton and RadioGroup widgets
+export type {
+	RadioButtonConfig as RadioButtonWidgetConfig,
+	RadioButtonWidget,
+	RadioGroupConfig as RadioGroupWidgetConfig,
+	RadioGroupWidget,
+} from './radioButton';
+export {
+	createRadioButton,
+	createRadioGroup,
+	isRadioButtonWidget,
+	isRadioGroupWidget,
+	RadioButtonConfigSchema as RadioButtonWidgetConfigSchema,
+	RadioButtonWidgetComponent,
+	RadioGroupConfigSchema as RadioGroupWidgetConfigSchema,
+	RadioGroupWidgetComponent,
+	resetRadioWidgetStore,
+} from './radioButton';
 // Widget Registry
 export type { WidgetFactory, WidgetRegistration, WidgetRegistry } from './registry';
 export {
