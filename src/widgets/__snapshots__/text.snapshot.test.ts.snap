@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Text widget snapshots > alignment > renders bottom-aligned text 1`] = `""`;
+
+exports[`Text widget snapshots > alignment > renders center-aligned text 1`] = `""`;
+
+exports[`Text widget snapshots > alignment > renders left-aligned text 1`] = `""`;
+
+exports[`Text widget snapshots > alignment > renders middle-aligned text 1`] = `""`;
+
+exports[`Text widget snapshots > alignment > renders right-aligned text 1`] = `""`;
+
+exports[`Text widget snapshots > alignment > renders top-aligned text 1`] = `""`;
+
+exports[`Text widget snapshots > basic rendering > renders empty text 1`] = `""`;
+
+exports[`Text widget snapshots > basic rendering > renders multiline text 1`] = `""`;
+
+exports[`Text widget snapshots > basic rendering > renders simple text 1`] = `""`;
+
+exports[`Text widget snapshots > colors and styling > renders text with background color 1`] = `""`;
+
+exports[`Text widget snapshots > colors and styling > renders text with foreground and background colors 1`] = `""`;
+
+exports[`Text widget snapshots > colors and styling > renders text with foreground color 1`] = `""`;
+
+exports[`Text widget snapshots > edge cases > renders single character 1`] = `""`;
+
+exports[`Text widget snapshots > edge cases > renders text at screen origin 1`] = `""`;
+
+exports[`Text widget snapshots > edge cases > renders very long text 1`] = `""`;

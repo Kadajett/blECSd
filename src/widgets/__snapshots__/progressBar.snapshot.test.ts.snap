@@ -1,0 +1,37 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ProgressBar widget snapshots > basic rendering > renders 25% progress 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > basic rendering > renders 50% progress 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > basic rendering > renders 75% progress 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > basic rendering > renders complete progress bar 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > basic rendering > renders empty progress bar 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > edge cases > renders at screen origin 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > edge cases > renders narrow progress bar 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > edge cases > renders with fractional progress 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > size variations > renders long progress bar 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > size variations > renders short progress bar 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > with custom characters > renders with block characters 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > with custom characters > renders with custom fill and empty characters 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > with custom characters > renders with hashtag characters 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > with labels > renders with custom label 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > with labels > renders with label and percentage 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > with percentage display > renders with percentage at 0% 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > with percentage display > renders with percentage at 42% 1`] = `""`;
+
+exports[`ProgressBar widget snapshots > with percentage display > renders with percentage at 100% 1`] = `""`;

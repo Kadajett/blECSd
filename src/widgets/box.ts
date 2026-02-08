@@ -9,6 +9,10 @@
 
 import { z } from 'zod';
 import {
+	BORDER_ASCII,
+	BORDER_BOLD,
+	BORDER_DOUBLE,
+	BORDER_ROUNDED,
 	BORDER_SINGLE,
 	type BorderCharset,
 	BorderType,
@@ -297,12 +301,6 @@ function valignToEnum(valign: VAlign): TextVAlign {
  * Gets the appropriate BorderCharset for a named style.
  */
 function getBorderCharset(ch: 'single' | 'double' | 'rounded' | 'bold' | 'ascii'): BorderCharset {
-	const {
-		BORDER_DOUBLE,
-		BORDER_ROUNDED,
-		BORDER_BOLD,
-		BORDER_ASCII,
-	} = require('../components/border');
 	switch (ch) {
 		case 'single':
 			return BORDER_SINGLE;

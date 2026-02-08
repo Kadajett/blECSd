@@ -1,0 +1,34 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Box widget snapshots > basic rendering > renders box with bold border 1`] = `""`;
+
+exports[`Box widget snapshots > basic rendering > renders box with double line border 1`] = `""`;
+
+exports[`Box widget snapshots > basic rendering > renders box with rounded border 1`] = `""`;
+
+exports[`Box widget snapshots > basic rendering > renders box with single line border 1`] = `""`;
+
+exports[`Box widget snapshots > basic rendering > renders simple box without border 1`] = `""`;
+
+exports[`Box widget snapshots > colors and styling > renders box with background color 1`] = `""`;
+
+exports[`Box widget snapshots > colors and styling > renders box with bold border 1`] = `""`;
+
+exports[`Box widget snapshots > colors and styling > renders box with foreground and background colors 1`] = `
+"
+ ┌────────┐
+ │        │
+ │        │
+ │        │
+ └────────┘"
+`;
+
+exports[`Box widget snapshots > edge cases > renders box at screen origin 1`] = `""`;
+
+exports[`Box widget snapshots > edge cases > renders full-screen box 1`] = `""`;
+
+exports[`Box widget snapshots > edge cases > renders minimal 1x1 box 1`] = `""`;
+
+exports[`Box widget snapshots > padding > renders box with asymmetric padding 1`] = `""`;
+
+exports[`Box widget snapshots > padding > renders box with symmetric padding 1`] = `""`;
