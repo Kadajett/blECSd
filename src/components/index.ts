@@ -407,9 +407,11 @@ export {
 	clearInteractionState,
 	DEFAULT_HOVER_BG,
 	DEFAULT_HOVER_FG,
+	disable,
 	disableInput,
 	disableKeys,
 	disableMouse,
+	enable,
 	enableInput,
 	enableKeys,
 	enableMouse,
@@ -422,6 +424,7 @@ export {
 	Interactive,
 	isClickable,
 	isDraggable,
+	isEnabled,
 	isHoverable,
 	isHovered,
 	isKeyable,
@@ -622,7 +625,7 @@ export {
 	untrackParticle,
 } from './particle';
 // Position component
-export type { PositionData } from './position';
+export type { PositionData, PositionKeyword } from './position';
 export {
 	bringToFront,
 	getPosition,
@@ -637,6 +640,8 @@ export {
 	sendToBack,
 	setAbsolute,
 	setPosition,
+	setPositionKeyword,
+	setPositionPercent,
 	setZIndex,
 	swapZIndex,
 } from './position';

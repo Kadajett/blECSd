@@ -6,6 +6,8 @@
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { SetPositionSchema, ZIndexSchema } from '../schemas/components';
+import { getDimensions } from './dimensions';
+import { getParent, Hierarchy } from './hierarchy';
 
 /** Default entity capacity for typed arrays */
 const DEFAULT_CAPACITY = 10000;
@@ -491,4 +493,168 @@ export function swapZIndex(world: World, a: Entity, b: Entity): void {
 	const zB = getZIndex(world, b);
 	setZIndex(world, a, zB);
 	setZIndex(world, b, zA);
+}
+
+// =============================================================================
+// POSITION KEYWORDS AND PERCENTAGES
+// =============================================================================
+
+/**
+ * Position keyword type for alignment shortcuts.
+ */
+export type PositionKeyword =
+	| 'center'
+	| 'top-left'
+	| 'tl'
+	| 'top-right'
+	| 'tr'
+	| 'bottom-left'
+	| 'bl'
+	| 'bottom-right'
+	| 'br';
+
+/**
+ * Sets entity position using a keyword for quick alignment.
+ * Requires parent with Dimensions component.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param keyword - Position keyword
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { setPositionKeyword } from 'blecsd';
+ *
+ * // Center within parent
+ * setPositionKeyword(world, dialog, 'center');
+ *
+ * // Top-left corner
+ * setPositionKeyword(world, logo, 'top-left');
+ *
+ * // Bottom-right corner
+ * setPositionKeyword(world, statusBar, 'bottom-right');
+ * ```
+ */
+export function setPositionKeyword(world: World, eid: Entity, keyword: PositionKeyword): Entity {
+	if (!hasComponent(world, eid, Hierarchy)) {
+		// No parent, position at origin based on keyword
+		const basePos = keywordToPosition(keyword, 0, 0, 0, 0);
+		setPosition(world, eid, basePos.x, basePos.y);
+		return eid;
+	}
+
+	const parent = getParent(world, eid);
+	if (parent === 0) {
+		// No parent, position at origin
+		const basePos = keywordToPosition(keyword, 0, 0, 0, 0);
+		setPosition(world, eid, basePos.x, basePos.y);
+		return eid;
+	}
+
+	// Get parent dimensions
+	const parentDims = getDimensions(world, parent);
+	if (!parentDims) {
+		// Parent has no dimensions, position at origin
+		const basePos = keywordToPosition(keyword, 0, 0, 0, 0);
+		setPosition(world, eid, basePos.x, basePos.y);
+		return eid;
+	}
+
+	// Get own dimensions for centering
+	const ownDims = getDimensions(world, eid);
+	const ownWidth = ownDims?.width ?? 0;
+	const ownHeight = ownDims?.height ?? 0;
+
+	const pos = keywordToPosition(keyword, parentDims.width, parentDims.height, ownWidth, ownHeight);
+	setPosition(world, eid, pos.x, pos.y);
+	return eid;
+}
+
+/**
+ * Converts a position keyword to x,y coordinates.
+ * @internal
+ */
+function keywordToPosition(
+	keyword: PositionKeyword,
+	parentWidth: number,
+	parentHeight: number,
+	entityWidth: number,
+	entityHeight: number,
+): { x: number; y: number } {
+	switch (keyword) {
+		case 'center':
+			return {
+				x: Math.floor((parentWidth - entityWidth) / 2),
+				y: Math.floor((parentHeight - entityHeight) / 2),
+			};
+		case 'top-left':
+		case 'tl':
+			return { x: 0, y: 0 };
+		case 'top-right':
+		case 'tr':
+			return { x: Math.max(0, parentWidth - entityWidth), y: 0 };
+		case 'bottom-left':
+		case 'bl':
+			return { x: 0, y: Math.max(0, parentHeight - entityHeight) };
+		case 'bottom-right':
+		case 'br':
+			return {
+				x: Math.max(0, parentWidth - entityWidth),
+				y: Math.max(0, parentHeight - entityHeight),
+			};
+		default:
+			return { x: 0, y: 0 };
+	}
+}
+
+/**
+ * Sets entity position using percentage of parent size.
+ * Requires parent with Dimensions component.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param xPercent - X position as percentage (0-100)
+ * @param yPercent - Y position as percentage (0-100)
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { setPositionPercent } from 'blecsd';
+ *
+ * // Center horizontally, 25% from top
+ * setPositionPercent(world, header, 50, 25);
+ *
+ * // Bottom-right quadrant
+ * setPositionPercent(world, footer, 75, 75);
+ * ```
+ */
+export function setPositionPercent(
+	world: World,
+	eid: Entity,
+	xPercent: number,
+	yPercent: number,
+): Entity {
+	if (!hasComponent(world, eid, Hierarchy)) {
+		setPosition(world, eid, 0, 0);
+		return eid;
+	}
+
+	const parent = getParent(world, eid);
+	if (parent === 0) {
+		setPosition(world, eid, 0, 0);
+		return eid;
+	}
+
+	const parentDims = getDimensions(world, parent);
+	if (!parentDims) {
+		setPosition(world, eid, 0, 0);
+		return eid;
+	}
+
+	const x = Math.floor((parentDims.width * xPercent) / 100);
+	const y = Math.floor((parentDims.height * yPercent) / 100);
+
+	setPosition(world, eid, x, y);
+	return eid;
 }

@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
 import {
 	clearInteractionState,
+	disable,
 	disableInput,
 	disableKeys,
 	disableMouse,
+	enable,
 	enableInput,
 	enableKeys,
 	enableMouse,
@@ -16,6 +18,7 @@ import {
 	Interactive,
 	isClickable,
 	isDraggable,
+	isEnabled,
 	isHoverable,
 	isHovered,
 	isKeyable,
@@ -668,6 +671,115 @@ describe('Interactive component', () => {
 			const entity = addEntity(world);
 
 			expect(hasInputEnabled(world, entity)).toBe(false);
+		});
+	});
+
+	describe('enable/disable state', () => {
+		describe('enable', () => {
+			it('enables an entity by default', () => {
+				const world = createWorld();
+				const entity = addEntity(world);
+
+				setInteractive(world, entity, { clickable: true });
+
+				expect(isEnabled(world, entity)).toBe(true);
+			});
+
+			it('re-enables a disabled entity', () => {
+				const world = createWorld();
+				const entity = addEntity(world);
+
+				setInteractive(world, entity, { clickable: true });
+				disable(world, entity);
+				enable(world, entity);
+
+				expect(isEnabled(world, entity)).toBe(true);
+			});
+
+			it('returns the entity for chaining', () => {
+				const world = createWorld();
+				const entity = addEntity(world);
+
+				setInteractive(world, entity, { clickable: true });
+				const result = enable(world, entity);
+
+				expect(result).toBe(entity);
+			});
+		});
+
+		describe('disable', () => {
+			it('disables an enabled entity', () => {
+				const world = createWorld();
+				const entity = addEntity(world);
+
+				setInteractive(world, entity, { clickable: true });
+				disable(world, entity);
+
+				expect(isEnabled(world, entity)).toBe(false);
+			});
+
+			it('clears interaction state when disabling', () => {
+				const world = createWorld();
+				const entity = addEntity(world);
+
+				setInteractive(world, entity, { clickable: true, hoverable: true });
+				setHovered(world, entity, true);
+				setPressed(world, entity, true);
+				Interactive.focused[entity] = 1;
+
+				disable(world, entity);
+
+				expect(Interactive.hovered[entity]).toBe(0);
+				expect(Interactive.pressed[entity]).toBe(0);
+				expect(Interactive.focused[entity]).toBe(0);
+			});
+
+			it('returns the entity for chaining', () => {
+				const world = createWorld();
+				const entity = addEntity(world);
+
+				setInteractive(world, entity, { clickable: true });
+				const result = disable(world, entity);
+
+				expect(result).toBe(entity);
+			});
+		});
+
+		describe('isEnabled', () => {
+			it('returns true for enabled entity', () => {
+				const world = createWorld();
+				const entity = addEntity(world);
+
+				setInteractive(world, entity, { clickable: true });
+
+				expect(isEnabled(world, entity)).toBe(true);
+			});
+
+			it('returns false for disabled entity', () => {
+				const world = createWorld();
+				const entity = addEntity(world);
+
+				setInteractive(world, entity, { clickable: true });
+				disable(world, entity);
+
+				expect(isEnabled(world, entity)).toBe(false);
+			});
+
+			it('returns true for entity without Interactive component', () => {
+				const world = createWorld();
+				const entity = addEntity(world);
+
+				expect(isEnabled(world, entity)).toBe(true);
+			});
+
+			it('can be set via setInteractive', () => {
+				const world = createWorld();
+				const entity = addEntity(world);
+
+				setInteractive(world, entity, { clickable: true, enabled: false });
+
+				expect(isEnabled(world, entity)).toBe(false);
+			});
 		});
 	});
 });
