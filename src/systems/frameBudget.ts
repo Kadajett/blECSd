@@ -7,6 +7,7 @@
  * @module systems/frameBudget
  */
 
+import { z } from 'zod';
 import type { System, World } from '../core/types';
 import { LoopPhase } from '../core/types';
 
@@ -27,6 +28,16 @@ export interface FrameBudgetConfig {
 	/** Whether to emit warnings on budget overruns (default: true) */
 	readonly warnOnOverrun: boolean;
 }
+
+/**
+ * Zod schema for FrameBudgetConfig validation.
+ */
+export const FrameBudgetConfigSchema = z.object({
+	targetFrameMs: z.number().positive(),
+	phaseBudgets: z.record(z.string(), z.number().positive()),
+	rollingWindowSize: z.number().int().positive(),
+	warnOnOverrun: z.boolean(),
+});
 
 /**
  * Per-system timing record.
@@ -170,9 +181,10 @@ function getAvg(s: MutableTimingSamples): number {
  * ```
  */
 export function createFrameBudgetManager(config?: Partial<FrameBudgetConfig>): FrameBudgetManager {
-	const merged: FrameBudgetConfig = { ...DEFAULT_CONFIG, ...config };
+	const merged = { ...DEFAULT_CONFIG, ...config };
+	const validated = FrameBudgetConfigSchema.parse(merged) as FrameBudgetConfig;
 	managerState = {
-		config: merged,
+		config: validated,
 		systemSamples: new Map(),
 		phaseTotals: new Map(),
 		frameSamples: createSamples(merged.rollingWindowSize),

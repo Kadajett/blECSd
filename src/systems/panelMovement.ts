@@ -8,6 +8,7 @@
  * @module systems/panelMovement
  */
 
+import { z } from 'zod';
 import type { Entity } from '../core/types';
 
 // =============================================================================
@@ -87,6 +88,16 @@ export interface PanelMoveConfig {
 	/** Number of pixels to resize with keyboard (default: 1) */
 	readonly keyboardResizeStep: number;
 }
+
+/**
+ * Zod schema for PanelMoveConfig validation.
+ */
+export const PanelMoveConfigSchema = z.object({
+	deferLayout: z.boolean(),
+	outlineResize: z.boolean(),
+	keyboardStep: z.number(),
+	keyboardResizeStep: z.number(),
+});
 
 /**
  * Dirty rectangle representing changed area.
@@ -177,7 +188,8 @@ export function createPanelMoveState(): PanelMoveState {
  * @returns Full configuration
  */
 export function createPanelMoveConfig(config?: Partial<PanelMoveConfig>): PanelMoveConfig {
-	return { ...DEFAULT_MOVE_CONFIG, ...config };
+	const merged = { ...DEFAULT_MOVE_CONFIG, ...config };
+	return PanelMoveConfigSchema.parse(merged);
 }
 
 /**

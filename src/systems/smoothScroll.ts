@@ -8,6 +8,7 @@
  * @module systems/smoothScroll
  */
 
+import { z } from 'zod';
 import type { Entity, System, World } from '../core/types';
 import { createComponentStore } from '../utils/componentStorage';
 
@@ -38,6 +39,21 @@ export interface ScrollPhysicsConfig {
 	/** Whether to enable overscroll bounce (default: true) */
 	readonly enableBounce: boolean;
 }
+
+/**
+ * Zod schema for ScrollPhysicsConfig validation.
+ */
+export const ScrollPhysicsConfigSchema = z.object({
+	friction: z.number().min(0).max(1),
+	minVelocity: z.number().nonnegative(),
+	maxVelocity: z.number().positive(),
+	sensitivity: z.number(),
+	springStiffness: z.number().nonnegative(),
+	springDamping: z.number().nonnegative(),
+	maxOverscroll: z.number().nonnegative(),
+	enableMomentum: z.boolean(),
+	enableBounce: z.boolean(),
+});
 
 /**
  * Scroll animation state for a single entity.
@@ -199,7 +215,8 @@ export function applyScrollImpulse(
 	deltaY: number,
 	physics?: Partial<ScrollPhysicsConfig>,
 ): void {
-	const cfg = { ...DEFAULT_PHYSICS, ...physics };
+	const merged = { ...DEFAULT_PHYSICS, ...physics };
+	const cfg = ScrollPhysicsConfigSchema.parse(merged) as ScrollPhysicsConfig;
 	const state = scrollStates.get(eid);
 	if (!state) return;
 
@@ -412,7 +429,8 @@ export function updateScrollPhysics(
 	dt: number,
 	physics?: Partial<ScrollPhysicsConfig>,
 ): boolean {
-	const cfg = { ...DEFAULT_PHYSICS, ...physics };
+	const merged = { ...DEFAULT_PHYSICS, ...physics };
+	const cfg = ScrollPhysicsConfigSchema.parse(merged) as ScrollPhysicsConfig;
 
 	if (!state.isAnimating) return false;
 
