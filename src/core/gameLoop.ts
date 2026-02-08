@@ -3,6 +3,7 @@
  * @module core/gameLoop
  */
 
+import { z } from 'zod';
 import type { Scheduler } from './scheduler';
 import { createScheduler } from './scheduler';
 import type { System, World } from './types';
@@ -90,6 +91,25 @@ export interface GameLoopOptions {
 	 */
 	fixedTimestepMode?: FixedTimestepConfig;
 }
+
+/**
+ * Zod schema for FixedTimestepConfig validation.
+ */
+export const FixedTimestepConfigSchema = z.object({
+	tickRate: z.number().positive(),
+	maxUpdatesPerFrame: z.number().int().positive(),
+	interpolate: z.boolean(),
+});
+
+/**
+ * Zod schema for GameLoopOptions validation.
+ */
+export const GameLoopOptionsSchema = z.object({
+	targetFPS: z.number().nonnegative().optional(),
+	fixedTimestep: z.boolean().optional(),
+	maxDeltaTime: z.number().positive().optional(),
+	fixedTimestepMode: FixedTimestepConfigSchema.optional(),
+});
 
 /**
  * Hook function for fixed timestep updates.
@@ -228,16 +248,19 @@ export function createGameLoop(
 	options: GameLoopOptions = {},
 	initialHooks: GameLoopHooks = {},
 ): GameLoop {
+	// Validate options
+	const validatedOptions = GameLoopOptionsSchema.parse(options);
+
 	let world = initialWorld;
 	const scheduler = createScheduler();
 	let hooks = { ...initialHooks };
 	let state: LoopState = LoopState.STOPPED;
 
 	const resolvedOptions = {
-		targetFPS: options.targetFPS ?? 60,
-		fixedTimestep: options.fixedTimestep ?? true,
-		maxDeltaTime: options.maxDeltaTime ?? 0.1,
-		fixedTimestepMode: options.fixedTimestepMode as FixedTimestepConfig | undefined,
+		targetFPS: validatedOptions.targetFPS ?? 60,
+		fixedTimestep: validatedOptions.fixedTimestep ?? true,
+		maxDeltaTime: validatedOptions.maxDeltaTime ?? 0.1,
+		fixedTimestepMode: validatedOptions.fixedTimestepMode as FixedTimestepConfig | undefined,
 	};
 
 	// Timing

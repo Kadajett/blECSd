@@ -7,6 +7,7 @@
  * @module widgets/hoverText
  */
 
+import { z } from 'zod';
 import type { Entity } from '../core/types';
 
 // =============================================================================
@@ -47,6 +48,42 @@ export const DEFAULT_TOOLTIP_BG = 0xff333333;
  * Default border color (light gray).
  */
 export const DEFAULT_TOOLTIP_BORDER = 0xff888888;
+
+// =============================================================================
+// VALIDATION SCHEMAS
+// =============================================================================
+
+/**
+ * Zod schema for TooltipStyle validation.
+ */
+export const TooltipStyleSchema = z.object({
+	fg: z.number().int().nonnegative().optional(),
+	bg: z.number().int().nonnegative().optional(),
+	border: z.number().int().nonnegative().optional(),
+	padding: z.number().int().nonnegative().optional(),
+});
+
+/**
+ * Zod schema for HoverTextConfig validation.
+ */
+export const HoverTextConfigSchema = z.object({
+	text: z.string(),
+	style: TooltipStyleSchema.optional(),
+	delay: z.number().positive().optional(),
+});
+
+/**
+ * Zod schema for HoverTextManagerConfig validation.
+ */
+export const HoverTextManagerConfigSchema = z.object({
+	showDelay: z.number().nonnegative().optional(),
+	hideDelay: z.number().nonnegative().optional(),
+	offsetX: z.number().optional(),
+	offsetY: z.number().optional(),
+	screenWidth: z.number().int().positive().optional(),
+	screenHeight: z.number().int().positive().optional(),
+	style: TooltipStyleSchema.optional(),
+});
 
 // =============================================================================
 // TYPES
@@ -380,17 +417,20 @@ function clampPosition(
  * ```
  */
 export function createHoverTextManager(config: HoverTextManagerConfig = {}): HoverTextManager {
-	const showDelay = config.showDelay ?? DEFAULT_HOVER_DELAY;
-	const hideDelay = config.hideDelay ?? DEFAULT_HIDE_DELAY;
-	const offsetX = config.offsetX ?? DEFAULT_CURSOR_OFFSET_X;
-	const offsetY = config.offsetY ?? DEFAULT_CURSOR_OFFSET_Y;
-	let screenWidth = config.screenWidth ?? 80;
-	let screenHeight = config.screenHeight ?? 24;
+	// Validate configuration
+	const validatedConfig = HoverTextManagerConfigSchema.parse(config);
+
+	const showDelay = validatedConfig.showDelay ?? DEFAULT_HOVER_DELAY;
+	const hideDelay = validatedConfig.hideDelay ?? DEFAULT_HIDE_DELAY;
+	const offsetX = validatedConfig.offsetX ?? DEFAULT_CURSOR_OFFSET_X;
+	const offsetY = validatedConfig.offsetY ?? DEFAULT_CURSOR_OFFSET_Y;
+	let screenWidth = validatedConfig.screenWidth ?? 80;
+	let screenHeight = validatedConfig.screenHeight ?? 24;
 	const defaultStyle: Required<TooltipStyle> = {
-		fg: config.style?.fg ?? DEFAULT_TOOLTIP_FG,
-		bg: config.style?.bg ?? DEFAULT_TOOLTIP_BG,
-		border: config.style?.border ?? DEFAULT_TOOLTIP_BORDER,
-		padding: config.style?.padding ?? 1,
+		fg: validatedConfig.style?.fg ?? DEFAULT_TOOLTIP_FG,
+		bg: validatedConfig.style?.bg ?? DEFAULT_TOOLTIP_BG,
+		border: validatedConfig.style?.border ?? DEFAULT_TOOLTIP_BORDER,
+		padding: validatedConfig.style?.padding ?? 1,
 	};
 
 	// State
@@ -408,7 +448,9 @@ export function createHoverTextManager(config: HoverTextManagerConfig = {}): Hov
 
 	const manager: HoverTextManager = {
 		setHoverText(eid: Entity, text: string | HoverTextConfig): void {
-			hoverTextStore.set(eid, normalizeConfig(text));
+			const config = normalizeConfig(text);
+			const validatedConfig = HoverTextConfigSchema.parse(config);
+			hoverTextStore.set(eid, validatedConfig);
 		},
 
 		clearHoverText(eid: Entity): void {
