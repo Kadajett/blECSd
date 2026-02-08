@@ -651,6 +651,31 @@ export {
 } from './styleInheritance';
 export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
+// Warning system
+export type {
+	DeprecatedAPIMetadata,
+	PerformanceIssueMetadata,
+	TerminalTooSmallMetadata,
+	UnsupportedCapabilityMetadata,
+	WarningEmitter,
+	WarningEvent,
+	WarningEventMap,
+	WarningMetadata,
+	WarningTypeValue,
+} from './warnings';
+export {
+	createWarningEmitter,
+	DeprecatedAPIMetadataSchema,
+	emitDeprecatedAPIWarning,
+	emitPerformanceWarning,
+	emitTerminalTooSmallWarning,
+	emitUnsupportedCapabilityWarning,
+	PerformanceIssueMetadataSchema,
+	TerminalTooSmallMetadataSchema,
+	UnsupportedCapabilityMetadataSchema,
+	WarningEventSchema,
+	WarningType,
+} from './warnings';
 export { createWorld, resetWorld } from './world';
 export type {
 	PackedQueryAdapter,
