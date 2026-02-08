@@ -56,6 +56,8 @@ export const Interactive = {
 	focused: new Uint8Array(DEFAULT_CAPACITY),
 	/** Tab index for focus order (-1=skip, 0+=order) */
 	tabIndex: new Int16Array(DEFAULT_CAPACITY),
+	/** Whether entity is enabled (0=disabled, 1=enabled) */
+	enabled: new Uint8Array(DEFAULT_CAPACITY),
 	/** Hover effect foreground color */
 	hoverEffectFg: new Uint32Array(DEFAULT_CAPACITY),
 	/** Hover effect background color */
@@ -88,6 +90,8 @@ export interface InteractiveOptions {
 	focusable?: boolean;
 	/** Tab index for focus order (-1=skip, 0+=order) */
 	tabIndex?: number;
+	/** Whether entity is enabled (can receive input/focus) */
+	enabled?: boolean;
 	/** Hover effect foreground color */
 	hoverEffectFg?: number;
 	/** Hover effect background color */
@@ -107,6 +111,7 @@ export interface InteractiveData {
 	readonly hoverable: boolean;
 	readonly hovered: boolean;
 	readonly pressed: boolean;
+	readonly enabled: boolean;
 	readonly keyable: boolean;
 	readonly focusable: boolean;
 	readonly focused: boolean;
@@ -130,6 +135,7 @@ function initInteractive(eid: Entity): void {
 	Interactive.focusable[eid] = 0;
 	Interactive.focused[eid] = 0;
 	Interactive.tabIndex[eid] = 0;
+	Interactive.enabled[eid] = 1; // Enabled by default
 	Interactive.hoverEffectFg[eid] = DEFAULT_HOVER_FG;
 	Interactive.hoverEffectBg[eid] = DEFAULT_HOVER_BG;
 	Interactive.focusEffectFg[eid] = DEFAULT_FOCUS_FG;
@@ -192,6 +198,7 @@ export function setInteractive(world: World, eid: Entity, options: InteractiveOp
 	setBoolOption(eid, Interactive.hoverable, options.hoverable);
 	setBoolOption(eid, Interactive.keyable, options.keyable);
 	setBoolOption(eid, Interactive.focusable, options.focusable);
+	setBoolOption(eid, Interactive.enabled, options.enabled);
 	setNumOption(eid, Interactive.tabIndex, options.tabIndex);
 	setNumOption(eid, Interactive.hoverEffectFg, options.hoverEffectFg);
 	setNumOption(eid, Interactive.hoverEffectBg, options.hoverEffectBg);
@@ -546,6 +553,7 @@ export function getInteractive(world: World, eid: Entity): InteractiveData | und
 		focusable: Interactive.focusable[eid] === 1,
 		focused: Interactive.focused[eid] === 1,
 		tabIndex: Interactive.tabIndex[eid] as number,
+		enabled: Interactive.enabled[eid] === 1,
 		hoverEffectFg: Interactive.hoverEffectFg[eid] as number,
 		hoverEffectBg: Interactive.hoverEffectBg[eid] as number,
 		focusEffectFg: Interactive.focusEffectFg[eid] as number,
@@ -786,4 +794,88 @@ export function hasInputEnabled(world: World, eid: Entity): boolean {
 		Interactive.hoverable[eid] === 1 ||
 		Interactive.keyable[eid] === 1
 	);
+}
+
+// =============================================================================
+// ENABLE/DISABLE STATE
+// =============================================================================
+
+/**
+ * Enables an entity, allowing it to receive input and focus.
+ * Disabled entities are skipped in focus traversal and ignore input.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { enable, disable, isEnabled } from 'blecsd';
+ *
+ * // Disable a button temporarily
+ * disable(world, button);
+ *
+ * // Re-enable it later
+ * enable(world, button);
+ * ```
+ */
+export function enable(world: World, eid: Entity): Entity {
+	ensureInteractive(world, eid);
+	Interactive.enabled[eid] = 1;
+	return eid;
+}
+
+/**
+ * Disables an entity, preventing it from receiving input and focus.
+ * Disabled entities are skipped in focus traversal and ignore input.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { enable, disable, isEnabled } from 'blecsd';
+ *
+ * // Disable a form field while loading
+ * disable(world, formField);
+ *
+ * // Re-enable when ready
+ * enable(world, formField);
+ * ```
+ */
+export function disable(world: World, eid: Entity): Entity {
+	ensureInteractive(world, eid);
+	Interactive.enabled[eid] = 0;
+	// Clear interaction state when disabled
+	Interactive.hovered[eid] = 0;
+	Interactive.pressed[eid] = 0;
+	Interactive.focused[eid] = 0;
+	return eid;
+}
+
+/**
+ * Checks if an entity is enabled.
+ * Disabled entities cannot receive input or focus.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns true if entity is enabled (default: true)
+ *
+ * @example
+ * ```typescript
+ * import { isEnabled, disable } from 'blecsd';
+ *
+ * if (isEnabled(world, button)) {
+ *   // Process click
+ * } else {
+ *   // Show disabled styling
+ * }
+ * ```
+ */
+export function isEnabled(world: World, eid: Entity): boolean {
+	if (!hasComponent(world, eid, Interactive)) {
+		return true; // Entities without Interactive are not disabled
+	}
+	return Interactive.enabled[eid] === 1;
 }

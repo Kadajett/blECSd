@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
+import { setDimensions } from './dimensions';
+import { setParent } from './hierarchy';
 import {
 	bringToFront,
 	getPosition,
@@ -14,6 +16,8 @@ import {
 	sendToBack,
 	setAbsolute,
 	setPosition,
+	setPositionKeyword,
+	setPositionPercent,
 	setZIndex,
 	swapZIndex,
 } from './position';
@@ -517,6 +521,177 @@ describe('Position component', () => {
 
 			expect(getZIndex(world, eid1)).toBe(0);
 			expect(getZIndex(world, eid2)).toBe(100);
+		});
+	});
+
+	describe('setPositionKeyword', () => {
+		it('centers entity within parent', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setDimensions(world, parent, 100, 50);
+			setDimensions(world, child, 20, 10);
+			setParent(world, child, parent);
+
+			setPositionKeyword(world, child, 'center');
+
+			const pos = getPosition(world, child);
+			expect(pos?.x).toBe(40); // (100 - 20) / 2
+			expect(pos?.y).toBe(20); // (50 - 10) / 2
+		});
+
+		it('positions at top-left', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setDimensions(world, parent, 100, 50);
+			setDimensions(world, child, 20, 10);
+			setParent(world, child, parent);
+
+			setPositionKeyword(world, child, 'top-left');
+
+			const pos = getPosition(world, child);
+			expect(pos?.x).toBe(0);
+			expect(pos?.y).toBe(0);
+		});
+
+		it('positions at top-right', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setDimensions(world, parent, 100, 50);
+			setDimensions(world, child, 20, 10);
+			setParent(world, child, parent);
+
+			setPositionKeyword(world, child, 'top-right');
+
+			const pos = getPosition(world, child);
+			expect(pos?.x).toBe(80); // 100 - 20
+			expect(pos?.y).toBe(0);
+		});
+
+		it('positions at bottom-left', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setDimensions(world, parent, 100, 50);
+			setDimensions(world, child, 20, 10);
+			setParent(world, child, parent);
+
+			setPositionKeyword(world, child, 'bottom-left');
+
+			const pos = getPosition(world, child);
+			expect(pos?.x).toBe(0);
+			expect(pos?.y).toBe(40); // 50 - 10
+		});
+
+		it('positions at bottom-right', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setDimensions(world, parent, 100, 50);
+			setDimensions(world, child, 20, 10);
+			setParent(world, child, parent);
+
+			setPositionKeyword(world, child, 'bottom-right');
+
+			const pos = getPosition(world, child);
+			expect(pos?.x).toBe(80); // 100 - 20
+			expect(pos?.y).toBe(40); // 50 - 10
+		});
+
+		it('handles shorthand keywords (tl, tr, bl, br)', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setDimensions(world, parent, 100, 50);
+			setDimensions(world, child, 20, 10);
+			setParent(world, child, parent);
+
+			setPositionKeyword(world, child, 'tr');
+			const pos = getPosition(world, child);
+			expect(pos?.x).toBe(80);
+			expect(pos?.y).toBe(0);
+		});
+
+		it('returns entity for chaining', () => {
+			const world = createWorld();
+			const eid = addEntity(world);
+
+			const result = setPositionKeyword(world, eid, 'center');
+			expect(result).toBe(eid);
+		});
+	});
+
+	describe('setPositionPercent', () => {
+		it('positions using percentage of parent size', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setDimensions(world, parent, 100, 50);
+			setParent(world, child, parent);
+
+			setPositionPercent(world, child, 50, 25);
+
+			const pos = getPosition(world, child);
+			expect(pos?.x).toBe(50); // 50% of 100
+			expect(pos?.y).toBe(12); // 25% of 50 (rounded down)
+		});
+
+		it('handles 0% positioning', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setDimensions(world, parent, 100, 50);
+			setParent(world, child, parent);
+
+			setPositionPercent(world, child, 0, 0);
+
+			const pos = getPosition(world, child);
+			expect(pos?.x).toBe(0);
+			expect(pos?.y).toBe(0);
+		});
+
+		it('handles 100% positioning', () => {
+			const world = createWorld();
+			const parent = addEntity(world);
+			const child = addEntity(world);
+
+			setDimensions(world, parent, 100, 50);
+			setParent(world, child, parent);
+
+			setPositionPercent(world, child, 100, 100);
+
+			const pos = getPosition(world, child);
+			expect(pos?.x).toBe(100);
+			expect(pos?.y).toBe(50);
+		});
+
+		it('returns entity for chaining', () => {
+			const world = createWorld();
+			const eid = addEntity(world);
+
+			const result = setPositionPercent(world, eid, 50, 50);
+			expect(result).toBe(eid);
+		});
+
+		it('defaults to 0,0 when no parent', () => {
+			const world = createWorld();
+			const child = addEntity(world);
+
+			setPositionPercent(world, child, 50, 50);
+
+			const pos = getPosition(world, child);
+			expect(pos?.x).toBe(0);
+			expect(pos?.y).toBe(0);
 		});
 	});
 });
