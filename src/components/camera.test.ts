@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
+import { SCREEN_80X24 } from '../testing/fixtures';
 import {
 	centerCameraOn,
 	clearCameraBounds,
@@ -287,7 +288,7 @@ describe('Camera Position', () => {
 
 		it('should respect bounds', () => {
 			const camera = addEntity(world);
-			setCamera(world, camera, { width: 80, height: 24 });
+			setCamera(world, camera, SCREEN_80X24);
 			setCameraBounds(world, camera, { minX: 0, maxX: 100, minY: 0, maxY: 50 });
 
 			// Try to move camera beyond bounds
@@ -320,7 +321,7 @@ describe('Camera Position', () => {
 
 		it('should respect bounds', () => {
 			const camera = addEntity(world);
-			setCamera(world, camera, { x: 0, y: 0, width: 80, height: 24 });
+			setCamera(world, camera, { x: 0, y: 0, ...SCREEN_80X24 });
 			setCameraBounds(world, camera, { minX: 0, maxX: 100, minY: 0, maxY: 50 });
 
 			moveCameraBy(world, camera, -10, -10);
@@ -334,7 +335,7 @@ describe('Camera Position', () => {
 	describe('centerCameraOn', () => {
 		it('should center camera on position', () => {
 			const camera = addEntity(world);
-			setCamera(world, camera, { width: 80, height: 24 });
+			setCamera(world, camera, SCREEN_80X24);
 
 			centerCameraOn(world, camera, 100, 50);
 
@@ -387,14 +388,14 @@ describe('Coordinate Conversion', () => {
 	describe('isInView', () => {
 		it('should return true for position in view', () => {
 			const camera = addEntity(world);
-			setCamera(world, camera, { x: 0, y: 0, width: 80, height: 24 });
+			setCamera(world, camera, { x: 0, y: 0, ...SCREEN_80X24 });
 
 			expect(isInView(world, camera, 40, 12)).toBe(true);
 		});
 
 		it('should return false for position outside view', () => {
 			const camera = addEntity(world);
-			setCamera(world, camera, { x: 0, y: 0, width: 80, height: 24 });
+			setCamera(world, camera, { x: 0, y: 0, ...SCREEN_80X24 });
 
 			expect(isInView(world, camera, 100, 12)).toBe(false);
 			expect(isInView(world, camera, 40, 30)).toBe(false);
@@ -410,7 +411,7 @@ describe('Coordinate Conversion', () => {
 	describe('isAreaInView', () => {
 		it('should return true for overlapping area', () => {
 			const camera = addEntity(world);
-			setCamera(world, camera, { x: 0, y: 0, width: 80, height: 24 });
+			setCamera(world, camera, { x: 0, y: 0, ...SCREEN_80X24 });
 
 			// Area that overlaps with viewport
 			expect(isAreaInView(world, camera, 70, 20, 20, 10)).toBe(true);
@@ -418,7 +419,7 @@ describe('Coordinate Conversion', () => {
 
 		it('should return false for non-overlapping area', () => {
 			const camera = addEntity(world);
-			setCamera(world, camera, { x: 0, y: 0, width: 80, height: 24 });
+			setCamera(world, camera, { x: 0, y: 0, ...SCREEN_80X24 });
 
 			// Area completely outside viewport
 			expect(isAreaInView(world, camera, 100, 30, 10, 10)).toBe(false);
@@ -426,7 +427,7 @@ describe('Coordinate Conversion', () => {
 
 		it('should return true for contained area', () => {
 			const camera = addEntity(world);
-			setCamera(world, camera, { x: 0, y: 0, width: 80, height: 24 });
+			setCamera(world, camera, { x: 0, y: 0, ...SCREEN_80X24 });
 
 			// Area completely inside viewport
 			expect(isAreaInView(world, camera, 10, 5, 20, 10)).toBe(true);
@@ -446,7 +447,7 @@ describe('Camera Follow', () => {
 			const camera = addEntity(world);
 			const target = addEntity(world);
 
-			setCamera(world, camera, { width: 80, height: 24 });
+			setCamera(world, camera, SCREEN_80X24);
 			setPosition(world, target, 100, 50);
 			setCameraTarget(world, camera, target, 0);
 
@@ -487,7 +488,7 @@ describe('Camera Follow', () => {
 			const camera = addEntity(world);
 			const target = addEntity(world);
 
-			setCamera(world, camera, { x: 0, y: 0, width: 80, height: 24 });
+			setCamera(world, camera, { x: 0, y: 0, ...SCREEN_80X24 });
 			setPosition(world, target, 45, 14); // Near center (40, 12)
 			setCameraTarget(world, camera, target, 0);
 			setCameraDeadZone(world, camera, 10, 5);
@@ -504,7 +505,7 @@ describe('Camera Follow', () => {
 			const camera = addEntity(world);
 			const target = addEntity(world);
 
-			setCamera(world, camera, { x: 0, y: 0, width: 80, height: 24 });
+			setCamera(world, camera, { x: 0, y: 0, ...SCREEN_80X24 });
 			setPosition(world, target, 60, 12); // Outside dead zone in X
 			setCameraTarget(world, camera, target, 0);
 			setCameraDeadZone(world, camera, 10, 5);
@@ -520,7 +521,7 @@ describe('Camera Follow', () => {
 			const camera = addEntity(world);
 			const target = addEntity(world);
 
-			setCamera(world, camera, { width: 80, height: 24 });
+			setCamera(world, camera, SCREEN_80X24);
 			setCameraBounds(world, camera, { minX: 0, maxX: 100, minY: 0, maxY: 50 });
 			setPosition(world, target, 10, 10); // Would center at (-30, -2)
 			setCameraTarget(world, camera, target, 0);
@@ -536,7 +537,7 @@ describe('Camera Follow', () => {
 			const camera = addEntity(world);
 			const target = addEntity(world);
 
-			setCamera(world, camera, { x: 0, y: 0, width: 80, height: 24 });
+			setCamera(world, camera, { x: 0, y: 0, ...SCREEN_80X24 });
 			setPosition(world, target, 100, 50);
 			setCameraTarget(world, camera, target, 0.9); // High smoothing
 

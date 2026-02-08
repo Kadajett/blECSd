@@ -1,13 +1,14 @@
 /**
  * Testing utilities for blECSd.
  *
- * Provides test helpers for creating worlds and entities, snapshot testing
- * helpers, render utilities, and test buffer setup for visual regression
- * testing of terminal UI components.
+ * Provides test fixtures, helper utilities, snapshot testing helpers,
+ * render utilities, and test buffer setup for visual regression testing
+ * of terminal UI components.
  *
  * @module testing
  */
 
+export * from './fixtures';
 export type { TestEntityConfig, TestScreenConfig } from './helpers';
 export {
 	createClickableEntity,
