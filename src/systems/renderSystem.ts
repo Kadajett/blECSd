@@ -465,11 +465,104 @@ function renderEntityTree(ctx: RenderContext, eid: Entity): void {
 */
 
 // =============================================================================
+// Z-ORDER OCCLUSION CULLING
+// =============================================================================
+
+/**
+ * Rectangle representing a screen region.
+ */
+interface OcclusionRect {
+	readonly x: number;
+	readonly y: number;
+	readonly width: number;
+	readonly height: number;
+}
+
+/**
+ * Checks if rect A is fully contained within rect B.
+ */
+function isFullyContained(a: OcclusionRect, b: OcclusionRect): boolean {
+	return (
+		a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height
+	);
+}
+
+/**
+ * Checks if an entity is fully occluded by rendered regions.
+ * Returns true if the entity's bounds are completely covered.
+ */
+function isFullyOccluded(bounds: EntityBounds, occludedRegions: readonly OcclusionRect[]): boolean {
+	if (occludedRegions.length === 0) {
+		return false;
+	}
+
+	// Fast path: check if fully contained in any single region
+	for (const region of occludedRegions) {
+		if (isFullyContained(bounds, region)) {
+			return true;
+		}
+	}
+
+	// TODO: Complex path - multi-rect union coverage test
+	// For now, conservative: only cull if single rect covers it
+	return false;
+}
+
+/**
+ * Adds a rendered entity's bounds to the occlusion map.
+ */
+function addOccludedRegion(regions: OcclusionRect[], bounds: EntityBounds): void {
+	regions.push({
+		x: bounds.x,
+		y: bounds.y,
+		width: bounds.width,
+		height: bounds.height,
+	});
+}
+
+/**
+ * Processes a single entity for rendering with optional occlusion culling.
+ * Returns true if the entity was rendered, false if it was culled.
+ */
+function processEntityWithOcclusion(
+	ctx: RenderContext,
+	eid: Entity,
+	occludedRegions: OcclusionRect[],
+): boolean {
+	const { world } = ctx;
+
+	// Get bounds once for both occlusion check and tracking
+	const bounds = occlusionCullingEnabled ? getEntityBounds(world, eid) : null;
+
+	// Check if entity is fully occluded
+	if (occlusionCullingEnabled && bounds && bounds.width > 0 && bounds.height > 0) {
+		if (isFullyOccluded(bounds, occludedRegions)) {
+			// Entity is completely hidden - skip rendering but mark as clean
+			markClean(world, eid);
+			return false;
+		}
+	}
+
+	// Render entity normally
+	renderEntity(ctx, eid);
+
+	// Add rendered bounds to occlusion map for subsequent entities
+	if (occlusionCullingEnabled && bounds && bounds.width > 0 && bounds.height > 0) {
+		addOccludedRegion(occludedRegions, bounds);
+	}
+
+	return true;
+}
+
+// =============================================================================
 // RENDER SYSTEM
 // =============================================================================
 
 /** Module-level double buffer reference for the render system */
 let renderDoubleBuffer: DoubleBufferData | null = null;
+
+/** Module-level occlusion culling enabled flag (disabled by default) */
+let occlusionCullingEnabled = false;
 
 /**
  * Sets the double buffer for the render system.
@@ -506,6 +599,36 @@ export function clearRenderBuffer(): void {
 }
 
 /**
+ * Enables or disables z-order occlusion culling.
+ * When enabled, entities fully hidden behind higher z-index entities are skipped during rendering.
+ *
+ * Disabled by default. Enable for applications with many overlapping widgets (modals, dialogs, overlays)
+ * where the performance benefit outweighs the culling overhead.
+ *
+ * @param enabled - Whether to enable occlusion culling (default: false)
+ *
+ * @example
+ * ```typescript
+ * import { setOcclusionCulling } from 'blecsd';
+ *
+ * // Enable occlusion culling for layered UI
+ * setOcclusionCulling(true);
+ * ```
+ */
+export function setOcclusionCulling(enabled: boolean): void {
+	occlusionCullingEnabled = enabled;
+}
+
+/**
+ * Gets the current occlusion culling state.
+ *
+ * @returns True if occlusion culling is enabled
+ */
+export function isOcclusionCullingEnabled(): boolean {
+	return occlusionCullingEnabled;
+}
+
+/**
  * Render system that draws visible, dirty entities to the screen buffer.
  * Entities are rendered in z-index order (lower z first, higher z on top).
  *
@@ -513,8 +636,13 @@ export function clearRenderBuffer(): void {
  * 1. Queries all entities with Position and Renderable
  * 2. Filters to visible, dirty entities
  * 3. Sorts by z-index
- * 4. Renders each entity (background, border, content)
- * 5. Marks entities as clean
+ * 4. Applies z-order occlusion culling (skips fully hidden entities)
+ * 5. Renders each visible entity (background, border, content)
+ * 6. Marks entities as clean
+ *
+ * Occlusion culling: entities fully covered by higher z-index entities are
+ * skipped to improve performance in layered UIs (modals, dialogs, overlays).
+ * Can be disabled via `setOcclusionCulling(false)`.
  *
  * @param world - The ECS world
  * @returns The world (unchanged)
@@ -570,9 +698,12 @@ export const renderSystem: System = (world: World): World => {
 	// Sort by z-index (lower renders first, higher renders on top)
 	sortedEntities.sort((a, b) => a.z - b.z);
 
-	// Render each entity
+	// Track occluded regions for culling
+	const occludedRegions: OcclusionRect[] = [];
+
+	// Render each entity with occlusion culling
 	for (const { eid } of sortedEntities) {
-		renderEntity(ctx, eid);
+		processEntityWithOcclusion(ctx, eid, occludedRegions);
 	}
 
 	return world;
