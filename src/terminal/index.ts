@@ -229,6 +229,18 @@ export {
 	isWindowsTerminal,
 	isXterm,
 } from './detection';
+// Focus tracking
+export type { FocusTrackerState, FocusTrackingEventMap } from './focusTracking';
+export {
+	createFocusTracker,
+	disableFocusTracking,
+	enableFocusTracking,
+	getFocusTracker,
+	getTerminalFocusEventBus,
+	isTerminalFocused,
+	resetTerminalFocusEventBus,
+	triggerFocusEvent,
+} from './focusTracking';
 // GPM mouse client (Linux console mouse support)
 export type { GpmClient, GpmClientConfig, GpmClientState, GpmRawEvent } from './gpmClient';
 export {
