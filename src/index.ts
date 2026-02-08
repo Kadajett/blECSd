@@ -98,6 +98,7 @@ export {
 	writeChar,
 	writeRaw,
 } from './terminal';
+export * from './text';
 export * from './types';
 export * from './utils';
 
