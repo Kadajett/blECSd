@@ -54,9 +54,9 @@ function createMockInput(): NodeJS.ReadStream & {
 		_rawMode: false,
 		isRaw: false,
 		setRawMode(mode: boolean) {
-			this._rawMode = mode;
-			this.isRaw = mode;
-			return this;
+			mock._rawMode = mode;
+			mock.isRaw = mode;
+			return mock;
 		},
 		on: vi.fn().mockReturnThis(),
 		once: vi.fn().mockReturnThis(),

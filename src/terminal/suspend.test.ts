@@ -44,17 +44,17 @@ function createMockInput(): NodeJS.ReadStream & {
 		_paused: false,
 		isRaw: true,
 		setRawMode(mode: boolean) {
-			this._rawMode = mode;
-			this.isRaw = mode;
-			return this;
+			mock._rawMode = mode;
+			mock.isRaw = mode;
+			return mock;
 		},
 		pause() {
-			this._paused = true;
-			return this;
+			mock._paused = true;
+			return mock;
 		},
 		resume() {
-			this._paused = false;
-			return this;
+			mock._paused = false;
+			return mock;
 		},
 		on: vi.fn().mockReturnThis(),
 		once: vi.fn().mockReturnThis(),
