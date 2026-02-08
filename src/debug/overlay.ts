@@ -15,7 +15,7 @@ import { setContent } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { setPosition } from '../components/position';
 import { hide as hideEntity, setStyle, show as showEntity } from '../components/renderable';
-import { addEntity, removeEntity } from '../core/ecs';
+import { addEntity, getAllEntities, removeEntity } from '../core/ecs';
 import { setEntityData } from '../core/entityData';
 import type { GameLoop } from '../core/gameLoop';
 import type { Entity, World } from '../core/types';
@@ -25,7 +25,7 @@ import {
 	getSystemTimings,
 	isSystemTimingEnabled,
 	type PerformanceStats,
-} from './index';
+} from './systemTiming';
 
 // =============================================================================
 // TYPES
@@ -248,8 +248,12 @@ export function createDebugOverlay(world: World, config: DebugOverlayConfig = {}
 		update(w: World, loop?: GameLoop) {
 			if (!visible || !entity) return;
 
+			// Get entity count
+			const entities = getAllEntities(w);
+			const entityCount = entities.length;
+
 			// Get stats
-			const stats = getPerformanceStats(w, loop);
+			const stats = getPerformanceStats(w, entityCount, loop);
 
 			// Build and set content
 			const content = buildContent(stats);
