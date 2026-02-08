@@ -111,6 +111,20 @@ export {
 	loadFont,
 	renderChar,
 } from './fonts';
+// Form widget
+export type {
+	FormConfig as FormWidgetConfig,
+	FormField,
+	FormValidator,
+	FormWidget,
+} from './form';
+export {
+	createForm,
+	FormComponent,
+	FormConfigSchema as FormWidgetConfigSchema,
+	isForm as isFormWidget,
+	resetFormStore as resetFormWidgetStore,
+} from './form';
 // HoverText (Tooltip) system
 export type {
 	HoverTextConfig,
@@ -323,6 +337,18 @@ export {
 	resetPanelStore,
 	setPanelTitle,
 } from './panel';
+// ProgressBar widget
+export type {
+	ProgressBarConfig as ProgressBarWidgetConfig,
+	ProgressBarWidget,
+} from './progressBar';
+export {
+	createProgressBar,
+	isProgressBar as isProgressBarWidget,
+	ProgressBarComponent,
+	ProgressBarConfigSchema as ProgressBarWidgetConfigSchema,
+	resetProgressBarStore as resetProgressBarWidgetStore,
+} from './progressBar';
 // Prompt widget
 export type {
 	PromptBorderConfig,
