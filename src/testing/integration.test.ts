@@ -10,7 +10,6 @@ import type { World } from '../core/types';
 import { focusEntity, focusNext, focusPrev, getFocused } from '../systems/focusSystem';
 import { renderText } from '../systems/renderSystem';
 import { getCell } from '../terminal/screen/cell';
-import { getBackBuffer } from '../terminal/screen/doubleBuffer';
 import type { IntegrationTestContext } from './integration';
 import {
 	createInteractiveEntity,
@@ -64,7 +63,7 @@ describe('Integration Tests', () => {
 			ctx.step();
 
 			// Overlapping area should be rendered (front on top)
-			const buffer = getBackBuffer(ctx.db);
+			const buffer = ctx.buffer;
 			const cell = getCell(buffer, 10, 2);
 			expect(cell?.bg).toBe(0xff0000ff); // blue in ARGB
 		});
@@ -84,13 +83,13 @@ describe('Integration Tests', () => {
 			ctx.step();
 
 			// Child absolute position: parent(5,2) + local(3,1) = (8,3)
-			const buffer = getBackBuffer(ctx.db);
+			const buffer = ctx.buffer;
 			const cell = getCell(buffer, 8, 3);
 			expect(cell?.bg).toBe(0xffff0000); // red in ARGB
 		});
 
 		it('renders text via direct buffer write', () => {
-			const buffer = getBackBuffer(ctx.db);
+			const buffer = ctx.buffer;
 			renderText(buffer, 5, 3, 'Integration Test', 0xffffffff, 0x000000ff);
 
 			expect(ctx.rowText(3)).toContain('Integration Test');

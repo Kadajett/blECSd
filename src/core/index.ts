@@ -109,33 +109,48 @@ export {
 	setAbsolutePosition,
 	setRelativePosition,
 } from './computedPosition';
-// Dirty rectangle tracking
+// Legacy dirty rectangle tracking (deprecated - use dirtyTracking instead)
 export type {
-	DirtyRect,
+	DirtyRect as LegacyDirtyRect,
 	DirtyStats,
 	DirtyTrackerData,
 } from './dirtyRects';
 export {
-	clearDirtyTracking,
-	createDirtyTracker,
+	clearDirtyTracking as legacyClearDirtyTracking,
+	createDirtyTracker as legacyCreateDirtyTracker,
 	forceFullRedrawFlag,
 	getDirtyEntities,
-	getDirtyRegions,
+	getDirtyRegions as legacyGetDirtyRegions,
 	getDirtyRegionsInViewport,
 	getDirtyStats,
 	hasDirtyEntities,
-	isCellDirty,
+	isCellDirty as legacyIsCellDirty,
 	isEntityDirty,
 	markAllEntitiesDirty,
-	markCellDirty,
-	markEntityDirty,
-	markRegionDirty,
+	markCellDirty as legacyMarkCellDirty,
+	markEntityDirty as legacyMarkEntityDirty,
+	markRegionDirty as legacyMarkRegionDirty,
 	needsFullRedraw,
 	regionIntersectsDirty,
-	removeEntityFromTracking,
+	removeEntityFromTracking as legacyRemoveEntityFromTracking,
 	resizeDirtyTracker,
 	updateEntityBounds,
 } from './dirtyRects';
+// Unified dirty tracking (primary system)
+export type { DirtyRect, DirtyTracker } from './dirtyTracking';
+export {
+	clearDirtyTracking,
+	createDirtyTracker,
+	forceFullRedraw,
+	getDirtyRegions,
+	getDirtyTrackingStats,
+	hasDirtyRegions,
+	isCellDirty,
+	markCellDirty,
+	markEntityDirty,
+	markRegionDirty,
+	removeEntityFromTracking,
+} from './dirtyTracking';
 // Disposal and cleanup
 export type { CleanupCallback, DestroyOptions } from './disposal';
 export {

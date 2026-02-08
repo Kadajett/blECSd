@@ -15,13 +15,13 @@ import {
 	markClean,
 	Renderable,
 } from '../components/renderable';
+import type { DirtyTracker } from '../core/dirtyTracking';
+import { markEntityDirty } from '../core/dirtyTracking';
 import { hasComponent } from '../core/ecs';
 import type { Entity, System, World } from '../core/types';
 import { getWorldAdapter } from '../core/worldAdapter';
 import type { Cell, ScreenBufferData } from '../terminal/screen/cell';
 import { Attr, createCell, fillRect, setCell, writeString } from '../terminal/screen/cell';
-import type { DoubleBufferData } from '../terminal/screen/doubleBuffer';
-import { getBackBuffer, markDirtyRegion } from '../terminal/screen/doubleBuffer';
 import { ComputedLayout, hasComputedLayout } from './layoutSystem';
 
 // =============================================================================
@@ -36,8 +36,8 @@ export interface RenderContext {
 	readonly world: World;
 	/** The screen buffer to render to */
 	readonly buffer: ScreenBufferData;
-	/** The double buffer for dirty tracking */
-	readonly doubleBuffer: DoubleBufferData;
+	/** The dirty tracker for optimized rendering */
+	readonly dirtyTracker: DirtyTracker;
 }
 
 /**
@@ -391,7 +391,7 @@ export function renderScrollbar(_ctx: RenderContext, _eid: Entity, _bounds: Enti
  * @param eid - Entity ID
  */
 function renderEntity(ctx: RenderContext, eid: Entity): void {
-	const { world, doubleBuffer } = ctx;
+	const { world } = ctx;
 
 	const bounds = getEntityBounds(world, eid);
 	if (!bounds) {
@@ -421,8 +421,8 @@ function renderEntity(ctx: RenderContext, eid: Entity): void {
 	// Render scrollbar if needed
 	renderScrollbar(ctx, eid, bounds);
 
-	// Mark dirty region for double buffer
-	markDirtyRegion(doubleBuffer, bounds.x, bounds.y, bounds.width, bounds.height);
+	// Mark entity dirty in unified tracker
+	markEntityDirty(ctx.dirtyTracker, world, eid);
 
 	// Mark entity as clean
 	markClean(world, eid);
@@ -647,44 +647,52 @@ function processEntityWithCulling(
 // RENDER SYSTEM
 // =============================================================================
 
-/** Module-level double buffer reference for the render system */
-let renderDoubleBuffer: DoubleBufferData | null = null;
+/** Module-level dirty tracker reference for the render system */
+let renderDirtyTracker: DirtyTracker | null = null;
+
+/** Module-level screen buffer reference for the render system */
+let renderScreenBuffer: ScreenBufferData | null = null;
 
 /** Module-level occlusion culling enabled flag (disabled by default) */
 let occlusionCullingEnabled = false;
 
 /**
- * Sets the double buffer for the render system.
+ * Sets the dirty tracker and screen buffer for the render system.
  * Must be called before running the render system.
  *
- * @param db - The double buffer to render to
+ * @param tracker - The dirty tracker for optimized rendering
+ * @param buffer - The screen buffer to render to
  *
  * @example
  * ```typescript
- * import { setRenderBuffer, createDoubleBuffer } from 'blecsd';
+ * import { setRenderBuffer, createDirtyTracker } from 'blecsd';
+ * import { createScreenBuffer } from 'blecsd';
  *
- * const db = createDoubleBuffer(80, 24);
- * setRenderBuffer(db);
+ * const tracker = createDirtyTracker(80, 24);
+ * const buffer = createScreenBuffer(80, 24);
+ * setRenderBuffer(tracker, buffer);
  * ```
  */
-export function setRenderBuffer(db: DoubleBufferData): void {
-	renderDoubleBuffer = db;
+export function setRenderBuffer(tracker: DirtyTracker, buffer: ScreenBufferData): void {
+	renderDirtyTracker = tracker;
+	renderScreenBuffer = buffer;
 }
 
 /**
- * Gets the current render buffer.
+ * Gets the current dirty tracker.
  *
- * @returns The current double buffer or null
+ * @returns The current dirty tracker or null
  */
-export function getRenderBuffer(): DoubleBufferData | null {
-	return renderDoubleBuffer;
+export function getRenderBuffer(): DirtyTracker | null {
+	return renderDirtyTracker;
 }
 
 /**
- * Clears the render buffer reference.
+ * Clears the render buffer references.
  */
 export function clearRenderBuffer(): void {
-	renderDoubleBuffer = null;
+	renderDirtyTracker = null;
+	renderScreenBuffer = null;
 }
 
 /**
@@ -749,23 +757,21 @@ export function isOcclusionCullingEnabled(): boolean {
  * scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
  *
  * // Set render buffer and enable viewport culling
- * setRenderBuffer(doubleBuffer);
+ * setRenderBuffer(dirtyTracker, screenBuffer);
  * setViewportBounds({ x: 0, y: 0, width: 80, height: 24 });
  *
  * scheduler.run(world, deltaTime);
  * ```
  */
 export const renderSystem: System = (world: World): World => {
-	if (!renderDoubleBuffer) {
+	if (!renderDirtyTracker || !renderScreenBuffer) {
 		return world;
 	}
 
-	const buffer = getBackBuffer(renderDoubleBuffer);
-
 	const ctx: RenderContext = {
 		world,
-		buffer,
-		doubleBuffer: renderDoubleBuffer,
+		buffer: renderScreenBuffer,
+		dirtyTracker: renderDirtyTracker,
 	};
 
 	// Query all entities with Position and Renderable via adapter
