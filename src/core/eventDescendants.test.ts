@@ -6,14 +6,13 @@ import { describe, expect, it, vi } from 'vitest';
 import { ZodError } from 'zod';
 import { appendChild } from '../components/hierarchy';
 import { addEntity } from './ecs';
+import { type EmitDescendantsOptions, emitDescendants } from './eventDescendants';
 import {
 	createEntityEventBusStore,
-	type EmitDescendantsOptions,
-	emitDescendants,
+	createEventBus,
+	type EventMap,
 	type GetEntityEventBus,
-} from './eventDescendants';
-import type { EventMap } from './events';
-import { createEventBus } from './events';
+} from './events';
 import type { Entity, World } from './types';
 import { createWorld } from './world';
 

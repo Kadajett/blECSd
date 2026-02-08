@@ -282,29 +282,32 @@ export type {
 	BubbleableEvent,
 	BubbleableEventOptions,
 	BubbleResult,
-	GetEntityEventBus,
 } from './eventBubbling';
 export {
 	bubbleEvent,
 	createBubbleableEvent,
-	createEntityEventBusStore,
 } from './eventBubbling';
 // Event descendants
 export type {
 	EmitDescendantsOptions,
 	EmitDescendantsResult,
-	EntityEventBusStore,
-	GetEntityEventBus as GetEntityEventBusForDescendants,
 } from './eventDescendants';
 export {
-	createEntityEventBusStore as createEntityEventBusStoreForDescendants,
 	EmitDescendantsOptionsSchema,
 	EmitDescendantsResultSchema,
 	emitDescendants,
 } from './eventDescendants';
 // Event system
-export type { EventBus, EventHandler, EventMap, ScreenEventMap, UIEventMap } from './events';
-export { createEventBus } from './events';
+export type {
+	EntityEventBusStore,
+	EventBus,
+	EventHandler,
+	EventMap,
+	GetEntityEventBus,
+	ScreenEventMap,
+	UIEventMap,
+} from './events';
+export { createEntityEventBusStore, createEventBus } from './events';
 // Game loop
 export type {
 	FixedTimestepConfig,

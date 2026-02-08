@@ -7,17 +7,8 @@
 import { z } from 'zod';
 import { Hierarchy, NULL_ENTITY } from '../components/hierarchy';
 import { hasComponent } from './ecs';
-import type { EventBus, EventMap } from './events';
+import type { EventMap, GetEntityEventBus } from './events';
 import type { Entity, World } from './types';
-
-/**
- * Function type for getting an EventBus for a specific entity.
- * Returns undefined if the entity has no event bus.
- */
-export type GetEntityEventBus<T extends EventMap> = (
-	world: World,
-	eid: Entity,
-) => EventBus<T> | undefined;
 
 /**
  * Result of emitting an event to descendants.
@@ -186,58 +177,5 @@ export function emitDescendants<T extends EventMap, K extends keyof T>(
 	return EmitDescendantsResultSchema.parse(result);
 }
 
-/**
- * Store for entity event buses.
- * Maps entity IDs to their event buses.
- */
-export interface EntityEventBusStore<T extends EventMap> {
-	/** Gets the event bus for an entity */
-	get(world: World, eid: Entity): EventBus<T> | undefined;
-	/** Sets the event bus for an entity */
-	set(world: World, eid: Entity, eventBus: EventBus<T>): void;
-	/** Checks if an entity has an event bus */
-	has(world: World, eid: Entity): boolean;
-	/** Removes the event bus for an entity */
-	delete(world: World, eid: Entity): boolean;
-	/** Clears all event buses */
-	clear(): void;
-}
-
-/**
- * Creates a simple entity event bus store using a Map.
- *
- * @typeParam T - Event map type
- * @returns A new EntityEventBusStore instance
- *
- * @example
- * ```typescript
- * import { createEntityEventBusStore, createEventBus } from 'blecsd';
- *
- * const store = createEntityEventBusStore();
- * const eventBus = createEventBus();
- *
- * store.set(world, entity, eventBus);
- * const retrieved = store.get(world, entity);
- * ```
- */
-export function createEntityEventBusStore<T extends EventMap>(): EntityEventBusStore<T> {
-	const buses = new Map<Entity, EventBus<T>>();
-
-	return {
-		get(_world: World, eid: Entity): EventBus<T> | undefined {
-			return buses.get(eid);
-		},
-		set(_world: World, eid: Entity, eventBus: EventBus<T>): void {
-			buses.set(eid, eventBus);
-		},
-		has(_world: World, eid: Entity): boolean {
-			return buses.has(eid);
-		},
-		delete(_world: World, eid: Entity): boolean {
-			return buses.delete(eid);
-		},
-		clear(): void {
-			buses.clear();
-		},
-	};
-}
+// Note: EntityEventBusStore and createEntityEventBusStore are now exported from './events'
+// Import them from there: import { type EntityEventBusStore, createEntityEventBusStore } from './events';

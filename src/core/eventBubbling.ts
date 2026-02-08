@@ -6,7 +6,7 @@
 
 import { getParent, Hierarchy, NULL_ENTITY } from '../components/hierarchy';
 import { hasComponent } from './ecs';
-import type { EventBus, EventMap } from './events';
+import type { EventMap, GetEntityEventBus } from './events';
 import type { Entity, World } from './types';
 
 /**
@@ -127,15 +127,6 @@ export function createBubbleableEvent<T>(options: BubbleableEventOptions<T>): Bu
 }
 
 /**
- * Function type for getting an EventBus for a specific entity.
- * Returns undefined if the entity has no event bus.
- */
-export type GetEntityEventBus<T extends EventMap> = (
-	world: World,
-	eid: Entity,
-) => EventBus<T> | undefined;
-
-/**
  * Result of bubbling an event through the hierarchy.
  */
 export interface BubbleResult {
@@ -232,73 +223,5 @@ export function bubbleEvent<T, E extends EventMap>(
 	};
 }
 
-/**
- * Creates a simple entity event bus store.
- * Useful for quickly setting up event bubbling without custom storage.
- *
- * @returns An object with methods to manage entity event buses
- *
- * @example
- * ```typescript
- * import { createEntityEventBusStore, createBubbleableEvent, bubbleEvent } from 'blecsd';
- *
- * interface MyEvents {
- *   click: BubbleableEvent<{ x: number; y: number }>;
- *   focus: BubbleableEvent<void>;
- * }
- *
- * const store = createEntityEventBusStore<MyEvents>();
- *
- * // Attach a bus to an entity
- * const bus = store.getOrCreate(buttonEntity);
- * bus.on('click', (e) => console.log('clicked!', e.payload));
- *
- * // Bubble an event
- * const event = createBubbleableEvent({
- *   type: 'click',
- *   target: buttonEntity,
- *   payload: { x: 10, y: 20 },
- * });
- *
- * bubbleEvent(world, event, store.get);
- * ```
- */
-export function createEntityEventBusStore<E extends EventMap>(): {
-	/** Get an entity's event bus (undefined if none exists) */
-	get: GetEntityEventBus<E>;
-	/** Get or create an event bus for an entity */
-	getOrCreate: (eid: Entity, createBus: () => EventBus<E>) => EventBus<E>;
-	/** Set an entity's event bus */
-	set: (eid: Entity, bus: EventBus<E>) => void;
-	/** Remove an entity's event bus */
-	delete: (eid: Entity) => boolean;
-	/** Check if an entity has an event bus */
-	has: (eid: Entity) => boolean;
-	/** Clear all stored event buses */
-	clear: () => void;
-} {
-	const buses = new Map<Entity, EventBus<E>>();
-
-	return {
-		get: (_world: World, eid: Entity) => buses.get(eid),
-
-		getOrCreate: (eid: Entity, createBus: () => EventBus<E>) => {
-			let bus = buses.get(eid);
-			if (!bus) {
-				bus = createBus();
-				buses.set(eid, bus);
-			}
-			return bus;
-		},
-
-		set: (eid: Entity, bus: EventBus<E>) => {
-			buses.set(eid, bus);
-		},
-
-		delete: (eid: Entity) => buses.delete(eid),
-
-		has: (eid: Entity) => buses.has(eid),
-
-		clear: () => buses.clear(),
-	};
-}
+// Note: createEntityEventBusStore is now exported from './events'
+// Import it from there: import { createEntityEventBusStore } from './events';
