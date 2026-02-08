@@ -235,14 +235,16 @@ export type {
 	BubbleableEventOptions,
 	/** Result of event bubbling */
 	BubbleResult,
-	/** Function to get entity event bus */
-	GetEntityEventBus,
 } from '../core/eventBubbling';
 export type {
+	/** Entity event bus store interface */
+	EntityEventBusStore,
 	/** Handler function for events */
 	EventHandler,
 	/** Generic event map interface */
 	EventMap,
+	/** Function to get entity event bus */
+	GetEntityEventBus,
 	/** Screen-level event map */
 	ScreenEventMap,
 	/** UI element event map */

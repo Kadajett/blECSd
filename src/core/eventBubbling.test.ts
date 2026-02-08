@@ -1,14 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { appendChild } from '../components/hierarchy';
 import { addEntity, createWorld } from '../core/ecs';
+import { type BubbleableEvent, bubbleEvent, createBubbleableEvent } from './eventBubbling';
 import {
-	type BubbleableEvent,
-	bubbleEvent,
-	createBubbleableEvent,
 	createEntityEventBusStore,
+	createEventBus,
+	type EventBus,
 	type GetEntityEventBus,
-} from './eventBubbling';
-import { createEventBus, type EventBus } from './events';
+} from './events';
 import type { Entity, World } from './types';
 
 // Test event map for bubbling events
@@ -360,56 +359,59 @@ describe('bubbleEvent', () => {
 
 describe('createEntityEventBusStore', () => {
 	it('creates empty store', () => {
+		const world = createWorld();
 		const store = createEntityEventBusStore<TestBubbleEventMap>();
-		expect(store.has(1 as Entity)).toBe(false);
+		expect(store.has(world, 1 as Entity)).toBe(false);
 	});
 
 	it('set() and get() work correctly', () => {
+		const world = createWorld();
 		const store = createEntityEventBusStore<TestBubbleEventMap>();
 		const bus = createEventBus<TestBubbleEventMap>();
 
-		store.set(1 as Entity, bus);
+		store.set(world, 1 as Entity, bus);
 
-		const world = createWorld();
 		expect(store.get(world, 1 as Entity)).toBe(bus);
 	});
 
 	it('getOrCreate() creates bus if not exists', () => {
+		const world = createWorld();
 		const store = createEntityEventBusStore<TestBubbleEventMap>();
-		const createBus = vi.fn(() => createEventBus<TestBubbleEventMap>());
 
-		const bus1 = store.getOrCreate(1 as Entity, createBus);
-		const bus2 = store.getOrCreate(1 as Entity, createBus);
+		const bus1 = store.getOrCreate(world, 1 as Entity);
+		const bus2 = store.getOrCreate(world, 1 as Entity);
 
-		expect(createBus).toHaveBeenCalledTimes(1);
 		expect(bus1).toBe(bus2);
+		expect(store.has(world, 1 as Entity)).toBe(true);
 	});
 
 	it('delete() removes bus', () => {
+		const world = createWorld();
 		const store = createEntityEventBusStore<TestBubbleEventMap>();
 		const bus = createEventBus<TestBubbleEventMap>();
 
-		store.set(1 as Entity, bus);
-		expect(store.has(1 as Entity)).toBe(true);
+		store.set(world, 1 as Entity, bus);
+		expect(store.has(world, 1 as Entity)).toBe(true);
 
-		const deleted = store.delete(1 as Entity);
+		const deleted = store.delete(world, 1 as Entity);
 
 		expect(deleted).toBe(true);
-		expect(store.has(1 as Entity)).toBe(false);
+		expect(store.has(world, 1 as Entity)).toBe(false);
 	});
 
 	it('clear() removes all buses', () => {
+		const world = createWorld();
 		const store = createEntityEventBusStore<TestBubbleEventMap>();
 
-		store.set(1 as Entity, createEventBus<TestBubbleEventMap>());
-		store.set(2 as Entity, createEventBus<TestBubbleEventMap>());
-		store.set(3 as Entity, createEventBus<TestBubbleEventMap>());
+		store.set(world, 1 as Entity, createEventBus<TestBubbleEventMap>());
+		store.set(world, 2 as Entity, createEventBus<TestBubbleEventMap>());
+		store.set(world, 3 as Entity, createEventBus<TestBubbleEventMap>());
 
 		store.clear();
 
-		expect(store.has(1 as Entity)).toBe(false);
-		expect(store.has(2 as Entity)).toBe(false);
-		expect(store.has(3 as Entity)).toBe(false);
+		expect(store.has(world, 1 as Entity)).toBe(false);
+		expect(store.has(world, 2 as Entity)).toBe(false);
+		expect(store.has(world, 3 as Entity)).toBe(false);
 	});
 
 	it('integrates with bubbleEvent', () => {
@@ -421,8 +423,8 @@ describe('createEntityEventBusStore', () => {
 
 		const store = createEntityEventBusStore<TestBubbleEventMap>();
 
-		const parentBus = store.getOrCreate(parent, () => createEventBus<TestBubbleEventMap>());
-		const childBus = store.getOrCreate(child, () => createEventBus<TestBubbleEventMap>());
+		const parentBus = store.getOrCreate(world, parent);
+		const childBus = store.getOrCreate(world, child);
 
 		const parentHandler = vi.fn();
 		const childHandler = vi.fn();
@@ -436,7 +438,7 @@ describe('createEntityEventBusStore', () => {
 			payload: { x: 5, y: 10 },
 		});
 
-		bubbleEvent(world, event, store.get);
+		bubbleEvent(world, event, (w, eid) => store.get(w, eid));
 
 		expect(childHandler).toHaveBeenCalledTimes(1);
 		expect(parentHandler).toHaveBeenCalledTimes(1);
