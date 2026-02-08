@@ -15,6 +15,40 @@ interface SystemEntry {
 }
 
 /**
+ * Per-phase timing data for a single frame.
+ */
+export interface PhaseTimingData {
+	/** Phase identifier */
+	readonly phase: LoopPhase;
+	/** Time spent in this phase in milliseconds */
+	duration: number;
+	/** Number of systems executed in this phase */
+	systemCount: number;
+}
+
+/**
+ * Frame telemetry data collected during scheduler execution.
+ */
+export interface FrameTelemetry {
+	/** Per-phase timing data */
+	readonly phases: ReadonlyArray<PhaseTimingData>;
+	/** Total frame time in milliseconds */
+	totalFrameTime: number;
+	/** Frame number (increments each run) */
+	frameNumber: number;
+}
+
+/**
+ * Telemetry configuration options.
+ */
+export interface TelemetryConfig {
+	/** Enable telemetry collection (default: false) */
+	enabled: boolean;
+	/** Maximum number of frames to keep in history (default: 0 = current frame only) */
+	historySize?: number;
+}
+
+/**
  * Current delta time for the frame.
  * Accessed via getDeltaTime() during system execution.
  */
@@ -78,6 +112,11 @@ export interface Scheduler {
 	hasSystem(system: System): boolean;
 	clearPhase(phase: LoopPhase): void;
 	clearAllSystems(): void;
+	enableTelemetry(config?: TelemetryConfig): void;
+	disableTelemetry(): void;
+	getTelemetry(): FrameTelemetry | null;
+	getTelemetryHistory(): ReadonlyArray<FrameTelemetry>;
+	isTelemetryEnabled(): boolean;
 }
 
 function sortPhase(systems: SystemEntry[]): void {
@@ -108,9 +147,77 @@ export function createScheduler(): Scheduler {
 	const phases = new Map<LoopPhase, SystemEntry[]>();
 	const inputSystems: SystemEntry[] = [];
 
+	// Telemetry state
+	let telemetryEnabled = false;
+	let telemetryHistorySize = 0;
+	const telemetryHistory: FrameTelemetry[] = [];
+	let currentTelemetry: FrameTelemetry | null = null;
+	let frameCounter = 0;
+
 	// Initialize all phases
 	for (let phase = LoopPhase.INPUT; phase <= LoopPhase.POST_RENDER; phase++) {
 		phases.set(phase, []);
+	}
+
+	/**
+	 * Creates a new telemetry frame data structure.
+	 * @internal
+	 */
+	function createTelemetryFrame(): FrameTelemetry {
+		const phaseData: PhaseTimingData[] = [];
+		for (let phase = LoopPhase.INPUT; phase <= LoopPhase.POST_RENDER; phase++) {
+			phaseData.push({
+				phase,
+				duration: 0,
+				systemCount: 0,
+			});
+		}
+		return {
+			phases: phaseData,
+			totalFrameTime: 0,
+			frameNumber: frameCounter++,
+		};
+	}
+
+	/**
+	 * Records telemetry for a phase.
+	 * @internal
+	 */
+	function recordPhase(phase: LoopPhase, duration: number, systemCount: number): void {
+		if (!telemetryEnabled || !currentTelemetry) {
+			return;
+		}
+		const phaseData = currentTelemetry.phases[phase] as PhaseTimingData | undefined;
+		if (phaseData) {
+			phaseData.duration = duration;
+			phaseData.systemCount = systemCount;
+		}
+	}
+
+	/**
+	 * Finalizes the current frame telemetry.
+	 * @internal
+	 */
+	function finalizeTelemetry(): void {
+		if (!telemetryEnabled || !currentTelemetry) {
+			return;
+		}
+
+		// Calculate total frame time
+		let total = 0;
+		for (const phaseData of currentTelemetry.phases) {
+			total += phaseData.duration;
+		}
+		currentTelemetry.totalFrameTime = total;
+
+		// Add to history if enabled
+		if (telemetryHistorySize > 0) {
+			telemetryHistory.push(currentTelemetry);
+			// Keep only the last N frames
+			while (telemetryHistory.length > telemetryHistorySize) {
+				telemetryHistory.shift();
+			}
+		}
 	}
 
 	return {
@@ -196,9 +303,16 @@ export function createScheduler(): Scheduler {
 		run(world: World, deltaTime: number): World {
 			currentDeltaTime = deltaTime;
 
+			// Initialize telemetry for this frame
+			if (telemetryEnabled) {
+				currentTelemetry = createTelemetryFrame();
+			}
+
 			let currentWorld = world;
 
 			// Always run INPUT systems first (internal)
+			// Note: Input systems run before the INPUT phase, so we include them in INPUT phase timing
+			const inputStart = telemetryEnabled ? performance.now() : 0;
 			for (const entry of inputSystems) {
 				currentWorld = entry.system(currentWorld);
 			}
@@ -207,12 +321,35 @@ export function createScheduler(): Scheduler {
 			for (let phase = LoopPhase.INPUT; phase <= LoopPhase.POST_RENDER; phase++) {
 				const systems = phases.get(phase);
 				if (!systems) {
+					// Record empty phase
+					if (phase === LoopPhase.INPUT && telemetryEnabled) {
+						const inputEnd = performance.now();
+						recordPhase(phase, inputEnd - inputStart, inputSystems.length);
+					} else if (telemetryEnabled) {
+						recordPhase(phase, 0, 0);
+					}
 					continue;
 				}
+
+				// Measure phase timing
+				const phaseStart =
+					phase === LoopPhase.INPUT ? inputStart : telemetryEnabled ? performance.now() : 0;
 
 				for (const entry of systems) {
 					currentWorld = entry.system(currentWorld);
 				}
+
+				if (telemetryEnabled) {
+					const phaseEnd = performance.now();
+					const systemCount =
+						phase === LoopPhase.INPUT ? inputSystems.length + systems.length : systems.length;
+					recordPhase(phase, phaseEnd - phaseStart, systemCount);
+				}
+			}
+
+			// Finalize telemetry
+			if (telemetryEnabled) {
+				finalizeTelemetry();
 			}
 
 			return currentWorld;
@@ -409,6 +546,133 @@ export function createScheduler(): Scheduler {
 					systems.length = 0;
 				}
 			}
+		},
+
+		/**
+		 * Enables telemetry collection for per-phase frame timing.
+		 * When enabled, the scheduler will track how long each phase takes to execute.
+		 *
+		 * @param config - Telemetry configuration options
+		 *
+		 * @example
+		 * ```typescript
+		 * import { createScheduler } from 'blecsd';
+		 *
+		 * const scheduler = createScheduler();
+		 *
+		 * // Enable telemetry with history
+		 * scheduler.enableTelemetry({ enabled: true, historySize: 60 });
+		 *
+		 * // Run frames
+		 * scheduler.run(world, deltaTime);
+		 *
+		 * // Check telemetry
+		 * const telemetry = scheduler.getTelemetry();
+		 * if (telemetry) {
+		 *   console.log(`Frame ${telemetry.frameNumber}: ${telemetry.totalFrameTime}ms`);
+		 *   for (const phase of telemetry.phases) {
+		 *     console.log(`  Phase ${phase.phase}: ${phase.duration}ms (${phase.systemCount} systems)`);
+		 *   }
+		 * }
+		 * ```
+		 */
+		enableTelemetry(config: TelemetryConfig = { enabled: true }): void {
+			telemetryEnabled = config.enabled;
+			telemetryHistorySize = config.historySize ?? 0;
+			if (!telemetryEnabled) {
+				telemetryHistory.length = 0;
+				currentTelemetry = null;
+			}
+		},
+
+		/**
+		 * Disables telemetry collection and clears history.
+		 *
+		 * @example
+		 * ```typescript
+		 * import { createScheduler } from 'blecsd';
+		 *
+		 * const scheduler = createScheduler();
+		 * scheduler.enableTelemetry();
+		 *
+		 * // ... run frames ...
+		 *
+		 * scheduler.disableTelemetry();
+		 * ```
+		 */
+		disableTelemetry(): void {
+			telemetryEnabled = false;
+			telemetryHistory.length = 0;
+			currentTelemetry = null;
+		},
+
+		/**
+		 * Gets the telemetry data for the most recent frame.
+		 * Returns null if telemetry is disabled or no frames have been run yet.
+		 *
+		 * @returns The most recent frame telemetry or null
+		 *
+		 * @example
+		 * ```typescript
+		 * import { createScheduler } from 'blecsd';
+		 *
+		 * const scheduler = createScheduler();
+		 * scheduler.enableTelemetry();
+		 *
+		 * scheduler.run(world, deltaTime);
+		 *
+		 * const telemetry = scheduler.getTelemetry();
+		 * if (telemetry) {
+		 *   console.log(`Total frame time: ${telemetry.totalFrameTime}ms`);
+		 * }
+		 * ```
+		 */
+		getTelemetry(): FrameTelemetry | null {
+			return currentTelemetry;
+		},
+
+		/**
+		 * Gets the telemetry history for recent frames.
+		 * Returns an empty array if history is disabled or no frames have been recorded.
+		 *
+		 * @returns Array of frame telemetry data (most recent last)
+		 *
+		 * @example
+		 * ```typescript
+		 * import { createScheduler } from 'blecsd';
+		 *
+		 * const scheduler = createScheduler();
+		 * scheduler.enableTelemetry({ enabled: true, historySize: 60 });
+		 *
+		 * // ... run multiple frames ...
+		 *
+		 * const history = scheduler.getTelemetryHistory();
+		 * const avgFrameTime = history.reduce((sum, t) => sum + t.totalFrameTime, 0) / history.length;
+		 * console.log(`Average frame time over ${history.length} frames: ${avgFrameTime}ms`);
+		 * ```
+		 */
+		getTelemetryHistory(): ReadonlyArray<FrameTelemetry> {
+			return telemetryHistory;
+		},
+
+		/**
+		 * Checks if telemetry is currently enabled.
+		 *
+		 * @returns true if telemetry is enabled
+		 *
+		 * @example
+		 * ```typescript
+		 * import { createScheduler } from 'blecsd';
+		 *
+		 * const scheduler = createScheduler();
+		 * console.log(scheduler.isTelemetryEnabled()); // false
+		 *
+		 * scheduler.enableTelemetry();
+		 * console.log(scheduler.isTelemetryEnabled()); // true
+		 * ```
+		 */
+		isTelemetryEnabled(): boolean {
+			return telemetryEnabled;
 		},
 	};
 }
