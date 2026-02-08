@@ -638,4 +638,40 @@ describe('TerminalBuffer Component', () => {
 			expect((state?.currentAttr.styles ?? 0) & 13).toBe(13);
 		});
 	});
+
+	describe('PTY configuration', () => {
+		it('should accept PTY options as string', () => {
+			const terminal = createTerminal(world);
+			// String option should work (if node-pty is installed)
+			// This tests the type system, actual PTY spawn requires node-pty
+			expect(() => terminal.spawn('/bin/sh')).not.toThrow();
+		});
+
+		it('should accept PTY options as object', () => {
+			const terminal = createTerminal(world);
+			// Object option should work (if node-pty is installed)
+			expect(() =>
+				terminal.spawn({
+					shell: '/bin/bash',
+					args: ['--login'],
+					env: { TEST_VAR: 'value' },
+					cwd: '/tmp',
+					term: 'xterm-256color',
+					cols: 80,
+					rows: 24,
+					autoResize: true,
+				}),
+			).not.toThrow();
+		});
+
+		it('should expose PTY handle', () => {
+			const terminal = createTerminal(world);
+			expect(terminal.getPtyHandle()).toBeNull();
+		});
+
+		it('should report PTY running state', () => {
+			const terminal = createTerminal(world);
+			expect(terminal.isRunning()).toBe(false);
+		});
+	});
 });

@@ -597,6 +597,7 @@ export {
 	isTerminal,
 	isTerminalKeysEnabled,
 	isTerminalMouseEnabled,
+	PtyOptionsSchema,
 	resetTerminalStore,
 	Terminal,
 	TerminalConfigSchema,
