@@ -6,6 +6,15 @@
  * @module widgets
  */
 
+// BarChart widget
+export type { BarChartConfig, BarChartWidget, BarOrientation, BarSeries } from './barChart';
+export {
+	BarChart,
+	BarChartConfigSchema,
+	createBarChart,
+	isBarChart,
+	resetBarChartStore,
+} from './barChart';
 // BigText widget
 export type { BigTextConfig, BigTextWidget, FontDefinition } from './bigText';
 export {
@@ -45,6 +54,23 @@ export {
 	isButtonWidget,
 	resetButtonWidgetStore,
 } from './button';
+// Chart utilities
+export {
+	BRAILLE_BASE,
+	BRAILLE_DOTS,
+	brailleChar,
+	CHART_COLORS,
+	calculateTickInterval,
+	combineBrailleDots,
+	formatNumber,
+	formatPercentage,
+	generateTicks,
+	getChartColor,
+	interpolateChartColor,
+	renderXAxisLabel,
+	renderYAxisLabel,
+	scaleValue,
+} from './chartUtils';
 // Checkbox widget
 export type { CheckboxConfig as CheckboxWidgetConfig, CheckboxWidget } from './checkbox';
 export {
@@ -125,6 +151,15 @@ export {
 	isForm as isFormWidget,
 	resetFormStore as resetFormWidgetStore,
 } from './form';
+// Gauge widget
+export type { GaugeConfig, GaugeThreshold, GaugeWidget } from './gauge';
+export {
+	createGauge,
+	Gauge,
+	GaugeConfigSchema,
+	isGauge,
+	resetGaugeStore,
+} from './gauge';
 // HoverText (Tooltip) system
 export type {
 	HoverTextConfig,
@@ -200,6 +235,15 @@ export {
 	resetLineStore,
 	setLineChar,
 } from './line';
+// LineChart widget
+export type { LineChartConfig, LineChartWidget, LineSeries } from './lineChart';
+export {
+	createLineChart,
+	isLineChart,
+	LineChart,
+	LineChartConfigSchema,
+	resetLineChartStore,
+} from './lineChart';
 // List widget
 export type { ListStyleConfig, ListWidget, ListWidgetConfig } from './list';
 export { createList, isListWidget, ListWidgetConfigSchema } from './list';
@@ -442,6 +486,15 @@ export {
 // ScrollableText widget
 export type { ScrollableTextConfig, ScrollableTextWidget } from './scrollableText';
 export { createScrollableText, isScrollableText } from './scrollableText';
+// Sparkline widget
+export type { SparklineConfig, SparklineWidget } from './sparkline';
+export {
+	createSparkline,
+	isSparkline,
+	resetSparklineStore,
+	Sparkline,
+	SparklineConfigSchema,
+} from './sparkline';
 // SplitPane widget
 export type {
 	DimensionValue as SplitPaneDimensionValue,
