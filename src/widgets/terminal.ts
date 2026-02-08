@@ -143,16 +143,46 @@ export interface TerminalConfig {
 
 /**
  * PTY process options for spawning a shell.
+ *
+ * @example
+ * ```typescript
+ * import { createTerminal } from 'blecsd/widgets';
+ *
+ * const terminal = createTerminal(world, {
+ *   width: 80,
+ *   height: 24,
+ * });
+ *
+ * // Spawn with full PTY configuration
+ * terminal.spawn({
+ *   shell: '/bin/bash',
+ *   args: ['--login'],
+ *   env: { CUSTOM_VAR: 'value' },
+ *   cwd: '/home/user',
+ *   term: 'xterm-256color',
+ *   cols: 80,
+ *   rows: 24,
+ *   autoResize: true,
+ * });
+ * ```
  */
 export interface PtyOptions {
 	/** Shell to spawn (default: $SHELL or /bin/sh) */
 	readonly shell?: string;
 	/** Arguments to pass to the shell */
 	readonly args?: readonly string[];
-	/** Environment variables */
+	/** Environment variables (merged with process.env) */
 	readonly env?: Record<string, string>;
-	/** Working directory */
+	/** Working directory (default: process.cwd()) */
 	readonly cwd?: string;
+	/** TERM environment variable (default: 'xterm-256color') */
+	readonly term?: string;
+	/** Initial columns (default: widget width) */
+	readonly cols?: number;
+	/** Initial rows (default: widget height) */
+	readonly rows?: number;
+	/** Auto-resize PTY when widget resizes (default: true) */
+	readonly autoResize?: boolean;
 }
 
 /**
@@ -165,6 +195,8 @@ interface PtyState {
 	onDataCallback: ((data: string) => void) | null;
 	/** Exit callback */
 	onExitCallback: ((code: number, signal?: number) => void) | null;
+	/** Auto-resize PTY when widget resizes */
+	autoResize: boolean;
 }
 
 /**
@@ -225,6 +257,8 @@ export interface TerminalWidget {
 	kill(signal?: string): TerminalWidget;
 	/** Checks if a PTY process is running */
 	isRunning(): boolean;
+	/** Gets the raw PTY handle for direct control (advanced use) */
+	getPtyHandle(): unknown | null;
 
 	// ==========================================================================
 	// Events
@@ -318,6 +352,36 @@ const BorderConfigSchema = z
 			.optional(),
 	})
 	.optional();
+
+/**
+ * Zod schema for PTY options.
+ *
+ * @example
+ * ```typescript
+ * import { PtyOptionsSchema } from 'blecsd/widgets';
+ *
+ * const options = PtyOptionsSchema.parse({
+ *   shell: '/bin/bash',
+ *   args: ['--login'],
+ *   env: { CUSTOM_VAR: 'value' },
+ *   cwd: '/home/user',
+ *   term: 'xterm-256color',
+ *   cols: 80,
+ *   rows: 24,
+ *   autoResize: true,
+ * });
+ * ```
+ */
+export const PtyOptionsSchema = z.object({
+	shell: z.string().min(1).optional(),
+	args: z.array(z.string()).optional(),
+	env: z.record(z.string(), z.string()).optional(),
+	cwd: z.string().min(1).optional(),
+	term: z.string().min(1).default('xterm-256color'),
+	cols: z.number().int().positive().optional(),
+	rows: z.number().int().positive().optional(),
+	autoResize: z.boolean().default(true),
+});
 
 /**
  * Zod schema for terminal widget configuration.
@@ -445,6 +509,10 @@ interface ParsedSpawnOptions {
 	readonly args: string[];
 	readonly env: Record<string, string>;
 	readonly cwd: string | undefined;
+	readonly term: string;
+	readonly cols: number | undefined;
+	readonly rows: number | undefined;
+	readonly autoResize: boolean;
 }
 
 /**
@@ -460,6 +528,10 @@ function parseSpawnOptions(options?: PtyOptions | string): ParsedSpawnOptions {
 			args: [],
 			env: defaultEnv,
 			cwd: undefined,
+			term: 'xterm-256color',
+			cols: undefined,
+			rows: undefined,
+			autoResize: true,
 		};
 	}
 
@@ -469,14 +541,27 @@ function parseSpawnOptions(options?: PtyOptions | string): ParsedSpawnOptions {
 			args: [],
 			env: defaultEnv,
 			cwd: undefined,
+			term: 'xterm-256color',
+			cols: undefined,
+			rows: undefined,
+			autoResize: true,
 		};
 	}
 
+	// Validate and parse options with Zod
+	const validated = PtyOptionsSchema.parse(options);
+
 	return {
-		shell: options.shell ?? defaultShell,
-		args: options.args ? [...options.args] : [],
-		env: options.env ? ({ ...process.env, ...options.env } as Record<string, string>) : defaultEnv,
-		cwd: options.cwd,
+		shell: validated.shell ?? defaultShell,
+		args: validated.args ?? [],
+		env: validated.env
+			? ({ ...process.env, ...validated.env } as Record<string, string>)
+			: defaultEnv,
+		cwd: validated.cwd,
+		term: validated.term,
+		cols: validated.cols,
+		rows: validated.rows,
+		autoResize: validated.autoResize,
 	};
 }
 
@@ -651,6 +736,7 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 		pty: null,
 		onDataCallback: null,
 		onExitCallback: null,
+		autoResize: true,
 	};
 	ptyStateMap.set(eid, ptyState);
 
@@ -730,16 +816,28 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 			}
 
 			// Parse options
-			const { shell, args, env, cwd } = parseSpawnOptions(options);
+			const {
+				shell,
+				args,
+				env,
+				cwd,
+				term,
+				cols: optCols,
+				rows: optRows,
+				autoResize,
+			} = parseSpawnOptions(options);
 
-			// Get terminal dimensions
+			// Get terminal dimensions (use options if provided, otherwise widget dimensions)
 			const buffer = getTerminalBuffer(eid);
-			const cols = buffer?.width ?? 80;
-			const rows = buffer?.height ?? 24;
+			const cols = optCols ?? buffer?.width ?? 80;
+			const rows = optRows ?? buffer?.height ?? 24;
+
+			// Store auto-resize setting
+			ptyState.autoResize = autoResize;
 
 			// Spawn PTY
 			const pty = nodePty.spawn(shell, args, {
-				name: 'xterm-256color',
+				name: term,
 				cols,
 				rows,
 				cwd,
@@ -783,9 +881,9 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 			// Resize terminal buffer
 			resizeTerminalBuffer(world, eid, cols, rows);
 
-			// Resize PTY if running
+			// Resize PTY if running and autoResize is enabled
 			const pty = ptyState.pty as { resize: (cols: number, rows: number) => void } | null;
-			if (pty) {
+			if (pty && ptyState.autoResize) {
 				pty.resize(cols, rows);
 			}
 
@@ -810,6 +908,10 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 
 		isRunning(): boolean {
 			return ptyState.pty !== null;
+		},
+
+		getPtyHandle(): unknown | null {
+			return ptyState.pty;
 		},
 
 		// Events
