@@ -51,6 +51,12 @@ export interface ScreenEventMap {
 	resize: { width: number; height: number };
 	render: { frameTime: number };
 	destroy: Record<string, never>;
+	warning: {
+		type: string;
+		message: string;
+		metadata: Record<string, unknown>;
+		timestamp: number;
+	};
 }
 
 /**
