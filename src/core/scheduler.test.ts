@@ -388,4 +388,248 @@ describe('Scheduler', () => {
 			expect(getDeltaTime()).toBe(0.033);
 		});
 	});
+
+	describe('telemetry', () => {
+		describe('enableTelemetry', () => {
+			it('enables telemetry collection', () => {
+				expect(scheduler.isTelemetryEnabled()).toBe(false);
+
+				scheduler.enableTelemetry();
+
+				expect(scheduler.isTelemetryEnabled()).toBe(true);
+			});
+
+			it('enables telemetry with history', () => {
+				scheduler.enableTelemetry({ enabled: true, historySize: 10 });
+
+				expect(scheduler.isTelemetryEnabled()).toBe(true);
+			});
+
+			it('clears history when disabled via config', () => {
+				scheduler.enableTelemetry({ enabled: true, historySize: 10 });
+				const world = createWorld();
+				scheduler.run(world, 0.016);
+
+				scheduler.enableTelemetry({ enabled: false });
+
+				expect(scheduler.isTelemetryEnabled()).toBe(false);
+				expect(scheduler.getTelemetry()).toBeNull();
+			});
+		});
+
+		describe('disableTelemetry', () => {
+			it('disables telemetry collection', () => {
+				scheduler.enableTelemetry();
+				expect(scheduler.isTelemetryEnabled()).toBe(true);
+
+				scheduler.disableTelemetry();
+
+				expect(scheduler.isTelemetryEnabled()).toBe(false);
+			});
+
+			it('clears current telemetry when disabled', () => {
+				scheduler.enableTelemetry();
+				const world = createWorld();
+				scheduler.run(world, 0.016);
+				expect(scheduler.getTelemetry()).not.toBeNull();
+
+				scheduler.disableTelemetry();
+
+				expect(scheduler.getTelemetry()).toBeNull();
+			});
+
+			it('clears telemetry history when disabled', () => {
+				scheduler.enableTelemetry({ enabled: true, historySize: 10 });
+				const world = createWorld();
+				scheduler.run(world, 0.016);
+				scheduler.run(world, 0.016);
+				expect(scheduler.getTelemetryHistory().length).toBe(2);
+
+				scheduler.disableTelemetry();
+
+				expect(scheduler.getTelemetryHistory().length).toBe(0);
+			});
+		});
+
+		describe('getTelemetry', () => {
+			it('returns null when telemetry is disabled', () => {
+				expect(scheduler.getTelemetry()).toBeNull();
+			});
+
+			it('returns null when telemetry is enabled but no frames run', () => {
+				scheduler.enableTelemetry();
+
+				expect(scheduler.getTelemetry()).toBeNull();
+			});
+
+			it('returns telemetry data after running a frame', () => {
+				scheduler.enableTelemetry();
+				const world = createWorld();
+
+				scheduler.run(world, 0.016);
+
+				const telemetry = scheduler.getTelemetry();
+				expect(telemetry).not.toBeNull();
+				expect(telemetry?.totalFrameTime).toBeGreaterThanOrEqual(0);
+				expect(telemetry?.phases).toHaveLength(8); // All phases
+			});
+
+			it('includes phase-specific timing data', () => {
+				scheduler.enableTelemetry();
+				const world = createWorld();
+
+				// Register a system in UPDATE phase
+				const system: System = (world) => {
+					// Simulate some work
+					const start = performance.now();
+					while (performance.now() - start < 1) {
+						// Busy wait
+					}
+					return world;
+				};
+				scheduler.registerSystem(LoopPhase.UPDATE, system);
+
+				scheduler.run(world, 0.016);
+
+				const telemetry = scheduler.getTelemetry();
+				expect(telemetry).not.toBeNull();
+
+				// Find UPDATE phase data
+				const updatePhase = telemetry?.phases.find((p) => p.phase === LoopPhase.UPDATE);
+				expect(updatePhase).toBeDefined();
+				expect(updatePhase?.duration).toBeGreaterThan(0);
+				expect(updatePhase?.systemCount).toBe(1);
+			});
+
+			it('tracks frame number', () => {
+				scheduler.enableTelemetry();
+				const world = createWorld();
+
+				scheduler.run(world, 0.016);
+				const telemetry1 = scheduler.getTelemetry();
+				expect(telemetry1?.frameNumber).toBe(0);
+
+				scheduler.run(world, 0.016);
+				const telemetry2 = scheduler.getTelemetry();
+				expect(telemetry2?.frameNumber).toBe(1);
+
+				scheduler.run(world, 0.016);
+				const telemetry3 = scheduler.getTelemetry();
+				expect(telemetry3?.frameNumber).toBe(2);
+			});
+		});
+
+		describe('getTelemetryHistory', () => {
+			it('returns empty array when history is disabled', () => {
+				scheduler.enableTelemetry({ enabled: true, historySize: 0 });
+				const world = createWorld();
+				scheduler.run(world, 0.016);
+
+				expect(scheduler.getTelemetryHistory()).toEqual([]);
+			});
+
+			it('returns empty array when telemetry is disabled', () => {
+				expect(scheduler.getTelemetryHistory()).toEqual([]);
+			});
+
+			it('stores history when historySize is set', () => {
+				scheduler.enableTelemetry({ enabled: true, historySize: 5 });
+				const world = createWorld();
+
+				scheduler.run(world, 0.016);
+				scheduler.run(world, 0.016);
+				scheduler.run(world, 0.016);
+
+				const history = scheduler.getTelemetryHistory();
+				expect(history).toHaveLength(3);
+				expect(history[0]?.frameNumber).toBe(0);
+				expect(history[1]?.frameNumber).toBe(1);
+				expect(history[2]?.frameNumber).toBe(2);
+			});
+
+			it('limits history to configured size', () => {
+				scheduler.enableTelemetry({ enabled: true, historySize: 3 });
+				const world = createWorld();
+
+				// Run more frames than history size
+				for (let i = 0; i < 10; i++) {
+					scheduler.run(world, 0.016);
+				}
+
+				const history = scheduler.getTelemetryHistory();
+				expect(history).toHaveLength(3);
+				// Should keep the most recent frames
+				expect(history[0]?.frameNumber).toBe(7);
+				expect(history[1]?.frameNumber).toBe(8);
+				expect(history[2]?.frameNumber).toBe(9);
+			});
+		});
+
+		describe('isTelemetryEnabled', () => {
+			it('returns false by default', () => {
+				expect(scheduler.isTelemetryEnabled()).toBe(false);
+			});
+
+			it('returns true after enabling', () => {
+				scheduler.enableTelemetry();
+
+				expect(scheduler.isTelemetryEnabled()).toBe(true);
+			});
+
+			it('returns false after disabling', () => {
+				scheduler.enableTelemetry();
+				scheduler.disableTelemetry();
+
+				expect(scheduler.isTelemetryEnabled()).toBe(false);
+			});
+		});
+
+		describe('telemetry with multiple systems', () => {
+			it('counts all systems in a phase', () => {
+				scheduler.enableTelemetry();
+				const world = createWorld();
+
+				const system1: System = (world) => world;
+				const system2: System = (world) => world;
+				const system3: System = (world) => world;
+
+				scheduler.registerSystem(LoopPhase.UPDATE, system1);
+				scheduler.registerSystem(LoopPhase.UPDATE, system2);
+				scheduler.registerSystem(LoopPhase.RENDER, system3);
+
+				scheduler.run(world, 0.016);
+
+				const telemetry = scheduler.getTelemetry();
+				const updatePhase = telemetry?.phases.find((p) => p.phase === LoopPhase.UPDATE);
+				const renderPhase = telemetry?.phases.find((p) => p.phase === LoopPhase.RENDER);
+
+				expect(updatePhase?.systemCount).toBe(2);
+				expect(renderPhase?.systemCount).toBe(1);
+			});
+
+			it('measures total frame time across all phases', () => {
+				scheduler.enableTelemetry();
+				const world = createWorld();
+
+				// Add systems to multiple phases
+				const system1: System = (world) => world;
+				const system2: System = (world) => world;
+
+				scheduler.registerSystem(LoopPhase.UPDATE, system1);
+				scheduler.registerSystem(LoopPhase.RENDER, system2);
+
+				scheduler.run(world, 0.016);
+
+				const telemetry = scheduler.getTelemetry();
+				expect(telemetry?.totalFrameTime).toBeGreaterThanOrEqual(0);
+
+				// Total should be sum of all phases
+				let sum = 0;
+				for (const phase of telemetry?.phases ?? []) {
+					sum += phase.duration;
+				}
+				expect(telemetry?.totalFrameTime).toBeCloseTo(sum, 2);
+			});
+		});
+	});
 });

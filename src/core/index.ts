@@ -564,7 +564,12 @@ export {
 	createSceneSystem,
 	createSlideTransition,
 } from './scene';
-export type { Scheduler } from './scheduler';
+export type {
+	FrameTelemetry,
+	PhaseTimingData,
+	Scheduler,
+	TelemetryConfig,
+} from './scheduler';
 export { createScheduler, getDeltaTime } from './scheduler';
 // Serialization
 export type {
