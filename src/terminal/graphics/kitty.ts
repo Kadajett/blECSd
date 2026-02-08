@@ -199,15 +199,15 @@ export interface KittyControlData {
  */
 export interface KittyImageConfig {
 	/** Image ID for referencing this image later */
-	readonly imageId?: number;
+	readonly imageId?: number | undefined;
 	/** Placement ID for this specific placement */
-	readonly placementId?: number;
+	readonly placementId?: number | undefined;
 	/** Quiet mode for suppressing responses */
-	readonly quiet?: KittyQuiet;
+	readonly quiet?: KittyQuiet | undefined;
 	/** Z-index for stacking order (negative = below text) */
-	readonly zIndex?: number;
+	readonly zIndex?: number | undefined;
 	/** Whether cursor should stay in place after placement */
-	readonly holdCursor?: boolean;
+	readonly holdCursor?: boolean | undefined;
 }
 
 /**
@@ -228,19 +228,19 @@ export interface KittyFrameConfig {
 	/** Image ID */
 	readonly imageId: number;
 	/** Frame number to edit (1-based) */
-	readonly frameNumber?: number;
+	readonly frameNumber?: number | undefined;
 	/** Background frame number (1-based) */
-	readonly backgroundFrame?: number;
+	readonly backgroundFrame?: number | undefined;
 	/** Frame duration in milliseconds */
-	readonly duration?: number;
+	readonly duration?: number | undefined;
 	/** X offset within the frame canvas */
-	readonly x?: number;
+	readonly x?: number | undefined;
 	/** Y offset within the frame canvas */
-	readonly y?: number;
+	readonly y?: number | undefined;
 	/** Width of frame data */
-	readonly width?: number;
+	readonly width?: number | undefined;
 	/** Height of frame data */
-	readonly height?: number;
+	readonly height?: number | undefined;
 }
 
 /**

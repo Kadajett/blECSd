@@ -77,7 +77,7 @@ export interface SceneTransition {
 	onStart?(world: World): void;
 
 	/** Called each frame during the transition with progress (0-1) */
-	onUpdate?(world: World, progress: number): void;
+	onUpdate?: ((world: World, progress: number) => void) | undefined;
 
 	/** Called when the transition completes */
 	onComplete?(world: World): void;

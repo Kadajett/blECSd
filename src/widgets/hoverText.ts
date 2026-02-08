@@ -102,13 +102,13 @@ export interface TooltipPosition {
  */
 export interface TooltipStyle {
 	/** Foreground color */
-	readonly fg?: number;
+	readonly fg?: number | undefined;
 	/** Background color */
-	readonly bg?: number;
+	readonly bg?: number | undefined;
 	/** Border color */
-	readonly border?: number;
+	readonly border?: number | undefined;
 	/** Padding inside tooltip */
-	readonly padding?: number;
+	readonly padding?: number | undefined;
 }
 
 /**
@@ -118,9 +118,9 @@ export interface HoverTextConfig {
 	/** The text to display */
 	readonly text: string;
 	/** Optional style override */
-	readonly style?: TooltipStyle;
+	readonly style?: TooltipStyle | undefined;
 	/** Custom delay for this entity (overrides global) */
-	readonly delay?: number;
+	readonly delay?: number | undefined;
 }
 
 /**
@@ -570,11 +570,11 @@ export function createHoverTextManager(config: HoverTextManagerConfig = {}): Hov
 			}
 
 			const config = hoverTextStore.get(sourceEntity);
-			const style: Required<TooltipStyle> = {
+			const style = {
 				fg: config?.style?.fg ?? defaultStyle.fg,
 				bg: config?.style?.bg ?? defaultStyle.bg,
 				border: config?.style?.border ?? defaultStyle.border,
-				padding: config?.style?.padding ?? defaultStyle.padding,
+				padding: config?.style?.padding ?? defaultStyle.padding ?? 1,
 			};
 
 			const width = calculateWidth(currentLines, style.padding);
@@ -611,8 +611,8 @@ export function createHoverTextManager(config: HoverTextManagerConfig = {}): Hov
 			padding: config?.style?.padding ?? defaultStyle.padding,
 		};
 
-		const width = calculateWidth(currentLines, style.padding);
-		const height = calculateHeight(currentLines, style.padding);
+		const width = calculateWidth(currentLines, style.padding ?? 1);
+		const height = calculateHeight(currentLines, style.padding ?? 1);
 
 		const rawX = mouseX + offsetX;
 		const rawY = mouseY + offsetY;

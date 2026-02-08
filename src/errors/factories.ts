@@ -44,9 +44,9 @@ import { BLECSD_ERROR_SYMBOL } from './types';
  */
 export interface ErrorOptions {
 	/** Original cause (if wrapping another error) */
-	readonly cause?: Error;
+	readonly cause?: Error | undefined;
 	/** Additional context for debugging */
-	readonly context?: ErrorContext;
+	readonly context?: ErrorContext | undefined;
 }
 
 /**
@@ -54,7 +54,7 @@ export interface ErrorOptions {
  */
 export interface ValidationErrorOptions extends ErrorOptions {
 	/** Zod validation issues */
-	readonly zodIssues?: readonly core.$ZodIssue[];
+	readonly zodIssues?: readonly core.$ZodIssue[] | undefined;
 }
 
 // =============================================================================

@@ -28,9 +28,9 @@ export interface DiffLine {
 	/** Line content */
 	readonly content: string;
 	/** Old line number (for remove/context) */
-	readonly oldLineNo?: number;
+	readonly oldLineNo?: number | undefined;
 	/** New line number (for add/context) */
-	readonly newLineNo?: number;
+	readonly newLineNo?: number | undefined;
 }
 
 /**
@@ -88,9 +88,9 @@ export interface SideBySideEntry<T extends SideBySideEntryType = SideBySideEntry
  */
 export interface SideBySideLine {
 	/** Left (old) line */
-	readonly left?: SideBySideEntry<'remove' | 'context'>;
+	readonly left?: SideBySideEntry<'remove' | 'context'> | undefined;
 	/** Right (new) line */
-	readonly right?: SideBySideEntry<'add' | 'context'>;
+	readonly right?: SideBySideEntry<'add' | 'context'> | undefined;
 }
 
 /**

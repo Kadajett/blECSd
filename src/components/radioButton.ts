@@ -132,8 +132,8 @@ export interface RadioButtonDisplay {
  * Options for radio button display configuration.
  */
 export interface RadioButtonDisplayOptions {
-	selectedChar?: string;
-	unselectedChar?: string;
+	selectedChar?: string | undefined;
+	unselectedChar?: string | undefined;
 }
 
 /** Default selected character */

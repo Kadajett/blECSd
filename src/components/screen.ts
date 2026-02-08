@@ -128,10 +128,10 @@ export interface ScreenData {
  * Options for initializing the Screen component.
  */
 export interface ScreenOptions {
-	cursorVisible?: boolean;
-	cursorShape?: CursorShapeValue;
-	fullUnicode?: boolean;
-	autoPadding?: boolean;
+	cursorVisible?: boolean | undefined;
+	cursorShape?: CursorShapeValue | undefined;
+	fullUnicode?: boolean | undefined;
+	autoPadding?: boolean | undefined;
 }
 
 // Store for singleton screen entity per world

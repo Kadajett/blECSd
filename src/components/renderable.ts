@@ -74,21 +74,21 @@ export const Renderable = {
  */
 export interface StyleOptions {
 	/** Foreground color (hex string or packed number) */
-	fg?: string | number;
+	fg?: string | number | undefined;
 	/** Background color (hex string or packed number) */
-	bg?: string | number;
+	bg?: string | number | undefined;
 	/** Bold text */
-	bold?: boolean;
+	bold?: boolean | undefined;
 	/** Underlined text */
-	underline?: boolean;
+	underline?: boolean | undefined;
 	/** Blinking text */
-	blink?: boolean;
+	blink?: boolean | undefined;
 	/** Inverse colors */
-	inverse?: boolean;
+	inverse?: boolean | undefined;
 	/** Transparent background */
-	transparent?: boolean;
+	transparent?: boolean | undefined;
 	/** Opacity for alpha blending (0-1, where 1 = fully opaque) */
-	opacity?: number;
+	opacity?: number | undefined;
 }
 
 /**

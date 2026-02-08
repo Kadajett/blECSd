@@ -49,13 +49,13 @@ export interface TableColumn {
 	/** Column header text */
 	readonly header: string;
 	/** Column width (characters) */
-	readonly width?: number;
+	readonly width?: number | undefined;
 	/** Column minimum width */
-	readonly minWidth?: number;
+	readonly minWidth?: number | undefined;
 	/** Column maximum width */
-	readonly maxWidth?: number;
+	readonly maxWidth?: number | undefined;
 	/** Column alignment */
-	readonly align?: CellAlign;
+	readonly align?: CellAlign | undefined;
 }
 
 /**

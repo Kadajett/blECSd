@@ -331,22 +331,25 @@ function updateQuestionContent(world: World, eid: Entity): void {
  * Parsed config type from QuestionConfigSchema.
  */
 interface ParsedQuestionConfig {
-	fg?: string | number;
-	bg?: string | number;
-	border?: {
-		type?: 'line' | 'bg' | 'none';
-		fg?: string | number;
-		bg?: string | number;
-		ch?: 'single' | 'double' | 'rounded' | 'bold' | 'ascii' | BorderCharset;
-	};
+	fg?: string | number | undefined;
+	bg?: string | number | undefined;
+	border?:
+		| {
+				type?: 'line' | 'bg' | 'none' | undefined;
+				fg?: string | number | undefined;
+				bg?: string | number | undefined;
+				ch?: 'single' | 'double' | 'rounded' | 'bold' | 'ascii' | BorderCharset | undefined;
+		  }
+		| undefined;
 	padding?:
 		| number
 		| {
-				left?: number;
-				top?: number;
-				right?: number;
-				bottom?: number;
-		  };
+				left?: number | undefined;
+				top?: number | undefined;
+				right?: number | undefined;
+				bottom?: number | undefined;
+		  }
+		| undefined;
 }
 
 /**

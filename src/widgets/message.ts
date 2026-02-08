@@ -309,7 +309,7 @@ interface MessageState {
 	/** Dismiss callback */
 	onDismissCallback?: () => void;
 	/** Timer ID for auto-dismiss */
-	timerId?: ReturnType<typeof setTimeout>;
+	timerId?: ReturnType<typeof setTimeout> | undefined;
 }
 
 /** Map of entity to message state */

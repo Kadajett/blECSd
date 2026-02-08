@@ -62,7 +62,7 @@ export interface SerializedWorld {
 	/** Array of serialized entities */
 	readonly entities: readonly SerializedEntity[];
 	/** Optional metadata attached by user */
-	readonly metadata?: Record<string, unknown>;
+	readonly metadata?: Record<string, unknown> | undefined;
 }
 
 /**
@@ -70,11 +70,11 @@ export interface SerializedWorld {
  */
 export interface SerializeOptions {
 	/** Only serialize entities with these IDs (default: all entities) */
-	readonly entityFilter?: readonly Entity[];
+	readonly entityFilter?: readonly Entity[] | undefined;
 	/** Only serialize these components by name (default: all registered) */
-	readonly componentFilter?: readonly string[];
+	readonly componentFilter?: readonly string[] | undefined;
 	/** Metadata to include in the snapshot */
-	readonly metadata?: Record<string, unknown>;
+	readonly metadata?: Record<string, unknown> | undefined;
 }
 
 /**
@@ -82,9 +82,9 @@ export interface SerializeOptions {
  */
 export interface DeserializeOptions {
 	/** If true, clear the world before loading (default: false) */
-	readonly clearWorld?: boolean;
+	readonly clearWorld?: boolean | undefined;
 	/** If true, create a new world instead of modifying the given one (default: false) */
-	readonly createNew?: boolean;
+	readonly createNew?: boolean | undefined;
 }
 
 /**

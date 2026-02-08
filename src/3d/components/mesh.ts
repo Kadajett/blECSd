@@ -41,7 +41,7 @@ export interface MeshData {
 	/** Number of triangles (indices.length / 3) */
 	readonly triangleCount: number;
 	/** Optional vertex normals: [nx0, ny0, nz0, nx1, ny1, nz1, ...] */
-	readonly normals?: Float32Array;
+	readonly normals?: Float32Array | undefined;
 }
 
 let nextMeshId = 1;

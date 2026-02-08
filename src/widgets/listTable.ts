@@ -89,27 +89,35 @@ import type { Entity, World } from '../core/types';
  */
 export interface ListTableStyleConfig {
 	/** Border style */
-	readonly border?: {
-		readonly fg?: number;
-		readonly bg?: number;
-	};
+	readonly border?:
+		| {
+				readonly fg?: number | undefined;
+				readonly bg?: number | undefined;
+		  }
+		| undefined;
 	/** Header style */
-	readonly header?: {
-		readonly fg?: number;
-		readonly bg?: number;
-	};
+	readonly header?:
+		| {
+				readonly fg?: number | undefined;
+				readonly bg?: number | undefined;
+		  }
+		| undefined;
 	/** Cell style */
-	readonly cell?: {
-		readonly fg?: number;
-		readonly bg?: number;
-	};
+	readonly cell?:
+		| {
+				readonly fg?: number | undefined;
+				readonly bg?: number | undefined;
+		  }
+		| undefined;
 	/** Selected row style */
-	readonly selected?: {
-		readonly fg?: number;
-		readonly bg?: number;
-	};
+	readonly selected?:
+		| {
+				readonly fg?: number | undefined;
+				readonly bg?: number | undefined;
+		  }
+		| undefined;
 	/** Alternate row background for striping */
-	readonly altRowBg?: number;
+	readonly altRowBg?: number | undefined;
 }
 
 /**

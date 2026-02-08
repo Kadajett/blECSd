@@ -88,13 +88,13 @@ export type PositionValue = number | `${number}%` | 'center' | 'left' | 'right' 
  */
 export interface BorderConfig {
 	/** Border type */
-	readonly type?: 'line' | 'bg' | 'none';
+	readonly type?: 'line' | 'bg' | 'none' | undefined;
 	/** Foreground color for border (hex string or packed number) */
-	readonly fg?: string | number;
+	readonly fg?: string | number | undefined;
 	/** Background color for border (hex string or packed number) */
-	readonly bg?: string | number;
+	readonly bg?: string | number | undefined;
 	/** Border charset ('single', 'double', 'rounded', 'bold', 'ascii', or custom) */
-	readonly ch?: 'single' | 'double' | 'rounded' | 'bold' | 'ascii' | BorderCharset;
+	readonly ch?: 'single' | 'double' | 'rounded' | 'bold' | 'ascii' | BorderCharset | undefined;
 }
 
 /**
@@ -102,9 +102,9 @@ export interface BorderConfig {
  */
 export interface TerminalStyle {
 	/** Foreground color (default text) */
-	readonly fg?: string | number;
+	readonly fg?: string | number | undefined;
 	/** Background color */
-	readonly bg?: string | number;
+	readonly bg?: string | number | undefined;
 }
 
 /**
@@ -840,7 +840,7 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 				name: term,
 				cols,
 				rows,
-				cwd,
+				...(cwd !== undefined ? { cwd } : {}),
 				env,
 			});
 

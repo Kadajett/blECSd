@@ -46,13 +46,13 @@ export interface TreeNode {
 	/** Optional value associated with the node */
 	readonly value?: unknown;
 	/** Child nodes */
-	readonly children?: readonly TreeNode[];
+	readonly children?: readonly TreeNode[] | undefined;
 	/** Whether the node is expanded (default: false) */
-	readonly expanded?: boolean;
+	readonly expanded?: boolean | undefined;
 	/** Optional icon displayed before the label */
-	readonly icon?: string;
+	readonly icon?: string | undefined;
 	/** Optional unique identifier (auto-generated if not provided) */
-	readonly id?: string;
+	readonly id?: string | undefined;
 }
 
 /**
@@ -63,9 +63,9 @@ interface InternalTreeNode {
 	value?: unknown;
 	children: InternalTreeNode[];
 	expanded: boolean;
-	icon?: string;
+	icon?: string | undefined;
 	id: string;
-	parent?: InternalTreeNode;
+	parent?: InternalTreeNode | undefined;
 	depth: number;
 }
 

@@ -54,7 +54,7 @@ export interface Color {
 	readonly g: number;
 	readonly b: number;
 	/** Optional alpha (0-1) */
-	readonly a?: number;
+	readonly a?: number | undefined;
 	/** Nearest 256-color palette index */
 	readonly color256: Color256;
 	/** Nearest 16-color index */
@@ -68,11 +68,11 @@ export interface Color {
  */
 export interface TruecolorConfig {
 	/** Force a specific color depth (bypasses auto-detection) */
-	readonly forceDepth?: ColorDepthLevelValue;
+	readonly forceDepth?: ColorDepthLevelValue | undefined;
 	/** Custom capability provider (for testing) */
-	readonly capabilities?: TerminalCapabilities;
+	readonly capabilities?: TerminalCapabilities | undefined;
 	/** Enable dithering for gradients (game-configurable) */
-	readonly dithering?: boolean;
+	readonly dithering?: boolean | undefined;
 }
 
 /**
