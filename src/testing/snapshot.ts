@@ -288,3 +288,365 @@ export function runRender(world: World): void {
 export function cleanupTestBuffer(): void {
 	clearRenderBuffer();
 }
+
+/**
+ * Compares two rendered outputs and returns a visual diff report.
+ *
+ * Creates a character-by-character comparison showing differences between
+ * expected and actual output. Useful for debugging snapshot failures.
+ *
+ * @param expected - The expected output string
+ * @param actual - The actual output string
+ * @returns A diff report showing line-by-line differences
+ *
+ * @example
+ * ```typescript
+ * import { compareSnapshots } from 'blecsd/testing';
+ *
+ * const expected = renderToString(expectedBuffer);
+ * const actual = renderToString(actualBuffer);
+ * const diff = compareSnapshots(expected, actual);
+ *
+ * if (diff.hasDifferences) {
+ *   console.log(diff.report);
+ * }
+ * ```
+ */
+export function compareSnapshots(
+	expected: string,
+	actual: string,
+): { hasDifferences: boolean; report: string; diffCount: number } {
+	const expectedLines = expected.split('\n');
+	const actualLines = actual.split('\n');
+	const maxLines = Math.max(expectedLines.length, actualLines.length);
+
+	let diffCount = 0;
+	const reportLines: string[] = [];
+	reportLines.push('Snapshot Comparison:');
+	reportLines.push('');
+
+	for (let i = 0; i < maxLines; i++) {
+		const expLine = expectedLines[i] ?? '';
+		const actLine = actualLines[i] ?? '';
+
+		if (expLine === actLine) {
+			reportLines.push(`  ${i + 1} | ${expLine}`);
+		} else {
+			diffCount++;
+			reportLines.push(`- ${i + 1} | ${expLine}`);
+			reportLines.push(`+ ${i + 1} | ${actLine}`);
+		}
+	}
+
+	reportLines.push('');
+	reportLines.push(`Total differences: ${diffCount} lines`);
+
+	return {
+		hasDifferences: diffCount > 0,
+		report: reportLines.join('\n'),
+		diffCount,
+	};
+}
+
+/**
+ * Compares a single cell for differences.
+ * Helper to reduce cognitive complexity.
+ */
+function compareCells(
+	expCell: { char: string; fg: number; bg: number },
+	actCell: { char: string; fg: number; bg: number },
+	x: number,
+	y: number,
+	differences: Array<{
+		x: number;
+		y: number;
+		type: 'char' | 'fg' | 'bg';
+		expected: string | number;
+		actual: string | number;
+	}>,
+): void {
+	if (expCell.char !== actCell.char) {
+		differences.push({ x, y, type: 'char', expected: expCell.char, actual: actCell.char });
+	}
+
+	if (expCell.fg !== actCell.fg) {
+		differences.push({ x, y, type: 'fg', expected: expCell.fg, actual: actCell.fg });
+	}
+
+	if (expCell.bg !== actCell.bg) {
+		differences.push({ x, y, type: 'bg', expected: expCell.bg, actual: actCell.bg });
+	}
+}
+
+/**
+ * Compares two screenshots for visual differences.
+ *
+ * Performs pixel-by-pixel comparison of character, foreground, and background
+ * values. Returns detailed information about differences.
+ *
+ * @param expected - The expected screenshot
+ * @param actual - The actual screenshot
+ * @returns Comparison result with difference details
+ *
+ * @example
+ * ```typescript
+ * import { compareScreenshots, captureTestScreen } from 'blecsd/testing';
+ *
+ * const expected = captureTestScreen(expectedBuffer);
+ * const actual = captureTestScreen(actualBuffer);
+ * const result = compareScreenshots(expected, actual);
+ *
+ * expect(result.pixelDifferences).toBe(0);
+ * ```
+ */
+export function compareScreenshots(
+	expected: Screenshot,
+	actual: Screenshot,
+): {
+	isIdentical: boolean;
+	pixelDifferences: number;
+	dimensionMismatch: boolean;
+	differences: Array<{
+		x: number;
+		y: number;
+		type: 'char' | 'fg' | 'bg';
+		expected: string | number;
+		actual: string | number;
+	}>;
+} {
+	const differences: Array<{
+		x: number;
+		y: number;
+		type: 'char' | 'fg' | 'bg';
+		expected: string | number;
+		actual: string | number;
+	}> = [];
+
+	const dimensionMismatch = expected.width !== actual.width || expected.height !== actual.height;
+
+	if (dimensionMismatch) {
+		return {
+			isIdentical: false,
+			pixelDifferences: -1,
+			dimensionMismatch: true,
+			differences: [],
+		};
+	}
+
+	for (let y = 0; y < expected.height; y++) {
+		for (let x = 0; x < expected.width; x++) {
+			const expCell = expected.cells[y]?.[x];
+			const actCell = actual.cells[y]?.[x];
+
+			if (expCell && actCell) {
+				compareCells(expCell, actCell, x, y, differences);
+			}
+		}
+	}
+
+	return {
+		isIdentical: differences.length === 0,
+		pixelDifferences: differences.length,
+		dimensionMismatch: false,
+		differences,
+	};
+}
+
+/**
+ * Gets the diff character for a cell comparison.
+ * Helper to reduce cognitive complexity.
+ */
+function getDiffChar(
+	expCell: { char: string; fg: number; bg: number },
+	actCell: { char: string; fg: number; bg: number },
+): { char: string; hasDiff: boolean } {
+	if (expCell.char !== actCell.char) {
+		return { char: '!', hasDiff: true };
+	}
+	if (expCell.fg !== actCell.fg) {
+		return { char: 'F', hasDiff: true };
+	}
+	if (expCell.bg !== actCell.bg) {
+		return { char: 'B', hasDiff: true };
+	}
+	return { char: actCell.char, hasDiff: false };
+}
+
+/**
+ * Creates a visual diff string showing character differences between buffers.
+ *
+ * Marks differences with color indicators: '!' for different chars, 'F' for
+ * foreground differences, 'B' for background differences.
+ *
+ * @param expected - The expected screenshot
+ * @param actual - The actual screenshot
+ * @returns A visual representation of differences
+ *
+ * @example
+ * ```typescript
+ * import { createVisualDiff, captureTestScreen } from 'blecsd/testing';
+ *
+ * const expected = captureTestScreen(expectedBuffer);
+ * const actual = captureTestScreen(actualBuffer);
+ * const diff = createVisualDiff(expected, actual);
+ * console.log(diff);
+ * ```
+ */
+export function createVisualDiff(expected: Screenshot, actual: Screenshot): string {
+	if (expected.width !== actual.width || expected.height !== actual.height) {
+		return `Dimension mismatch: expected ${expected.width}x${expected.height}, got ${actual.width}x${actual.height}`;
+	}
+
+	const lines: string[] = [];
+	lines.push('Visual Diff (! = char diff, F = fg diff, B = bg diff):');
+	lines.push('');
+
+	for (let y = 0; y < expected.height; y++) {
+		let diffLine = '';
+		let hasDiff = false;
+
+		for (let x = 0; x < expected.width; x++) {
+			const expCell = expected.cells[y]?.[x];
+			const actCell = actual.cells[y]?.[x];
+
+			if (!expCell || !actCell) {
+				diffLine += ' ';
+				continue;
+			}
+
+			const diff = getDiffChar(expCell, actCell);
+			diffLine += diff.char;
+			if (diff.hasDiff) {
+				hasDiff = true;
+			}
+		}
+
+		if (hasDiff) {
+			lines.push(`${y.toString().padStart(3, ' ')} | ${diffLine}`);
+		}
+	}
+
+	if (lines.length === 2) {
+		lines.push('  (no differences)');
+	}
+
+	return lines.join('\n');
+}
+
+/**
+ * Asserts that two rendered outputs match exactly.
+ *
+ * Throws an error with a detailed diff report if they don't match.
+ * Useful for custom snapshot assertion logic.
+ *
+ * @param expected - The expected output
+ * @param actual - The actual output
+ * @param message - Optional custom error message
+ *
+ * @example
+ * ```typescript
+ * import { assertSnapshotMatch, renderToString } from 'blecsd/testing';
+ *
+ * const expected = renderToString(expectedBuffer);
+ * const actual = renderToString(actualBuffer);
+ *
+ * assertSnapshotMatch(expected, actual, 'Box widget rendering');
+ * ```
+ */
+export function assertSnapshotMatch(expected: string, actual: string, message?: string): void {
+	if (expected === actual) {
+		return;
+	}
+
+	const diff = compareSnapshots(expected, actual);
+	const errorMessage = message
+		? `${message}\n\n${diff.report}`
+		: `Snapshot mismatch\n\n${diff.report}`;
+
+	throw new Error(errorMessage);
+}
+
+/**
+ * Normalizes rendered output for stable snapshot comparisons.
+ *
+ * Removes trailing whitespace from lines, removes trailing empty lines,
+ * and normalizes line endings to LF.
+ *
+ * @param output - The raw output string
+ * @returns Normalized output
+ *
+ * @example
+ * ```typescript
+ * import { normalizeSnapshot, renderToString } from 'blecsd/testing';
+ *
+ * const raw = renderToString(buffer);
+ * const normalized = normalizeSnapshot(raw);
+ * expect(normalized).toMatchSnapshot();
+ * ```
+ */
+export function normalizeSnapshot(output: string): string {
+	// Normalize line endings to LF
+	const normalized = output.replace(/\r\n/g, '\n');
+
+	// Trim trailing whitespace from each line
+	const lines = normalized.split('\n').map((line) => line.trimEnd());
+
+	// Remove trailing empty lines
+	while (lines.length > 0 && lines[lines.length - 1] === '') {
+		lines.pop();
+	}
+
+	return lines.join('\n');
+}
+
+/**
+ * Creates a color-accurate representation for snapshot testing.
+ *
+ * Converts packed RGBA colors to hex strings for readable snapshots.
+ * Returns a structured representation of the buffer with colors.
+ *
+ * @param buffer - The screen buffer
+ * @returns A JSON-serializable object with color information
+ *
+ * @example
+ * ```typescript
+ * import { renderWithColors, createTestBuffer } from 'blecsd/testing';
+ *
+ * const { buffer } = createTestBuffer(20, 5);
+ * // ... render ...
+ * const colorSnapshot = renderWithColors(buffer);
+ * expect(colorSnapshot).toMatchSnapshot();
+ * ```
+ */
+export function renderWithColors(
+	buffer: ScreenBufferData,
+): Array<Array<{ char: string; fg: string; bg: string }>> {
+	const rows: Array<Array<{ char: string; fg: string; bg: string }>> = [];
+
+	for (let y = 0; y < buffer.height; y++) {
+		const row: Array<{ char: string; fg: string; bg: string }> = [];
+
+		for (let x = 0; x < buffer.width; x++) {
+			const cell = getCell(buffer, x, y);
+
+			if (!cell) {
+				row.push({ char: ' ', fg: '#000000', bg: '#000000' });
+				continue;
+			}
+
+			// Convert ARGB packed colors to hex strings
+			const fgHex = `#${((cell.fg >>> 0) & 0xffffff).toString(16).padStart(6, '0')}`;
+			const bgHex = `#${((cell.bg >>> 0) & 0xffffff).toString(16).padStart(6, '0')}`;
+
+			row.push({
+				char: cell.char,
+				fg: fgHex,
+				bg: bgHex,
+			});
+		}
+
+		rows.push(row);
+	}
+
+	return rows;
+}

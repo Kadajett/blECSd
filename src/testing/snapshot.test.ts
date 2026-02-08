@@ -10,16 +10,22 @@ import { renderText } from '../systems/renderSystem';
 import type { ScreenBufferData } from '../terminal/screen/cell';
 import type { TestBufferContext } from './snapshot';
 import {
+	assertSnapshotMatch,
 	captureTestScreen,
 	cleanupTestBuffer,
+	compareScreenshots,
+	compareSnapshots,
 	createTestBuffer,
+	createVisualDiff,
 	getCellBg,
 	getCellChar,
 	getCellFg,
 	getRowText,
+	normalizeSnapshot,
 	renderBox,
 	renderRegionToString,
 	renderToString,
+	renderWithColors,
 	runRender,
 } from './snapshot';
 
@@ -276,6 +282,232 @@ describe('Widget Snapshot Tests', () => {
 
 			const region = renderRegionToString(buffer, 5, 2, 6, 1);
 			expect(region).toMatchInlineSnapshot(`"REGION"`);
+		});
+	});
+
+	describe('compareSnapshots', () => {
+		it('returns no differences for identical strings', () => {
+			const text = 'Hello\nWorld';
+			const result = compareSnapshots(text, text);
+
+			expect(result.hasDifferences).toBe(false);
+			expect(result.diffCount).toBe(0);
+		});
+
+		it('detects line differences', () => {
+			const expected = 'Hello\nWorld';
+			const actual = 'Hello\nEarth';
+
+			const result = compareSnapshots(expected, actual);
+
+			expect(result.hasDifferences).toBe(true);
+			expect(result.diffCount).toBe(1);
+			expect(result.report).toContain('- 2 | World');
+			expect(result.report).toContain('+ 2 | Earth');
+		});
+
+		it('handles different line counts', () => {
+			const expected = 'Line 1\nLine 2';
+			const actual = 'Line 1\nLine 2\nLine 3';
+
+			const result = compareSnapshots(expected, actual);
+
+			expect(result.hasDifferences).toBe(true);
+			expect(result.diffCount).toBe(1);
+			expect(result.report).toContain('+ 3 | Line 3');
+		});
+
+		it('shows matching lines without diff markers', () => {
+			const expected = 'Same\nDifferent\nSame';
+			const actual = 'Same\nChanged\nSame';
+
+			const result = compareSnapshots(expected, actual);
+
+			expect(result.report).toContain('  1 | Same');
+			expect(result.report).toContain('  3 | Same');
+		});
+	});
+
+	describe('compareScreenshots', () => {
+		it('returns identical for same screenshots', () => {
+			renderText(buffer, 0, 0, 'Test', 0xffffffff, 0x000000ff);
+			const screenshot = captureTestScreen(buffer);
+
+			const result = compareScreenshots(screenshot, screenshot);
+
+			expect(result.isIdentical).toBe(true);
+			expect(result.pixelDifferences).toBe(0);
+			expect(result.dimensionMismatch).toBe(false);
+		});
+
+		it('detects character differences', () => {
+			renderText(buffer, 0, 0, 'ABC', 0xffffffff, 0x000000ff);
+			const expected = captureTestScreen(buffer);
+
+			// Clear and render different text
+			renderText(buffer, 0, 0, 'XYZ', 0xffffffff, 0x000000ff);
+			const actual = captureTestScreen(buffer);
+
+			const result = compareScreenshots(expected, actual);
+
+			expect(result.isIdentical).toBe(false);
+			expect(result.pixelDifferences).toBeGreaterThan(0);
+			expect(result.differences.some((d) => d.type === 'char')).toBe(true);
+		});
+
+		it('detects color differences', () => {
+			renderText(buffer, 0, 0, 'A', 0xff0000ff, 0x000000ff);
+			const expected = captureTestScreen(buffer);
+
+			// Same char, different color
+			renderText(buffer, 0, 0, 'A', 0x00ff00ff, 0x000000ff);
+			const actual = captureTestScreen(buffer);
+
+			const result = compareScreenshots(expected, actual);
+
+			expect(result.isIdentical).toBe(false);
+			expect(result.differences.some((d) => d.type === 'fg')).toBe(true);
+		});
+
+		it('detects dimension mismatches', () => {
+			const buffer1 = createTestBuffer(10, 5).buffer;
+			const buffer2 = createTestBuffer(20, 10).buffer;
+
+			const screenshot1 = captureTestScreen(buffer1);
+			const screenshot2 = captureTestScreen(buffer2);
+
+			const result = compareScreenshots(screenshot1, screenshot2);
+
+			expect(result.dimensionMismatch).toBe(true);
+			expect(result.isIdentical).toBe(false);
+		});
+	});
+
+	describe('createVisualDiff', () => {
+		it('returns no differences message for identical screenshots', () => {
+			renderText(buffer, 0, 0, 'Test', 0xffffffff, 0x000000ff);
+			const screenshot = captureTestScreen(buffer);
+
+			const diff = createVisualDiff(screenshot, screenshot);
+
+			expect(diff).toContain('(no differences)');
+		});
+
+		it('marks character differences with !', () => {
+			renderText(buffer, 0, 0, 'ABC', 0xffffffff, 0x000000ff);
+			const expected = captureTestScreen(buffer);
+
+			renderText(buffer, 0, 0, 'AXC', 0xffffffff, 0x000000ff);
+			const actual = captureTestScreen(buffer);
+
+			const diff = createVisualDiff(expected, actual);
+
+			expect(diff).toContain('!'); // Marks the difference
+		});
+
+		it('marks foreground differences with F', () => {
+			renderText(buffer, 0, 0, 'A', 0xff0000ff, 0x000000ff);
+			const expected = captureTestScreen(buffer);
+
+			renderText(buffer, 0, 0, 'A', 0x00ff00ff, 0x000000ff);
+			const actual = captureTestScreen(buffer);
+
+			const diff = createVisualDiff(expected, actual);
+
+			expect(diff).toContain('F');
+		});
+
+		it('reports dimension mismatches', () => {
+			const buffer1 = createTestBuffer(10, 5).buffer;
+			const buffer2 = createTestBuffer(20, 10).buffer;
+
+			const screenshot1 = captureTestScreen(buffer1);
+			const screenshot2 = captureTestScreen(buffer2);
+
+			const diff = createVisualDiff(screenshot1, screenshot2);
+
+			expect(diff).toContain('Dimension mismatch');
+			expect(diff).toContain('10x5');
+			expect(diff).toContain('20x10');
+		});
+	});
+
+	describe('assertSnapshotMatch', () => {
+		it('does not throw for matching strings', () => {
+			expect(() => assertSnapshotMatch('Hello', 'Hello')).not.toThrow();
+		});
+
+		it('throws with diff report for mismatches', () => {
+			expect(() => assertSnapshotMatch('Hello', 'World')).toThrow('Snapshot mismatch');
+		});
+
+		it('includes custom message in error', () => {
+			expect(() => assertSnapshotMatch('A', 'B', 'Custom message')).toThrow('Custom message');
+		});
+	});
+
+	describe('normalizeSnapshot', () => {
+		it('trims trailing whitespace from lines', () => {
+			const input = 'Line 1   \nLine 2  \n';
+			const normalized = normalizeSnapshot(input);
+
+			expect(normalized).toBe('Line 1\nLine 2');
+		});
+
+		it('removes trailing empty lines', () => {
+			const input = 'Line 1\nLine 2\n\n\n';
+			const normalized = normalizeSnapshot(input);
+
+			expect(normalized).toBe('Line 1\nLine 2');
+		});
+
+		it('normalizes line endings to LF', () => {
+			const input = 'Line 1\r\nLine 2\r\n';
+			const normalized = normalizeSnapshot(input);
+
+			expect(normalized).toBe('Line 1\nLine 2');
+		});
+
+		it('handles mixed line endings', () => {
+			const input = 'Line 1\r\nLine 2\nLine 3\r\n';
+			const normalized = normalizeSnapshot(input);
+
+			expect(normalized).toBe('Line 1\nLine 2\nLine 3');
+		});
+	});
+
+	describe('renderWithColors', () => {
+		it('captures color information as hex strings', () => {
+			renderText(buffer, 0, 0, 'A', 0xffff0000, 0xff00ff00);
+
+			const colorSnapshot = renderWithColors(buffer);
+
+			const firstRow = colorSnapshot[0];
+			const firstCell = firstRow?.[0];
+
+			expect(firstCell?.char).toBe('A');
+			expect(firstCell?.fg).toBe('#ff0000');
+			expect(firstCell?.bg).toBe('#00ff00');
+		});
+
+		it('returns correct dimensions', () => {
+			const { buffer: smallBuffer } = createTestBuffer(5, 3);
+			const colorSnapshot = renderWithColors(smallBuffer);
+
+			expect(colorSnapshot.length).toBe(3); // height
+			expect(colorSnapshot[0]?.length).toBe(5); // width
+		});
+
+		it('handles empty cells with default colors', () => {
+			const colorSnapshot = renderWithColors(buffer);
+
+			const firstRow = colorSnapshot[0];
+			const firstCell = firstRow?.[0];
+
+			expect(firstCell?.char).toBe(' ');
+			// Empty cells have white fg by default
+			expect(firstCell?.fg).toBeDefined();
+			expect(firstCell?.bg).toBeDefined();
 		});
 	});
 });
