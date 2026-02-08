@@ -3,6 +3,15 @@
  * @module core
  */
 
+// Absolute positioning
+export {
+	getAbsoluteEdges,
+	setAbsoluteBottom,
+	setAbsoluteEdges,
+	setAbsoluteLeft,
+	setAbsoluteRight,
+	setAbsoluteTop,
+} from './absolutePositioning';
 // Auto-padding
 export type { AutoPaddingData, EffectivePaddingData } from './autoPadding';
 export {
