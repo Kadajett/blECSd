@@ -231,6 +231,294 @@ if (events.hasListeners('debug')) {
 
 ---
 
+---
+
+## Warning Events
+
+blECSd provides a built-in warning system for non-fatal issues like small terminal sizes, unsupported capabilities, deprecated APIs, and performance problems.
+
+### createWarningEmitter
+
+Creates a warning event emitter with typed warning events.
+
+```typescript
+import { createWarningEmitter, WarningType } from 'blecsd';
+
+const warnings = createWarningEmitter();
+
+// Listen for all warnings
+warnings.on('warning', (event) => {
+  console.warn(`[${event.type}] ${event.message}`);
+  console.warn('Metadata:', event.metadata);
+});
+```
+
+**Returns:** `WarningEmitter` - Event bus for warning events
+
+---
+
+### Warning Types
+
+#### WarningType.TERMINAL_TOO_SMALL
+
+Emitted when terminal is resized to very small dimensions.
+
+```typescript
+warnings.on('warning', (event) => {
+  if (event.type === WarningType.TERMINAL_TOO_SMALL) {
+    const { width, height, minWidth, minHeight } = event.metadata;
+    console.warn(`Terminal ${width}x${height} is smaller than ${minWidth}x${minHeight}`);
+  }
+});
+```
+
+**Metadata:**
+- `width: number` - Current terminal width
+- `height: number` - Current terminal height
+- `minWidth: number` - Minimum recommended width
+- `minHeight: number` - Minimum recommended height
+
+#### WarningType.UNSUPPORTED_CAPABILITY
+
+Emitted when a requested terminal capability is not supported.
+
+```typescript
+warnings.on('warning', (event) => {
+  if (event.type === WarningType.UNSUPPORTED_CAPABILITY) {
+    const { capability, fallback } = event.metadata;
+    console.warn(`${capability} not supported. ${fallback || ''}`);
+  }
+});
+```
+
+**Metadata:**
+- `capability: string` - The unsupported capability name
+- `fallback?: string` - Optional fallback description
+
+#### WarningType.DEPRECATED_API
+
+Emitted when deprecated API is used.
+
+```typescript
+warnings.on('warning', (event) => {
+  if (event.type === WarningType.DEPRECATED_API) {
+    const { api, replacement, since } = event.metadata;
+    console.warn(`${api} deprecated since ${since}. Use ${replacement}`);
+  }
+});
+```
+
+**Metadata:**
+- `api: string` - Deprecated API name
+- `replacement: string` - Replacement API
+- `since: string` - Version since deprecated
+
+#### WarningType.PERFORMANCE_ISSUE
+
+Emitted when performance issues are detected (frame drops, slow operations).
+
+```typescript
+warnings.on('warning', (event) => {
+  if (event.type === WarningType.PERFORMANCE_ISSUE) {
+    const { metric, value, threshold, frameTime } = event.metadata;
+    console.warn(`${metric}: ${value} exceeds ${threshold}`);
+  }
+});
+```
+
+**Metadata:**
+- `metric: string` - Performance metric name
+- `value: number` - Measured value
+- `threshold: number` - Threshold value
+- `frameTime?: number` - Optional frame time in milliseconds
+
+---
+
+### Emitting Warnings
+
+#### emitTerminalTooSmallWarning
+
+```typescript
+import { emitTerminalTooSmallWarning } from 'blecsd';
+
+emitTerminalTooSmallWarning(warnings, 40, 15, 80, 24);
+// Emits: "Terminal size (40x15) is smaller than recommended (80x24)"
+```
+
+**Parameters:**
+- `emitter: WarningEmitter` - The warning emitter
+- `width: number` - Current terminal width
+- `height: number` - Current terminal height
+- `minWidth: number` - Minimum recommended width
+- `minHeight: number` - Minimum recommended height
+
+#### emitUnsupportedCapabilityWarning
+
+```typescript
+import { emitUnsupportedCapabilityWarning } from 'blecsd';
+
+emitUnsupportedCapabilityWarning(
+  warnings,
+  'truecolor',
+  'Falling back to 256-color mode'
+);
+```
+
+**Parameters:**
+- `emitter: WarningEmitter` - The warning emitter
+- `capability: string` - The unsupported capability name
+- `fallback?: string` - Optional fallback description
+
+#### emitDeprecatedAPIWarning
+
+```typescript
+import { emitDeprecatedAPIWarning } from 'blecsd';
+
+emitDeprecatedAPIWarning(
+  warnings,
+  'oldFunction()',
+  'newFunction()',
+  'v2.0.0'
+);
+```
+
+**Parameters:**
+- `emitter: WarningEmitter` - The warning emitter
+- `api: string` - Deprecated API name
+- `replacement: string` - Replacement API
+- `since: string` - Version since deprecated
+
+#### emitPerformanceWarning
+
+```typescript
+import { emitPerformanceWarning } from 'blecsd';
+
+emitPerformanceWarning(
+  warnings,
+  'frame-time',
+  35,       // Current frame time
+  16.67,    // Target (60 FPS)
+  35        // Frame time in ms
+);
+```
+
+**Parameters:**
+- `emitter: WarningEmitter` - The warning emitter
+- `metric: string` - Performance metric name
+- `value: number` - Measured value
+- `threshold: number` - Threshold value
+- `frameTime?: number` - Optional frame time in milliseconds
+
+---
+
+### Warning Event Structure
+
+```typescript
+interface WarningEvent {
+  type: 'terminal-too-small' | 'unsupported-capability' | 'deprecated-api' | 'performance-issue';
+  message: string;          // Human-readable message
+  metadata: WarningMetadata; // Type-specific metadata
+  timestamp: number;         // Unix timestamp
+}
+```
+
+---
+
+### Complete Warning System Example
+
+```typescript
+import {
+  createWarningEmitter,
+  WarningType,
+  emitTerminalTooSmallWarning
+} from 'blecsd';
+
+// Create warning emitter
+const warnings = createWarningEmitter();
+
+// Listen for warnings
+warnings.on('warning', (event) => {
+  // Log to console
+  console.warn(`[${new Date(event.timestamp).toISOString()}] ${event.message}`);
+
+  // Handle specific warning types
+  switch (event.type) {
+    case WarningType.TERMINAL_TOO_SMALL:
+      // Show resize prompt to user
+      showResizePrompt(event.metadata);
+      break;
+
+    case WarningType.UNSUPPORTED_CAPABILITY:
+      // Disable feature or show fallback
+      disableFeature(event.metadata.capability);
+      break;
+
+    case WarningType.DEPRECATED_API:
+      // Log for developer
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Deprecation:', event.metadata);
+      }
+      break;
+
+    case WarningType.PERFORMANCE_ISSUE:
+      // Reduce quality or frame rate
+      if (event.metadata.value > event.metadata.threshold * 2) {
+        reduceQuality();
+      }
+      break;
+  }
+});
+
+// Emit warnings from your systems
+function checkTerminalSize(width: number, height: number) {
+  if (width < 80 || height < 24) {
+    emitTerminalTooSmallWarning(warnings, width, height, 80, 24);
+  }
+}
+```
+
+---
+
+### Filtering Warnings
+
+Filter warnings by type:
+
+```typescript
+const warnings = createWarningEmitter();
+
+warnings.on('warning', (event) => {
+  // Only handle performance warnings
+  if (event.type === WarningType.PERFORMANCE_ISSUE) {
+    handlePerformanceWarning(event);
+  }
+});
+```
+
+---
+
+### Warning Validation
+
+All warnings are validated using Zod schemas:
+
+```typescript
+import {
+  WarningEventSchema,
+  TerminalTooSmallMetadataSchema,
+  UnsupportedCapabilityMetadataSchema,
+  DeprecatedAPIMetadataSchema,
+  PerformanceIssueMetadataSchema
+} from 'blecsd';
+
+// Validate warning event
+const result = WarningEventSchema.safeParse(event);
+if (!result.success) {
+  console.error('Invalid warning:', result.error);
+}
+```
+
+---
+
 ## See Also
 
 - [Core Concepts](../getting-started/concepts.md) - Event bus overview
+- [Event Bubbling](/docs/api/core/event-bubbling.md) - Hierarchical event propagation
