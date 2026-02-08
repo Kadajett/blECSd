@@ -29,6 +29,10 @@ import {
 	type CursorPosition,
 	clampCursor,
 	cursorToOffset,
+	deleteWordBackward,
+	deleteWordForward,
+	findWordEnd,
+	findWordStart,
 	insertAt,
 	moveCursorDown,
 	moveCursorEndOfDocument,
@@ -276,7 +280,7 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 			}
 
 			// Try handling with the standard text input handler
-			const action = handleTextInputKeyPress(world, eid, keyName, state.value);
+			const action = handleTextInputKeyPress(world, eid, keyName, state.value, ctrl);
 			if (!action) return false;
 
 			switch (action.type) {
@@ -315,6 +319,40 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 					state.cursor = clampCursor(state.value, { line: 0, column: action.position });
 					setCursorPos(world, eid, action.position);
 					ensureCursorVisible(state);
+					return true;
+				}
+
+				case 'moveWordLeft': {
+					state.cursor = findWordStart(action.text, state.cursor);
+					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
+					ensureCursorVisible(state);
+					return true;
+				}
+
+				case 'moveWordRight': {
+					state.cursor = findWordEnd(action.text, state.cursor);
+					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
+					ensureCursorVisible(state);
+					return true;
+				}
+
+				case 'deleteWordBackward': {
+					const result = deleteWordBackward(action.text, state.cursor);
+					state.value = result.text;
+					state.cursor = result.cursor;
+					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
+					ensureCursorVisible(state);
+					emitValueChange(eid, state.value);
+					return true;
+				}
+
+				case 'deleteWordForward': {
+					const result = deleteWordForward(action.text, state.cursor);
+					state.value = result.text;
+					state.cursor = result.cursor;
+					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
+					ensureCursorVisible(state);
+					emitValueChange(eid, state.value);
 					return true;
 				}
 

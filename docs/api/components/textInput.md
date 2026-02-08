@@ -19,6 +19,13 @@ import {
   getSelection,
   setSelection,
   clearSelection,
+  // Validation
+  validateTextInput,
+  getValidationError,
+  hasValidationError,
+  clearValidationError,
+  type ValidationFunction,
+  type ValidationTiming,
 } from 'blecsd';
 ```
 
@@ -91,6 +98,8 @@ TextInput uses a state machine with these states:
 | `placeholder` | `string` | `''` | Text shown when empty |
 | `maxLength` | `number` | `0` | Maximum characters (0 = unlimited) |
 | `multiline` | `boolean` | `false` | Enable multi-line input |
+| `validator` | `ValidationFunction` | `undefined` | Validation callback function |
+| `validationTiming` | `ValidationTiming` | `'both'` | When to run validation |
 
 ## Cursor Modes
 
@@ -251,7 +260,7 @@ unsub3();
 ### Key Handling
 
 ```typescript
-// In your input loop
+// Basic key handling
 const action = handleTextInputKeyPress(world, eid, key);
 if (action) {
   switch (action.type) {
@@ -269,7 +278,45 @@ if (action) {
       break;
   }
 }
+
+// With Ctrl modifier for word navigation
+const action = handleTextInputKeyPress(world, eid, key, ctrl);
+if (action) {
+  switch (action.type) {
+    case 'moveWordLeft':
+      // Ctrl+Left pressed
+      break;
+    case 'moveWordRight':
+      // Ctrl+Right pressed
+      break;
+    case 'deleteWordBackward':
+      // Ctrl+Backspace pressed
+      break;
+    case 'deleteWordForward':
+      // Ctrl+Delete pressed
+      break;
+  }
+}
 ```
+
+### Word Navigation
+
+Word-level cursor movement and deletion is supported via keyboard modifiers:
+
+| Key | Action |
+|-----|--------|
+| Ctrl+Left | Move cursor to start of previous word |
+| Ctrl+Right | Move cursor to start of next word |
+| Ctrl+Backspace | Delete word before cursor |
+| Ctrl+Delete | Delete word after cursor |
+
+```typescript
+// Pass ctrl=true to enable word operations
+handleTextInputKeyPress(world, eid, 'left', value, true);
+handleTextInputKeyPress(world, eid, 'backspace', value, true);
+```
+
+Word boundaries are detected using the built-in `isWordBoundary` function, which treats whitespace and punctuation as word separators.
 
 ## Example: Login Form
 
@@ -308,30 +355,117 @@ onTextInputSubmit(password, (value) => {
 focusTextInput(world, username);
 ```
 
-## Example: Validation
+## Validation
 
-<!-- blecsd-doccheck:ignore -->
+TextInput supports built-in validation with customizable timing and error messages.
+
+### Validation Function
+
+A validation function receives the current value and returns:
+- `true` if valid
+- `false` if invalid (shows "Invalid input" message)
+- A string error message if invalid
+
+```typescript
+type ValidationFunction = (value: string) => boolean | string;
+```
+
+### Validation Timing
+
+Control when validation runs:
+
+| Timing | Description |
+|--------|-------------|
+| `'onChange'` | Validate every time value changes |
+| `'onSubmit'` | Validate only when Enter is pressed |
+| `'both'` | Validate on both change and submit (default) |
+
+### Validation API
+
+```typescript
+// Set validator when creating input
+setTextInputConfig(eid, {
+  validator: (value) => value.length >= 8 || 'Must be at least 8 characters',
+  validationTiming: 'onSubmit',
+});
+
+// Manually validate
+const isValid = validateTextInput(eid, currentValue);
+
+// Check for errors
+if (hasValidationError(eid)) {
+  const error = getValidationError(eid);
+  console.log(`Error: ${error}`);
+}
+
+// Clear error
+clearValidationError(eid);
+```
+
+### Validation Behavior
+
+- When `validationTiming` is `'onChange'` or `'both'`, validation runs automatically in `emitValueChange`
+- When `validationTiming` is `'onSubmit'` or `'both'`, validation runs automatically in `emitSubmit`
+- If validation fails on submit, the submit event is **not emitted** and `emitSubmit` returns `false`
+- Validation errors automatically trigger the `'error'` state in the state machine
+
+## Example: Email Validation
+
 ```typescript
 import {
   attachTextInputBehavior,
-  onTextInputChange,
-  setTextInputError,
-  clearTextInputError,
+  setTextInputConfig,
+  hasValidationError,
+  getValidationError,
 } from 'blecsd';
 
 const emailInput = addEntity(world);
-attachTextInputBehavior(world, emailInput, {
+attachTextInputBehavior(world, emailInput);
+
+// Set up email validation
+setTextInputConfig(emailInput, {
   placeholder: 'Email address',
+  validator: (value) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value) || 'Invalid email format';
+  },
+  validationTiming: 'both',
 });
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Check validation state
+if (hasValidationError(emailInput)) {
+  const error = getValidationError(emailInput);
+  // Display error: "Invalid email format"
+}
+```
 
-onTextInputChange(emailInput, (value) => {
-  if (value && !emailRegex.test(value)) {
-    setTextInputError(world, emailInput);
-  } else {
-    clearTextInputError(world, emailInput);
-  }
+## Example: Number Range Validation
+
+```typescript
+setTextInputConfig(eid, {
+  placeholder: 'Enter age (0-120)',
+  validator: (value) => {
+    const num = Number.parseFloat(value);
+    if (Number.isNaN(num)) return 'Must be a number';
+    if (num < 0 || num > 120) return 'Must be between 0 and 120';
+    return true;
+  },
+  validationTiming: 'onChange',
+});
+```
+
+## Example: Password Strength
+
+```typescript
+setTextInputConfig(passwordInput, {
+  secret: true,
+  validator: (value) => {
+    if (value.length < 8) return 'At least 8 characters required';
+    if (!/[A-Z]/.test(value)) return 'Must contain uppercase letter';
+    if (!/[0-9]/.test(value)) return 'Must contain number';
+    return true;
+  },
+  validationTiming: 'onChange',
 });
 ```
 

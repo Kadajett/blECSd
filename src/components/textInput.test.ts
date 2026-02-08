@@ -10,6 +10,7 @@ import {
 	clearSelection,
 	clearTextInputCallbacks,
 	clearTextInputError,
+	clearValidationError,
 	DEFAULT_CENSOR_CHAR,
 	DEFAULT_CURSOR_BLINK_MS,
 	DEFAULT_CURSOR_BLOCK_CHAR,
@@ -34,8 +35,10 @@ import {
 	getSelection,
 	getTextInputConfig,
 	getTextInputState,
+	getValidationError,
 	handleTextInputKeyPress,
 	hasSelection,
+	hasValidationError,
 	isCursorBlinkEnabled,
 	isCursorVisible,
 	isSecretMode,
@@ -62,6 +65,7 @@ import {
 	TEXT_INPUT_STATE_MACHINE_CONFIG,
 	textInputStore,
 	toggleCursorMode,
+	validateTextInput,
 } from './textInput';
 
 describe('TextInput Component', () => {
@@ -783,6 +787,261 @@ describe('TextInput Component', () => {
 
 				// New blink time should be >= initial (reset to current time)
 				expect(newBlink!).toBeGreaterThanOrEqual(initialBlink!);
+			});
+		});
+	});
+
+	describe('word navigation', () => {
+		beforeEach(() => {
+			world = createWorld();
+			eid = addEntity(world);
+			attachTextInputBehavior(world, eid);
+			focusTextInput(world, eid);
+		});
+
+		describe('Ctrl+Left - move word left', () => {
+			it('should return moveWordLeft action', () => {
+				const text = 'hello world test';
+				const action = handleTextInputKeyPress(world, eid, 'left', text, true);
+
+				expect(action?.type).toBe('moveWordLeft');
+				expect(action).toHaveProperty('text', text);
+			});
+
+			it('should work with empty text', () => {
+				const action = handleTextInputKeyPress(world, eid, 'left', '', true);
+				expect(action?.type).toBe('moveWordLeft');
+			});
+		});
+
+		describe('Ctrl+Right - move word right', () => {
+			it('should return moveWordRight action', () => {
+				const text = 'hello world test';
+				const action = handleTextInputKeyPress(world, eid, 'right', text, true);
+
+				expect(action?.type).toBe('moveWordRight');
+				expect(action).toHaveProperty('text', text);
+			});
+
+			it('should work with empty text', () => {
+				const action = handleTextInputKeyPress(world, eid, 'right', '', true);
+				expect(action?.type).toBe('moveWordRight');
+			});
+		});
+
+		describe('Ctrl+Backspace - delete word backward', () => {
+			it('should return deleteWordBackward action', () => {
+				const text = 'hello world';
+				const action = handleTextInputKeyPress(world, eid, 'backspace', text, true);
+
+				expect(action?.type).toBe('deleteWordBackward');
+				expect(action).toHaveProperty('text', text);
+			});
+
+			it('should work with empty text', () => {
+				const action = handleTextInputKeyPress(world, eid, 'backspace', '', true);
+				expect(action?.type).toBe('deleteWordBackward');
+			});
+		});
+
+		describe('Ctrl+Delete - delete word forward', () => {
+			it('should return deleteWordForward action', () => {
+				const text = 'hello world';
+				const action = handleTextInputKeyPress(world, eid, 'delete', text, true);
+
+				expect(action?.type).toBe('deleteWordForward');
+				expect(action).toHaveProperty('text', text);
+			});
+
+			it('should work with empty text', () => {
+				const action = handleTextInputKeyPress(world, eid, 'delete', '', true);
+				expect(action?.type).toBe('deleteWordForward');
+			});
+		});
+
+		it('should not trigger word operations when ctrl is false', () => {
+			const text = 'hello world';
+			setCursorPos(world, eid, 5); // Set cursor to middle of text
+			const action = handleTextInputKeyPress(world, eid, 'left', text, false);
+
+			expect(action?.type).toBe('moveCursor');
+		});
+	});
+
+	describe('validation', () => {
+		beforeEach(() => {
+			world = createWorld();
+			eid = addEntity(world);
+			attachTextInputBehavior(world, eid);
+		});
+
+		describe('validateTextInput', () => {
+			it('should return true when no validator is set', () => {
+				const isValid = validateTextInput(eid, 'any value');
+				expect(isValid).toBe(true);
+				expect(hasValidationError(eid)).toBe(false);
+			});
+
+			it('should return true when validator returns true', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => value.length >= 5,
+				});
+
+				const isValid = validateTextInput(eid, 'hello');
+				expect(isValid).toBe(true);
+				expect(hasValidationError(eid)).toBe(false);
+			});
+
+			it('should return false when validator returns false', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => value.length >= 5,
+				});
+
+				const isValid = validateTextInput(eid, 'hi');
+				expect(isValid).toBe(false);
+				expect(hasValidationError(eid)).toBe(true);
+				expect(getValidationError(eid)).toBe('Invalid input');
+			});
+
+			it('should store error message when validator returns string', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => (value.length >= 5 ? true : 'Must be at least 5 characters'),
+				});
+
+				const isValid = validateTextInput(eid, 'hi');
+				expect(isValid).toBe(false);
+				expect(hasValidationError(eid)).toBe(true);
+				expect(getValidationError(eid)).toBe('Must be at least 5 characters');
+			});
+
+			it('should clear error when validation passes', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => value.length >= 5 || 'Too short',
+				});
+
+				validateTextInput(eid, 'hi');
+				expect(hasValidationError(eid)).toBe(true);
+
+				validateTextInput(eid, 'hello');
+				expect(hasValidationError(eid)).toBe(false);
+				expect(getValidationError(eid)).toBe(null);
+			});
+		});
+
+		describe('clearValidationError', () => {
+			it('should clear validation error', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => value.length >= 5 || 'Too short',
+				});
+
+				validateTextInput(eid, 'hi');
+				expect(hasValidationError(eid)).toBe(true);
+
+				clearValidationError(eid);
+				expect(hasValidationError(eid)).toBe(false);
+				expect(getValidationError(eid)).toBe(null);
+			});
+		});
+
+		describe('validation timing - onChange', () => {
+			it('should validate on value change when timing is onChange', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => value.length >= 3 || 'Too short',
+					validationTiming: 'onChange',
+				});
+
+				emitValueChange(eid, 'hi');
+				expect(hasValidationError(eid)).toBe(true);
+
+				emitValueChange(eid, 'hello');
+				expect(hasValidationError(eid)).toBe(false);
+			});
+
+			it('should not validate on submit when timing is onChange', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => value.length >= 3 || 'Too short',
+					validationTiming: 'onChange',
+				});
+
+				const submitted = emitSubmit(eid, 'hi');
+				expect(submitted).toBe(true);
+			});
+		});
+
+		describe('validation timing - onSubmit', () => {
+			it('should validate on submit when timing is onSubmit', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => value.length >= 3 || 'Too short',
+					validationTiming: 'onSubmit',
+				});
+
+				const submitted = emitSubmit(eid, 'hi');
+				expect(submitted).toBe(false);
+				expect(hasValidationError(eid)).toBe(true);
+
+				const submitted2 = emitSubmit(eid, 'hello');
+				expect(submitted2).toBe(true);
+				expect(hasValidationError(eid)).toBe(false);
+			});
+
+			it('should not validate on value change when timing is onSubmit', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => value.length >= 3 || 'Too short',
+					validationTiming: 'onSubmit',
+				});
+
+				emitValueChange(eid, 'hi');
+				expect(hasValidationError(eid)).toBe(false);
+			});
+		});
+
+		describe('validation timing - both', () => {
+			it('should validate on both value change and submit when timing is both', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => value.length >= 3 || 'Too short',
+					validationTiming: 'both',
+				});
+
+				emitValueChange(eid, 'hi');
+				expect(hasValidationError(eid)).toBe(true);
+
+				clearValidationError(eid);
+
+				const submitted = emitSubmit(eid, 'hi');
+				expect(submitted).toBe(false);
+				expect(hasValidationError(eid)).toBe(true);
+			});
+		});
+
+		describe('complex validators', () => {
+			it('should validate email format', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || 'Invalid email',
+				});
+
+				expect(validateTextInput(eid, 'invalid')).toBe(false);
+				expect(validateTextInput(eid, 'test@')).toBe(false);
+				expect(validateTextInput(eid, 'test@example.com')).toBe(true);
+			});
+
+			it('should validate number range', () => {
+				setTextInputConfig(eid, {
+					validator: (value) => {
+						const num = Number.parseFloat(value);
+						if (Number.isNaN(num)) return 'Must be a number';
+						if (num < 0 || num > 100) return 'Must be between 0 and 100';
+						return true;
+					},
+				});
+
+				expect(validateTextInput(eid, 'abc')).toBe(false);
+				expect(getValidationError(eid)).toBe('Must be a number');
+
+				expect(validateTextInput(eid, '150')).toBe(false);
+				expect(getValidationError(eid)).toBe('Must be between 0 and 100');
+
+				expect(validateTextInput(eid, '50')).toBe(true);
+				expect(hasValidationError(eid)).toBe(false);
 			});
 		});
 	});
