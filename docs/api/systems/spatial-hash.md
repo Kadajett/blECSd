@@ -1,91 +1,118 @@
 # Spatial Hash System API
 
-O(1) spatial hash grid for efficient broad-phase collision detection and spatial queries.
+> **Module:** `systems/spatialHash`
+
+Spatial hash grid for O(1) collision lookups using uniform grid partitioning with incremental update support.
 
 ## Overview
 
-The spatial hash system handles:
-- Partitioning 2D space into a uniform grid
-- O(1) entity insertion and removal
-- Area-based queries for nearby entities
-- Point queries for entities at a position
-- Automatic grid rebuilding from ECS world state
-- Statistics reporting for grid utilization
+The spatial hash system partitions 2D space into a uniform grid where each cell tracks which entities overlap it. This enables efficient broad-phase collision detection by only checking entities in the same or adjacent cells.
 
-## Quick Start
+**Key Features:**
+- O(1) collision lookup performance
+- Incremental updates: only re-hash entities that moved
+- Automatic threshold-based full/partial rebuilds
+- Configurable cell size and dirty tracking
+- PackedStore-backed dirty set for cache-friendly iteration
+- Position caching with change detection
 
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import {
-  createSpatialHash,
-  setSpatialHashGrid,
-  spatialHashSystem,
-  queryArea,
-  getNearbyEntities,
-  LoopPhase,
-} from 'blecsd';
+**Components Used:**
+- `Position` - Entity location (x, y)
+- `Collider` - Collision bounds (width, height, offsetX, offsetY)
 
-const grid = createSpatialHash({ cellSize: 8 });
-setSpatialHashGrid(grid);
-
-scheduler.registerSystem(LoopPhase.EARLY_UPDATE, spatialHashSystem);
-
-// Query nearby entities
-const nearby = queryArea(grid, playerX, playerY, 2, 2);
-```
+---
 
 ## Types
 
 ### SpatialHashConfig
 
+Configuration for the spatial hash grid.
+
 ```typescript
 interface SpatialHashConfig {
-  /** Width of each cell in world units (default: 8) */
-  readonly cellSize: number;
-  /** Initial number of cells in the grid (default: 256) */
-  readonly initialCapacity: number;
+  readonly cellSize: number;           // Width of each cell in world units (default: 8)
+  readonly initialCapacity: number;    // Initial number of cells (default: 256)
+}
+```
+
+**Validation:** `SpatialHashConfigSchema` (Zod)
+
+### SpatialHashGrid
+
+The spatial hash grid data structure.
+
+```typescript
+interface SpatialHashGrid {
+  readonly cellSize: number;                           // Cell size in world units
+  readonly cells: Map<number, Set<number>>;            // Cell key → entity IDs
+  readonly entityCells: Map<number, Set<number>>;      // Entity ID → cell keys
 }
 ```
 
 ### CellCoord
 
+A cell coordinate in the grid.
+
 ```typescript
 interface CellCoord {
-  readonly cx: number;
-  readonly cy: number;
-}
-```
-
-### SpatialHashGrid
-
-```typescript
-interface SpatialHashGrid {
-  readonly cellSize: number;
-  readonly cells: Map<number, Set<number>>;
-  readonly entityCells: Map<number, Set<number>>;
+  readonly cx: number;  // Cell X coordinate
+  readonly cy: number;  // Cell Y coordinate
 }
 ```
 
 ### SpatialHashStats
 
+Grid statistics.
+
 ```typescript
 interface SpatialHashStats {
-  readonly cellCount: number;
-  readonly entityCount: number;
-  readonly averageEntitiesPerCell: number;
-  readonly maxEntitiesInCell: number;
+  readonly cellCount: number;                // Total cells in use
+  readonly entityCount: number;              // Total entities tracked
+  readonly averageEntitiesPerCell: number;   // Average load per cell
+  readonly maxEntitiesInCell: number;        // Max entities in any cell
 }
 ```
+
+### SpatialHashSystemState
+
+Internal state for incremental spatial hash updates.
+
+```typescript
+interface SpatialHashSystemState {
+  readonly dirtyEntities: PackedStore<number>;       // Dense packed dirty entity IDs
+  readonly dirtyLookup: Set<number>;                 // O(1) dedup lookup
+  readonly prevBounds: ComponentStore<PrevBounds>;   // Position cache
+  initialized: boolean;                              // Whether first frame completed
+  dirtyThreshold: number;                            // Fraction for full rebuild (0.0-1.0)
+}
+```
+
+### PrevBounds
+
+Cached bounds for a single entity.
+
+```typescript
+interface PrevBounds {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+```
+
+---
 
 ## Constants
 
 ### DEFAULT_CELL_SIZE
 
-Default cell size for the spatial hash grid: `8`.
+Default cell size in world units.
 
 ```typescript
-import { DEFAULT_CELL_SIZE } from 'blecsd';
+const DEFAULT_CELL_SIZE = 8;
 ```
+
+---
 
 ## Functions
 
@@ -97,7 +124,11 @@ Creates a new spatial hash grid.
 function createSpatialHash(config?: Partial<SpatialHashConfig>): SpatialHashGrid
 ```
 
-<!-- blecsd-doccheck:ignore -->
+**Parameters:**
+- `config` - Optional configuration overrides
+
+**Returns:** A new spatial hash grid.
+
 ```typescript
 import { createSpatialHash } from 'blecsd';
 
@@ -112,7 +143,13 @@ Gets the cell coordinate for a world position.
 function worldToCell(grid: SpatialHashGrid, x: number, y: number): CellCoord
 ```
 
-<!-- blecsd-doccheck:ignore -->
+**Parameters:**
+- `grid` - The spatial hash grid
+- `x` - World X coordinate
+- `y` - World Y coordinate
+
+**Returns:** The cell coordinate.
+
 ```typescript
 import { createSpatialHash, worldToCell } from 'blecsd';
 
@@ -123,7 +160,7 @@ const cell = worldToCell(grid, 15, 23);
 
 ### insertEntity
 
-Inserts an entity into the spatial hash at the given position and size. Automatically removes the entity from its previous position first.
+Inserts an entity into the spatial hash at the given position and size.
 
 ```typescript
 function insertEntity(
@@ -136,6 +173,21 @@ function insertEntity(
 ): void
 ```
 
+**Parameters:**
+- `grid` - The spatial hash grid
+- `eid` - Entity ID
+- `x` - Entity X position
+- `y` - Entity Y position
+- `width` - Entity width (default: 1)
+- `height` - Entity height (default: 1)
+
+```typescript
+import { createSpatialHash, insertEntity } from 'blecsd';
+
+const grid = createSpatialHash();
+insertEntity(grid, entity, 10, 20, 2, 3);
+```
+
 ### removeEntityFromGrid
 
 Removes an entity from the spatial hash.
@@ -144,9 +196,19 @@ Removes an entity from the spatial hash.
 function removeEntityFromGrid(grid: SpatialHashGrid, eid: Entity): void
 ```
 
+**Parameters:**
+- `grid` - The spatial hash grid
+- `eid` - Entity ID to remove
+
+```typescript
+import { removeEntityFromGrid } from 'blecsd';
+
+removeEntityFromGrid(grid, entity);
+```
+
 ### queryArea
 
-Gets all entities in the cells that overlap the given area. This is the core broad-phase query for collision detection.
+Gets all entities in the same cell(s) as the given position/area. This is the core broad-phase query for collision detection.
 
 ```typescript
 function queryArea(
@@ -158,13 +220,21 @@ function queryArea(
 ): ReadonlySet<number>
 ```
 
-<!-- blecsd-doccheck:ignore -->
+**Parameters:**
+- `grid` - The spatial hash grid
+- `x` - Query X position
+- `y` - Query Y position
+- `width` - Query width (default: 1)
+- `height` - Query height (default: 1)
+
+**Returns:** Set of entity IDs that may overlap the query area.
+
 ```typescript
-import { queryArea } from 'blecsd';
+import { createSpatialHash, queryArea } from 'blecsd';
 
 const nearby = queryArea(grid, playerX, playerY, 2, 2);
 for (const eid of nearby) {
-  // Narrow-phase collision check
+  // Check narrow-phase collision
 }
 ```
 
@@ -176,13 +246,18 @@ Gets potential collision candidates for an entity. Returns all entities in the s
 function getNearbyEntities(grid: SpatialHashGrid, eid: Entity): ReadonlySet<number>
 ```
 
-<!-- blecsd-doccheck:ignore -->
+**Parameters:**
+- `grid` - The spatial hash grid
+- `eid` - Entity to find candidates for
+
+**Returns:** Set of entity IDs that may collide with the given entity.
+
 ```typescript
 import { getNearbyEntities } from 'blecsd';
 
 const candidates = getNearbyEntities(grid, player);
 for (const other of candidates) {
-  // Check if actual collision
+  // Narrow-phase collision check
 }
 ```
 
@@ -191,7 +266,24 @@ for (const other of candidates) {
 Gets all entities at a specific cell coordinate.
 
 ```typescript
-function getEntitiesInCell(grid: SpatialHashGrid, cx: number, cy: number): ReadonlySet<number>
+function getEntitiesInCell(
+  grid: SpatialHashGrid,
+  cx: number,
+  cy: number,
+): ReadonlySet<number>
+```
+
+**Parameters:**
+- `grid` - The spatial hash grid
+- `cx` - Cell X coordinate
+- `cy` - Cell Y coordinate
+
+**Returns:** Set of entity IDs in that cell.
+
+```typescript
+import { getEntitiesInCell } from 'blecsd';
+
+const entities = getEntitiesInCell(grid, 3, 5);
 ```
 
 ### getEntitiesAtPoint
@@ -199,7 +291,24 @@ function getEntitiesInCell(grid: SpatialHashGrid, cx: number, cy: number): Reado
 Gets all entities at a world position.
 
 ```typescript
-function getEntitiesAtPoint(grid: SpatialHashGrid, x: number, y: number): ReadonlySet<number>
+function getEntitiesAtPoint(
+  grid: SpatialHashGrid,
+  x: number,
+  y: number,
+): ReadonlySet<number>
+```
+
+**Parameters:**
+- `grid` - The spatial hash grid
+- `x` - World X coordinate
+- `y` - World Y coordinate
+
+**Returns:** Set of entity IDs at that position.
+
+```typescript
+import { getEntitiesAtPoint } from 'blecsd';
+
+const entities = getEntitiesAtPoint(grid, 10, 20);
 ```
 
 ### clearSpatialHash
@@ -210,6 +319,12 @@ Clears all entities from the spatial hash grid.
 function clearSpatialHash(grid: SpatialHashGrid): void
 ```
 
+```typescript
+import { clearSpatialHash } from 'blecsd';
+
+clearSpatialHash(grid);
+```
+
 ### getSpatialHashStats
 
 Gets statistics about the spatial hash grid.
@@ -218,13 +333,15 @@ Gets statistics about the spatial hash grid.
 function getSpatialHashStats(grid: SpatialHashGrid): SpatialHashStats
 ```
 
-<!-- blecsd-doccheck:ignore -->
+**Returns:** Grid statistics.
+
 ```typescript
 import { getSpatialHashStats } from 'blecsd';
 
 const stats = getSpatialHashStats(grid);
 console.log(`Cells: ${stats.cellCount}, Entities: ${stats.entityCount}`);
-console.log(`Max entities per cell: ${stats.maxEntitiesInCell}`);
+console.log(`Avg per cell: ${stats.averageEntitiesPerCell.toFixed(2)}`);
+console.log(`Max in cell: ${stats.maxEntitiesInCell}`);
 ```
 
 ### rebuildSpatialHash
@@ -235,12 +352,49 @@ Rebuilds the spatial hash from all entities with Position and Collider component
 function rebuildSpatialHash(grid: SpatialHashGrid, world: World): void
 ```
 
+**Parameters:**
+- `grid` - The spatial hash grid to rebuild
+- `world` - The ECS world
+
+```typescript
+import { createSpatialHash, rebuildSpatialHash } from 'blecsd';
+
+const grid = createSpatialHash({ cellSize: 4 });
+rebuildSpatialHash(grid, world);
+```
+
+### createSpatialHashSystemState
+
+Creates a fresh spatial hash system state for incremental updates.
+
+```typescript
+function createSpatialHashSystemState(dirtyThreshold?: number): SpatialHashSystemState
+```
+
+**Parameters:**
+- `dirtyThreshold` - Fraction of entities above which full rebuild is used (default: 0.5)
+
+**Returns:** New system state.
+
+```typescript
+import { createSpatialHashSystemState } from 'blecsd';
+
+const state = createSpatialHashSystemState(0.3);
+```
+
 ### setSpatialHashGrid
 
-Sets the spatial hash grid for the built-in system to use.
+Sets the spatial hash grid for the system to use. Resets incremental state so the next tick performs a full rebuild.
 
 ```typescript
 function setSpatialHashGrid(grid: SpatialHashGrid): void
+```
+
+```typescript
+import { createSpatialHash, setSpatialHashGrid } from 'blecsd';
+
+const grid = createSpatialHash({ cellSize: 4 });
+setSpatialHashGrid(grid);
 ```
 
 ### getSpatialHashGrid
@@ -251,9 +405,117 @@ Gets the current system spatial hash grid.
 function getSpatialHashGrid(): SpatialHashGrid | null
 ```
 
+**Returns:** The grid, or null if not set.
+
+### getSpatialHashSystemState
+
+Gets the current incremental update system state.
+
+```typescript
+function getSpatialHashSystemState(): SpatialHashSystemState
+```
+
+**Returns:** The system state.
+
+### markSpatialDirty
+
+Marks an entity as needing re-hashing on the next system tick. Use this when an external system knows an entity's position or collider changed, to avoid waiting for the position comparison scan.
+
+```typescript
+function markSpatialDirty(eid: Entity): void
+```
+
+```typescript
+import { markSpatialDirty } from 'blecsd';
+
+// After teleporting an entity, mark it dirty
+Position.x[entity] = 100;
+Position.y[entity] = 200;
+markSpatialDirty(entity);
+```
+
+### getSpatialDirtyCount
+
+Gets the number of entities currently marked as dirty.
+
+```typescript
+function getSpatialDirtyCount(): number
+```
+
+**Returns:** Count of dirty entities awaiting re-hash.
+
+```typescript
+import { getSpatialDirtyCount } from 'blecsd';
+
+console.log(`${getSpatialDirtyCount()} entities need re-hashing`);
+```
+
+### resetSpatialHashState
+
+Resets the incremental spatial hash system state. Clears dirty entities, position cache, and forces a full rebuild on next tick. Useful for testing or scene transitions.
+
+```typescript
+function resetSpatialHashState(): void
+```
+
+```typescript
+import { resetSpatialHashState } from 'blecsd';
+
+resetSpatialHashState();
+```
+
+### setSpatialDirtyThreshold
+
+Sets the dirty threshold for the incremental update system. When the fraction of dirty entities exceeds this value, a full rebuild is used instead of incremental updates.
+
+```typescript
+function setSpatialDirtyThreshold(threshold: number): void
+```
+
+**Parameters:**
+- `threshold` - Fraction between 0.0 and 1.0 (default: 0.5)
+
+```typescript
+import { setSpatialDirtyThreshold } from 'blecsd';
+
+// Use full rebuild when more than 30% of entities moved
+setSpatialDirtyThreshold(0.3);
+```
+
+### incrementalSpatialUpdate
+
+Performs an incremental update of the spatial hash grid. Only re-inserts entities that were marked dirty (moved, resized, or new). Falls back to full rebuild when dirty count exceeds the threshold.
+
+```typescript
+function incrementalSpatialUpdate(
+  grid: SpatialHashGrid,
+  state: SpatialHashSystemState,
+  world: World,
+): void
+```
+
+**Parameters:**
+- `grid` - The spatial hash grid
+- `state` - The incremental update state
+- `world` - The ECS world
+
+```typescript
+import {
+  createSpatialHash,
+  createSpatialHashSystemState,
+  incrementalSpatialUpdate
+} from 'blecsd';
+
+const grid = createSpatialHash({ cellSize: 4 });
+const state = createSpatialHashSystemState();
+incrementalSpatialUpdate(grid, state, world);
+```
+
 ### spatialHashSystem
 
-The built-in system that rebuilds the grid each frame. Register in the EARLY_UPDATE phase.
+Spatial hash system with incremental updates. On the first frame, performs a full rebuild. On subsequent frames, detects which entities moved and only re-hashes those. Falls back to full rebuild when the dirty fraction exceeds the configured threshold.
+
+Register this in the EARLY_UPDATE phase to ensure collision queries use up-to-date spatial data.
 
 ```typescript
 const spatialHashSystem: System
@@ -261,68 +523,137 @@ const spatialHashSystem: System
 
 ### createSpatialHashSystem
 
-Factory function that returns the spatialHashSystem.
+Creates a new spatial hash system.
 
 ```typescript
 function createSpatialHashSystem(): System
 ```
 
-## Usage Example
+**Returns:** The system function.
 
-Complete collision detection setup:
+---
 
-<!-- blecsd-doccheck:ignore -->
+## Complete Example
+
+Full spatial hash setup with incremental updates and collision queries:
+
 ```typescript
 import {
   createWorld,
-  addEntity,
   createScheduler,
+  LoopPhase,
+  addEntity,
+  setPosition,
+  setCollider,
   createSpatialHash,
   setSpatialHashGrid,
   spatialHashSystem,
-  insertEntity,
   queryArea,
   getNearbyEntities,
   getSpatialHashStats,
-  setPosition,
-  setCollider,
-  LoopPhase,
+  markSpatialDirty,
+  setSpatialDirtyThreshold,
 } from 'blecsd';
 
+// Setup
 const world = createWorld();
 const scheduler = createScheduler();
 
-// Create spatial hash with small cells for precise collision
-const grid = createSpatialHash({ cellSize: 4 });
+// Create and register spatial hash with custom settings
+const grid = createSpatialHash({ cellSize: 8 });
 setSpatialHashGrid(grid);
+setSpatialDirtyThreshold(0.3); // Full rebuild when >30% moved
 
-// Register rebuild system in EARLY_UPDATE
 scheduler.registerSystem(LoopPhase.EARLY_UPDATE, spatialHashSystem);
 
-// Create entities with position and collider
+// Add entities
 const player = addEntity(world);
-setPosition(world, player, 10, 5);
-setCollider(world, player, { width: 2, height: 2 });
+setPosition(world, player, 40, 30);
+setCollider(world, player, { type: 'aabb', width: 2, height: 2, layer: 1 });
 
-const enemy = addEntity(world);
-setPosition(world, enemy, 12, 5);
-setCollider(world, enemy, { width: 2, height: 2 });
-
-// After system runs, query for collisions
-scheduler.run(world, 1 / 60);
-
-const candidates = getNearbyEntities(grid, player);
-for (const other of candidates) {
-  // Narrow-phase AABB check
-  console.log(`Potential collision with entity ${other}`);
+for (let i = 0; i < 100; i++) {
+  const enemy = addEntity(world);
+  setPosition(world, enemy, Math.random() * 100, Math.random() * 100);
+  setCollider(world, enemy, { type: 'aabb', width: 1, height: 1, layer: 2 });
 }
 
-// Check for entities under mouse cursor
-const entitiesAtMouse = queryArea(grid, mouseX, mouseY, 1, 1);
+// Update loop - spatial hash updates incrementally
+scheduler.run(world, 0.016);
 
-// Monitor grid efficiency
+// Query nearby entities for collision detection
+const nearby = queryArea(grid, 40, 30, 10, 10);
+console.log(`Found ${nearby.size} entities near player`);
+
+// Get collision candidates for specific entity
+const candidates = getNearbyEntities(grid, player);
+for (const eid of candidates) {
+  // Perform narrow-phase collision detection
+}
+
+// Monitor grid health
 const stats = getSpatialHashStats(grid);
-if (stats.maxEntitiesInCell > 50) {
-  console.warn('Consider using a smaller cell size');
+console.log(`Grid: ${stats.cellCount} cells, ${stats.entityCount} entities`);
+console.log(`Avg per cell: ${stats.averageEntitiesPerCell.toFixed(2)}`);
+
+// Manually mark entity as dirty after teleport
+Position.x[player] = 100;
+Position.y[player] = 50;
+markSpatialDirty(player);
+```
+
+---
+
+## Performance Tips
+
+### Cell Size Selection
+
+- **Too small** (< 2): Many cells, high memory, more lookups per query
+- **Too large** (> 32): Few cells, broad-phase returns too many false positives
+- **Optimal**: ~2-4x the average entity size
+
+```typescript
+// For 2x2 entities, use cellSize: 4-8
+const grid = createSpatialHash({ cellSize: 4 });
+```
+
+### Dirty Threshold Tuning
+
+The dirty threshold controls when incremental updates switch to full rebuilds:
+
+- **Low threshold (0.1-0.3)**: Favor full rebuilds, better when most entities move each frame
+- **High threshold (0.7-0.9)**: Favor incremental updates, better for mostly-static scenes
+- **Default (0.5)**: Balanced for mixed scenarios
+
+```typescript
+// Mostly static scene (few entities move per frame)
+setSpatialDirtyThreshold(0.8);
+
+// Fast-paced game (most entities move per frame)
+setSpatialDirtyThreshold(0.2);
+```
+
+### Manual Dirty Marking
+
+Use `markSpatialDirty()` after large position changes (teleports, scene transitions) to avoid waiting for the automatic position scan:
+
+```typescript
+// After batch update
+for (const eid of movedEntities) {
+  markSpatialDirty(eid);
 }
 ```
+
+### Query Optimization
+
+- Use `getNearbyEntities()` for entity-to-entity checks (excludes self)
+- Use `queryArea()` for viewport culling or area-of-effect checks
+- Use `getEntitiesAtPoint()` for mouse picking
+
+---
+
+## See Also
+
+- [Collision System](./collisionSystem.md) - Narrow-phase collision detection
+- [Visibility Culling](./visibility-culling.md) - Uses spatial hash for viewport queries
+- [Position Component](../components/position.md)
+- [Collider Component](../components/collider.md)
