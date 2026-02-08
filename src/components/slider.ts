@@ -451,10 +451,11 @@ export function enableSlider(world: World, eid: Entity): boolean {
 /**
  * Gets the slider value.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns The current value
  */
-export function getSliderValue(eid: Entity): number {
+export function getSliderValue(_world: World, eid: Entity): number {
 	return sliderStore.value[eid] ?? 0;
 }
 
@@ -490,30 +491,33 @@ export function setSliderValue(world: World, eid: Entity, value: number): void {
 /**
  * Gets the slider minimum value.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns The minimum value
  */
-export function getSliderMin(eid: Entity): number {
+export function getSliderMin(_world: World, eid: Entity): number {
 	return sliderStore.min[eid] ?? 0;
 }
 
 /**
  * Gets the slider maximum value.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns The maximum value
  */
-export function getSliderMax(eid: Entity): number {
+export function getSliderMax(_world: World, eid: Entity): number {
 	return sliderStore.max[eid] ?? 100;
 }
 
 /**
  * Gets the slider step value.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns The step value
  */
-export function getSliderStep(eid: Entity): number {
+export function getSliderStep(_world: World, eid: Entity): number {
 	return sliderStore.step[eid] ?? 1;
 }
 
@@ -565,10 +569,11 @@ export function setSliderStep(world: World, eid: Entity, step: number): void {
 /**
  * Gets the slider percentage (0-1).
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns Value as percentage
  */
-export function getSliderPercentage(eid: Entity): number {
+export function getSliderPercentage(_world: World, eid: Entity): number {
 	const min = sliderStore.min[eid] ?? 0;
 	const max = sliderStore.max[eid] ?? 100;
 	const value = sliderStore.value[eid] ?? 0;
@@ -649,10 +654,11 @@ export function setSliderToMax(world: World, eid: Entity): void {
 /**
  * Gets the slider orientation.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns The orientation
  */
-export function getSliderOrientation(eid: Entity): SliderOrientationType {
+export function getSliderOrientation(_world: World, eid: Entity): SliderOrientationType {
 	return sliderStore.orientation[eid] as SliderOrientationType;
 }
 
@@ -675,21 +681,23 @@ export function setSliderOrientation(
 /**
  * Checks if slider is horizontal.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns true if horizontal
  */
-export function isSliderHorizontal(eid: Entity): boolean {
-	return getSliderOrientation(eid) === SliderOrientation.Horizontal;
+export function isSliderHorizontal(world: World, eid: Entity): boolean {
+	return getSliderOrientation(world, eid) === SliderOrientation.Horizontal;
 }
 
 /**
  * Checks if slider is vertical.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns true if vertical
  */
-export function isSliderVertical(eid: Entity): boolean {
-	return getSliderOrientation(eid) === SliderOrientation.Vertical;
+export function isSliderVertical(world: World, eid: Entity): boolean {
+	return getSliderOrientation(world, eid) === SliderOrientation.Vertical;
 }
 
 // =============================================================================
@@ -699,10 +707,11 @@ export function isSliderVertical(eid: Entity): boolean {
 /**
  * Gets whether the slider shows its value.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns true if showing value
  */
-export function isShowingSliderValue(eid: Entity): boolean {
+export function isShowingSliderValue(_world: World, eid: Entity): boolean {
 	return sliderStore.showValue[eid] === 1;
 }
 
@@ -725,12 +734,13 @@ export function setShowSliderValue(world: World, eid: Entity, show: boolean): vo
 /**
  * Sets the slider display configuration.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @param options - Display options
  */
-export function setSliderDisplay(eid: Entity, options: SliderDisplayOptions): void {
+export function setSliderDisplay(world: World, eid: Entity, options: SliderDisplayOptions): void {
 	const existing = displayStore.get(eid);
-	const orientation = getSliderOrientation(eid);
+	const orientation = getSliderOrientation(world, eid);
 
 	const defaultTrack =
 		orientation === SliderOrientation.Vertical ? DEFAULT_TRACK_CHAR_VERTICAL : DEFAULT_TRACK_CHAR;
@@ -753,11 +763,12 @@ export function setSliderDisplay(eid: Entity, options: SliderDisplayOptions): vo
 /**
  * Gets the slider display configuration.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns Display configuration
  */
-export function getSliderDisplay(eid: Entity): SliderDisplay {
-	const orientation = getSliderOrientation(eid);
+export function getSliderDisplay(world: World, eid: Entity): SliderDisplay {
+	const orientation = getSliderOrientation(world, eid);
 	const defaultTrack =
 		orientation === SliderOrientation.Vertical ? DEFAULT_TRACK_CHAR_VERTICAL : DEFAULT_TRACK_CHAR;
 	const defaultFill =
@@ -781,9 +792,10 @@ export function getSliderDisplay(eid: Entity): SliderDisplay {
 /**
  * Clears the slider display configuration.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  */
-export function clearSliderDisplay(eid: Entity): void {
+export function clearSliderDisplay(_world: World, eid: Entity): void {
 	displayStore.delete(eid);
 }
 
@@ -794,18 +806,23 @@ export function clearSliderDisplay(eid: Entity): void {
 /**
  * Registers a callback for when the slider value changes.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @param callback - The callback function
  * @returns Unsubscribe function
  *
  * @example
  * ```typescript
- * const unsubscribe = onSliderChange(eid, (value) => {
+ * const unsubscribe = onSliderChange(world, eid, (value) => {
  *   console.log(`Value: ${value}`);
  * });
  * ```
  */
-export function onSliderChange(eid: Entity, callback: SliderChangeCallback): () => void {
+export function onSliderChange(
+	_world: World,
+	eid: Entity,
+	callback: SliderChangeCallback,
+): () => void {
 	const callbacks = changeCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	changeCallbacks.set(eid, callbacks);
@@ -824,11 +841,12 @@ export function onSliderChange(eid: Entity, callback: SliderChangeCallback): () 
 /**
  * Registers a callback for when dragging starts.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @param callback - The callback function
  * @returns Unsubscribe function
  */
-export function onSliderDragStart(eid: Entity, callback: () => void): () => void {
+export function onSliderDragStart(_world: World, eid: Entity, callback: () => void): () => void {
 	const callbacks = dragStartCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	dragStartCallbacks.set(eid, callbacks);
@@ -847,11 +865,12 @@ export function onSliderDragStart(eid: Entity, callback: () => void): () => void
 /**
  * Registers a callback for when dragging ends.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @param callback - The callback function
  * @returns Unsubscribe function
  */
-export function onSliderDragEnd(eid: Entity, callback: () => void): () => void {
+export function onSliderDragEnd(_world: World, eid: Entity, callback: () => void): () => void {
 	const callbacks = dragEndCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	dragEndCallbacks.set(eid, callbacks);
@@ -870,9 +889,10 @@ export function onSliderDragEnd(eid: Entity, callback: () => void): () => void {
 /**
  * Clears all callbacks for a slider.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  */
-export function clearSliderCallbacks(eid: Entity): void {
+export function clearSliderCallbacks(_world: World, eid: Entity): void {
 	changeCallbacks.delete(eid);
 	dragStartCallbacks.delete(eid);
 	dragEndCallbacks.delete(eid);
@@ -916,7 +936,7 @@ export function handleSliderKeyPress(world: World, eid: Entity, key: string): Sl
 		return null;
 	}
 
-	const isHorizontal = isSliderHorizontal(eid);
+	const isHorizontal = isSliderHorizontal(world, eid);
 
 	switch (key) {
 		case 'right':
@@ -967,24 +987,25 @@ export function handleSliderKeyPress(world: World, eid: Entity, key: string): Sl
 /**
  * Renders the slider as a string.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @param width - The available width
  * @returns Rendered slider string
  */
-export function renderSliderString(eid: Entity, width: number): string {
+export function renderSliderString(_world: World, eid: Entity, width: number): string {
 	if (width <= 0) {
 		return '';
 	}
 
-	const percentage = getSliderPercentage(eid);
-	const display = getSliderDisplay(eid);
-	const showValue = isShowingSliderValue(eid);
+	const percentage = getSliderPercentage(_world, eid);
+	const display = getSliderDisplay(_world, eid);
+	const showValue = isShowingSliderValue(_world, eid);
 
 	// Calculate value string and adjust width
 	let valueStr = '';
 	let trackWidth = width;
 	if (showValue) {
-		const value = getSliderValue(eid);
+		const value = getSliderValue(_world, eid);
 		valueStr = ` ${value}`;
 		trackWidth = Math.max(1, width - valueStr.length);
 	}

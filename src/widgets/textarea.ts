@@ -191,7 +191,7 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 		});
 	}
 
-	setTextInputConfig(eid, {
+	setTextInputConfig(world, eid, {
 		placeholder: validated.placeholder ?? '',
 		maxLength: validated.maxLength,
 		multiline: true,
@@ -237,7 +237,7 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 				};
 				const offset = cursorToOffset(value, state.cursor);
 				setCursorPos(world, eid, offset);
-				emitValueChange(eid, value);
+				emitValueChange(world, eid, value);
 			}
 			return widget;
 		},
@@ -290,7 +290,7 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 					state.cursor = result.cursor;
 					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
 					ensureCursorVisible(state);
-					emitValueChange(eid, state.value);
+					emitValueChange(world, eid, state.value);
 					return true;
 				}
 
@@ -300,7 +300,7 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 					state.cursor = result.cursor;
 					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
 					ensureCursorVisible(state);
-					emitValueChange(eid, state.value);
+					emitValueChange(world, eid, state.value);
 					return true;
 				}
 
@@ -311,7 +311,7 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 					state.cursor = clampCursor(state.value, { line: 0, column: startOffset });
 					setCursorPos(world, eid, startOffset);
 					ensureCursorVisible(state);
-					emitValueChange(eid, state.value);
+					emitValueChange(world, eid, state.value);
 					return true;
 				}
 
@@ -342,7 +342,7 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 					state.cursor = result.cursor;
 					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
 					ensureCursorVisible(state);
-					emitValueChange(eid, state.value);
+					emitValueChange(world, eid, state.value);
 					return true;
 				}
 
@@ -352,12 +352,12 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 					state.cursor = result.cursor;
 					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
 					ensureCursorVisible(state);
-					emitValueChange(eid, state.value);
+					emitValueChange(world, eid, state.value);
 					return true;
 				}
 
 				case 'submit': {
-					emitSubmit(eid, action.value);
+					emitSubmit(world, eid, action.value);
 					return true;
 				}
 
@@ -381,11 +381,11 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 		},
 
 		onSubmit(callback: (value: string) => void): () => void {
-			return onTextInputSubmit(eid, callback);
+			return onTextInputSubmit(world, eid, callback);
 		},
 
 		onChange(callback: (value: string) => void): () => void {
-			return onTextInputChange(eid, callback);
+			return onTextInputChange(world, eid, callback);
 		},
 
 		destroy(): void {

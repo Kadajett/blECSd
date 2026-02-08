@@ -386,6 +386,7 @@ export function applyScrollableOptions(
 }
 
 export function applySliderDisplayOptions(
+	world: World,
 	eid: Entity,
 	config: {
 		trackChar?: string | undefined;
@@ -409,5 +410,5 @@ export function applySliderDisplayOptions(
 	if (config.thumbBg !== undefined) options.thumbBg = config.thumbBg;
 	if (config.fillFg !== undefined) options.fillFg = config.fillFg;
 	if (config.fillBg !== undefined) options.fillBg = config.fillBg;
-	setSliderDisplay(eid, options);
+	setSliderDisplay(world, eid, options);
 }

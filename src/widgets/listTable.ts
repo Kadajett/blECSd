@@ -504,7 +504,7 @@ export function createListTable(
 
 	// Apply display styles if provided
 	if (validated.style) {
-		setTableDisplay(eid, styleToTableDisplayOptions(validated.style));
+		setTableDisplay(world, eid, styleToTableDisplayOptions(validated.style));
 	}
 
 	// Convert data rows to list items for selection tracking
@@ -522,8 +522,8 @@ export function createListTable(
 
 	// Helper to sync list items when table data changes
 	const syncListItems = (): void => {
-		const currentData = getDataAsStrings(eid);
-		const headerCount = getHeaderRowCount(eid);
+		const currentData = getDataAsStrings(world, eid);
+		const headerCount = getHeaderRowCount(world, eid);
 		const items = dataRowsToListItems(currentData, headerCount);
 		setItems(world, eid, items);
 	};
@@ -575,11 +575,11 @@ export function createListTable(
 		},
 
 		getData(): string[][] {
-			return getDataAsStrings(eid);
+			return getDataAsStrings(world, eid);
 		},
 
 		getFullData(): TableData {
-			return getData(eid);
+			return getData(world, eid);
 		},
 
 		clearData(): ListTableWidget {
@@ -596,24 +596,24 @@ export function createListTable(
 		},
 
 		getCell(row: number, col: number): TableCell | undefined {
-			return getCell(eid, row, col);
+			return getCell(world, eid, row, col);
 		},
 
 		getCellValue(row: number, col: number): string | undefined {
-			return getCellValue(eid, row, col);
+			return getCellValue(world, eid, row, col);
 		},
 
 		// Rows
 		getRow(row: number): TableRow | undefined {
-			return getRow(eid, row);
+			return getRow(world, eid, row);
 		},
 
 		getRowCount(): number {
-			return getRowCount(eid);
+			return getRowCount(world, eid);
 		},
 
 		getDataRowCount(): number {
-			return Math.max(0, getRowCount(eid) - getHeaderRowCount(eid));
+			return Math.max(0, getRowCount(world, eid) - getHeaderRowCount(world, eid));
 		},
 
 		// Columns
@@ -623,11 +623,11 @@ export function createListTable(
 		},
 
 		getColumns(): readonly TableColumn[] {
-			return getColumns(eid);
+			return getColumns(world, eid);
 		},
 
 		getColCount(): number {
-			return getColCount(eid);
+			return getColCount(world, eid);
 		},
 
 		// Headers
@@ -638,15 +638,15 @@ export function createListTable(
 		},
 
 		getHeaderRowCount(): number {
-			return getHeaderRowCount(eid);
+			return getHeaderRowCount(world, eid);
 		},
 
 		getHeaderRows(): readonly TableRow[] {
-			return getHeaderRows(eid);
+			return getHeaderRows(world, eid);
 		},
 
 		getDataRows(): readonly TableRow[] {
-			return getDataRows(eid);
+			return getDataRows(world, eid);
 		},
 
 		// Display
@@ -656,7 +656,7 @@ export function createListTable(
 		},
 
 		getCellPadding(): number {
-			return getCellPadding(eid);
+			return getCellPadding(world, eid);
 		},
 
 		setCellBorders(enabled: boolean): ListTableWidget {
@@ -665,17 +665,17 @@ export function createListTable(
 		},
 
 		hasCellBorders(): boolean {
-			return hasCellBorders(eid);
+			return hasCellBorders(world, eid);
 		},
 
 		setStyle(style: ListTableStyleConfig): ListTableWidget {
-			setTableDisplay(eid, styleToTableDisplayOptions(style));
+			setTableDisplay(world, eid, styleToTableDisplayOptions(style));
 			markDirty(world, eid);
 			return widget;
 		},
 
 		getDisplay(): TableDisplay {
-			return getTableDisplay(eid);
+			return getTableDisplay(world, eid);
 		},
 
 		// Selection
@@ -694,8 +694,8 @@ export function createListTable(
 				return undefined;
 			}
 			// Convert list index to table row index (add header rows)
-			const headerCount = getHeaderRowCount(eid);
-			return getRow(eid, headerCount + selectedIdx);
+			const headerCount = getHeaderRowCount(world, eid);
+			return getRow(world, eid, headerCount + selectedIdx);
 		},
 
 		selectPrev(): ListTableWidget {

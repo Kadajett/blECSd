@@ -442,7 +442,7 @@ export function createTextboxEntity(world: World, config: TextboxConfig = {}): E
 	attachTextInputBehavior(world, eid);
 
 	// Set up text input configuration
-	setTextInputConfig(eid, {
+	setTextInputConfig(world, eid, {
 		secret: validated.secret ?? false,
 		censor: validated.censor ?? DEFAULT_CENSOR_CHAR,
 		placeholder: validated.placeholder ?? DEFAULT_PLACEHOLDER,
@@ -498,7 +498,7 @@ export function createTextareaEntity(world: World, config: TextareaConfig = {}):
 	attachTextInputBehavior(world, eid);
 
 	// Set up text input configuration with multiline enabled
-	setTextInputConfig(eid, {
+	setTextInputConfig(world, eid, {
 		secret: false, // Textareas don't support secret mode
 		censor: '', // Not applicable for textarea
 		placeholder: validated.placeholder ?? DEFAULT_PLACEHOLDER,
@@ -553,7 +553,7 @@ export function createSelectEntity(world: World, config: SelectConfig = {}): Ent
 		selectDisplayOptions.openIndicator = validated.openIndicator;
 	if (validated.selectedMark !== undefined)
 		selectDisplayOptions.selectedMark = validated.selectedMark;
-	setSelectDisplay(eid, selectDisplayOptions);
+	setSelectDisplay(world, eid, selectDisplayOptions);
 
 	// Set initial content to placeholder or selected value
 	if (selectedIndex >= 0 && options[selectedIndex]) {
@@ -606,7 +606,7 @@ export function createSliderEntity(world: World, config: SliderConfig = {}): Ent
 	}
 
 	// Apply slider display configuration
-	applySliderDisplayOptions(eid, validated);
+	applySliderDisplayOptions(world, eid, validated);
 
 	if (validated.parent !== undefined) {
 		setParent(world, eid, validated.parent as Entity);
@@ -675,7 +675,7 @@ export function createProgressBarEntity(world: World, config: ProgressBarConfig 
 		validated.emptyFg !== undefined ||
 		validated.emptyBg !== undefined
 	) {
-		setProgressBarDisplay(eid, {
+		setProgressBarDisplay(world, eid, {
 			fillChar: validated.fillChar,
 			emptyChar: validated.emptyChar,
 			fillFg: validated.fillFg,

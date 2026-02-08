@@ -174,7 +174,7 @@ export function attachProgressBarBehavior(
 	progressBarStore.showPercentage[eid] = options.showPercentage ? 1 : 0;
 
 	// Initialize default display
-	setProgressBarDisplay(eid, {});
+	setProgressBarDisplay(world, eid, {});
 
 	markDirty(world, eid);
 }
@@ -202,6 +202,7 @@ export function isProgressBar(_world: World, eid: Entity): boolean {
 /**
  * Gets the current progress value.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @returns Current value
  *
@@ -209,36 +210,39 @@ export function isProgressBar(_world: World, eid: Entity): boolean {
  * ```typescript
  * import { getProgress } from 'blecsd';
  *
- * const value = getProgress(progressBar);
+ * const value = getProgress(world, progressBar);
  * ```
  */
-export function getProgress(eid: Entity): number {
+export function getProgress(_world: World, eid: Entity): number {
 	return progressBarStore.value[eid] as number;
 }
 
 /**
  * Gets the minimum value of the progress bar.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @returns Minimum value
  */
-export function getProgressMin(eid: Entity): number {
+export function getProgressMin(_world: World, eid: Entity): number {
 	return progressBarStore.min[eid] as number;
 }
 
 /**
  * Gets the maximum value of the progress bar.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @returns Maximum value
  */
-export function getProgressMax(eid: Entity): number {
+export function getProgressMax(_world: World, eid: Entity): number {
 	return progressBarStore.max[eid] as number;
 }
 
 /**
  * Gets the progress as a percentage (0-100).
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @returns Progress percentage (0-100)
  *
@@ -246,11 +250,11 @@ export function getProgressMax(eid: Entity): number {
  * ```typescript
  * import { getProgressPercentage } from 'blecsd';
  *
- * const percent = getProgressPercentage(progressBar);
+ * const percent = getProgressPercentage(world, progressBar);
  * console.log(`${percent}% complete`);
  * ```
  */
-export function getProgressPercentage(eid: Entity): number {
+export function getProgressPercentage(_world: World, eid: Entity): number {
 	const min = progressBarStore.min[eid] as number;
 	const max = progressBarStore.max[eid] as number;
 	const value = progressBarStore.value[eid] as number;
@@ -265,20 +269,22 @@ export function getProgressPercentage(eid: Entity): number {
 /**
  * Gets the progress bar orientation.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @returns Orientation value
  */
-export function getProgressOrientation(eid: Entity): ProgressOrientation {
+export function getProgressOrientation(_world: World, eid: Entity): ProgressOrientation {
 	return progressBarStore.orientation[eid] as ProgressOrientation;
 }
 
 /**
  * Checks if percentage display is enabled.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @returns True if percentage is shown
  */
-export function isShowingPercentage(eid: Entity): boolean {
+export function isShowingPercentage(_world: World, eid: Entity): boolean {
 	return progressBarStore.showPercentage[eid] === 1;
 }
 
@@ -310,12 +316,12 @@ export function setProgress(world: World, eid: Entity, value: number): void {
 
 	// Emit change callback
 	if (clampedValue !== oldValue) {
-		const percentage = getProgressPercentage(eid);
-		emitProgressChange(eid, clampedValue, percentage);
+		const percentage = getProgressPercentage(world, eid);
+		emitProgressChange(world, eid, clampedValue, percentage);
 
 		// Emit complete callback if at max
 		if (clampedValue === max && oldValue < max) {
-			emitProgressComplete(eid);
+			emitProgressComplete(world, eid);
 		}
 	}
 }
@@ -376,6 +382,7 @@ export function completeProgress(world: World, eid: Entity): void {
 /**
  * Checks if the progress bar is complete (at max value).
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @returns True if at max value
  *
@@ -383,12 +390,12 @@ export function completeProgress(world: World, eid: Entity): void {
  * ```typescript
  * import { isProgressComplete } from 'blecsd';
  *
- * if (isProgressComplete(progressBar)) {
+ * if (isProgressComplete(world, progressBar)) {
  *   console.log('Done!');
  * }
  * ```
  */
-export function isProgressComplete(eid: Entity): boolean {
+export function isProgressComplete(_world: World, eid: Entity): boolean {
 	const max = progressBarStore.max[eid] as number;
 	const value = progressBarStore.value[eid] as number;
 	return value >= max;
@@ -397,6 +404,7 @@ export function isProgressComplete(eid: Entity): boolean {
 /**
  * Sets the progress bar display configuration.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @param options - Display options
  *
@@ -404,14 +412,18 @@ export function isProgressComplete(eid: Entity): boolean {
  * ```typescript
  * import { setProgressBarDisplay } from 'blecsd';
  *
- * setProgressBarDisplay(progressBar, {
+ * setProgressBarDisplay(world, progressBar, {
  *   fillChar: '=',
  *   emptyChar: '-',
  *   fillFg: 0x00ff00ff,
  * });
  * ```
  */
-export function setProgressBarDisplay(eid: Entity, options: ProgressBarDisplayOptions): void {
+export function setProgressBarDisplay(
+	_world: World,
+	eid: Entity,
+	options: ProgressBarDisplayOptions,
+): void {
 	const existing = displayStore.get(eid);
 	const orientation = progressBarStore.orientation[eid] as ProgressOrientation;
 
@@ -433,10 +445,11 @@ export function setProgressBarDisplay(eid: Entity, options: ProgressBarDisplayOp
 /**
  * Gets the progress bar display configuration.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @returns Display configuration
  */
-export function getProgressBarDisplay(eid: Entity): ProgressBarDisplay {
+export function getProgressBarDisplay(_world: World, eid: Entity): ProgressBarDisplay {
 	const display = displayStore.get(eid);
 	if (display) {
 		return display;
@@ -462,36 +475,40 @@ export function getProgressBarDisplay(eid: Entity): ProgressBarDisplay {
 /**
  * Clears the progress bar display configuration.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  */
-export function clearProgressBarDisplay(eid: Entity): void {
+export function clearProgressBarDisplay(_world: World, eid: Entity): void {
 	displayStore.delete(eid);
 }
 
 /**
  * Gets the fill character for the current progress value.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @returns Fill character
  */
-export function getProgressFillChar(eid: Entity): string {
-	return getProgressBarDisplay(eid).fillChar;
+export function getProgressFillChar(world: World, eid: Entity): string {
+	return getProgressBarDisplay(world, eid).fillChar;
 }
 
 /**
  * Gets the empty character for the remaining progress.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @returns Empty character
  */
-export function getProgressEmptyChar(eid: Entity): string {
-	return getProgressBarDisplay(eid).emptyChar;
+export function getProgressEmptyChar(world: World, eid: Entity): string {
+	return getProgressBarDisplay(world, eid).emptyChar;
 }
 
 /**
  * Renders the progress bar as a string.
  * Useful for custom rendering.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @param width - Width in characters
  * @returns Rendered progress bar string
@@ -500,13 +517,13 @@ export function getProgressEmptyChar(eid: Entity): string {
  * ```typescript
  * import { renderProgressString } from 'blecsd';
  *
- * const bar = renderProgressString(progressBar, 20);
+ * const bar = renderProgressString(world, progressBar, 20);
  * // Returns something like "████████████░░░░░░░░"
  * ```
  */
-export function renderProgressString(eid: Entity, width: number): string {
-	const percentage = getProgressPercentage(eid) / 100;
-	const display = getProgressBarDisplay(eid);
+export function renderProgressString(world: World, eid: Entity, width: number): string {
+	const percentage = getProgressPercentage(world, eid) / 100;
+	const display = getProgressBarDisplay(world, eid);
 
 	const filledWidth = Math.round(width * percentage);
 	const emptyWidth = width - filledWidth;
@@ -517,6 +534,7 @@ export function renderProgressString(eid: Entity, width: number): string {
 /**
  * Registers a callback for progress completion.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @param callback - Function to call when complete
  * @returns Unsubscribe function
@@ -525,12 +543,16 @@ export function renderProgressString(eid: Entity, width: number): string {
  * ```typescript
  * import { onProgressComplete } from 'blecsd';
  *
- * const unsubscribe = onProgressComplete(progressBar, () => {
+ * const unsubscribe = onProgressComplete(world, progressBar, () => {
  *   console.log('Progress complete!');
  * });
  * ```
  */
-export function onProgressComplete(eid: Entity, callback: ProgressCompleteCallback): () => void {
+export function onProgressComplete(
+	_world: World,
+	eid: Entity,
+	callback: ProgressCompleteCallback,
+): () => void {
 	const callbacks = completeCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	completeCallbacks.set(eid, callbacks);
@@ -549,11 +571,16 @@ export function onProgressComplete(eid: Entity, callback: ProgressCompleteCallba
 /**
  * Registers a callback for progress changes.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @param callback - Function to call on change
  * @returns Unsubscribe function
  */
-export function onProgressChange(eid: Entity, callback: ProgressChangeCallback): () => void {
+export function onProgressChange(
+	_world: World,
+	eid: Entity,
+	callback: ProgressChangeCallback,
+): () => void {
 	const callbacks = changeCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	changeCallbacks.set(eid, callbacks);
@@ -572,9 +599,10 @@ export function onProgressChange(eid: Entity, callback: ProgressChangeCallback):
 /**
  * Emits the progress complete event.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  */
-function emitProgressComplete(eid: Entity): void {
+function emitProgressComplete(_world: World, eid: Entity): void {
 	const callbacks = completeCallbacks.get(eid);
 	if (callbacks) {
 		for (const callback of callbacks) {
@@ -586,11 +614,12 @@ function emitProgressComplete(eid: Entity): void {
 /**
  * Emits the progress change event.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  * @param value - New value
  * @param percentage - New percentage
  */
-function emitProgressChange(eid: Entity, value: number, percentage: number): void {
+function emitProgressChange(_world: World, eid: Entity, value: number, percentage: number): void {
 	const callbacks = changeCallbacks.get(eid);
 	if (callbacks) {
 		for (const callback of callbacks) {
@@ -602,9 +631,10 @@ function emitProgressChange(eid: Entity, value: number, percentage: number): voi
 /**
  * Clears all callbacks for a progress bar.
  *
+ * @param world - The ECS world
  * @param eid - Progress bar entity ID
  */
-export function clearProgressBarCallbacks(eid: Entity): void {
+export function clearProgressBarCallbacks(_world: World, eid: Entity): void {
 	completeCallbacks.delete(eid);
 	changeCallbacks.delete(eid);
 }
