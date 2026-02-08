@@ -3,6 +3,7 @@
  * @module components/content
  */
 
+import { z } from 'zod';
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { stripAnsi } from '../utils/textWrap';
@@ -83,6 +84,7 @@ function hashString(str: string): number {
  * - `align`: Horizontal text alignment
  * - `valign`: Vertical text alignment
  * - `parseTags`: Whether to parse markup tags (0=no, 1=yes)
+ * - `tabSize`: Tab character width in spaces (default: 8)
  *
  * @example
  * ```typescript
@@ -108,7 +110,15 @@ export const Content = {
 	valign: new Uint8Array(DEFAULT_CAPACITY),
 	/** Parse markup tags (0=no, 1=yes) */
 	parseTags: new Uint8Array(DEFAULT_CAPACITY),
+	/** Tab character width in spaces (default: 8) */
+	tabSize: new Uint8Array(DEFAULT_CAPACITY),
 };
+
+/**
+ * Zod schema for tab size validation.
+ * Tab size must be a positive integer between 1 and 16.
+ */
+export const TabSizeSchema = z.number().int().min(1).max(16);
 
 /**
  * Content configuration options.
@@ -122,6 +132,8 @@ export interface ContentOptions {
 	valign?: TextVAlign;
 	/** Whether to parse markup tags */
 	parseTags?: boolean;
+	/** Tab character width in spaces (1-16, default: 8) */
+	tabSize?: number;
 }
 
 /**
@@ -135,7 +147,13 @@ export interface ContentData {
 	readonly align: TextAlign;
 	readonly valign: TextVAlign;
 	readonly parseTags: boolean;
+	readonly tabSize: number;
 }
+
+/**
+ * Default tab size (standard terminal tab width)
+ */
+export const DEFAULT_TAB_SIZE = 8;
 
 /**
  * Initializes a Content component with default values.
@@ -148,6 +166,7 @@ function initContent(eid: Entity): void {
 	Content.align[eid] = TextAlign.Left;
 	Content.valign[eid] = TextVAlign.Top;
 	Content.parseTags[eid] = 0;
+	Content.tabSize[eid] = DEFAULT_TAB_SIZE;
 }
 
 /**
@@ -169,6 +188,10 @@ function applyContentOptions(eid: Entity, options: ContentOptions): void {
 	if (options.align !== undefined) Content.align[eid] = options.align;
 	if (options.valign !== undefined) Content.valign[eid] = options.valign;
 	if (options.parseTags !== undefined) Content.parseTags[eid] = options.parseTags ? 1 : 0;
+	if (options.tabSize !== undefined) {
+		const validatedTabSize = TabSizeSchema.parse(options.tabSize);
+		Content.tabSize[eid] = validatedTabSize;
+	}
 }
 
 /**
@@ -274,6 +297,7 @@ export function getContentData(world: World, eid: Entity): ContentData | undefin
 		align: Content.align[eid] as TextAlign,
 		valign: Content.valign[eid] as TextVAlign,
 		parseTags: Content.parseTags[eid] === 1,
+		tabSize: Content.tabSize[eid] as number,
 	};
 }
 
@@ -500,6 +524,53 @@ export function isParsingTags(world: World, eid: Entity): boolean {
 		return false;
 	}
 	return Content.parseTags[eid] === 1;
+}
+
+/**
+ * Sets the tab character width for an entity.
+ * Tab size must be between 1 and 16.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @param tabSize - Tab character width in spaces (1-16)
+ * @returns The entity ID for chaining
+ *
+ * @example
+ * ```typescript
+ * import { setTabSize } from 'blecsd';
+ *
+ * // Set tab width to 4 spaces
+ * setTabSize(world, entity, 4);
+ * ```
+ */
+export function setTabSize(world: World, eid: Entity, tabSize: number): Entity {
+	ensureContent(world, eid);
+	const validatedTabSize = TabSizeSchema.parse(tabSize);
+	Content.tabSize[eid] = validatedTabSize;
+	return eid;
+}
+
+/**
+ * Gets the tab character width for an entity.
+ * Returns the default tab size (8) if no Content component.
+ *
+ * @param world - The ECS world
+ * @param eid - The entity ID
+ * @returns Tab character width in spaces
+ *
+ * @example
+ * ```typescript
+ * import { getTabSize } from 'blecsd';
+ *
+ * const tabSize = getTabSize(world, entity);
+ * console.log(`Tab width: ${tabSize} spaces`);
+ * ```
+ */
+export function getTabSize(world: World, eid: Entity): number {
+	if (!hasComponent(world, eid, Content)) {
+		return DEFAULT_TAB_SIZE;
+	}
+	return Content.tabSize[eid] as number;
 }
 
 /**
