@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
+import { TEXT_HELLO, TEXT_HELLO_WORLD, TEXT_TEST } from '../testing/fixtures';
 import {
 	appendContent,
 	Content,
@@ -33,7 +34,7 @@ describe('Content component', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			setContent(world, entity, 'Hello');
+			setContent(world, entity, TEXT_HELLO);
 
 			expect(hasContent(world, entity)).toBe(true);
 		});
@@ -42,16 +43,16 @@ describe('Content component', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			setContent(world, entity, 'Hello, World!');
+			setContent(world, entity, TEXT_HELLO_WORLD);
 
-			expect(getContent(world, entity)).toBe('Hello, World!');
+			expect(getContent(world, entity)).toBe(TEXT_HELLO_WORLD);
 		});
 
 		it('sets content length', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			setContent(world, entity, 'Hello');
+			setContent(world, entity, TEXT_HELLO);
 
 			expect(Content.length[entity]).toBe(5);
 		});
@@ -60,7 +61,7 @@ describe('Content component', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			setContent(world, entity, 'Hello');
+			setContent(world, entity, TEXT_HELLO);
 
 			expect(Content.hash[entity]).toBeGreaterThan(0);
 		});
@@ -69,7 +70,7 @@ describe('Content component', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			setContent(world, entity, 'Hello');
+			setContent(world, entity, TEXT_HELLO);
 			const hash1 = Content.hash[entity];
 
 			setContent(world, entity, 'World');
@@ -82,7 +83,7 @@ describe('Content component', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			setContent(world, entity, 'Test', {
+			setContent(world, entity, TEXT_TEST, {
 				wrap: true,
 				align: TextAlign.Center,
 				valign: TextVAlign.Middle,
@@ -154,7 +155,7 @@ describe('Content component', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			setContent(world, entity, 'Test', {
+			setContent(world, entity, TEXT_TEST, {
 				wrap: true,
 				align: TextAlign.Right,
 				valign: TextVAlign.Bottom,
@@ -179,10 +180,10 @@ describe('Content component', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			setContent(world, entity, 'Hello');
+			setContent(world, entity, TEXT_HELLO);
 			appendContent(world, entity, ', World!');
 
-			expect(getContent(world, entity)).toBe('Hello, World!');
+			expect(getContent(world, entity)).toBe(TEXT_HELLO_WORLD);
 		});
 
 		it('creates content if none exists', () => {
@@ -198,7 +199,7 @@ describe('Content component', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			setContent(world, entity, 'Hello');
+			setContent(world, entity, TEXT_HELLO);
 			const hash1 = Content.hash[entity];
 
 			appendContent(world, entity, '!');
@@ -299,7 +300,7 @@ describe('Content component', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			setContent(world, entity, 'Hello');
+			setContent(world, entity, TEXT_HELLO);
 
 			expect(getContentLength(world, entity)).toBe(5);
 		});
