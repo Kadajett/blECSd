@@ -8,6 +8,7 @@
  * @module input/viMode
  */
 
+import { z } from 'zod';
 import type { KeyEvent } from '../terminal/keyParser';
 
 // =============================================================================
@@ -50,6 +51,28 @@ export interface ViModeConfig {
 	/** Number of visible lines for H/M/L calculations */
 	readonly viewportHeight: number;
 }
+
+/**
+ * Zod schema for ViModeConfig validation.
+ *
+ * @example
+ * ```typescript
+ * import { ViModeConfigSchema } from 'blecsd';
+ *
+ * const config = ViModeConfigSchema.parse({
+ *   enabled: true,
+ *   scrollStep: 3,
+ *   horizontalStep: 5,
+ *   viewportHeight: 40,
+ * });
+ * ```
+ */
+export const ViModeConfigSchema = z.object({
+	enabled: z.boolean(),
+	scrollStep: z.number().int().positive(),
+	horizontalStep: z.number().int().positive(),
+	viewportHeight: z.number().int().positive(),
+});
 
 /**
  * Vi mode internal state.

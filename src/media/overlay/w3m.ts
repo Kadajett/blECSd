@@ -101,6 +101,36 @@ export interface W3MDrawConfig {
 }
 
 /**
+ * Zod schema for W3MDrawConfig validation.
+ *
+ * @example
+ * ```typescript
+ * import { W3MDrawConfigSchema } from 'blecsd';
+ *
+ * const config = W3MDrawConfigSchema.parse({
+ *   id: 1,
+ *   x: 100,
+ *   y: 50,
+ *   width: 200,
+ *   height: 150,
+ *   filePath: '/path/to/image.png',
+ * });
+ * ```
+ */
+export const W3MDrawConfigSchema = z.object({
+	id: z.number().int().nonnegative(),
+	x: z.number().int().nonnegative(),
+	y: z.number().int().nonnegative(),
+	width: z.number().int().positive(),
+	height: z.number().int().positive(),
+	srcX: z.number().int().nonnegative().optional(),
+	srcY: z.number().int().nonnegative().optional(),
+	srcWidth: z.number().int().positive().optional(),
+	srcHeight: z.number().int().positive().optional(),
+	filePath: z.string().min(1),
+});
+
+/**
  * Configuration for a w3m clear command.
  */
 export interface W3MClearConfig {
@@ -113,6 +143,28 @@ export interface W3MClearConfig {
 	/** Height in pixels */
 	readonly height: number;
 }
+
+/**
+ * Zod schema for W3MClearConfig validation.
+ *
+ * @example
+ * ```typescript
+ * import { W3MClearConfigSchema } from 'blecsd';
+ *
+ * const config = W3MClearConfigSchema.parse({
+ *   x: 100,
+ *   y: 50,
+ *   width: 200,
+ *   height: 150,
+ * });
+ * ```
+ */
+export const W3MClearConfigSchema = z.object({
+	x: z.number().int().nonnegative(),
+	y: z.number().int().nonnegative(),
+	width: z.number().int().positive(),
+	height: z.number().int().positive(),
+});
 
 /**
  * Result of an image size query.
@@ -219,32 +271,6 @@ export const W3M_SEARCH_PATHS: readonly string[] = [
  * Zod schema for CellPixelSize.
  */
 export const CellPixelSizeSchema = z.object({
-	width: z.number().int().positive(),
-	height: z.number().int().positive(),
-});
-
-/**
- * Zod schema for W3MDrawConfig.
- */
-export const W3MDrawConfigSchema = z.object({
-	id: z.number().int().nonnegative(),
-	x: z.number().int().nonnegative(),
-	y: z.number().int().nonnegative(),
-	width: z.number().int().positive(),
-	height: z.number().int().positive(),
-	srcX: z.number().int().nonnegative().optional(),
-	srcY: z.number().int().nonnegative().optional(),
-	srcWidth: z.number().int().positive().optional(),
-	srcHeight: z.number().int().positive().optional(),
-	filePath: z.string().min(1),
-});
-
-/**
- * Zod schema for W3MClearConfig.
- */
-export const W3MClearConfigSchema = z.object({
-	x: z.number().int().nonnegative(),
-	y: z.number().int().nonnegative(),
 	width: z.number().int().positive(),
 	height: z.number().int().positive(),
 });

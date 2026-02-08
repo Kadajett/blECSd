@@ -3,6 +3,7 @@
  * @module core/scheduler
  */
 
+import { z } from 'zod';
 import type { System, World } from './types';
 import { LoopPhase } from './types';
 
@@ -49,6 +50,24 @@ export interface TelemetryConfig {
 }
 
 /**
+ * Zod schema for TelemetryConfig validation.
+ *
+ * @example
+ * ```typescript
+ * import { TelemetryConfigSchema } from 'blecsd';
+ *
+ * const config = TelemetryConfigSchema.parse({
+ *   enabled: true,
+ *   historySize: 60,
+ * });
+ * ```
+ */
+export const TelemetryConfigSchema = z.object({
+	enabled: z.boolean(),
+	historySize: z.number().int().nonnegative().optional(),
+});
+
+/**
  * Frame budget configuration for adaptive performance.
  */
 export interface AdaptiveFrameBudgetConfig {
@@ -59,6 +78,26 @@ export interface AdaptiveFrameBudgetConfig {
 	/** Phases that can be skipped when over budget (default: [ANIMATION]) */
 	skippablePhases?: ReadonlyArray<LoopPhase>;
 }
+
+/**
+ * Zod schema for AdaptiveFrameBudgetConfig validation.
+ *
+ * @example
+ * ```typescript
+ * import { AdaptiveFrameBudgetConfigSchema, LoopPhase } from 'blecsd';
+ *
+ * const config = AdaptiveFrameBudgetConfigSchema.parse({
+ *   enabled: true,
+ *   budgetMs: 16.67,
+ *   skippablePhases: [LoopPhase.ANIMATION],
+ * });
+ * ```
+ */
+export const AdaptiveFrameBudgetConfigSchema = z.object({
+	enabled: z.boolean(),
+	budgetMs: z.number().positive().optional(),
+	skippablePhases: z.array(z.nativeEnum(LoopPhase)).readonly().optional(),
+});
 
 /**
  * Frame budget status for the current frame.
