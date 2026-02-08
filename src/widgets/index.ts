@@ -542,6 +542,17 @@ export {
 	stripAnsiSequences,
 	wrapLine,
 } from './streamingText';
+// Switch widget
+export type { SwitchConfig, SwitchWidget } from './switch';
+export {
+	createSwitch,
+	handleSwitchClick,
+	handleSwitchKey,
+	isSwitch,
+	resetSwitchStore,
+	Switch,
+	SwitchConfigSchema,
+} from './switch';
 // Table widget
 export type { TableStyleConfig, TableWidget, TableWidgetConfig } from './table';
 export { createTable, isTableWidget, TableWidgetConfigSchema } from './table';
@@ -601,6 +612,30 @@ export {
 	Text,
 	TextConfigSchema,
 } from './text';
+// Toast widget
+export type {
+	ToastBorderConfig,
+	ToastConfig,
+	ToastPosition,
+	ToastStyleConfig,
+	ToastType,
+	ToastWidget,
+} from './toast';
+export {
+	createToast,
+	DEFAULT_TOAST_PADDING,
+	DEFAULT_TOAST_STYLES,
+	DEFAULT_TOAST_TIMEOUT,
+	isToast,
+	resetToastStore,
+	showErrorToast,
+	showInfoToast,
+	showSuccessToast,
+	showWarningToast,
+	TOAST_STACK_SPACING,
+	Toast,
+	ToastConfigSchema,
+} from './toast';
 // Tree widget
 export type {
 	FlattenedNode,
