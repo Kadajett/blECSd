@@ -74,29 +74,21 @@ export type {
 } from './terminal';
 export * from './terminal';
 export {
-	beginFrame,
 	clearBuffer,
-	clearOutputBuffer,
 	disableInput,
 	disableKeys,
 	disableMouse,
 	enableInput,
 	enableKeys,
 	enableMouse,
-	endFrame,
 	fillRect,
 	getCell,
-	hideCursor,
 	isCursorVisible,
 	isScreen,
-	moveCursor,
 	resetCursorBlink,
 	setCell,
 	setCursorVisible,
-	showCursor,
 	stripAnsi,
-	writeChar,
-	writeRaw,
 } from './terminal';
 export * from './text';
 export * from './types';
