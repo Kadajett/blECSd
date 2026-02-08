@@ -683,55 +683,641 @@ describe('image loading', () => {
 });
 ```
 
-## Testing with Fixtures
+## Test Utilities
 
-Create reusable test fixtures:
+blECSd provides a comprehensive set of test utilities in `src/testing/` to reduce boilerplate and make tests more readable.
+
+### Test Helper Functions
+
+Import from `'blecsd/testing'`:
 
 ```typescript
-import { createWorld, addEntity, World, Entity } from 'blecsd';
-import { setPosition, setDimensions, setContent } from 'blecsd';
+import {
+  createTestWorld,
+  createTestEntity,
+  createRenderableEntity,
+  createClickableEntity,
+  createHoverableEntity,
+  createTestScreen,
+} from 'blecsd/testing';
+```
 
-// Fixtures
-function createTestWorld(): World {
-  return createWorld();
-}
+#### `createTestWorld()`
 
-function createTestBox(world: World, x = 0, y = 0): Entity {
-  const eid = addEntity(world);
-  setPosition(world, eid, x, y);
-  setDimensions(world, eid, 10, 5);
-  setContent(world, eid, 'Test');
-  return eid;
-}
+Creates a pre-configured ECS world for testing:
 
-function createTestScene(world: World): {
-  player: Entity;
-  enemy: Entity;
-  wall: Entity;
-} {
-  const player = addEntity(world);
-  setPosition(world, player, 5, 5);
+```typescript
+import { createTestWorld } from 'blecsd/testing';
 
-  const enemy = addEntity(world);
-  setPosition(world, enemy, 20, 10);
+const world = createTestWorld();
+// Use world in tests...
+```
 
-  const wall = addEntity(world);
-  setPosition(world, wall, 10, 8);
+#### `createTestEntity(world, config)`
 
-  return { player, enemy, wall };
-}
+Creates an entity with common components based on configuration. This eliminates boilerplate for setting up test entities:
 
-// Usage
-describe('collision system', () => {
-  it('detects collision between entities', () => {
+```typescript
+import { createTestWorld, createTestEntity } from 'blecsd/testing';
+
+const world = createTestWorld();
+
+// Simple positioned entity
+const box = createTestEntity(world, {
+  x: 10,
+  y: 5,
+  width: 20,
+  height: 10,
+});
+
+// Clickable button with content
+const button = createTestEntity(world, {
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 3,
+  content: 'Click me',
+  clickable: true,
+  style: { fg: 0xffffff, bg: 0x0000ff },
+});
+
+// Entity with z-index for layering
+const overlay = createTestEntity(world, {
+  x: 0,
+  y: 0,
+  width: 80,
+  height: 24,
+  z: 100, // High z-index renders on top
+  style: { bg: 0x000000 },
+});
+```
+
+**Configuration options:**
+- `x`, `y`: Position coordinates
+- `z`: Z-index for layering (sets ZOrder.zIndex)
+- `width`, `height`: Dimensions
+- `style`: Colors and text attributes
+- `visible`, `dirty`: Renderable flags
+- `content`: Text content
+- `clickable`, `hoverable`: Interactive flags
+- `focusable`: Focus capability
+- `scrollable`: Scroll capability
+- `border`, `padding`, `hierarchy`: Add component flags
+
+#### Specialized Entity Creators
+
+```typescript
+// Renderable entity (Position + Dimensions + Renderable)
+const renderable = createRenderableEntity(world, 10, 20, 30, 15);
+
+// Clickable entity (adds Interactive component)
+const clickable = createClickableEntity(world, 5, 5, 20, 10);
+
+// Hoverable entity (adds Interactive component with hover)
+const hoverable = createHoverableEntity(world, 0, 0, 15, 8);
+```
+
+#### `createTestScreen(world, config)`
+
+Creates a screen entity with standard terminal configuration:
+
+```typescript
+import { createTestWorld, createTestScreen } from 'blecsd/testing';
+
+const world = createTestWorld();
+const screen = createTestScreen(world, {
+  width: 80,
+  height: 24,
+  title: 'Test App',
+});
+```
+
+### Test Fixtures
+
+blECSd provides shared test fixtures to reduce duplication and improve consistency. Import from `'blecsd/testing'`:
+
+#### Screen Dimensions
+
+```typescript
+import { SCREEN_80X24, SCREEN_40X12, SCREEN_120X40, SCREEN_10X5 } from 'blecsd/testing';
+
+// Use in tests
+const screen = createTestScreen(world, SCREEN_80X24);
+```
+
+**Available fixtures:**
+- `SCREEN_80X24`: Standard terminal (80x24)
+- `SCREEN_40X12`: Small screen for compact tests
+- `SCREEN_120X40`: Large screen for extended layouts
+- `SCREEN_10X5`: Minimal screen for edge cases
+
+#### Position and Size Presets
+
+```typescript
+import {
+  POSITION_ORIGIN,
+  POSITION_CENTER,
+  SIZE_SMALL_BOX,
+  SIZE_MEDIUM_BOX,
+  SIZE_LARGE_BOX,
+  SIZE_BUTTON,
+} from 'blecsd/testing';
+
+// Use in entity creation
+const box = createTestEntity(world, {
+  ...POSITION_CENTER,
+  ...SIZE_MEDIUM_BOX,
+});
+```
+
+**Available fixtures:**
+- `POSITION_ORIGIN`: `{ x: 0, y: 0 }`
+- `POSITION_CENTER`: `{ x: 40, y: 12 }` (center of 80x24)
+- `SIZE_SMALL_BOX`: `{ width: 10, height: 5 }`
+- `SIZE_MEDIUM_BOX`: `{ width: 20, height: 10 }`
+- `SIZE_LARGE_BOX`: `{ width: 40, height: 20 }`
+- `SIZE_BUTTON`: `{ width: 10, height: 3 }`
+
+#### Text Content
+
+```typescript
+import {
+  TEXT_HELLO,
+  TEXT_HELLO_WORLD,
+  TEXT_TEST,
+  TEXT_MULTILINE,
+  TEXT_LOREM_IPSUM,
+  TEXT_UNICODE_EMOJI,
+} from 'blecsd/testing';
+
+// Use in content tests
+const entity = createTestEntity(world, {
+  x: 0,
+  y: 0,
+  content: TEXT_HELLO_WORLD,
+});
+```
+
+**Available fixtures:**
+- `TEXT_HELLO`: `'Hello'`
+- `TEXT_HELLO_WORLD`: `'Hello, World!'`
+- `TEXT_TEST`: `'Test'`
+- `TEXT_SINGLE_LINE`: Single line text
+- `TEXT_MULTILINE`: `'Line 1\nLine 2\nLine 3'`
+- `TEXT_LOREM_IPSUM`: Lorem ipsum sample
+- `TEXT_UNICODE_EMOJI`: `'Hello 👋 World 🌍'`
+- `TEXT_UNICODE_CJK`: `'你好世界'`
+- `TEXT_EMPTY`: `''`
+
+#### Colors
+
+```typescript
+import { COLORS, COLOR_PAIRS } from 'blecsd/testing';
+
+// Use in style tests
+const button = createTestEntity(world, {
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 3,
+  style: {
+    fg: COLORS.WHITE,
+    bg: COLORS.BLUE,
+  },
+});
+
+// Or use color pairs
+const text = createTestEntity(world, {
+  x: 0,
+  y: 0,
+  style: COLOR_PAIRS.WHITE_ON_BLACK,
+});
+```
+
+**Available color fixtures:**
+- `COLORS.WHITE`, `COLORS.BLACK`, `COLORS.RED`, `COLORS.GREEN`, `COLORS.BLUE`
+- `COLORS.YELLOW`, `COLORS.CYAN`, `COLORS.MAGENTA`
+- `COLORS.LIGHT_GRAY`, `COLORS.DARK_GRAY`, `COLORS.MEDIUM_GRAY`
+
+**Available color pairs:**
+- `COLOR_PAIRS.WHITE_ON_BLACK`: Default terminal colors
+- `COLOR_PAIRS.BLACK_ON_WHITE`: Inverted
+- `COLOR_PAIRS.GREEN_ON_BLACK`: Matrix style
+- `COLOR_PAIRS.BLUE_ON_WHITE`: Hyperlink style
+- `COLOR_PAIRS.WHITE_ON_BLUE`: Button style
+- `COLOR_PAIRS.YELLOW_ON_BLACK`: Warning style
+- `COLOR_PAIRS.RED_ON_BLACK`: Error style
+
+#### Keyboard Input
+
+```typescript
+import { KEYS } from 'blecsd/testing';
+
+// Use in input tests
+queueKeyEvent({ sequence: KEYS.ENTER, name: 'return' });
+queueKeyEvent({ sequence: KEYS.ARROW_UP, name: 'up' });
+```
+
+**Available key fixtures:**
+- `KEYS.ENTER`, `KEYS.ESC`, `KEYS.TAB`, `KEYS.BACKSPACE`, `KEYS.SPACE`
+- `KEYS.ARROW_UP`, `KEYS.ARROW_DOWN`, `KEYS.ARROW_LEFT`, `KEYS.ARROW_RIGHT`
+
+#### Mouse Positions
+
+```typescript
+import { MOUSE_POSITIONS } from 'blecsd/testing';
+
+// Use in mouse event tests
+queueMouseEvent({
+  ...MOUSE_POSITIONS.CENTER,
+  button: 'left',
+  action: 'press',
+});
+```
+
+**Available mouse position fixtures:**
+- `MOUSE_POSITIONS.TOP_LEFT`: `{ x: 0, y: 0 }`
+- `MOUSE_POSITIONS.CENTER`: `{ x: 40, y: 12 }`
+- `MOUSE_POSITIONS.BOTTOM_RIGHT`: `{ x: 79, y: 23 }`
+
+#### ANSI Codes
+
+```typescript
+import { ANSI, ANSI_TEXT } from 'blecsd/testing';
+
+// Use in ANSI parsing tests
+const stripped = stripAnsi(ANSI_TEXT.RED_TEXT);
+expect(stripped).toBe('Red Text');
+```
+
+**Available ANSI fixtures:**
+- `ANSI.RESET`, `ANSI.BOLD`, `ANSI.DIM`, `ANSI.ITALIC`, `ANSI.UNDERLINE`
+- `ANSI.BLINK`, `ANSI.INVERSE`, `ANSI.CLEAR_SCREEN`, `ANSI.CURSOR_HOME`
+
+#### Timeouts
+
+```typescript
+import { TIMEOUTS } from 'blecsd/testing';
+
+// Use in async tests
+await new Promise(resolve => setTimeout(resolve, TIMEOUTS.SHORT));
+```
+
+**Available timeout fixtures:**
+- `TIMEOUTS.VERY_SHORT`: 10ms
+- `TIMEOUTS.SHORT`: 50ms
+- `TIMEOUTS.MEDIUM`: 100ms
+- `TIMEOUTS.LONG`: 500ms
+- `TIMEOUTS.VERY_LONG`: 1000ms
+
+### Complete Example with Utilities and Fixtures
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { createTestWorld, createTestEntity } from 'blecsd/testing';
+import {
+  SCREEN_80X24,
+  POSITION_CENTER,
+  SIZE_BUTTON,
+  TEXT_HELLO_WORLD,
+  COLORS,
+  COLOR_PAIRS,
+} from 'blecsd/testing';
+
+describe('Button widget', () => {
+  it('creates a styled button at center', () => {
     const world = createTestWorld();
-    const { player, enemy } = createTestScene(world);
 
-    // Move player to enemy position
-    setPosition(world, player, 20, 10);
+    const button = createTestEntity(world, {
+      ...POSITION_CENTER,
+      ...SIZE_BUTTON,
+      content: TEXT_HELLO_WORLD,
+      style: COLOR_PAIRS.WHITE_ON_BLUE,
+      clickable: true,
+      focusable: true,
+    });
 
-    const collision = checkCollision(world, player, enemy);
-    expect(collision).toBe(true);
+    expect(Position.x[button]).toBe(40);
+    expect(Position.y[button]).toBe(12);
+    expect(Dimensions.width[button]).toBe(10);
+    expect(Dimensions.height[button]).toBe(3);
+    expect(getContent(world, button)).toBe('Hello, World!');
+  });
+});
+```
+
+## Snapshot Testing for ANSI Output
+
+Snapshot tests capture exact rendered terminal output to detect visual regressions. When widget rendering changes, snapshots will fail, alerting you to verify the change is intentional.
+
+### Setup
+
+Import snapshot testing utilities from `'blecsd/testing'`:
+
+```typescript
+import {
+  createTestBuffer,
+  renderToString,
+  cleanupTestBuffer,
+} from 'blecsd/testing';
+import { layoutSystem, renderSystem } from 'blecsd';
+```
+
+### Basic Snapshot Test Pattern
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { addEntity } from 'blecsd';
+import { layoutSystem, renderSystem } from 'blecsd';
+import { createTestBuffer, renderToString, cleanupTestBuffer } from 'blecsd/testing';
+import { createBox } from 'blecsd';
+
+describe('Box widget snapshots', () => {
+  it('renders box with border', () => {
+    // Create test buffer with specific dimensions
+    const { world, db } = createTestBuffer(20, 10);
+    const entity = addEntity(world);
+
+    // Configure widget
+    createBox(world, entity, {
+      top: 1,
+      left: 1,
+      width: 10,
+      height: 5,
+      border: { type: 'line' },
+      content: 'Hello',
+    });
+
+    // Run layout and render systems
+    layoutSystem(world);
+    renderSystem(world);
+
+    // Capture ANSI output and compare to snapshot
+    const output = renderToString(db);
+    expect(output).toMatchSnapshot();
+
+    // Clean up
+    cleanupTestBuffer();
+  });
+});
+```
+
+### Snapshot Testing Workflow
+
+1. **Create test buffer**: `createTestBuffer(width, height)` creates a world and double buffer
+2. **Set up widgets**: Create and configure widgets as normal
+3. **Run systems**: Execute `layoutSystem(world)` and `renderSystem(world)`
+4. **Capture output**: `renderToString(db)` converts buffer to ANSI string
+5. **Compare snapshot**: `expect(output).toMatchSnapshot()` compares to saved snapshot
+6. **Clean up**: `cleanupTestBuffer()` releases resources
+
+### Testing Different Widget States
+
+```typescript
+describe('Button snapshots', () => {
+  it('renders normal state', () => {
+    const { world, db } = createTestBuffer(30, 10);
+    const entity = addEntity(world);
+
+    createButton(world, entity, {
+      x: 5,
+      y: 2,
+      width: 15,
+      height: 3,
+      content: 'Click Me',
+      style: { fg: 0xffffff, bg: 0x0000ff },
+    });
+
+    layoutSystem(world);
+    renderSystem(world);
+
+    expect(renderToString(db)).toMatchSnapshot();
+    cleanupTestBuffer();
+  });
+
+  it('renders hover state', () => {
+    const { world, db } = createTestBuffer(30, 10);
+    const entity = addEntity(world);
+
+    createButton(world, entity, {
+      x: 5,
+      y: 2,
+      width: 15,
+      height: 3,
+      content: 'Click Me',
+      style: { fg: 0xffffff, bg: 0x3366ff }, // Lighter blue for hover
+    });
+
+    layoutSystem(world);
+    renderSystem(world);
+
+    expect(renderToString(db)).toMatchSnapshot();
+    cleanupTestBuffer();
+  });
+
+  it('renders disabled state', () => {
+    const { world, db } = createTestBuffer(30, 10);
+    const entity = addEntity(world);
+
+    createButton(world, entity, {
+      x: 5,
+      y: 2,
+      width: 15,
+      height: 3,
+      content: 'Click Me',
+      style: { fg: 0x888888, bg: 0x444444 }, // Gray for disabled
+    });
+
+    layoutSystem(world);
+    renderSystem(world);
+
+    expect(renderToString(db)).toMatchSnapshot();
+    cleanupTestBuffer();
+  });
+});
+```
+
+### Testing Edge Cases
+
+```typescript
+describe('Text widget edge cases', () => {
+  it('renders at screen origin', () => {
+    const { world, db } = createTestBuffer(25, 8);
+    const entity = addEntity(world);
+
+    createText(world, entity, {
+      top: 0,
+      left: 0,
+      content: 'Origin',
+    });
+
+    layoutSystem(world);
+    renderSystem(world);
+
+    expect(renderToString(db)).toMatchSnapshot();
+    cleanupTestBuffer();
+  });
+
+  it('renders single character', () => {
+    const { world, db } = createTestBuffer(10, 10);
+    const entity = addEntity(world);
+
+    createText(world, entity, {
+      top: 2,
+      left: 2,
+      content: 'X',
+    });
+
+    layoutSystem(world);
+    renderSystem(world);
+
+    expect(renderToString(db)).toMatchSnapshot();
+    cleanupTestBuffer();
+  });
+
+  it('renders very long text with wrapping', () => {
+    const { world, db } = createTestBuffer(50, 10);
+    const entity = addEntity(world);
+
+    createText(world, entity, {
+      top: 1,
+      left: 1,
+      width: 40,
+      content: 'This is a very long text string that will wrap',
+    });
+
+    layoutSystem(world);
+    renderSystem(world);
+
+    expect(renderToString(db)).toMatchSnapshot();
+    cleanupTestBuffer();
+  });
+});
+```
+
+### Updating Snapshots
+
+When you intentionally change rendering, update snapshots:
+
+```bash
+# Update all snapshots
+pnpm test -- -u
+
+# Update snapshots for specific file
+pnpm test src/widgets/box.snapshot.test.ts -- -u
+
+# Update specific test
+pnpm test -- -u -t "renders box with border"
+```
+
+### Snapshot Best Practices
+
+1. **Test visual variations**: Capture different border styles, colors, alignments
+2. **Test edge cases**: Empty content, single characters, screen boundaries
+3. **Test size variations**: Small, medium, large widgets
+4. **Use descriptive test names**: Clearly indicate what visual state is being tested
+5. **Keep snapshots focused**: One visual state per snapshot for easier review
+6. **Review snapshot diffs**: When snapshots fail, verify the change is intentional
+
+### Example: Complete Snapshot Test Suite
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { addEntity } from 'blecsd';
+import { layoutSystem, renderSystem } from 'blecsd';
+import { createTestBuffer, renderToString, cleanupTestBuffer } from 'blecsd/testing';
+import { createList } from 'blecsd';
+
+describe('List widget snapshots', () => {
+  describe('basic rendering', () => {
+    it('renders simple list', () => {
+      const { world, db } = createTestBuffer(30, 12);
+      const entity = addEntity(world);
+
+      createList(world, entity, {
+        x: 1,
+        y: 1,
+        width: 20,
+        height: 5,
+        items: ['Item 1', 'Item 2', 'Item 3'],
+      });
+
+      layoutSystem(world);
+      renderSystem(world);
+
+      expect(renderToString(db)).toMatchSnapshot();
+      cleanupTestBuffer();
+    });
+
+    it('renders empty list', () => {
+      const { world, db } = createTestBuffer(30, 10);
+      const entity = addEntity(world);
+
+      createList(world, entity, {
+        x: 1,
+        y: 1,
+        width: 20,
+        height: 5,
+        items: [],
+      });
+
+      layoutSystem(world);
+      renderSystem(world);
+
+      expect(renderToString(db)).toMatchSnapshot();
+      cleanupTestBuffer();
+    });
+  });
+
+  describe('selection', () => {
+    it('renders list with first item selected', () => {
+      const { world, db } = createTestBuffer(30, 12);
+      const entity = addEntity(world);
+
+      createList(world, entity, {
+        x: 1,
+        y: 1,
+        width: 20,
+        height: 5,
+        items: ['Item 1', 'Item 2', 'Item 3'],
+        selected: 0,
+      });
+
+      layoutSystem(world);
+      renderSystem(world);
+
+      expect(renderToString(db)).toMatchSnapshot();
+      cleanupTestBuffer();
+    });
+  });
+
+  describe('styling', () => {
+    it('renders list with custom colors', () => {
+      const { world, db } = createTestBuffer(30, 12);
+      const entity = addEntity(world);
+
+      createList(world, entity, {
+        x: 1,
+        y: 1,
+        width: 20,
+        height: 5,
+        items: ['Item 1', 'Item 2', 'Item 3'],
+        selected: 1,
+        style: {
+          selected: {
+            fg: 0xffffff,
+            bg: 0x0000ff,
+            prefix: '> ',
+          },
+        },
+      });
+
+      layoutSystem(world);
+      renderSystem(world);
+
+      expect(renderToString(db)).toMatchSnapshot();
+      cleanupTestBuffer();
+    });
   });
 });
 ```
