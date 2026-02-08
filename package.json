@@ -147,7 +147,7 @@
     "prepublishOnly": "pnpm run build:publish",
     "build:publish": "tsup --no-sourcemap --minify",
     "size": "size-limit",
-    "size:check": "size-limit --check",
+    "size:why": "size-limit --why",
     "verify-pack": "./scripts/verify-pack.sh",
     "doccheck": "tsx scripts/doccheck.ts"
   },
