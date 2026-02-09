@@ -40,13 +40,21 @@ export {
 	resetAutocompleteStore,
 } from './autocomplete';
 // BarChart widget
-export type { BarChartConfig, BarChartWidget, BarOrientation, BarSeries } from './barChart';
+export type {
+	BarChartConfig,
+	BarChartWidget,
+	BarMode,
+	BarOrientation,
+	BarSeries,
+} from './barChart';
 export {
 	BarChart,
 	BarChartConfigSchema,
 	createBarChart,
+	HORIZONTAL_BLOCKS,
 	isBarChart,
 	resetBarChartStore,
+	VERTICAL_BLOCKS,
 } from './barChart';
 // BigText widget
 export type { BigTextConfig, BigTextWidget, FontDefinition } from './bigText';
