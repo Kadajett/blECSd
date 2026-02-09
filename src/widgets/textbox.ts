@@ -40,31 +40,90 @@ import {
 
 /**
  * Textbox configuration.
+ *
+ * @example
+ * ```typescript
+ * // Regular text input
+ * const textbox = createTextbox(world, eid, {
+ *   left: 10,
+ *   top: 5,
+ *   width: 30,
+ *   value: 'Initial text',
+ *   placeholder: 'Enter text here',
+ *   maxLength: 50
+ * });
+ *
+ * // Password input
+ * const password = createTextbox(world, eid, {
+ *   left: 10,
+ *   top: 10,
+ *   width: 30,
+ *   secret: true,
+ *   censor: '●',
+ *   placeholder: 'Enter password'
+ * });
+ * ```
  */
 export interface TextboxConfig {
-	/** Initial value */
+	/**
+	 * Initial text value displayed in the textbox
+	 * @default '' (empty string)
+	 */
 	readonly value?: string;
-	/** Placeholder text when empty */
+	/**
+	 * Placeholder text shown when textbox is empty
+	 * @default undefined (no placeholder)
+	 */
 	readonly placeholder?: string;
-	/** Maximum text length (0 = unlimited) */
+	/**
+	 * Maximum number of characters allowed (0 = unlimited)
+	 * @default 0 (unlimited)
+	 */
 	readonly maxLength?: number;
-	/** Secret mode (password field) */
+	/**
+	 * Enable password/secret mode (masks input characters)
+	 * @default false
+	 */
 	readonly secret?: boolean;
-	/** Mask character for secret mode */
+	/**
+	 * Character used to mask input in secret mode (single character)
+	 * @default '*'
+	 */
 	readonly censor?: string;
-	/** Width of the textbox */
+	/**
+	 * Width of the textbox in cells (including border)
+	 * @default 20
+	 */
 	readonly width?: number;
-	/** Height (default: 1 for single line, +2 for border) */
+	/**
+	 * Height of the textbox in cells (1 for content + 2 for border = 3)
+	 * @default 3
+	 */
 	readonly height?: number;
-	/** Left position */
+	/**
+	 * Left (X) position in cells
+	 * @default 0
+	 */
 	readonly left?: number;
-	/** Top position */
+	/**
+	 * Top (Y) position in cells
+	 * @default 0
+	 */
 	readonly top?: number;
-	/** Foreground color */
+	/**
+	 * Foreground (text) color (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Terminal default foreground
+	 */
 	readonly fg?: string | number;
-	/** Background color */
+	/**
+	 * Background color (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Terminal default background
+	 */
 	readonly bg?: string | number;
-	/** Border foreground color */
+	/**
+	 * Border foreground color (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Same as fg
+	 */
 	readonly borderFg?: string | number;
 }
 

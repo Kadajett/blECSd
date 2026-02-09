@@ -37,26 +37,64 @@ import type { Entity, World } from '../core/types';
 
 /**
  * Configuration for creating a Button widget.
+ *
+ * @example
+ * ```typescript
+ * const button = createButton(world, eid, {
+ *   x: 10,
+ *   y: 5,
+ *   width: 20,
+ *   height: 3,
+ *   label: 'Click Me',
+ *   focusable: true,
+ *   disabled: false
+ * });
+ *
+ * button.onClick(() => {
+ *   console.log('Button clicked!');
+ * });
+ * ```
  */
 export interface ButtonConfig {
 	// Position
-	/** X position */
+	/**
+	 * X (horizontal) position in cells
+	 * @default 0
+	 */
 	readonly x?: number;
-	/** Y position */
+	/**
+	 * Y (vertical) position in cells
+	 * @default 0
+	 */
 	readonly y?: number;
-	/** Width (auto-calculated if not specified) */
+	/**
+	 * Width in cells (auto-calculated from label if not specified)
+	 * @default label.length + 4 (2 cells padding on each side)
+	 */
 	readonly width?: number;
-	/** Height (default: 3) */
+	/**
+	 * Height in cells (includes border)
+	 * @default 3
+	 */
 	readonly height?: number;
 
 	// Content
-	/** Button label text */
+	/**
+	 * Button label text displayed in the center
+	 * @default 'Button'
+	 */
 	readonly label?: string;
 
 	// Behavior
-	/** Whether button can receive focus (default: true) */
+	/**
+	 * Whether button can receive keyboard focus
+	 * @default true
+	 */
 	readonly focusable?: boolean;
-	/** Initial disabled state (default: false) */
+	/**
+	 * Initial disabled state (disabled buttons don't respond to clicks)
+	 * @default false
+	 */
 	readonly disabled?: boolean;
 }
 

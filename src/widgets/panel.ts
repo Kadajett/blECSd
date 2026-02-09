@@ -82,14 +82,32 @@ export interface PanelContentStyle {
 }
 
 /**
- * Panel style configuration.
+ * Panel style configuration for customizing visual appearance.
+ *
+ * @example
+ * ```typescript
+ * style: {
+ *   title: { fg: '#FFFF00', bg: '#000080', align: 'center' },
+ *   content: { fg: '#FFFFFF', bg: '#000000' },
+ *   border: { type: 'line', ch: 'double', fg: '#00FFFF' }
+ * }
+ * ```
  */
 export interface PanelStyleConfig {
-	/** Title bar style */
+	/**
+	 * Title bar styling (colors and alignment)
+	 * @default undefined (uses panel fg/bg)
+	 */
 	readonly title?: PanelTitleStyle;
-	/** Content area style */
+	/**
+	 * Content area styling (colors)
+	 * @default undefined (uses panel fg/bg)
+	 */
 	readonly content?: PanelContentStyle;
-	/** Border configuration */
+	/**
+	 * Border styling (type, colors, and characters)
+	 * @default undefined (uses panel fg/bg with default border)
+	 */
 	readonly border?: PanelBorderConfig;
 }
 
@@ -147,44 +165,106 @@ export type PaddingConfig =
 
 /**
  * Configuration for creating a Panel widget.
+ *
+ * @example
+ * ```typescript
+ * const panel = createPanel(world, eid, {
+ *   left: 10,
+ *   top: 5,
+ *   width: 50,
+ *   height: 30,
+ *   title: 'My Panel',
+ *   titleAlign: 'center',
+ *   closable: true,
+ *   collapsible: true,
+ *   content: 'Panel content goes here',
+ *   padding: 2,
+ *   style: {
+ *     title: { fg: '#FFFF00', align: 'center' },
+ *     border: { type: 'line', ch: 'double' }
+ *   }
+ * });
+ * ```
  */
 export interface PanelConfig {
 	// Position
-	/** Left position (absolute or percentage) */
+	/**
+	 * Left position (absolute pixels, percentage of parent, or keyword)
+	 * @default 0
+	 */
 	readonly left?: PositionValue;
-	/** Top position (absolute or percentage) */
+	/**
+	 * Top position (absolute pixels, percentage of parent, or keyword)
+	 * @default 0
+	 */
 	readonly top?: PositionValue;
-	/** Width (absolute, percentage, or 'auto') */
+	/**
+	 * Width (absolute pixels, percentage of parent, or 'auto')
+	 * @default 'auto'
+	 */
 	readonly width?: DimensionValue;
-	/** Height (absolute, percentage, or 'auto') */
+	/**
+	 * Height (absolute pixels, percentage of parent, or 'auto')
+	 * @default 'auto'
+	 */
 	readonly height?: DimensionValue;
 
 	// Title
-	/** Title text */
+	/**
+	 * Title text displayed in the title bar
+	 * @default '' (empty string, no title bar)
+	 */
 	readonly title?: string;
-	/** Title alignment */
+	/**
+	 * Horizontal alignment of title text
+	 * @default 'left'
+	 */
 	readonly titleAlign?: TitleAlign;
 
 	// Features
-	/** Show close button in title bar */
+	/**
+	 * Show close button (×) in title bar
+	 * @default false
+	 */
 	readonly closable?: boolean;
-	/** Allow collapse/expand */
+	/**
+	 * Allow panel to be collapsed/expanded via title bar click
+	 * @default false
+	 */
 	readonly collapsible?: boolean;
-	/** Initial collapsed state */
+	/**
+	 * Initial collapsed state (requires collapsible: true)
+	 * @default false
+	 */
 	readonly collapsed?: boolean;
 
 	// Style
-	/** Foreground color (hex string or packed number) */
+	/**
+	 * Foreground (text) color (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Terminal default foreground color
+	 */
 	readonly fg?: string | number;
-	/** Background color (hex string or packed number) */
+	/**
+	 * Background color (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Terminal default background color
+	 */
 	readonly bg?: string | number;
-	/** Panel style configuration */
+	/**
+	 * Detailed style configuration for title, content, and border
+	 * @default undefined (uses default styling)
+	 */
 	readonly style?: PanelStyleConfig;
-	/** Padding configuration for content area */
+	/**
+	 * Padding configuration for content area (uniform or per-side)
+	 * @default 0
+	 */
 	readonly padding?: PaddingConfig;
 
 	// Content
-	/** Initial content text */
+	/**
+	 * Initial text content displayed in the panel body
+	 * @default '' (empty string)
+	 */
 	readonly content?: string;
 }
 

@@ -44,38 +44,89 @@ export type VAlign = 'top' | 'middle' | 'bottom';
 
 /**
  * Configuration for creating a Text widget.
+ *
+ * @example
+ * ```typescript
+ * const text = createText(world, eid, {
+ *   left: 10,
+ *   top: 5,
+ *   width: 40,
+ *   content: 'Hello, World!',
+ *   align: 'center',
+ *   valign: 'middle',
+ *   fg: '#FFFFFF',
+ *   bg: '#000080',
+ *   shrink: false
+ * });
+ * ```
  */
 export interface TextConfig {
 	// Position
-	/** Left position (absolute or percentage) */
+	/**
+	 * Left position (absolute pixels, percentage of parent, or keyword)
+	 * @default 0
+	 */
 	readonly left?: PositionValue;
-	/** Top position (absolute or percentage) */
+	/**
+	 * Top position (absolute pixels, percentage of parent, or keyword)
+	 * @default 0
+	 */
 	readonly top?: PositionValue;
-	/** Right position (absolute or percentage) */
+	/**
+	 * Right position (absolute pixels, percentage of parent, or keyword)
+	 * @default undefined
+	 */
 	readonly right?: PositionValue;
-	/** Bottom position (absolute or percentage) */
+	/**
+	 * Bottom position (absolute pixels, percentage of parent, or keyword)
+	 * @default undefined
+	 */
 	readonly bottom?: PositionValue;
-	/** Width (absolute, percentage, or 'auto') - defaults to 'auto' */
+	/**
+	 * Width (absolute pixels, percentage of parent, or 'auto')
+	 * @default 'auto' (fits content width)
+	 */
 	readonly width?: DimensionValue;
-	/** Height (absolute, percentage, or 'auto') - defaults to 'auto' */
+	/**
+	 * Height (absolute pixels, percentage of parent, or 'auto')
+	 * @default 'auto' (fits content height)
+	 */
 	readonly height?: DimensionValue;
 
 	// Style
-	/** Foreground color (hex string or packed number) */
+	/**
+	 * Foreground (text) color (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Terminal default foreground color
+	 */
 	readonly fg?: string | number;
-	/** Background color (hex string or packed number) */
+	/**
+	 * Background color (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Terminal default background color
+	 */
 	readonly bg?: string | number;
 
 	// Content
-	/** Text content */
+	/**
+	 * Text content to display
+	 * @default '' (empty string)
+	 */
 	readonly content?: string;
-	/** Horizontal text alignment */
+	/**
+	 * Horizontal text alignment within the bounds
+	 * @default 'left'
+	 */
 	readonly align?: Align;
-	/** Vertical text alignment */
+	/**
+	 * Vertical text alignment within the bounds
+	 * @default 'top'
+	 */
 	readonly valign?: VAlign;
 
 	// Behavior
-	/** Whether to shrink to content size (default: true) */
+	/**
+	 * Whether to automatically shrink dimensions to fit content
+	 * @default true
+	 */
 	readonly shrink?: boolean;
 }
 
