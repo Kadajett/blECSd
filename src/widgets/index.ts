@@ -203,6 +203,24 @@ export {
 	resetFileManagerStore,
 	setReadDirFn,
 } from './fileManager';
+// Flexbox widget
+export type {
+	AlignItems as FlexAlignItems,
+	FlexChildOptions,
+	FlexContainerConfig,
+	FlexContainerWidget,
+	FlexDirection as FlexboxDirection,
+	FlexWrap,
+	JustifyContent as FlexJustifyContent,
+} from './flexbox';
+export {
+	addFlexChild,
+	createFlexContainer,
+	FlexContainer,
+	FlexContainerConfigSchema,
+	isFlexContainer,
+	resetFlexContainerStore,
+} from './flexbox';
 // Fonts
 export type {
 	BitmapFont,
