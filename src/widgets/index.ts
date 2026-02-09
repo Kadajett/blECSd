@@ -137,6 +137,9 @@ export {
 	loadFont,
 	renderChar,
 } from './fonts';
+// Footer widget
+export type { FooterAlign, FooterConfig, FooterWidget } from './footer';
+export { createFooter, Footer, FooterConfigSchema } from './footer';
 // Form widget
 export type {
 	FormConfig as FormWidgetConfig,
@@ -160,6 +163,9 @@ export {
 	isGauge,
 	resetGaugeStore,
 } from './gauge';
+// Header widget
+export type { HeaderAlign, HeaderConfig, HeaderWidget } from './header';
+export { createHeader, Header, HeaderConfigSchema } from './header';
 // HoverText (Tooltip) system
 export type {
 	HoverTextConfig,
