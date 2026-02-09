@@ -94,6 +94,46 @@ export interface PanelStyleConfig {
 }
 
 /**
+ * Zod schema for PanelStyleConfig validation.
+ *
+ * @example
+ * ```typescript
+ * import { PanelStyleConfigSchema } from 'blecsd';
+ *
+ * const style = PanelStyleConfigSchema.parse({
+ *   title: { fg: 0xFFFFFFFF, bg: 0x0000FFFF, align: 'center' },
+ *   content: { fg: 0xCCCCCCFF, bg: 0x000000FF },
+ *   border: { type: 'line', fg: 0xFFFFFFFF, ch: 'single' },
+ * });
+ * ```
+ */
+export const PanelStyleConfigSchema = z.object({
+	title: z
+		.object({
+			fg: z.union([z.string(), z.number().int().nonnegative()]).optional(),
+			bg: z.union([z.string(), z.number().int().nonnegative()]).optional(),
+			align: z.enum(['left', 'center', 'right']).optional(),
+		})
+		.optional(),
+	content: z
+		.object({
+			fg: z.union([z.string(), z.number().int().nonnegative()]).optional(),
+			bg: z.union([z.string(), z.number().int().nonnegative()]).optional(),
+		})
+		.optional(),
+	border: z
+		.object({
+			type: z.enum(['line', 'bg', 'none']).optional(),
+			fg: z.union([z.string(), z.number().int().nonnegative()]).optional(),
+			bg: z.union([z.string(), z.number().int().nonnegative()]).optional(),
+			ch: z
+				.union([z.enum(['single', 'double', 'rounded', 'bold', 'ascii']), z.unknown()])
+				.optional(),
+		})
+		.optional(),
+});
+
+/**
  * Padding configuration (all sides, or individual sides).
  */
 export type PaddingConfig =

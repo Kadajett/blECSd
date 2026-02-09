@@ -11,6 +11,7 @@
  * @module debug/overlay
  */
 
+import { z } from 'zod';
 import { setContent } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { setPosition } from '../components/position';
@@ -60,6 +61,38 @@ export interface DebugOverlayConfig {
 	/** Whether visible on start (default: false) */
 	readonly visibleOnStart?: boolean;
 }
+
+/**
+ * Zod schema for DebugOverlayConfig validation.
+ *
+ * @example
+ * ```typescript
+ * import { DebugOverlayConfigSchema } from 'blecsd';
+ *
+ * const config = DebugOverlayConfigSchema.parse({
+ *   x: 10,
+ *   y: 5,
+ *   width: 40,
+ *   toggleKey: 'F12',
+ *   showFPS: true,
+ *   maxSystemsShown: 10,
+ * });
+ * ```
+ */
+export const DebugOverlayConfigSchema = z.object({
+	x: z.number().finite().optional(),
+	y: z.number().finite().optional(),
+	width: z.number().positive().optional(),
+	toggleKey: z.string().optional(),
+	showFPS: z.boolean().optional(),
+	showEntityCount: z.boolean().optional(),
+	showMemory: z.boolean().optional(),
+	showSystemTimings: z.boolean().optional(),
+	maxSystemsShown: z.number().int().positive().optional(),
+	bgColor: z.number().int().nonnegative().optional(),
+	fgColor: z.number().int().nonnegative().optional(),
+	visibleOnStart: z.boolean().optional(),
+});
 
 /**
  * Debug overlay state.

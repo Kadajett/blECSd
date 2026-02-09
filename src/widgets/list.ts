@@ -89,6 +89,38 @@ export interface ListStyleConfig {
 }
 
 /**
+ * Zod schema for ListStyleConfig validation.
+ *
+ * @example
+ * ```typescript
+ * import { ListStyleConfigSchema } from 'blecsd';
+ *
+ * const style = ListStyleConfigSchema.parse({
+ *   item: { fg: 0xFFFFFFFF, bg: 0x000000FF },
+ *   selected: { fg: 0x000000FF, bg: 0x00FF00FF, prefix: '> ' },
+ *   unselectedPrefix: '  ',
+ * });
+ * ```
+ */
+export const ListStyleConfigSchema = z.object({
+	item: z
+		.object({
+			fg: z.number().int().nonnegative().optional(),
+			bg: z.number().int().nonnegative().optional(),
+		})
+		.optional(),
+	selected: z
+		.object({
+			fg: z.number().int().nonnegative().optional(),
+			bg: z.number().int().nonnegative().optional(),
+			prefix: z.string().optional(),
+		})
+		.optional(),
+	unselectedPrefix: z.string().optional(),
+	disabledFg: z.number().int().nonnegative().optional(),
+});
+
+/**
  * Configuration for creating a List widget.
  */
 export interface ListWidgetConfig {

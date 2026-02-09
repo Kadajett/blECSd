@@ -8,6 +8,7 @@
  * @module systems/tilemapRenderer
  */
 
+import { z } from 'zod';
 import { Position } from '../components/position';
 import {
 	EMPTY_TILE,
@@ -59,6 +60,29 @@ export interface TileMapRendererConfig {
 	/** Camera offset */
 	camera: TileMapCamera;
 }
+
+/**
+ * Zod schema for TileMapRendererConfig validation.
+ *
+ * @example
+ * ```typescript
+ * import { TileMapRendererConfigSchema } from 'blecsd';
+ *
+ * const config = TileMapRendererConfigSchema.parse({
+ *   viewportWidth: 80,
+ *   viewportHeight: 24,
+ *   camera: { x: 0, y: 0 },
+ * });
+ * ```
+ */
+export const TileMapRendererConfigSchema = z.object({
+	viewportWidth: z.number().int().positive(),
+	viewportHeight: z.number().int().positive(),
+	camera: z.object({
+		x: z.number().finite(),
+		y: z.number().finite(),
+	}),
+});
 
 // =============================================================================
 // RENDERER STATE

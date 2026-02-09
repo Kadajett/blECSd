@@ -8,6 +8,7 @@
  * @module debug/memoryProfiler
  */
 
+import { z } from 'zod';
 import { getAllEntities, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
@@ -94,6 +95,30 @@ export interface MemoryProfilerConfig {
 	/** Components to track (all if empty) */
 	readonly trackedComponents: readonly { component: unknown; name: string }[];
 }
+
+/**
+ * Zod schema for MemoryProfilerConfig validation.
+ *
+ * @example
+ * ```typescript
+ * import { MemoryProfilerConfigSchema } from 'blecsd';
+ *
+ * const config = MemoryProfilerConfigSchema.parse({
+ *   snapshotInterval: 1000,
+ *   maxSnapshots: 10,
+ *   entityLeakThreshold: 100,
+ *   heapLeakThreshold: 1024 * 1024,
+ *   trackedComponents: [],
+ * });
+ * ```
+ */
+export const MemoryProfilerConfigSchema = z.object({
+	snapshotInterval: z.number().nonnegative(),
+	maxSnapshots: z.number().int().positive(),
+	entityLeakThreshold: z.number().nonnegative(),
+	heapLeakThreshold: z.number().nonnegative(),
+	trackedComponents: z.array(z.object({ component: z.unknown(), name: z.string() })).readonly(),
+});
 
 /**
  * Memory profiler state.
