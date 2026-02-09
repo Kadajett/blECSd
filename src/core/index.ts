@@ -689,6 +689,13 @@ export {
 } from './styleInheritance';
 export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
+// Entity validation
+export {
+	EntityValidationError,
+	isEntityValid,
+	registerComponentName,
+	validateEntity,
+} from './validation';
 // Warning system
 export type {
 	DeprecatedAPIMetadata,
