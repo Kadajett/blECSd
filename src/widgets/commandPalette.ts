@@ -416,7 +416,9 @@ export function createCommandPalette(
 	config: CommandPaletteConfig = {},
 ): CommandPaletteWidget {
 	// Validate config (omit commands and onClose for function type compatibility)
-	const validated = CommandPaletteConfigSchema.omit({ commands: true, onClose: true }).parse(config);
+	const validated = CommandPaletteConfigSchema.omit({ commands: true, onClose: true }).parse(
+		config,
+	);
 
 	const commands = config.commands ?? [];
 	const placeholder = validated.placeholder ?? 'Type a command...';
