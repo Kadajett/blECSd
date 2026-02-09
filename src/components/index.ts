@@ -734,6 +734,8 @@ export {
 	setRadioSet,
 	setRadioValue,
 } from './radioButton';
+// Component name registration
+export { registerBuiltinComponentNames } from './registerNames';
 // Renderable component
 export type { RenderableData, StyleData, StyleOptions } from './renderable';
 export {
