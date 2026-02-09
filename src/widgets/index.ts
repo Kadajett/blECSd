@@ -6,6 +6,30 @@
  * @module widgets
  */
 
+// Accordion widget
+export type {
+	AccordionConfig,
+	AccordionSection,
+	AccordionWidget,
+	CollapsibleConfig,
+	CollapsibleWidget,
+} from './accordion';
+export {
+	Accordion,
+	AccordionConfigSchema,
+	CollapsibleConfigSchema,
+	collapseAllSections,
+	createAccordion,
+	createCollapsible,
+	expandAllSections,
+	expandSection,
+	getExpandedSections,
+	isAccordion,
+	isCollapsible,
+	resetAccordionStore,
+	toggleCollapsible,
+	toggleSection,
+} from './accordion';
 // Autocomplete widget
 export type { AutocompleteConfig, AutocompleteWidget } from './autocomplete';
 export {
