@@ -150,6 +150,25 @@ export {
 	spliceLines,
 	unshiftLine,
 } from './contentManipulation';
+// DevTools widget
+export type {
+	DevToolsComponentInfo,
+	DevToolsConfig,
+	DevToolsPosition,
+	DevToolsTab,
+	DevToolsTheme,
+	DevToolsWidget,
+	EntityInfo,
+	EventLogEntry,
+	SystemInfo,
+} from './devTools';
+export {
+	createDevTools,
+	DevTools,
+	DevToolsConfigSchema,
+	isDevTools,
+	resetDevToolsStore,
+} from './devTools';
 // FileManager widget
 export type {
 	FileEntry,
