@@ -6,6 +6,15 @@
  * @module widgets
  */
 
+// Autocomplete widget
+export type { AutocompleteConfig, AutocompleteWidget } from './autocomplete';
+export {
+	Autocomplete,
+	AutocompleteConfigSchema,
+	createAutocomplete,
+	isAutocomplete,
+	resetAutocompleteStore,
+} from './autocomplete';
 // BarChart widget
 export type { BarChartConfig, BarChartWidget, BarOrientation, BarSeries } from './barChart';
 export {
