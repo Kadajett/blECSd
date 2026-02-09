@@ -36,84 +36,223 @@ import { parseColor } from '../utils/color';
 
 /**
  * Dimension value that can be a number, percentage string, or 'auto'.
+ *
+ * @example
+ * ```typescript
+ * // Absolute pixel value
+ * width: 50
+ *
+ * // Percentage of parent
+ * width: '50%'
+ *
+ * // Automatic sizing based on content
+ * width: 'auto'
+ * ```
  */
 export type DimensionValue = number | `${number}%` | 'auto';
 
 /**
  * Position value that can be a number, percentage string, or keyword.
+ *
+ * @example
+ * ```typescript
+ * // Absolute pixel position
+ * left: 10
+ *
+ * // Percentage of parent
+ * left: '50%'
+ *
+ * // Keyword positioning
+ * left: 'center'  // Center horizontally
+ * top: 'center'   // Center vertically
+ * ```
  */
 export type PositionValue = number | `${number}%` | 'center' | 'left' | 'right' | 'top' | 'bottom';
 
 /**
  * Horizontal text alignment.
+ *
+ * @example
+ * ```typescript
+ * align: 'left'    // Align text to left edge
+ * align: 'center'  // Center text horizontally
+ * align: 'right'   // Align text to right edge
+ * ```
  */
 export type Align = 'left' | 'center' | 'right';
 
 /**
  * Vertical text alignment.
+ *
+ * @example
+ * ```typescript
+ * valign: 'top'     // Align text to top edge
+ * valign: 'middle'  // Center text vertically
+ * valign: 'bottom'  // Align text to bottom edge
+ * ```
  */
 export type VAlign = 'top' | 'middle' | 'bottom';
 
 /**
  * Border configuration for boxes.
+ *
+ * @example
+ * ```typescript
+ * // Simple line border
+ * border: { type: 'line' }
+ *
+ * // Styled border with colors
+ * border: {
+ *   type: 'line',
+ *   fg: '#00FF00',
+ *   bg: '#000000',
+ *   ch: 'double'
+ * }
+ * ```
  */
 export interface BorderConfig {
-	/** Border type */
+	/**
+	 * Border rendering type
+	 * @default 'line'
+	 */
 	readonly type?: 'line' | 'bg' | 'none';
-	/** Foreground color for border (hex string or packed number) */
+	/**
+	 * Foreground color for border (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Inherits from parent or terminal default
+	 */
 	readonly fg?: string | number;
-	/** Background color for border (hex string or packed number) */
+	/**
+	 * Background color for border (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Inherits from parent or terminal default
+	 */
 	readonly bg?: string | number;
-	/** Border charset ('single', 'double', 'rounded', 'bold', 'ascii', or custom) */
+	/**
+	 * Border character set style
+	 * @default 'single'
+	 */
 	readonly ch?: 'single' | 'double' | 'rounded' | 'bold' | 'ascii' | BorderCharset;
 }
 
 /**
  * Padding configuration (all sides, or individual sides).
+ *
+ * @example
+ * ```typescript
+ * // Uniform padding on all sides
+ * padding: 2
+ *
+ * // Individual side padding
+ * padding: {
+ *   left: 2,
+ *   right: 2,
+ *   top: 1,
+ *   bottom: 1
+ * }
+ * ```
  */
 export type PaddingConfig =
 	| number
 	| {
+			/** Left padding in cells @default 0 */
 			readonly left?: number;
+			/** Top padding in cells @default 0 */
 			readonly top?: number;
+			/** Right padding in cells @default 0 */
 			readonly right?: number;
+			/** Bottom padding in cells @default 0 */
 			readonly bottom?: number;
 	  };
 
 /**
  * Configuration for creating a Box widget.
+ *
+ * @example
+ * ```typescript
+ * const box = createBox(world, eid, {
+ *   left: 10,
+ *   top: 5,
+ *   width: 40,
+ *   height: 20,
+ *   content: 'Hello, World!',
+ *   align: 'center',
+ *   valign: 'middle',
+ *   fg: '#FFFFFF',
+ *   bg: '#000000',
+ *   border: { type: 'line', ch: 'rounded' },
+ *   padding: 2
+ * });
+ * ```
  */
 export interface BoxConfig {
 	// Position
-	/** Left position (absolute or percentage) */
+	/**
+	 * Left position (absolute pixels, percentage of parent, or keyword)
+	 * @default 0
+	 */
 	readonly left?: PositionValue;
-	/** Top position (absolute or percentage) */
+	/**
+	 * Top position (absolute pixels, percentage of parent, or keyword)
+	 * @default 0
+	 */
 	readonly top?: PositionValue;
-	/** Right position (absolute or percentage) */
+	/**
+	 * Right position (absolute pixels, percentage of parent, or keyword)
+	 * @default undefined
+	 */
 	readonly right?: PositionValue;
-	/** Bottom position (absolute or percentage) */
+	/**
+	 * Bottom position (absolute pixels, percentage of parent, or keyword)
+	 * @default undefined
+	 */
 	readonly bottom?: PositionValue;
-	/** Width (absolute, percentage, or 'auto') */
+	/**
+	 * Width (absolute pixels, percentage of parent, or 'auto')
+	 * @default 'auto'
+	 */
 	readonly width?: DimensionValue;
-	/** Height (absolute, percentage, or 'auto') */
+	/**
+	 * Height (absolute pixels, percentage of parent, or 'auto')
+	 * @default 'auto'
+	 */
 	readonly height?: DimensionValue;
 
 	// Style
-	/** Foreground color (hex string or packed number) */
+	/**
+	 * Foreground (text) color (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Terminal default foreground color
+	 */
 	readonly fg?: string | number;
-	/** Background color (hex string or packed number) */
+	/**
+	 * Background color (hex string like "#RRGGBB" or packed RGBA number)
+	 * @default Terminal default background color
+	 */
 	readonly bg?: string | number;
-	/** Border configuration */
+	/**
+	 * Border configuration (type, colors, and character set)
+	 * @default undefined (no border)
+	 */
 	readonly border?: BorderConfig;
-	/** Padding configuration */
+	/**
+	 * Padding configuration (uniform or per-side)
+	 * @default 0
+	 */
 	readonly padding?: PaddingConfig;
 
 	// Content
-	/** Text content */
+	/**
+	 * Text content to display inside the box
+	 * @default '' (empty string)
+	 */
 	readonly content?: string;
-	/** Horizontal text alignment */
+	/**
+	 * Horizontal text alignment within the box
+	 * @default 'left'
+	 */
 	readonly align?: Align;
-	/** Vertical text alignment */
+	/**
+	 * Vertical text alignment within the box
+	 * @default 'top'
+	 */
 	readonly valign?: VAlign;
 }
 

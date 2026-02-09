@@ -69,22 +69,49 @@ import type { Entity, World } from '../core/types';
 
 /**
  * Style configuration for list items.
+ *
+ * @example
+ * ```typescript
+ * style: {
+ *   item: { fg: 0xFFFFFFFF, bg: 0x000000FF },
+ *   selected: { fg: 0x000000FF, bg: 0x00FF00FF, prefix: '> ' },
+ *   unselectedPrefix: '  ',
+ *   disabledFg: 0x888888FF
+ * }
+ * ```
  */
 export interface ListStyleConfig {
-	/** Style for regular items */
+	/**
+	 * Style for regular (unselected) items
+	 * @default undefined (uses terminal defaults)
+	 */
 	readonly item?: {
+		/** Foreground color @default Terminal default */
 		readonly fg?: number;
+		/** Background color @default Terminal default */
 		readonly bg?: number;
 	};
-	/** Style for selected item */
+	/**
+	 * Style for the currently selected item
+	 * @default undefined (uses inverted colors)
+	 */
 	readonly selected?: {
+		/** Foreground color @default Inverted terminal fg */
 		readonly fg?: number;
+		/** Background color @default Inverted terminal bg */
 		readonly bg?: number;
+		/** Prefix string shown before selected item @default '> ' */
 		readonly prefix?: string;
 	};
-	/** Prefix for unselected items */
+	/**
+	 * Prefix string shown before unselected items
+	 * @default '  ' (two spaces)
+	 */
 	readonly unselectedPrefix?: string;
-	/** Style for disabled items */
+	/**
+	 * Foreground color for disabled items
+	 * @default 0x888888FF (gray)
+	 */
 	readonly disabledFg?: number;
 }
 
@@ -122,31 +149,87 @@ export const ListStyleConfigSchema = z.object({
 
 /**
  * Configuration for creating a List widget.
+ *
+ * @example
+ * ```typescript
+ * const list = createList(world, eid, {
+ *   x: 10,
+ *   y: 5,
+ *   width: 30,
+ *   height: 10,
+ *   items: ['Item 1', 'Item 2', 'Item 3'],
+ *   selected: 0,
+ *   interactive: true,
+ *   keys: true,
+ *   mouse: true,
+ *   search: true,
+ *   multiSelect: false,
+ *   style: {
+ *     selected: { bg: 0x00FF00FF, prefix: '> ' }
+ *   }
+ * });
+ * ```
  */
 export interface ListWidgetConfig {
-	/** X position */
+	/**
+	 * X (horizontal) position in cells
+	 * @default 0
+	 */
 	readonly x?: number;
-	/** Y position */
+	/**
+	 * Y (vertical) position in cells
+	 * @default 0
+	 */
 	readonly y?: number;
-	/** Width of the list */
+	/**
+	 * Width of the list in cells
+	 * @default 20
+	 */
 	readonly width?: number;
-	/** Height of the list (visible items) */
+	/**
+	 * Height of the list in cells (number of visible items)
+	 * @default 10
+	 */
 	readonly height?: number;
-	/** Items to display */
+	/**
+	 * Array of items to display in the list
+	 * @default [] (empty array)
+	 */
 	readonly items?: readonly string[];
-	/** Initially selected index */
+	/**
+	 * Initially selected item index (0-based)
+	 * @default 0
+	 */
 	readonly selected?: number;
-	/** Style configuration */
+	/**
+	 * Style configuration for items and selection
+	 * @default undefined (uses default styling)
+	 */
 	readonly style?: ListStyleConfig;
-	/** Whether the list is interactive (default: true) */
+	/**
+	 * Whether the list responds to user input
+	 * @default true
+	 */
 	readonly interactive?: boolean;
-	/** Whether mouse input is enabled (default: true) */
+	/**
+	 * Whether mouse clicks/scrolling are enabled
+	 * @default true
+	 */
 	readonly mouse?: boolean;
-	/** Whether keyboard input is enabled (default: true) */
+	/**
+	 * Whether keyboard navigation (arrow keys, Enter) is enabled
+	 * @default true
+	 */
 	readonly keys?: boolean;
-	/** Whether search mode is enabled (default: false) */
+	/**
+	 * Whether search/filter mode is enabled (type to filter items)
+	 * @default false
+	 */
 	readonly search?: boolean;
-	/** Whether multi-select mode is enabled (default: false) */
+	/**
+	 * Whether multiple items can be selected simultaneously
+	 * @default false
+	 */
 	readonly multiSelect?: boolean;
 }
 
