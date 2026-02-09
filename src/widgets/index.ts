@@ -196,6 +196,16 @@ export {
 	isGauge,
 	resetGaugeStore,
 } from './gauge';
+// Grid widget
+export type { CellSize, GridCell, GridConfig, GridWidget } from './grid';
+export {
+	addToGrid,
+	createGrid,
+	Grid,
+	GridConfigSchema,
+	isGrid,
+	resetGridStore,
+} from './grid';
 // Header widget
 export type { HeaderAlign, HeaderConfig, HeaderWidget } from './header';
 export { createHeader, Header, HeaderConfigSchema } from './header';
