@@ -729,6 +729,29 @@ export {
 	Text,
 	TextConfigSchema,
 } from './text';
+// Timer and Stopwatch widgets
+export type {
+	StopwatchConfig,
+	StopwatchState,
+	StopwatchWidget,
+	TimeFormat,
+	TimerConfig,
+	TimerState,
+	TimerWidget,
+} from './timer';
+export {
+	createStopwatch,
+	createTimer,
+	isStopwatch,
+	isTimer,
+	resetStopwatchWidgetStore,
+	resetTimerWidgetStore,
+	StopwatchComponent,
+	StopwatchConfigSchema,
+	TimerComponent,
+	TimerConfigSchema,
+	updateTimeWidgets,
+} from './timer';
 // Toast widget
 export type {
 	ToastBorderConfig,
