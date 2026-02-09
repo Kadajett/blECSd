@@ -592,6 +592,9 @@ export function logWorld(world: World): void {
 
 export { KNOWN_COMPONENTS };
 
+// Debug console
+export type { ConsoleLogLevel, DebugConsole, DebugConsoleConfig, LogEntry } from './console';
+export { createDebugConsole, DebugConsoleConfigSchema, debugLog } from './console';
 // ECS Inspector (note: inspectEntity and inspectWorld are already exported above)
 export {
 	dumpEntity,
@@ -603,7 +606,6 @@ export {
 	listEntities,
 	listEntityComponents,
 } from './ecsInspector';
-
 // Memory profiler
 export type {
 	AllocationTracker,
@@ -614,7 +616,6 @@ export type {
 	MemorySnapshot,
 } from './memoryProfiler';
 export { createMemoryProfiler } from './memoryProfiler';
-
 // Debug overlay
 export type {
 	DebugOverlay,
