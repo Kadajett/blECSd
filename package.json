@@ -143,6 +143,7 @@
     "bench:startup": "vitest bench benchmarks/startup.bench.ts",
     "bench:widgets": "vitest bench benchmarks/widgets.bench.ts",
     "bench:memory": "node --expose-gc node_modules/.bin/vitest bench benchmarks/memory.bench.ts",
+    "bench:leak-check": "node --expose-gc node_modules/.bin/vitest bench benchmarks/memory-leak.bench.ts",
     "bench:render-cycle": "vitest bench benchmarks/render-cycle.bench.ts",
     "bench:update-baseline": "tsx scripts/update-baseline.ts",
     "bench:check-regression": "vitest bench benchmarks/ci.bench.ts --run --outputFile=benchmark-results.json && tsx scripts/check-perf-regression.ts benchmark-results.json",
