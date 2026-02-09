@@ -5,7 +5,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { appendChild, Hierarchy } from '../components/hierarchy';
 import { DEFAULT_FG, Renderable } from '../components/renderable';
-import { addComponent, addEntity, createWorld } from '../core/ecs';
+import { addComponent, addEntity } from '../core/ecs';
+import { COLORS_RGBA, createTestWorld } from '../testing';
 import {
 	clearStyleCache,
 	computeInheritedStyle,
@@ -88,7 +89,7 @@ describe('styleInheritance', () => {
 
 	describe('getLocalStyle', () => {
 		it('returns default for entity without Renderable', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 
 			const style = getLocalStyle(world, entity);
@@ -97,15 +98,15 @@ describe('styleInheritance', () => {
 		});
 
 		it('returns entity style for entity with Renderable', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 			addComponent(world, entity, Renderable);
-			Renderable.fg[entity] = 0xff0000ff;
+			Renderable.fg[entity] = COLORS_RGBA.RED;
 			Renderable.bold[entity] = 1;
 
 			const style = getLocalStyle(world, entity);
 
-			expect(style.fg).toBe(0xff0000ff);
+			expect(style.fg).toBe(COLORS_RGBA.RED);
 			expect(style.bold).toBe(true);
 		});
 	});
@@ -120,27 +121,27 @@ describe('styleInheritance', () => {
 		});
 
 		it('returns false for non-default color', () => {
-			expect(isDefaultColor(0xff0000ff)).toBe(false);
+			expect(isDefaultColor(COLORS_RGBA.RED)).toBe(false);
 		});
 	});
 
 	describe('mergeStyles', () => {
 		it('uses child fg if set', () => {
-			const parent = { ...getDefaultStyle(), fg: 0xff0000ff };
-			const child = { ...getDefaultStyle(), fg: 0x00ff00ff };
+			const parent = { ...getDefaultStyle(), fg: COLORS_RGBA.RED };
+			const child = { ...getDefaultStyle(), fg: COLORS_RGBA.GREEN };
 
 			const merged = mergeStyles(parent, child);
 
-			expect(merged.fg).toBe(0x00ff00ff);
+			expect(merged.fg).toBe(COLORS_RGBA.GREEN);
 		});
 
 		it('inherits parent fg if child is default', () => {
-			const parent = { ...getDefaultStyle(), fg: 0xff0000ff };
+			const parent = { ...getDefaultStyle(), fg: COLORS_RGBA.RED };
 			const child = getDefaultStyle();
 
 			const merged = mergeStyles(parent, child);
 
-			expect(merged.fg).toBe(0xff0000ff);
+			expect(merged.fg).toBe(COLORS_RGBA.RED);
 		});
 
 		it('inherits bold from parent', () => {
@@ -180,7 +181,7 @@ describe('styleInheritance', () => {
 		});
 
 		it('does not inherit bg', () => {
-			const parent = { ...getDefaultStyle(), bg: 0xff0000ff };
+			const parent = { ...getDefaultStyle(), bg: COLORS_RGBA.RED };
 			const child = { ...getDefaultStyle(), bg: 0x111111ff };
 
 			const merged = mergeStyles(parent, child);
@@ -200,52 +201,52 @@ describe('styleInheritance', () => {
 
 	describe('computeInheritedStyle', () => {
 		it('returns local style for entity without hierarchy', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 			addComponent(world, entity, Renderable);
-			Renderable.fg[entity] = 0xff0000ff;
+			Renderable.fg[entity] = COLORS_RGBA.RED;
 
 			const style = computeInheritedStyle(world, entity);
 
-			expect(style.fg).toBe(0xff0000ff);
+			expect(style.fg).toBe(COLORS_RGBA.RED);
 		});
 
 		it('inherits fg from parent', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const parent = addEntity(world);
 			const child = addEntity(world);
 			addComponent(world, parent, Renderable);
 			addComponent(world, child, Renderable);
 			addComponent(world, parent, Hierarchy);
 			addComponent(world, child, Hierarchy);
-			Renderable.fg[parent] = 0xff0000ff;
+			Renderable.fg[parent] = COLORS_RGBA.RED;
 			Renderable.fg[child] = DEFAULT_FG;
 			appendChild(world, parent, child);
 
 			const style = computeInheritedStyle(world, child);
 
-			expect(style.fg).toBe(0xff0000ff);
+			expect(style.fg).toBe(COLORS_RGBA.RED);
 		});
 
 		it('child fg overrides parent fg', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const parent = addEntity(world);
 			const child = addEntity(world);
 			addComponent(world, parent, Renderable);
 			addComponent(world, child, Renderable);
 			addComponent(world, parent, Hierarchy);
 			addComponent(world, child, Hierarchy);
-			Renderable.fg[parent] = 0xff0000ff;
-			Renderable.fg[child] = 0x00ff00ff;
+			Renderable.fg[parent] = COLORS_RGBA.RED;
+			Renderable.fg[child] = COLORS_RGBA.GREEN;
 			appendChild(world, parent, child);
 
 			const style = computeInheritedStyle(world, child);
 
-			expect(style.fg).toBe(0x00ff00ff);
+			expect(style.fg).toBe(COLORS_RGBA.GREEN);
 		});
 
 		it('inherits bold from parent', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const parent = addEntity(world);
 			const child = addEntity(world);
 			addComponent(world, parent, Renderable);
@@ -262,14 +263,14 @@ describe('styleInheritance', () => {
 		});
 
 		it('does not inherit bg', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const parent = addEntity(world);
 			const child = addEntity(world);
 			addComponent(world, parent, Renderable);
 			addComponent(world, child, Renderable);
 			addComponent(world, parent, Hierarchy);
 			addComponent(world, child, Hierarchy);
-			Renderable.bg[parent] = 0xff0000ff;
+			Renderable.bg[parent] = COLORS_RGBA.RED;
 			Renderable.bg[child] = 0x111111ff;
 			appendChild(world, parent, child);
 
@@ -279,7 +280,7 @@ describe('styleInheritance', () => {
 		});
 
 		it('inherits through multiple levels', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const grandparent = addEntity(world);
 			const parent = addEntity(world);
 			const child = addEntity(world);
@@ -289,7 +290,7 @@ describe('styleInheritance', () => {
 			addComponent(world, grandparent, Hierarchy);
 			addComponent(world, parent, Hierarchy);
 			addComponent(world, child, Hierarchy);
-			Renderable.fg[grandparent] = 0xff0000ff;
+			Renderable.fg[grandparent] = COLORS_RGBA.RED;
 			Renderable.fg[parent] = DEFAULT_FG;
 			Renderable.fg[child] = DEFAULT_FG;
 			appendChild(world, grandparent, parent);
@@ -297,14 +298,14 @@ describe('styleInheritance', () => {
 
 			const style = computeInheritedStyle(world, child);
 
-			expect(style.fg).toBe(0xff0000ff);
+			expect(style.fg).toBe(COLORS_RGBA.RED);
 		});
 
 		it('caches computed style', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 			addComponent(world, entity, Renderable);
-			Renderable.fg[entity] = 0xff0000ff;
+			Renderable.fg[entity] = COLORS_RGBA.RED;
 
 			computeInheritedStyle(world, entity);
 
@@ -312,14 +313,14 @@ describe('styleInheritance', () => {
 		});
 
 		it('uses cached style on subsequent calls', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 			addComponent(world, entity, Renderable);
-			Renderable.fg[entity] = 0xff0000ff;
+			Renderable.fg[entity] = COLORS_RGBA.RED;
 
 			const style1 = computeInheritedStyle(world, entity);
 			// Change style (but don't invalidate cache)
-			Renderable.fg[entity] = 0x00ff00ff;
+			Renderable.fg[entity] = COLORS_RGBA.GREEN;
 			const style2 = computeInheritedStyle(world, entity);
 
 			// Should return cached value
@@ -329,10 +330,10 @@ describe('styleInheritance', () => {
 
 	describe('resolveStyle', () => {
 		it('is alias for computeInheritedStyle', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 			addComponent(world, entity, Renderable);
-			Renderable.fg[entity] = 0xff0000ff;
+			Renderable.fg[entity] = COLORS_RGBA.RED;
 
 			const style1 = computeInheritedStyle(world, entity);
 			clearStyleCache();
@@ -344,7 +345,7 @@ describe('styleInheritance', () => {
 
 	describe('cache operations', () => {
 		it('invalidateStyleCache removes entity cache', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 			addComponent(world, entity, Renderable);
 
@@ -363,7 +364,7 @@ describe('styleInheritance', () => {
 		});
 
 		it('invalidateAllStyleCaches invalidates all caches', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity1 = addEntity(world);
 			const entity2 = addEntity(world);
 			addComponent(world, entity1, Renderable);
@@ -378,17 +379,17 @@ describe('styleInheritance', () => {
 		});
 
 		it('cache recomputes after invalidation', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 			addComponent(world, entity, Renderable);
-			Renderable.fg[entity] = 0xff0000ff;
+			Renderable.fg[entity] = COLORS_RGBA.RED;
 
 			computeInheritedStyle(world, entity);
 			invalidateStyleCache(entity);
-			Renderable.fg[entity] = 0x00ff00ff;
+			Renderable.fg[entity] = COLORS_RGBA.GREEN;
 			const style = computeInheritedStyle(world, entity);
 
-			expect(style.fg).toBe(0x00ff00ff);
+			expect(style.fg).toBe(COLORS_RGBA.GREEN);
 		});
 	});
 
@@ -412,28 +413,28 @@ describe('styleInheritance', () => {
 
 	describe('getInheritedProperty', () => {
 		it('returns inherited value', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const parent = addEntity(world);
 			const child = addEntity(world);
 			addComponent(world, parent, Renderable);
 			addComponent(world, child, Renderable);
 			addComponent(world, parent, Hierarchy);
 			addComponent(world, child, Hierarchy);
-			Renderable.fg[parent] = 0xff0000ff;
+			Renderable.fg[parent] = COLORS_RGBA.RED;
 			appendChild(world, parent, child);
 
 			const fg = getInheritedProperty(world, child, 'fg');
 
-			expect(fg).toBe(0xff0000ff);
+			expect(fg).toBe(COLORS_RGBA.RED);
 		});
 	});
 
 	describe('findPropertySource', () => {
 		it('returns entity if it has the property set', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 			addComponent(world, entity, Renderable);
-			Renderable.fg[entity] = 0xff0000ff;
+			Renderable.fg[entity] = COLORS_RGBA.RED;
 
 			const source = findPropertySource(world, entity, 'fg');
 
@@ -441,14 +442,14 @@ describe('styleInheritance', () => {
 		});
 
 		it('returns parent if child has default', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const parent = addEntity(world);
 			const child = addEntity(world);
 			addComponent(world, parent, Renderable);
 			addComponent(world, child, Renderable);
 			addComponent(world, parent, Hierarchy);
 			addComponent(world, child, Hierarchy);
-			Renderable.fg[parent] = 0xff0000ff;
+			Renderable.fg[parent] = COLORS_RGBA.RED;
 			Renderable.fg[child] = DEFAULT_FG;
 			appendChild(world, parent, child);
 
@@ -458,7 +459,7 @@ describe('styleInheritance', () => {
 		});
 
 		it('returns 0 if no source found', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 			addComponent(world, entity, Renderable);
 			Renderable.fg[entity] = DEFAULT_FG;
@@ -469,7 +470,7 @@ describe('styleInheritance', () => {
 		});
 
 		it('returns 0 for entity without hierarchy', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity = addEntity(world);
 			addComponent(world, entity, Renderable);
 			Renderable.fg[entity] = DEFAULT_FG;
@@ -480,7 +481,7 @@ describe('styleInheritance', () => {
 		});
 
 		it('finds source for bold', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const parent = addEntity(world);
 			const child = addEntity(world);
 			addComponent(world, parent, Renderable);
@@ -499,7 +500,7 @@ describe('styleInheritance', () => {
 
 	describe('precomputeStyles', () => {
 		it('caches styles for all entities', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity1 = addEntity(world);
 			const entity2 = addEntity(world);
 			addComponent(world, entity1, Renderable);
@@ -514,18 +515,18 @@ describe('styleInheritance', () => {
 
 	describe('getComputedStyles', () => {
 		it('returns map of computed styles', () => {
-			const world = createWorld();
+			const world = createTestWorld();
 			const entity1 = addEntity(world);
 			const entity2 = addEntity(world);
 			addComponent(world, entity1, Renderable);
 			addComponent(world, entity2, Renderable);
-			Renderable.fg[entity1] = 0xff0000ff;
-			Renderable.fg[entity2] = 0x00ff00ff;
+			Renderable.fg[entity1] = COLORS_RGBA.RED;
+			Renderable.fg[entity2] = COLORS_RGBA.GREEN;
 
 			const styles = getComputedStyles(world, [entity1, entity2]);
 
-			expect(styles.get(entity1)?.fg).toBe(0xff0000ff);
-			expect(styles.get(entity2)?.fg).toBe(0x00ff00ff);
+			expect(styles.get(entity1)?.fg).toBe(COLORS_RGBA.RED);
+			expect(styles.get(entity2)?.fg).toBe(COLORS_RGBA.GREEN);
 		});
 	});
 });

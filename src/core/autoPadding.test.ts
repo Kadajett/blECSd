@@ -6,7 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { BorderType, setBorder } from '../components/border';
 import { setPadding } from '../components/padding';
 import { setAutoPadding } from '../components/screen';
-import { addEntity, createWorld, type World } from '../core/ecs';
+import { addEntity, type World } from '../core/ecs';
+import { createTestWorld, SCREEN_80X24 } from '../testing';
 import {
 	getAutoPadding,
 	getEffectivePadding,
@@ -23,8 +24,8 @@ describe('autoPadding', () => {
 	let entity: Entity;
 
 	beforeEach(() => {
-		world = createWorld();
-		screen = createScreenEntity(world, { width: 80, height: 24 });
+		world = createTestWorld();
+		screen = createScreenEntity(world, SCREEN_80X24);
 		entity = addEntity(world) as Entity;
 	});
 
@@ -43,7 +44,7 @@ describe('autoPadding', () => {
 		});
 
 		it('returns false when no screen exists', () => {
-			const emptyWorld = createWorld();
+			const emptyWorld = createTestWorld();
 			expect(hasAutoPadding(emptyWorld)).toBe(false);
 		});
 	});

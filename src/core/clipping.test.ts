@@ -8,8 +8,9 @@ import { appendChild } from '../components/hierarchy';
 import { setPosition } from '../components/position';
 import { setStyle } from '../components/renderable';
 import { resetScreenSingleton } from '../components/screen';
-import { addEntity, createWorld } from '../core/ecs';
+import { addEntity } from '../core/ecs';
 import { layoutSystem } from '../systems/layoutSystem';
+import { createTestWorld, SCREEN_80X24 } from '../testing';
 import type { ClipRect } from './clipping';
 import {
 	clampToClipRect,
@@ -41,9 +42,9 @@ describe('clipping', () => {
 	let screen: number;
 
 	beforeEach(() => {
-		world = createWorld() as World;
+		world = createTestWorld() as World;
 		resetScreenSingleton(world);
-		screen = createScreenEntity(world, { width: 80, height: 24 });
+		screen = createScreenEntity(world, SCREEN_80X24);
 	});
 
 	describe('Overflow constants', () => {
