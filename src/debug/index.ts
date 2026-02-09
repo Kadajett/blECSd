@@ -592,6 +592,18 @@ export function logWorld(world: World): void {
 
 export { KNOWN_COMPONENTS };
 
+// ECS Inspector (note: inspectEntity and inspectWorld are already exported above)
+export {
+	dumpEntity,
+	dumpWorld,
+	findEntitiesWithComponent,
+	findEntitiesWithComponents,
+	getComponentField,
+	isEntityActive,
+	listEntities,
+	listEntityComponents,
+} from './ecsInspector';
+
 // Memory profiler
 export type {
 	AllocationTracker,
