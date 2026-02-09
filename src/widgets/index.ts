@@ -113,6 +113,20 @@ export {
 	isCheckboxWidget,
 	resetCheckboxWidgetStore,
 } from './checkbox';
+// CommandPalette widget
+export type {
+	Command,
+	CommandPaletteConfig,
+	CommandPaletteTheme,
+	CommandPaletteWidget,
+} from './commandPalette';
+export {
+	CommandPalette,
+	CommandPaletteConfigSchema,
+	createCommandPalette,
+	isCommandPalette,
+	resetCommandPaletteStore,
+} from './commandPalette';
 // Content line manipulation
 export {
 	clearLines,
