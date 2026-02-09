@@ -287,16 +287,21 @@ export function createAccordion(
 	// Initialize expanded sections
 	const expandedSections = new Set<number>();
 	if (defaultExpanded === 'all') {
-		sections.forEach((_, i) => expandedSections.add(i));
+		for (let i = 0; i < sections.length; i++) {
+			expandedSections.add(i);
+		}
 	} else if (Array.isArray(defaultExpanded)) {
-		defaultExpanded.forEach((i) => expandedSections.add(i));
+		for (const i of defaultExpanded) {
+			expandedSections.add(i);
+		}
 	} else {
 		// Use section-level expanded flags
-		sections.forEach((section, i) => {
-			if (section.expanded) {
+		for (let i = 0; i < sections.length; i++) {
+			const section = sections[i];
+			if (section?.expanded) {
 				expandedSections.add(i);
 			}
-		});
+		}
 	}
 
 	// Create section entities

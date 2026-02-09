@@ -144,9 +144,7 @@ describe('Accordion widget', () => {
 		it('should toggle section expanded state', () => {
 			const eid = addEntity(world);
 			createAccordion(world, eid, {
-				sections: [
-					{ title: 'Section 1', content: 'Content 1', expanded: false },
-				],
+				sections: [{ title: 'Section 1', content: 'Content 1', expanded: false }],
 			});
 
 			expect(getExpandedSections(eid)).toEqual([]);
