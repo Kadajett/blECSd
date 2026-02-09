@@ -9,7 +9,7 @@
  */
 
 import { readdirSync, statSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { z } from 'zod';
 import {
 	BORDER_SINGLE,
@@ -43,6 +43,8 @@ export interface FileEntry {
 	readonly isDirectory: boolean;
 	/** File size in bytes (0 for directories) */
 	readonly size: number;
+	/** Last modified time (milliseconds since epoch) */
+	readonly mtime: number;
 }
 
 /**
@@ -72,6 +74,11 @@ export type FileManagerPaddingConfig =
 	  };
 
 /**
+ * Sort method for file entries.
+ */
+export type FileManagerSortBy = 'name' | 'size' | 'date';
+
+/**
  * Configuration for creating a FileManager widget.
  */
 export interface FileManagerConfig {
@@ -81,6 +88,8 @@ export interface FileManagerConfig {
 	readonly showHidden?: boolean;
 	/** Simple glob pattern for filtering files (e.g., '*.ts', '*.js') */
 	readonly filePattern?: string;
+	/** Sort entries by name, size, or date (default: 'name') */
+	readonly sortBy?: FileManagerSortBy;
 	/** Width of the widget */
 	readonly width?: number;
 	/** Height of the widget */
@@ -97,6 +106,8 @@ export interface FileManagerConfig {
 	readonly border?: FileManagerBorderConfig;
 	/** Padding configuration for content area */
 	readonly padding?: FileManagerPaddingConfig;
+	/** Whether to show file icons (default: true) */
+	readonly showIcons?: boolean;
 }
 
 /**
@@ -132,11 +143,23 @@ export interface FileManagerWidget {
 	/** Gets all current directory entries */
 	getEntries(): readonly FileEntry[];
 
+	// Sorting and filtering
+	/** Sets the sort method (name, size, or date) */
+	setSortBy(sortBy: FileManagerSortBy): FileManagerWidget;
+	/** Gets the current sort method */
+	getSortBy(): FileManagerSortBy;
+	/** Toggles hidden file visibility */
+	toggleHidden(): FileManagerWidget;
+
 	// Callbacks
 	/** Registers a callback for when a file is selected (Enter on a file) */
 	onSelect(cb: (entry: FileEntry) => void): FileManagerWidget;
 	/** Registers a callback for when navigating to a directory */
 	onNavigate(cb: (path: string) => void): FileManagerWidget;
+	/** Registers a callback for when a file/directory is deleted */
+	onDelete(cb: (entry: FileEntry) => void): FileManagerWidget;
+	/** Registers a callback for when a file/directory is renamed */
+	onRename(cb: (oldEntry: FileEntry, newName: string) => void): FileManagerWidget;
 
 	// Lifecycle
 	/** Destroys the widget and removes it from the world */
@@ -157,9 +180,15 @@ const DEFAULT_FILE_MANAGER_WIDTH = 40;
 const DEFAULT_FILE_MANAGER_HEIGHT = 20;
 
 /** Icon for directories */
-const DIR_ICON = '/';
+const DIR_ICON = '📁';
+
+/** Icon for files */
+const FILE_ICON = '📄';
 
 /** Icon for parent directory */
+const PARENT_DIR_ICON = '⬆️';
+
+/** Parent directory entry name */
 const PARENT_DIR_ENTRY = '..';
 
 // =============================================================================
@@ -201,6 +230,7 @@ const FileManagerPaddingSchema = z.union([
  * const result = FileManagerConfigSchema.safeParse({
  *   cwd: '/home/user',
  *   showHidden: false,
+ *   sortBy: 'name',
  *   width: 50,
  *   height: 25,
  * });
@@ -210,6 +240,7 @@ export const FileManagerConfigSchema = z.object({
 	cwd: z.string().optional(),
 	showHidden: z.boolean().optional().default(false),
 	filePattern: z.string().optional(),
+	sortBy: z.enum(['name', 'size', 'date']).optional().default('name'),
 	width: z.number().int().positive().optional(),
 	height: z.number().int().positive().optional(),
 	left: z.number().int().optional(),
@@ -218,6 +249,7 @@ export const FileManagerConfigSchema = z.object({
 	bg: z.union([z.string(), z.number()]).optional(),
 	border: FileManagerBorderConfigSchema.optional(),
 	padding: FileManagerPaddingSchema.optional(),
+	showIcons: z.boolean().optional().default(true),
 });
 
 // =============================================================================
@@ -253,12 +285,16 @@ export const FileManager = {
 interface FileManagerState {
 	cwd: string;
 	showHidden: boolean;
+	showIcons: boolean;
 	filePattern: string | undefined;
+	sortBy: FileManagerSortBy;
 	width: number;
 	height: number;
 	entries: FileEntry[];
 	onSelectCallbacks: Array<(entry: FileEntry) => void>;
 	onNavigateCallbacks: Array<(path: string) => void>;
+	onDeleteCallbacks: Array<(entry: FileEntry) => void>;
+	onRenameCallbacks: Array<(oldEntry: FileEntry, newName: string) => void>;
 	/** Injected readDir function (for testing) */
 	readDirFn: (dirPath: string) => FileEntry[];
 }
@@ -307,6 +343,7 @@ function defaultReadDir(dirPath: string): FileEntry[] {
 					path: fullPath,
 					isDirectory: stat.isDirectory(),
 					size: stat.isDirectory() ? 0 : stat.size,
+					mtime: stat.mtimeMs,
 				});
 			} catch {
 				// Skip entries we can't stat (permission denied, broken symlinks, etc.)
@@ -320,14 +357,28 @@ function defaultReadDir(dirPath: string): FileEntry[] {
 }
 
 /**
- * Sorts entries: directories first (alphabetically), then files (alphabetically).
+ * Sorts entries: directories first, then files by specified sort method.
  */
-function sortEntries(entries: readonly FileEntry[]): FileEntry[] {
+function sortEntries(entries: readonly FileEntry[], sortBy: FileManagerSortBy): FileEntry[] {
 	return [...entries].sort((a, b) => {
+		// Always sort directories first
 		if (a.isDirectory !== b.isDirectory) {
 			return a.isDirectory ? -1 : 1;
 		}
-		return a.name.localeCompare(b.name);
+
+		// Then sort by specified method
+		switch (sortBy) {
+			case 'size':
+				if (a.size !== b.size) return b.size - a.size; // Largest first
+				return a.name.localeCompare(b.name); // Fall back to name
+
+			case 'date':
+				if (a.mtime !== b.mtime) return b.mtime - a.mtime; // Newest first
+				return a.name.localeCompare(b.name); // Fall back to name
+
+			default:
+				return a.name.localeCompare(b.name);
+		}
 	});
 }
 
@@ -357,7 +408,7 @@ function loadEntries(state: FileManagerState): FileEntry[] {
 		return [];
 	}
 	const filtered = filterEntries(raw, state.showHidden, state.filePattern);
-	return sortEntries(filtered);
+	return sortEntries(filtered, state.sortBy);
 }
 
 /**
@@ -365,15 +416,27 @@ function loadEntries(state: FileManagerState): FileEntry[] {
  */
 function buildContent(state: FileManagerState): string {
 	const lines: string[] = [];
-	const dirName = basename(state.cwd) || state.cwd;
-	lines.push(`[${dirName}]`);
-	lines.push(PARENT_DIR_ENTRY);
 
+	// Show full path (truncate if too long)
+	const maxPathLen = state.width - 4;
+	let displayPath = state.cwd;
+	if (displayPath.length > maxPathLen) {
+		displayPath = `...${displayPath.slice(-(maxPathLen - 3))}`;
+	}
+	lines.push(`[${displayPath}]`);
+
+	// Parent directory entry
+	const parentPrefix = FileManager.selectedIndex[0] === -1 ? '> ' : '  ';
+	const parentIcon = state.showIcons ? `${PARENT_DIR_ICON} ` : '';
+	lines.push(`${parentPrefix}${parentIcon}${PARENT_DIR_ENTRY}`);
+
+	// File/directory entries
 	for (let i = 0; i < state.entries.length; i++) {
 		const entry = state.entries[i] as FileEntry;
-		const prefix = i === FileManager.selectedIndex[0] ? '> ' : '  ';
-		const suffix = entry.isDirectory ? DIR_ICON : '';
-		lines.push(`${prefix}${entry.name}${suffix}`);
+		const isSelected = i === FileManager.selectedIndex[0];
+		const prefix = isSelected ? '> ' : '  ';
+		const icon = state.showIcons ? (entry.isDirectory ? `${DIR_ICON} ` : `${FILE_ICON} `) : '';
+		lines.push(`${prefix}${icon}${entry.name}`);
 	}
 
 	return lines.join('\n');
@@ -466,8 +529,9 @@ function updateDisplay(world: World, eid: Entity, state: FileManagerState): void
 /**
  * Creates a FileManager widget with the given configuration.
  *
- * The file manager lists directory contents, supports navigation, and
- * fires callbacks when files are selected or directories are entered.
+ * The file manager lists directory contents with icons, supports navigation,
+ * sorting (by name, size, or date), hidden file toggling, and fires callbacks
+ * for file operations (select, navigate, delete, rename).
  *
  * @param world - The ECS world
  * @param config - FileManager configuration
@@ -475,20 +539,42 @@ function updateDisplay(world: World, eid: Entity, state: FileManagerState): void
  *
  * @example
  * ```typescript
- * import { createWorld } from 'blecsd';
- * import { createFileManager } from 'blecsd';
+ * import { createWorld, createFileManager, handleFileManagerKey } from 'blecsd';
  *
  * const world = createWorld();
  * const fm = createFileManager(world, {
  *   cwd: '/home/user',
  *   showHidden: false,
+ *   sortBy: 'name',
+ *   showIcons: true,
  *   width: 50,
  *   height: 25,
  * });
  *
+ * // Register callbacks
  * fm.onSelect((entry) => {
- *   console.log('Selected:', entry.name);
+ *   console.log('Selected file:', entry.name);
  * });
+ *
+ * fm.onNavigate((path) => {
+ *   console.log('Navigated to:', path);
+ * });
+ *
+ * fm.onDelete((entry) => {
+ *   console.log('Delete requested for:', entry.name);
+ * });
+ *
+ * // Sort entries
+ * fm.setSortBy('size');  // Sort by file size
+ * fm.setSortBy('date');  // Sort by modification date
+ *
+ * // Toggle hidden files
+ * fm.toggleHidden();
+ *
+ * // Handle keyboard input
+ * handleFileManagerKey(world, fm.eid, 'enter');  // Open/navigate
+ * handleFileManagerKey(world, fm.eid, 'h');      // Toggle hidden
+ * handleFileManagerKey(world, fm.eid, 's');      // Sort by size
  *
  * fm.show();
  * ```
@@ -509,12 +595,16 @@ export function createFileManager(world: World, config: FileManagerConfig = {}):
 	const state: FileManagerState = {
 		cwd,
 		showHidden: validated.showHidden,
+		showIcons: validated.showIcons,
 		filePattern: validated.filePattern,
+		sortBy: validated.sortBy,
 		width,
 		height,
 		entries: [],
 		onSelectCallbacks: [],
 		onNavigateCallbacks: [],
+		onDeleteCallbacks: [],
+		onRenameCallbacks: [],
 		readDirFn: defaultReadDir,
 	};
 	fileManagerStateMap.set(eid, state);
@@ -618,6 +708,29 @@ function createFileManagerWidgetInterface(world: World, eid: Entity): FileManage
 			return fileManagerStateMap.get(eid)?.entries ?? [];
 		},
 
+		setSortBy(sortBy: FileManagerSortBy): FileManagerWidget {
+			const state = fileManagerStateMap.get(eid);
+			if (!state) return widget;
+			state.sortBy = sortBy;
+			state.entries = loadEntries(state);
+			updateDisplay(world, eid, state);
+			return widget;
+		},
+
+		getSortBy(): FileManagerSortBy {
+			return fileManagerStateMap.get(eid)?.sortBy ?? 'name';
+		},
+
+		toggleHidden(): FileManagerWidget {
+			const state = fileManagerStateMap.get(eid);
+			if (!state) return widget;
+			state.showHidden = !state.showHidden;
+			state.entries = loadEntries(state);
+			FileManager.selectedIndex[eid] = 0;
+			updateDisplay(world, eid, state);
+			return widget;
+		},
+
 		onSelect(cb: (entry: FileEntry) => void): FileManagerWidget {
 			const state = fileManagerStateMap.get(eid);
 			if (state) {
@@ -630,6 +743,22 @@ function createFileManagerWidgetInterface(world: World, eid: Entity): FileManage
 			const state = fileManagerStateMap.get(eid);
 			if (state) {
 				state.onNavigateCallbacks.push(cb);
+			}
+			return widget;
+		},
+
+		onDelete(cb: (entry: FileEntry) => void): FileManagerWidget {
+			const state = fileManagerStateMap.get(eid);
+			if (state) {
+				state.onDeleteCallbacks.push(cb);
+			}
+			return widget;
+		},
+
+		onRename(cb: (oldEntry: FileEntry, newName: string) => void): FileManagerWidget {
+			const state = fileManagerStateMap.get(eid);
+			if (state) {
+				state.onRenameCallbacks.push(cb);
 			}
 			return widget;
 		},
@@ -687,6 +816,12 @@ function navigateToDir(world: World, eid: Entity, state: FileManagerState, dirPa
  * - `down`: Move selection down
  * - `enter`: Open file (fires onSelect) or navigate into directory (fires onNavigate)
  * - `backspace`: Navigate to parent directory
+ * - `h`: Toggle hidden files visibility
+ * - `d`: Delete selected file/directory (fires onDelete callback)
+ * - `r`: Rename selected file/directory (fires onRename callback)
+ * - `n`: Sort by name
+ * - `s`: Sort by size
+ * - `t`: Sort by date/time
  *
  * @param world - The ECS world
  * @param eid - The file manager entity ID
@@ -734,6 +869,57 @@ export function handleFileManagerKey(world: World, eid: Entity, key: string): bo
 			if (parentDir !== state.cwd) {
 				navigateToDir(world, eid, state, parentDir);
 			}
+			return true;
+		}
+
+		case 'h': {
+			state.showHidden = !state.showHidden;
+			state.entries = loadEntries(state);
+			FileManager.selectedIndex[eid] = 0;
+			updateDisplay(world, eid, state);
+			return true;
+		}
+
+		case 'd': {
+			const idx = FileManager.selectedIndex[eid] ?? 0;
+			const entry = state.entries[idx];
+			if (entry) {
+				for (const cb of state.onDeleteCallbacks) {
+					cb(entry);
+				}
+			}
+			return true;
+		}
+
+		case 'r': {
+			const idx = FileManager.selectedIndex[eid] ?? 0;
+			const entry = state.entries[idx];
+			if (entry) {
+				for (const cb of state.onRenameCallbacks) {
+					cb(entry, entry.name); // Callback should prompt for new name
+				}
+			}
+			return true;
+		}
+
+		case 'n': {
+			state.sortBy = 'name';
+			state.entries = loadEntries(state);
+			updateDisplay(world, eid, state);
+			return true;
+		}
+
+		case 's': {
+			state.sortBy = 'size';
+			state.entries = loadEntries(state);
+			updateDisplay(world, eid, state);
+			return true;
+		}
+
+		case 't': {
+			state.sortBy = 'date';
+			state.entries = loadEntries(state);
+			updateDisplay(world, eid, state);
 			return true;
 		}
 
