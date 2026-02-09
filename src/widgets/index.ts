@@ -87,6 +87,15 @@ export {
 	isButtonWidget,
 	resetButtonWidgetStore,
 } from './button';
+// Calendar widget
+export type { CalendarConfig, CalendarTheme, CalendarWidget } from './calendar';
+export {
+	Calendar,
+	CalendarConfigSchema,
+	createCalendar,
+	isCalendar,
+	resetCalendarStore,
+} from './calendar';
 // Canvas widget
 export type { CanvasConfig, CanvasWidget } from './canvas';
 export {
