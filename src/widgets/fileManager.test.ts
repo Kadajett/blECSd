@@ -25,28 +25,34 @@ import {
 
 function createMockEntries(dir: string): FileEntry[] {
 	return [
-		{ name: 'src', path: `${dir}/src`, isDirectory: true, size: 0 },
-		{ name: 'docs', path: `${dir}/docs`, isDirectory: true, size: 0 },
-		{ name: 'README.md', path: `${dir}/README.md`, isDirectory: false, size: 500 },
-		{ name: 'package.json', path: `${dir}/package.json`, isDirectory: false, size: 200 },
-		{ name: 'index.ts', path: `${dir}/index.ts`, isDirectory: false, size: 100 },
+		{ name: 'src', path: `${dir}/src`, isDirectory: true, size: 0, mtime: 1000 },
+		{ name: 'docs', path: `${dir}/docs`, isDirectory: true, size: 0, mtime: 2000 },
+		{ name: 'README.md', path: `${dir}/README.md`, isDirectory: false, size: 500, mtime: 5000 },
+		{
+			name: 'package.json',
+			path: `${dir}/package.json`,
+			isDirectory: false,
+			size: 200,
+			mtime: 4000,
+		},
+		{ name: 'index.ts', path: `${dir}/index.ts`, isDirectory: false, size: 100, mtime: 3000 },
 	];
 }
 
 function createMockEntriesWithHidden(dir: string): FileEntry[] {
 	return [
 		...createMockEntries(dir),
-		{ name: '.gitignore', path: `${dir}/.gitignore`, isDirectory: false, size: 50 },
-		{ name: '.env', path: `${dir}/.env`, isDirectory: false, size: 30 },
-		{ name: '.config', path: `${dir}/.config`, isDirectory: true, size: 0 },
+		{ name: '.gitignore', path: `${dir}/.gitignore`, isDirectory: false, size: 50, mtime: 6000 },
+		{ name: '.env', path: `${dir}/.env`, isDirectory: false, size: 30, mtime: 7000 },
+		{ name: '.config', path: `${dir}/.config`, isDirectory: true, size: 0, mtime: 8000 },
 	];
 }
 
 function createSubdirEntries(dir: string): FileEntry[] {
 	return [
-		{ name: 'components', path: `${dir}/components`, isDirectory: true, size: 0 },
-		{ name: 'utils', path: `${dir}/utils`, isDirectory: true, size: 0 },
-		{ name: 'main.ts', path: `${dir}/main.ts`, isDirectory: false, size: 300 },
+		{ name: 'components', path: `${dir}/components`, isDirectory: true, size: 0, mtime: 1000 },
+		{ name: 'utils', path: `${dir}/utils`, isDirectory: true, size: 0, mtime: 2000 },
+		{ name: 'main.ts', path: `${dir}/main.ts`, isDirectory: false, size: 300, mtime: 3000 },
 	];
 }
 
@@ -134,6 +140,21 @@ describe('FileManager widget', () => {
 		it('rejects non-positive height', () => {
 			const result = FileManagerConfigSchema.safeParse({ height: -1 });
 			expect(result.success).toBe(false);
+		});
+
+		it('validates sortBy option', () => {
+			const result = FileManagerConfigSchema.safeParse({ sortBy: 'size' });
+			expect(result.success).toBe(true);
+		});
+
+		it('rejects invalid sortBy option', () => {
+			const result = FileManagerConfigSchema.safeParse({ sortBy: 'invalid' });
+			expect(result.success).toBe(false);
+		});
+
+		it('validates showIcons option', () => {
+			const result = FileManagerConfigSchema.safeParse({ showIcons: false });
+			expect(result.success).toBe(true);
 		});
 	});
 
@@ -453,6 +474,91 @@ describe('FileManager widget', () => {
 	});
 
 	// =========================================================================
+	// Sorting and filtering
+	// =========================================================================
+
+	describe('setSortBy / getSortBy', () => {
+		it('setSortBy changes sort method', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			fm.setSortBy('size');
+
+			expect(fm.getSortBy()).toBe('size');
+		});
+
+		it('setSortBy re-sorts entries', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			fm.setSortBy('size');
+			const entries = fm.getEntries();
+			const files = entries.filter((e) => !e.isDirectory);
+
+			// First file should be largest
+			expect(files[0]?.size).toBe(500); // README.md
+		});
+
+		it('sorts by date (newest first)', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			fm.setSortBy('date');
+			const entries = fm.getEntries();
+			const files = entries.filter((e) => !e.isDirectory);
+
+			// First file should be newest
+			expect(files[0]?.mtime).toBe(5000); // README.md
+		});
+
+		it('setSortBy returns widget for chaining', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			expect(fm.setSortBy('size')).toBe(fm);
+		});
+	});
+
+	describe('toggleHidden', () => {
+		it('toggles hidden file visibility', () => {
+			const fm = createFileManager(world, { cwd: '/test', showHidden: false });
+			setReadDirFn(fm.eid, mockReadDirWithHidden);
+			fm.refresh();
+
+			const beforeCount = fm.getEntries().length;
+
+			fm.toggleHidden();
+			const afterCount = fm.getEntries().length;
+
+			expect(afterCount).toBeGreaterThan(beforeCount);
+		});
+
+		it('resets selected index to 0', () => {
+			const fm = createFileManager(world, { cwd: '/test', showHidden: false });
+			setReadDirFn(fm.eid, mockReadDirWithHidden);
+			fm.refresh();
+
+			handleFileManagerKey(world, fm.eid, 'down');
+			expect(FileManager.selectedIndex[fm.eid]).toBe(1);
+
+			fm.toggleHidden();
+			expect(FileManager.selectedIndex[fm.eid]).toBe(0);
+		});
+
+		it('returns widget for chaining', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			expect(fm.toggleHidden()).toBe(fm);
+		});
+	});
+
+	// =========================================================================
 	// Key handling
 	// =========================================================================
 
@@ -563,6 +669,75 @@ describe('FileManager widget', () => {
 
 			expect(handleFileManagerKey(world, fm.eid, 'tab')).toBe(false);
 		});
+
+		it('h key toggles hidden files', () => {
+			const fm = createFileManager(world, { cwd: '/test', showHidden: false });
+			setReadDirFn(fm.eid, mockReadDirWithHidden);
+			fm.refresh();
+
+			const beforeCount = fm.getEntries().length;
+
+			handleFileManagerKey(world, fm.eid, 'h');
+
+			const afterCount = fm.getEntries().length;
+			expect(afterCount).toBeGreaterThan(beforeCount);
+		});
+
+		it('n key sorts by name', () => {
+			const fm = createFileManager(world, { cwd: '/test', sortBy: 'size' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			handleFileManagerKey(world, fm.eid, 'n');
+
+			expect(fm.getSortBy()).toBe('name');
+		});
+
+		it('s key sorts by size', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			handleFileManagerKey(world, fm.eid, 's');
+
+			expect(fm.getSortBy()).toBe('size');
+		});
+
+		it('t key sorts by date', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			handleFileManagerKey(world, fm.eid, 't');
+
+			expect(fm.getSortBy()).toBe('date');
+		});
+
+		it('d key fires onDelete callback', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			const deleteCb = vi.fn();
+			fm.onDelete(deleteCb);
+
+			handleFileManagerKey(world, fm.eid, 'd');
+
+			expect(deleteCb).toHaveBeenCalledOnce();
+		});
+
+		it('r key fires onRename callback', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			const renameCb = vi.fn();
+			fm.onRename(renameCb);
+
+			handleFileManagerKey(world, fm.eid, 'r');
+
+			expect(renameCb).toHaveBeenCalledOnce();
+		});
 	});
 
 	// =========================================================================
@@ -615,6 +790,46 @@ describe('FileManager widget', () => {
 			expect(cb1).toHaveBeenCalledOnce();
 			expect(cb2).toHaveBeenCalledOnce();
 		});
+
+		it('onDelete returns widget for chaining', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			expect(fm.onDelete(() => {})).toBe(fm);
+		});
+
+		it('onRename returns widget for chaining', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			expect(fm.onRename(() => {})).toBe(fm);
+		});
+
+		it('supports multiple onDelete callbacks', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			const cb1 = vi.fn();
+			const cb2 = vi.fn();
+			fm.onDelete(cb1).onDelete(cb2);
+
+			handleFileManagerKey(world, fm.eid, 'd');
+
+			expect(cb1).toHaveBeenCalledOnce();
+			expect(cb2).toHaveBeenCalledOnce();
+		});
+
+		it('supports multiple onRename callbacks', () => {
+			const fm = createFileManager(world, { cwd: '/test' });
+			setReadDirFn(fm.eid, mockReadDir);
+			fm.refresh();
+
+			const cb1 = vi.fn();
+			const cb2 = vi.fn();
+			fm.onRename(cb1).onRename(cb2);
+
+			handleFileManagerKey(world, fm.eid, 'r');
+
+			expect(cb1).toHaveBeenCalledOnce();
+			expect(cb2).toHaveBeenCalledOnce();
+		});
 	});
 
 	// =========================================================================
@@ -649,7 +864,7 @@ describe('FileManager widget', () => {
 
 			// Replace with fewer entries
 			setReadDirFn(fm.eid, () => [
-				{ name: 'only.txt', path: '/test/only.txt', isDirectory: false, size: 10 },
+				{ name: 'only.txt', path: '/test/only.txt', isDirectory: false, size: 10, mtime: 1000 },
 			]);
 			fm.refresh();
 
