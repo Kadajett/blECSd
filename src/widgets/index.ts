@@ -87,6 +87,22 @@ export {
 	isButtonWidget,
 	resetButtonWidgetStore,
 } from './button';
+// Canvas widget
+export type { CanvasConfig, CanvasWidget } from './canvas';
+export {
+	Canvas,
+	CanvasConfigSchema,
+	clearCanvas,
+	createCanvas,
+	drawCircle,
+	drawLine,
+	drawRect,
+	drawText,
+	getCanvasContent,
+	isCanvas,
+	resetCanvasStore,
+	setPixel,
+} from './canvas';
 // Chart utilities
 export {
 	BRAILLE_BASE,
