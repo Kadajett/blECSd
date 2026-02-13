@@ -54,8 +54,14 @@ export interface FuzzySearchOptions<T> extends FuzzyOptions {
 	readonly getText?: ((item: T) => string) | undefined;
 }
 
-type ResolvedFuzzyOptions = Omit<Required<FuzzyOptions>, 'limit'> & {
+type ResolvedFuzzyOptions = {
+	readonly caseSensitive: boolean;
+	readonly threshold: number;
 	readonly limit: number | undefined;
+	readonly consecutiveBonus: number;
+	readonly wordBoundaryBonus: number;
+	readonly prefixBonus: number;
+	readonly gapPenalty: number;
 };
 
 // =============================================================================
@@ -79,7 +85,7 @@ export const FuzzyOptionsSchema = z.object({
 // DEFAULTS
 // =============================================================================
 
-const DEFAULT_OPTIONS = {
+const DEFAULT_OPTIONS: ResolvedFuzzyOptions = {
 	caseSensitive: false,
 	threshold: 0,
 	limit: undefined,
@@ -87,10 +93,18 @@ const DEFAULT_OPTIONS = {
 	wordBoundaryBonus: 0.2,
 	prefixBonus: 0.5,
 	gapPenalty: 0.1,
-} satisfies ResolvedFuzzyOptions;
+};
 
 function resolveFuzzyOptions(options: FuzzyOptions = {}): ResolvedFuzzyOptions {
-	return { ...DEFAULT_OPTIONS, ...options };
+	return {
+		caseSensitive: options.caseSensitive ?? DEFAULT_OPTIONS.caseSensitive,
+		threshold: options.threshold ?? DEFAULT_OPTIONS.threshold,
+		limit: options.limit ?? DEFAULT_OPTIONS.limit,
+		consecutiveBonus: options.consecutiveBonus ?? DEFAULT_OPTIONS.consecutiveBonus,
+		wordBoundaryBonus: options.wordBoundaryBonus ?? DEFAULT_OPTIONS.wordBoundaryBonus,
+		prefixBonus: options.prefixBonus ?? DEFAULT_OPTIONS.prefixBonus,
+		gapPenalty: options.gapPenalty ?? DEFAULT_OPTIONS.gapPenalty,
+	};
 }
 
 // =============================================================================
@@ -152,19 +166,19 @@ function calculateFuzzyScore(
 		// Consecutive bonus
 		if (index === previousIndex + 1) {
 			consecutiveCount++;
-			score += opts.consecutiveBonus! * (consecutiveCount / query.length);
+			score += opts.consecutiveBonus * (consecutiveCount / query.length);
 		} else {
 			consecutiveCount = 0;
 			// Gap penalty
 			if (previousIndex >= 0) {
 				const gap = index - previousIndex - 1;
-				score -= opts.gapPenalty! * (gap / text.length);
+				score -= opts.gapPenalty * (gap / text.length);
 			}
 		}
 
 		// Word boundary bonus
 		if (isWordBoundary(text, index)) {
-			score += opts.wordBoundaryBonus! / query.length;
+			score += opts.wordBoundaryBonus / query.length;
 		}
 
 		previousIndex = index;
@@ -172,7 +186,7 @@ function calculateFuzzyScore(
 
 	// Prefix bonus
 	if (indices[0] === 0) {
-		score += opts.prefixBonus!;
+		score += opts.prefixBonus;
 	}
 
 	// Exact match bonus
