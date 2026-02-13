@@ -306,6 +306,29 @@ function calculateCellDimensions(
 	return result;
 }
 
+/** Validates grid cell bounds and throws if invalid */
+function validateGridBounds(
+	row: number,
+	col: number,
+	rowSpan: number,
+	colSpan: number,
+	rows: number,
+	cols: number,
+): void {
+	if (row < 0 || row >= rows) {
+		throw new Error(`Row ${row} out of bounds (0-${rows - 1})`);
+	}
+	if (col < 0 || col >= cols) {
+		throw new Error(`Column ${col} out of bounds (0-${cols - 1})`);
+	}
+	if (row + rowSpan > rows) {
+		throw new Error(`Row span ${rowSpan} exceeds grid bounds (row ${row} + span ${rowSpan} > ${rows})`);
+	}
+	if (col + colSpan > cols) {
+		throw new Error(`Column span ${colSpan} exceeds grid bounds (col ${col} + span ${colSpan} > ${cols})`);
+	}
+}
+
 /**
  * Calculates grid layout and updates child positions/dimensions.
  */
@@ -526,22 +549,7 @@ export function createGrid(world: World, entity: Entity, config: GridConfig = {}
 			if (!currentState) return widget;
 
 			// Validate bounds
-			if (row < 0 || row >= currentState.rows) {
-				throw new Error(`Row ${row} out of bounds (0-${currentState.rows - 1})`);
-			}
-			if (col < 0 || col >= currentState.cols) {
-				throw new Error(`Column ${col} out of bounds (0-${currentState.cols - 1})`);
-			}
-			if (row + rowSpan > currentState.rows) {
-				throw new Error(
-					`Row span ${rowSpan} exceeds grid bounds (row ${row} + span ${rowSpan} > ${currentState.rows})`,
-				);
-			}
-			if (col + colSpan > currentState.cols) {
-				throw new Error(
-					`Column span ${colSpan} exceeds grid bounds (col ${col} + span ${colSpan} > ${currentState.cols})`,
-				);
-			}
+			validateGridBounds(row, col, rowSpan, colSpan, currentState.rows, currentState.cols);
 
 			// Remove from previous cell if already in grid
 			const existingIndex = currentState.cells.findIndex((c) => c.entity === childEid);
