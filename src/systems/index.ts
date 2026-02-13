@@ -283,19 +283,6 @@ export {
 	startUserScroll,
 	updateScrollPhysics,
 } from './smoothScroll';
-// Spring system
-export type { SpringConfig } from './spring';
-export {
-	createSpring,
-	getSpringTarget,
-	isSpringActive,
-	setSpringTarget,
-	Spring,
-	springBouncy,
-	springSmooth,
-	springSnappy,
-	springSystem,
-} from './spring';
 // Spatial hash system
 export type {
 	CellCoord,
@@ -330,6 +317,19 @@ export {
 	spatialHashSystem,
 	worldToCell,
 } from './spatialHash';
+// Spring system
+export type { SpringConfig } from './spring';
+export {
+	createSpring,
+	getSpringTarget,
+	isSpringActive,
+	Spring,
+	setSpringTarget,
+	springBouncy,
+	springSmooth,
+	springSnappy,
+	springSystem,
+} from './spring';
 // State machine system
 export {
 	createStateMachineSystem,

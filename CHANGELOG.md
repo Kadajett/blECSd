@@ -9,18 +9,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Pre-1.0**: Minor version bumps for breaking changes, patch for fixes and features
 - **Post-1.0**: Standard [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-## [0.4.0] - Unreleased
+## [0.4.0] - 2026-02-13
 
 ### Added
 
 #### New Widgets
-- Calendar widget with month/year navigation and date selection (#1066)
+- **Calendar** widget with month/year navigation, date selection, min/max constraints, marked dates, week numbers, and keyboard navigation (#1066)
+- **Multi-Select** widget with checkbox display, Space toggle, Ctrl+A select all, Shift+Arrow range selection, and filter-as-you-type (#1190)
+- **Search Overlay** widget with regex/plain text modes, match highlighting, and next/prev navigation for scrollable content (#1190)
+- **Searchable List** widget with inline filter enhancement, real-time filtering, and selection preservation (#1190)
+- **Context Menu** widget with keyboard navigation, auto-positioning to avoid screen edges, disabled items, and separators (#1192)
 
-#### Audit & Cleanup
-- Terminal app patterns guide (`docs/guides/terminal-patterns.md`)
+#### Core Systems & Architecture
+- **Spring Physics Animation System**: smooth spring-based animations with stiffness, damping, and precision config; includes bouncy, smooth, and snappy presets (#1192)
+- **Constraint Layout System**: flexible layout computation with fixed, percentage, min, max, and ratio constraints; `layoutHorizontal` and `layoutVertical` functions (#1192)
+- **Accessibility Foundation**: ARIA-like roles (button, checkbox, list, textbox, dialog, menu, tree), accessible labels, and `announce()` for screen reader notifications (#1192)
+- **Plugin/Module System**: extensible architecture for bundling components, systems, and lifecycle hooks into reusable modules with dependency resolution and priority ordering
+- **CSS-like Stylesheet System**: declarative style rules with selectors by widget tag, class, and entity ID; CSS-like specificity cascading with Zod validation
+- **2D TUI Render Backend Abstraction**: pluggable `RenderBackend` interface with auto-detection
+  - **AnsiBackend**: standard ANSI escape sequences with optimized cursor movement
+  - **KittyBackend**: Kitty graphics protocol with synchronized output and image encoding
+
+#### Performance
+- **Lazy Query Cache for Packed Adapter**: 320x sync performance improvement (43k to 14M+ ops/sec at 1k entities); `sync()` now stores world ref and bumps frame counter at near-zero cost; unified render system to single indexed-iteration path
+
+#### Documentation
+- Terminal app patterns guide covering command palettes, search overlays, status bars, focus management, and event-driven architecture
+
+### Changed
+- Reduced cognitive complexity across 14+ files to pass Biome lint threshold (max 15); extracted helpers in scheduler, testing/helpers, sparkline, textarea, lineChart, accordion, grid, and more (#1191)
+- Refactored `EntityValidationError` from class to functional style (`createEntityValidationError` factory + `isEntityValidationError` guard)
 - Corrected VERSION constant to match package.json
-- Refactored `EntityValidationError` to functional style
-- Cleaned up barrel exports
+- Cleaned up barrel exports with collision ownership comments
+
+### Fixed
+- Biome lint errors reduced from 32 warnings to 0 (#1191)
+- Non-null assertion errors in `fuzzySearch.ts` and `chartUtils.ts` replaced with proper typing
 
 ### Removed
 - Local `examples/` directory (previously migrated to external repo, now fully removed)
@@ -382,7 +406,7 @@ Initial release of blECSd, a modern terminal UI library built on ECS architectur
 - File Manager
 - Telnet Server
 
-[0.4.0]: https://github.com/Kadajett/blECSd/compare/v0.3.0...HEAD
+[0.4.0]: https://github.com/Kadajett/blECSd/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Kadajett/blECSd/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Kadajett/blECSd/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Kadajett/blECSd/releases/tag/v0.1.0

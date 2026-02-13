@@ -160,13 +160,6 @@ export {
 	isCommandPalette,
 	resetCommandPaletteStore,
 } from './commandPalette';
-// ContextMenu widget
-export type { ContextMenuConfig, ContextMenuItem } from './contextMenu';
-export {
-	createContextMenu,
-	getContextMenuSelectedIndex,
-	handleContextMenuKey,
-} from './contextMenu';
 // Content line manipulation
 export {
 	clearLines,
@@ -190,6 +183,13 @@ export {
 	spliceLines,
 	unshiftLine,
 } from './contentManipulation';
+// ContextMenu widget
+export type { ContextMenuConfig, ContextMenuItem } from './contextMenu';
+export {
+	createContextMenu,
+	getContextMenuSelectedIndex,
+	handleContextMenuKey,
+} from './contextMenu';
 // DevTools widget
 export type {
 	DevToolsComponentInfo,

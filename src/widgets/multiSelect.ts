@@ -313,6 +313,32 @@ const stateMap = new Map<Entity, MultiSelectState>();
 // =============================================================================
 
 /**
+ * Handles vertical navigation with optional shift for range selection.
+ */
+function handleVerticalNav(
+	widget: MultiSelectWidget,
+	state: MultiSelectState,
+	direction: 'up' | 'down',
+	shift: boolean,
+): void {
+	if (direction === 'up') {
+		if (shift) {
+			widget.rangeSelectTo(Math.max(0, state.cursorIndex - 1));
+		} else {
+			widget.cursorUp();
+			state.rangeAnchor = state.cursorIndex;
+		}
+	} else {
+		if (shift) {
+			widget.rangeSelectTo(Math.min(state.filteredIndices.length - 1, state.cursorIndex + 1));
+		} else {
+			widget.cursorDown();
+			state.rangeAnchor = state.cursorIndex;
+		}
+	}
+}
+
+/**
  * Handles navigation keys for multi-select.
  */
 function handleMultiSelectNav(
@@ -322,22 +348,12 @@ function handleMultiSelectNav(
 	shift: boolean,
 ): boolean {
 	if (key === 'up' || key === 'k') {
-		if (shift) {
-			widget.rangeSelectTo(Math.max(0, state.cursorIndex - 1));
-		} else {
-			widget.cursorUp();
-			state.rangeAnchor = state.cursorIndex;
-		}
+		handleVerticalNav(widget, state, 'up', shift);
 		return true;
 	}
 
 	if (key === 'down' || key === 'j') {
-		if (shift) {
-			widget.rangeSelectTo(Math.min(state.filteredIndices.length - 1, state.cursorIndex + 1));
-		} else {
-			widget.cursorDown();
-			state.rangeAnchor = state.cursorIndex;
-		}
+		handleVerticalNav(widget, state, 'down', shift);
 		return true;
 	}
 
@@ -502,6 +518,81 @@ function ensureCursorVisible(state: MultiSelectState): void {
 	}
 }
 
+/**
+ * Initializes the selected indices set, filtering out invalid and disabled items.
+ */
+function initializeSelected(
+	items: readonly MultiSelectItem[],
+	indices: readonly number[],
+): Set<number> {
+	const selected = new Set<number>();
+	for (const idx of indices) {
+		if (idx < 0 || idx >= items.length) {
+			continue;
+		}
+		const item = items[idx];
+		if (item && !item.disabled) {
+			selected.add(idx);
+		}
+	}
+	return selected;
+}
+
+/**
+ * Creates the initial MultiSelectState from validated config.
+ */
+function createMultiSelectState(
+	items: MultiSelectItem[],
+	validated: z.infer<typeof MultiSelectConfigSchema>,
+): MultiSelectState {
+	const selected = initializeSelected(items, validated.selected);
+	const filterLineHeight = validated.filterable ? 1 : 0;
+	const visibleCount = Math.max(1, validated.height - filterLineHeight);
+
+	return {
+		items,
+		selected,
+		cursorIndex: items.length > 0 ? 0 : -1,
+		rangeAnchor: 0,
+		filterQuery: '',
+		filteredIndices: items.map((_, i) => i),
+		filterable: validated.filterable,
+		firstVisible: 0,
+		visibleCount,
+		width: validated.width,
+		fg: validated.fg ?? 0xffffffff,
+		bg: validated.bg ?? 0x000000ff,
+		cursorFg: validated.cursorFg ?? 0x000000ff,
+		cursorBg: validated.cursorBg ?? 0x0088ffff,
+		selectedFg: validated.selectedFg ?? 0x00ff00ff,
+		selectedBg: validated.selectedBg ?? 0x000000ff,
+		disabledFg: validated.disabledFg ?? 0x888888ff,
+		selectionCallbacks: [],
+	};
+}
+
+/**
+ * Renders a single item line for the multi-select widget.
+ */
+function renderItemLine(state: MultiSelectState, viewIndex: number): string | undefined {
+	const actualIdx = getActualIndex(state, viewIndex);
+	if (actualIdx < 0) {
+		return undefined;
+	}
+	const item = state.items[actualIdx];
+	if (!item) {
+		return undefined;
+	}
+
+	const checkbox = state.selected.has(actualIdx) ? CHECKBOX_CHECKED : CHECKBOX_UNCHECKED;
+	const cursor = viewIndex === state.cursorIndex ? '>' : ' ';
+	const maxTextWidth = Math.max(0, state.width - 6);
+	const truncated =
+		item.text.length > maxTextWidth ? `${item.text.slice(0, maxTextWidth - 1)}~` : item.text;
+
+	return `${cursor} ${checkbox} ${truncated}`;
+}
+
 // =============================================================================
 // FACTORY
 // =============================================================================
@@ -543,42 +634,7 @@ export function createMultiSelect(world: World, config: MultiSelectConfig = {}):
 	MultiSelect.focused[eid] = 0;
 
 	const items = normalizeItems(validated.items);
-
-	// Initialize selected set
-	const selected = new Set<number>();
-	for (const idx of validated.selected) {
-		if (idx >= 0 && idx < items.length) {
-			const item = items[idx];
-			if (item && !item.disabled) {
-				selected.add(idx);
-			}
-		}
-	}
-
-	// Determine visible count (account for filter input line if filterable)
-	const filterLineHeight = validated.filterable ? 1 : 0;
-	const visibleCount = Math.max(1, validated.height - filterLineHeight);
-
-	const state: MultiSelectState = {
-		items,
-		selected,
-		cursorIndex: items.length > 0 ? 0 : -1,
-		rangeAnchor: 0,
-		filterQuery: '',
-		filteredIndices: items.map((_, i) => i),
-		filterable: validated.filterable,
-		firstVisible: 0,
-		visibleCount,
-		width: validated.width,
-		fg: validated.fg ?? 0xffffffff,
-		bg: validated.bg ?? 0x000000ff,
-		cursorFg: validated.cursorFg ?? 0x000000ff,
-		cursorBg: validated.cursorBg ?? 0x0088ffff,
-		selectedFg: validated.selectedFg ?? 0x00ff00ff,
-		selectedBg: validated.selectedBg ?? 0x000000ff,
-		disabledFg: validated.disabledFg ?? 0x888888ff,
-		selectionCallbacks: [],
-	};
+	const state = createMultiSelectState(items, validated);
 
 	stateMap.set(eid, state);
 
@@ -837,22 +893,10 @@ export function createMultiSelect(world: World, config: MultiSelectConfig = {}):
 			const endIdx = Math.min(startIdx + state.visibleCount, state.filteredIndices.length);
 
 			for (let i = startIdx; i < endIdx; i++) {
-				const actualIdx = getActualIndex(state, i);
-				if (actualIdx < 0) {
-					continue;
+				const line = renderItemLine(state, i);
+				if (line !== undefined) {
+					lines.push(line);
 				}
-				const item = state.items[actualIdx];
-				if (!item) {
-					continue;
-				}
-
-				const checkbox = state.selected.has(actualIdx) ? CHECKBOX_CHECKED : CHECKBOX_UNCHECKED;
-				const cursor = i === state.cursorIndex ? '>' : ' ';
-				const text = item.text;
-				const maxTextWidth = Math.max(0, state.width - 6); // cursor + space + checkbox + space
-				const truncated = text.length > maxTextWidth ? `${text.slice(0, maxTextWidth - 1)}~` : text;
-
-				lines.push(`${cursor} ${checkbox} ${truncated}`);
 			}
 
 			return lines;
