@@ -487,6 +487,22 @@ export {
 	openModal,
 	resetModalStore,
 } from './modal';
+// MultiSelect widget
+export type {
+	MultiSelectConfig,
+	MultiSelectItem,
+	MultiSelectWidget,
+	SelectionChangeCallback,
+} from './multiSelect';
+export {
+	createMultiSelect,
+	getSelectedItems,
+	isMultiSelect,
+	MultiSelect,
+	MultiSelectConfigSchema,
+	onSelectionChange,
+	resetMultiSelectStore,
+} from './multiSelect';
 // Panel widget
 export type {
 	PanelAction,
@@ -619,6 +635,41 @@ export {
 // ScrollableText widget
 export type { ScrollableTextConfig, ScrollableTextWidget } from './scrollableText';
 export { createScrollableText, isScrollableText } from './scrollableText';
+// SearchableList widget
+export type {
+	SearchableListCallback,
+	SearchableListConfig,
+	SearchableListItem,
+	SearchableListWidget,
+} from './searchableList';
+export {
+	createSearchableList,
+	getSearchableFilteredItems,
+	isSearchableList,
+	resetSearchableListStore,
+	SearchableList,
+	SearchableListConfigSchema,
+	setSearchableFilter,
+} from './searchableList';
+// SearchOverlay widget
+export type {
+	SearchableContent,
+	SearchMode,
+	SearchOverlayConfig,
+	SearchOverlayMatch,
+	SearchOverlayMatchCallback,
+	SearchOverlayWidget,
+} from './searchOverlay';
+export {
+	attachSearchOverlay,
+	createSearchOverlay,
+	getSearchOverlayColors,
+	getSearchOverlayTarget,
+	isSearchOverlay,
+	resetSearchOverlayStore,
+	SearchOverlay,
+	SearchOverlayConfigSchema,
+} from './searchOverlay';
 // Sparkline widget
 export type { SparklineConfig, SparklineWidget } from './sparkline';
 export {
