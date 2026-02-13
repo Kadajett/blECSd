@@ -9,7 +9,162 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Pre-1.0**: Minor version bumps for breaking changes, patch for fixes and features
 - **Post-1.0**: Standard [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-## [Unreleased]
+## [0.4.0] - Unreleased
+
+### Added
+
+#### New Widgets
+- Calendar widget with month/year navigation and date selection (#1066)
+
+#### Audit & Cleanup
+- Terminal app patterns guide (`docs/guides/terminal-patterns.md`)
+- Corrected VERSION constant to match package.json
+- Refactored `EntityValidationError` to functional style
+- Cleaned up barrel exports
+
+### Removed
+- Local `examples/` directory (previously migrated to external repo, now fully removed)
+
+## [0.3.0] - 2026-02-09
+
+### Added
+
+#### New Widgets
+- **Textarea** and **Textbox** input widgets (#1079)
+- **Button**, **Checkbox**, and **RadioButton** form widgets (#1080)
+- **Form** and **ProgressBar** widgets (#1083)
+- **LineChart**, **BarChart**, **Sparkline**, and **Gauge** data visualization widgets (#1085)
+- **Switch** and **Toast** widgets
+- **Header** and **Footer** widgets for persistent UI chrome (#1057)
+- **Accordion** and **Collapsible** widgets (#1058)
+- **Autocomplete** widget with fuzzy matching (#1060)
+- **Markdown** widget for rich text rendering (#1037)
+- **Canvas** widget for custom shape drawing (#1070)
+- **Command Palette** widget (#1074)
+- **Timer** and **Stopwatch** widgets (#1067)
+- **Stacked bar chart** and block characters (#1069)
+
+#### Layout Systems
+- **Grid** layout system (#1065)
+- **Flexbox** layout system (#1072)
+
+#### Developer Experience
+- **DevTools** inspector for runtime ECS state inspection (#1063)
+- **Debug mode** with F12 console for runtime debugging (#993)
+- ECS state inspection utilities (#954)
+- Entity validation utilities with descriptive error messages (#940)
+- TypeScript autocomplete improvements for common widget patterns (#946)
+- TypeScript playground for experimentation (#1044)
+- Enhanced snapshot testing utilities with visual diff reporting (#1048)
+
+#### Components & Core
+- `UserData` component for arbitrary entity data storage
+- `emitDescendants()` for downward event propagation (#1111)
+- `tabSize` option for tab character width (#1100)
+- Element enable/disable state and position keywords (#1084)
+- Absolute positioning helpers for screen-edge anchoring
+- Terminal focus tracking with CSI ? 1004 h/l sequences
+- Screen warning events and logging (#1106)
+- Terminal widget PTY mode configuration (#1050)
+- Theme system for centralized styling and color palettes (#1076)
+- Text tags/markup system for inline styling (#1075)
+- Scrollbar rendering and dashed border styles (#1082)
+- List activation callbacks, multi-select, fuzzy search, and Table column config (#1081)
+- Word navigation and validation for text inputs
+- Basic syntax highlighting for terminal code display (#1062)
+- FileManager directory navigation and file operations (#1054)
+
+#### Schemas
+- Zod validation for 10 config interfaces (#884)
+- Zod validation for 11 additional config interfaces (#1118)
+
+#### Performance & Benchmarks
+- Full-stack render cycle benchmark with frame time breakdown (#969)
+- Memory profiling and GC pressure tracking benchmarks (#970)
+- Startup time and time-to-first-render benchmarks (#971)
+- Layout system performance benchmarks (#974)
+- Animation system performance benchmarks (#976)
+- Text rendering performance benchmarks (#978)
+- Real-world scenario benchmarks (#1026)
+- CI performance regression gates (#1027)
+- Memory leak detection for long-running apps (#1030)
+- Benchmarks for all remaining widgets (#1031)
+
+#### Testing
+- Integration tests for widget + system interactions (#982)
+- End-to-end rendering pipeline tests (#985)
+- Test helper utilities module for world/entity creation (#1105)
+- Shared test fixtures and test data (#1068, #1116)
+- 271 tests for 8 previously untested source files (#1052)
+- Error handling tests for system boundaries (#1064)
+- Error handling tests for terminal I/O boundaries (#1113)
+- Snapshot testing for ANSI output rendering (#1120)
+- Test coverage reporting and threshold enforcement in CI (#1021)
+
+#### Documentation
+- ECS newcomers guide
+- System execution order and phases guide
+- Coordinate system documentation
+- Widgets vs components relationship guide
+- Game API vs ECS API distinction guide
+- API documentation for 9 missing entity factories
+- API reference for core systems module (#1107)
+- API reference for specialized systems (#1103)
+- API documentation for tabSize, warning events, emitDescendants, and Zod schemas (#1121)
+- Testing utilities documentation (#1127)
+- Comprehensive how-to guides for common tasks (#1119)
+- Comprehensive testing guide (#1102)
+- Comprehensive error handling guide (#1098)
+- Comprehensive 3D rendering guide (#1117)
+- Performance optimization guide (#1115)
+- Migration guide from blessed.js to blECSd (#1123)
+- Export patterns clarification for blecsd vs specialized modules (#1125)
+- One-page cheat sheet with common APIs (#957)
+- TUI library comparison matrix (#980)
+- Interactive examples for hello world, dashboard, forms, animation, and ECS game (#943)
+- Library-first design examples with standalone components (#1112)
+- Keyboard shortcuts reference guide (#1108)
+- API reference pages for UserData and absolute positioning
+- API reference for Switch and Toast widgets
+- API documentation for word navigation and validation
+- Code quality investigation findings (#1078)
+- README updated to accurately reflect current library state
+
+### Changed
+
+#### Breaking: Functional Style Enforcement
+- Eliminated `this` keyword from `src/core` and `src/components` (#1099)
+- Eliminated `this` keyword from `src/systems` (#1101)
+- Eliminated `this` keyword from `src/widgets` (#1104)
+- Eliminated `this` keyword from `src/terminal` (#1110)
+- Eliminated all remaining `this` keyword usage (#1114)
+
+#### Refactoring
+- Split `entities.ts` and `list.ts` god files into focused modules (#997)
+- Split `ansi.ts` god file into 8 focused modules (#1124)
+- Consolidated event system API for consistency (#989)
+- Fixed parameter order in top 5 components (#1014)
+- Enabled `exactOptionalPropertyTypes` in tsconfig.json (#1025)
+- Used shared test fixtures in representative test files (#1068)
+- LICENSE updated to Jeremy Stover (Kadajett) for 2026 (#923)
+- Examples repository link added to README (#922)
+
+#### Performance
+- Unified dirty tracking: merged doubleBuffer and dirtyRects systems (#1000)
+- Viewport bounds culling added to renderSystem (#1005)
+- Per-phase frame time telemetry added to scheduler (#1006)
+- Adaptive frame budget enforcement (#1007)
+- Z-order occlusion culling to skip hidden widgets (#1126)
+- Skip sorting in outputSystem for full redraws (#1097)
+- Hot-path system audit and optimization (#1059)
+
+### Fixed
+- Removed direct bitecs `require()` in widget registry (#1091)
+- Bundle size monitoring scripts corrected (#1043)
+
+### Removed
+- Unused `optimizedOutput` module (#1128)
+- Circular import dependencies detected and fixed (#1061)
 
 ## [0.2.0] - 2026-02-06
 
@@ -227,6 +382,7 @@ Initial release of blECSd, a modern terminal UI library built on ECS architectur
 - File Manager
 - Telnet Server
 
-[unreleased]: https://github.com/Kadajett/blECSd/compare/v0.2.0...HEAD
+[0.4.0]: https://github.com/Kadajett/blECSd/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Kadajett/blECSd/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Kadajett/blECSd/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Kadajett/blECSd/releases/tag/v0.1.0
