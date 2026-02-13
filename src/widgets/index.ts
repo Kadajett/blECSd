@@ -160,6 +160,13 @@ export {
 	isCommandPalette,
 	resetCommandPaletteStore,
 } from './commandPalette';
+// ContextMenu widget
+export type { ContextMenuConfig, ContextMenuItem } from './contextMenu';
+export {
+	createContextMenu,
+	getSelectedIndex,
+	handleContextMenuKey,
+} from './contextMenu';
 // Content line manipulation
 export {
 	clearLines,
