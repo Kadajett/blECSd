@@ -2104,7 +2104,7 @@ if (buffer) {
 
 ### See Also
 
-- [Standalone Components Example](../examples/standalone-components.md)
+- [Examples Repository](https://github.com/Kadajett/blECSd-Examples)
 - [Library-First Design](../../CLAUDE.md#library-first-design-hard-requirement)
 
 ---
@@ -2445,7 +2445,7 @@ gameLoop();
 ### See Also
 
 - [Library-First Design](../../CLAUDE.md#library-first-design-hard-requirement)
-- [Standalone Components](../examples/standalone-components.md)
+- [Examples Repository](https://github.com/Kadajett/blECSd-Examples)
 
 ---
 
@@ -2836,4 +2836,4 @@ scheduler.start();
 - [Performance Guide](./performance.md)
 - [Testing Guide](./testing.md)
 - [API Reference](../api/)
-- [Standalone Components](../examples/standalone-components.md)
+- [Examples Repository](https://github.com/Kadajett/blECSd-Examples)

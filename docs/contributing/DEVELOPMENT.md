@@ -40,8 +40,6 @@ blessed/
 │   ├── widgets/            # High-level widgets (box, panel, list, etc.)
 │   ├── schemas/            # Zod validation schemas
 │   └── index.ts            # Public API exports
-├── examples/               # Example applications
-│   └── file-manager/       # File manager example
 ├── docs/                   # Documentation
 │   ├── api/                # API reference
 │   ├── guides/             # How-to guides
@@ -289,23 +287,11 @@ export function createMyWidget(
 }
 ```
 
-## Running Examples
+## Examples
 
-### File Manager
+Examples are maintained in a separate repository: [blECSd-Examples](https://github.com/Kadajett/blECSd-Examples).
 
-```bash
-cd examples/file-manager
-pnpm install
-pnpm start
-```
-
-### Creating a New Example
-
-1. Create a directory under `examples/`
-2. Add a `package.json` with blECSd as a dependency
-3. Create an `index.ts` entry point
-4. Add a `README.md` explaining the example
-5. Document in `docs/examples/`
+To contribute a new example, open a PR against that repository.
 
 ## Debugging
 

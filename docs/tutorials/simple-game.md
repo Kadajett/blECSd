@@ -592,7 +592,7 @@ npx tsx snake.ts
 
 ## Complete Source
 
-See the full example at: `examples/snake/index.ts`
+See the full example in the [blECSd-Examples repository](https://github.com/Kadajett/blECSd-Examples).
 
 ## Next Steps
 

@@ -51,8 +51,7 @@ Step-by-step guides for building applications:
 
 Working applications demonstrating blECSd patterns:
 
-- [Examples Gallery](./examples/index.md) - Overview of all examples
-- [File Manager](./examples/file-manager.md) - Full-featured file manager with tabs, preview, virtualization
+- [Examples Repository](https://github.com/Kadajett/blECSd-Examples) - Runnable examples: file manager, multiplexer, system monitor, and more
 
 ## Guides
 

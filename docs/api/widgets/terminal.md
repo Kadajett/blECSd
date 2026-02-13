@@ -238,5 +238,5 @@ The Terminal widget gracefully degrades if `node-pty` is not available, logging 
 
 - [Encoding Utilities](../utils/encoding.md) - CP437 encoding for ANSI art
 - [ANSI Parser](../ansi.md) - Low-level ANSI parsing
-- [Examples: Multiplexer](../../examples/index.md#multiplexer) - tmux-like terminal manager
-- [Examples: ANSI Viewer](../../examples/index.md#ansi-art-viewer) - Classic ANSI art browser
+- [Examples: Multiplexer](https://github.com/Kadajett/blECSd-Examples) - tmux-like terminal manager
+- [Examples: ANSI Viewer](https://github.com/Kadajett/blECSd-Examples) - Classic ANSI art browser
