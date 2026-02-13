@@ -6,6 +6,14 @@
 import { z } from 'zod';
 import type { System, World } from './types';
 import { LoopPhase } from './types';
+import {
+	createDefaultPackedQueryAdapter,
+	DEFAULT_WORLD_ADAPTER,
+	getWorldAdapter,
+	isPackedQueryAdapter,
+	setWorldAdapter,
+	syncWorldAdapter,
+} from './worldAdapter';
 
 /**
  * Registered system entry.
@@ -37,6 +45,8 @@ export interface FrameTelemetry {
 	totalFrameTime: number;
 	/** Frame number (increments each run) */
 	frameNumber: number;
+	/** Time spent synchronizing world adapter data this frame */
+	adapterSyncMs: number;
 }
 
 /**
@@ -116,6 +126,8 @@ export interface AdaptiveFrameBudgetStatus {
  * Accessed via getDeltaTime() during system execution.
  */
 let currentDeltaTime = 0;
+const autoPackedAdapterEnabled = process.env.BLECSD_PACKED_ADAPTER === '1';
+const worldsWithAutoPackedAdapter = new WeakSet<World>();
 
 /**
  * Gets the current frame's delta time.
@@ -232,6 +244,22 @@ export function createScheduler(): Scheduler {
 		phases.set(phase, []);
 	}
 
+	function maybeEnableAutoPackedAdapter(world: World): void {
+		if (!autoPackedAdapterEnabled) {
+			return;
+		}
+		if (worldsWithAutoPackedAdapter.has(world)) {
+			return;
+		}
+		if (getWorldAdapter(world) !== DEFAULT_WORLD_ADAPTER) {
+			worldsWithAutoPackedAdapter.add(world);
+			return;
+		}
+
+		setWorldAdapter(world, createDefaultPackedQueryAdapter());
+		worldsWithAutoPackedAdapter.add(world);
+	}
+
 	/**
 	 * Creates a new telemetry frame data structure.
 	 * @internal
@@ -249,6 +277,7 @@ export function createScheduler(): Scheduler {
 			phases: phaseData,
 			totalFrameTime: 0,
 			frameNumber: frameCounter++,
+			adapterSyncMs: 0,
 		};
 	}
 
@@ -387,10 +416,38 @@ export function createScheduler(): Scheduler {
 			let budgetExceeded = false;
 
 			let currentWorld = world;
+			maybeEnableAutoPackedAdapter(currentWorld);
+			const adapter = getWorldAdapter(currentWorld);
+			const packedAdapter = isPackedQueryAdapter(adapter) ? adapter : null;
+			const shouldSyncInput = packedAdapter?.syncMode !== 'render_only';
+			const syncAdapter = (): void => {
+				if (!packedAdapter) {
+					return;
+				}
+				if (!telemetryEnabled || !currentTelemetry) {
+					syncWorldAdapter(currentWorld);
+					return;
+				}
+				const syncStart = performance.now();
+				syncWorldAdapter(currentWorld);
+				currentTelemetry.adapterSyncMs += performance.now() - syncStart;
+			};
+			const shouldSyncPhase = (phase: LoopPhase): boolean => {
+				if (!packedAdapter) {
+					return false;
+				}
+				if (packedAdapter.syncMode === 'all') {
+					return true;
+				}
+				return phase === LoopPhase.RENDER;
+			};
 
 			// Always run INPUT systems first (internal)
 			// Note: Input systems run before the INPUT phase, so we include them in INPUT phase timing
 			const inputStart = telemetryEnabled || frameBudgetEnabled ? performance.now() : 0;
+			if (shouldSyncInput) {
+				syncAdapter();
+			}
 			for (const entry of inputSystems) {
 				currentWorld = entry.system(currentWorld);
 			}
@@ -427,6 +484,9 @@ export function createScheduler(): Scheduler {
 							? performance.now()
 							: 0;
 
+				if (shouldSyncPhase(phase)) {
+					syncAdapter();
+				}
 				for (const entry of systems) {
 					currentWorld = entry.system(currentWorld);
 				}
@@ -479,8 +539,15 @@ export function createScheduler(): Scheduler {
 		runInputOnly(world: World, deltaTime: number): World {
 			currentDeltaTime = deltaTime;
 			let currentWorld = world;
+			maybeEnableAutoPackedAdapter(currentWorld);
+			const adapter = getWorldAdapter(currentWorld);
+			const packedAdapter = isPackedQueryAdapter(adapter) ? adapter : null;
+			const shouldSync = packedAdapter?.syncMode !== 'render_only';
 
 			// Run internal input systems
+			if (shouldSync) {
+				syncWorldAdapter(currentWorld);
+			}
 			for (const entry of inputSystems) {
 				currentWorld = entry.system(currentWorld);
 			}
@@ -488,6 +555,9 @@ export function createScheduler(): Scheduler {
 			// Run INPUT phase systems
 			const inputPhaseSystems = phases.get(LoopPhase.INPUT);
 			if (inputPhaseSystems) {
+				if (shouldSync) {
+					syncWorldAdapter(currentWorld);
+				}
 				for (const entry of inputPhaseSystems) {
 					currentWorld = entry.system(currentWorld);
 				}
@@ -508,6 +578,10 @@ export function createScheduler(): Scheduler {
 		runFixedUpdatePhases(world: World, fixedDeltaTime: number): World {
 			currentDeltaTime = fixedDeltaTime;
 			let currentWorld = world;
+			maybeEnableAutoPackedAdapter(currentWorld);
+			const adapter = getWorldAdapter(currentWorld);
+			const packedAdapter = isPackedQueryAdapter(adapter) ? adapter : null;
+			const shouldSync = !!packedAdapter && packedAdapter.syncMode === 'all';
 
 			// Run fixed update phases in order
 			const fixedPhases = [
@@ -523,6 +597,9 @@ export function createScheduler(): Scheduler {
 					continue;
 				}
 
+				if (shouldSync) {
+					syncWorldAdapter(currentWorld);
+				}
 				for (const entry of systems) {
 					currentWorld = entry.system(currentWorld);
 				}
@@ -543,6 +620,18 @@ export function createScheduler(): Scheduler {
 		runRenderPhases(world: World, deltaTime: number): World {
 			currentDeltaTime = deltaTime;
 			let currentWorld = world;
+			maybeEnableAutoPackedAdapter(currentWorld);
+			const adapter = getWorldAdapter(currentWorld);
+			const packedAdapter = isPackedQueryAdapter(adapter) ? adapter : null;
+			const shouldSyncPhase = (phase: LoopPhase): boolean => {
+				if (!packedAdapter) {
+					return false;
+				}
+				if (packedAdapter.syncMode === 'all') {
+					return true;
+				}
+				return phase === LoopPhase.RENDER;
+			};
 
 			// Run render phases in order
 			const renderPhases = [LoopPhase.LAYOUT, LoopPhase.RENDER, LoopPhase.POST_RENDER];
@@ -553,6 +642,9 @@ export function createScheduler(): Scheduler {
 					continue;
 				}
 
+				if (shouldSyncPhase(phase)) {
+					syncWorldAdapter(currentWorld);
+				}
 				for (const entry of systems) {
 					currentWorld = entry.system(currentWorld);
 				}

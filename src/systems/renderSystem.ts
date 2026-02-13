@@ -50,13 +50,10 @@ interface EntityBounds {
 	readonly height: number;
 }
 
-/**
- * Entity with z-index for sorting.
- */
-interface SortedEntity {
-	readonly eid: Entity;
-	readonly z: number;
-}
+/** Reusable scratch array for frame-local render sorting. */
+const renderSortScratch: Entity[] = [];
+/** Reusable scratch array for frame-local occlusion tracking. */
+const occlusionScratch: OcclusionRect[] = [];
 
 // =============================================================================
 // RENDER HELPER FUNCTIONS
@@ -774,16 +771,19 @@ export const renderSystem: System = (world: World): World => {
 		dirtyTracker: renderDirtyTracker,
 	};
 
-	// Query all entities with Position and Renderable via adapter
-	const adapter = getWorldAdapter(world);
-	const entities = adapter.queryRenderables(world);
+	// Query all entities with Position and Renderable via adapter.
+	// PERF: Use indexed iteration for both adapter types (faster than for-of in V8).
+	const entities = getWorldAdapter(world).queryRenderables(world);
+	const entityCount = entities.length;
 
-	// PERF: Reuse arrays across frames to avoid GC pressure
-	// Collect root entities (those without parents or at top level)
-	// and sort by z-index
-	const sortedEntities: SortedEntity[] = [];
+	// PERF: Reuse arrays across frames to avoid GC pressure.
+	// Collect dirty+visible renderables for z-sort.
+	const sortedEntities = renderSortScratch;
+	sortedEntities.length = 0;
 
-	for (const eid of entities) {
+	for (let i = 0; i < entityCount; i++) {
+		const eid = entities[i] as Entity;
+
 		// Only process if visible and dirty
 		if (!isEffectivelyVisible(world, eid)) {
 			continue;
@@ -792,23 +792,20 @@ export const renderSystem: System = (world: World): World => {
 			continue;
 		}
 
-		// PERF: Push directly to array (unavoidable allocation for filtered results)
-		sortedEntities.push({
-			eid,
-			z: Position.z[eid] as number,
-		});
+		sortedEntities.push(eid);
 	}
 
-	// PERF: In-place sort to avoid additional allocations
-	// Sort by z-index (lower renders first, higher renders on top)
-	sortedEntities.sort((a, b) => a.z - b.z);
+	// PERF: In-place sort by z-index (lower renders first).
+	if (sortedEntities.length > 1) {
+		sortedEntities.sort((a, b) => (Position.z[a] as number) - (Position.z[b] as number));
+	}
 
-	// PERF: Reuse occlusion array across frames
-	// Track occluded regions for z-order culling
-	const occludedRegions: OcclusionRect[] = [];
+	// PERF: Reuse occlusion array across frames.
+	const occludedRegions = occlusionScratch;
+	occludedRegions.length = 0;
 
 	// Render each entity with viewport and occlusion culling
-	for (const { eid } of sortedEntities) {
+	for (const eid of sortedEntities) {
 		processEntityWithCulling(ctx, eid, occludedRegions);
 	}
 
@@ -912,9 +909,9 @@ export function renderRect(
  * ```
  */
 export function markAllDirty(world: World): void {
-	const adapter = getWorldAdapter(world);
-	const entities = adapter.queryRenderables(world);
-	for (const eid of entities) {
-		Renderable.dirty[eid] = 1;
+	const entities = getWorldAdapter(world).queryRenderables(world);
+	const len = entities.length;
+	for (let i = 0; i < len; i++) {
+		Renderable.dirty[entities[i] as Entity] = 1;
 	}
 }

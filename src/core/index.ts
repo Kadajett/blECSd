@@ -732,6 +732,7 @@ export type {
 } from './worldAdapter';
 export {
 	clearWorldAdapter,
+	createDefaultPackedQueryAdapter,
 	createPackedQueryAdapter,
 	createWorldAdapter,
 	DEFAULT_WORLD_ADAPTER,
@@ -740,6 +741,7 @@ export {
 	PackedQueryAdapterConfigSchema,
 	PackedQueryRegistrationSchema,
 	setWorldAdapter,
+	syncWorldAdapter,
 } from './worldAdapter';
 // Z-order management
 export {

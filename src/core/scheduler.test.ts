@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createWorld } from '../core/ecs';
+import { Position } from '../components/position';
+import { Renderable } from '../components/renderable';
+import { addComponent, addEntity, createWorld } from './ecs';
 import { createScheduler, getDeltaTime, type Scheduler } from './scheduler';
 import type { System } from './types';
 import { LoopPhase } from './types';
+import { clearWorldAdapter, createPackedQueryAdapter, setWorldAdapter } from './worldAdapter';
 
 describe('Scheduler', () => {
 	let scheduler: Scheduler;
@@ -221,6 +224,37 @@ describe('Scheduler', () => {
 			const result = scheduler.run(world, 0.016);
 
 			expect(result).toBe(world);
+		});
+
+		it('syncs packed query adapters before systems run', () => {
+			const world = createWorld();
+			const adapter = createPackedQueryAdapter({
+				queries: [{ name: 'renderables', components: [Position, Renderable] }],
+			});
+			setWorldAdapter(world, adapter);
+
+			let renderableCount = 0;
+
+			const updateSystem: System = (w) => {
+				const eid = addEntity(w);
+				addComponent(w, eid, Position);
+				addComponent(w, eid, Renderable);
+				return w;
+			};
+
+			const renderSystem: System = (w) => {
+				const renderables = adapter.queryByName('renderables', w) ?? [];
+				renderableCount = renderables.length;
+				return w;
+			};
+
+			scheduler.registerSystem(LoopPhase.UPDATE, updateSystem);
+			scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
+
+			scheduler.run(world, 0.016);
+
+			expect(renderableCount).toBe(1);
+			clearWorldAdapter(world);
 		});
 	});
 
@@ -471,7 +505,31 @@ describe('Scheduler', () => {
 				const telemetry = scheduler.getTelemetry();
 				expect(telemetry).not.toBeNull();
 				expect(telemetry?.totalFrameTime).toBeGreaterThanOrEqual(0);
+				expect(telemetry?.adapterSyncMs).toBeGreaterThanOrEqual(0);
 				expect(telemetry?.phases).toHaveLength(8); // All phases
+			});
+
+			it('tracks adapter sync time for packed adapter worlds', () => {
+				scheduler.enableTelemetry();
+				const world = createWorld();
+				setWorldAdapter(
+					world,
+					createPackedQueryAdapter({
+						queries: [{ name: 'renderables', components: [Position, Renderable] }],
+					}),
+				);
+
+				for (let i = 0; i < 200; i++) {
+					const eid = addEntity(world);
+					addComponent(world, eid, Position);
+					addComponent(world, eid, Renderable);
+				}
+
+				scheduler.run(world, 0.016);
+
+				const telemetry = scheduler.getTelemetry();
+				expect(telemetry).not.toBeNull();
+				expect(telemetry?.adapterSyncMs).toBeGreaterThan(0);
 			});
 
 			it('includes phase-specific timing data', () => {

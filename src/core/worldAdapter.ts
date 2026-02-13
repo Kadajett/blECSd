@@ -14,13 +14,6 @@ import { Position } from '../components/position';
 import { Renderable } from '../components/renderable';
 import type { QueryTerm } from './ecs';
 import { query } from './ecs';
-import type { PackedHandle, PackedStore } from './storage/packedStore';
-import {
-	addToStore,
-	createPackedStore,
-	getStoreData,
-	removeFromStore,
-} from './storage/packedStore';
 import type { Entity, World } from './types';
 
 // =============================================================================
@@ -123,7 +116,19 @@ export interface PackedQueryAdapterConfig {
 	readonly queries: readonly PackedQueryRegistration[];
 	/** Initial capacity for each PackedStore (default: 64) */
 	readonly initialCapacity?: number;
+	/** Synchronization strategy for scheduler integration (default: 'all') */
+	readonly syncMode?: 'all' | 'render_only';
 }
+
+/**
+ * Default named query registrations used for packed-adapter acceleration.
+ *
+ * Keep this list intentionally minimal to avoid sync overhead for unused
+ * queries. Additional queries can be registered explicitly per application.
+ */
+export const DEFAULT_PACKED_QUERY_REGISTRATIONS: readonly PackedQueryRegistration[] = [
+	{ name: 'renderables', components: [Position, Renderable] },
+];
 
 /**
  * Extended adapter backed by PackedStores for cache-friendly iteration.
@@ -184,6 +189,8 @@ export interface PackedQueryAdapter extends WorldAdapter {
 	 * @returns Frozen array of query names
 	 */
 	readonly getRegisteredQueries: () => readonly string[];
+	/** Scheduler sync mode hint. */
+	readonly syncMode: 'all' | 'render_only';
 }
 
 // =============================================================================
@@ -228,18 +235,23 @@ export const PackedQueryRegistrationSchema = z.object({
 export const PackedQueryAdapterConfigSchema = z.object({
 	queries: z.array(PackedQueryRegistrationSchema),
 	initialCapacity: z.number().int().positive().optional(),
+	syncMode: z.enum(['all', 'render_only']).optional(),
 });
 
 // =============================================================================
 // INTERNAL TYPES
 // =============================================================================
 
-/** Internal state for a single named query's PackedStore. */
-interface QueryStoreState {
+/** Internal state for a single named query with lazy frame-cached results. */
+interface QueryCacheState {
 	readonly name: string;
 	readonly components: readonly QueryTerm[];
-	readonly store: PackedStore<number>;
-	readonly handleMap: Map<number, PackedHandle>;
+	/** Cached query result from the last frame this query was accessed. */
+	cachedResult: readonly number[] | null;
+	/** Cached size of the last query result. */
+	cachedSize: number;
+	/** Frame ID when the cache was last populated. */
+	cacheFrameId: number;
 }
 
 // =============================================================================
@@ -351,6 +363,29 @@ export function getWorldAdapter(world: World): WorldAdapter {
 }
 
 /**
+ * Synchronizes the registered world adapter if it is PackedStore-backed.
+ *
+ * Safe to call unconditionally each frame/system tick. For non-packed
+ * adapters this is a no-op.
+ *
+ * @param world - The ECS world
+ *
+ * @example
+ * ```typescript
+ * import { syncWorldAdapter } from 'blecsd';
+ *
+ * // Call before systems that read adapter-backed query data
+ * syncWorldAdapter(world);
+ * ```
+ */
+export function syncWorldAdapter(world: World): void {
+	const adapter = getWorldAdapter(world);
+	if (isPackedQueryAdapter(adapter)) {
+		adapter.sync(world);
+	}
+}
+
+/**
  * Clears any custom adapter for a world.
  *
  * @param world - The ECS world
@@ -371,75 +406,31 @@ export function clearWorldAdapter(world: World): void {
 // =============================================================================
 
 /**
- * Creates the internal state for a single named query.
+ * Creates a lazy cache state for a single named query.
  */
-function createQueryStoreState(
-	name: string,
-	components: readonly QueryTerm[],
-	capacity: number,
-): QueryStoreState {
+function createQueryCacheState(name: string, components: readonly QueryTerm[]): QueryCacheState {
 	return {
 		name,
 		components,
-		store: createPackedStore<number>(capacity),
-		handleMap: new Map<number, PackedHandle>(),
+		cachedResult: null,
+		cachedSize: 0,
+		cacheFrameId: -1,
 	};
 }
 
 /**
- * Synchronizes a single query store with current bitecs query results.
- * Removes departed entities (backward for swap-and-pop safety),
- * then adds new entities.
+ * Ensures a query cache is populated for the current frame.
+ * Lazily runs the bitecs query on first access per frame,
+ * returning the cached result for subsequent accesses.
  */
-function syncQueryStore(state: QueryStoreState, world: World): void {
-	const currentEntities = query(world, [...state.components]) as Entity[];
-	const { store, handleMap } = state;
-
-	// Build set of current entities for O(1) lookup
-	const currentSet = new Set<number>();
-	for (const eid of currentEntities) {
-		currentSet.add(eid as number);
+function ensureQueryCached(state: QueryCacheState, world: World, frameId: number): void {
+	if (state.cacheFrameId === frameId) {
+		return;
 	}
-
-	// Remove departed entities (backward iteration for swap-and-pop safety)
-	const data = getStoreData(store);
-	for (let i = store.size - 1; i >= 0; i--) {
-		const entityId = data[i];
-		if (entityId === undefined || currentSet.has(entityId)) {
-			continue;
-		}
-		const handle = handleMap.get(entityId);
-		if (!handle) {
-			continue;
-		}
-		removeFromStore(store, handle);
-		handleMap.delete(entityId);
-	}
-
-	// Add new entities
-	for (const eid of currentEntities) {
-		const entityNum = eid as number;
-		if (handleMap.has(entityNum)) {
-			continue;
-		}
-		const handle = addToStore(store, entityNum);
-		handleMap.set(entityNum, handle);
-	}
-}
-
-/**
- * Builds a readonly Entity[] from a query store's dense data.
- */
-function buildEntityArray(state: QueryStoreState): readonly Entity[] {
-	const data = getStoreData(state.store);
-	const result: Entity[] = [];
-	for (let i = 0; i < state.store.size; i++) {
-		const eid = data[i];
-		if (eid !== undefined) {
-			result.push(eid as Entity);
-		}
-	}
-	return result;
+	const result = query(world, state.components as QueryTerm[]);
+	state.cachedResult = result as readonly number[];
+	state.cachedSize = result.length;
+	state.cacheFrameId = frameId;
 }
 
 /**
@@ -487,69 +478,88 @@ function buildEntityArray(state: QueryStoreState): readonly Entity[] {
 export function createPackedQueryAdapter(config: PackedQueryAdapterConfig): PackedQueryAdapter {
 	// Validate config structure at the boundary
 	PackedQueryAdapterConfigSchema.parse(config);
-	const capacity = config.initialCapacity ?? 64;
+	const syncMode = config.syncMode ?? 'all';
 
-	// Build internal query stores from typed config
-	const queryStores = new Map<string, QueryStoreState>();
+	// Build internal query caches from typed config
+	const queryStores = new Map<string, QueryCacheState>();
 	for (const reg of config.queries) {
-		queryStores.set(reg.name, createQueryStoreState(reg.name, reg.components, capacity));
+		queryStores.set(reg.name, createQueryCacheState(reg.name, reg.components));
 	}
 
 	// Auto-register 'renderables' if not provided
 	if (!queryStores.has('renderables')) {
-		queryStores.set(
-			'renderables',
-			createQueryStoreState('renderables', [Position, Renderable], capacity),
-		);
+		queryStores.set('renderables', createQueryCacheState('renderables', [Position, Renderable]));
 	}
 
 	const registeredNames = Object.freeze([...queryStores.keys()]);
 
+	// Lazy query cache: sync() stores the world ref and bumps a frame counter.
+	// Actual queries run lazily on first getQueryData/getQuerySize/queryByName access.
+	let syncedWorld: World | null = null;
+	let frameId = 0;
+
 	return {
 		type: 'custom',
+		syncMode,
 
-		queryRenderables(_world: World): readonly Entity[] {
+		queryRenderables(world: World): readonly Entity[] {
 			const state = queryStores.get('renderables');
 			if (!state) {
 				return EMPTY_ENTITY_ARRAY;
 			}
-			return buildEntityArray(state);
+			ensureQueryCached(state, world, frameId);
+			return (state.cachedResult ?? EMPTY_ENTITY_ARRAY) as readonly Entity[];
 		},
 
-		queryByName(name: string, _world: World): readonly Entity[] | undefined {
+		queryByName(name: string, world: World): readonly Entity[] | undefined {
 			const state = queryStores.get(name);
 			if (!state) {
 				return undefined;
 			}
-			return buildEntityArray(state);
+			ensureQueryCached(state, world, frameId);
+			return (state.cachedResult ?? EMPTY_ENTITY_ARRAY) as readonly Entity[];
 		},
 
 		sync(world: World): void {
-			for (const state of queryStores.values()) {
-				syncQueryStore(state, world);
-			}
+			syncedWorld = world;
+			frameId++;
 		},
 
 		getQueryData(name: string): readonly number[] {
 			const state = queryStores.get(name);
-			if (!state) {
+			if (!state || !syncedWorld) {
 				return EMPTY_NUMBER_ARRAY;
 			}
-			return getStoreData(state.store);
+			ensureQueryCached(state, syncedWorld, frameId);
+			return state.cachedResult ?? EMPTY_NUMBER_ARRAY;
 		},
 
 		getQuerySize(name: string): number {
 			const state = queryStores.get(name);
-			if (!state) {
+			if (!state || !syncedWorld) {
 				return 0;
 			}
-			return state.store.size;
+			ensureQueryCached(state, syncedWorld, frameId);
+			return state.cachedSize;
 		},
 
 		getRegisteredQueries(): readonly string[] {
 			return registeredNames;
 		},
 	};
+}
+
+/**
+ * Creates the default PackedQueryAdapter used for TUI acceleration.
+ *
+ * @param _initialCapacity - Deprecated, kept for API compatibility. No longer used.
+ * @returns Packed query adapter with common TUI query registrations
+ */
+export function createDefaultPackedQueryAdapter(_initialCapacity = 256): PackedQueryAdapter {
+	return createPackedQueryAdapter({
+		queries: DEFAULT_PACKED_QUERY_REGISTRATIONS,
+		syncMode: 'render_only',
+	});
 }
 
 /**

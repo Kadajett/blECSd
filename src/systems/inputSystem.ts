@@ -279,6 +279,14 @@ export function pointInEntity(world: World, eid: Entity, x: number, y: number): 
 		return false;
 	}
 
+	return pointInEntityBounds(eid, x, y);
+}
+
+/**
+ * Fast bounds test for entities known to have Position + Dimensions.
+ * @internal
+ */
+function pointInEntityBounds(eid: Entity, x: number, y: number): boolean {
 	const posX = Position.x[eid] ?? 0;
 	const posY = Position.y[eid] ?? 0;
 	const width = Dimensions.width[eid] ?? 0;
@@ -356,15 +364,22 @@ export function hitTest(world: World, x: number, y: number): HitTestResult[] {
  * @returns The topmost interactive entity or null
  */
 export function getInteractiveEntityAt(world: World, x: number, y: number): Entity | null {
-	const hits = hitTest(world, x, y);
+	let topEntity: Entity | null = null;
+	let topZ = Number.NEGATIVE_INFINITY;
 
-	for (const hit of hits) {
-		if (hasInteractive(world, hit.entity)) {
-			return hit.entity;
+	for (const eid of query(world, [Position, Dimensions, Interactive])) {
+		if (!pointInEntityBounds(eid, x, y)) {
+			continue;
 		}
+		const zIndex = Position.z[eid] ?? 0;
+		if (zIndex < topZ) {
+			continue;
+		}
+		topZ = zIndex;
+		topEntity = eid;
 	}
 
-	return null;
+	return topEntity;
 }
 
 /**

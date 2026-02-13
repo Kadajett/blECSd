@@ -37,7 +37,7 @@ export default defineConfig({
 
 		// Benchmark configuration
 		benchmark: {
-			include: ['src/**/*.bench.ts'],
+			include: ['src/**/*.bench.ts', 'benchmarks/**/*.bench.ts'],
 			reporters: ['default'],
 			outputFile: './benchmark-results.json',
 		},
