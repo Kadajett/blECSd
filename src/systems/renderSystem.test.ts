@@ -6,12 +6,13 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { BORDER_SINGLE, BorderType, setBorder, setBorderChars } from '../components/border';
 import { setDimensions } from '../components/dimensions';
 import { appendChild } from '../components/hierarchy';
-import { setPosition, setZIndex } from '../components/position';
+import { Position, setPosition, setZIndex } from '../components/position';
 import { hide, Renderable, setStyle } from '../components/renderable';
 import { clearDirtyTracking, createDirtyTracker, getDirtyRegions } from '../core/dirtyTracking';
 import { addEntity, createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { World } from '../core/types';
+import { clearWorldAdapter, createPackedQueryAdapter, setWorldAdapter } from '../core/worldAdapter';
 import { createCell, createScreenBuffer, getCell } from '../terminal/screen/cell';
 import { layoutSystem } from './layoutSystem';
 import {
@@ -76,6 +77,33 @@ describe('renderSystem', () => {
 			expect(cell?.char).toBe(' ');
 			// Background should be blue (ARGB format: 0xff0000ff)
 			expect(cell?.bg).toBe(0xff0000ff);
+		});
+
+		it('renders with packed query adapter dense data path', () => {
+			const tracker = createDirtyTracker(80, 24);
+			const buffer = createScreenBuffer(80, 24);
+			setRenderBuffer(tracker, buffer);
+
+			const adapter = createPackedQueryAdapter({
+				queries: [{ name: 'renderables', components: [Position, Renderable] }],
+			});
+			setWorldAdapter(world, adapter);
+
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 5);
+			setDimensions(world, entity, 20, 10);
+			setStyle(world, entity, { fg: '#ff0000', bg: '#0000ff' });
+
+			layoutSystem(world);
+			adapter.sync(world);
+			renderSystem(world);
+
+			const cell = getCell(buffer, 10, 5);
+			expect(cell).toBeDefined();
+			expect(cell?.char).toBe(' ');
+			expect(cell?.bg).toBe(0xff0000ff);
+
+			clearWorldAdapter(world);
 		});
 
 		it('skips hidden entities', () => {
