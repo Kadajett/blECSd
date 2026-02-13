@@ -57,7 +57,7 @@ A full-featured terminal file manager demonstrating blECSd's architecture for ha
 ## Quick Start
 
 ```bash
-# From the blessed root directory
+# From the blECSd project root
 pnpm install
 pnpm build
 

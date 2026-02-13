@@ -1,24 +1,34 @@
 /**
- * blECSd Terminal Game Library
+ * blECSd Terminal UI Library
  *
- * A modern terminal game library built on TypeScript and ECS architecture.
+ * A modern terminal UI library built on TypeScript and ECS architecture.
  *
  * @packageDocumentation
  */
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.3.0';
 
-// Conflict-free modules: use export *
+// 3D module exported as namespace to avoid top-level name collisions
 export * as three from './3d';
+
+// Conflict-free modules
 export * from './audio';
-// Components owns TableCell, TableData (table widget component)
+export * from './debug';
+export * from './errors';
+export * from './game';
+export * from './input';
+export * from './schemas';
+export * from './text';
+export * from './types';
+
+// Modules with name collisions between them require explicit disambiguation.
+// When two modules export the same name, the explicit re-export below wins.
+
 export type { DimensionValue, ListItem, TableCell, TableData } from './components';
-// Modules with name collisions: export * then explicitly re-export
-// the ambiguous names from the preferred source module.
+// Components: export all, then re-export names that collide with other modules.
+// Components owns: TextAlign (enum, over utils type alias), getText, setText,
+// scrollBy, scrollToTop, scrollToBottom, etc. (over widgets/bigText or streamingText)
 export * from './components';
-// Disambiguate colliding exports:
-// Components owns these (also in widgets/bigText or widgets/streamingText)
-// Components owns TextAlign (enum) over utils TextAlign (type alias)
 export {
 	ensureCursorVisible,
 	focusNext,
@@ -33,7 +43,6 @@ export {
 	setText,
 	TextAlign,
 } from './components';
-// Core owns CleanupCallback and PositionCache (value)
 export type {
 	BoxConfig,
 	CleanupCallback,
@@ -42,6 +51,9 @@ export type {
 	TextConfig,
 	Unsubscribe,
 } from './core';
+// Core: export all, then re-export names that collide with other modules.
+// Core owns: BoxConfig, CleanupCallback, HitTestResult, PositionValue,
+// TextConfig, Unsubscribe, BoxConfigSchema, hitTest, query, etc.
 export * from './core';
 export {
 	BoxConfigSchema,
@@ -53,16 +65,10 @@ export {
 	setZIndex,
 	TextConfigSchema,
 } from './core';
-export * from './debug';
-export * from './errors';
-export * from './game';
-export * from './input';
-export * from './schemas';
-// Systems owns DirtyRect
-// Systems owns PositionCache (interface from visibilityCulling)
 export type { DirtyRect, PositionCache } from './systems';
+// Systems: export all, then re-export type names that collide.
+// Systems owns: DirtyRect, PositionCache (interface from visibilityCulling)
 export * from './systems';
-// Terminal owns these
 export type {
 	AttrFlags,
 	Cell,
@@ -72,6 +78,9 @@ export type {
 	MouseHandler,
 	TerminalCapabilities,
 } from './terminal';
+// Terminal: export all, then re-export names that collide with other modules.
+// Terminal owns: AttrFlags, Cell, CursorPosition, CursorShape, KeyHandler,
+// MouseHandler, TerminalCapabilities, and various enable/disable functions.
 export * from './terminal';
 export {
 	clearBuffer,
@@ -90,12 +99,11 @@ export {
 	setCursorVisible,
 	stripAnsi,
 } from './terminal';
-export * from './text';
-export * from './types';
+
+// Utils: export all. Names like getLine, getLineCount, etc. are owned by utils
+// and win over any collisions from other modules.
 export * from './utils';
-
-// Utils owns these
 export { getLine, getLineCount, getLines, getStats, renderText } from './utils';
-export * from './widgets';
 
-// Game module (no unique collision exports needed, handled via export *)
+// Widgets: export all
+export * from './widgets';

@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { Position, Renderable, Velocity } from '../components';
 import { addComponent, addEntity, createWorld, removeEntity } from './ecs';
 import {
-	EntityValidationError,
+	createEntityValidationError,
 	isEntityValid,
+	isEntityValidationError,
 	registerComponentName,
 	validateEntity,
 } from './validation';
@@ -43,10 +44,6 @@ describe('validation', () => {
 
 			expect(() => {
 				validateEntity(world, nonExistentEid, [Position], 'testSystem');
-			}).toThrow(EntityValidationError);
-
-			expect(() => {
-				validateEntity(world, nonExistentEid, [Position], 'testSystem');
 			}).toThrow(/Entity 999 does not exist in the world/);
 
 			expect(() => {
@@ -58,10 +55,6 @@ describe('validation', () => {
 			const world = createWorld();
 			const eid = addEntity(world);
 			addComponent(world, eid, Position);
-
-			expect(() => {
-				validateEntity(world, eid, [Position, Velocity], 'movementSystem');
-			}).toThrow(EntityValidationError);
 
 			expect(() => {
 				validateEntity(world, eid, [Position, Velocity], 'movementSystem');
@@ -79,10 +72,6 @@ describe('validation', () => {
 		it('throws when entity is missing multiple required components', () => {
 			const world = createWorld();
 			const eid = addEntity(world);
-
-			expect(() => {
-				validateEntity(world, eid, [Position, Velocity, Renderable], 'renderSystem');
-			}).toThrow(EntityValidationError);
 
 			expect(() => {
 				validateEntity(world, eid, [Position, Velocity, Renderable], 'renderSystem');
@@ -107,10 +96,6 @@ describe('validation', () => {
 			const eid = addEntity(world);
 			addComponent(world, eid, Position);
 			removeEntity(world, eid);
-
-			expect(() => {
-				validateEntity(world, eid, [Position], 'testSystem');
-			}).toThrow(EntityValidationError);
 
 			expect(() => {
 				validateEntity(world, eid, [Position], 'testSystem');
@@ -139,7 +124,7 @@ describe('validation', () => {
 				validateEntity(world, eid, [Position, Velocity, Renderable], 'testSystem');
 				expect.fail('Should have thrown');
 			} catch (error) {
-				if (error instanceof EntityValidationError) {
+				if (isEntityValidationError(error)) {
 					expect(error.message).toContain('Velocity');
 					expect(error.message).toContain('Renderable');
 					expect(error.message).not.toContain('Position'); // This one is present
@@ -165,6 +150,18 @@ describe('validation', () => {
 			expect(() => {
 				validateEntity(world, eid, [Position, Velocity], 'testSystem');
 			}).toThrow(/is missing required components/); // Plural with 's'
+		});
+
+		it('throws errors identifiable with isEntityValidationError', () => {
+			const world = createWorld();
+			const eid = addEntity(world);
+
+			try {
+				validateEntity(world, eid, [Position], 'testSystem');
+				expect.fail('Should have thrown');
+			} catch (error) {
+				expect(isEntityValidationError(error)).toBe(true);
+			}
 		});
 	});
 
@@ -243,21 +240,40 @@ describe('validation', () => {
 		});
 	});
 
-	describe('EntityValidationError', () => {
-		it('is an instance of Error', () => {
-			const error = new EntityValidationError('test message');
+	describe('createEntityValidationError', () => {
+		it('creates an instance of Error', () => {
+			const error = createEntityValidationError('test message');
 			expect(error).toBeInstanceOf(Error);
 		});
 
 		it('has correct name property', () => {
-			const error = new EntityValidationError('test message');
+			const error = createEntityValidationError('test message');
 			expect(error.name).toBe('EntityValidationError');
 		});
 
 		it('preserves message', () => {
 			const message = 'Entity 5 is missing Position component';
-			const error = new EntityValidationError(message);
+			const error = createEntityValidationError(message);
 			expect(error.message).toBe(message);
+		});
+	});
+
+	describe('isEntityValidationError', () => {
+		it('returns true for entity validation errors', () => {
+			const error = createEntityValidationError('test');
+			expect(isEntityValidationError(error)).toBe(true);
+		});
+
+		it('returns false for regular errors', () => {
+			const error = new Error('test');
+			expect(isEntityValidationError(error)).toBe(false);
+		});
+
+		it('returns false for non-error values', () => {
+			expect(isEntityValidationError('not an error')).toBe(false);
+			expect(isEntityValidationError(null)).toBe(false);
+			expect(isEntityValidationError(undefined)).toBe(false);
+			expect(isEntityValidationError(42)).toBe(false);
 		});
 	});
 });
