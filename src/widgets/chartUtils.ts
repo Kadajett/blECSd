@@ -288,7 +288,8 @@ export function getChartColor(index: number): number {
 	const color = CHART_COLORS[index % CHART_COLORS.length];
 	// CHART_COLORS is a const array with known values, so this is safe
 	if (color === undefined) {
-		return 0xff_64_95_ed; // Default to first color (blue)
+		// biome-ignore lint/style/noNonNullAssertion: CHART_COLORS always has at least one element
+		return CHART_COLORS[0]!; // Default to first color
 	}
 	return color;
 }

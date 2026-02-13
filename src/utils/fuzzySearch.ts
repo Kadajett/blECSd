@@ -54,15 +54,10 @@ export interface FuzzySearchOptions<T> extends FuzzyOptions {
 	readonly getText?: ((item: T) => string) | undefined;
 }
 
-type ResolvedFuzzyOptions = {
-	readonly caseSensitive: boolean;
-	readonly threshold: number;
-	readonly limit: number | undefined;
-	readonly consecutiveBonus: number;
-	readonly wordBoundaryBonus: number;
-	readonly prefixBonus: number;
-	readonly gapPenalty: number;
-};
+type ResolvedFuzzyOptions = Omit<
+	{ readonly [K in keyof FuzzyOptions]-?: Exclude<FuzzyOptions[K], undefined> },
+	'limit'
+> & { readonly limit: number | undefined };
 
 // =============================================================================
 // SCHEMA

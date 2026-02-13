@@ -324,7 +324,7 @@ export function createScheduler(): Scheduler {
 
 	/** Creates sync adapter functions for the current world */
 	function createAdapterSyncFunctions(world: World): {
-		readonly syncAdapter: () => void;
+		readonly syncAdapter: (currentWorld?: World) => void;
 		readonly shouldSyncInput: boolean;
 		readonly shouldSyncPhase: (phase: LoopPhase) => boolean;
 	} {
@@ -332,16 +332,17 @@ export function createScheduler(): Scheduler {
 		const packedAdapter = isPackedQueryAdapter(adapter) ? adapter : null;
 		const shouldSyncInput = packedAdapter?.syncMode !== 'render_only';
 
-		const syncAdapter = (): void => {
+		const syncAdapter = (currentWorld?: World): void => {
 			if (!packedAdapter) {
 				return;
 			}
+			const target = currentWorld ?? world;
 			if (!telemetryEnabled || !currentTelemetry) {
-				syncWorldAdapter(world);
+				syncWorldAdapter(target);
 				return;
 			}
 			const syncStart = performance.now();
-			syncWorldAdapter(world);
+			syncWorldAdapter(target);
 			currentTelemetry.adapterSyncMs += performance.now() - syncStart;
 		};
 
@@ -359,10 +360,14 @@ export function createScheduler(): Scheduler {
 	}
 
 	/** Executes input systems and returns updated world */
-	function executeInputSystems(world: World, syncAdapter: () => void, shouldSync: boolean): World {
+	function executeInputSystems(
+		world: World,
+		syncAdapter: (currentWorld?: World) => void,
+		shouldSync: boolean,
+	): World {
 		let currentWorld = world;
 		if (shouldSync) {
-			syncAdapter();
+			syncAdapter(currentWorld);
 		}
 		for (const entry of inputSystems) {
 			currentWorld = entry.system(currentWorld);
@@ -379,10 +384,10 @@ export function createScheduler(): Scheduler {
 	function executePhaseSystem(
 		world: World,
 		systems: readonly SystemEntry[],
-		syncPhase: () => void,
+		syncPhase: (currentWorld: World) => void,
 	): World {
 		let currentWorld = world;
-		syncPhase();
+		syncPhase(currentWorld);
 		for (const entry of systems) {
 			currentWorld = entry.system(currentWorld);
 		}
@@ -463,7 +468,7 @@ export function createScheduler(): Scheduler {
 		inputStart: number,
 		budgetExceeded: boolean,
 		skippedPhases: LoopPhase[],
-		syncAdapter: () => void,
+		syncAdapter: (currentWorld?: World) => void,
 		shouldSyncPhase: (phase: LoopPhase) => boolean,
 	): { world: World; budgetExceeded: boolean } {
 		// Skip phase if over budget
@@ -477,9 +482,9 @@ export function createScheduler(): Scheduler {
 
 		// Execute phase
 		const phaseStart = getPhaseStartTime(phase, inputStart);
-		const syncPhase = (): void => {
+		const syncPhase = (currentWorld: World): void => {
 			if (shouldSyncPhase(phase)) {
-				syncAdapter();
+				syncAdapter(currentWorld);
 			}
 		};
 		const updatedWorld = executePhaseSystem(world, systems, syncPhase);
@@ -501,7 +506,7 @@ export function createScheduler(): Scheduler {
 		world: World,
 		frameStartTime: number,
 		inputStart: number,
-		syncAdapter: () => void,
+		syncAdapter: (currentWorld?: World) => void,
 		shouldSyncPhase: (phase: LoopPhase) => boolean,
 	): { world: World; skippedPhases: LoopPhase[]; budgetExceeded: boolean } {
 		let currentWorld = world;
