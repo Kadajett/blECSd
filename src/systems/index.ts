@@ -52,6 +52,17 @@ export {
 	registerCollisionSystem,
 	resetCollisionState,
 } from './collisionSystem';
+// Constraint layout
+export type { Constraint, Rect } from './constraintLayout';
+export {
+	fixed,
+	layoutHorizontal,
+	layoutVertical,
+	max,
+	min,
+	percentage,
+	ratio,
+} from './constraintLayout';
 // Drag system
 export type {
 	DragConstraints,
