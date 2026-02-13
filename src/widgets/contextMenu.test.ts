@@ -7,7 +7,7 @@ import { createWorld } from '../core/world';
 import {
 	type ContextMenuItem,
 	createContextMenu,
-	getSelectedIndex,
+	getContextMenuSelectedIndex,
 	handleContextMenuKey,
 } from './contextMenu';
 
@@ -205,11 +205,11 @@ describe('contextMenu', () => {
 
 			// Go up from first item (wraps to last)
 			handleContextMenuKey(world, menu, 'up');
-			expect(getSelectedIndex(menu)).toBe(1);
+			expect(getContextMenuSelectedIndex(menu)).toBe(1);
 
 			// Go down from last item (wraps to first)
 			handleContextMenuKey(world, menu, 'down');
-			expect(getSelectedIndex(menu)).toBe(0);
+			expect(getContextMenuSelectedIndex(menu)).toBe(0);
 		});
 
 		it('skips disabled items during navigation', () => {
@@ -228,7 +228,7 @@ describe('contextMenu', () => {
 
 			handleContextMenuKey(world, menu, 'down');
 			// Should skip disabled item and go to Item 3
-			expect(getSelectedIndex(menu)).toBe(2);
+			expect(getContextMenuSelectedIndex(menu)).toBe(2);
 		});
 
 		it('skips separators during navigation', () => {
@@ -247,11 +247,11 @@ describe('contextMenu', () => {
 
 			handleContextMenuKey(world, menu, 'down');
 			// Should skip separator
-			expect(getSelectedIndex(menu)).toBe(2);
+			expect(getContextMenuSelectedIndex(menu)).toBe(2);
 		});
 	});
 
-	describe('getSelectedIndex', () => {
+	describe('getContextMenuSelectedIndex', () => {
 		it('returns current selection', () => {
 			const world = createWorld();
 			const items: ContextMenuItem[] = [
@@ -265,14 +265,14 @@ describe('contextMenu', () => {
 				items,
 			});
 
-			expect(getSelectedIndex(menu)).toBe(0);
+			expect(getContextMenuSelectedIndex(menu)).toBe(0);
 
 			handleContextMenuKey(world, menu, 'down');
-			expect(getSelectedIndex(menu)).toBe(1);
+			expect(getContextMenuSelectedIndex(menu)).toBe(1);
 		});
 
 		it('returns 0 for non-existent menu', () => {
-			expect(getSelectedIndex(999999)).toBe(0);
+			expect(getContextMenuSelectedIndex(999999)).toBe(0);
 		});
 	});
 });

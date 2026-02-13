@@ -164,7 +164,7 @@ export {
 export type { ContextMenuConfig, ContextMenuItem } from './contextMenu';
 export {
 	createContextMenu,
-	getSelectedIndex,
+	getContextMenuSelectedIndex,
 	handleContextMenuKey,
 } from './contextMenu';
 // Content line manipulation
