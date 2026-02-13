@@ -123,7 +123,7 @@ export function createContextMenu(world: World, config: ContextMenuConfig): Enti
 		setText(world, itemEntity, displayText);
 
 		if (!item.separator && !item.disabled) {
-			setFocusable(world, itemEntity, true);
+			setFocusable(world, itemEntity, { focusable: true });
 			setAccessibleRole(world, itemEntity, 'menuitem');
 			setAccessibleLabel(world, itemEntity, item.label);
 		}
@@ -143,7 +143,7 @@ export function createContextMenu(world: World, config: ContextMenuConfig): Enti
 
 	// Set container as focusable menu
 	setAccessibleRole(world, container, 'menu');
-	setFocusable(world, container, true);
+	setFocusable(world, container, { focusable: true });
 
 	return container;
 }
