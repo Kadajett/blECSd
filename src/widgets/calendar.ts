@@ -345,6 +345,41 @@ function isDateInRange(date: Date, minDate: Date | undefined, maxDate: Date | un
 // =============================================================================
 
 /**
+ * Renders a single week's days as a string.
+ * Helper function to reduce complexity in renderCalendar.
+ */
+function renderWeekDays(
+	currentDate: number,
+	daysInMonth: number,
+	showWeekNumbers: boolean,
+	year: number,
+	month: number,
+): { weekLine: string; nextDate: number } {
+	let weekLine = '';
+
+	// Week number
+	if (showWeekNumbers) {
+		const dateForWeek = new Date(year, month, currentDate > 0 ? currentDate : 1);
+		const weekNum = getWeekNumber(dateForWeek);
+		weekLine += `${String(weekNum).padStart(2, ' ')} `;
+	}
+
+	// Days
+	let date = currentDate;
+	for (let day = 0; day < 7; day++) {
+		if (date < 1 || date > daysInMonth) {
+			weekLine += '   ';
+		} else {
+			const dayStr = String(date).padStart(2, ' ');
+			weekLine += `${dayStr} `;
+		}
+		date++;
+	}
+
+	return { weekLine: weekLine.trimEnd(), nextDate: date };
+}
+
+/**
  * Renders the calendar to content lines.
  */
 function renderCalendar(world: World, eid: Entity): void {
@@ -398,27 +433,16 @@ function renderCalendar(world: World, eid: Entity): void {
 	let currentDate = 1 - adjustedFirstDay;
 
 	for (let week = 0; week < 6; week++) {
-		let weekLine = '';
+		const result = renderWeekDays(
+			currentDate,
+			daysInMonth,
+			state.showWeekNumbers,
+			state.year,
+			state.month,
+		);
 
-		// Week number
-		if (state.showWeekNumbers) {
-			const dateForWeek = new Date(state.year, state.month, currentDate > 0 ? currentDate : 1);
-			const weekNum = getWeekNumber(dateForWeek);
-			weekLine += `${String(weekNum).padStart(2, ' ')} `;
-		}
-
-		// Days
-		for (let day = 0; day < 7; day++) {
-			if (currentDate < 1 || currentDate > daysInMonth) {
-				weekLine += '   ';
-			} else {
-				const dayStr = String(currentDate).padStart(2, ' ');
-				weekLine += `${dayStr} `;
-			}
-			currentDate++;
-		}
-
-		lines.push(weekLine.trimEnd());
+		lines.push(result.weekLine);
+		currentDate = result.nextDate;
 
 		if (dayNum > daysInMonth && currentDate > daysInMonth) break;
 	}

@@ -465,6 +465,108 @@ function collectSystemInfo(scheduler: Scheduler | null): SystemInfo[] {
  * devTools.logEvent('player_moved', { x: 10, y: 20 });
  * ```
  */
+/**
+ * Builds layout overrides from validated config.
+ * @internal
+ */
+function buildLayoutOverrides(validated: ValidatedDevToolsConfig): {
+	left?: number;
+	top?: number;
+	width?: number;
+	height?: number;
+} {
+	const overrides: {
+		left?: number;
+		top?: number;
+		width?: number;
+		height?: number;
+	} = {};
+	if (validated.left !== undefined) overrides.left = validated.left;
+	if (validated.top !== undefined) overrides.top = validated.top;
+	if (validated.width !== undefined) overrides.width = validated.width;
+	if (validated.height !== undefined) overrides.height = validated.height;
+	return overrides;
+}
+
+/**
+ * Applies theme styling to the devtools entity.
+ * @internal
+ */
+function applyDevToolsTheme(
+	world: World,
+	eid: Entity,
+	theme: ValidatedDevToolsConfig['theme'],
+): void {
+	if (!theme) {
+		return;
+	}
+
+	const fgColor = theme.fg ? parseColor(theme.fg) : undefined;
+	const bgColor = theme.bg ? parseColor(theme.bg) : undefined;
+	if (fgColor !== undefined || bgColor !== undefined) {
+		setStyle(world, eid, { fg: fgColor, bg: bgColor });
+	}
+}
+
+/**
+ * Builds tab style from theme configuration.
+ * @internal
+ */
+function buildTabStyle(theme: ValidatedDevToolsConfig['theme']):
+	| {
+			tab?: {
+				activeFg?: string | number;
+				activeBg?: string | number;
+				inactiveFg?: string | number;
+				inactiveBg?: string | number;
+			};
+			border?: {
+				fg?: string | number;
+				bg?: string | number;
+			};
+	  }
+	| undefined {
+	if (!theme) {
+		return undefined;
+	}
+
+	const tabsStyle: {
+		tab?: {
+			activeFg?: string | number;
+			activeBg?: string | number;
+			inactiveFg?: string | number;
+			inactiveBg?: string | number;
+		};
+		border?: {
+			fg?: string | number;
+			bg?: string | number;
+		};
+	} = {};
+
+	if (
+		theme.tabActiveFg !== undefined ||
+		theme.tabActiveBg !== undefined ||
+		theme.tabInactiveFg !== undefined ||
+		theme.tabInactiveBg !== undefined
+	) {
+		tabsStyle.tab = {
+			...(theme.tabActiveFg !== undefined && { activeFg: theme.tabActiveFg }),
+			...(theme.tabActiveBg !== undefined && { activeBg: theme.tabActiveBg }),
+			...(theme.tabInactiveFg !== undefined && { inactiveFg: theme.tabInactiveFg }),
+			...(theme.tabInactiveBg !== undefined && { inactiveBg: theme.tabInactiveBg }),
+		};
+	}
+
+	if (theme.borderFg !== undefined || theme.borderBg !== undefined) {
+		tabsStyle.border = {
+			...(theme.borderFg !== undefined && { fg: theme.borderFg }),
+			...(theme.borderBg !== undefined && { bg: theme.borderBg }),
+		};
+	}
+
+	return tabsStyle;
+}
+
 export function createDevTools(
 	world: World,
 	entity: Entity,
@@ -477,17 +579,7 @@ export function createDevTools(
 	DevTools.isDevTools[eid] = 1;
 
 	// Calculate layout
-	const overrides: {
-		left?: number;
-		top?: number;
-		width?: number;
-		height?: number;
-	} = {};
-	if (validated.left !== undefined) overrides.left = validated.left;
-	if (validated.top !== undefined) overrides.top = validated.top;
-	if (validated.width !== undefined) overrides.width = validated.width;
-	if (validated.height !== undefined) overrides.height = validated.height;
-
+	const overrides = buildLayoutOverrides(validated);
 	const layout = calculateLayout(validated.position, overrides);
 
 	// Position and dimensions
@@ -498,57 +590,14 @@ export function createDevTools(
 	setFocusable(world, eid, { focusable: true });
 
 	// Set up style
-	const theme = validated.theme;
-	if (theme) {
-		const fgColor = theme.fg ? parseColor(theme.fg) : undefined;
-		const bgColor = theme.bg ? parseColor(theme.bg) : undefined;
-		if (fgColor !== undefined || bgColor !== undefined) {
-			setStyle(world, eid, { fg: fgColor, bg: bgColor });
-		}
-	}
+	applyDevToolsTheme(world, eid, validated.theme);
 
 	// Create tabs widget for panels
 	const tabsEid = addEntity(world);
 	appendChild(world, eid, tabsEid);
 
 	// Build style configuration if theme is provided
-	let tabsStyle:
-		| {
-				tab?: {
-					activeFg?: string | number;
-					activeBg?: string | number;
-					inactiveFg?: string | number;
-					inactiveBg?: string | number;
-				};
-				border?: {
-					fg?: string | number;
-					bg?: string | number;
-				};
-		  }
-		| undefined;
-
-	if (theme) {
-		tabsStyle = {};
-		if (
-			theme.tabActiveFg !== undefined ||
-			theme.tabActiveBg !== undefined ||
-			theme.tabInactiveFg !== undefined ||
-			theme.tabInactiveBg !== undefined
-		) {
-			tabsStyle.tab = {
-				...(theme.tabActiveFg !== undefined && { activeFg: theme.tabActiveFg }),
-				...(theme.tabActiveBg !== undefined && { activeBg: theme.tabActiveBg }),
-				...(theme.tabInactiveFg !== undefined && { inactiveFg: theme.tabInactiveFg }),
-				...(theme.tabInactiveBg !== undefined && { inactiveBg: theme.tabInactiveBg }),
-			};
-		}
-		if (theme.borderFg !== undefined || theme.borderBg !== undefined) {
-			tabsStyle.border = {
-				...(theme.borderFg !== undefined && { fg: theme.borderFg }),
-				...(theme.borderBg !== undefined && { bg: theme.borderBg }),
-			};
-		}
-	}
+	const tabsStyle = buildTabStyle(validated.theme);
 
 	const tabsConfig: {
 		left: number;

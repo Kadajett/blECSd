@@ -367,6 +367,94 @@ function hideCommandPalette(entity: Entity): void {
 	markDirty(state.world, entity);
 }
 
+/**
+ * Applies theme styling to the input entity.
+ * @internal
+ */
+function applyInputTheme(
+	world: World,
+	inputEntity: Entity,
+	theme: CommandPaletteTheme | undefined,
+): void {
+	if (!theme?.inputFg && !theme?.inputBg) {
+		return;
+	}
+
+	const fg = typeof theme.inputFg === 'string' ? parseColor(theme.inputFg) : theme.inputFg;
+	const bg = typeof theme.inputBg === 'string' ? parseColor(theme.inputBg) : theme.inputBg;
+	setStyle(world, inputEntity, { fg, bg });
+}
+
+/**
+ * Applies theme styling to the list entity.
+ * @internal
+ */
+function applyListTheme(
+	world: World,
+	listEntity: Entity,
+	theme: CommandPaletteTheme | undefined,
+): void {
+	if (!theme?.listFg && !theme?.listBg) {
+		return;
+	}
+
+	const fg = typeof theme.listFg === 'string' ? parseColor(theme.listFg) : theme.listFg;
+	const bg = typeof theme.listBg === 'string' ? parseColor(theme.listBg) : theme.listBg;
+	if (fg !== undefined || bg !== undefined) {
+		setStyle(world, listEntity, { fg, bg });
+	}
+}
+
+/**
+ * Creates and configures the input field entity.
+ * @internal
+ */
+function createInputEntity(
+	world: World,
+	parentEntity: Entity,
+	placeholder: string,
+	theme: CommandPaletteTheme | undefined,
+): Entity {
+	const inputEntity = addEntity(world);
+	createBox(world, inputEntity);
+	setPosition(world, inputEntity, 1, 1);
+	appendChild(world, parentEntity, inputEntity);
+
+	attachTextInputBehavior(world, inputEntity);
+	setTextInputConfig(world, inputEntity, { placeholder });
+
+	applyInputTheme(world, inputEntity, theme);
+
+	return inputEntity;
+}
+
+/**
+ * Creates and configures the results list entity.
+ * @internal
+ */
+function createListEntity(
+	world: World,
+	parentEntity: Entity,
+	width: number,
+	maxResults: number,
+	theme: CommandPaletteTheme | undefined,
+): Entity {
+	const listEntity = addEntity(world);
+	setPosition(world, listEntity, 1, 3);
+	appendChild(world, parentEntity, listEntity);
+
+	const listConfig: ListWidgetConfig = {
+		items: [],
+		width: width - 2,
+		height: Math.min(maxResults + 2, 12),
+	};
+
+	applyListTheme(world, listEntity, theme);
+	createList(world, listEntity, listConfig);
+
+	return listEntity;
+}
+
 // =============================================================================
 // WIDGET FACTORY
 // =============================================================================
@@ -424,7 +512,7 @@ export function createCommandPalette(
 	const placeholder = validated.placeholder ?? 'Type a command...';
 	const maxResults = validated.maxResults ?? 10;
 	const width = validated.width ?? 60;
-	const theme = validated.theme;
+	const theme = validated.theme as CommandPaletteTheme | undefined;
 
 	// Create container box
 	createBox(world, entity);
@@ -432,45 +520,10 @@ export function createCommandPalette(
 	setVisible(world, entity, false); // Start hidden
 
 	// Create input field
-	const inputEntity = addEntity(world);
-	createBox(world, inputEntity);
-	setPosition(world, inputEntity, 1, 1);
-	appendChild(world, entity, inputEntity);
-
-	// Setup text input behavior
-	attachTextInputBehavior(world, inputEntity);
-	setTextInputConfig(world, inputEntity, {
-		placeholder,
-	});
-
-	// Apply input theme
-	if (theme?.inputFg !== undefined || theme?.inputBg !== undefined) {
-		const fg = typeof theme.inputFg === 'string' ? parseColor(theme.inputFg) : theme.inputFg;
-		const bg = typeof theme.inputBg === 'string' ? parseColor(theme.inputBg) : theme.inputBg;
-		setStyle(world, inputEntity, { fg, bg });
-	}
+	const inputEntity = createInputEntity(world, entity, placeholder, theme);
 
 	// Create results list
-	const listEntity = addEntity(world);
-	setPosition(world, listEntity, 1, 3);
-	appendChild(world, entity, listEntity);
-
-	const listConfig: ListWidgetConfig = {
-		items: [],
-		width: width - 2,
-		height: Math.min(maxResults + 2, 12),
-	};
-
-	// Apply list theme
-	if (theme?.listFg !== undefined || theme?.listBg !== undefined) {
-		const fg = typeof theme.listFg === 'string' ? parseColor(theme.listFg) : theme.listFg;
-		const bg = typeof theme.listBg === 'string' ? parseColor(theme.listBg) : theme.listBg;
-		if (fg !== undefined || bg !== undefined) {
-			setStyle(world, listEntity, { fg, bg });
-		}
-	}
-
-	createList(world, listEntity, listConfig);
+	const listEntity = createListEntity(world, entity, width, maxResults, theme);
 
 	// Initialize state
 	const state: CommandPaletteState = {

@@ -295,6 +295,55 @@ const flexContainerStateMap = new Map<Entity, FlexContainerState>();
 // =============================================================================
 
 /**
+ * Positions a single child within a flex line.
+ * Helper function to reduce complexity in applyFlexLayout.
+ */
+function positionFlexChild(
+	world: World,
+	child: FlexChildState,
+	containerPos: { x: number; y: number },
+	mainPos: number,
+	mainChildSize: number,
+	crossOffset: number,
+	crossPos: number,
+	isRow: boolean,
+): void {
+	const childEntity = child.entity;
+	const childCrossSize = getCrossSize(world, childEntity, isRow);
+
+	// Set position and dimensions
+	if (isRow) {
+		setPosition(
+			world,
+			childEntity,
+			containerPos.x + mainPos,
+			containerPos.y + crossOffset + crossPos,
+		);
+		setDimensions(
+			world,
+			childEntity,
+			mainChildSize as DimensionValue,
+			childCrossSize as DimensionValue,
+		);
+	} else {
+		setPosition(
+			world,
+			childEntity,
+			containerPos.x + crossPos,
+			containerPos.y + crossOffset + mainPos,
+		);
+		setDimensions(
+			world,
+			childEntity,
+			childCrossSize as DimensionValue,
+			mainChildSize as DimensionValue,
+		);
+	}
+
+	markDirty(world, childEntity);
+}
+
+/**
  * Applies flexbox layout to children.
  */
 function applyFlexLayout(world: World, containerEid: Entity, state: FlexContainerState): void {
@@ -336,45 +385,24 @@ function applyFlexLayout(world: World, containerEid: Entity, state: FlexContaine
 			const child = line.children[i];
 			if (!child) continue;
 
-			const childEntity = child.entity;
 			const mainPos = positions[i] ?? 0;
 			const mainChildSize = sizes[i] ?? 0;
 
 			// Calculate cross axis position
 			const alignSelf = child.alignSelf ?? state.alignItems;
-			const childCrossSize = getCrossSize(world, childEntity, isRow);
+			const childCrossSize = getCrossSize(world, child.entity, isRow);
 			const crossPos = calculateCrossPosition(alignSelf, lineCrossSize, childCrossSize);
 
-			// Set position and dimensions
-			if (isRow) {
-				setPosition(
-					world,
-					childEntity,
-					containerPos.x + mainPos,
-					containerPos.y + crossOffset + crossPos,
-				);
-				setDimensions(
-					world,
-					childEntity,
-					mainChildSize as DimensionValue,
-					childCrossSize as DimensionValue,
-				);
-			} else {
-				setPosition(
-					world,
-					childEntity,
-					containerPos.x + crossPos,
-					containerPos.y + crossOffset + mainPos,
-				);
-				setDimensions(
-					world,
-					childEntity,
-					childCrossSize as DimensionValue,
-					mainChildSize as DimensionValue,
-				);
-			}
-
-			markDirty(world, childEntity);
+			positionFlexChild(
+				world,
+				child,
+				containerPos,
+				mainPos,
+				mainChildSize,
+				crossOffset,
+				crossPos,
+				isRow,
+			);
 		}
 
 		crossOffset += lineCrossSize + state.gap;
@@ -484,20 +512,15 @@ function getCrossSize(world: World, entity: Entity, isRow: boolean): number {
 	return isRow ? dims.height : dims.width;
 }
 
-function distributeMainAxis(
+/**
+ * Calculates child sizes based on flex grow/shrink.
+ * Helper function to reduce complexity in distributeMainAxis.
+ */
+function calculateFlexSizes(
 	children: FlexChildState[],
-	containerSize: number,
+	availableSpace: number,
 	contentSize: number,
-	gap: number,
-	justifyContent: JustifyContent,
-): { positions: number[]; sizes: number[] } {
-	const positions: number[] = [];
-	const sizes: number[] = [];
-
-	if (children.length === 0) {
-		return { positions, sizes };
-	}
-
+): number[] {
 	// Calculate total flex grow/shrink
 	let totalFlex = 0;
 	let totalShrink = 0;
@@ -506,8 +529,6 @@ function distributeMainAxis(
 		totalShrink += child.flexShrink;
 	}
 
-	const totalGap = gap * (children.length - 1);
-	const availableSpace = containerSize - totalGap;
 	const freeSpace = availableSpace - contentSize;
 
 	// Distribute space
@@ -531,45 +552,95 @@ function distributeMainAxis(
 		childSizes.push(Math.max(0, size));
 	}
 
+	return childSizes;
+}
+
+/**
+ * Calculates initial position based on justifyContent.
+ * Helper function to reduce complexity in distributeMainAxis.
+ */
+function calculateStartPosition(
+	justifyContent: JustifyContent,
+	remainingSpace: number,
+	childCount: number,
+): number {
+	switch (justifyContent) {
+		case 'start':
+			return 0;
+		case 'center':
+			return remainingSpace / 2;
+		case 'end':
+			return remainingSpace;
+		case 'space-between':
+			return 0;
+		case 'space-around':
+			return remainingSpace / (childCount * 2);
+		case 'space-evenly':
+			return remainingSpace / (childCount + 1);
+	}
+}
+
+/**
+ * Calculates position increment for each child.
+ * Helper function to reduce complexity in distributeMainAxis.
+ */
+function calculatePositionIncrement(
+	justifyContent: JustifyContent,
+	childSize: number,
+	gap: number,
+	remainingSpace: number,
+	childCount: number,
+): number {
+	if (justifyContent === 'space-between' && childCount > 1) {
+		return childSize + gap + remainingSpace / (childCount - 1);
+	}
+	if (justifyContent === 'space-around') {
+		return childSize + gap + remainingSpace / childCount;
+	}
+	if (justifyContent === 'space-evenly') {
+		return childSize + gap + remainingSpace / (childCount + 1);
+	}
+	return childSize + gap;
+}
+
+function distributeMainAxis(
+	children: FlexChildState[],
+	containerSize: number,
+	contentSize: number,
+	gap: number,
+	justifyContent: JustifyContent,
+): { positions: number[]; sizes: number[] } {
+	const positions: number[] = [];
+	const sizes: number[] = [];
+
+	if (children.length === 0) {
+		return { positions, sizes };
+	}
+
+	const totalGap = gap * (children.length - 1);
+	const availableSpace = containerSize - totalGap;
+
+	// Calculate child sizes with flex grow/shrink
+	const childSizes = calculateFlexSizes(children, availableSpace, contentSize);
+
 	// Calculate positions based on justifyContent
-	let position = 0;
 	const actualContentSize = childSizes.reduce((sum, size) => sum + size, 0) + totalGap;
 	const remainingSpace = containerSize - actualContentSize;
 
-	switch (justifyContent) {
-		case 'start':
-			position = 0;
-			break;
-		case 'center':
-			position = remainingSpace / 2;
-			break;
-		case 'end':
-			position = remainingSpace;
-			break;
-		case 'space-between':
-			position = 0;
-			break;
-		case 'space-around':
-			position = remainingSpace / (children.length * 2);
-			break;
-		case 'space-evenly':
-			position = remainingSpace / (children.length + 1);
-			break;
-	}
+	let position = calculateStartPosition(justifyContent, remainingSpace, children.length);
 
 	for (let i = 0; i < children.length; i++) {
+		const childSize = childSizes[i] ?? 0;
 		positions.push(position);
-		sizes.push(childSizes[i] ?? 0);
+		sizes.push(childSize);
 
-		if (justifyContent === 'space-between' && children.length > 1) {
-			position += (childSizes[i] ?? 0) + gap + remainingSpace / (children.length - 1);
-		} else if (justifyContent === 'space-around') {
-			position += (childSizes[i] ?? 0) + gap + remainingSpace / children.length;
-		} else if (justifyContent === 'space-evenly') {
-			position += (childSizes[i] ?? 0) + gap + remainingSpace / (children.length + 1);
-		} else {
-			position += (childSizes[i] ?? 0) + gap;
-		}
+		position += calculatePositionIncrement(
+			justifyContent,
+			childSize,
+			gap,
+			remainingSpace,
+			children.length,
+		);
 	}
 
 	return { positions, sizes };

@@ -203,20 +203,10 @@ function getFillColor(value: number, state: GaugeState): number | undefined {
 }
 
 /**
- * Renders the gauge content.
+ * Builds the status text for the gauge.
  * @internal
  */
-function renderGauge(state: GaugeState, width: number, height: number): string {
-	const lines: string[] = [];
-
-	// Calculate the fill width
-	const fillWidth = Math.round(state.value * width);
-	const emptyWidth = width - fillWidth;
-
-	// Build the gauge bar
-	const bar = state.fillChar.repeat(fillWidth) + state.emptyChar.repeat(emptyWidth);
-
-	// Build status text
+function buildStatusText(state: GaugeState): string {
 	let statusText = '';
 	if (state.label) {
 		statusText = state.label;
@@ -230,36 +220,81 @@ function renderGauge(state: GaugeState, width: number, height: number): string {
 		const valueText = `${actualValue.toFixed(1)}/${state.max}`;
 		statusText = statusText ? `${statusText} ${valueText}` : valueText;
 	}
+	return statusText;
+}
 
-	// Overlay status text on the bar if it fits
-	if (height === 1) {
-		if (statusText && statusText.length < width) {
-			const padding = Math.floor((width - statusText.length) / 2);
-			const overlay = ' '.repeat(padding) + statusText;
+/**
+ * Merges status text overlay with the gauge bar.
+ * @internal
+ */
+function mergeStatusWithBar(bar: string, statusText: string, width: number): string {
+	const padding = Math.floor((width - statusText.length) / 2);
+	const overlay = ' '.repeat(padding) + statusText;
 
-			// Merge with bar (show text over bar)
-			let result = '';
-			for (let i = 0; i < width; i++) {
-				if (i < overlay.length && overlay[i] !== ' ') {
-					result += overlay[i];
-				} else {
-					result += bar[i] ?? ' ';
-				}
-			}
-			lines.push(result);
+	let result = '';
+	for (let i = 0; i < width; i++) {
+		if (i < overlay.length && overlay[i] !== ' ') {
+			result += overlay[i];
 		} else {
-			lines.push(bar);
-		}
-	} else {
-		// Multi-line gauge: bar on first line, text below
-		lines.push(bar);
-		if (statusText) {
-			lines.push(statusText.padEnd(width, ' '));
-		}
-		while (lines.length < height) {
-			lines.push(' '.repeat(width));
+			result += bar[i] ?? ' ';
 		}
 	}
+	return result;
+}
+
+/**
+ * Renders a single-line gauge with optional overlaid text.
+ * @internal
+ */
+function renderSingleLineGauge(bar: string, statusText: string, width: number): string[] {
+	if (!statusText || statusText.length >= width) {
+		return [bar];
+	}
+
+	const merged = mergeStatusWithBar(bar, statusText, width);
+	return [merged];
+}
+
+/**
+ * Renders a multi-line gauge with bar on first line and text below.
+ * @internal
+ */
+function renderMultiLineGauge(
+	bar: string,
+	statusText: string,
+	width: number,
+	height: number,
+): string[] {
+	const lines: string[] = [bar];
+	if (statusText) {
+		lines.push(statusText.padEnd(width, ' '));
+	}
+	while (lines.length < height) {
+		lines.push(' '.repeat(width));
+	}
+	return lines;
+}
+
+/**
+ * Renders the gauge content.
+ * @internal
+ */
+function renderGauge(state: GaugeState, width: number, height: number): string {
+	// Calculate the fill width
+	const fillWidth = Math.round(state.value * width);
+	const emptyWidth = width - fillWidth;
+
+	// Build the gauge bar
+	const bar = state.fillChar.repeat(fillWidth) + state.emptyChar.repeat(emptyWidth);
+
+	// Build status text
+	const statusText = buildStatusText(state);
+
+	// Overlay status text on the bar if it fits
+	const lines =
+		height === 1
+			? renderSingleLineGauge(bar, statusText, width)
+			: renderMultiLineGauge(bar, statusText, width, height);
 
 	return lines.join('\n');
 }

@@ -209,6 +209,61 @@ export function destroyMarkdown(world: World, eid: Entity): void {
 // =============================================================================
 
 /**
+ * Builds style options from validated config.
+ * @internal
+ */
+function buildStyleOptions(validated: {
+	fg?: string | number;
+	bg?: string | number;
+	bold?: boolean;
+	underline?: boolean;
+}): { fg?: number; bg?: number; bold?: boolean; underline?: boolean } {
+	const styleOptions: {
+		fg?: number;
+		bg?: number;
+		bold?: boolean;
+		underline?: boolean;
+	} = {};
+
+	if (validated.fg !== undefined) {
+		styleOptions.fg = typeof validated.fg === 'string' ? parseColor(validated.fg) : validated.fg;
+	}
+	if (validated.bg !== undefined) {
+		styleOptions.bg = typeof validated.bg === 'string' ? parseColor(validated.bg) : validated.bg;
+	}
+	if (validated.bold) {
+		styleOptions.bold = true;
+	}
+	if (validated.underline) {
+		styleOptions.underline = true;
+	}
+
+	return styleOptions;
+}
+
+/**
+ * Applies base styling to the entity if styling options are present.
+ * @internal
+ */
+function applyBaseStyle(
+	world: World,
+	entity: Entity,
+	validated: {
+		fg?: string | number;
+		bg?: string | number;
+		bold?: boolean;
+		underline?: boolean;
+	},
+): void {
+	if (!validated.fg && !validated.bg && !validated.bold && !validated.underline) {
+		return;
+	}
+
+	const styleOptions = buildStyleOptions(validated);
+	setStyle(world, entity, styleOptions);
+}
+
+/**
  * Creates a markdown widget for rich text rendering.
  *
  * Supports:
@@ -279,34 +334,12 @@ export function createMarkdown(world: World, entity: Entity, config: MarkdownCon
 	setContent(world, entity, '');
 
 	// Apply base styling if colors/decorations are provided
-	if (
-		validated.fg !== undefined ||
-		validated.bg !== undefined ||
-		validated.bold ||
-		validated.underline
-	) {
-		const styleOptions: {
-			fg?: number;
-			bg?: number;
-			bold?: boolean;
-			underline?: boolean;
-		} = {};
-
-		if (validated.fg !== undefined) {
-			styleOptions.fg = typeof validated.fg === 'string' ? parseColor(validated.fg) : validated.fg;
-		}
-		if (validated.bg !== undefined) {
-			styleOptions.bg = typeof validated.bg === 'string' ? parseColor(validated.bg) : validated.bg;
-		}
-		if (validated.bold) {
-			styleOptions.bold = true;
-		}
-		if (validated.underline) {
-			styleOptions.underline = true;
-		}
-
-		setStyle(world, entity, styleOptions);
-	}
+	applyBaseStyle(world, entity, {
+		fg: validated.fg,
+		bg: validated.bg,
+		bold: validated.bold,
+		underline: validated.underline,
+	} as { fg?: string | number; bg?: string | number; bold?: boolean; underline?: boolean });
 
 	// Ensure Renderable component is added and marked dirty
 	markDirty(world, entity);

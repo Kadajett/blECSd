@@ -744,6 +744,51 @@ function detectDirtyEntities(state: SpatialHashSystemState, entities: readonly E
 }
 
 /**
+ * Processes dirty entities by re-inserting them into the spatial hash grid.
+ * @internal
+ */
+function processDirtyEntities(
+	grid: SpatialHashGrid,
+	world: World,
+	dirtyEntities: { size: number; data: readonly (number | undefined)[] },
+): void {
+	const { data, size } = dirtyEntities;
+	for (let i = 0; i < size; i++) {
+		const id = data[i];
+		if (id === undefined) continue;
+		const eid = id as Entity;
+		// Skip entities that no longer have the required components
+		if (!hasComponent(world, eid, Position) || !hasComponent(world, eid, Collider)) continue;
+		const { x, y, w, h } = readEntityBounds(eid);
+		insertEntity(grid, eid, x, y, w, h);
+	}
+}
+
+/**
+ * Handles dirty entities either by full rebuild or incremental update.
+ * @internal
+ */
+function handleDirtyEntities(
+	grid: SpatialHashGrid,
+	state: SpatialHashSystemState,
+	world: World,
+	totalCount: number,
+): void {
+	const dirtyCount = state.dirtyEntities.size;
+	if (dirtyCount === 0) {
+		return;
+	}
+
+	if (totalCount > 0 && dirtyCount > state.dirtyThreshold * totalCount) {
+		// Too many dirty entities: full rebuild is faster
+		rebuildSpatialHash(grid, world);
+	} else {
+		// Incremental: only re-insert dirty entities
+		processDirtyEntities(grid, world, state.dirtyEntities);
+	}
+}
+
+/**
  * Performs an incremental update of the spatial hash grid.
  * Only re-inserts entities that were marked dirty (moved, resized, or new).
  * Falls back to full rebuild when dirty count exceeds the threshold.
@@ -791,26 +836,7 @@ export function incrementalSpatialUpdate(
 	detectDirtyEntities(state, entities);
 
 	// Process dirty entities
-	const dirtyCount = state.dirtyEntities.size;
-	if (dirtyCount > 0) {
-		const totalCount = entities.length;
-		if (totalCount > 0 && dirtyCount > state.dirtyThreshold * totalCount) {
-			// Too many dirty entities: full rebuild is faster
-			rebuildSpatialHash(grid, world);
-		} else {
-			// Incremental: only re-insert dirty entities
-			const { data } = state.dirtyEntities;
-			for (let i = 0; i < dirtyCount; i++) {
-				const id = data[i];
-				if (id === undefined) continue;
-				const eid = id as Entity;
-				// Skip entities that no longer have the required components
-				if (!hasComponent(world, eid, Position) || !hasComponent(world, eid, Collider)) continue;
-				const { x, y, w, h } = readEntityBounds(eid);
-				insertEntity(grid, eid, x, y, w, h);
-			}
-		}
-	}
+	handleDirtyEntities(grid, state, world, entities.length);
 
 	// Clear dirty set for next frame
 	clearStore(state.dirtyEntities);
