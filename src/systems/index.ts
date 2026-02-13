@@ -283,6 +283,19 @@ export {
 	startUserScroll,
 	updateScrollPhysics,
 } from './smoothScroll';
+// Spring system
+export type { SpringConfig } from './spring';
+export {
+	createSpring,
+	getSpringTarget,
+	isSpringActive,
+	setSpringTarget,
+	Spring,
+	springBouncy,
+	springSmooth,
+	springSnappy,
+	springSystem,
+} from './spring';
 // Spatial hash system
 export type {
 	CellCoord,
