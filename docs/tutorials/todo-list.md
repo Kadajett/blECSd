@@ -365,7 +365,7 @@ npx tsx todo.ts
 
 ## Complete Code
 
-See the full example at: `examples/todo-list/index.ts`
+See the full example in the [blECSd-Examples repository](https://github.com/Kadajett/blECSd-Examples).
 
 ## What You Learned
 

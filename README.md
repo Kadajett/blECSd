@@ -323,8 +323,7 @@ Choose blECSd if you want data-oriented design, physics-based animations, or gam
 - [Keyboard Shortcuts](./docs/guides/keyboard-shortcuts.md): Custom keybindings
 
 ### Examples
-- [Examples](./docs/examples/index.md): File manager, multiplexer, system monitor, ANSI viewer, telnet server
-- [Examples Repository](https://github.com/Kadajett/blECSd-Examples): Standalone runnable examples
+- [Examples Repository](https://github.com/Kadajett/blECSd-Examples): File manager, multiplexer, system monitor, ANSI viewer, telnet server, and more
 
 ## Development
 

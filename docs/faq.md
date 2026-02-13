@@ -304,7 +304,7 @@ With proper virtualization:
 
 1. **Documentation**: You're here!
 2. **GitHub Issues**: Report bugs or ask questions
-3. **Examples**: Check `examples/` for working code
+3. **Examples**: See the [blECSd-Examples repo](https://github.com/Kadajett/blECSd-Examples) for working code
 4. **Source Code**: Read the implementation
 
 ### How do I report a bug?

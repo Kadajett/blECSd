@@ -910,7 +910,7 @@ Move to screens with:
 
 - [API Documentation](../api/)
 - [How-To Guides](./how-to.md)
-- [Examples](../examples/)
+- [Examples](https://github.com/Kadajett/blECSd-Examples)
 - [GitHub Issues](https://github.com/Kadajett/blECSd/issues)
 
 ### Common Questions

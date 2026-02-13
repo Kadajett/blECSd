@@ -273,12 +273,7 @@ console.log('Position:', Position.x[entity], Position.y[entity]);
 
 ### 5. Reference Examples
 
-Check the `examples/` directory for more complete applications:
-- `examples/01-hello-world.ts` - Basic setup
-- `examples/02-dashboard.ts` - Multiple widgets
-- `examples/03-form-validation.ts` - Form controls
-- `examples/04-animation-physics.ts` - Animation
-- `examples/05-game-ecs.ts` - Full game
+See the [blECSd-Examples repository](https://github.com/Kadajett/blECSd-Examples) for complete, runnable applications covering dashboards, forms, animations, games, and more.
 
 ## Troubleshooting
 
@@ -333,7 +328,7 @@ Once you're comfortable with the basics:
 
 - [API Reference](../docs/api/index.md)
 - [Getting Started Guide](../docs/getting-started/concepts.md)
-- [Examples](../examples/)
+- [Examples](https://github.com/Kadajett/blECSd-Examples)
 - [GitHub](https://github.com/Kadajett/blECSd)
 
 Happy experimenting! 🚀

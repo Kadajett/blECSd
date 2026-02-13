@@ -732,7 +732,7 @@ npm run build       # Build for production
 - **GitHub**: https://github.com/Kadajett/blECSd
 - **npm**: https://www.npmjs.com/package/blecsd
 - **Issues**: https://github.com/Kadajett/blECSd/issues
-- **Examples**: https://github.com/Kadajett/blECSd/tree/main/examples
+- **Examples**: https://github.com/Kadajett/blECSd-Examples
 
 ---
 

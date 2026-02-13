@@ -691,8 +691,9 @@ export type { Entity, System, Unsubscribe, World } from './types';
 export { LoopPhase } from './types';
 // Entity validation
 export {
-	EntityValidationError,
+	createEntityValidationError,
 	isEntityValid,
+	isEntityValidationError,
 	registerComponentName,
 	validateEntity,
 } from './validation';

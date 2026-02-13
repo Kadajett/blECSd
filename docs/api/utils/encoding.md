@@ -190,4 +190,4 @@ writeFileSync('output.ans', cp437Content);
 
 - [Terminal Widget](../widgets/terminal.md) - Display ANSI content
 - [ANSI Parser](../ansi.md) - Parse ANSI escape sequences
-- [Examples: ANSI Viewer](../../examples/index.md#ansi-art-viewer) - Browse ANSI art
+- [Examples: ANSI Viewer](https://github.com/Kadajett/blECSd-Examples) - Browse ANSI art

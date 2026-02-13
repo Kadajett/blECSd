@@ -11,13 +11,47 @@ import { entityExists, hasComponent } from './ecs';
 import type { Entity, World } from './types';
 
 /**
- * Error thrown when entity validation fails.
+ * Creates an entity validation error with the given message.
+ *
+ * @param message - The error message
+ * @returns An Error with name set to 'EntityValidationError'
+ *
+ * @example
+ * ```typescript
+ * import { createEntityValidationError, isEntityValidationError } from 'blecsd';
+ *
+ * const error = createEntityValidationError('Entity 5 is missing Position');
+ * console.log(error.name); // 'EntityValidationError'
+ * console.log(isEntityValidationError(error)); // true
+ * ```
  */
-export class EntityValidationError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'EntityValidationError';
-	}
+export function createEntityValidationError(message: string): Error {
+	const error = new Error(message);
+	error.name = 'EntityValidationError';
+	return error;
+}
+
+/**
+ * Type guard to check if an error is an entity validation error.
+ *
+ * @param error - The value to check
+ * @returns True if the error is an EntityValidationError
+ *
+ * @example
+ * ```typescript
+ * import { isEntityValidationError } from 'blecsd';
+ *
+ * try {
+ *   validateEntity(world, eid, [Position], 'test');
+ * } catch (error) {
+ *   if (isEntityValidationError(error)) {
+ *     console.log('Validation failed:', error.message);
+ *   }
+ * }
+ * ```
+ */
+export function isEntityValidationError(error: unknown): error is Error {
+	return error instanceof Error && error.name === 'EntityValidationError';
 }
 
 /**
@@ -79,7 +113,7 @@ function getComponentName(component: ComponentRef): string {
  * @param eid - The entity ID to validate
  * @param requiredComponents - Array of components the entity must have
  * @param context - Context string describing where this validation is happening (e.g., "layoutSystem", "createBox")
- * @throws {EntityValidationError} If entity doesn't exist or is missing required components
+ * @throws {Error} An EntityValidationError if entity doesn't exist or is missing required components
  *
  * @example
  * ```typescript
@@ -118,7 +152,7 @@ export function validateEntity(
 ): void {
 	// Check if entity exists
 	if (!entityExists(world, eid)) {
-		throw new EntityValidationError(
+		throw createEntityValidationError(
 			`Entity ${eid} does not exist in the world (context: ${context}). ` +
 				'The entity may have been removed or never created.',
 		);
@@ -135,7 +169,7 @@ export function validateEntity(
 	if (missingComponents.length > 0) {
 		const componentList = missingComponents.join(', ');
 		const firstMissing = missingComponents[0];
-		throw new EntityValidationError(
+		throw createEntityValidationError(
 			`Entity ${eid} is missing required component${missingComponents.length > 1 ? 's' : ''} for ${context}: ${componentList}. ` +
 				`Did you forget to call addComponent(world, ${eid}, ${firstMissing})?`,
 		);
