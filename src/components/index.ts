@@ -3,6 +3,17 @@
  * @module components
  */
 
+// Accessibility component
+export type { AccessibleRole } from './accessibility';
+export {
+	Accessible,
+	announce,
+	clearAccessibilityLabels,
+	getAccessibleLabel,
+	getAccessibleRole,
+	setAccessibleLabel,
+	setAccessibleRole,
+} from './accessibility';
 // Animation component
 export type {
 	AnimationData,
