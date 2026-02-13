@@ -245,6 +245,35 @@ const DEFAULT_EXPANDED_ICON = '▼';
 const DEFAULT_COLLAPSED_ICON = '▶';
 
 // =============================================================================
+// HELPERS
+// =============================================================================
+
+/** Initializes the set of expanded section indices */
+function initializeExpandedSections(
+	sections: readonly AccordionSection[],
+	defaultExpanded: AccordionConfig['defaultExpanded'],
+): Set<number> {
+	const expandedSections = new Set<number>();
+	if (defaultExpanded === 'all') {
+		for (let i = 0; i < sections.length; i++) {
+			expandedSections.add(i);
+		}
+	} else if (Array.isArray(defaultExpanded)) {
+		for (const i of defaultExpanded) {
+			expandedSections.add(i);
+		}
+	} else {
+		for (let i = 0; i < sections.length; i++) {
+			const section = sections[i];
+			if (section?.expanded) {
+				expandedSections.add(i);
+			}
+		}
+	}
+	return expandedSections;
+}
+
+// =============================================================================
 // ACCORDION WIDGET
 // =============================================================================
 
@@ -285,24 +314,7 @@ export function createAccordion(
 	};
 
 	// Initialize expanded sections
-	const expandedSections = new Set<number>();
-	if (defaultExpanded === 'all') {
-		for (let i = 0; i < sections.length; i++) {
-			expandedSections.add(i);
-		}
-	} else if (Array.isArray(defaultExpanded)) {
-		for (const i of defaultExpanded) {
-			expandedSections.add(i);
-		}
-	} else {
-		// Use section-level expanded flags
-		for (let i = 0; i < sections.length; i++) {
-			const section = sections[i];
-			if (section?.expanded) {
-				expandedSections.add(i);
-			}
-		}
-	}
+	const expandedSections = initializeExpandedSections(sections, defaultExpanded);
 
 	// Create section entities
 	const sectionStates = sections.map((section, index) => {

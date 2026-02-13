@@ -73,7 +73,7 @@ describe('markdown widget', () => {
 
 			const lines = getMarkdownLines(entity);
 			expect(lines).toBeDefined();
-			expect(lines && lines.length).toBeGreaterThan(0);
+			expect(lines?.length).toBeGreaterThan(0);
 		});
 
 		it('creates markdown widget with theme', () => {
@@ -141,7 +141,7 @@ describe('markdown widget', () => {
 
 			const lines = getMarkdownLines(entity);
 			expect(lines).toBeDefined();
-			expect(lines && lines.length).toBeGreaterThan(0);
+			expect(lines?.length).toBeGreaterThan(0);
 		});
 
 		it('marks entity as dirty after update', () => {
@@ -164,7 +164,7 @@ describe('markdown widget', () => {
 
 			const lines = getMarkdownLines(entity);
 			expect(lines).toBeDefined();
-			expect(lines && lines.length).toBeGreaterThan(0);
+			expect(lines?.length).toBeGreaterThan(0);
 		});
 
 		it('handles markdown with bold text', () => {
@@ -257,7 +257,7 @@ console.log(x);
 
 			const lines = getMarkdownLines(entity);
 			expect(lines).toBeDefined();
-			expect(lines && lines.length).toBeGreaterThan(0);
+			expect(lines?.length).toBeGreaterThan(0);
 		});
 	});
 

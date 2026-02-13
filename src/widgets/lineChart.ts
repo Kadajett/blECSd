@@ -255,8 +255,9 @@ function renderLineChart(
 				const rowDots = BRAILLE_DOTS[row];
 				if (rowDots) {
 					const dotBit = rowDots[col] ?? 0;
-					if (grid[charY] && grid[charY][charX] !== undefined) {
-						grid[charY]![charX]! |= dotBit;
+					const gridRow = grid[charY];
+					if (gridRow && gridRow[charX] !== undefined) {
+						gridRow[charX] |= dotBit;
 					}
 				}
 			}
