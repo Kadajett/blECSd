@@ -6,7 +6,7 @@
 
 import { Position } from '../components/position';
 import { Velocity } from '../components/velocity';
-import { addComponent, hasComponent } from '../core/ecs';
+import { addComponent, hasComponent, query } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 /** Default entity capacity for typed arrays */
@@ -315,19 +315,6 @@ export function springSystem(world: World, dt: number): World {
  * Gets all entities that have Spring, Position, and Velocity components.
  * Helper function for the spring system.
  */
-function getAllEntitiesWithSpring(world: World): Entity[] {
-	const entities: Entity[] = [];
-
-	// Find all entities with all three required components
-	for (let eid = 0; eid < DEFAULT_CAPACITY; eid++) {
-		if (
-			hasComponent(world, eid, Spring) &&
-			hasComponent(world, eid, Position) &&
-			hasComponent(world, eid, Velocity)
-		) {
-			entities.push(eid);
-		}
-	}
-
-	return entities;
+function getAllEntitiesWithSpring(world: World): readonly Entity[] {
+	return query(world, [Spring, Position, Velocity]) as unknown as readonly Entity[];
 }

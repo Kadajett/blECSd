@@ -223,7 +223,10 @@ export function announce(message: string): void {
 	// Use OSC 2 (Set Window Title) for announcements
 	// Screen readers can monitor title changes
 	if (typeof process !== 'undefined' && process.stdout) {
-		process.stdout.write(`\x1b]2;${message}\x07`);
+		// Strip control characters to prevent breaking the OSC sequence
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally matching control chars for sanitization
+		const sanitizedMessage = message.replace(/[\x00-\x1F\x7F]/g, '');
+		process.stdout.write(`\x1b]2;${sanitizedMessage}\x07`);
 	}
 }
 

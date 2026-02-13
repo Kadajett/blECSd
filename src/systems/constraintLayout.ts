@@ -148,6 +148,9 @@ function calculateSingleSize(constraint: Constraint, totalAvailable: number): nu
 		case 'max':
 			return Math.min(constraint.value, totalAvailable);
 		case 'ratio':
+			if (constraint.denominator === 0) {
+				return 0;
+			}
 			return Math.floor((constraint.numerator / constraint.denominator) * totalAvailable);
 	}
 }
@@ -225,7 +228,7 @@ function calculateAdditional(
 		additional = Math.min(additional, maxAllowed);
 	}
 
-	return additional;
+	return Math.max(0, additional);
 }
 
 /**

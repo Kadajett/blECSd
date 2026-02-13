@@ -9,7 +9,7 @@ import { Content, setText } from '../components/content';
 import { Dimensions } from '../components/dimensions';
 import { setFocusable } from '../components/focusable';
 import { Position } from '../components/position';
-import { addComponent, addEntity } from '../core/ecs';
+import { addComponent, addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 
 /**
@@ -84,7 +84,10 @@ export function createContextMenu(world: World, config: ContextMenuConfig): Enti
 	// Calculate menu dimensions
 	const termWidth = config.termWidth ?? 80;
 	const termHeight = config.termHeight ?? 24;
-	const maxLabelWidth = Math.max(...config.items.map((item) => item.label?.length ?? 0));
+	const visibleLabelWidths = config.items.map((item) =>
+		item.separator ? 3 : (item.label?.length ?? 0),
+	);
+	const maxLabelWidth = visibleLabelWidths.length > 0 ? Math.max(...visibleLabelWidths) : 0;
 	const menuWidth = Math.min(maxLabelWidth + 4, 40);
 	const menuHeight = config.items.length + 2;
 
@@ -133,10 +136,14 @@ export function createContextMenu(world: World, config: ContextMenuConfig): Enti
 	}
 
 	// Store state
+	const initialSelectedIndex = Math.max(
+		0,
+		config.items.findIndex((item) => !item.separator && !item.disabled),
+	);
 	const state: ContextMenuState = {
 		items: config.items,
 		itemEntities,
-		selectedIndex: 0,
+		selectedIndex: initialSelectedIndex,
 		containerEntity: container,
 	};
 	contextMenuStates.set(container, state);
@@ -170,7 +177,7 @@ export function handleContextMenuKey(world: World, eid: Entity, key: string): bo
 		return true;
 	}
 
-	if (key === 'enter' || key === ' ') {
+	if (key === 'enter') {
 		selectCurrentItem(world, state);
 		return true;
 	}
@@ -198,10 +205,14 @@ function moveSelection(_world: World, state: ContextMenuState, direction: number
 	if (validIndices.length === 0) return;
 
 	const currentPos = validIndices.indexOf(state.selectedIndex);
-	let newPos = currentPos + direction;
-
-	if (newPos < 0) newPos = validIndices.length - 1;
-	if (newPos >= validIndices.length) newPos = 0;
+	let newPos: number;
+	if (currentPos === -1) {
+		newPos = direction >= 0 ? 0 : validIndices.length - 1;
+	} else {
+		newPos = currentPos + direction;
+		if (newPos < 0) newPos = validIndices.length - 1;
+		if (newPos >= validIndices.length) newPos = 0;
+	}
 
 	const newIndex = validIndices[newPos];
 	if (newIndex !== undefined) {
@@ -222,11 +233,17 @@ function selectCurrentItem(_world: World, state: ContextMenuState): void {
 /**
  * Closes the context menu and cleans up.
  */
-function closeContextMenu(_world: World, eid: Entity): void {
+function closeContextMenu(world: World, eid: Entity): void {
 	const state = contextMenuStates.get(eid);
 	if (!state) return;
 
-	// Clean up would go here (remove entities, etc.)
+	// Remove all item entities from the ECS world
+	for (const itemEntity of state.itemEntities) {
+		removeEntity(world, itemEntity);
+	}
+	// Remove the container entity
+	removeEntity(world, state.containerEntity);
+
 	contextMenuStates.delete(eid);
 }
 
