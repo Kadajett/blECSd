@@ -65,6 +65,7 @@ export {
 	setZIndex,
 	TextConfigSchema,
 } from './core';
+export * from './style';
 export type { DirtyRect, PositionCache } from './systems';
 // Systems: export all, then re-export type names that collide.
 // Systems owns: DirtyRect, PositionCache (interface from visibilityCulling)

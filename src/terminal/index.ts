@@ -85,6 +85,24 @@ export {
 	unpackRgb,
 	visibleLength,
 } from './ansi/parser';
+// 2D Render backends
+export type {
+	AnsiBackendConfig,
+	KittyBackendConfig,
+	RenderBackend,
+	RenderBackendCapabilities,
+	RenderBackendPreference,
+	RenderBackendType,
+	RenderCell,
+} from './backends';
+export {
+	createAnsiBackend,
+	createKittyRenderBackend,
+	createRenderBackendByType,
+	detectRenderBackend,
+	encodeKittyImage,
+	getAvailableBackends,
+} from './backends';
 // Bracketed paste mode
 export type {
 	PasteConfig,

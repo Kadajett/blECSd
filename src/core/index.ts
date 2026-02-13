@@ -523,6 +523,27 @@ export {
 	defaultPhaseManager,
 	isBuiltinPhase,
 } from './phaseManager';
+// Plugin system
+export type {
+	Plugin,
+	PluginComponent,
+	PluginInfo,
+	PluginRegistrationResult,
+	PluginRegistry,
+	PluginSystem,
+} from './plugins';
+export {
+	clearPlugins,
+	createPluginRegistry,
+	getPluginCount,
+	getPlugins,
+	hasPlugin,
+	PluginComponentSchema,
+	PluginSchema,
+	PluginSystemSchema,
+	registerPlugin,
+	unregisterPlugin,
+} from './plugins';
 // Position cache
 export type { CachedPosition, SetPositionCacheOptions } from './positionCache';
 export {

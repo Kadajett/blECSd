@@ -1,11 +1,33 @@
 /**
  * Style System
  *
- * Provides theme management and styling utilities.
+ * Provides theme management, stylesheet rules, and styling utilities.
  *
  * @module style
  */
 
+export type {
+	ApplyResult,
+	StyleProperties,
+	StyleRule,
+	StyleSelector,
+	Stylesheet,
+} from './stylesheet';
+export {
+	addRule,
+	applyStylesheet,
+	applyStylesheetToEntity,
+	calculateSpecificity,
+	clearRules,
+	createStylesheet,
+	getMatchingRules,
+	matchesSelector,
+	removeRules,
+	StylePropertiesSchema,
+	StyleRuleSchema,
+	StyleSelectorSchema,
+	StylesheetSchema,
+} from './stylesheet';
 export type {
 	Theme,
 	ThemeBorders,
@@ -13,7 +35,6 @@ export type {
 	ThemeFocus,
 	ThemeWidgetStyles,
 } from './theme';
-
 export {
 	applyTheme,
 	applyThemeToAll,
