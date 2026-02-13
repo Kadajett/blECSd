@@ -322,6 +322,225 @@ export function createScheduler(): Scheduler {
 		}
 	}
 
+	/** Creates sync adapter functions for the current world */
+	function createAdapterSyncFunctions(world: World): {
+		readonly syncAdapter: (currentWorld?: World) => void;
+		readonly shouldSyncInput: boolean;
+		readonly shouldSyncPhase: (phase: LoopPhase) => boolean;
+	} {
+		const adapter = getWorldAdapter(world);
+		const packedAdapter = isPackedQueryAdapter(adapter) ? adapter : null;
+		const shouldSyncInput = packedAdapter?.syncMode !== 'render_only';
+
+		const syncAdapter = (currentWorld?: World): void => {
+			if (!packedAdapter) {
+				return;
+			}
+			const target = currentWorld ?? world;
+			if (!telemetryEnabled || !currentTelemetry) {
+				syncWorldAdapter(target);
+				return;
+			}
+			const syncStart = performance.now();
+			syncWorldAdapter(target);
+			currentTelemetry.adapterSyncMs += performance.now() - syncStart;
+		};
+
+		const shouldSyncPhase = (phase: LoopPhase): boolean => {
+			if (!packedAdapter) {
+				return false;
+			}
+			if (packedAdapter.syncMode === 'all') {
+				return true;
+			}
+			return phase === LoopPhase.RENDER;
+		};
+
+		return { syncAdapter, shouldSyncInput, shouldSyncPhase };
+	}
+
+	/** Executes input systems and returns updated world */
+	function executeInputSystems(
+		world: World,
+		syncAdapter: (currentWorld?: World) => void,
+		shouldSync: boolean,
+	): World {
+		let currentWorld = world;
+		if (shouldSync) {
+			syncAdapter(currentWorld);
+		}
+		for (const entry of inputSystems) {
+			currentWorld = entry.system(currentWorld);
+		}
+		return currentWorld;
+	}
+
+	/** Checks if a phase should be skipped due to budget */
+	function shouldSkipPhase(phase: LoopPhase, budgetExceeded: boolean): boolean {
+		return frameBudgetEnabled && budgetExceeded && skippablePhases.has(phase);
+	}
+
+	/** Executes systems for a single phase */
+	function executePhaseSystem(
+		world: World,
+		systems: readonly SystemEntry[],
+		syncPhase: (currentWorld: World) => void,
+	): World {
+		let currentWorld = world;
+		syncPhase(currentWorld);
+		for (const entry of systems) {
+			currentWorld = entry.system(currentWorld);
+		}
+		return currentWorld;
+	}
+
+	/** Records timing for an empty phase */
+	function recordEmptyPhase(phase: LoopPhase, inputStart: number): void {
+		if (!telemetryEnabled) {
+			return;
+		}
+		if (phase === LoopPhase.INPUT) {
+			const inputEnd = performance.now();
+			recordPhase(phase, inputEnd - inputStart, inputSystems.length);
+		} else {
+			recordPhase(phase, 0, 0);
+		}
+	}
+
+	/** Gets the phase start time */
+	function getPhaseStartTime(phase: LoopPhase, inputStart: number): number {
+		if (phase === LoopPhase.INPUT) {
+			return inputStart;
+		}
+		return telemetryEnabled || frameBudgetEnabled ? performance.now() : 0;
+	}
+
+	/** Records phase telemetry */
+	function recordPhaseTelemetry(
+		phase: LoopPhase,
+		phaseStart: number,
+		phaseEnd: number,
+		systemCount: number,
+	): void {
+		if (!telemetryEnabled) {
+			return;
+		}
+		recordPhase(phase, phaseEnd - phaseStart, systemCount);
+	}
+
+	/** Updates frame budget status after a phase */
+	function updateBudgetAfterPhase(
+		frameStartTime: number,
+		phaseEnd: number,
+		budgetExceeded: boolean,
+	): boolean {
+		if (!frameBudgetEnabled || budgetExceeded) {
+			return budgetExceeded;
+		}
+		const elapsed = phaseEnd - frameStartTime;
+		return elapsed > frameBudgetMs;
+	}
+
+	/** Finalizes frame budget status */
+	function finalizeFrameBudget(
+		frameStartTime: number,
+		budgetExceeded: boolean,
+		skippedPhases: readonly LoopPhase[],
+	): void {
+		if (!frameBudgetEnabled) {
+			return;
+		}
+		const frameEndTime = performance.now();
+		const totalTime = frameEndTime - frameStartTime;
+		currentBudgetStatus = {
+			exceeded: budgetExceeded,
+			skippedPhases: [...skippedPhases],
+			remainingMs: frameBudgetMs - totalTime,
+		};
+	}
+
+	/** Executes a single phase with telemetry and budget tracking */
+	function runPhase(
+		world: World,
+		phase: LoopPhase,
+		systems: readonly SystemEntry[],
+		frameStartTime: number,
+		inputStart: number,
+		budgetExceeded: boolean,
+		skippedPhases: LoopPhase[],
+		syncAdapter: (currentWorld?: World) => void,
+		shouldSyncPhase: (phase: LoopPhase) => boolean,
+	): { world: World; budgetExceeded: boolean } {
+		// Skip phase if over budget
+		if (shouldSkipPhase(phase, budgetExceeded)) {
+			skippedPhases.push(phase);
+			if (telemetryEnabled) {
+				recordPhase(phase, 0, 0);
+			}
+			return { world, budgetExceeded };
+		}
+
+		// Execute phase
+		const phaseStart = getPhaseStartTime(phase, inputStart);
+		const syncPhase = (currentWorld: World): void => {
+			if (shouldSyncPhase(phase)) {
+				syncAdapter(currentWorld);
+			}
+		};
+		const updatedWorld = executePhaseSystem(world, systems, syncPhase);
+		const phaseEnd = telemetryEnabled || frameBudgetEnabled ? performance.now() : 0;
+
+		// Record telemetry
+		const systemCount =
+			phase === LoopPhase.INPUT ? inputSystems.length + systems.length : systems.length;
+		recordPhaseTelemetry(phase, phaseStart, phaseEnd, systemCount);
+
+		// Update budget status
+		const newBudgetExceeded = updateBudgetAfterPhase(frameStartTime, phaseEnd, budgetExceeded);
+
+		return { world: updatedWorld, budgetExceeded: newBudgetExceeded };
+	}
+
+	/** Executes all phases in order */
+	function runAllPhases(
+		world: World,
+		frameStartTime: number,
+		inputStart: number,
+		syncAdapter: (currentWorld?: World) => void,
+		shouldSyncPhase: (phase: LoopPhase) => boolean,
+	): { world: World; skippedPhases: LoopPhase[]; budgetExceeded: boolean } {
+		let currentWorld = world;
+		const skippedPhases: LoopPhase[] = [];
+		let budgetExceeded = false;
+
+		for (let phase = LoopPhase.INPUT; phase <= LoopPhase.POST_RENDER; phase++) {
+			const systems = phases.get(phase);
+
+			// Handle empty phase
+			if (!systems) {
+				recordEmptyPhase(phase, inputStart);
+				continue;
+			}
+
+			// Execute phase
+			const result = runPhase(
+				currentWorld,
+				phase,
+				systems,
+				frameStartTime,
+				inputStart,
+				budgetExceeded,
+				skippedPhases,
+				syncAdapter,
+				shouldSyncPhase,
+			);
+			currentWorld = result.world;
+			budgetExceeded = result.budgetExceeded;
+		}
+
+		return { world: currentWorld, skippedPhases, budgetExceeded };
+	}
+
 	return {
 		/**
 		 * Registers a system for a specific phase.
@@ -405,124 +624,39 @@ export function createScheduler(): Scheduler {
 		run(world: World, deltaTime: number): World {
 			currentDeltaTime = deltaTime;
 
-			// Initialize telemetry for this frame
+			// Initialize telemetry
 			if (telemetryEnabled) {
 				currentTelemetry = createTelemetryFrame();
 			}
 
-			// Initialize frame budget status
+			// Initialize frame timing
 			const frameStartTime = frameBudgetEnabled || telemetryEnabled ? performance.now() : 0;
-			const skippedPhases: LoopPhase[] = [];
-			let budgetExceeded = false;
 
+			// Setup world adapter
 			let currentWorld = world;
 			maybeEnableAutoPackedAdapter(currentWorld);
-			const adapter = getWorldAdapter(currentWorld);
-			const packedAdapter = isPackedQueryAdapter(adapter) ? adapter : null;
-			const shouldSyncInput = packedAdapter?.syncMode !== 'render_only';
-			const syncAdapter = (): void => {
-				if (!packedAdapter) {
-					return;
-				}
-				if (!telemetryEnabled || !currentTelemetry) {
-					syncWorldAdapter(currentWorld);
-					return;
-				}
-				const syncStart = performance.now();
-				syncWorldAdapter(currentWorld);
-				currentTelemetry.adapterSyncMs += performance.now() - syncStart;
-			};
-			const shouldSyncPhase = (phase: LoopPhase): boolean => {
-				if (!packedAdapter) {
-					return false;
-				}
-				if (packedAdapter.syncMode === 'all') {
-					return true;
-				}
-				return phase === LoopPhase.RENDER;
-			};
+			const { syncAdapter, shouldSyncInput, shouldSyncPhase } =
+				createAdapterSyncFunctions(currentWorld);
 
-			// Always run INPUT systems first (internal)
-			// Note: Input systems run before the INPUT phase, so we include them in INPUT phase timing
+			// Execute input systems
 			const inputStart = telemetryEnabled || frameBudgetEnabled ? performance.now() : 0;
-			if (shouldSyncInput) {
-				syncAdapter();
-			}
-			for (const entry of inputSystems) {
-				currentWorld = entry.system(currentWorld);
-			}
+			currentWorld = executeInputSystems(currentWorld, syncAdapter, shouldSyncInput);
 
-			// Run all phases in order
-			for (let phase = LoopPhase.INPUT; phase <= LoopPhase.POST_RENDER; phase++) {
-				const systems = phases.get(phase);
-				if (!systems) {
-					// Record empty phase
-					if (phase === LoopPhase.INPUT && telemetryEnabled) {
-						const inputEnd = performance.now();
-						recordPhase(phase, inputEnd - inputStart, inputSystems.length);
-					} else if (telemetryEnabled) {
-						recordPhase(phase, 0, 0);
-					}
-					continue;
-				}
+			// Execute all phases
+			const phaseResult = runAllPhases(
+				currentWorld,
+				frameStartTime,
+				inputStart,
+				syncAdapter,
+				shouldSyncPhase,
+			);
+			currentWorld = phaseResult.world;
 
-				// Check frame budget before executing phase
-				if (frameBudgetEnabled && budgetExceeded && skippablePhases.has(phase)) {
-					// Skip this phase due to budget exceeded
-					skippedPhases.push(phase);
-					if (telemetryEnabled) {
-						recordPhase(phase, 0, 0);
-					}
-					continue;
-				}
-
-				// Measure phase timing
-				const phaseStart =
-					phase === LoopPhase.INPUT
-						? inputStart
-						: telemetryEnabled || frameBudgetEnabled
-							? performance.now()
-							: 0;
-
-				if (shouldSyncPhase(phase)) {
-					syncAdapter();
-				}
-				for (const entry of systems) {
-					currentWorld = entry.system(currentWorld);
-				}
-
-				const phaseEnd = telemetryEnabled || frameBudgetEnabled ? performance.now() : 0;
-
-				if (telemetryEnabled) {
-					const systemCount =
-						phase === LoopPhase.INPUT ? inputSystems.length + systems.length : systems.length;
-					recordPhase(phase, phaseEnd - phaseStart, systemCount);
-				}
-
-				// Check if we've exceeded frame budget after this phase
-				if (frameBudgetEnabled && !budgetExceeded) {
-					const elapsed = phaseEnd - frameStartTime;
-					if (elapsed > frameBudgetMs) {
-						budgetExceeded = true;
-					}
-				}
-			}
-
-			// Finalize telemetry
+			// Finalize telemetry and budget
 			if (telemetryEnabled) {
 				finalizeTelemetry();
 			}
-
-			// Finalize frame budget status
-			if (frameBudgetEnabled) {
-				const frameEndTime = performance.now();
-				const totalTime = frameEndTime - frameStartTime;
-				currentBudgetStatus = {
-					exceeded: budgetExceeded,
-					skippedPhases,
-					remainingMs: frameBudgetMs - totalTime,
-				};
-			}
+			finalizeFrameBudget(frameStartTime, phaseResult.budgetExceeded, phaseResult.skippedPhases);
 
 			return currentWorld;
 		},

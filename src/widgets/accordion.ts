@@ -245,8 +245,171 @@ const DEFAULT_EXPANDED_ICON = '▼';
 const DEFAULT_COLLAPSED_ICON = '▶';
 
 // =============================================================================
+// HELPERS
+// =============================================================================
+
+/** Initializes the set of expanded section indices */
+function initializeExpandedSections(
+	sections: readonly AccordionSection[],
+	defaultExpanded: AccordionConfig['defaultExpanded'],
+): Set<number> {
+	const expandedSections = new Set<number>();
+	if (defaultExpanded === 'all') {
+		for (let i = 0; i < sections.length; i++) {
+			expandedSections.add(i);
+		}
+	} else if (Array.isArray(defaultExpanded)) {
+		for (const i of defaultExpanded) {
+			expandedSections.add(i);
+		}
+	} else {
+		for (let i = 0; i < sections.length; i++) {
+			const section = sections[i];
+			if (section?.expanded) {
+				expandedSections.add(i);
+			}
+		}
+	}
+	return expandedSections;
+}
+
+// =============================================================================
 // ACCORDION WIDGET
 // =============================================================================
+
+/**
+ * Applies color styling to an entity if colors are provided.
+ * @internal
+ */
+function applyStyleColors(
+	world: World,
+	entity: Entity,
+	style: { fg?: string | number; bg?: string | number } | undefined,
+): void {
+	if (!style) {
+		return;
+	}
+
+	const fg = typeof style.fg === 'string' ? parseColor(style.fg) : style.fg;
+	const bg = typeof style.bg === 'string' ? parseColor(style.bg) : style.bg;
+
+	if (fg !== undefined || bg !== undefined) {
+		setStyle(world, entity, { fg, bg });
+	}
+}
+
+/**
+ * Creates a header entity for an accordion section.
+ * @internal
+ */
+function createSectionHeader(
+	world: World,
+	parentEntity: Entity,
+	section: AccordionSection,
+	index: number,
+	expanded: boolean,
+	icons: { expanded: string; collapsed: string },
+	headerStyle: { fg?: string | number; bg?: string | number } | undefined,
+): Entity {
+	const headerEntity = addEntity(world);
+	createBox(world, headerEntity);
+	setPosition(world, headerEntity, 0, index * 2);
+	setDimensions(world, headerEntity, 40, 1);
+	setContent(
+		world,
+		headerEntity,
+		`${expanded ? icons.expanded : icons.collapsed} ${section.title}`,
+	);
+	setFocusable(world, headerEntity, { focusable: true });
+	appendChild(world, parentEntity, headerEntity);
+
+	headerTitleStore.set(headerEntity, section.title);
+	setClickable(world, headerEntity, true);
+	applyStyleColors(world, headerEntity, headerStyle);
+
+	return headerEntity;
+}
+
+/**
+ * Creates a content entity for an accordion section.
+ * @internal
+ */
+function createSectionContent(
+	world: World,
+	parentEntity: Entity,
+	section: AccordionSection,
+	index: number,
+	expanded: boolean,
+	contentStyle: { fg?: string | number; bg?: string | number } | undefined,
+): Entity {
+	const contentEntity = addEntity(world);
+	createBox(world, contentEntity);
+	setPosition(world, contentEntity, 2, index * 2 + 1);
+	setDimensions(world, contentEntity, 38, 3);
+	setPadding(world, contentEntity, { left: 1, right: 1, top: 0, bottom: 0 });
+
+	if (typeof section.content === 'string') {
+		setContent(world, contentEntity, section.content);
+	} else if (section.content !== undefined) {
+		appendChild(world, contentEntity, section.content);
+	}
+
+	setVisible(world, contentEntity, expanded);
+	appendChild(world, parentEntity, contentEntity);
+	applyStyleColors(world, contentEntity, contentStyle);
+
+	return contentEntity;
+}
+
+/**
+ * Creates a complete accordion section (header + content).
+ * @internal
+ */
+function createAccordionSection(
+	world: World,
+	parentEntity: Entity,
+	section: AccordionSection,
+	index: number,
+	expanded: boolean,
+	icons: { expanded: string; collapsed: string },
+	style:
+		| {
+				header?: { fg?: string | number; bg?: string | number };
+				content?: { fg?: string | number; bg?: string | number };
+		  }
+		| undefined,
+): {
+	headerEntity: Entity;
+	contentEntity: Entity;
+	expanded: boolean;
+	onToggle: ((expanded: boolean) => void) | undefined;
+} {
+	const headerEntity = createSectionHeader(
+		world,
+		parentEntity,
+		section,
+		index,
+		expanded,
+		icons,
+		style?.header,
+	);
+
+	const contentEntity = createSectionContent(
+		world,
+		parentEntity,
+		section,
+		index,
+		expanded,
+		style?.content,
+	);
+
+	return {
+		headerEntity,
+		contentEntity,
+		expanded,
+		onToggle: section.onToggle ?? undefined,
+	};
+}
 
 /**
  * Creates an accordion widget with multiple collapsible sections.
@@ -285,101 +448,20 @@ export function createAccordion(
 	};
 
 	// Initialize expanded sections
-	const expandedSections = new Set<number>();
-	if (defaultExpanded === 'all') {
-		for (let i = 0; i < sections.length; i++) {
-			expandedSections.add(i);
-		}
-	} else if (Array.isArray(defaultExpanded)) {
-		for (const i of defaultExpanded) {
-			expandedSections.add(i);
-		}
-	} else {
-		// Use section-level expanded flags
-		for (let i = 0; i < sections.length; i++) {
-			const section = sections[i];
-			if (section?.expanded) {
-				expandedSections.add(i);
-			}
-		}
-	}
+	const expandedSections = initializeExpandedSections(sections, defaultExpanded);
 
 	// Create section entities
-	const sectionStates = sections.map((section, index) => {
-		const expanded = expandedSections.has(index);
-
-		// Create header entity
-		const headerEntity = addEntity(world);
-		createBox(world, headerEntity);
-		setPosition(world, headerEntity, 0, index * 2);
-		setDimensions(world, headerEntity, 40, 1);
-		setContent(
+	const sectionStates = sections.map((section, index) =>
+		createAccordionSection(
 			world,
-			headerEntity,
-			`${expanded ? icons.expanded : icons.collapsed} ${section.title}`,
-		);
-		setFocusable(world, headerEntity, { focusable: true });
-		appendChild(world, entity, headerEntity);
-
-		// Store title for later reference
-		headerTitleStore.set(headerEntity, section.title);
-
-		// Make header clickable
-		setClickable(world, headerEntity, true);
-
-		// Apply header styling
-		if (config.style?.header) {
-			const fg =
-				typeof config.style.header.fg === 'string'
-					? parseColor(config.style.header.fg)
-					: config.style.header.fg;
-			const bg =
-				typeof config.style.header.bg === 'string'
-					? parseColor(config.style.header.bg)
-					: config.style.header.bg;
-			if (fg !== undefined || bg !== undefined) {
-				setStyle(world, headerEntity, { fg, bg });
-			}
-		}
-
-		// Create content entity
-		const contentEntity = addEntity(world);
-		createBox(world, contentEntity);
-		setPosition(world, contentEntity, 2, index * 2 + 1);
-		setDimensions(world, contentEntity, 38, 3);
-		setPadding(world, contentEntity, { left: 1, right: 1, top: 0, bottom: 0 });
-
-		if (typeof section.content === 'string') {
-			setContent(world, contentEntity, section.content);
-		} else if (section.content !== undefined) {
-			appendChild(world, contentEntity, section.content);
-		}
-
-		setVisible(world, contentEntity, expanded);
-		appendChild(world, entity, contentEntity);
-
-		// Apply content styling
-		if (config.style?.content) {
-			const fg =
-				typeof config.style.content.fg === 'string'
-					? parseColor(config.style.content.fg)
-					: config.style.content.fg;
-			const bg =
-				typeof config.style.content.bg === 'string'
-					? parseColor(config.style.content.bg)
-					: config.style.content.bg;
-			if (fg !== undefined || bg !== undefined) {
-				setStyle(world, contentEntity, { fg, bg });
-			}
-		}
-
-		return {
-			headerEntity,
-			contentEntity,
-			expanded,
-			onToggle: section.onToggle,
-		};
-	});
+			entity,
+			section,
+			index,
+			expandedSections.has(index),
+			icons,
+			config.style,
+		),
+	);
 
 	// Store accordion state
 	accordionStore.set(entity, {
@@ -530,6 +612,63 @@ export function getExpandedSections(entity: Entity): readonly number[] {
 // =============================================================================
 
 /**
+ * Creates a collapsible header entity.
+ * @internal
+ */
+function createCollapsibleHeader(
+	world: World,
+	parentEntity: Entity,
+	title: string,
+	expanded: boolean,
+	icons: { expanded: string; collapsed: string },
+	headerStyle: { fg?: string | number; bg?: string | number } | undefined,
+): Entity {
+	const headerEntity = addEntity(world);
+	createBox(world, headerEntity);
+	setPosition(world, headerEntity, 0, 0);
+	setDimensions(world, headerEntity, 40, 1);
+	setContent(world, headerEntity, `${expanded ? icons.expanded : icons.collapsed} ${title}`);
+	setFocusable(world, headerEntity, { focusable: true });
+	appendChild(world, parentEntity, headerEntity);
+
+	headerTitleStore.set(headerEntity, title);
+	setClickable(world, headerEntity, true);
+	applyStyleColors(world, headerEntity, headerStyle);
+
+	return headerEntity;
+}
+
+/**
+ * Creates a collapsible content entity.
+ * @internal
+ */
+function createCollapsibleContent(
+	world: World,
+	parentEntity: Entity,
+	content: string | Entity | undefined,
+	expanded: boolean,
+	contentStyle: { fg?: string | number; bg?: string | number } | undefined,
+): Entity {
+	const contentEntity = addEntity(world);
+	createBox(world, contentEntity);
+	setPosition(world, contentEntity, 2, 1);
+	setDimensions(world, contentEntity, 38, 3);
+	setPadding(world, contentEntity, { left: 1, right: 1, top: 0, bottom: 0 });
+
+	if (typeof content === 'string') {
+		setContent(world, contentEntity, content);
+	} else if (content !== undefined) {
+		appendChild(world, contentEntity, content);
+	}
+
+	setVisible(world, contentEntity, expanded);
+	appendChild(world, parentEntity, contentEntity);
+	applyStyleColors(world, contentEntity, contentStyle);
+
+	return contentEntity;
+}
+
+/**
  * Creates a single collapsible section widget.
  *
  * @param world - The ECS world
@@ -557,68 +696,23 @@ export function createCollapsible(world: World, entity: Entity, config: Collapsi
 		collapsed: config.icons?.collapsed ?? DEFAULT_COLLAPSED_ICON,
 	};
 
-	// Create header entity
-	const headerEntity = addEntity(world);
-	createBox(world, headerEntity);
-	setPosition(world, headerEntity, 0, 0);
-	setDimensions(world, headerEntity, 40, 1);
-	setContent(world, headerEntity, `${expanded ? icons.expanded : icons.collapsed} ${config.title}`);
-	setFocusable(world, headerEntity, { focusable: true });
-	appendChild(world, entity, headerEntity);
+	const headerEntity = createCollapsibleHeader(
+		world,
+		entity,
+		config.title,
+		expanded,
+		icons,
+		config.style?.header,
+	);
 
-	// Store title for later reference
-	headerTitleStore.set(headerEntity, config.title);
+	const contentEntity = createCollapsibleContent(
+		world,
+		entity,
+		config.content,
+		expanded,
+		config.style?.content,
+	);
 
-	// Make header clickable
-	setClickable(world, headerEntity, true);
-
-	// Apply header styling
-	if (config.style?.header) {
-		const fg =
-			typeof config.style.header.fg === 'string'
-				? parseColor(config.style.header.fg)
-				: config.style.header.fg;
-		const bg =
-			typeof config.style.header.bg === 'string'
-				? parseColor(config.style.header.bg)
-				: config.style.header.bg;
-		if (fg !== undefined || bg !== undefined) {
-			setStyle(world, headerEntity, { fg, bg });
-		}
-	}
-
-	// Create content entity
-	const contentEntity = addEntity(world);
-	createBox(world, contentEntity);
-	setPosition(world, contentEntity, 2, 1);
-	setDimensions(world, contentEntity, 38, 3);
-	setPadding(world, contentEntity, { left: 1, right: 1, top: 0, bottom: 0 });
-
-	if (typeof config.content === 'string') {
-		setContent(world, contentEntity, config.content);
-	} else if (config.content !== undefined) {
-		appendChild(world, contentEntity, config.content);
-	}
-
-	setVisible(world, contentEntity, expanded);
-	appendChild(world, entity, contentEntity);
-
-	// Apply content styling
-	if (config.style?.content) {
-		const fg =
-			typeof config.style.content.fg === 'string'
-				? parseColor(config.style.content.fg)
-				: config.style.content.fg;
-		const bg =
-			typeof config.style.content.bg === 'string'
-				? parseColor(config.style.content.bg)
-				: config.style.content.bg;
-		if (fg !== undefined || bg !== undefined) {
-			setStyle(world, contentEntity, { fg, bg });
-		}
-	}
-
-	// Store collapsible state
 	collapsibleStore.set(entity, {
 		expanded,
 		headerEntity,

@@ -136,6 +136,76 @@ const sparklineStateMap = new Map<Entity, SparklineState>();
 // RENDERING
 // =============================================================================
 
+/** Calculates min and max values from data */
+function calculateMinMax(data: readonly number[]): { min: number; max: number } {
+	let min = Number.POSITIVE_INFINITY;
+	let max = Number.NEGATIVE_INFINITY;
+	for (const value of data) {
+		if (value < min) min = value;
+		if (value > max) max = value;
+	}
+	return { min, max };
+}
+
+/** Builds braille dots for a character with optional min/max markers */
+function buildBrailleDots(
+	value1: number,
+	value2: number,
+	min: number,
+	max: number,
+	showMin: boolean,
+	showMax: boolean,
+	y1: number,
+	y2: number,
+): [number, number][] {
+	const dots: [number, number][] = [];
+
+	// Column 0 (pixel 1)
+	dots.push([0, Math.max(0, Math.min(3, y1))]);
+
+	// Column 1 (pixel 2)
+	dots.push([1, Math.max(0, Math.min(3, y2))]);
+
+	// Add min/max markers
+	if (showMin && (value1 === min || value2 === min)) {
+		dots.push([0, 3]);
+		dots.push([1, 3]);
+	}
+	if (showMax && (value1 === max || value2 === max)) {
+		dots.push([0, 0]);
+		dots.push([1, 0]);
+	}
+
+	return dots;
+}
+
+/** Renders a single braille character from data values */
+function renderBrailleChar(
+	data: readonly number[],
+	charIdx: number,
+	width: number,
+	min: number,
+	max: number,
+	showMin: boolean,
+	showMax: boolean,
+): string {
+	const totalPixels = width * 2;
+	const pixelX1 = charIdx * 2;
+	const pixelX2 = charIdx * 2 + 1;
+
+	const dataIdx1 = Math.floor((pixelX1 / totalPixels) * data.length);
+	const dataIdx2 = Math.floor((pixelX2 / totalPixels) * data.length);
+
+	const value1 = data[dataIdx1] ?? 0;
+	const value2 = data[dataIdx2] ?? 0;
+
+	const y1 = Math.round(scaleValue(value1, min, max, 3, 0));
+	const y2 = Math.round(scaleValue(value2, min, max, 3, 0));
+
+	const dots = buildBrailleDots(value1, value2, min, max, showMin, showMax, y1, y2);
+	return combineBrailleDots(dots);
+}
+
 /**
  * Renders sparkline data to braille characters.
  * @internal
@@ -150,62 +220,17 @@ function renderSparkline(
 		return ' '.repeat(width);
 	}
 
-	// Calculate min/max
-	let min = Number.POSITIVE_INFINITY;
-	let max = Number.NEGATIVE_INFINITY;
-	for (const value of data) {
-		if (value < min) min = value;
-		if (value > max) max = value;
-	}
+	const { min, max } = calculateMinMax(data);
 
 	// Handle flat data
 	if (min === max) {
-		const halfChar = String.fromCharCode(BRAILLE_BASE | 0x44); // Middle dots
+		const halfChar = String.fromCharCode(BRAILLE_BASE | 0x44);
 		return halfChar.repeat(width);
 	}
 
-	// Each character is 2 pixels wide, 4 pixels tall (braille 2x4 grid)
-	const totalPixels = width * 2;
 	const output: string[] = [];
-
 	for (let charIdx = 0; charIdx < width; charIdx++) {
-		// Each character represents 2 data points
-		const pixelX1 = charIdx * 2;
-		const pixelX2 = charIdx * 2 + 1;
-
-		// Map pixel X to data index
-		const dataIdx1 = Math.floor((pixelX1 / totalPixels) * data.length);
-		const dataIdx2 = Math.floor((pixelX2 / totalPixels) * data.length);
-
-		const value1 = data[dataIdx1] ?? 0;
-		const value2 = data[dataIdx2] ?? 0;
-
-		// Scale to 0-3 (4 vertical pixels)
-		const y1 = Math.round(scaleValue(value1, min, max, 3, 0));
-		const y2 = Math.round(scaleValue(value2, min, max, 3, 0));
-
-		// Build dots for this character
-		const dots: [number, number][] = [];
-
-		// Column 0 (pixel 1)
-		dots.push([0, Math.max(0, Math.min(3, y1))]);
-
-		// Column 1 (pixel 2)
-		dots.push([1, Math.max(0, Math.min(3, y2))]);
-
-		// Add min/max markers
-		if (showMin && (value1 === min || value2 === min)) {
-			// Add bottom marker (row 3)
-			dots.push([0, 3]);
-			dots.push([1, 3]);
-		}
-		if (showMax && (value1 === max || value2 === max)) {
-			// Add top marker (row 0)
-			dots.push([0, 0]);
-			dots.push([1, 0]);
-		}
-
-		output.push(combineBrailleDots(dots));
+		output.push(renderBrailleChar(data, charIdx, width, min, max, showMin, showMax));
 	}
 
 	return output.join('');

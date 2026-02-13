@@ -114,76 +114,84 @@ export interface TestEntityConfig {
  * });
  * ```
  */
-export function createTestEntity(world: World, config: TestEntityConfig = {}): Entity {
-	const eid = addEntity(world);
-
-	// Position (almost always needed)
+/** Applies position and z-index configuration */
+function applyPositionConfig(world: World, eid: Entity, config: TestEntityConfig): void {
 	if (config.x !== undefined || config.y !== undefined) {
 		setPosition(world, eid, config.x ?? 0, config.y ?? 0);
 	}
-
-	// Z-index for layering (separate from Position.z)
 	if (config.z !== undefined) {
 		setZIndex(world, eid, config.z);
 	}
+}
 
-	// Dimensions (needed for rendering and hit testing)
+/** Applies dimensions configuration */
+function applyDimensionsConfig(world: World, eid: Entity, config: TestEntityConfig): void {
 	if (config.width !== undefined || config.height !== undefined) {
 		setDimensions(world, eid, config.width ?? 0, config.height ?? 0);
 	}
+}
 
-	// Renderable (for visible entities)
-	if (config.style !== undefined || config.visible !== undefined) {
-		addComponent(world, eid, Renderable);
-		if (config.style !== undefined) {
-			setStyle(world, eid, config.style);
-		}
-		if (config.visible !== undefined) {
-			Renderable.visible[eid] = config.visible ? 1 : 0;
-		}
-		if (config.dirty !== undefined) {
-			Renderable.dirty[eid] = config.dirty ? 1 : 0;
-		}
+/** Applies renderable configuration */
+function applyRenderableConfig(world: World, eid: Entity, config: TestEntityConfig): void {
+	if (config.style === undefined && config.visible === undefined) {
+		return;
 	}
+	addComponent(world, eid, Renderable);
+	if (config.style !== undefined) {
+		setStyle(world, eid, config.style);
+	}
+	if (config.visible !== undefined) {
+		Renderable.visible[eid] = config.visible ? 1 : 0;
+	}
+	if (config.dirty !== undefined) {
+		Renderable.dirty[eid] = config.dirty ? 1 : 0;
+	}
+}
 
-	// Content (for text)
+/** Applies content configuration */
+function applyContentConfig(world: World, eid: Entity, config: TestEntityConfig): void {
 	if (config.content !== undefined) {
 		setContent(world, eid, config.content);
 	}
+}
 
-	// Interactive (for clickable/hoverable)
+/** Applies interactivity configuration */
+function applyInteractivityConfig(world: World, eid: Entity, config: TestEntityConfig): void {
 	if (config.clickable !== undefined || config.hoverable !== undefined) {
 		setInteractive(world, eid, {
 			clickable: config.clickable ?? false,
 			hoverable: config.hoverable ?? false,
 		});
 	}
-
-	// Focusable
 	if (config.focusable !== undefined) {
 		setFocusable(world, eid, { focusable: config.focusable });
 	}
+}
 
-	// Scrollable
+/** Applies layout components */
+function applyLayoutConfig(world: World, eid: Entity, config: TestEntityConfig): void {
 	if (config.scrollable !== undefined) {
 		setScrollable(world, eid, {});
 	}
-
-	// Border
 	if (config.border !== undefined && config.border) {
 		addComponent(world, eid, Border);
 	}
-
-	// Padding
 	if (config.padding !== undefined && config.padding) {
 		addComponent(world, eid, Padding);
 	}
-
-	// Hierarchy
 	if (config.hierarchy !== undefined && config.hierarchy) {
 		addComponent(world, eid, Hierarchy);
 	}
+}
 
+export function createTestEntity(world: World, config: TestEntityConfig = {}): Entity {
+	const eid = addEntity(world);
+	applyPositionConfig(world, eid, config);
+	applyDimensionsConfig(world, eid, config);
+	applyRenderableConfig(world, eid, config);
+	applyContentConfig(world, eid, config);
+	applyInteractivityConfig(world, eid, config);
+	applyLayoutConfig(world, eid, config);
 	return eid;
 }
 

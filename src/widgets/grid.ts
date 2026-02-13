@@ -306,6 +306,110 @@ function calculateCellDimensions(
 	return result;
 }
 
+/** Validates grid cell bounds and throws if invalid */
+function validateGridBounds(
+	row: number,
+	col: number,
+	rowSpan: number,
+	colSpan: number,
+	rows: number,
+	cols: number,
+): void {
+	if (row < 0 || row >= rows) {
+		throw new Error(`Row ${row} out of bounds (0-${rows - 1})`);
+	}
+	if (col < 0 || col >= cols) {
+		throw new Error(`Column ${col} out of bounds (0-${cols - 1})`);
+	}
+	if (row + rowSpan > rows) {
+		throw new Error(
+			`Row span ${rowSpan} exceeds grid bounds (row ${row} + span ${rowSpan} > ${rows})`,
+		);
+	}
+	if (col + colSpan > cols) {
+		throw new Error(
+			`Column span ${colSpan} exceeds grid bounds (col ${col} + span ${colSpan} > ${cols})`,
+		);
+	}
+}
+
+/**
+ * Calculates cumulative positions for rows or columns (including gaps).
+ * @internal
+ */
+function calculatePositions(
+	count: number,
+	cellSizes: readonly number[],
+	gap: number,
+	padding: number,
+): number[] {
+	const positions: number[] = [padding];
+	for (let i = 0; i < count; i++) {
+		if (i > 0) {
+			positions[i] = (positions[i - 1] ?? 0) + (cellSizes[i - 1] ?? 0) + gap;
+		}
+	}
+	return positions;
+}
+
+/**
+ * Calculates the total dimension for a cell span (including internal gaps).
+ * @internal
+ */
+function calculateSpanDimension(
+	startIndex: number,
+	span: number,
+	maxIndex: number,
+	cellSizes: readonly number[],
+	gap: number,
+): number {
+	let totalSize = 0;
+	for (let i = startIndex; i < startIndex + span && i < maxIndex; i++) {
+		totalSize += cellSizes[i] ?? 0;
+		if (i < startIndex + span - 1) {
+			totalSize += gap;
+		}
+	}
+	return totalSize;
+}
+
+/**
+ * Positions a single grid cell.
+ * @internal
+ */
+function positionCell(
+	world: World,
+	cell: GridCell,
+	gridPos: { x: number; y: number },
+	colPositions: readonly number[],
+	rowPositions: readonly number[],
+	cellWidths: readonly number[],
+	cellHeights: readonly number[],
+	state: GridState,
+): void {
+	const cellX = colPositions[cell.col] ?? 0;
+	const cellY = rowPositions[cell.row] ?? 0;
+
+	const cellWidth = calculateSpanDimension(
+		cell.col,
+		cell.colSpan,
+		state.cols,
+		cellWidths,
+		state.gap,
+	);
+	const cellHeight = calculateSpanDimension(
+		cell.row,
+		cell.rowSpan,
+		state.rows,
+		cellHeights,
+		state.gap,
+	);
+
+	setPosition(world, cell.entity, gridPos.x + cellX, gridPos.y + cellY);
+	setDimensions(world, cell.entity, cellWidth, cellHeight);
+	markDirty(world, cell.entity);
+}
+
 /**
  * Calculates grid layout and updates child positions/dimensions.
  */
@@ -314,12 +418,9 @@ function applyGridLayout(world: World, eid: Entity, state: GridState): void {
 	const dims = getDimensions(world, eid);
 	if (!dims) return;
 
-	const gridWidth = dims.width;
-	const gridHeight = dims.height;
-
 	// Account for padding
-	const contentWidth = gridWidth - state.padding * 2;
-	const contentHeight = gridHeight - state.padding * 2;
+	const contentWidth = dims.width - state.padding * 2;
+	const contentHeight = dims.height - state.padding * 2;
 
 	// Calculate cell dimensions
 	const cellWidths = calculateCellDimensions(state.cellWidths, state.cols, contentWidth, state.gap);
@@ -331,19 +432,8 @@ function applyGridLayout(world: World, eid: Entity, state: GridState): void {
 	);
 
 	// Calculate cumulative positions (including gaps)
-	const colPositions: number[] = [state.padding];
-	for (let col = 0; col < state.cols; col++) {
-		if (col > 0) {
-			colPositions[col] = (colPositions[col - 1] ?? 0) + (cellWidths[col - 1] ?? 0) + state.gap;
-		}
-	}
-
-	const rowPositions: number[] = [state.padding];
-	for (let row = 0; row < state.rows; row++) {
-		if (row > 0) {
-			rowPositions[row] = (rowPositions[row - 1] ?? 0) + (cellHeights[row - 1] ?? 0) + state.gap;
-		}
-	}
+	const colPositions = calculatePositions(state.cols, cellWidths, state.gap, state.padding);
+	const rowPositions = calculatePositions(state.rows, cellHeights, state.gap, state.padding);
 
 	// Get grid position
 	const gridPos = getPosition(world, eid);
@@ -351,30 +441,7 @@ function applyGridLayout(world: World, eid: Entity, state: GridState): void {
 
 	// Position each cell
 	for (const cell of state.cells) {
-		const cellX = colPositions[cell.col] ?? 0;
-		const cellY = rowPositions[cell.row] ?? 0;
-
-		// Calculate span dimensions
-		let cellWidth = 0;
-		for (let c = cell.col; c < cell.col + cell.colSpan && c < state.cols; c++) {
-			cellWidth += cellWidths[c] ?? 0;
-			if (c < cell.col + cell.colSpan - 1) {
-				cellWidth += state.gap;
-			}
-		}
-
-		let cellHeight = 0;
-		for (let r = cell.row; r < cell.row + cell.rowSpan && r < state.rows; r++) {
-			cellHeight += cellHeights[r] ?? 0;
-			if (r < cell.row + cell.rowSpan - 1) {
-				cellHeight += state.gap;
-			}
-		}
-
-		// Set child position and dimensions (relative to grid)
-		setPosition(world, cell.entity, gridPos.x + cellX, gridPos.y + cellY);
-		setDimensions(world, cell.entity, cellWidth, cellHeight);
-		markDirty(world, cell.entity);
+		positionCell(world, cell, gridPos, colPositions, rowPositions, cellWidths, cellHeights, state);
 	}
 }
 
@@ -526,22 +593,7 @@ export function createGrid(world: World, entity: Entity, config: GridConfig = {}
 			if (!currentState) return widget;
 
 			// Validate bounds
-			if (row < 0 || row >= currentState.rows) {
-				throw new Error(`Row ${row} out of bounds (0-${currentState.rows - 1})`);
-			}
-			if (col < 0 || col >= currentState.cols) {
-				throw new Error(`Column ${col} out of bounds (0-${currentState.cols - 1})`);
-			}
-			if (row + rowSpan > currentState.rows) {
-				throw new Error(
-					`Row span ${rowSpan} exceeds grid bounds (row ${row} + span ${rowSpan} > ${currentState.rows})`,
-				);
-			}
-			if (col + colSpan > currentState.cols) {
-				throw new Error(
-					`Column span ${colSpan} exceeds grid bounds (col ${col} + span ${colSpan} > ${currentState.cols})`,
-				);
-			}
+			validateGridBounds(row, col, rowSpan, colSpan, currentState.rows, currentState.cols);
 
 			// Remove from previous cell if already in grid
 			const existingIndex = currentState.cells.findIndex((c) => c.entity === childEid);

@@ -179,96 +179,203 @@ const lineChartStateMap = new Map<Entity, LineChartState>();
 // =============================================================================
 
 /**
- * Renders a line chart using braille characters for high resolution.
+ * Finds min/max values from series data.
  * @internal
  */
-function renderLineChart(
-	state: LineChartState,
-	width: number,
-	height: number,
-	_showGrid: boolean,
-	showLegend: boolean,
-): string {
-	const lines: string[] = [];
+function findSeriesMinMax(series: readonly LineChartState['series'][number][]): {
+	minY: number;
+	maxY: number;
+} {
+	let minY = Number.POSITIVE_INFINITY;
+	let maxY = Number.NEGATIVE_INFINITY;
 
-	// Calculate data range
+	for (const s of series) {
+		for (const value of s.data) {
+			if (value < minY) minY = value;
+			if (value > maxY) maxY = value;
+		}
+	}
+
+	return { minY, maxY };
+}
+
+/**
+ * Calculates the Y-axis range from series data.
+ * @internal
+ */
+function calculateDataRange(state: LineChartState): { minY: number; maxY: number } {
 	let minY = state.minY ?? Number.POSITIVE_INFINITY;
 	let maxY = state.maxY ?? Number.NEGATIVE_INFINITY;
 
 	if (state.minY === undefined || state.maxY === undefined) {
-		for (const series of state.series) {
-			for (const value of series.data) {
-				if (value < minY) minY = value;
-				if (value > maxY) maxY = value;
-			}
-		}
+		const calculated = findSeriesMinMax(state.series);
+		minY = calculated.minY;
+		maxY = calculated.maxY;
 	}
 
 	if (minY === Number.POSITIVE_INFINITY) minY = 0;
 	if (maxY === Number.NEGATIVE_INFINITY) maxY = 100;
 
-	// Reserve space for axes and legend
+	return { minY, maxY };
+}
+
+/**
+ * Calculates chart dimensions accounting for axes and legend.
+ * @internal
+ */
+function calculateChartDimensions(
+	width: number,
+	height: number,
+	showLegend: boolean,
+	seriesCount: number,
+): {
+	yAxisWidth: number;
+	xAxisHeight: number;
+	legendHeight: number;
+	chartHeight: number;
+	chartWidth: number;
+	pixelHeight: number;
+} {
 	const yAxisWidth = 8;
 	const xAxisHeight = 2;
-	const legendHeight = showLegend && state.series.length > 0 ? 2 : 0;
+	const legendHeight = showLegend && seriesCount > 0 ? 2 : 0;
 	const chartHeight = height - xAxisHeight - legendHeight;
 	const chartWidth = width - yAxisWidth;
-
-	// Braille gives us 4x vertical resolution (4 pixels per character height)
 	const pixelHeight = chartHeight * 4;
 
-	// Calculate max data points
+	return { yAxisWidth, xAxisHeight, legendHeight, chartHeight, chartWidth, pixelHeight };
+}
+
+/**
+ * Finds the maximum number of data points across all series.
+ * @internal
+ */
+function calculateMaxDataPoints(series: readonly LineChartState['series'][number][]): number {
 	let maxDataPoints = 0;
-	for (const series of state.series) {
-		if (series.data.length > maxDataPoints) {
-			maxDataPoints = series.data.length;
+	for (const s of series) {
+		if (s.data.length > maxDataPoints) {
+			maxDataPoints = s.data.length;
 		}
 	}
+	return maxDataPoints;
+}
 
-	// Generate Y-axis ticks
-	const ticks = generateTicks(minY, maxY, 5);
+/**
+ * Maps a data point to braille grid coordinates.
+ * @internal
+ */
+function mapDataPointToGrid(
+	dataIdx: number,
+	value: number,
+	minY: number,
+	maxY: number,
+	chartWidth: number,
+	pixelHeight: number,
+	maxDataPoints: number,
+): { charX: number; charY: number; col: number; row: number } {
+	const xPixel = Math.floor((dataIdx / (maxDataPoints - 1 || 1)) * (chartWidth * 2 - 1));
+	const charX = Math.floor(xPixel / 2);
+	const col = xPixel % 2;
 
-	// Initialize chart grid (braille characters)
-	const grid: number[][] = Array.from({ length: chartHeight }, () =>
-		Array(chartWidth).fill(BRAILLE_BASE),
-	);
+	const yPixel = Math.round(scaleValue(value, minY, maxY, pixelHeight - 1, 0));
+	const charY = Math.floor(yPixel / 4);
+	const row = yPixel % 4;
 
-	// Plot each series
-	for (const series of state.series) {
-		if (series.data.length === 0) continue;
+	return { charX, charY, col, row };
+}
 
-		for (let dataIdx = 0; dataIdx < series.data.length; dataIdx++) {
-			const value = series.data[dataIdx] ?? 0;
-
-			// Map data index to X pixel
-			const xPixel = Math.floor((dataIdx / (maxDataPoints - 1 || 1)) * (chartWidth * 2 - 1));
-			const charX = Math.floor(xPixel / 2);
-			const col = xPixel % 2;
-
-			// Map value to Y pixel (inverted because terminal coords are top-down)
-			const yPixel = Math.round(scaleValue(value, minY, maxY, pixelHeight - 1, 0));
-			const charY = Math.floor(yPixel / 4);
-			const row = yPixel % 4;
-
-			// Set the braille dot
-			if (charX >= 0 && charX < chartWidth && charY >= 0 && charY < chartHeight) {
-				const rowDots = BRAILLE_DOTS[row];
-				if (rowDots) {
-					const dotBit = rowDots[col] ?? 0;
-					if (grid[charY] && grid[charY][charX] !== undefined) {
-						grid[charY]![charX]! |= dotBit;
-					}
-				}
-			}
-		}
+/**
+ * Sets a braille dot in the grid.
+ * @internal
+ */
+function setBrailleDot(
+	grid: number[][],
+	charX: number,
+	charY: number,
+	col: number,
+	row: number,
+	chartWidth: number,
+	chartHeight: number,
+): void {
+	if (charX < 0 || charX >= chartWidth || charY < 0 || charY >= chartHeight) {
+		return;
 	}
 
-	// Render chart area
+	const rowDots = BRAILLE_DOTS[row];
+	if (!rowDots) {
+		return;
+	}
+
+	const dotBit = rowDots[col] ?? 0;
+	const gridRow = grid[charY];
+	if (gridRow && gridRow[charX] !== undefined) {
+		gridRow[charX] |= dotBit;
+	}
+}
+
+/**
+ * Plots all series data onto the braille grid.
+ * @internal
+ */
+function plotSeriesToGrid(
+	grid: number[][],
+	series: readonly LineChartState['series'][number][],
+	minY: number,
+	maxY: number,
+	chartWidth: number,
+	chartHeight: number,
+	pixelHeight: number,
+	maxDataPoints: number,
+): void {
+	for (const s of series) {
+		if (s.data.length === 0) continue;
+
+		for (let dataIdx = 0; dataIdx < s.data.length; dataIdx++) {
+			const value = s.data[dataIdx] ?? 0;
+
+			const coords = mapDataPointToGrid(
+				dataIdx,
+				value,
+				minY,
+				maxY,
+				chartWidth,
+				pixelHeight,
+				maxDataPoints,
+			);
+
+			setBrailleDot(
+				grid,
+				coords.charX,
+				coords.charY,
+				coords.col,
+				coords.row,
+				chartWidth,
+				chartHeight,
+			);
+		}
+	}
+}
+
+/**
+ * Renders the chart area with Y-axis labels.
+ * @internal
+ */
+function renderChartArea(
+	grid: number[][],
+	chartHeight: number,
+	chartWidth: number,
+	yAxisWidth: number,
+	minY: number,
+	maxY: number,
+	ticks: readonly number[],
+	width: number,
+): string[] {
+	const lines: string[] = [];
+
 	for (let row = 0; row < chartHeight; row++) {
 		const y = chartHeight - row - 1;
 		const value = scaleValue(y, 0, chartHeight - 1, minY, maxY);
 
-		// Y-axis label
 		const tickValue = ticks.find((t) => Math.abs(t - value) < (maxY - minY) / chartHeight);
 		const yLabel =
 			tickValue !== undefined
@@ -276,7 +383,6 @@ function renderLineChart(
 				: ' '.repeat(yAxisWidth - 2);
 		let line = `${yLabel}│`;
 
-		// Chart data (from grid)
 		const gridRow = grid[row];
 		if (gridRow) {
 			for (let col = 0; col < chartWidth; col++) {
@@ -288,16 +394,30 @@ function renderLineChart(
 		lines.push(line.padEnd(width, ' '));
 	}
 
-	// X-axis
+	return lines;
+}
+
+/**
+ * Renders the X-axis and labels.
+ * @internal
+ */
+function renderXAxis(
+	yAxisWidth: number,
+	chartWidth: number,
+	width: number,
+	xLabels: readonly string[],
+	maxDataPoints: number,
+): string[] {
+	const lines: string[] = [];
+
 	const xAxisLine = `${' '.repeat(yAxisWidth)}└${'─'.repeat(chartWidth - 1)}`;
 	lines.push(xAxisLine.padEnd(width, ' '));
 
-	// X-axis labels (if provided)
-	if (state.xLabels.length > 0) {
+	if (xLabels.length > 0) {
 		let labelLine = `${' '.repeat(yAxisWidth)} `;
 		const labelStep = Math.max(1, Math.floor(maxDataPoints / 5));
 		for (let i = 0; i < maxDataPoints; i += labelStep) {
-			const label = state.xLabels[i] ?? i.toString();
+			const label = xLabels[i] ?? i.toString();
 			labelLine += label.slice(0, 8).padEnd(8, ' ');
 		}
 		lines.push(labelLine.padEnd(width, ' '));
@@ -305,13 +425,27 @@ function renderLineChart(
 		lines.push(' '.repeat(width));
 	}
 
-	// Legend
-	if (showLegend && state.series.length > 0) {
+	return lines;
+}
+
+/**
+ * Renders the legend if enabled.
+ * @internal
+ */
+function renderLegend(
+	showLegend: boolean,
+	series: readonly LineChartState['series'][number][],
+	legendHeight: number,
+	width: number,
+): string[] {
+	const lines: string[] = [];
+
+	if (showLegend && series.length > 0) {
 		let legendLine = 'Legend: ';
-		for (let i = 0; i < state.series.length; i++) {
-			const series = state.series[i];
-			if (series) {
-				legendLine += `${series.label} `;
+		for (let i = 0; i < series.length; i++) {
+			const s = series[i];
+			if (s) {
+				legendLine += `${s.label} `;
 			}
 		}
 		lines.push(legendLine.padEnd(width, ' '));
@@ -321,7 +455,63 @@ function renderLineChart(
 		}
 	}
 
-	return lines.join('\n');
+	return lines;
+}
+
+/**
+ * Renders a line chart using braille characters for high resolution.
+ * @internal
+ */
+function renderLineChart(
+	state: LineChartState,
+	width: number,
+	height: number,
+	_showGrid: boolean,
+	showLegend: boolean,
+): string {
+	const { minY, maxY } = calculateDataRange(state);
+
+	const dims = calculateChartDimensions(width, height, showLegend, state.series.length);
+	const maxDataPoints = calculateMaxDataPoints(state.series);
+	const ticks = generateTicks(minY, maxY, 5);
+
+	const grid: number[][] = Array.from({ length: dims.chartHeight }, () =>
+		Array(dims.chartWidth).fill(BRAILLE_BASE),
+	);
+
+	plotSeriesToGrid(
+		grid,
+		state.series,
+		minY,
+		maxY,
+		dims.chartWidth,
+		dims.chartHeight,
+		dims.pixelHeight,
+		maxDataPoints,
+	);
+
+	const chartLines = renderChartArea(
+		grid,
+		dims.chartHeight,
+		dims.chartWidth,
+		dims.yAxisWidth,
+		minY,
+		maxY,
+		ticks,
+		width,
+	);
+
+	const xAxisLines = renderXAxis(
+		dims.yAxisWidth,
+		dims.chartWidth,
+		width,
+		state.xLabels,
+		maxDataPoints,
+	);
+
+	const legendLines = renderLegend(showLegend, state.series, dims.legendHeight, width);
+
+	return [...chartLines, ...xAxisLines, ...legendLines].join('\n');
 }
 
 /**

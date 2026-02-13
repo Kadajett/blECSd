@@ -388,6 +388,36 @@ export const ListWidgetConfigSchema = z.object({
 // =============================================================================
 
 /**
+ * Applies list style options to display options.
+ * Helper function to reduce complexity in createList.
+ */
+function applyListStyleOptions(eid: Entity, style: ListStyleConfig): void {
+	const displayOptions: ListDisplayOptions = {};
+	if (style.selected?.prefix !== undefined) {
+		displayOptions.selectedPrefix = style.selected.prefix;
+	}
+	if (style.unselectedPrefix !== undefined) {
+		displayOptions.unselectedPrefix = style.unselectedPrefix;
+	}
+	if (style.selected?.fg !== undefined) {
+		displayOptions.selectedFg = style.selected.fg;
+	}
+	if (style.selected?.bg !== undefined) {
+		displayOptions.selectedBg = style.selected.bg;
+	}
+	if (style.item?.fg !== undefined) {
+		displayOptions.itemFg = style.item.fg;
+	}
+	if (style.item?.bg !== undefined) {
+		displayOptions.itemBg = style.item.bg;
+	}
+	if (style.disabledFg !== undefined) {
+		displayOptions.disabledFg = style.disabledFg;
+	}
+	setListDisplay(eid, displayOptions);
+}
+
+/**
  * Creates a List widget with the given configuration.
  *
  * The List widget provides a chainable API for creating and managing
@@ -474,29 +504,7 @@ export function createList(
 
 	// Apply display styles if provided
 	if (validated.style) {
-		const displayOptions: ListDisplayOptions = {};
-		if (validated.style.selected?.prefix !== undefined) {
-			displayOptions.selectedPrefix = validated.style.selected.prefix;
-		}
-		if (validated.style.unselectedPrefix !== undefined) {
-			displayOptions.unselectedPrefix = validated.style.unselectedPrefix;
-		}
-		if (validated.style.selected?.fg !== undefined) {
-			displayOptions.selectedFg = validated.style.selected.fg;
-		}
-		if (validated.style.selected?.bg !== undefined) {
-			displayOptions.selectedBg = validated.style.selected.bg;
-		}
-		if (validated.style.item?.fg !== undefined) {
-			displayOptions.itemFg = validated.style.item.fg;
-		}
-		if (validated.style.item?.bg !== undefined) {
-			displayOptions.itemBg = validated.style.item.bg;
-		}
-		if (validated.style.disabledFg !== undefined) {
-			displayOptions.disabledFg = validated.style.disabledFg;
-		}
-		setListDisplay(eid, displayOptions);
+		applyListStyleOptions(eid, validated.style as ListStyleConfig);
 	}
 
 	// Create the widget object with chainable methods

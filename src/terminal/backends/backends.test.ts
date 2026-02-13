@@ -125,6 +125,7 @@ describe('ANSI Backend', () => {
 
 		// The second cell should NOT have a cursor move (implicit advance)
 		// Count cursor move sequences
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: Testing ANSI escape sequences
 		const moves = output.match(/\x1b\[\d+;\d+H/g);
 		expect(moves).toHaveLength(1); // Only the initial position
 	});
@@ -180,7 +181,9 @@ describe('Kitty Backend', () => {
 		const changes: RenderCell[] = [makeChange(0, 0, 'A')];
 		const output = backend.renderBuffer(changes, 80, 24);
 
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: Testing ANSI escape sequences
 		expect(output).toMatch(/^\x1b\[\?2026h/); // Starts with sync begin
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: Testing ANSI escape sequences
 		expect(output).toMatch(/\x1b\[\?2026l$/); // Ends with sync end
 	});
 
@@ -196,7 +199,9 @@ describe('encodeKittyImage', () => {
 		const data = Buffer.from('fakepngdata').toString('base64');
 		const seq = encodeKittyImage(data);
 
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: Testing ANSI escape sequences
 		expect(seq).toMatch(/^\x1b_G/); // APC
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: Testing ANSI escape sequences
 		expect(seq).toMatch(/\x1b\\$/); // ST
 		expect(seq).toContain('a=T'); // Transmit
 		expect(seq).toContain('f=100'); // PNG format

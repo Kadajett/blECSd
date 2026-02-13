@@ -21,6 +21,7 @@ import {
 	setCursorPos,
 	setTextInputConfig,
 	startEditingTextInput,
+	type TextInputAction,
 } from '../components/textInput';
 import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
@@ -137,6 +138,93 @@ interface TextareaState {
 const textareaStateMap = new Map<Entity, TextareaState>();
 
 // =============================================================================
+// HELPERS
+// =============================================================================
+
+/** Handles text input actions by dispatching to specific handlers */
+function handleTextAction(
+	world: World,
+	eid: Entity,
+	state: TextareaState,
+	action: TextInputAction,
+): boolean {
+	switch (action.type) {
+		case 'insert': {
+			const result = insertAt(state.value, state.cursor, action.char);
+			state.value = result.text;
+			state.cursor = result.cursor;
+			setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
+			ensureCursorVisible(state);
+			emitValueChange(world, eid, state.value);
+			return true;
+		}
+		case 'newline': {
+			const result = insertAt(state.value, state.cursor, '\n');
+			state.value = result.text;
+			state.cursor = result.cursor;
+			setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
+			ensureCursorVisible(state);
+			emitValueChange(world, eid, state.value);
+			return true;
+		}
+		case 'delete': {
+			const startOffset = Math.min(action.start, action.end);
+			const endOffset = Math.max(action.start, action.end);
+			state.value = state.value.slice(0, startOffset) + state.value.slice(endOffset);
+			state.cursor = clampCursor(state.value, { line: 0, column: startOffset });
+			setCursorPos(world, eid, startOffset);
+			ensureCursorVisible(state);
+			emitValueChange(world, eid, state.value);
+			return true;
+		}
+		case 'moveCursor': {
+			state.cursor = clampCursor(state.value, { line: 0, column: action.position });
+			setCursorPos(world, eid, action.position);
+			ensureCursorVisible(state);
+			return true;
+		}
+		case 'moveWordLeft': {
+			state.cursor = findWordStart(action.text, state.cursor);
+			setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
+			ensureCursorVisible(state);
+			return true;
+		}
+		case 'moveWordRight': {
+			state.cursor = findWordEnd(action.text, state.cursor);
+			setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
+			ensureCursorVisible(state);
+			return true;
+		}
+		case 'deleteWordBackward': {
+			const result = deleteWordBackward(action.text, state.cursor);
+			state.value = result.text;
+			state.cursor = result.cursor;
+			setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
+			ensureCursorVisible(state);
+			emitValueChange(world, eid, state.value);
+			return true;
+		}
+		case 'deleteWordForward': {
+			const result = deleteWordForward(action.text, state.cursor);
+			state.value = result.text;
+			state.cursor = result.cursor;
+			setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
+			ensureCursorVisible(state);
+			emitValueChange(world, eid, state.value);
+			return true;
+		}
+		case 'submit': {
+			emitSubmit(world, eid, action.value);
+			return true;
+		}
+		case 'cancel':
+			return true;
+		default:
+			return false;
+	}
+}
+
+// =============================================================================
 // FACTORY
 // =============================================================================
 
@@ -251,27 +339,23 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 			const state = textareaStateMap.get(eid);
 			if (!state) return false;
 
-			// Handle Ctrl+Home/End for document start/end
+			// Handle special navigation keys
 			if (ctrl && keyName === 'home') {
 				state.cursor = moveCursorStart(state.value, state.cursor);
 				setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
 				return true;
 			}
-
 			if (ctrl && keyName === 'end') {
 				state.cursor = moveCursorEndOfDocument(state.value, state.cursor);
 				setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
 				return true;
 			}
-
-			// Handle up/down arrow keys
 			if (keyName === 'up') {
 				state.cursor = moveCursorUp(state.value, state.cursor);
 				setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
 				ensureCursorVisible(state);
 				return true;
 			}
-
 			if (keyName === 'down') {
 				state.cursor = moveCursorDown(state.value, state.cursor);
 				setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
@@ -279,95 +363,10 @@ export function createTextarea(world: World, config: TextareaConfig = {}): Texta
 				return true;
 			}
 
-			// Try handling with the standard text input handler
 			const action = handleTextInputKeyPress(world, eid, keyName, state.value, ctrl);
 			if (!action) return false;
 
-			switch (action.type) {
-				case 'insert': {
-					const result = insertAt(state.value, state.cursor, action.char);
-					state.value = result.text;
-					state.cursor = result.cursor;
-					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
-					ensureCursorVisible(state);
-					emitValueChange(world, eid, state.value);
-					return true;
-				}
-
-				case 'newline': {
-					const result = insertAt(state.value, state.cursor, '\n');
-					state.value = result.text;
-					state.cursor = result.cursor;
-					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
-					ensureCursorVisible(state);
-					emitValueChange(world, eid, state.value);
-					return true;
-				}
-
-				case 'delete': {
-					const startOffset = Math.min(action.start, action.end);
-					const endOffset = Math.max(action.start, action.end);
-					state.value = state.value.slice(0, startOffset) + state.value.slice(endOffset);
-					state.cursor = clampCursor(state.value, { line: 0, column: startOffset });
-					setCursorPos(world, eid, startOffset);
-					ensureCursorVisible(state);
-					emitValueChange(world, eid, state.value);
-					return true;
-				}
-
-				case 'moveCursor': {
-					state.cursor = clampCursor(state.value, { line: 0, column: action.position });
-					setCursorPos(world, eid, action.position);
-					ensureCursorVisible(state);
-					return true;
-				}
-
-				case 'moveWordLeft': {
-					state.cursor = findWordStart(action.text, state.cursor);
-					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
-					ensureCursorVisible(state);
-					return true;
-				}
-
-				case 'moveWordRight': {
-					state.cursor = findWordEnd(action.text, state.cursor);
-					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
-					ensureCursorVisible(state);
-					return true;
-				}
-
-				case 'deleteWordBackward': {
-					const result = deleteWordBackward(action.text, state.cursor);
-					state.value = result.text;
-					state.cursor = result.cursor;
-					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
-					ensureCursorVisible(state);
-					emitValueChange(world, eid, state.value);
-					return true;
-				}
-
-				case 'deleteWordForward': {
-					const result = deleteWordForward(action.text, state.cursor);
-					state.value = result.text;
-					state.cursor = result.cursor;
-					setCursorPos(world, eid, cursorToOffset(state.value, state.cursor));
-					ensureCursorVisible(state);
-					emitValueChange(world, eid, state.value);
-					return true;
-				}
-
-				case 'submit': {
-					emitSubmit(world, eid, action.value);
-					return true;
-				}
-
-				case 'cancel': {
-					return true;
-				}
-
-				default:
-					return false;
-			}
+			return handleTextAction(world, eid, state, action);
 		},
 
 		focus(): TextareaWidget {

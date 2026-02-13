@@ -148,7 +148,9 @@ export function generateTicks(min: number, max: number, targetTicks = 5): readon
 		}
 	}
 
-	if (ticks.length === 0 || ticks[ticks.length - 1]! < max) {
+	// Ensure max is included if not already present
+	const lastTick = ticks[ticks.length - 1];
+	if (ticks.length === 0 || (lastTick !== undefined && lastTick < max)) {
 		ticks.push(max);
 	}
 
@@ -283,7 +285,13 @@ export const CHART_COLORS: readonly number[] = [
  * ```
  */
 export function getChartColor(index: number): number {
-	return CHART_COLORS[index % CHART_COLORS.length] ?? CHART_COLORS[0]!;
+	const color = CHART_COLORS[index % CHART_COLORS.length];
+	// CHART_COLORS is a const array with known values, so this is safe
+	if (color === undefined) {
+		// biome-ignore lint/style/noNonNullAssertion: CHART_COLORS always has at least one element
+		return CHART_COLORS[0]!; // Default to first color
+	}
+	return color;
 }
 
 /**

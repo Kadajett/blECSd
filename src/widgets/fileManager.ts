@@ -836,92 +836,141 @@ function navigateToDir(world: World, eid: Entity, state: FileManagerState, dirPa
  * handleFileManagerKey(world, fmEid, 'enter');
  * ```
  */
+
+/**
+ * Handles up arrow key navigation.
+ * @internal
+ */
+function handleUpKey(world: World, eid: Entity, state: FileManagerState): void {
+	const current = FileManager.selectedIndex[eid] ?? 0;
+	if (current > 0) {
+		FileManager.selectedIndex[eid] = current - 1;
+		updateDisplay(world, eid, state);
+	}
+}
+
+/**
+ * Handles down arrow key navigation.
+ * @internal
+ */
+function handleDownKey(world: World, eid: Entity, state: FileManagerState): void {
+	const current = FileManager.selectedIndex[eid] ?? 0;
+	if (current < state.entries.length - 1) {
+		FileManager.selectedIndex[eid] = current + 1;
+		updateDisplay(world, eid, state);
+	}
+}
+
+/**
+ * Handles backspace key for navigating to parent directory.
+ * @internal
+ */
+function handleBackspaceKey(world: World, eid: Entity, state: FileManagerState): void {
+	const parentDir = dirname(state.cwd);
+	if (parentDir !== state.cwd) {
+		navigateToDir(world, eid, state, parentDir);
+	}
+}
+
+/**
+ * Handles toggling hidden files visibility.
+ * @internal
+ */
+function handleToggleHidden(world: World, eid: Entity, state: FileManagerState): void {
+	state.showHidden = !state.showHidden;
+	state.entries = loadEntries(state);
+	FileManager.selectedIndex[eid] = 0;
+	updateDisplay(world, eid, state);
+}
+
+/**
+ * Handles delete action on selected entry.
+ * @internal
+ */
+function handleDeleteKey(eid: Entity, state: FileManagerState): void {
+	const idx = FileManager.selectedIndex[eid] ?? 0;
+	const entry = state.entries[idx];
+	if (entry) {
+		for (const cb of state.onDeleteCallbacks) {
+			cb(entry);
+		}
+	}
+}
+
+/**
+ * Handles rename action on selected entry.
+ * @internal
+ */
+function handleRenameKey(eid: Entity, state: FileManagerState): void {
+	const idx = FileManager.selectedIndex[eid] ?? 0;
+	const entry = state.entries[idx];
+	if (entry) {
+		for (const cb of state.onRenameCallbacks) {
+			cb(entry, entry.name);
+		}
+	}
+}
+
+/**
+ * Handles changing sort order.
+ * @internal
+ */
+function handleSortKey(
+	world: World,
+	eid: Entity,
+	state: FileManagerState,
+	sortBy: 'name' | 'size' | 'date',
+): void {
+	state.sortBy = sortBy;
+	state.entries = loadEntries(state);
+	updateDisplay(world, eid, state);
+}
+
 export function handleFileManagerKey(world: World, eid: Entity, key: string): boolean {
 	if (FileManager.isFileManager[eid] !== 1) return false;
 	const state = fileManagerStateMap.get(eid);
 	if (!state) return false;
 
 	switch (key) {
-		case 'up': {
-			const current = FileManager.selectedIndex[eid] ?? 0;
-			if (current > 0) {
-				FileManager.selectedIndex[eid] = current - 1;
-				updateDisplay(world, eid, state);
-			}
+		case 'up':
+			handleUpKey(world, eid, state);
 			return true;
-		}
 
-		case 'down': {
-			const current = FileManager.selectedIndex[eid] ?? 0;
-			if (current < state.entries.length - 1) {
-				FileManager.selectedIndex[eid] = current + 1;
-				updateDisplay(world, eid, state);
-			}
+		case 'down':
+			handleDownKey(world, eid, state);
 			return true;
-		}
 
 		case 'enter':
 			handleEnterKey(world, eid, state);
 			return true;
 
-		case 'backspace': {
-			const parentDir = dirname(state.cwd);
-			if (parentDir !== state.cwd) {
-				navigateToDir(world, eid, state, parentDir);
-			}
+		case 'backspace':
+			handleBackspaceKey(world, eid, state);
 			return true;
-		}
 
-		case 'h': {
-			state.showHidden = !state.showHidden;
-			state.entries = loadEntries(state);
-			FileManager.selectedIndex[eid] = 0;
-			updateDisplay(world, eid, state);
+		case 'h':
+			handleToggleHidden(world, eid, state);
 			return true;
-		}
 
-		case 'd': {
-			const idx = FileManager.selectedIndex[eid] ?? 0;
-			const entry = state.entries[idx];
-			if (entry) {
-				for (const cb of state.onDeleteCallbacks) {
-					cb(entry);
-				}
-			}
+		case 'd':
+			handleDeleteKey(eid, state);
 			return true;
-		}
 
-		case 'r': {
-			const idx = FileManager.selectedIndex[eid] ?? 0;
-			const entry = state.entries[idx];
-			if (entry) {
-				for (const cb of state.onRenameCallbacks) {
-					cb(entry, entry.name); // Callback should prompt for new name
-				}
-			}
+		case 'r':
+			handleRenameKey(eid, state);
 			return true;
-		}
 
-		case 'n': {
-			state.sortBy = 'name';
-			state.entries = loadEntries(state);
-			updateDisplay(world, eid, state);
+		case 'n':
+			handleSortKey(world, eid, state, 'name');
 			return true;
-		}
 
-		case 's': {
-			state.sortBy = 'size';
-			state.entries = loadEntries(state);
-			updateDisplay(world, eid, state);
+		case 's':
+			handleSortKey(world, eid, state, 'size');
 			return true;
-		}
 
-		case 't': {
-			state.sortBy = 'date';
-			state.entries = loadEntries(state);
-			updateDisplay(world, eid, state);
+		case 't':
+			handleSortKey(world, eid, state, 'date');
 			return true;
-		}
 
 		default:
 			return false;
