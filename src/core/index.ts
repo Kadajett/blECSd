@@ -644,6 +644,20 @@ export {
 	getShrinkHeight,
 	getShrinkWidth,
 } from './shrinkToContent';
+// Signal primitives
+export type {
+	ComputedGetter,
+	Signal,
+	SignalGetter,
+	SignalSetter,
+} from './signals';
+export {
+	createBatch,
+	createComputed,
+	createEntitySignal,
+	createSignal,
+	disposeSignal,
+} from './signals';
 // Packed storage utilities
 export type { EntityHandle, EntityPool, PackedHandle, PackedStore } from './storage';
 export {
