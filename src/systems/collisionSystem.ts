@@ -230,14 +230,25 @@ export function resetCollisionState(): void {
 // COLLISION QUERIES
 // =============================================================================
 
+// Module-level scratch array for collision detection
+// Reused across frames to avoid per-frame allocation
+const scratchColliders: number[] = [];
+
 /**
  * Query all entities with the Collider component.
  *
+ * PERF: Reuses module-level scratch array to avoid per-frame allocation.
+ * The returned array is only valid until the next call to this function.
+ *
  * @param world - The ECS world
- * @returns Array of entity IDs with Collider component
+ * @returns Array of entity IDs with Collider component (reused buffer)
  */
 export function queryColliders(world: World): number[] {
-	return Array.from(query(world, [Collider]));
+	scratchColliders.length = 0;
+	for (const eid of query(world, [Collider])) {
+		scratchColliders.push(eid);
+	}
+	return scratchColliders;
 }
 
 // =============================================================================

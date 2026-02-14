@@ -180,9 +180,16 @@ export function queryVisibleEntities(
 	return queryArea(grid, viewport.x, viewport.y, viewport.width, viewport.height);
 }
 
+// Module-level scratch array for visibility culling
+// Reused across frames to avoid per-frame allocation
+const scratchVisible: Entity[] = [];
+
 /**
  * Performs full visibility culling: queries the spatial hash and returns
  * a categorized result of visible vs culled entities.
+ *
+ * PERF: Reuses module-level scratch array to avoid per-frame allocation.
+ * The visible array in the result is only valid until the next call.
  *
  * @param grid - Spatial hash grid
  * @param viewport - Current viewport
@@ -201,12 +208,17 @@ export function performCulling(
 	totalEntities: number,
 ): CullingResult {
 	const visibleSet = queryVisibleEntities(grid, viewport);
-	const visible = Array.from(visibleSet) as Entity[];
+
+	// PERF: Reuse scratch array instead of Array.from()
+	scratchVisible.length = 0;
+	for (const eid of visibleSet) {
+		scratchVisible.push(eid);
+	}
 
 	return {
-		visible,
+		visible: scratchVisible,
 		total: totalEntities,
-		culled: totalEntities - visible.length,
+		culled: totalEntities - scratchVisible.length,
 	};
 }
 

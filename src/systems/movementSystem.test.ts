@@ -98,19 +98,22 @@ describe('movementSystem', () => {
 });
 
 describe('queryMovement', () => {
-	it('returns array', () => {
+	it('returns iterable', () => {
 		const world = createWorld();
 		const entities = queryMovement(world);
 
-		expect(Array.isArray(entities)).toBe(true);
+		// queryMovement now returns an iterable, not an array
+		expect(typeof entities[Symbol.iterator]).toBe('function');
 	});
 
 	it('handles empty world', () => {
 		const world = createWorld();
 		const entities = queryMovement(world);
 
-		expect(Array.isArray(entities)).toBe(true);
-		expect(entities.length).toBeGreaterThanOrEqual(0);
+		// queryMovement now returns an iterable, not an array
+		const entitiesArray = Array.from(entities);
+		expect(Array.isArray(entitiesArray)).toBe(true);
+		expect(entitiesArray.length).toBeGreaterThanOrEqual(0);
 	});
 });
 
