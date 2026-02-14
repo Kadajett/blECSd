@@ -33,14 +33,20 @@
  * ```
  */
 
+import {
+	blur as blurFocusable,
+	focus as focusFocusable,
+	isFocusable,
+} from '../components/focusable';
 import { NULL_ENTITY } from '../components/hierarchy';
-import { Interactive, isFocusable, setFocusedState } from '../components/interactive';
+import { Interactive } from '../components/interactive';
 import { Position } from '../components/position';
 import { isEffectivelyVisible, markDirty, Renderable } from '../components/renderable';
 import { getScreen, Screen, setScreenFocus } from '../components/screen';
 import { query } from '../core/ecs';
 import { createEventBus, type EventBus } from '../core/events';
 import type { Entity, System, World } from '../core/types';
+import { setFocusedState } from '../systems/interactiveSystem';
 
 // =============================================================================
 // TYPES
@@ -252,6 +258,7 @@ function setFocusInternal(
 	// Blur previous entity
 	if (previousEntity !== null) {
 		setFocusedState(world, previousEntity, false);
+		blurFocusable(world, previousEntity);
 		markDirty(world, previousEntity);
 		bus.emit('blur', {
 			entity: previousEntity,
@@ -263,6 +270,7 @@ function setFocusInternal(
 	// Focus new entity
 	if (newEntity !== null) {
 		setFocusedState(world, newEntity, true);
+		focusFocusable(world, newEntity);
 		markDirty(world, newEntity);
 		bus.emit('focus', {
 			entity: newEntity,

@@ -11,10 +11,20 @@ import { z } from 'zod';
 import { setDimensions } from '../components/dimensions';
 import { Position, setPosition } from '../components/position';
 import { markDirty, setVisible } from '../components/renderable';
+import type {
+	CellAlign,
+	TableCell,
+	TableColumn,
+	TableData,
+	TableDisplay,
+	TableDisplayOptions,
+	TableRow,
+} from '../components/table';
+import { removeEntity } from '../core/ecs';
+import type { Entity, World } from '../core/types';
 import {
 	appendRow,
 	attachTableBehavior,
-	type CellAlign,
 	calculateColumnWidths,
 	clearData,
 	detachTableBehavior,
@@ -43,15 +53,7 @@ import {
 	setHeaderRowCount,
 	setHeaders,
 	setTableDisplay,
-	type TableCell,
-	type TableColumn,
-	type TableData,
-	type TableDisplay,
-	type TableDisplayOptions,
-	type TableRow,
-} from '../components/table';
-import { removeEntity } from '../core/ecs';
-import type { Entity, World } from '../core/types';
+} from '../systems/tableSystem';
 
 // =============================================================================
 // HELPER FUNCTIONS

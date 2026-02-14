@@ -583,8 +583,6 @@ export type {
 } from '../components/radioButton';
 // Select
 export type {
-	/** Select action */
-	SelectAction,
 	/** Select callback */
 	SelectCallback,
 	/** Select display */
@@ -602,8 +600,6 @@ export type {
 } from '../components/select';
 // Slider
 export type {
-	/** Slider action */
-	SliderAction,
 	/** Slider change callback */
 	SliderChangeCallback,
 	/** Slider display */
@@ -619,7 +615,6 @@ export type {
 	/** Slider store */
 	SliderStore,
 } from '../components/slider';
-
 // Table
 export type {
 	/** Cell alignment */
@@ -660,6 +655,14 @@ export type {
 	/** Text input store */
 	TextInputStore,
 } from '../components/textInput';
+export type {
+	/** Select action */
+	SelectAction,
+} from '../systems/selectSystem';
+export type {
+	/** Slider action */
+	SliderAction,
+} from '../systems/sliderSystem';
 
 // =============================================================================
 // CONFIG TYPES

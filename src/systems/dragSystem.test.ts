@@ -5,11 +5,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setDimensions } from '../components/dimensions';
 import { setParent } from '../components/hierarchy';
-import { setDraggable } from '../components/interactive';
 import { getPosition, getZIndex, setPosition, setZIndex } from '../components/position';
 import { addEntity, createWorld } from '../core/ecs';
 import { createEventBus, type EventBus } from '../core/events';
 import type { Entity, World } from '../core/types';
+import { setDraggable } from '../systems/interactiveSystem';
 import {
 	clearDragConstraints,
 	createDragSystem,

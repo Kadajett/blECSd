@@ -15,7 +15,6 @@ import {
 	hasInteractive,
 	hasKeysEnabled,
 	hasMouseEnabled,
-	Interactive,
 	isClickable,
 	isDraggable,
 	isEnabled,
@@ -30,7 +29,8 @@ import {
 	setInteractive,
 	setKeyable,
 	setPressed,
-} from './interactive';
+} from '../systems/interactiveSystem';
+import { Interactive } from './interactive';
 
 describe('Interactive component', () => {
 	describe('setInteractive', () => {

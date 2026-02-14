@@ -10,12 +10,14 @@ import { Content, type ContentOptions, setContent } from '../../components/conte
 import { Dimensions, type DimensionValue } from '../../components/dimensions';
 import { Focusable, type FocusableOptions, setFocusable } from '../../components/focusable';
 import { Hierarchy } from '../../components/hierarchy';
-import { Interactive, type InteractiveOptions, setInteractive } from '../../components/interactive';
+import { Interactive, type InteractiveOptions } from '../../components/interactive';
 import { Padding, type PaddingOptions, setPadding } from '../../components/padding';
 import { Position } from '../../components/position';
 import { Renderable, type StyleOptions, setStyle } from '../../components/renderable';
-import { Scrollable, type ScrollableOptions, setScrollable } from '../../components/scrollable';
-import { setSliderDisplay } from '../../components/slider';
+import { Scrollable, type ScrollableOptions } from '../../components/scrollable';
+import { setInteractive } from '../../systems/interactiveSystem';
+import { setScrollable } from '../../systems/scrollableSystem';
+import { setSliderDisplay } from '../../systems/sliderSystem';
 import { addComponent } from '../ecs';
 import type { Entity, World } from '../types';
 import type {

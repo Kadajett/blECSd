@@ -25,7 +25,6 @@
 import { setDimensions } from '../components/dimensions';
 import { makeFocusable, resetFocusState } from '../components/focusable';
 import { appendChild } from '../components/hierarchy';
-import { setInteractive } from '../components/interactive';
 import { setPosition, setZIndex } from '../components/position';
 import { setStyle } from '../components/renderable';
 import { resetScreenSingleton } from '../components/screen';
@@ -40,6 +39,7 @@ import {
 	queueMouseEvent,
 	resetInputState,
 } from '../systems/inputSystem';
+import { setInteractive } from '../systems/interactiveSystem';
 import { layoutSystem } from '../systems/layoutSystem';
 import { clearRenderBuffer, renderSystem, setRenderBuffer } from '../systems/renderSystem';
 import type { KeyEvent, KeyName } from '../terminal/keyParser';

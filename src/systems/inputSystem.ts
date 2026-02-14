@@ -24,19 +24,19 @@ import {
 	setKeyboardInput,
 	setMouseInput,
 } from '../components/input';
-import {
-	hasInteractive,
-	Interactive,
-	isClickable,
-	isHoverable,
-	setHovered,
-	setPressed,
-} from '../components/interactive';
+import { Interactive } from '../components/interactive';
 import { Position } from '../components/position';
 import { hasComponent, query } from '../core/ecs';
 import { createEventBus, type EventBus, type UIEventMap } from '../core/events';
 import type { Scheduler } from '../core/scheduler';
 import type { Entity, System, World } from '../core/types';
+import {
+	hasInteractive,
+	isClickable,
+	isHoverable,
+	setHovered,
+	setPressed,
+} from '../systems/interactiveSystem';
 import type { KeyEvent as ParsedKeyEvent } from '../terminal/keyParser';
 import type { MouseEvent as ParsedMouseEvent } from '../terminal/mouseParser';
 

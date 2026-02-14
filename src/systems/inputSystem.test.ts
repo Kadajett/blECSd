@@ -8,9 +8,9 @@ import {
 	setFocusable,
 } from '../components/focusable';
 import { KeyboardInput, MouseInput, setKeyboardInput, setMouseInput } from '../components/input';
-import { isHovered, isPressed, setInteractive } from '../components/interactive';
 import { setPosition } from '../components/position';
 import { addEntity, createWorld } from '../core/ecs';
+import { isHovered, isPressed, setInteractive } from '../systems/interactiveSystem';
 import type { KeyEvent, KeyName } from '../terminal/keyParser';
 import type { MouseAction, MouseButton, MouseEvent } from '../terminal/mouseParser';
 import {

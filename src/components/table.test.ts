@@ -11,12 +11,6 @@ import {
 	calculateColumnWidths,
 	clearData,
 	clearTableDisplay,
-	DEFAULT_BORDER_BG,
-	DEFAULT_BORDER_FG,
-	DEFAULT_CELL_BG,
-	DEFAULT_CELL_FG,
-	DEFAULT_HEADER_BG,
-	DEFAULT_HEADER_FG,
 	getCell,
 	getCellPadding,
 	getCellValue,
@@ -44,6 +38,14 @@ import {
 	setHeaderRowCount,
 	setHeaders,
 	setTableDisplay,
+} from '../systems/tableSystem';
+import {
+	DEFAULT_BORDER_BG,
+	DEFAULT_BORDER_FG,
+	DEFAULT_CELL_BG,
+	DEFAULT_CELL_FG,
+	DEFAULT_HEADER_BG,
+	DEFAULT_HEADER_FG,
 	tableStore,
 } from './table';
 

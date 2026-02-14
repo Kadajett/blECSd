@@ -12,8 +12,6 @@ import {
 	isAtLeft,
 	isAtRight,
 	isAtTop,
-	Scrollable,
-	ScrollbarVisibility,
 	scrollBy,
 	scrollTo,
 	scrollToBottom,
@@ -27,7 +25,8 @@ import {
 	setScrollPercentage,
 	setScrollSize,
 	setViewport,
-} from './scrollable';
+} from '../systems/scrollableSystem';
+import { Scrollable, ScrollbarVisibility } from './scrollable';
 
 describe('Scrollable component', () => {
 	describe('setScrollable', () => {

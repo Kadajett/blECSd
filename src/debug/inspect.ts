@@ -15,7 +15,7 @@ import { Content } from '../components/content';
 import { Dimensions } from '../components/dimensions';
 import { Focusable, isFocused } from '../components/focusable';
 import { getChildren, getParent, Hierarchy } from '../components/hierarchy';
-import { Interactive, isHovered, isPressed } from '../components/interactive';
+import { Interactive } from '../components/interactive';
 import { Padding } from '../components/padding';
 import { Position } from '../components/position';
 import { Renderable, unpackColor } from '../components/renderable';
@@ -25,6 +25,7 @@ import { Velocity } from '../components/velocity';
 import { getAllEntities, hasComponent } from '../core/ecs';
 import { getEntityData, hasEntityData } from '../core/entityData';
 import type { Entity, World } from '../core/types';
+import { isHovered, isPressed } from '../systems/interactiveSystem';
 
 // =============================================================================
 // TYPES

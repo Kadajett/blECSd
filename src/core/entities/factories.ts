@@ -15,7 +15,7 @@ import { Dimensions } from '../../components/dimensions';
 import { Focusable, type FocusableOptions, setFocusable } from '../../components/focusable';
 import { attachFormBehavior, registerFormField } from '../../components/form';
 import { Hierarchy, setParent } from '../../components/hierarchy';
-import { Interactive, type InteractiveOptions, setInteractive } from '../../components/interactive';
+import { Interactive, type InteractiveOptions } from '../../components/interactive';
 import { Position } from '../../components/position';
 import {
 	attachProgressBarBehavior,
@@ -36,18 +36,20 @@ import {
 	registerScreenSingleton,
 } from '../../components/screen';
 import { Scrollable } from '../../components/scrollable';
-import { attachSelectBehavior, type SelectOption, setSelectDisplay } from '../../components/select';
-import {
-	attachSliderBehavior,
-	setShowSliderValue,
-	setSliderOrientation,
-} from '../../components/slider';
+import type { SelectOption } from '../../components/select';
 import {
 	attachTextInputBehavior,
 	DEFAULT_CENSOR_CHAR,
 	DEFAULT_PLACEHOLDER,
 	setTextInputConfig,
 } from '../../components/textInput';
+import { setInteractive } from '../../systems/interactiveSystem';
+import { attachSelectBehavior, setSelectDisplay } from '../../systems/selectSystem';
+import {
+	attachSliderBehavior,
+	setShowSliderValue,
+	setSliderOrientation,
+} from '../../systems/sliderSystem';
 import { addComponent, addEntity } from '../ecs';
 import type { Entity, World } from '../types';
 import {

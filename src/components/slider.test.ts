@@ -37,8 +37,6 @@ import {
 	onSliderDragStart,
 	renderSliderString,
 	resetSliderStore,
-	SLIDER_STATE_MACHINE_CONFIG,
-	SliderOrientation,
 	setShowSliderValue,
 	setSliderDisplay,
 	setSliderFromPercentage,
@@ -48,10 +46,10 @@ import {
 	setSliderToMax,
 	setSliderToMin,
 	setSliderValue,
-	sliderStore,
 	startDragging,
 	stopDragging,
-} from './slider';
+} from '../systems/sliderSystem';
+import { SLIDER_STATE_MACHINE_CONFIG, SliderOrientation, sliderStore } from './slider';
 
 describe('Slider Component', () => {
 	let world: World;

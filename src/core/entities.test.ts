@@ -35,7 +35,18 @@ import {
 	resetProgressBarStore,
 } from '../components/progressBar';
 import { Renderable } from '../components/renderable';
-import { hasScrollable, Scrollable } from '../components/scrollable';
+import { Scrollable } from '../components/scrollable';
+import { SliderOrientation } from '../components/slider';
+import { StateMachineStore } from '../components/stateMachine';
+import {
+	getTextInputConfig,
+	getTextInputState,
+	isMultiline,
+	isTextInput,
+	resetTextInputStore,
+} from '../components/textInput';
+import { createWorld } from '../core/ecs';
+import { hasScrollable } from '../systems/scrollableSystem';
 import {
 	getSelectDisplay,
 	getSelectedIndex,
@@ -43,7 +54,7 @@ import {
 	getSelectState,
 	isSelect,
 	resetSelectStore,
-} from '../components/select';
+} from '../systems/selectSystem';
 import {
 	getSliderDisplay,
 	getSliderMax,
@@ -55,17 +66,7 @@ import {
 	isShowingSliderValue,
 	isSlider,
 	resetSliderStore,
-	SliderOrientation,
-} from '../components/slider';
-import { StateMachineStore } from '../components/stateMachine';
-import {
-	getTextInputConfig,
-	getTextInputState,
-	isMultiline,
-	isTextInput,
-	resetTextInputStore,
-} from '../components/textInput';
-import { createWorld } from '../core/ecs';
+} from '../systems/sliderSystem';
 import {
 	BoxConfigSchema,
 	ButtonConfigSchema,

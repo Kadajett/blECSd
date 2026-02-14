@@ -3,9 +3,9 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { resetTableStore } from '../components/table';
 import { addEntity, createWorld } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { resetTableStore } from '../systems/tableSystem';
 import { createTable, isTableWidget, type TableWidget } from './table';
 
 describe('Table Widget', () => {
