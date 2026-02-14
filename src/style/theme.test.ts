@@ -13,16 +13,25 @@ import {
 	applyThemeToAll,
 	createDarkTheme,
 	createDefaultTheme,
+	createDraculaTheme,
+	createGruvboxTheme,
 	createHighContrastTheme,
 	createLightTheme,
+	createMonokaiTheme,
+	createNordTheme,
+	createSolarizedTheme,
 	createTheme,
+	deserializeTheme,
+	extendTheme,
 	getActiveTheme,
 	getTheme,
 	mergeThemes,
 	registerTheme,
 	resetThemeRegistry,
+	serializeTheme,
 	setActiveTheme,
 	type Theme,
+	ThemeSchema,
 } from './theme';
 
 describe('Theme System', () => {
@@ -323,6 +332,224 @@ describe('Theme System', () => {
 			expect(() => {
 				registerTheme(invalidBorder);
 			}).toThrow();
+		});
+	});
+
+	describe('New Theme Presets', () => {
+		it('creates solarized theme with valid structure', () => {
+			const theme = createSolarizedTheme();
+
+			expect(theme.name).toBe('solarized');
+			expect(() => ThemeSchema.parse(theme)).not.toThrow();
+
+			// Check all required properties exist
+			expect(theme.colors).toBeDefined();
+			expect(theme.borders).toBeDefined();
+			expect(theme.focus).toBeDefined();
+			expect(theme.widgets).toBeDefined();
+		});
+
+		it('creates monokai theme with valid structure', () => {
+			const theme = createMonokaiTheme();
+
+			expect(theme.name).toBe('monokai');
+			expect(() => ThemeSchema.parse(theme)).not.toThrow();
+
+			// Check all required properties exist
+			expect(theme.colors).toBeDefined();
+			expect(theme.borders).toBeDefined();
+			expect(theme.focus).toBeDefined();
+			expect(theme.widgets).toBeDefined();
+		});
+
+		it('creates nord theme with valid structure', () => {
+			const theme = createNordTheme();
+
+			expect(theme.name).toBe('nord');
+			expect(() => ThemeSchema.parse(theme)).not.toThrow();
+
+			// Check all required properties exist
+			expect(theme.colors).toBeDefined();
+			expect(theme.borders).toBeDefined();
+			expect(theme.focus).toBeDefined();
+			expect(theme.widgets).toBeDefined();
+		});
+
+		it('creates dracula theme with valid structure', () => {
+			const theme = createDraculaTheme();
+
+			expect(theme.name).toBe('dracula');
+			expect(() => ThemeSchema.parse(theme)).not.toThrow();
+
+			// Check all required properties exist
+			expect(theme.colors).toBeDefined();
+			expect(theme.borders).toBeDefined();
+			expect(theme.focus).toBeDefined();
+			expect(theme.widgets).toBeDefined();
+		});
+
+		it('creates gruvbox theme with valid structure', () => {
+			const theme = createGruvboxTheme();
+
+			expect(theme.name).toBe('gruvbox');
+			expect(() => ThemeSchema.parse(theme)).not.toThrow();
+
+			// Check all required properties exist
+			expect(theme.colors).toBeDefined();
+			expect(theme.borders).toBeDefined();
+			expect(theme.focus).toBeDefined();
+			expect(theme.widgets).toBeDefined();
+		});
+	});
+
+	describe('Theme Extension', () => {
+		beforeEach(() => {
+			registerTheme(createDarkTheme());
+			registerTheme(createDefaultTheme());
+		});
+
+		it('extends theme with deep merge', () => {
+			const extended = extendTheme('dark', 'custom-dark', {
+				colors: {
+					primary: packColor(255, 0, 0),
+				},
+			});
+
+			expect(extended.name).toBe('custom-dark');
+			expect(extended.colors.primary).toBe(packColor(255, 0, 0));
+
+			// Base theme colors should be preserved
+			const base = createDarkTheme();
+			expect(extended.colors.secondary).toBe(base.colors.secondary);
+			expect(extended.colors.background).toBe(base.colors.background);
+		});
+
+		it('deeply merges nested widget properties', () => {
+			const extended = extendTheme('dark', 'custom-dark', {
+				widgets: {
+					button: {
+						bg: packColor(255, 100, 0),
+					},
+				},
+			});
+
+			expect(extended.widgets.button.bg).toBe(packColor(255, 100, 0));
+
+			// Other button properties should remain from base
+			const base = createDarkTheme();
+			expect(extended.widgets.button.fg).toBe(base.widgets.button.fg);
+			expect(extended.widgets.button.activeFg).toBe(base.widgets.button.activeFg);
+
+			// Other widgets should be untouched
+			expect(extended.widgets.input.fg).toBe(base.widgets.input.fg);
+			expect(extended.widgets.list.fg).toBe(base.widgets.list.fg);
+		});
+
+		it('throws error for unknown base theme', () => {
+			expect(() => {
+				extendTheme('nonexistent', 'custom', {
+					colors: { primary: packColor(255, 0, 0) },
+				});
+			}).toThrow('Base theme "nonexistent" is not registered');
+		});
+
+		it('deeply merges multiple nested levels', () => {
+			const extended = extendTheme('default', 'multi-level', {
+				widgets: {
+					button: {
+						activeBg: packColor(100, 200, 50),
+					},
+					panel: {
+						headerFg: packColor(200, 200, 200),
+					},
+				},
+			});
+
+			const base = createDefaultTheme();
+
+			// Modified properties
+			expect(extended.widgets.button.activeBg).toBe(packColor(100, 200, 50));
+			expect(extended.widgets.panel.headerFg).toBe(packColor(200, 200, 200));
+
+			// Unmodified properties
+			expect(extended.widgets.button.bg).toBe(base.widgets.button.bg);
+			expect(extended.widgets.panel.bg).toBe(base.widgets.panel.bg);
+		});
+	});
+
+	describe('Theme Serialization', () => {
+		it('serializes theme to JSON', () => {
+			const theme = createDarkTheme();
+			const json = serializeTheme(theme);
+
+			expect(typeof json).toBe('string');
+			expect(json).toContain('"name":"dark"');
+		});
+
+		it('deserializes theme from JSON', () => {
+			const original = createDarkTheme();
+			const json = serializeTheme(original);
+			const deserialized = deserializeTheme(json);
+
+			expect(deserialized).toEqual(original);
+		});
+
+		it('round-trip serialization is lossless', () => {
+			const themes = [
+				createDefaultTheme(),
+				createDarkTheme(),
+				createLightTheme(),
+				createHighContrastTheme(),
+				createSolarizedTheme(),
+				createMonokaiTheme(),
+				createNordTheme(),
+				createDraculaTheme(),
+				createGruvboxTheme(),
+			];
+
+			for (const original of themes) {
+				const json = serializeTheme(original);
+				const deserialized = deserializeTheme(json);
+				expect(deserialized).toEqual(original);
+			}
+		});
+
+		it('validates theme during deserialization', () => {
+			const invalidJson = JSON.stringify({
+				name: 'invalid',
+				colors: {
+					primary: 'not-a-number',
+				},
+			});
+
+			expect(() => {
+				deserializeTheme(invalidJson);
+			}).toThrow();
+		});
+
+		it('throws error for malformed JSON', () => {
+			const malformed = '{ invalid json';
+
+			expect(() => {
+				deserializeTheme(malformed);
+			}).toThrow();
+		});
+
+		it('deserializes and validates complete theme structure', () => {
+			const theme = createDarkTheme();
+			const json = serializeTheme(theme);
+			const deserialized = deserializeTheme(json);
+
+			// Validate all required properties
+			expect(deserialized.name).toBe('dark');
+			expect(deserialized.colors.primary).toBeDefined();
+			expect(deserialized.colors.secondary).toBeDefined();
+			expect(deserialized.borders.style).toBeDefined();
+			expect(deserialized.focus.fg).toBeDefined();
+			expect(deserialized.widgets.button).toBeDefined();
+			expect(deserialized.widgets.input).toBeDefined();
+			expect(deserialized.widgets.list).toBeDefined();
+			expect(deserialized.widgets.panel).toBeDefined();
 		});
 	});
 });
