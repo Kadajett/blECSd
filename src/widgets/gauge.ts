@@ -206,16 +206,16 @@ function getFillColor(value: number, state: GaugeState): number | undefined {
  * Builds the status text for the gauge.
  * @internal
  */
-function buildStatusText(state: GaugeState): string {
+function buildStatusText(eid: Entity, state: GaugeState): string {
 	let statusText = '';
 	if (state.label) {
 		statusText = state.label;
 	}
-	if (Gauge.showPercentage[0] === 1) {
+	if (Gauge.showPercentage[eid] === 1) {
 		const percentText = formatPercentage(state.value);
 		statusText = statusText ? `${statusText} ${percentText}` : percentText;
 	}
-	if (Gauge.showValue[0] === 1) {
+	if (Gauge.showValue[eid] === 1) {
 		const actualValue = state.min + state.value * (state.max - state.min);
 		const valueText = `${actualValue.toFixed(1)}/${state.max}`;
 		statusText = statusText ? `${statusText} ${valueText}` : valueText;
@@ -279,7 +279,7 @@ function renderMultiLineGauge(
  * Renders the gauge content.
  * @internal
  */
-function renderGauge(state: GaugeState, width: number, height: number): string {
+function renderGauge(eid: Entity, state: GaugeState, width: number, height: number): string {
 	// Calculate the fill width
 	const fillWidth = Math.round(state.value * width);
 	const emptyWidth = width - fillWidth;
@@ -288,7 +288,7 @@ function renderGauge(state: GaugeState, width: number, height: number): string {
 	const bar = state.fillChar.repeat(fillWidth) + state.emptyChar.repeat(emptyWidth);
 
 	// Build status text
-	const statusText = buildStatusText(state);
+	const statusText = buildStatusText(eid, state);
 
 	// Overlay status text on the bar if it fits
 	const lines =
@@ -310,7 +310,7 @@ function updateGaugeContent(world: World, eid: Entity): void {
 	const dims = getDimensions(world, eid);
 	if (!dims) return;
 
-	const content = renderGauge(state, dims.width, dims.height);
+	const content = renderGauge(eid, state, dims.width, dims.height);
 	setContent(world, eid, content);
 
 	// Update style based on threshold
