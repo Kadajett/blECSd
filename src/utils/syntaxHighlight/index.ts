@@ -7,23 +7,13 @@
  * @module utils/syntaxHighlight
  */
 
-// Re-export everything from the new modular structure
-export type {
-	Token,
-	TokenType,
-	LineState,
-	LineEntry,
-	Grammar,
-	HighlightCache,
-	HighlightResult,
-	HighlightStats,
-} from './syntaxHighlight/types';
+// Re-export types
+export type { Token, TokenType, LineState, LineEntry, Grammar, HighlightCache, HighlightResult, HighlightStats } from './types';
 
-export {
-	DEFAULT_HIGHLIGHT_BATCH,
-	EMPTY_STATE,
-} from './syntaxHighlight/constants';
+// Re-export constants
+export { DEFAULT_HIGHLIGHT_BATCH, EMPTY_STATE } from './constants';
 
+// Re-export grammars
 export {
 	GRAMMAR_JAVASCRIPT,
 	GRAMMAR_PYTHON,
@@ -33,8 +23,9 @@ export {
 	GRAMMAR_JSON,
 	GRAMMAR_PLAINTEXT,
 	GRAMMARS,
-} from './syntaxHighlight/grammars';
+} from './grammars';
 
+// Re-export cache management functions
 export {
 	createHighlightCache,
 	clearHighlightCache,
@@ -43,10 +34,12 @@ export {
 	invalidateLines,
 	invalidateLine,
 	invalidateAllLines,
-} from './syntaxHighlight/cache';
+} from './cache';
 
-export { tokenizeLine, statesEqual } from './syntaxHighlight/tokenizer';
+// Re-export tokenization functions
+export { tokenizeLine, statesEqual } from './tokenizer';
 
+// Re-export highlighting functions
 export {
 	highlightWithCache,
 	highlightVisibleFirst,
@@ -54,4 +47,4 @@ export {
 	detectLanguage,
 	detectLanguageFromContent,
 	getGrammarByName,
-} from './syntaxHighlight/highlighter';
+} from './highlighter';
