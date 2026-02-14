@@ -53,6 +53,12 @@ export interface OutputState {
 	lastAttrs: number;
 	/** Whether we're in alternate screen mode */
 	alternateScreen: boolean;
+	/** Whether mouse tracking is enabled */
+	mouseTracking: boolean;
+	/** Mouse tracking mode */
+	mouseMode: string | null;
+	/** Whether synchronized output is active */
+	syncOutput: boolean;
 }
 
 /**
@@ -66,6 +72,9 @@ export function createOutputState(): OutputState {
 		lastBg: -1,
 		lastAttrs: -1,
 		alternateScreen: false,
+		mouseTracking: false,
+		mouseMode: null,
+		syncOutput: false,
 	};
 }
 
@@ -638,6 +647,199 @@ export function resetAttributes(): void {
 }
 
 /**
+ * Rings the terminal bell.
+ *
+ * @example
+ * ```typescript
+ * import { bell } from 'blecsd';
+ *
+ * bell(); // Produce audible or visual bell
+ * ```
+ */
+export function bell(): void {
+	writeRaw('\x07');
+}
+
+/**
+ * Moves cursor to a specific position.
+ *
+ * @param x - Column position (0-indexed)
+ * @param y - Row position (0-indexed)
+ *
+ * @example
+ * ```typescript
+ * import { moveTo } from 'blecsd';
+ *
+ * moveTo(10, 5); // Move to column 10, row 5
+ * ```
+ */
+export function moveTo(x: number, y: number): void {
+	writeRaw(moveCursor(x, y));
+	const state = getOutputState();
+	state.lastX = x;
+	state.lastY = y;
+}
+
+/**
+ * Enables mouse tracking in the terminal.
+ *
+ * @param mode - Mouse tracking mode: 'normal' (clicks only), 'button' (clicks + drag), or 'any' (all motion). Default is 'any'.
+ *
+ * @example
+ * ```typescript
+ * import { enableMouseTracking } from 'blecsd';
+ *
+ * enableMouseTracking('any'); // Track all mouse motion
+ * enableMouseTracking('button'); // Track only when button pressed
+ * enableMouseTracking('normal'); // Track clicks only
+ * ```
+ */
+export function enableMouseTracking(mode: 'normal' | 'button' | 'any' = 'any'): void {
+	const state = getOutputState();
+
+	// Enable SGR extended mouse coordinates
+	writeRaw(`${CSI}?1006h`);
+
+	// Enable appropriate tracking mode
+	if (mode === 'normal') {
+		// Normal tracking (clicks only)
+		writeRaw(`${CSI}?1000h`);
+	} else if (mode === 'button') {
+		// Button event tracking (clicks + drag)
+		writeRaw(`${CSI}?1002h`);
+	} else {
+		// Any event tracking (all motion)
+		writeRaw(`${CSI}?1003h`);
+	}
+
+	state.mouseTracking = true;
+	state.mouseMode = mode;
+}
+
+/**
+ * Disables mouse tracking in the terminal.
+ *
+ * @example
+ * ```typescript
+ * import { disableMouseTracking } from 'blecsd';
+ *
+ * disableMouseTracking();
+ * ```
+ */
+export function disableMouseTracking(): void {
+	const state = getOutputState();
+
+	// Disable all tracking modes
+	writeRaw(`${CSI}?1000l`); // Normal
+	writeRaw(`${CSI}?1002l`); // Button
+	writeRaw(`${CSI}?1003l`); // Any
+	writeRaw(`${CSI}?1006l`); // SGR extended
+
+	state.mouseTracking = false;
+	state.mouseMode = null;
+}
+
+/**
+ * Sets the terminal cursor shape.
+ *
+ * @param shape - Cursor shape: 'block', 'underline', or 'bar'
+ *
+ * @example
+ * ```typescript
+ * import { setTerminalCursorShape } from 'blecsd';
+ *
+ * setTerminalCursorShape('block'); // Block cursor
+ * setTerminalCursorShape('underline'); // Underline cursor
+ * setTerminalCursorShape('bar'); // Bar/vertical line cursor
+ * ```
+ */
+export function setTerminalCursorShape(shape: 'block' | 'underline' | 'bar'): void {
+	const shapeCode = shape === 'block' ? 2 : shape === 'underline' ? 4 : 6;
+	writeRaw(`${CSI}${shapeCode} q`);
+}
+
+/**
+ * Sets the terminal window title.
+ *
+ * @param title - Window title string
+ *
+ * @example
+ * ```typescript
+ * import { setWindowTitle } from 'blecsd';
+ *
+ * setWindowTitle('My Terminal App');
+ * ```
+ */
+export function setWindowTitle(title: string): void {
+	writeRaw(`\x1b]2;${title}\x07`);
+}
+
+/**
+ * Begins synchronized output mode.
+ * Prevents partial screen updates from being displayed.
+ *
+ * @example
+ * ```typescript
+ * import { beginSyncOutput, endSyncOutput } from 'blecsd';
+ *
+ * beginSyncOutput();
+ * // ... render multiple updates ...
+ * endSyncOutput(); // All updates appear atomically
+ * ```
+ */
+export function beginSyncOutput(): void {
+	writeRaw(`${CSI}?2026h`);
+	const state = getOutputState();
+	state.syncOutput = true;
+}
+
+/**
+ * Ends synchronized output mode.
+ *
+ * @example
+ * ```typescript
+ * import { endSyncOutput } from 'blecsd';
+ *
+ * endSyncOutput();
+ * ```
+ */
+export function endSyncOutput(): void {
+	writeRaw(`${CSI}?2026l`);
+	const state = getOutputState();
+	state.syncOutput = false;
+}
+
+/**
+ * Saves the current cursor position.
+ *
+ * @example
+ * ```typescript
+ * import { saveCursorPosition, restoreCursorPosition } from 'blecsd';
+ *
+ * saveCursorPosition();
+ * // ... move cursor and draw ...
+ * restoreCursorPosition(); // Return to saved position
+ * ```
+ */
+export function saveCursorPosition(): void {
+	writeRaw('\x1b7');
+}
+
+/**
+ * Restores the previously saved cursor position.
+ *
+ * @example
+ * ```typescript
+ * import { restoreCursorPosition } from 'blecsd';
+ *
+ * restoreCursorPosition();
+ * ```
+ */
+export function restoreCursorPosition(): void {
+	writeRaw('\x1b8');
+}
+
+/**
  * Flushes output and resets terminal state.
  * Call this before exiting the application.
  *
@@ -651,6 +853,14 @@ export function resetAttributes(): void {
  */
 export function cleanup(): void {
 	const state = getOutputState();
+
+	if (state.mouseTracking) {
+		disableMouseTracking();
+	}
+
+	if (state.syncOutput) {
+		endSyncOutput();
+	}
 
 	if (state.alternateScreen) {
 		leaveAlternateScreen();

@@ -187,6 +187,8 @@ export {
 // Output system
 export type { OutputState } from './outputSystem';
 export {
+	beginSyncOutput,
+	bell,
 	cleanup,
 	clearOutputBuffer,
 	clearOutputStream,
@@ -194,6 +196,9 @@ export {
 	createOutputState,
 	createOutputSystem,
 	cursorHome,
+	disableMouseTracking,
+	enableMouseTracking,
+	endSyncOutput,
 	enterAlternateScreen,
 	generateOutput,
 	getOutputBuffer,
@@ -201,11 +206,16 @@ export {
 	getOutputStream,
 	hideCursor,
 	leaveAlternateScreen,
+	moveTo,
 	outputSystem,
 	resetAttributes,
 	resetOutputState,
+	restoreCursorPosition,
+	saveCursorPosition,
 	setOutputBuffer,
 	setOutputStream,
+	setTerminalCursorShape,
+	setWindowTitle,
 	showCursor,
 	writeRaw,
 } from './outputSystem';
