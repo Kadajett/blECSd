@@ -6,6 +6,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import {
+	SLIDER_STATE_MACHINE_CONFIG,
+	SliderOrientation,
+	sliderStore,
+} from './slider';
+import {
 	attachSliderBehavior,
 	blurSlider,
 	clearSliderCallbacks,
@@ -37,8 +42,6 @@ import {
 	onSliderDragStart,
 	renderSliderString,
 	resetSliderStore,
-	SLIDER_STATE_MACHINE_CONFIG,
-	SliderOrientation,
 	setShowSliderValue,
 	setSliderDisplay,
 	setSliderFromPercentage,
@@ -48,10 +51,9 @@ import {
 	setSliderToMax,
 	setSliderToMin,
 	setSliderValue,
-	sliderStore,
 	startDragging,
 	stopDragging,
-} from './slider';
+} from '../systems/sliderSystem';
 
 describe('Slider Component', () => {
 	let world: World;

@@ -604,8 +604,6 @@ export type {
 } from '../systems/selectSystem';
 // Slider
 export type {
-	/** Slider action */
-	SliderAction,
 	/** Slider change callback */
 	SliderChangeCallback,
 	/** Slider display */
@@ -621,6 +619,10 @@ export type {
 	/** Slider store */
 	SliderStore,
 } from '../components/slider';
+export type {
+	/** Slider action */
+	SliderAction,
+} from '../systems/sliderSystem';
 
 // Table
 export type {

@@ -958,7 +958,6 @@ export {
 } from './shadow';
 // Slider component
 export type {
-	SliderAction,
 	SliderChangeCallback,
 	SliderDisplay,
 	SliderDisplayOptions,
@@ -968,10 +967,6 @@ export type {
 	SliderStore,
 } from './slider';
 export {
-	attachSliderBehavior,
-	blurSlider,
-	clearSliderCallbacks,
-	clearSliderDisplay,
 	DEFAULT_FILL_BG as DEFAULT_SLIDER_FILL_BG,
 	DEFAULT_FILL_CHAR as DEFAULT_SLIDER_FILL_CHAR,
 	DEFAULT_FILL_CHAR_VERTICAL as DEFAULT_SLIDER_FILL_CHAR_VERTICAL,
@@ -983,6 +978,15 @@ export {
 	DEFAULT_TRACK_CHAR,
 	DEFAULT_TRACK_CHAR_VERTICAL,
 	DEFAULT_TRACK_FG,
+	SLIDER_STATE_MACHINE_CONFIG,
+	SliderOrientation,
+	sliderStore,
+} from './slider';
+export {
+	attachSliderBehavior,
+	blurSlider,
+	clearSliderCallbacks,
+	clearSliderDisplay,
 	decrementSlider,
 	disableSlider,
 	enableSlider,
@@ -1010,8 +1014,6 @@ export {
 	onSliderDragStart,
 	renderSliderString,
 	resetSliderStore,
-	SLIDER_STATE_MACHINE_CONFIG,
-	SliderOrientation,
 	sendSliderEvent,
 	setShowSliderValue,
 	setSliderDisplay,
@@ -1022,10 +1024,10 @@ export {
 	setSliderToMax,
 	setSliderToMin,
 	setSliderValue,
-	sliderStore,
 	startDragging,
 	stopDragging,
-} from './slider';
+	type SliderAction,
+} from '../systems/sliderSystem';
 // Spinner component
 export type { SpinnerData, SpinnerOptions } from './spinner';
 export {

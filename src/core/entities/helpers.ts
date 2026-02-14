@@ -17,7 +17,7 @@ import { Position } from '../../components/position';
 import { Renderable, type StyleOptions, setStyle } from '../../components/renderable';
 import { Scrollable, type ScrollableOptions } from '../../components/scrollable';
 import { setScrollable } from '../../systems/scrollableSystem';
-import { setSliderDisplay } from '../../components/slider';
+import { setSliderDisplay } from '../../systems/sliderSystem';
 import { addComponent } from '../ecs';
 import type { Entity, World } from '../types';
 import type {

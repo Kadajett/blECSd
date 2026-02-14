@@ -43,7 +43,7 @@ import {
 	attachSliderBehavior,
 	setShowSliderValue,
 	setSliderOrientation,
-} from '../../components/slider';
+} from '../../systems/sliderSystem';
 import {
 	attachTextInputBehavior,
 	DEFAULT_CENSOR_CHAR,

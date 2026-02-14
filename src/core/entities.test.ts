@@ -45,6 +45,7 @@ import {
 	isSelect,
 	resetSelectStore,
 } from '../systems/selectSystem';
+import { SliderOrientation } from '../components/slider';
 import {
 	getSliderDisplay,
 	getSliderMax,
@@ -56,8 +57,7 @@ import {
 	isShowingSliderValue,
 	isSlider,
 	resetSliderStore,
-	SliderOrientation,
-} from '../components/slider';
+} from '../systems/sliderSystem';
 import { StateMachineStore } from '../components/stateMachine';
 import {
 	getTextInputConfig,
