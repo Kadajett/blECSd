@@ -166,7 +166,7 @@ describe('List Component', () => {
 			expect(isListMouseEnabled(eid)).toBe(false);
 			expect(isListKeysEnabled(eid)).toBe(false);
 			expect(getSelectedIndex(eid)).toBe(0);
-			expect(getVisibleCount(eid)).toBe(5);
+			expect(getVisibleCount(world, eid)).toBe(5);
 		});
 
 		it('should set initial state to idle', () => {
@@ -416,39 +416,39 @@ describe('List Component', () => {
 		});
 
 		it('should get first visible', () => {
-			expect(getFirstVisible(eid)).toBe(0);
+			expect(getFirstVisible(world, eid)).toBe(0);
 		});
 
 		it('should set first visible', () => {
 			setFirstVisible(world, eid, 5);
-			expect(getFirstVisible(eid)).toBe(5);
+			expect(getFirstVisible(world, eid)).toBe(5);
 		});
 
 		it('should clamp first visible to bounds', () => {
 			setFirstVisible(world, eid, 100);
-			expect(getFirstVisible(eid)).toBe(19);
+			expect(getFirstVisible(world, eid)).toBe(19);
 
 			setFirstVisible(world, eid, -5);
-			expect(getFirstVisible(eid)).toBe(0);
+			expect(getFirstVisible(world, eid)).toBe(0);
 		});
 
 		it('should get visible count', () => {
-			expect(getVisibleCount(eid)).toBe(5);
+			expect(getVisibleCount(world, eid)).toBe(5);
 		});
 
 		it('should set visible count', () => {
 			setVisibleCount(world, eid, 10);
-			expect(getVisibleCount(eid)).toBe(10);
+			expect(getVisibleCount(world, eid)).toBe(10);
 		});
 
 		it('should ensure index is visible', () => {
-			expect(getFirstVisible(eid)).toBe(0);
+			expect(getFirstVisible(world, eid)).toBe(0);
 			ensureVisible(world, eid, 10);
-			expect(getFirstVisible(eid)).toBe(6); // 10 - 5 + 1
+			expect(getFirstVisible(world, eid)).toBe(6); // 10 - 5 + 1
 		});
 
 		it('should get visible items', () => {
-			const visibleItems = getVisibleItems(eid);
+			const visibleItems = getVisibleItems(world, eid);
 			expect(visibleItems.length).toBe(5);
 			expect(visibleItems[0]?.item.text).toBe('Item 1');
 			expect(visibleItems[4]?.item.text).toBe('Item 5');
@@ -457,7 +457,7 @@ describe('List Component', () => {
 		it('should scroll page down', () => {
 			setSelectedIndex(world, eid, 0);
 			expect(scrollPage(world, eid, 1)).toBe(true);
-			expect(getFirstVisible(eid)).toBe(5);
+			expect(getFirstVisible(world, eid)).toBe(5);
 			expect(getSelectedIndex(eid)).toBe(5);
 		});
 
@@ -465,7 +465,7 @@ describe('List Component', () => {
 			setFirstVisible(world, eid, 10);
 			setSelectedIndex(world, eid, 10);
 			expect(scrollPage(world, eid, -1)).toBe(true);
-			expect(getFirstVisible(eid)).toBe(5);
+			expect(getFirstVisible(world, eid)).toBe(5);
 			expect(getSelectedIndex(eid)).toBe(5);
 		});
 	});
@@ -646,7 +646,7 @@ describe('List Component', () => {
 
 		it('should render items with default prefixes', () => {
 			setSelectedIndex(world, eid, 1);
-			const lines = renderListItems(eid, 20);
+			const lines = renderListItems(world, eid, 20);
 			expect(lines[0]).toBe('  Item 1');
 			expect(lines[1]).toBe('> Item 2');
 			expect(lines[2]).toBe('  Item 3');
@@ -654,7 +654,7 @@ describe('List Component', () => {
 
 		it('should truncate long items', () => {
 			setItems(world, eid, [{ text: 'This is a very long item that should be truncated' }]);
-			const lines = renderListItems(eid, 15);
+			const lines = renderListItems(world, eid, 15);
 			expect(lines[0]?.length).toBeLessThanOrEqual(15);
 			expect(lines[0]).toContain('…');
 		});
@@ -828,13 +828,13 @@ describe('List Component', () => {
 				attachListBehavior(world, eid, [{ text: 'A' }]);
 				setTotalCount(world, eid, 1000);
 
-				expect(getTotalCount(eid)).toBe(1000);
+				expect(getTotalCount(world, eid)).toBe(1000);
 			});
 
 			it('should default to item count when total not set', () => {
 				attachListBehavior(world, eid, [{ text: 'A' }, { text: 'B' }]);
 
-				expect(getTotalCount(eid)).toBe(2);
+				expect(getTotalCount(world, eid)).toBe(2);
 			});
 		});
 
@@ -842,28 +842,28 @@ describe('List Component', () => {
 			it('should set and check loading state', () => {
 				attachListBehavior(world, eid);
 
-				expect(isListLoading(eid)).toBe(false);
+				expect(isListLoading(world, eid)).toBe(false);
 
 				setListLoading(world, eid, true);
-				expect(isListLoading(eid)).toBe(true);
+				expect(isListLoading(world, eid)).toBe(true);
 
 				setListLoading(world, eid, false);
-				expect(isListLoading(eid)).toBe(false);
+				expect(isListLoading(world, eid)).toBe(false);
 			});
 		});
 
 		describe('Loading Placeholder', () => {
 			it('should set and get loading placeholder', () => {
 				attachListBehavior(world, eid);
-				setLoadingPlaceholder(eid, 'Please wait...');
+				setLoadingPlaceholder(world, eid, 'Please wait...');
 
-				expect(getLoadingPlaceholder(eid)).toBe('Please wait...');
+				expect(getLoadingPlaceholder(world, eid)).toBe('Please wait...');
 			});
 
 			it('should return default placeholder when not set', () => {
 				attachListBehavior(world, eid);
 
-				expect(getLoadingPlaceholder(eid)).toBe('Loading...');
+				expect(getLoadingPlaceholder(world, eid)).toBe('Loading...');
 			});
 		});
 
@@ -872,19 +872,19 @@ describe('List Component', () => {
 				attachListBehavior(world, eid);
 				const callback = vi.fn().mockResolvedValue([]);
 
-				setLazyLoadCallback(eid, callback);
+				setLazyLoadCallback(world, eid, callback);
 
-				expect(getLazyLoadCallback(eid)).toBe(callback);
+				expect(getLazyLoadCallback(world, eid)).toBe(callback);
 			});
 
 			it('should clear lazy load callback', () => {
 				attachListBehavior(world, eid);
 				const callback = vi.fn().mockResolvedValue([]);
 
-				setLazyLoadCallback(eid, callback);
-				clearLazyLoadCallback(eid);
+				setLazyLoadCallback(world, eid, callback);
+				clearLazyLoadCallback(world, eid);
 
-				expect(getLazyLoadCallback(eid)).toBeUndefined();
+				expect(getLazyLoadCallback(world, eid)).toBeUndefined();
 			});
 		});
 
@@ -899,7 +899,7 @@ describe('List Component', () => {
 				]);
 				setVisibleCount(world, eid, 3);
 
-				const info = getScrollInfo(eid);
+				const info = getScrollInfo(world, eid);
 
 				expect(info.firstVisible).toBe(0);
 				expect(info.visibleCount).toBe(3);
@@ -945,7 +945,7 @@ describe('List Component', () => {
 				setVisibleCount(world, eid, 3);
 
 				const callback = vi.fn();
-				onListScroll(eid, callback);
+				onListScroll(world, eid, callback);
 
 				setFirstVisible(world, eid, 1);
 
@@ -961,7 +961,7 @@ describe('List Component', () => {
 				attachListBehavior(world, eid, [{ text: 'A' }, { text: 'B' }]);
 
 				const callback = vi.fn();
-				const unsubscribe = onListScroll(eid, callback);
+				const unsubscribe = onListScroll(world, eid, callback);
 				unsubscribe();
 
 				setFirstVisible(world, eid, 1);
@@ -975,7 +975,7 @@ describe('List Component', () => {
 				attachListBehavior(world, eid, [{ text: 'A' }, { text: 'B' }]);
 				setVisibleCount(world, eid, 2);
 
-				const result = checkNeedsLoad(eid);
+				const result = checkNeedsLoad(world, eid);
 
 				expect(result.needsLoad).toBe(false);
 			});
@@ -985,7 +985,7 @@ describe('List Component', () => {
 				setTotalCount(world, eid, 10);
 				setVisibleCount(world, eid, 5);
 
-				const result = checkNeedsLoad(eid);
+				const result = checkNeedsLoad(world, eid);
 
 				expect(result.needsLoad).toBe(true);
 				expect(result.startIndex).toBe(0);
@@ -1012,7 +1012,7 @@ describe('List Component', () => {
 
 				const mockItems: ListItem[] = [{ text: 'Item 1' }, { text: 'Item 2' }];
 				const callback = vi.fn().mockResolvedValue(mockItems);
-				setLazyLoadCallback(eid, callback);
+				setLazyLoadCallback(world, eid, callback);
 
 				await loadItems(world, eid, 0, 2);
 
@@ -1026,15 +1026,15 @@ describe('List Component', () => {
 
 				let loadingDuringCallback = false;
 				const callback = vi.fn().mockImplementation(async () => {
-					loadingDuringCallback = isListLoading(eid);
+					loadingDuringCallback = isListLoading(world, eid);
 					return [{ text: 'A' }];
 				});
-				setLazyLoadCallback(eid, callback);
+				setLazyLoadCallback(world, eid, callback);
 
 				await loadItems(world, eid, 0, 1);
 
 				expect(loadingDuringCallback).toBe(true);
-				expect(isListLoading(eid)).toBe(false);
+				expect(isListLoading(world, eid)).toBe(false);
 			});
 
 			it('should not start another load while loading', async () => {
@@ -1046,7 +1046,7 @@ describe('List Component', () => {
 					await new Promise((resolve) => setTimeout(resolve, 10));
 					return [{ text: 'A' }];
 				});
-				setLazyLoadCallback(eid, callback);
+				setLazyLoadCallback(world, eid, callback);
 
 				// Start loading and immediately try to start another
 				const loadPromise = loadItems(world, eid, 0, 1);
@@ -1074,7 +1074,7 @@ describe('List Component', () => {
 
 				setFirstVisible(world, eid, 50);
 
-				expect(getFirstVisible(eid)).toBe(50);
+				expect(getFirstVisible(world, eid)).toBe(50);
 			});
 		});
 	});

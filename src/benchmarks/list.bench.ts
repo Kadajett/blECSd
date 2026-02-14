@@ -190,7 +190,7 @@ describe('Virtualization', () => {
 		bench(
 			'100 items, 10 visible',
 			() => {
-				getVisibleItems(eid);
+				getVisibleItems(world, eid);
 			},
 			{
 				setup() {
@@ -205,7 +205,7 @@ describe('Virtualization', () => {
 		bench(
 			'10,000 items, 10 visible',
 			() => {
-				getVisibleItems(eid);
+				getVisibleItems(world, eid);
 			},
 			{
 				setup() {
@@ -220,7 +220,7 @@ describe('Virtualization', () => {
 		bench(
 			'100,000 items, 10 visible',
 			() => {
-				getVisibleItems(eid);
+				getVisibleItems(world, eid);
 			},
 			{
 				setup() {
@@ -235,7 +235,7 @@ describe('Virtualization', () => {
 		bench(
 			'1,000,000 items, 10 visible',
 			() => {
-				getVisibleItems(eid);
+				getVisibleItems(world, eid);
 			},
 			{
 				setup() {
@@ -250,7 +250,7 @@ describe('Virtualization', () => {
 		bench(
 			'1,000,000 items, 100 visible',
 			() => {
-				getVisibleItems(eid);
+				getVisibleItems(world, eid);
 			},
 			{
 				setup() {
@@ -467,7 +467,7 @@ describe('Scroll Info', () => {
 	bench(
 		'getScrollInfo',
 		() => {
-			getScrollInfo(eid);
+			getScrollInfo(world, eid);
 		},
 		{
 			setup() {
@@ -496,7 +496,7 @@ describe('Continuous Scrolling Simulation', () => {
 				// Simulate 60 frames of scrolling
 				for (let frame = 0; frame < 60; frame++) {
 					handleListKeyPress(world, eid, 'down');
-					getVisibleItems(eid); // Would be rendered
+					getVisibleItems(world, eid); // Would be rendered
 				}
 			},
 			{
@@ -515,7 +515,7 @@ describe('Continuous Scrolling Simulation', () => {
 				// Scroll through list page by page
 				for (let page = 0; page < 100; page++) {
 					scrollPage(world, eid, 1);
-					getVisibleItems(eid);
+					getVisibleItems(world, eid);
 				}
 			},
 			{
