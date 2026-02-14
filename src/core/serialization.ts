@@ -13,7 +13,6 @@ import {
 	hasComponent,
 	removeEntity,
 } from './ecs';
-import type { Entity, World } from './types';
 import {
 	addEntitiesWithIds,
 	applyComponentToEntity,
@@ -27,6 +26,7 @@ import {
 	restoreComponentData,
 	serializeComponentRegistration,
 } from './serialization-helpers';
+import type { Entity, World } from './types';
 
 // =============================================================================
 // SCHEMAS
@@ -367,7 +367,16 @@ export function applyWorldDelta(
 			if (eid === undefined) continue;
 
 			const targetEid = (entityMap.get(eid) || eid) as Entity;
-			applyComponentToEntity(world, targetEid, reg, compData, i, hasComponent, addComponent, entityExists);
+			applyComponentToEntity(
+				world,
+				targetEid,
+				reg,
+				compData,
+				i,
+				hasComponent,
+				addComponent,
+				entityExists,
+			);
 		}
 	}
 

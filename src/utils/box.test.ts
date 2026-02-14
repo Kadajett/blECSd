@@ -8,10 +8,10 @@ import {
 	BOX_ROUNDED,
 	BOX_SINGLE,
 	type BoxChars,
+	boxFillRect,
 	bufferToString,
 	charsetToBoxChars,
 	createCellBuffer,
-	fillRect,
 	renderBox,
 	renderHLine,
 	renderText,
@@ -266,7 +266,7 @@ describe('renderVLine', () => {
 describe('fillRect', () => {
 	it('fills rectangular region', () => {
 		const buffer = createCellBuffer(10, 5);
-		fillRect(buffer, 1, 1, 3, 2, '#');
+		boxFillRect(buffer, 1, 1, 3, 2, '#');
 
 		expect(buffer.cells[0]?.[1]?.char).toBe(' ');
 		expect(buffer.cells[1]?.[1]?.char).toBe('#');
@@ -277,7 +277,7 @@ describe('fillRect', () => {
 
 	it('applies colors', () => {
 		const buffer = createCellBuffer(5, 5);
-		fillRect(buffer, 0, 0, 2, 2, ' ', 0xff0000ff, 0x00ff00ff);
+		boxFillRect(buffer, 0, 0, 2, 2, ' ', 0xff0000ff, 0x00ff00ff);
 
 		expect(buffer.cells[0]?.[0]?.fg).toBe(0xff0000ff);
 		expect(buffer.cells[0]?.[0]?.bg).toBe(0x00ff00ff);

@@ -28,15 +28,15 @@ export {
 	clearImage,
 	createGraphicsManager,
 	DEFAULT_FALLBACK_CHAIN,
-	getActiveBackend,
-	getBackendCapabilities,
 	GraphicsCapabilitiesSchema,
 	GraphicsManagerConfigSchema,
+	getActiveBackend,
+	getBackendCapabilities,
 	ImageDataSchema,
+	RenderOptionsSchema,
 	refreshBackend,
 	registerBackend,
 	renderImage,
-	RenderOptionsSchema,
 	selectBackend,
 } from './backend';
 // Braille backend

@@ -11,9 +11,9 @@
 import { createAnsiBackend } from './ansi';
 import {
 	createGraphicsManager,
-	registerBackend,
 	type GraphicsManagerConfig,
 	type GraphicsManagerState,
+	registerBackend,
 } from './backend';
 import { createBrailleBackend } from './braille';
 import { createITerm2Backend } from './iterm2';

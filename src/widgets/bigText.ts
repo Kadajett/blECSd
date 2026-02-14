@@ -512,10 +512,10 @@ export async function createBigText(
  * ```typescript
  * import { setText } from 'blecsd/widgets';
  *
- * setText(world, bigTextEntity, 'NEW TEXT');
+ * setBigText(world, bigTextEntity, 'NEW TEXT');
  * ```
  */
-export function setText(
+export function setBigText(
 	world: World,
 	eid: Entity,
 	text: string,
@@ -544,7 +544,7 @@ function setTextContent(
 	text: string,
 	font?: string | FontDefinition,
 ): Entity {
-	setText(world, eid, text, font);
+	setBigText(world, eid, text, font);
 	return eid;
 }
 

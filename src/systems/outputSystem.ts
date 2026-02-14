@@ -350,7 +350,10 @@ function generateCellOutput(state: OutputState, change: CellChange): string {
  * ```
  */
 /** Sort changes by row then column for optimal cursor movement. */
-function sortChangesByPosition(changes: readonly CellChange[], skipSort: boolean): readonly CellChange[] {
+function sortChangesByPosition(
+	changes: readonly CellChange[],
+	skipSort: boolean,
+): readonly CellChange[] {
 	if (skipSort) return changes;
 	const mutable = Array.from(changes);
 	mutable.sort((a, b) => (a.y !== b.y ? a.y - b.y : a.x - b.x));

@@ -4,8 +4,8 @@ import {
 	clearState,
 	createStreamingState,
 	getStreamVisibleLines,
-	scrollByLines,
 	scrollToLine,
+	streamingScrollByLines,
 	stripAnsiSequences,
 	wrapLine,
 } from './streamingText';
@@ -213,7 +213,7 @@ describe('StreamingText', () => {
 				state = appendToState(state, `Line ${i}\n`);
 			}
 			state = { ...state, scrollTop: 0 };
-			const scrolled = scrollByLines(state, 3);
+			const scrolled = streamingScrollByLines(state, 3);
 			expect(scrolled.scrollTop).toBe(3);
 		});
 
@@ -223,7 +223,7 @@ describe('StreamingText', () => {
 				state = appendToState(state, `Line ${i}\n`);
 			}
 			state = { ...state, scrollTop: 5 };
-			const scrolled = scrollByLines(state, -2);
+			const scrolled = streamingScrollByLines(state, -2);
 			expect(scrolled.scrollTop).toBe(3);
 		});
 	});

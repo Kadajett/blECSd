@@ -346,7 +346,11 @@ function parseList(lines: readonly string[], startIndex: number, isOrdered: bool
 	};
 }
 
-function parseParagraph(lines: readonly string[], startIndex: number, firstLine: string): ParseResult {
+function parseParagraph(
+	lines: readonly string[],
+	startIndex: number,
+	firstLine: string,
+): ParseResult {
 	const paraLines: string[] = [firstLine];
 	let i = startIndex;
 	while (i < lines.length) {
@@ -532,25 +536,35 @@ export function wrapText(text: string, width: number): readonly string[] {
 
 // --- Per-block-type renderers ---
 
-function renderHeadingBlock(block: StreamingBlock, theme: StreamingMarkdownTheme): readonly string[] {
+function renderHeadingBlock(
+	block: StreamingBlock,
+	theme: StreamingMarkdownTheme,
+): readonly string[] {
 	const level = block.headingLevel ?? 1;
 	const prefix = '#'.repeat(level);
 	return [`${theme.heading}${prefix} ${formatInline(block.content, theme)}${theme.reset}`];
 }
 
-function renderCodeBlockLines(block: StreamingBlock, config: StreamingMarkdownConfig): readonly string[] {
+function renderCodeBlockLines(
+	block: StreamingBlock,
+	config: StreamingMarkdownConfig,
+): readonly string[] {
 	const { theme, wrapWidth } = config;
 	const lines: string[] = [];
 	const lang = block.language ?? '';
 	const langLabel = lang ? ` ${lang}` : '';
 	const borderChar = '\u2500';
 
-	lines.push(`${theme.codeBlock}\u250c${borderChar.repeat(Math.max(0, wrapWidth - 2 - langLabel.length))}${langLabel}${theme.reset}`);
+	lines.push(
+		`${theme.codeBlock}\u250c${borderChar.repeat(Math.max(0, wrapWidth - 2 - langLabel.length))}${langLabel}${theme.reset}`,
+	);
 
 	const codeLines = block.content.split('\n');
 	const shouldHighlight = config.syntaxHighlight && lang && SUPPORTED_LANGUAGES.has(lang);
 	for (const codeLine of codeLines) {
-		const formatted = shouldHighlight ? highlightCode(codeLine, lang as SupportedLanguage) : codeLine;
+		const formatted = shouldHighlight
+			? highlightCode(codeLine, lang as SupportedLanguage)
+			: codeLine;
 		lines.push(`${theme.codeBlock}\u2502${theme.reset} ${formatted}`);
 	}
 
@@ -558,11 +572,17 @@ function renderCodeBlockLines(block: StreamingBlock, config: StreamingMarkdownCo
 		lines.push(`${theme.codeBlock}\u2502 ${theme.thinking}...${theme.reset}`);
 	}
 
-	lines.push(`${theme.codeBlock}\u2514${borderChar.repeat(Math.max(0, wrapWidth - 2))}${theme.reset}`);
+	lines.push(
+		`${theme.codeBlock}\u2514${borderChar.repeat(Math.max(0, wrapWidth - 2))}${theme.reset}`,
+	);
 	return lines;
 }
 
-function renderListBlock(block: StreamingBlock, theme: StreamingMarkdownTheme, wrapWidth: number): readonly string[] {
+function renderListBlock(
+	block: StreamingBlock,
+	theme: StreamingMarkdownTheme,
+	wrapWidth: number,
+): readonly string[] {
 	const items = block.content.split('\n');
 	const lines: string[] = [];
 	const indent = block.listOrdered ? 4 : 3;
@@ -577,7 +597,11 @@ function renderListBlock(block: StreamingBlock, theme: StreamingMarkdownTheme, w
 		for (let j = 0; j < wrapped.length; j++) {
 			const w = wrapped[j];
 			if (w === undefined) continue;
-			lines.push(j === 0 ? `  ${bullet} ${formatInline(w, theme)}` : `${' '.repeat(indent + 1)}${formatInline(w, theme)}`);
+			lines.push(
+				j === 0
+					? `  ${bullet} ${formatInline(w, theme)}`
+					: `${' '.repeat(indent + 1)}${formatInline(w, theme)}`,
+			);
 		}
 	}
 	return lines;
