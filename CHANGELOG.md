@@ -9,6 +9,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Pre-1.0**: Minor version bumps for breaking changes, patch for fixes and features
 - **Post-1.0**: Standard [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## [0.4.2] - 2026-02-13
+
+### Fixed
+- **Complete terminal cleanup**: `restoreTerminal()` now properly disables ALL terminal modes on exit (mouse tracking, bracketed paste, focus tracking, synchronized output, Kitty keyboard protocol). Previously only handled alternate screen, cursor visibility, and style reset, which could leave terminals in a broken state after crashes.
+
+### Added
+- **`enableBracketedPasteMode()`** / **`disableBracketedPasteMode()`** - Convenience wrappers for bracketed paste mode
+- **`enableFocusReporting()`** / **`disableFocusReporting()`** - Convenience wrappers for terminal focus events
+- `OutputState` now tracks `bracketedPaste` and `focusReporting` state
+- `cleanup()` now disables bracketed paste and focus reporting if enabled
+
+### Documentation
+- Added API reference page for terminal control functions (`docs/api/terminal-control.md`)
+- Added API reference page for spring physics animation system (`docs/api/spring-animation.md`)
+- Added API reference page for constraint-based layout (`docs/api/constraint-layout.md`)
+- Added API reference page for accessibility foundation (`docs/api/accessibility.md`)
+- Added API reference page for context menu widget (`docs/api/context-menu.md`)
+
 ## [0.4.1] - 2026-02-13
 
 ### Added
