@@ -22,7 +22,6 @@ import {
 	clearDragConstraints,
 	createDragSystem,
 	type DragEventMap,
-	resetDragStores,
 	setDragConstraints,
 	setDragVerifyCallback,
 } from '../systems/dragSystem';
@@ -72,9 +71,10 @@ function createPanelWorld(panelCount: number): {
 
 /**
  * Cleans up after a benchmark iteration.
+ * Note: resetDragStores now requires world parameter, handled per-benchmark
  */
 function cleanup(): void {
-	resetDragStores();
+	// Individual benchmarks call resetDragStores(world) in their setup
 }
 
 // =============================================================================
@@ -112,7 +112,7 @@ describe('Drag Start/End', () => {
 			const dragSystem = createDragSystem(eventBus);
 			const panel = panels[0]!;
 
-			setDragConstraints(panel, {
+			setDragConstraints(world, panel, {
 				constrainToParent: true,
 				snapToGrid: { x: 5, y: 5 },
 				minX: 0,
@@ -123,7 +123,7 @@ describe('Drag Start/End', () => {
 			dragSystem.startDrag(world, panel, 10, 5);
 			dragSystem.endDrag(world);
 
-			clearDragConstraints(panel);
+			clearDragConstraints(world, panel);
 			cleanup();
 		});
 	});
@@ -227,7 +227,7 @@ describe('Drag Movement', () => {
 					world = setup.world;
 					panel = setup.panels[0]!;
 
-					setDragConstraints(panel, {
+					setDragConstraints(world, panel, {
 						constrainToParent: true,
 					});
 
@@ -252,7 +252,7 @@ describe('Drag Movement', () => {
 					world = setup.world;
 					panel = setup.panels[0]!;
 
-					setDragConstraints(panel, {
+					setDragConstraints(world, panel, {
 						snapToGrid: { x: 5, y: 5 },
 					});
 
@@ -277,7 +277,7 @@ describe('Drag Movement', () => {
 					world = setup.world;
 					panel = setup.panels[0]!;
 
-					setDragConstraints(panel, {
+					setDragConstraints(world, panel, {
 						constrainAxis: 'x',
 					});
 
@@ -302,7 +302,7 @@ describe('Drag Movement', () => {
 					world = setup.world;
 					panel = setup.panels[0]!;
 
-					setDragConstraints(panel, {
+					setDragConstraints(world, panel, {
 						constrainToParent: true,
 						snapToGrid: { x: 5, y: 5 },
 						minX: 0,
@@ -339,7 +339,7 @@ describe('Drag Movement', () => {
 					world = setup.world;
 					panel = setup.panels[0]!;
 
-					setDragVerifyCallback(panel, (_entity, _dx, _dy) => {
+					setDragVerifyCallback(world, panel, (_entity, _dx, _dy) => {
 						// Simulate some verification logic
 						return true;
 					});
@@ -460,12 +460,13 @@ describe('Multi-Panel Operations', () => {
 
 	describe('constraint lookup with many panels', () => {
 		let panels: Entity[];
+		let world: World;
 
 		bench(
 			'set/get constraints for 100 panels',
 			() => {
 				for (const panel of panels) {
-					setDragConstraints(panel, {
+					setDragConstraints(world, panel, {
 						constrainToParent: true,
 						snapToGrid: { x: 5, y: 5 },
 					});
@@ -475,6 +476,7 @@ describe('Multi-Panel Operations', () => {
 				setup() {
 					cleanup();
 					const setup = createPanelWorld(100);
+					world = setup.world;
 					panels = setup.panels;
 				},
 			},
@@ -506,7 +508,7 @@ describe('60 FPS Drag Simulation', () => {
 				world = setup.world;
 				panel = setup.panels[0]!;
 
-				setDragConstraints(panel, {
+				setDragConstraints(world, panel, {
 					constrainToParent: true,
 					snapToGrid: { x: 1, y: 1 },
 				});
