@@ -12,6 +12,8 @@ export {
 	cursorPosition as ansiCursorPosition,
 	renderAnsiImage,
 } from './ansi';
+// Auto-registration
+export { createAutoGraphicsManager } from './autoBackend';
 // Backend abstraction
 export type {
 	BackendName,
@@ -24,18 +26,17 @@ export type {
 } from './backend';
 export {
 	clearImage,
-	createAutoGraphicsManager,
 	createGraphicsManager,
 	DEFAULT_FALLBACK_CHAIN,
-	GraphicsCapabilitiesSchema,
-	GraphicsManagerConfigSchema,
 	getActiveBackend,
 	getBackendCapabilities,
+	GraphicsCapabilitiesSchema,
+	GraphicsManagerConfigSchema,
 	ImageDataSchema,
-	RenderOptionsSchema,
 	refreshBackend,
 	registerBackend,
 	renderImage,
+	RenderOptionsSchema,
 	selectBackend,
 } from './backend';
 // Braille backend

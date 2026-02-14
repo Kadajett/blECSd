@@ -8,11 +8,11 @@ import type { ComponentRef } from '../core/ecs';
 import { getAllEntities, hasComponent, query } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import {
-	inspectEntity as _inspectEntity,
-	inspectWorld as _inspectWorld,
 	formatEntityInspection,
 	formatWorldInspection,
-} from './index';
+	inspectEntity as _inspectEntity,
+	inspectWorld as _inspectWorld,
+} from './inspect';
 
 // =============================================================================
 // ENTITY INSPECTION
