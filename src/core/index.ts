@@ -637,9 +637,13 @@ export {
 } from './reactiveEffects';
 // Reactive sources
 export {
+	createCallbackSignal,
 	createDerivedSignal,
+	createEventSignal,
 	createIntervalSignal,
+	createPollingSignal,
 	createReducerSignal,
+	createStreamSignal,
 	createTimerSignal,
 } from './reactiveSource';
 // Scene management
