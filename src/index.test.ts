@@ -10,7 +10,7 @@ import {
 
 describe('blECSd', () => {
 	it('should export VERSION', () => {
-		expect(VERSION).toBe('0.4.0');
+		expect(VERSION).toBe('0.4.1');
 	});
 
 	it('should export core render/output helpers', () => {

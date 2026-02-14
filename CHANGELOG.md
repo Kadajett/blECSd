@@ -9,6 +9,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Pre-1.0**: Minor version bumps for breaking changes, patch for fixes and features
 - **Post-1.0**: Standard [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## [0.4.1] - 2026-02-13
+
+### Added
+
+#### Terminal Control Convenience Wrappers
+- **`bell()`** - Ring the terminal bell without needing raw escape codes
+- **`moveTo(x, y)`** - Move cursor to absolute position with OutputState tracking (0-indexed)
+- **`enableMouseTracking(mode)`** - Enable mouse tracking with `'normal'`, `'button'`, or `'any'` modes; auto-enables SGR extended coordinates
+- **`disableMouseTracking()`** - Disable all mouse tracking modes and SGR extended coordinates
+- **`setCursorShape(shape)`** - Set cursor to `'block'`, `'underline'`, or `'bar'` via DECSCUSR
+- **`setWindowTitle(title)`** - Set terminal window title via OSC 2
+- **`beginSyncOutput()`** / **`endSyncOutput()`** - Synchronized output mode (DEC 2026) for atomic screen updates
+- **`saveCursorPosition()`** / **`restoreCursorPosition()`** - DEC cursor save/restore
+
+### Changed
+- `OutputState` now tracks `mouseTracking`, `mouseMode`, and `syncOutput` state
+- `cleanup()` now properly disables mouse tracking and ends synchronized output before restoring terminal state
+- All new functions exported from `blecsd` package
+
 ## [0.4.0] - 2026-02-13
 
 ### Added

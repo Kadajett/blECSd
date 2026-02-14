@@ -1,6 +1,6 @@
 {
   "name": "blecsd",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A modern, high-performance terminal UI library built on TypeScript and ECS architecture",
   "type": "module",
   "main": "./dist/index.js",
