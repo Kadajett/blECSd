@@ -10,7 +10,8 @@ import { Content, type ContentOptions, setContent } from '../../components/conte
 import { Dimensions, type DimensionValue } from '../../components/dimensions';
 import { Focusable, type FocusableOptions, setFocusable } from '../../components/focusable';
 import { Hierarchy } from '../../components/hierarchy';
-import { Interactive, type InteractiveOptions, setInteractive } from '../../components/interactive';
+import { Interactive, type InteractiveOptions } from '../../components/interactive';
+import { setInteractive } from '../../systems/interactiveSystem';
 import { Padding, type PaddingOptions, setPadding } from '../../components/padding';
 import { Position } from '../../components/position';
 import { Renderable, type StyleOptions, setStyle } from '../../components/renderable';

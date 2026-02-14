@@ -25,7 +25,7 @@ import {
 import { setContent, TextAlign, TextVAlign } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
-import { setInteractive } from '../components/interactive';
+import { setInteractive } from '../systems/interactiveSystem';
 import { moveBy, Position, setPosition } from '../components/position';
 import { markDirty } from '../components/renderable';
 import { addEntity, removeEntity } from '../core/ecs';

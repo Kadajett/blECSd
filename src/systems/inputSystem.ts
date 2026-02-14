@@ -24,14 +24,14 @@ import {
 	setKeyboardInput,
 	setMouseInput,
 } from '../components/input';
+import { Interactive } from '../components/interactive';
 import {
 	hasInteractive,
-	Interactive,
 	isClickable,
 	isHoverable,
 	setHovered,
 	setPressed,
-} from '../components/interactive';
+} from '../systems/interactiveSystem';
 import { Position } from '../components/position';
 import { hasComponent, query } from '../core/ecs';
 import { createEventBus, type EventBus, type UIEventMap } from '../core/events';

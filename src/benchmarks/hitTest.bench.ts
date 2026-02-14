@@ -11,7 +11,8 @@
 import { addComponent, addEntity, createWorld } from '../core/ecs';
 import { bench, describe } from 'vitest';
 import { Dimensions } from '../components/dimensions';
-import { Interactive, setInteractive } from '../components/interactive';
+import { Interactive } from '../components/interactive';
+import { setInteractive } from '../systems/interactiveSystem';
 import { Position } from '../components/position';
 import { Renderable } from '../components/renderable';
 import {

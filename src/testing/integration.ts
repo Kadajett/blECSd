@@ -25,7 +25,7 @@
 import { setDimensions } from '../components/dimensions';
 import { makeFocusable, resetFocusState } from '../components/focusable';
 import { appendChild } from '../components/hierarchy';
-import { setInteractive } from '../components/interactive';
+import { setInteractive } from '../systems/interactiveSystem';
 import { setPosition, setZIndex } from '../components/position';
 import { setStyle } from '../components/renderable';
 import { resetScreenSingleton } from '../components/screen';

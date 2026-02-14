@@ -8,7 +8,7 @@ import { setContent } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { setFocusable } from '../components/focusable';
 import { Hierarchy } from '../components/hierarchy';
-import { setInteractive } from '../components/interactive';
+import { setInteractive } from '../systems/interactiveSystem';
 import { Padding } from '../components/padding';
 import { setPosition } from '../components/position';
 import type { StyleOptions } from '../components/renderable';

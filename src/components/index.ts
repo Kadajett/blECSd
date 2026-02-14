@@ -414,10 +414,9 @@ export {
 } from './input';
 // Interactive component
 export type { InteractiveData, InteractiveOptions } from './interactive';
+export { DEFAULT_HOVER_BG, DEFAULT_HOVER_FG, Interactive } from './interactive';
 export {
 	clearInteractionState,
-	DEFAULT_HOVER_BG,
-	DEFAULT_HOVER_FG,
 	disable,
 	disableInput,
 	disableKeys,
@@ -432,7 +431,6 @@ export {
 	hasInteractive,
 	hasKeysEnabled,
 	hasMouseEnabled,
-	Interactive,
 	isClickable,
 	isDraggable,
 	isEnabled,
@@ -442,14 +440,14 @@ export {
 	isPressed,
 	setClickable,
 	setDraggable,
-	setFocusEffect,
 	setFocusedState,
+	setFocusEffect,
 	setHoverable,
 	setHovered,
 	setInteractive,
 	setKeyable,
 	setPressed,
-} from './interactive';
+} from '../systems/interactiveSystem';
 // Label component
 export type { LabelData, LabelOptions } from './label';
 export {

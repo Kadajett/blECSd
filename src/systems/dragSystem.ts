@@ -9,7 +9,7 @@
 
 import { getDimensions } from '../components/dimensions';
 import { getParent, NULL_ENTITY } from '../components/hierarchy';
-import { isDraggable } from '../components/interactive';
+import { isDraggable } from '../systems/interactiveSystem';
 import { getPosition, Position, setPosition, setZIndex } from '../components/position';
 import type { EventBus } from '../core/events';
 import type { Entity, World } from '../core/types';

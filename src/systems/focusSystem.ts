@@ -34,7 +34,8 @@
  */
 
 import { NULL_ENTITY } from '../components/hierarchy';
-import { Interactive, isFocusable, setFocusedState } from '../components/interactive';
+import { Interactive } from '../components/interactive';
+import { isFocusable, setFocusedState } from '../systems/interactiveSystem';
 import { Position } from '../components/position';
 import { isEffectivelyVisible, markDirty, Renderable } from '../components/renderable';
 import { getScreen, Screen, setScreenFocus } from '../components/screen';

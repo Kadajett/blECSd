@@ -3,7 +3,8 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { isFocused, setFocusable, setInteractive } from '../components/interactive';
+import { setInteractive } from '../systems/interactiveSystem';
+import { isFocused, makeFocusable } from '../components/focusable';
 import { setPosition } from '../components/position';
 import { setStyle, setVisible } from '../components/renderable';
 import { resetScreenSingleton } from '../components/screen';
@@ -395,7 +396,7 @@ describe('focusSystem', () => {
 			expect(getFocused(world)).toBe(entity);
 
 			// Make entity non-focusable
-			setFocusable(world, entity, false);
+			makeFocusable(world, entity, false);
 
 			// System should blur it
 			focusSystem(world);
@@ -575,7 +576,7 @@ describe('focusSystem', () => {
 				focusPush(world, entity2);
 
 				// Make entity2 non-focusable
-				setFocusable(world, entity2, false);
+				makeFocusable(world, entity2, false);
 
 				const result = rewindFocus(world);
 				expect(result).toBe(entity1);

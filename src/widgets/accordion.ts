@@ -14,7 +14,7 @@ import { setContent } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { setFocusable } from '../components/focusable';
 import { appendChild } from '../components/hierarchy';
-import { setClickable } from '../components/interactive';
+import { setClickable } from '../systems/interactiveSystem';
 import { setPadding } from '../components/padding';
 import { setPosition } from '../components/position';
 import { markDirty, setStyle, setVisible } from '../components/renderable';

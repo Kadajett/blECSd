@@ -15,7 +15,8 @@ import { Dimensions } from '../../components/dimensions';
 import { Focusable, type FocusableOptions, setFocusable } from '../../components/focusable';
 import { attachFormBehavior, registerFormField } from '../../components/form';
 import { Hierarchy, setParent } from '../../components/hierarchy';
-import { Interactive, type InteractiveOptions, setInteractive } from '../../components/interactive';
+import { Interactive, type InteractiveOptions } from '../../components/interactive';
+import { setInteractive } from '../../systems/interactiveSystem';
 import { Position } from '../../components/position';
 import {
 	attachProgressBarBehavior,
