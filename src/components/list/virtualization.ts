@@ -170,7 +170,10 @@ export function scrollPage(world: World, eid: Entity, direction: 1 | -1): boolea
  * @param eid - The entity ID
  * @returns Array of visible items with their indices
  */
-export function getVisibleItems(_world: World, eid: Entity): Array<{ index: number; item: ListItem }> {
+export function getVisibleItems(
+	_world: World,
+	eid: Entity,
+): Array<{ index: number; item: ListItem }> {
 	const items = itemsStore.get(eid) ?? [];
 	const firstVisible = listStore.firstVisible[eid] ?? 0;
 	const visibleCount = listStore.visibleCount[eid] ?? items.length;
@@ -385,7 +388,10 @@ export async function loadItems(
  * @param eid - The entity ID
  * @returns Object with needsLoad flag and range to load
  */
-export function checkNeedsLoad(_world: World, eid: Entity): {
+export function checkNeedsLoad(
+	_world: World,
+	eid: Entity,
+): {
 	needsLoad: boolean;
 	startIndex: number;
 	count: number;

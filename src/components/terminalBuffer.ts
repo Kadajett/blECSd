@@ -355,30 +355,36 @@ export function setTerminalBuffer(
 /**
  * Checks if an entity has a terminal buffer.
  *
+ * @param _world - The ECS world
  * @param eid - Entity ID
  * @returns true if the entity has a terminal buffer
  */
-export function hasTerminalBuffer(eid: Entity): boolean {
+export function hasTerminalBuffer(_world: World, eid: Entity): boolean {
 	return TerminalBuffer.isTerminal[eid] === 1;
 }
 
 /**
  * Gets the terminal state for an entity.
  *
+ * @param _world - The ECS world
  * @param eid - Entity ID
  * @returns Terminal state or undefined
  */
-export function getTerminalState(eid: Entity): TerminalState | undefined {
+export function getTerminalState(_world: World, eid: Entity): TerminalState | undefined {
 	return terminalStateMap.get(eid);
 }
 
 /**
  * Gets terminal buffer data (scalar values).
  *
+ * @param _world - The ECS world
  * @param eid - Entity ID
  * @returns Terminal buffer data
  */
-export function getTerminalBuffer(eid: Entity):
+export function getTerminalBuffer(
+	_world: World,
+	eid: Entity,
+):
 	| {
 			width: number;
 			height: number;
@@ -388,7 +394,7 @@ export function getTerminalBuffer(eid: Entity):
 			scrollOffset: number;
 	  }
 	| undefined {
-	if (!hasTerminalBuffer(eid)) {
+	if (!hasTerminalBuffer(_world, eid)) {
 		return undefined;
 	}
 
@@ -1392,9 +1398,10 @@ export function resizeTerminalBuffer(
 /**
  * Removes a terminal buffer from an entity.
  *
+ * @param _world - The ECS world
  * @param eid - Entity ID
  */
-export function removeTerminalBuffer(eid: Entity): void {
+export function removeTerminalBuffer(_world: World, eid: Entity): void {
 	TerminalBuffer.isTerminal[eid] = 0;
 	TerminalBuffer.width[eid] = 0;
 	TerminalBuffer.height[eid] = 0;
@@ -1448,10 +1455,11 @@ function renderCell(
 /**
  * Renders terminal buffer to an ANSI string (for display).
  *
+ * @param _world - The ECS world
  * @param eid - Entity ID
  * @returns ANSI string representation of the terminal
  */
-export function renderTerminalToAnsi(eid: Entity): string {
+export function renderTerminalToAnsi(_world: World, eid: Entity): string {
 	const state = terminalStateMap.get(eid);
 	if (!state) return '';
 
@@ -1490,10 +1498,11 @@ export function renderTerminalToAnsi(eid: Entity): string {
 /**
  * Gets the cells for rendering.
  *
+ * @param _world - The ECS world
  * @param eid - Entity ID
  * @returns Readonly array of cells
  */
-export function getTerminalCells(eid: Entity): readonly Cell[] | undefined {
+export function getTerminalCells(_world: World, eid: Entity): readonly Cell[] | undefined {
 	const state = terminalStateMap.get(eid);
 	return state?.buffer.cells;
 }

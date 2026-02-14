@@ -267,7 +267,11 @@ export function getSelectedValue(_world: World, eid: Entity): string | null {
  * });
  * ```
  */
-export function onRadioSelect(_world: World, eid: Entity, callback: RadioSelectCallback): () => void {
+export function onRadioSelect(
+	_world: World,
+	eid: Entity,
+	callback: RadioSelectCallback,
+): () => void {
 	const callbacks = selectCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	selectCallbacks.set(eid, callbacks);
@@ -597,7 +601,11 @@ export function enableRadioButton(world: World, eid: Entity): void {
  * });
  * ```
  */
-export function setRadioButtonDisplay(_world: World, eid: Entity, options: RadioButtonDisplayOptions): void {
+export function setRadioButtonDisplay(
+	_world: World,
+	eid: Entity,
+	options: RadioButtonDisplayOptions,
+): void {
 	const existing = displayStore.get(eid);
 	displayStore.set(eid, {
 		selectedChar: options.selectedChar ?? existing?.selectedChar ?? DEFAULT_RADIO_SELECTED_CHAR,
