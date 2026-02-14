@@ -595,6 +595,23 @@ export {
 	sortByTabIndex,
 	// sortByZIndex is exported from ./zOrder (uses dedicated ZOrder component)
 } from './queries';
+// Reactive effects
+export type { EffectHandle } from './reactiveEffects';
+export {
+	createEffect,
+	createScheduledEffect,
+	disposeEffect,
+	flushScheduledEffects,
+	getScheduledEffectCount,
+	getTotalScheduledEffectCount,
+} from './reactiveEffects';
+// Reactive sources
+export {
+	createDerivedSignal,
+	createIntervalSignal,
+	createReducerSignal,
+	createTimerSignal,
+} from './reactiveSource';
 // Scene management
 export type { Scene, SceneManager, SceneTransition, TransitionState } from './scene';
 export {
@@ -647,6 +664,7 @@ export {
 // Signal primitives
 export type {
 	ComputedGetter,
+	ComputedSignal,
 	Signal,
 	SignalGetter,
 	SignalSetter,
@@ -657,6 +675,7 @@ export {
 	createEntitySignal,
 	createSignal,
 	disposeSignal,
+	trackDependencies,
 } from './signals';
 // Packed storage utilities
 export type { EntityHandle, EntityPool, PackedHandle, PackedStore } from './storage';

@@ -35,6 +35,11 @@ export type Signal<T> = readonly [SignalGetter<T>, SignalSetter<T>];
 export type ComputedGetter<T> = SignalGetter<T>;
 
 /**
+ * Alias for computed signal getter used by reactive sources.
+ */
+export type ComputedSignal<T> = SignalGetter<T>;
+
+/**
  * Internal signal node for dependency tracking.
  */
 interface SignalNode<T> {
@@ -55,6 +60,7 @@ interface ComputedNode<T> {
 	dirty: boolean;
 	version: number;
 	computing: boolean;
+	onNotify?: () => void;
 }
 
 /**
@@ -104,6 +110,16 @@ function track<T>(node: SignalNode<T> | ComputedNode<T>): void {
 }
 
 /**
+ * Marks a subscriber as dirty and invokes its onNotify callback if present.
+ */
+function markSubscriberDirty(subscriber: ComputedNode<unknown>): void {
+	subscriber.dirty = true;
+	if (subscriber.onNotify) {
+		subscriber.onNotify();
+	}
+}
+
+/**
  * Notifies all subscribers that a signal or computed has changed.
  * Recursively marks dependent computeds as dirty.
  */
@@ -112,9 +128,8 @@ function notify(node: SignalNode<unknown> | ComputedNode<unknown>): void {
 		// In batch mode, collect dirty computeds instead of recomputing immediately
 		for (const subscriber of node.subscribers) {
 			if (!subscriber.dirty) {
-				subscriber.dirty = true;
+				markSubscriberDirty(subscriber);
 				batchedComputeds.add(subscriber);
-				// Recursively mark dependents
 				notify(subscriber);
 			}
 		}
@@ -124,8 +139,7 @@ function notify(node: SignalNode<unknown> | ComputedNode<unknown>): void {
 	// Immediately mark subscribers as dirty and propagate
 	for (const subscriber of node.subscribers) {
 		if (!subscriber.dirty) {
-			subscriber.dirty = true;
-			// Recursively mark dependents of this computed
+			markSubscriberDirty(subscriber);
 			notify(subscriber);
 		}
 	}
@@ -410,4 +424,48 @@ export function disposeSignal<T>(getter: SignalGetter<T>): void {
 		unsubscribe(node);
 		computedNodes.delete(getter);
 	}
+}
+
+// =============================================================================
+// DEPENDENCY TRACKING FOR EFFECTS
+// =============================================================================
+
+/**
+ * Runs a function while tracking signal dependencies.
+ * When any tracked signal changes, the callback is invoked.
+ *
+ * Used internally by the effect system.
+ *
+ * @param fn - Function to run while tracking reads
+ * @param onDependencyChange - Called when any tracked signal changes
+ * @returns Cleanup function that stops tracking
+ * @internal
+ */
+export function trackDependencies(fn: () => void, onDependencyChange: () => void): () => void {
+	const node: ComputedNode<undefined> = {
+		fn: () => undefined,
+		value: undefined,
+		dependencies: new Set(),
+		subscribers: new Set(),
+		dirty: false,
+		version: 0,
+		computing: false,
+		onNotify: (): void => {
+			// Reset dirty so the callback fires again on next change
+			node.dirty = false;
+			onDependencyChange();
+		},
+	};
+
+	// Track dependencies by running fn with this node on the tracking stack
+	trackingStack.push(node);
+	try {
+		fn();
+	} finally {
+		trackingStack.pop();
+	}
+
+	return (): void => {
+		unsubscribe(node);
+	};
 }

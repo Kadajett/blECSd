@@ -257,6 +257,8 @@ export {
 	moveParticle,
 	spawnParticle,
 } from './particleSystem';
+// Reactive system
+export { createReactiveSystem, createReactiveSystemsForAllPhases } from './reactiveSystem';
 // Render system
 export type { RenderContext } from './renderSystem';
 export {
