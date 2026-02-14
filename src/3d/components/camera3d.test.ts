@@ -64,7 +64,7 @@ describe('Camera3D component', () => {
 		const { world, eid } = setup();
 		setCamera3D(world, eid, {});
 
-		const matrix = getProjMatrix(eid);
+		const matrix = getProjMatrix(world, eid);
 		expect(matrix).toBeInstanceOf(Float32Array);
 		expect(matrix.length).toBe(16);
 	});
@@ -73,7 +73,7 @@ describe('Camera3D component', () => {
 		const { world, eid } = setup();
 		setCamera3D(world, eid, {});
 
-		const matrix = getViewMatrix(eid);
+		const matrix = getViewMatrix(world, eid);
 		expect(matrix).toBeInstanceOf(Float32Array);
 		expect(matrix.length).toBe(16);
 	});

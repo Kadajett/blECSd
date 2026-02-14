@@ -200,11 +200,11 @@ export function setScale(world: World, eid: Entity, sx: number, sy: number, sz: 
  *
  * @example
  * ```typescript
- * const matrix = getWorldMatrix(eid);
+ * const matrix = getWorldMatrix(world, eid);
  * // matrix is a live view; changes to worldMatrix are reflected
  * ```
  */
-export function getWorldMatrix(eid: Entity): Float32Array {
+export function getWorldMatrix(_world: World, eid: Entity): Float32Array {
 	const offset = eid * 16;
 	return Transform3D.worldMatrix.subarray(offset, offset + 16);
 }
@@ -212,18 +212,20 @@ export function getWorldMatrix(eid: Entity): Float32Array {
 /**
  * Mark an entity's transform as dirty (needs world matrix recomputation).
  *
+ * @param _world - The ECS world (unused)
  * @param eid - Entity ID
  */
-export function markDirty(eid: Entity): void {
+export function markDirty(_world: World, eid: Entity): void {
 	Transform3D.dirty[eid] = 1;
 }
 
 /**
  * Check if an entity's transform is dirty.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - Entity ID
  * @returns True if the transform needs recomputation
  */
-export function isDirty(eid: Entity): boolean {
+export function isDirty(_world: World, eid: Entity): boolean {
 	return Transform3D.dirty[eid] === 1;
 }
