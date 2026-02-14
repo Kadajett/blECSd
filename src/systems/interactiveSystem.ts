@@ -3,6 +3,7 @@
  * @module systems/interactiveSystem
  */
 
+import { makeFocusable } from '../components/focusable';
 import {
 	DEFAULT_FOCUS_BG,
 	DEFAULT_FOCUS_FG,
@@ -99,6 +100,11 @@ export function setInteractive(world: World, eid: Entity, options: InteractiveOp
 	setNumOption(eid, Interactive.hoverEffectBg, options.hoverEffectBg);
 	setNumOption(eid, Interactive.focusEffectFg, options.focusEffectFg);
 	setNumOption(eid, Interactive.focusEffectBg, options.focusEffectBg);
+
+	// Keep Focusable component in sync when focusable option is set
+	if (options.focusable !== undefined) {
+		makeFocusable(world, eid, options.focusable);
+	}
 
 	return eid;
 }
