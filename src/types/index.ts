@@ -583,8 +583,6 @@ export type {
 } from '../components/radioButton';
 // Select
 export type {
-	/** Select action */
-	SelectAction,
 	/** Select callback */
 	SelectCallback,
 	/** Select display */
@@ -600,6 +598,10 @@ export type {
 	/** Select store */
 	SelectStore,
 } from '../components/select';
+export type {
+	/** Select action */
+	SelectAction,
+} from '../systems/selectSystem';
 // Slider
 export type {
 	/** Slider action */

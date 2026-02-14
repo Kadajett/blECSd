@@ -37,7 +37,8 @@ import {
 	registerScreenSingleton,
 } from '../../components/screen';
 import { Scrollable } from '../../components/scrollable';
-import { attachSelectBehavior, type SelectOption, setSelectDisplay } from '../../components/select';
+import { type SelectOption } from '../../components/select';
+import { attachSelectBehavior, setSelectDisplay } from '../../systems/selectSystem';
 import {
 	attachSliderBehavior,
 	setShowSliderValue,

@@ -866,7 +866,6 @@ export {
 } from './scrollbar';
 // Select component
 export type {
-	SelectAction,
 	SelectCallback,
 	SelectDisplay,
 	SelectDisplayOptions,
@@ -876,15 +875,19 @@ export type {
 	SelectStore,
 } from './select';
 export {
+	DEFAULT_CLOSED_INDICATOR,
+	DEFAULT_OPEN_INDICATOR,
+	DEFAULT_SELECTED_MARK,
+	DEFAULT_SEPARATOR,
+	SELECT_STATE_MACHINE_CONFIG,
+	selectStore,
+} from './select';
+export {
 	attachSelectBehavior,
 	clearSelectCallbacks,
 	clearSelectDisplay,
 	clearSelection as clearSelectSelection,
 	closeSelect,
-	DEFAULT_CLOSED_INDICATOR,
-	DEFAULT_OPEN_INDICATOR,
-	DEFAULT_SELECTED_MARK,
-	DEFAULT_SEPARATOR,
 	disableSelect,
 	enableSelect,
 	getHighlightedIndex,
@@ -910,17 +913,16 @@ export {
 	onSelectOpen,
 	openSelect,
 	resetSelectStore,
-	SELECT_STATE_MACHINE_CONFIG,
 	selectHighlighted,
 	selectOptionByIndex,
 	selectOptionByValue,
-	selectStore,
 	sendSelectEvent,
 	setHighlightedIndex,
 	setSelectDisplay,
 	setSelectOptions,
 	toggleSelect,
-} from './select';
+	type SelectAction,
+} from '../systems/selectSystem';
 // Shadow component
 export type { ShadowData, ShadowOptions, ShadowPosition } from './shadow';
 export {

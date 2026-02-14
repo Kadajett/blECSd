@@ -44,7 +44,7 @@ import {
 	getSelectState,
 	isSelect,
 	resetSelectStore,
-} from '../components/select';
+} from '../systems/selectSystem';
 import {
 	getSliderDisplay,
 	getSliderMax,
