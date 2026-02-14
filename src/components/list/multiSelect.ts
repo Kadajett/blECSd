@@ -92,7 +92,7 @@ export function selectAllItems(world: World, eid: Entity): void {
 		return;
 	}
 
-	const items = getItems(eid);
+	const items = getItems(world, eid);
 	const selected = multiSelectedStore.get(eid);
 	if (selected) {
 		selected.clear();

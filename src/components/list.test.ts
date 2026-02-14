@@ -136,10 +136,10 @@ describe('List Component', () => {
 
 			expect(isList(world, eid)).toBe(true);
 			expect(getSelectedIndex(eid)).toBe(-1);
-			expect(getItemCount(eid)).toBe(0);
-			expect(isListInteractive(eid)).toBe(true);
-			expect(isListMouseEnabled(eid)).toBe(true);
-			expect(isListKeysEnabled(eid)).toBe(true);
+			expect(getItemCount(world, eid)).toBe(0);
+			expect(isListInteractive(world, eid)).toBe(true);
+			expect(isListMouseEnabled(world, eid)).toBe(true);
+			expect(isListKeysEnabled(world, eid)).toBe(true);
 		});
 
 		it('should initialize list with items', () => {
@@ -149,8 +149,8 @@ describe('List Component', () => {
 			];
 			attachListBehavior(world, eid, items);
 
-			expect(getItemCount(eid)).toBe(2);
-			expect(getItems(eid)).toEqual(items);
+			expect(getItemCount(world, eid)).toBe(2);
+			expect(getItems(world, eid)).toEqual(items);
 		});
 
 		it('should initialize list with custom options', () => {
@@ -162,9 +162,9 @@ describe('List Component', () => {
 				visibleCount: 5,
 			});
 
-			expect(isListInteractive(eid)).toBe(false);
-			expect(isListMouseEnabled(eid)).toBe(false);
-			expect(isListKeysEnabled(eid)).toBe(false);
+			expect(isListInteractive(world, eid)).toBe(false);
+			expect(isListMouseEnabled(world, eid)).toBe(false);
+			expect(isListKeysEnabled(world, eid)).toBe(false);
 			expect(getSelectedIndex(eid)).toBe(0);
 			expect(getVisibleCount(world, eid)).toBe(5);
 		});
@@ -232,28 +232,28 @@ describe('List Component', () => {
 		});
 
 		it('should get items', () => {
-			const items = getItems(eid);
+			const items = getItems(world, eid);
 			expect(items.length).toBe(3);
 			expect(items[0]?.text).toBe('Item 1');
 		});
 
 		it('should set items', () => {
 			setItems(world, eid, [{ text: 'New Item' }]);
-			expect(getItemCount(eid)).toBe(1);
-			expect(getItem(eid, 0)?.text).toBe('New Item');
+			expect(getItemCount(world, eid)).toBe(1);
+			expect(getItem(world, eid, 0)?.text).toBe('New Item');
 		});
 
 		it('should add item at end', () => {
 			addItem(world, eid, { text: 'Item 4', value: 'item4' });
-			expect(getItemCount(eid)).toBe(4);
-			expect(getItem(eid, 3)?.text).toBe('Item 4');
+			expect(getItemCount(world, eid)).toBe(4);
+			expect(getItem(world, eid, 3)?.text).toBe('Item 4');
 		});
 
 		it('should add item at specific index', () => {
 			addItem(world, eid, { text: 'Inserted', value: 'inserted' }, 1);
-			expect(getItemCount(eid)).toBe(4);
-			expect(getItem(eid, 1)?.text).toBe('Inserted');
-			expect(getItem(eid, 2)?.text).toBe('Item 2');
+			expect(getItemCount(world, eid)).toBe(4);
+			expect(getItem(world, eid, 1)?.text).toBe('Inserted');
+			expect(getItem(world, eid, 2)?.text).toBe('Item 2');
 		});
 
 		it('should adjust selection when adding before selected', () => {
@@ -265,8 +265,8 @@ describe('List Component', () => {
 		it('should remove item', () => {
 			const removed = removeItem(world, eid, 1);
 			expect(removed?.text).toBe('Item 2');
-			expect(getItemCount(eid)).toBe(2);
-			expect(getItem(eid, 1)?.text).toBe('Item 3');
+			expect(getItemCount(world, eid)).toBe(2);
+			expect(getItem(world, eid, 1)?.text).toBe('Item 3');
 		});
 
 		it('should return undefined when removing invalid index', () => {
@@ -288,7 +288,7 @@ describe('List Component', () => {
 
 		it('should update item', () => {
 			expect(updateItem(world, eid, 1, { text: 'Updated', value: 'updated' })).toBe(true);
-			expect(getItem(eid, 1)?.text).toBe('Updated');
+			expect(getItem(world, eid, 1)?.text).toBe('Updated');
 		});
 
 		it('should fail to update invalid index', () => {
@@ -298,7 +298,7 @@ describe('List Component', () => {
 		it('should clear items', () => {
 			setSelectedIndex(world, eid, 1);
 			clearItems(world, eid);
-			expect(getItemCount(eid)).toBe(0);
+			expect(getItemCount(world, eid)).toBe(0);
 			expect(getSelectedIndex(eid)).toBe(-1);
 		});
 	});
@@ -320,11 +320,11 @@ describe('List Component', () => {
 
 		it('should get selected item', () => {
 			setSelectedIndex(world, eid, 0);
-			expect(getSelectedItem(eid)?.text).toBe('Item 1');
+			expect(getSelectedItem(world, eid)?.text).toBe('Item 1');
 		});
 
 		it('should return undefined for no selection', () => {
-			expect(getSelectedItem(eid)).toBeUndefined();
+			expect(getSelectedItem(world, eid)).toBeUndefined();
 		});
 
 		it('should not select disabled item', () => {
@@ -508,17 +508,17 @@ describe('List Component', () => {
 
 		it('should set interactive mode', () => {
 			setListInteractive(world, eid, false);
-			expect(isListInteractive(eid)).toBe(false);
+			expect(isListInteractive(world, eid)).toBe(false);
 		});
 
 		it('should set mouse mode', () => {
 			setListMouse(world, eid, false);
-			expect(isListMouseEnabled(eid)).toBe(false);
+			expect(isListMouseEnabled(world, eid)).toBe(false);
 		});
 
 		it('should set keys mode', () => {
 			setListKeys(world, eid, false);
-			expect(isListKeysEnabled(eid)).toBe(false);
+			expect(isListKeysEnabled(world, eid)).toBe(false);
 		});
 	});
 
@@ -999,9 +999,9 @@ describe('List Component', () => {
 
 				appendItems(world, eid, [{ text: 'B' }, { text: 'C' }]);
 
-				expect(getItemCount(eid)).toBe(3);
-				expect(getItems(eid)).toHaveLength(3);
-				expect(getItem(eid, 2)?.text).toBe('C');
+				expect(getItemCount(world, eid)).toBe(3);
+				expect(getItems(world, eid)).toHaveLength(3);
+				expect(getItem(world, eid, 2)?.text).toBe('C');
 			});
 		});
 
@@ -1017,8 +1017,8 @@ describe('List Component', () => {
 				await loadItems(world, eid, 0, 2);
 
 				expect(callback).toHaveBeenCalledWith(0, 2);
-				expect(getItem(eid, 0)?.text).toBe('Item 1');
-				expect(getItem(eid, 1)?.text).toBe('Item 2');
+				expect(getItem(world, eid, 0)?.text).toBe('Item 1');
+				expect(getItem(world, eid, 1)?.text).toBe('Item 2');
 			});
 
 			it('should set loading state during load', async () => {
@@ -1062,7 +1062,7 @@ describe('List Component', () => {
 				// Should not throw
 				await loadItems(world, eid, 0, 5);
 
-				expect(getItemCount(eid)).toBe(0);
+				expect(getItemCount(world, eid)).toBe(0);
 			});
 		});
 

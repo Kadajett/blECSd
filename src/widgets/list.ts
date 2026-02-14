@@ -554,11 +554,11 @@ export function createList(
 		},
 
 		getItems(): readonly ListItem[] {
-			return getItems(eid);
+			return getItems(world, eid);
 		},
 
 		addItem(text: string, value?: string): ListWidget {
-			const currentItems = [...getItems(eid)];
+			const currentItems = [...getItems(world, eid)];
 			currentItems.push({ text, value: value ?? text });
 			setItems(world, eid, currentItems);
 			return widget;
@@ -585,7 +585,7 @@ export function createList(
 		},
 
 		getSelectedItem(): ListItem | undefined {
-			return getSelectedItem(eid);
+			return getSelectedItem(world, eid);
 		},
 
 		selectPrev(): ListWidget {

@@ -24,31 +24,32 @@ export function getSelectedIndex(eid: Entity): number {
 /**
  * Gets the selected item.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns Selected item or undefined
  */
-export function getSelectedItem(eid: Entity): ListItem | undefined {
+export function getSelectedItem(_world: World, eid: Entity): ListItem | undefined {
 	const index = listStore.selectedIndex[eid] ?? -1;
 	if (index < 0) {
 		return undefined;
 	}
-	return getItem(eid, index);
+	return getItem(_world, eid, index);
 }
 
 /** Validate and check if index can be selected */
-function canSelectIndex(eid: Entity, index: number, itemCount: number): boolean {
+function canSelectIndex(world: World, eid: Entity, index: number, itemCount: number): boolean {
 	if (index < -1 || index >= itemCount) return false;
 	if (index < 0) return true;
 
-	const item = getItem(eid, index);
+	const item = getItem(world, eid, index);
 	return !item?.disabled;
 }
 
 /** Fire select callbacks for a given index */
-function fireSelectCallbacks(eid: Entity, index: number): void {
+function fireSelectCallbacks(world: World, eid: Entity, index: number): void {
 	if (index < 0) return;
 
-	const item = getItem(eid, index);
+	const item = getItem(world, eid, index);
 	if (!item) return;
 
 	const callbacks = selectCallbacks.get(eid);
@@ -71,12 +72,12 @@ export function setSelectedIndex(world: World, eid: Entity, index: number): bool
 	const itemCount = listStore.itemCount[eid] ?? 0;
 	const currentIndex = listStore.selectedIndex[eid] ?? -1;
 
-	if (!canSelectIndex(eid, index, itemCount)) return false;
+	if (!canSelectIndex(world, eid, index, itemCount)) return false;
 	if (currentIndex === index) return false;
 
 	listStore.selectedIndex[eid] = index;
 	markDirty(world, eid);
-	fireSelectCallbacks(eid, index);
+	fireSelectCallbacks(world, eid, index);
 	ensureVisible(world, eid, index);
 
 	return true;
@@ -109,7 +110,7 @@ export function selectPrev(world: World, eid: Entity, wrap = true): boolean {
 				return false;
 			}
 		}
-		const item = getItem(eid, index);
+		const item = getItem(world, eid, index);
 		if (!item?.disabled) {
 			return setSelectedIndex(world, eid, index);
 		}
@@ -145,7 +146,7 @@ export function selectNext(world: World, eid: Entity, wrap = true): boolean {
 				return false;
 			}
 		}
-		const item = getItem(eid, index);
+		const item = getItem(world, eid, index);
 		if (!item?.disabled) {
 			return setSelectedIndex(world, eid, index);
 		}
@@ -164,7 +165,7 @@ export function selectNext(world: World, eid: Entity, wrap = true): boolean {
 export function selectFirst(world: World, eid: Entity): boolean {
 	const itemCount = listStore.itemCount[eid] ?? 0;
 	for (let i = 0; i < itemCount; i++) {
-		const item = getItem(eid, i);
+		const item = getItem(world, eid, i);
 		if (!item?.disabled) {
 			return setSelectedIndex(world, eid, i);
 		}
@@ -182,7 +183,7 @@ export function selectFirst(world: World, eid: Entity): boolean {
 export function selectLast(world: World, eid: Entity): boolean {
 	const itemCount = listStore.itemCount[eid] ?? 0;
 	for (let i = itemCount - 1; i >= 0; i--) {
-		const item = getItem(eid, i);
+		const item = getItem(world, eid, i);
 		if (!item?.disabled) {
 			return setSelectedIndex(world, eid, i);
 		}
@@ -230,7 +231,7 @@ export function activateSelected(_world: World, eid: Entity): boolean {
 		return false;
 	}
 
-	const item = getItem(eid, index);
+	const item = getItem(_world, eid, index);
 	if (!item || item.disabled) {
 		return false;
 	}

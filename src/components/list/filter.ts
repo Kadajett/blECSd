@@ -27,7 +27,7 @@ export function setListFilter(world: World, eid: Entity, filterText: string): vo
 	filterStore.set(eid, filter);
 
 	// Recalculate filtered items
-	const allItems = getItems(eid);
+	const allItems = getItems(world, eid);
 	const filtered =
 		filter === ''
 			? [...allItems]
@@ -67,7 +67,7 @@ export function clearListFilter(world: World, eid: Entity): void {
 	filterStore.delete(eid);
 	filteredItemsCache.delete(eid);
 	listStore.firstVisible[eid] = 0;
-	if (getItems(eid).length > 0) {
+	if (getItems(world, eid).length > 0) {
 		listStore.selectedIndex[eid] = 0;
 	}
 	markDirty(world, eid);
@@ -83,7 +83,7 @@ export function clearListFilter(world: World, eid: Entity): void {
 export function getFilteredItems(_world: World, eid: Entity): readonly ListItem[] {
 	const filter = filterStore.get(eid);
 	if (filter === undefined || filter === '') {
-		return getItems(eid);
+		return getItems(_world, eid);
 	}
 
 	const cached = filteredItemsCache.get(eid);
@@ -92,7 +92,7 @@ export function getFilteredItems(_world: World, eid: Entity): readonly ListItem[
 	}
 
 	// Fallback: calculate on the fly
-	const allItems = getItems(eid);
+	const allItems = getItems(_world, eid);
 	const filtered = allItems.filter((item) =>
 		item.text.toLowerCase().includes(filter.toLowerCase()),
 	);

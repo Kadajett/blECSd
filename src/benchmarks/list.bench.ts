@@ -151,7 +151,7 @@ describe('List Item Operations', () => {
 		bench(
 			'get items from 100 item list',
 			() => {
-				getItems(eid);
+				getItems(world, eid);
 			},
 			{
 				setup() {
@@ -165,7 +165,7 @@ describe('List Item Operations', () => {
 		bench(
 			'get items from 100,000 item list',
 			() => {
-				getItems(eid);
+				getItems(world, eid);
 			},
 			{
 				setup() {

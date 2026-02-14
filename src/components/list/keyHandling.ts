@@ -36,7 +36,7 @@ export function handleListKeyPress(world: World, eid: Entity, key: string): List
 		return null;
 	}
 
-	if (!isListKeysEnabled(eid)) {
+	if (!isListKeysEnabled(world, eid)) {
 		return null;
 	}
 
