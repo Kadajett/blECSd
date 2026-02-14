@@ -173,6 +173,7 @@ function createDragState(): DragState {
 /**
  * Sets drag constraints for an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @param constraints - Drag constraints
  *
@@ -181,41 +182,44 @@ function createDragState(): DragState {
  * import { setDragConstraints } from 'blecsd';
  *
  * // Constrain to parent bounds
- * setDragConstraints(entity, { constrainToParent: true });
+ * setDragConstraints(world, entity, { constrainToParent: true });
  *
  * // Lock to horizontal axis with grid snap
- * setDragConstraints(entity, {
+ * setDragConstraints(world, entity, {
  *   constrainAxis: 'x',
  *   snapToGrid: { x: 10, y: 10 }
  * });
  * ```
  */
-export function setDragConstraints(eid: Entity, constraints: DragConstraints): void {
+export function setDragConstraints(_world: World, eid: Entity, constraints: DragConstraints): void {
 	constraintStore.set(eid, constraints);
 }
 
 /**
  * Gets drag constraints for an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns Drag constraints or empty object
  */
-export function getDragConstraints(eid: Entity): DragConstraints {
+export function getDragConstraints(_world: World, eid: Entity): DragConstraints {
 	return constraintStore.get(eid) ?? {};
 }
 
 /**
  * Clears drag constraints for an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  */
-export function clearDragConstraints(eid: Entity): void {
+export function clearDragConstraints(_world: World, eid: Entity): void {
 	constraintStore.delete(eid);
 }
 
 /**
  * Sets a drag verification callback for an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @param callback - Verification callback (return false to cancel movement)
  *
@@ -224,7 +228,7 @@ export function clearDragConstraints(eid: Entity): void {
  * import { setDragVerifyCallback } from 'blecsd';
  *
  * // Prevent dragging into certain areas
- * setDragVerifyCallback(entity, (entity, dx, dy) => {
+ * setDragVerifyCallback(world, entity, (entity, dx, dy) => {
  *   const newX = Position.x[entity] + dx;
  *   const newY = Position.y[entity] + dy;
  *
@@ -235,7 +239,11 @@ export function clearDragConstraints(eid: Entity): void {
  * });
  * ```
  */
-export function setDragVerifyCallback(eid: Entity, callback: DragVerifyCallback | null): void {
+export function setDragVerifyCallback(
+	_world: World,
+	eid: Entity,
+	callback: DragVerifyCallback | null,
+): void {
 	if (callback) {
 		verifyStore.set(eid, callback);
 	} else {
@@ -246,10 +254,11 @@ export function setDragVerifyCallback(eid: Entity, callback: DragVerifyCallback 
 /**
  * Gets the drag verification callback for an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns The verification callback or null
  */
-export function getDragVerifyCallback(eid: Entity): DragVerifyCallback | null {
+export function getDragVerifyCallback(_world: World, eid: Entity): DragVerifyCallback | null {
 	return verifyStore.get(eid) ?? null;
 }
 
@@ -494,8 +503,8 @@ export function createDragSystem(eventBus: EventBus<DragEventMap>) {
 			state.offsetY = mouseY - pos.y;
 			state.lastX = pos.x;
 			state.lastY = pos.y;
-			state.constraints = getDragConstraints(eid);
-			state.verifyCallback = getDragVerifyCallback(eid);
+			state.constraints = getDragConstraints(world, eid);
+			state.verifyCallback = getDragVerifyCallback(world, eid);
 
 			// Bring to front if configured
 			if (state.constraints.bringToFront) {

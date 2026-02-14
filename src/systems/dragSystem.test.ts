@@ -237,22 +237,22 @@ describe('dragSystem', () => {
 	describe('constraints', () => {
 		describe('setDragConstraints', () => {
 			it('should store constraints for entity', () => {
-				setDragConstraints(entity, { constrainAxis: 'x' });
-				expect(getDragConstraints(entity)).toEqual({ constrainAxis: 'x' });
+				setDragConstraints(world, entity, { constrainAxis: 'x' });
+				expect(getDragConstraints(world, entity)).toEqual({ constrainAxis: 'x' });
 			});
 		});
 
 		describe('clearDragConstraints', () => {
 			it('should clear constraints', () => {
-				setDragConstraints(entity, { constrainAxis: 'x' });
-				clearDragConstraints(entity);
-				expect(getDragConstraints(entity)).toEqual({});
+				setDragConstraints(world, entity, { constrainAxis: 'x' });
+				clearDragConstraints(world, entity);
+				expect(getDragConstraints(world, entity)).toEqual({});
 			});
 		});
 
 		describe('constrainAxis', () => {
 			it('should lock to X axis', () => {
-				setDragConstraints(entity, { constrainAxis: 'x' });
+				setDragConstraints(world, entity, { constrainAxis: 'x' });
 
 				dragSystem.startDrag(world, entity, 15, 25);
 				dragSystem.updateDrag(world, 25, 50); // Try to move both X and Y
@@ -263,7 +263,7 @@ describe('dragSystem', () => {
 			});
 
 			it('should lock to Y axis', () => {
-				setDragConstraints(entity, { constrainAxis: 'y' });
+				setDragConstraints(world, entity, { constrainAxis: 'y' });
 
 				dragSystem.startDrag(world, entity, 15, 25);
 				dragSystem.updateDrag(world, 50, 35);
@@ -276,7 +276,7 @@ describe('dragSystem', () => {
 
 		describe('snapToGrid', () => {
 			it('should snap position to grid', () => {
-				setDragConstraints(entity, { snapToGrid: { x: 10, y: 10 } });
+				setDragConstraints(world, entity, { snapToGrid: { x: 10, y: 10 } });
 
 				// Entity at (10, 20), drag starts at mouse (10, 20) so offset = (0, 0)
 				dragSystem.startDrag(world, entity, 10, 20);
@@ -292,7 +292,7 @@ describe('dragSystem', () => {
 
 		describe('minX/maxX/minY/maxY', () => {
 			it('should constrain to min/max bounds', () => {
-				setDragConstraints(entity, {
+				setDragConstraints(world, entity, {
 					minX: 5,
 					maxX: 50,
 					minY: 5,
@@ -318,7 +318,7 @@ describe('dragSystem', () => {
 		describe('bringToFront', () => {
 			it('should bring entity to front when drag starts', () => {
 				setZIndex(world, entity, 10);
-				setDragConstraints(entity, { bringToFront: true });
+				setDragConstraints(world, entity, { bringToFront: true });
 
 				dragSystem.startDrag(world, entity, 15, 25);
 
@@ -327,7 +327,7 @@ describe('dragSystem', () => {
 
 			it('should use custom frontZIndex', () => {
 				setZIndex(world, entity, 10);
-				setDragConstraints(entity, { bringToFront: true, frontZIndex: 500 });
+				setDragConstraints(world, entity, { bringToFront: true, frontZIndex: 500 });
 
 				dragSystem.startDrag(world, entity, 15, 25);
 
@@ -336,7 +336,7 @@ describe('dragSystem', () => {
 
 			it('should not change z-index if bringToFront is false', () => {
 				setZIndex(world, entity, 10);
-				setDragConstraints(entity, { bringToFront: false });
+				setDragConstraints(world, entity, { bringToFront: false });
 
 				dragSystem.startDrag(world, entity, 15, 25);
 
@@ -353,7 +353,7 @@ describe('dragSystem', () => {
 				setDimensions(world, entity, 20, 20);
 
 				setParent(world, entity, parent);
-				setDragConstraints(entity, { constrainToParent: true });
+				setDragConstraints(world, entity, { constrainToParent: true });
 
 				dragSystem.startDrag(world, entity, 10, 20);
 
@@ -375,7 +375,7 @@ describe('dragSystem', () => {
 	describe('verification callback', () => {
 		it('should call verify callback before move', () => {
 			const verify = vi.fn().mockReturnValue(true);
-			setDragVerifyCallback(entity, verify);
+			setDragVerifyCallback(world, entity, verify);
 
 			dragSystem.startDrag(world, entity, 15, 25);
 			dragSystem.updateDrag(world, 25, 35);
@@ -384,7 +384,7 @@ describe('dragSystem', () => {
 		});
 
 		it('should block move if callback returns false', () => {
-			setDragVerifyCallback(entity, () => false);
+			setDragVerifyCallback(world, entity, () => false);
 
 			dragSystem.startDrag(world, entity, 15, 25);
 			const result = dragSystem.updateDrag(world, 25, 35);
@@ -396,7 +396,7 @@ describe('dragSystem', () => {
 		});
 
 		it('should allow move if callback returns true', () => {
-			setDragVerifyCallback(entity, () => true);
+			setDragVerifyCallback(world, entity, () => true);
 
 			dragSystem.startDrag(world, entity, 15, 25);
 			dragSystem.updateDrag(world, 25, 35);
@@ -409,12 +409,12 @@ describe('dragSystem', () => {
 		describe('getDragVerifyCallback', () => {
 			it('should return stored callback', () => {
 				const callback = () => true;
-				setDragVerifyCallback(entity, callback);
-				expect(getDragVerifyCallback(entity)).toBe(callback);
+				setDragVerifyCallback(world, entity, callback);
+				expect(getDragVerifyCallback(world, entity)).toBe(callback);
 			});
 
 			it('should return null if no callback', () => {
-				expect(getDragVerifyCallback(entity)).toBeNull();
+				expect(getDragVerifyCallback(world, entity)).toBeNull();
 			});
 		});
 	});
