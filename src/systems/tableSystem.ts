@@ -812,4 +812,7 @@ export function resetTableStore(): void {
 	tableStore.headerRows.fill(1);
 	tableStore.pad.fill(1);
 	tableStore.cellBorders.fill(0);
+	dataStore.clear();
+	columnStore.clear();
+	displayStore.clear();
 }
