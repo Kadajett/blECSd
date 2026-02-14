@@ -661,26 +661,19 @@ export type {
 export { createScheduler, getDeltaTime } from './scheduler';
 // Serialization
 export type {
-	ComponentDescriptor,
-	DeserializeOptions,
-	DeserializeResult,
-	SerializedComponentData,
-	SerializedEntity,
-	SerializedWorld,
-	SerializeOptions,
+	ComponentData,
+	ComponentFieldData,
+	ComponentRegistration,
+	WorldDelta,
+	WorldSnapshot,
 } from './serialization';
 export {
-	clearSerializableRegistry,
-	cloneSnapshot,
+	applyWorldDelta,
+	createWorldDelta,
 	deserializeWorld,
-	deserializeWorldFromJSON,
 	getRegisteredComponents,
-	getSerializable,
-	registerSerializable,
-	SERIALIZATION_VERSION,
+	registerComponents,
 	serializeWorld,
-	serializeWorldToJSON,
-	unregisterSerializable,
 } from './serialization';
 // Shrink-to-content
 export type { ShrinkBox } from './shrinkToContent';

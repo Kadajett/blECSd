@@ -1,513 +1,564 @@
 /**
- * ECS world state serialization and deserialization.
- *
- * Provides functions to serialize ECS world state to JSON and restore it,
- * supporting component data, entity relationships, and custom serializers
- * for complex (non-typed-array) data.
- *
+ * ECS world state serialization with delta compression
  * @module core/serialization
  */
 
-import { addComponent, addEntity, getAllEntities, hasComponent, removeEntity } from './ecs';
+import { z } from 'zod';
+import {
+	addComponent,
+	addEntity,
+	createWorld,
+	entityExists,
+	getAllEntities,
+	hasComponent,
+	removeEntity,
+} from './ecs';
 import type { Entity, World } from './types';
-import { createWorld } from './world';
+
+// =============================================================================
+// SCHEMAS
+// =============================================================================
+
+/**
+ * Zod schema for component field data
+ */
+const ComponentFieldDataSchema = z.record(z.string(), z.array(z.number()));
+
+/**
+ * Zod schema for component data
+ */
+const ComponentDataSchema = z.object({
+	name: z.string(),
+	entities: z.array(z.number()),
+	values: ComponentFieldDataSchema,
+});
+
+/**
+ * Zod schema for world snapshot
+ */
+const WorldSnapshotSchema = z.object({
+	version: z.number().int().positive(),
+	timestamp: z.number().int().nonnegative(),
+	entityCount: z.number().int().nonnegative(),
+	components: z.array(ComponentDataSchema),
+});
+
+/**
+ * Zod schema for world delta
+ */
+const WorldDeltaSchema = z.object({
+	baseTimestamp: z.number().int().nonnegative(),
+	timestamp: z.number().int().nonnegative(),
+	addedEntities: z.array(z.number()),
+	removedEntities: z.array(z.number()),
+	changedComponents: z.array(ComponentDataSchema),
+});
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
 /**
- * A registered component descriptor for serialization.
+ * Component field data - maps field names to their value arrays
  */
-export interface ComponentDescriptor {
-	/** Unique name for the component (used as key in serialized data) */
+export interface ComponentFieldData {
+	readonly [fieldName: string]: readonly number[];
+}
+
+/**
+ * Serialized component data
+ */
+export interface ComponentData {
 	readonly name: string;
-	/** The component store object (SoA typed arrays) */
-	// biome-ignore lint/suspicious/noExplicitAny: Component stores have heterogeneous typed array fields
-	readonly store: Record<string, any>;
-	/** Optional custom serializer for non-typed-array data */
-	readonly serialize?: (eid: Entity) => unknown;
-	/** Optional custom deserializer for non-typed-array data */
-	readonly deserialize?: (eid: Entity, data: unknown) => void;
+	readonly entities: readonly number[];
+	readonly values: ComponentFieldData;
 }
 
 /**
- * Serialized entity data.
+ * Complete world snapshot
  */
-export interface SerializedEntity {
-	/** Original entity ID (for relationship mapping) */
-	readonly id: number;
-	/** Map of component name to serialized component data */
-	readonly components: Record<string, SerializedComponentData>;
-}
-
-/**
- * Serialized component data for a single entity.
- */
-export interface SerializedComponentData {
-	/** Typed array field values (field name -> value) */
-	readonly fields: Record<string, number>;
-	/** Optional custom data from serialize callback */
-	readonly custom?: unknown;
-}
-
-/**
- * Complete serialized world snapshot.
- */
-export interface SerializedWorld {
-	/** Version for forward compatibility */
+export interface WorldSnapshot {
 	readonly version: number;
-	/** Timestamp of serialization */
 	readonly timestamp: number;
-	/** Array of serialized entities */
-	readonly entities: readonly SerializedEntity[];
-	/** Optional metadata attached by user */
-	readonly metadata?: Record<string, unknown> | undefined;
-}
-
-/**
- * Options for serialization.
- */
-export interface SerializeOptions {
-	/** Only serialize entities with these IDs (default: all entities) */
-	readonly entityFilter?: readonly Entity[] | undefined;
-	/** Only serialize these components by name (default: all registered) */
-	readonly componentFilter?: readonly string[] | undefined;
-	/** Metadata to include in the snapshot */
-	readonly metadata?: Record<string, unknown> | undefined;
-}
-
-/**
- * Options for deserialization.
- */
-export interface DeserializeOptions {
-	/** If true, clear the world before loading (default: false) */
-	readonly clearWorld?: boolean | undefined;
-	/** If true, create a new world instead of modifying the given one (default: false) */
-	readonly createNew?: boolean | undefined;
-}
-
-/**
- * Result of deserialization.
- */
-export interface DeserializeResult {
-	/** The world that was deserialized into */
-	readonly world: World;
-	/** Map from old entity IDs to new entity IDs */
-	readonly entityMap: ReadonlyMap<number, Entity>;
-	/** Count of entities restored */
 	readonly entityCount: number;
-	/** Count of components restored */
-	readonly componentCount: number;
+	readonly components: readonly ComponentData[];
+}
+
+/**
+ * Delta between two world snapshots
+ */
+export interface WorldDelta {
+	readonly baseTimestamp: number;
+	readonly timestamp: number;
+	readonly addedEntities: readonly number[];
+	readonly removedEntities: readonly number[];
+	readonly changedComponents: readonly ComponentData[];
+}
+
+/**
+ * Component registration for serialization
+ */
+export interface ComponentRegistration {
+	readonly name: string;
+	// biome-ignore lint/suspicious/noExplicitAny: Component stores have heterogeneous typed array fields
+	readonly component: any;
+	readonly fields: readonly string[];
 }
 
 // =============================================================================
 // COMPONENT REGISTRY
 // =============================================================================
 
-/** Registered component descriptors for serialization */
-const componentRegistry = new Map<string, ComponentDescriptor>();
+/**
+ * Global component registry
+ */
+let componentRegistry: readonly ComponentRegistration[] = [];
 
 /**
- * Registers a component for serialization.
+ * Registers components for serialization.
+ * Must be called before serializing/deserializing world state.
  *
- * Components must be registered before they can be serialized or deserialized.
- * The descriptor tells the serializer how to read/write the component's data.
- *
- * @param descriptor - Component descriptor with name, store, and optional custom serializers
+ * @param registrations - Array of component registrations
  *
  * @example
  * ```typescript
- * import { registerSerializable, Position } from 'blecsd';
+ * import { registerComponents, Position, Velocity } from 'blecsd';
  *
- * registerSerializable({
- *   name: 'Position',
- *   store: Position,
- * });
+ * registerComponents([
+ *   { name: 'Position', component: Position, fields: ['x', 'y', 'z', 'absolute'] },
+ *   { name: 'Velocity', component: Velocity, fields: ['x', 'y', 'maxSpeed', 'friction'] },
+ * ]);
  * ```
  */
-export function registerSerializable(descriptor: ComponentDescriptor): void {
-	componentRegistry.set(descriptor.name, descriptor);
+export function registerComponents(registrations: readonly ComponentRegistration[]): void {
+	componentRegistry = registrations;
 }
 
 /**
- * Unregisters a component from serialization.
+ * Gets the currently registered components.
  *
- * @param name - The component name to unregister
- * @returns True if the component was found and removed
- *
- * @example
- * ```typescript
- * import { unregisterSerializable } from 'blecsd';
- *
- * unregisterSerializable('Position');
- * ```
- */
-export function unregisterSerializable(name: string): boolean {
-	return componentRegistry.delete(name);
-}
-
-/**
- * Gets a registered component descriptor by name.
- *
- * @param name - The component name
- * @returns The descriptor, or undefined if not registered
- *
- * @example
- * ```typescript
- * import { getSerializable } from 'blecsd';
- *
- * const desc = getSerializable('Position');
- * if (desc) {
- *   console.log(Object.keys(desc.store)); // ['x', 'y', 'z', 'absolute']
- * }
- * ```
- */
-export function getSerializable(name: string): ComponentDescriptor | undefined {
-	return componentRegistry.get(name);
-}
-
-/**
- * Gets all registered component names.
- *
- * @returns Array of registered component names
+ * @returns Array of component registrations
  *
  * @example
  * ```typescript
  * import { getRegisteredComponents } from 'blecsd';
  *
- * const names = getRegisteredComponents();
- * console.log(names); // ['Position', 'Velocity', 'Renderable']
+ * const components = getRegisteredComponents();
+ * console.log(components.map(c => c.name));
  * ```
  */
-export function getRegisteredComponents(): readonly string[] {
-	return Array.from(componentRegistry.keys());
-}
-
-/**
- * Clears all registered serializable components.
- * Useful for testing.
- *
- * @example
- * ```typescript
- * import { clearSerializableRegistry } from 'blecsd';
- *
- * clearSerializableRegistry();
- * ```
- */
-export function clearSerializableRegistry(): void {
-	componentRegistry.clear();
+export function getRegisteredComponents(): readonly ComponentRegistration[] {
+	return componentRegistry;
 }
 
 // =============================================================================
 // SERIALIZATION
 // =============================================================================
 
-/**
- * Checks whether a value is a typed array.
- */
-function isTypedArray(
-	value: unknown,
-): value is
-	| Float32Array
-	| Float64Array
-	| Int8Array
-	| Int16Array
-	| Int32Array
-	| Uint8Array
-	| Uint16Array
-	| Uint32Array {
-	return (
-		value instanceof Float32Array ||
-		value instanceof Float64Array ||
-		value instanceof Int8Array ||
-		value instanceof Int16Array ||
-		value instanceof Int32Array ||
-		value instanceof Uint8Array ||
-		value instanceof Uint16Array ||
-		value instanceof Uint32Array
-	);
-}
+const SCHEMA_VERSION = 1;
 
 /**
- * Serializes a single entity's component data.
- */
-function serializeEntityComponent(
-	descriptor: ComponentDescriptor,
-	eid: Entity,
-): SerializedComponentData {
-	const fields: Record<string, number> = {};
-
-	for (const [fieldName, fieldArray] of Object.entries(descriptor.store)) {
-		if (isTypedArray(fieldArray)) {
-			fields[fieldName] = fieldArray[eid] as number;
-		}
-	}
-
-	const result: { fields: Record<string, number>; custom?: unknown } = { fields };
-
-	if (descriptor.serialize) {
-		result.custom = descriptor.serialize(eid);
-	}
-
-	return result;
-}
-
-/**
- * Serializes ECS world state to a snapshot object.
+ * Serializes a world to a snapshot.
  *
- * Only components registered via `registerSerializable` are included.
- * The snapshot can be converted to JSON with `JSON.stringify`.
- *
- * @param world - The world to serialize
- * @param options - Optional serialization options
- * @returns A serialized world snapshot
+ * @param world - The ECS world to serialize
+ * @param components - Array of component registrations to serialize
+ * @returns World snapshot
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity, setPosition, serializeWorld, registerSerializable, Position } from 'blecsd';
- *
- * registerSerializable({ name: 'Position', store: Position });
+ * import { createWorld, addEntity, setPosition, serializeWorld } from 'blecsd';
  *
  * const world = createWorld();
- * const eid = addEntity(world);
- * setPosition(world, eid, 10, 20);
+ * const entity = addEntity(world);
+ * setPosition(world, entity, 10, 5);
  *
- * const snapshot = serializeWorld(world);
- * const json = JSON.stringify(snapshot);
+ * const snapshot = serializeWorld(world, [
+ *   { name: 'Position', component: Position, fields: ['x', 'y', 'z', 'absolute'] },
+ * ]);
  * ```
  */
-export function serializeWorld(world: World, options?: SerializeOptions): SerializedWorld {
-	const allEntities = getAllEntities(world);
-	const entities: Entity[] = options?.entityFilter
-		? (allEntities.filter((eid) =>
-				(options.entityFilter as readonly Entity[]).includes(eid),
-			) as Entity[])
-		: (allEntities as Entity[]);
+export function serializeWorld(
+	world: World,
+	components: readonly ComponentRegistration[],
+): WorldSnapshot {
+	const entities = getAllEntities(world);
+	const componentData: ComponentData[] = [];
 
-	const descriptors = getFilteredDescriptors(options?.componentFilter);
+	for (const reg of components) {
+		const entitiesWithComponent: number[] = [];
+		const values: Record<string, number[]> = {};
 
-	const serializedEntities: SerializedEntity[] = [];
+		// Initialize value arrays
+		for (const field of reg.fields) {
+			values[field] = [];
+		}
 
-	for (const eid of entities) {
-		const components: Record<string, SerializedComponentData> = {};
-		let hasAnyComponent = false;
+		// Collect data for entities that have this component
+		for (const eid of entities) {
+			if (hasComponent(world, eid, reg.component)) {
+				entitiesWithComponent.push(eid);
 
-		for (const descriptor of descriptors) {
-			if (hasComponent(world, eid, descriptor.store)) {
-				components[descriptor.name] = serializeEntityComponent(descriptor, eid);
-				hasAnyComponent = true;
+				// Copy field values
+				for (const field of reg.fields) {
+					const typedArray = reg.component[field];
+					if (typedArray && typeof typedArray[eid] !== 'undefined') {
+						values[field]?.push(typedArray[eid]);
+					} else {
+						values[field]?.push(0);
+					}
+				}
 			}
 		}
 
-		if (hasAnyComponent) {
-			serializedEntities.push({
-				id: eid as number,
-				components,
+		if (entitiesWithComponent.length > 0) {
+			componentData.push({
+				name: reg.name,
+				entities: entitiesWithComponent,
+				values,
 			});
 		}
 	}
 
-	return {
-		version: 1,
+	const snapshot: WorldSnapshot = {
+		version: SCHEMA_VERSION,
 		timestamp: Date.now(),
-		entities: serializedEntities,
-		metadata: options?.metadata,
+		entityCount: entities.length,
+		components: componentData,
 	};
+
+	// Validate with Zod
+	return WorldSnapshotSchema.parse(snapshot);
 }
 
 /**
- * Serializes ECS world state to a JSON string.
+ * Deserializes a snapshot into a new world.
  *
- * Convenience wrapper around `serializeWorld` + `JSON.stringify`.
- *
- * @param world - The world to serialize
- * @param options - Optional serialization options
- * @returns JSON string of the world state
+ * @param snapshot - World snapshot to deserialize
+ * @returns A new world with the snapshot data
  *
  * @example
  * ```typescript
- * import { createWorld, addEntity, setPosition, serializeWorldToJSON, registerSerializable, Position } from 'blecsd';
+ * import { deserializeWorld, getAllEntities } from 'blecsd';
  *
- * registerSerializable({ name: 'Position', store: Position });
- *
- * const world = createWorld();
- * const eid = addEntity(world);
- * setPosition(world, eid, 10, 20);
- *
- * const json = serializeWorldToJSON(world);
- * // Save to file, send over network, etc.
+ * const world = deserializeWorld(snapshot);
+ * const entities = getAllEntities(world);
+ * console.log(`Restored ${entities.length} entities`);
  * ```
  */
-export function serializeWorldToJSON(world: World, options?: SerializeOptions): string {
-	return JSON.stringify(serializeWorld(world, options));
-}
+export function deserializeWorld(snapshot: WorldSnapshot): World {
+	// Validate snapshot
+	WorldSnapshotSchema.parse(snapshot);
 
-// =============================================================================
-// DESERIALIZATION
-// =============================================================================
-
-/**
- * Restores a single entity's component data from serialized form.
- */
-function deserializeEntityComponent(
-	descriptor: ComponentDescriptor,
-	eid: Entity,
-	data: SerializedComponentData,
-): void {
-	for (const [fieldName, value] of Object.entries(data.fields)) {
-		const fieldArray = descriptor.store[fieldName];
-		if (isTypedArray(fieldArray)) {
-			fieldArray[eid] = value;
-		}
-	}
-
-	if (descriptor.deserialize && data.custom !== undefined) {
-		descriptor.deserialize(eid, data.custom);
-	}
-}
-
-/**
- * Deserializes a world snapshot back into an ECS world.
- *
- * Creates new entities and restores their component data from the snapshot.
- * Returns a mapping from old entity IDs to new ones for relationship fixup.
- *
- * @param snapshot - The serialized world snapshot
- * @param world - The world to deserialize into
- * @param options - Optional deserialization options
- * @returns Result with the world, entity map, and statistics
- *
- * @example
- * ```typescript
- * import { createWorld, deserializeWorld, registerSerializable, Position } from 'blecsd';
- *
- * registerSerializable({ name: 'Position', store: Position });
- *
- * const world = createWorld();
- * const result = deserializeWorld(snapshot, world);
- *
- * console.log(result.entityCount); // number of entities restored
- * console.log(result.entityMap); // Map<oldId, newId>
- * ```
- */
-export function deserializeWorld(
-	snapshot: SerializedWorld,
-	world: World,
-	options?: DeserializeOptions,
-): DeserializeResult {
-	let targetWorld = world;
-
-	if (options?.createNew) {
-		targetWorld = createWorld();
-	} else if (options?.clearWorld) {
-		// Remove all existing entities
-		const existing = getAllEntities(targetWorld);
-		for (const eid of existing) {
-			removeEntity(targetWorld, eid);
-		}
-	}
-
+	const world = createWorld();
 	const entityMap = new Map<number, Entity>();
-	let componentCount = 0;
 
-	for (const serializedEntity of snapshot.entities) {
-		const newEid = addEntity(targetWorld);
-		entityMap.set(serializedEntity.id, newEid);
+	// First pass: create all entities
+	const allEntityIds = new Set<number>();
+	for (const comp of snapshot.components) {
+		for (const eid of comp.entities) {
+			allEntityIds.add(eid);
+		}
+	}
 
-		for (const [componentName, componentData] of Object.entries(serializedEntity.components)) {
-			const descriptor = componentRegistry.get(componentName);
-			if (!descriptor) {
-				continue;
+	for (const originalEid of Array.from(allEntityIds).sort((a, b) => a - b)) {
+		const newEid = addEntity(world);
+		entityMap.set(originalEid, newEid);
+	}
+
+	// Second pass: add components and restore values
+	for (const compData of snapshot.components) {
+		const reg = componentRegistry.find((r) => r.name === compData.name);
+		if (!reg) {
+			throw new Error(`Component ${compData.name} not registered`);
+		}
+
+		for (let i = 0; i < compData.entities.length; i++) {
+			const originalEid = compData.entities[i];
+			if (originalEid === undefined) continue;
+
+			const newEid = entityMap.get(originalEid);
+			if (newEid === undefined) continue;
+
+			// Add component
+			addComponent(world, newEid, reg.component);
+
+			// Restore field values
+			for (const field of reg.fields) {
+				const values = compData.values[field];
+				if (values && typeof values[i] !== 'undefined') {
+					const typedArray = reg.component[field];
+					if (typedArray) {
+						typedArray[newEid] = values[i];
+					}
+				}
+			}
+		}
+	}
+
+	return world;
+}
+
+// =============================================================================
+// DELTA COMPRESSION
+// =============================================================================
+
+/**
+ * Creates a delta between two snapshots.
+ *
+ * @param prev - Previous snapshot
+ * @param current - Current snapshot
+ * @returns Delta containing changes between snapshots
+ *
+ * @example
+ * ```typescript
+ * import { serializeWorld, createWorldDelta } from 'blecsd';
+ *
+ * const snapshot1 = serializeWorld(world, components);
+ * // ... modify world ...
+ * const snapshot2 = serializeWorld(world, components);
+ *
+ * const delta = createWorldDelta(snapshot1, snapshot2);
+ * console.log(`Added: ${delta.addedEntities.length}, Removed: ${delta.removedEntities.length}`);
+ * ```
+ */
+export function createWorldDelta(prev: WorldSnapshot, current: WorldSnapshot): WorldDelta {
+	WorldSnapshotSchema.parse(prev);
+	WorldSnapshotSchema.parse(current);
+
+	// Build entity sets
+	const prevEntities = new Set<number>();
+	for (const comp of prev.components) {
+		for (const eid of comp.entities) {
+			prevEntities.add(eid);
+		}
+	}
+
+	const currentEntities = new Set<number>();
+	for (const comp of current.components) {
+		for (const eid of comp.entities) {
+			currentEntities.add(eid);
+		}
+	}
+
+	// Find added and removed entities
+	const addedEntities: number[] = [];
+	const removedEntities: number[] = [];
+
+	for (const eid of currentEntities) {
+		if (!prevEntities.has(eid)) {
+			addedEntities.push(eid);
+		}
+	}
+
+	for (const eid of prevEntities) {
+		if (!currentEntities.has(eid)) {
+			removedEntities.push(eid);
+		}
+	}
+
+	// Find changed components
+	const changedComponents: ComponentData[] = [];
+
+	for (const currentComp of current.components) {
+		const prevComp = prev.components.find((c) => c.name === currentComp.name);
+
+		const changedEntities: number[] = [];
+		const changedValues: Record<string, number[]> = {};
+
+		// Initialize value arrays
+		for (const field of Object.keys(currentComp.values)) {
+			changedValues[field] = [];
+		}
+
+		// Check each entity in current component
+		for (let i = 0; i < currentComp.entities.length; i++) {
+			const eid = currentComp.entities[i];
+			if (eid === undefined) continue;
+
+			// Skip newly added entities (they're in addedEntities)
+			if (addedEntities.includes(eid)) continue;
+
+			let hasChanges = false;
+
+			// If entity didn't have this component before, it's a change
+			if (!prevComp || !prevComp.entities.includes(eid)) {
+				hasChanges = true;
+			} else {
+				// Check if any field values changed
+				const prevIndex = prevComp.entities.indexOf(eid);
+				for (const field of Object.keys(currentComp.values)) {
+					const currentValue = currentComp.values[field]?.[i];
+					const prevValue = prevComp.values[field]?.[prevIndex];
+					if (currentValue !== prevValue) {
+						hasChanges = true;
+						break;
+					}
+				}
 			}
 
-			addComponent(targetWorld, newEid, descriptor.store);
-			deserializeEntityComponent(descriptor, newEid, componentData);
-			componentCount++;
+			if (hasChanges) {
+				changedEntities.push(eid);
+				for (const field of Object.keys(currentComp.values)) {
+					const value = currentComp.values[field]?.[i];
+					if (value !== undefined) {
+						changedValues[field]?.push(value);
+					}
+				}
+			}
+		}
+
+		if (changedEntities.length > 0) {
+			changedComponents.push({
+				name: currentComp.name,
+				entities: changedEntities,
+				values: changedValues,
+			});
 		}
 	}
 
-	return {
-		world: targetWorld,
-		entityMap,
-		entityCount: entityMap.size,
-		componentCount,
+	// Include full data for added entities
+	for (const currentComp of current.components) {
+		const addedInThisComp: number[] = [];
+		const addedValues: Record<string, number[]> = {};
+
+		// Initialize value arrays
+		for (const field of Object.keys(currentComp.values)) {
+			addedValues[field] = [];
+		}
+
+		for (let i = 0; i < currentComp.entities.length; i++) {
+			const eid = currentComp.entities[i];
+			if (eid === undefined) continue;
+
+			if (addedEntities.includes(eid)) {
+				addedInThisComp.push(eid);
+				for (const field of Object.keys(currentComp.values)) {
+					const value = currentComp.values[field]?.[i];
+					if (value !== undefined) {
+						addedValues[field]?.push(value);
+					}
+				}
+			}
+		}
+
+		if (addedInThisComp.length > 0) {
+			// Check if we already have this component in changedComponents
+			const existing = changedComponents.find((c) => c.name === currentComp.name);
+			if (existing) {
+				// Merge with existing
+				const mergedValues: Record<string, number[]> = {};
+				for (const field of Object.keys(currentComp.values)) {
+					mergedValues[field] = [...(existing.values[field] || []), ...(addedValues[field] || [])];
+				}
+				const merged: ComponentData = {
+					name: existing.name,
+					entities: [...existing.entities, ...addedInThisComp],
+					values: mergedValues,
+				};
+				// Replace existing
+				const idx = changedComponents.indexOf(existing);
+				changedComponents[idx] = merged;
+			} else {
+				changedComponents.push({
+					name: currentComp.name,
+					entities: addedInThisComp,
+					values: addedValues,
+				});
+			}
+		}
+	}
+
+	const delta: WorldDelta = {
+		baseTimestamp: prev.timestamp,
+		timestamp: current.timestamp,
+		addedEntities,
+		removedEntities,
+		changedComponents,
 	};
+
+	return WorldDeltaSchema.parse(delta);
 }
 
 /**
- * Deserializes a JSON string back into an ECS world.
+ * Applies a delta to a world.
  *
- * Convenience wrapper around JSON.parse + `deserializeWorld`.
- *
- * @param json - The JSON string to parse
- * @param world - The world to deserialize into
- * @param options - Optional deserialization options
- * @returns Result with the world, entity map, and statistics
+ * @param world - The world to apply the delta to
+ * @param delta - The delta to apply
+ * @param components - Component registrations
+ * @returns The modified world
  *
  * @example
  * ```typescript
- * import { createWorld, deserializeWorldFromJSON, registerSerializable, Position } from 'blecsd';
+ * import { applyWorldDelta } from 'blecsd';
  *
- * registerSerializable({ name: 'Position', store: Position });
- *
- * const world = createWorld();
- * const result = deserializeWorldFromJSON(jsonString, world);
- *
- * console.log(result.entityCount);
+ * const world = deserializeWorld(baseSnapshot);
+ * applyWorldDelta(world, delta, components);
  * ```
  */
-export function deserializeWorldFromJSON(
-	json: string,
+export function applyWorldDelta(
 	world: World,
-	options?: DeserializeOptions,
-): DeserializeResult {
-	const snapshot = JSON.parse(json) as SerializedWorld;
-	return deserializeWorld(snapshot, world, options);
-}
+	delta: WorldDelta,
+	components: readonly ComponentRegistration[],
+): World {
+	WorldDeltaSchema.parse(delta);
 
-// =============================================================================
-// HELPERS
-// =============================================================================
-
-/**
- * Returns descriptors matching the optional component name filter.
- */
-function getFilteredDescriptors(
-	componentFilter?: readonly string[],
-): readonly ComponentDescriptor[] {
-	if (!componentFilter) {
-		return Array.from(componentRegistry.values());
-	}
-
-	const result: ComponentDescriptor[] = [];
-	for (const name of componentFilter) {
-		const descriptor = componentRegistry.get(name);
-		if (descriptor) {
-			result.push(descriptor);
+	// Remove entities
+	for (const eid of delta.removedEntities) {
+		if (entityExists(world, eid as Entity)) {
+			removeEntity(world, eid as Entity);
 		}
 	}
-	return result;
-}
 
-/**
- * Creates a deep clone of a serialized world snapshot.
- * Useful for creating save slots or undo history.
- *
- * @param snapshot - The snapshot to clone
- * @returns A new snapshot with identical data
- *
- * @example
- * ```typescript
- * import { serializeWorld, cloneSnapshot } from 'blecsd';
- *
- * const snapshot = serializeWorld(world);
- * const backup = cloneSnapshot(snapshot);
- * ```
- */
-export function cloneSnapshot(snapshot: SerializedWorld): SerializedWorld {
-	return JSON.parse(JSON.stringify(snapshot)) as SerializedWorld;
-}
+	// Add new entities
+	const entityMap = new Map<number, Entity>();
+	const allEntities = getAllEntities(world);
+	for (const eid of allEntities) {
+		entityMap.set(eid, eid);
+	}
 
-/** Current serialization format version */
-export const SERIALIZATION_VERSION = 1;
+	for (const eid of delta.addedEntities) {
+		if (!entityExists(world, eid as Entity)) {
+			// We need to create entities with specific IDs
+			// bitecs doesn't support this directly, so we create entities until we get the right ID
+			let newEid = addEntity(world);
+			while (newEid !== eid && newEid < eid) {
+				newEid = addEntity(world);
+			}
+			entityMap.set(eid, newEid);
+		}
+	}
+
+	// Apply component changes
+	for (const compData of delta.changedComponents) {
+		const reg = components.find((r) => r.name === compData.name);
+		if (!reg) {
+			throw new Error(`Component ${compData.name} not registered`);
+		}
+
+		for (let i = 0; i < compData.entities.length; i++) {
+			const eid = compData.entities[i];
+			if (eid === undefined) continue;
+
+			const targetEid = entityMap.get(eid) || (eid as Entity);
+			if (!entityExists(world, targetEid)) continue;
+
+			// Add component if not present
+			if (!hasComponent(world, targetEid, reg.component)) {
+				addComponent(world, targetEid, reg.component);
+			}
+
+			// Update field values
+			for (const field of reg.fields) {
+				const values = compData.values[field];
+				if (values && typeof values[i] !== 'undefined') {
+					const typedArray = reg.component[field];
+					if (typedArray) {
+						typedArray[targetEid] = values[i];
+					}
+				}
+			}
+		}
+	}
+
+	return world;
+}

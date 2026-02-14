@@ -1,23 +1,25 @@
 /**
- * Tests for ECS world state serialization/deserialization.
+ * Tests for ECS world state serialization with delta compression
  * @module core/serialization.test
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { addComponent, addEntity, createWorld, hasComponent } from './ecs';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-	clearSerializableRegistry,
-	cloneSnapshot,
+	addComponent,
+	addEntity,
+	createWorld,
+	getAllEntities,
+	hasComponent,
+	removeEntity,
+} from './ecs';
+import {
+	applyWorldDelta,
+	type ComponentRegistration,
+	createWorldDelta,
 	deserializeWorld,
-	deserializeWorldFromJSON,
 	getRegisteredComponents,
-	getSerializable,
-	registerSerializable,
-	SERIALIZATION_VERSION,
-	type SerializedWorld,
+	registerComponents,
 	serializeWorld,
-	serializeWorldToJSON,
-	unregisterSerializable,
 } from './serialization';
 import type { World } from './types';
 
@@ -31,18 +33,38 @@ const TestPosition = {
 	x: new Float32Array(DEFAULT_CAPACITY),
 	y: new Float32Array(DEFAULT_CAPACITY),
 	z: new Uint16Array(DEFAULT_CAPACITY),
+	absolute: new Uint8Array(DEFAULT_CAPACITY),
 };
 
 const TestVelocity = {
-	vx: new Float32Array(DEFAULT_CAPACITY),
-	vy: new Float32Array(DEFAULT_CAPACITY),
+	x: new Float32Array(DEFAULT_CAPACITY),
+	y: new Float32Array(DEFAULT_CAPACITY),
+	maxSpeed: new Float32Array(DEFAULT_CAPACITY),
+	friction: new Float32Array(DEFAULT_CAPACITY),
 };
 
-/** Side store for custom data (not in typed arrays) */
-const customDataStore = new Map<number, string>();
+const TestHealth = {
+	current: new Float32Array(DEFAULT_CAPACITY),
+	max: new Float32Array(DEFAULT_CAPACITY),
+};
 
-const TestCustom = {
-	flag: new Uint8Array(DEFAULT_CAPACITY),
+// Component registrations
+const positionReg: ComponentRegistration = {
+	name: 'Position',
+	component: TestPosition,
+	fields: ['x', 'y', 'z', 'absolute'],
+};
+
+const velocityReg: ComponentRegistration = {
+	name: 'Velocity',
+	component: TestVelocity,
+	fields: ['x', 'y', 'maxSpeed', 'friction'],
+};
+
+const healthReg: ComponentRegistration = {
+	name: 'Health',
+	component: TestHealth,
+	fields: ['current', 'max'],
 };
 
 // =============================================================================
@@ -54,13 +76,7 @@ describe('serialization', () => {
 
 	beforeEach(() => {
 		world = createWorld();
-		clearSerializableRegistry();
-		customDataStore.clear();
-	});
-
-	afterEach(() => {
-		clearSerializableRegistry();
-		customDataStore.clear();
+		registerComponents([positionReg, velocityReg, healthReg]);
 	});
 
 	// =========================================================================
@@ -68,45 +84,19 @@ describe('serialization', () => {
 	// =========================================================================
 
 	describe('component registry', () => {
-		it('registers and retrieves a component descriptor', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-
-			const desc = getSerializable('Position');
-			expect(desc).toBeDefined();
-			expect(desc?.name).toBe('Position');
-			expect(desc?.store).toBe(TestPosition);
+		it('registers and retrieves components', () => {
+			const components = getRegisteredComponents();
+			expect(components).toHaveLength(3);
+			expect(components.find((c) => c.name === 'Position')).toBeDefined();
+			expect(components.find((c) => c.name === 'Velocity')).toBeDefined();
+			expect(components.find((c) => c.name === 'Health')).toBeDefined();
 		});
 
-		it('returns undefined for unregistered components', () => {
-			expect(getSerializable('NonExistent')).toBeUndefined();
-		});
-
-		it('unregisters a component', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-			expect(unregisterSerializable('Position')).toBe(true);
-			expect(getSerializable('Position')).toBeUndefined();
-		});
-
-		it('returns false when unregistering non-existent component', () => {
-			expect(unregisterSerializable('NonExistent')).toBe(false);
-		});
-
-		it('lists registered component names', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-			registerSerializable({ name: 'Velocity', store: TestVelocity });
-
-			const names = getRegisteredComponents();
-			expect(names).toContain('Position');
-			expect(names).toContain('Velocity');
-			expect(names).toHaveLength(2);
-		});
-
-		it('clears all registered components', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-			registerSerializable({ name: 'Velocity', store: TestVelocity });
-
-			clearSerializableRegistry();
-			expect(getRegisteredComponents()).toHaveLength(0);
+		it('allows re-registering components', () => {
+			registerComponents([positionReg]);
+			const components = getRegisteredComponents();
+			expect(components).toHaveLength(1);
+			expect(components[0]?.name).toBe('Position');
 		});
 	});
 
@@ -115,53 +105,37 @@ describe('serialization', () => {
 	// =========================================================================
 
 	describe('serializeWorld', () => {
-		it('serializes entities with registered components', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
+		it('serializes an empty world', () => {
+			const snapshot = serializeWorld(world, [positionReg]);
+			expect(snapshot.version).toBe(1);
+			expect(snapshot.timestamp).toBeGreaterThan(0);
+			expect(snapshot.entityCount).toBe(0);
+			expect(snapshot.components).toHaveLength(0);
+		});
 
+		it('serializes a world with one entity and one component', () => {
 			const eid = addEntity(world);
 			addComponent(world, eid, TestPosition);
 			TestPosition.x[eid] = 10;
 			TestPosition.y[eid] = 20;
 			TestPosition.z[eid] = 5;
+			TestPosition.absolute[eid] = 1;
 
-			const snapshot = serializeWorld(world);
+			const snapshot = serializeWorld(world, [positionReg]);
+			expect(snapshot.entityCount).toBe(1);
+			expect(snapshot.components).toHaveLength(1);
 
-			expect(snapshot.version).toBe(SERIALIZATION_VERSION);
-			expect(snapshot.timestamp).toBeGreaterThan(0);
-			expect(snapshot.entities).toHaveLength(1);
-
-			const entity = snapshot.entities[0];
-			expect(entity).toBeDefined();
-			expect(entity!.components.Position).toBeDefined();
-			expect(entity!.components.Position!.fields.x).toBe(10);
-			expect(entity!.components.Position!.fields.y).toBe(20);
-			expect(entity!.components.Position!.fields.z).toBe(5);
+			const posComp = snapshot.components[0];
+			expect(posComp).toBeDefined();
+			expect(posComp!.name).toBe('Position');
+			expect(posComp!.entities).toEqual([eid]);
+			expect(posComp!.values.x).toEqual([10]);
+			expect(posComp!.values.y).toEqual([20]);
+			expect(posComp!.values.z).toEqual([5]);
+			expect(posComp!.values.absolute).toEqual([1]);
 		});
 
-		it('serializes multiple components per entity', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-			registerSerializable({ name: 'Velocity', store: TestVelocity });
-
-			const eid = addEntity(world);
-			addComponent(world, eid, TestPosition);
-			addComponent(world, eid, TestVelocity);
-			TestPosition.x[eid] = 1;
-			TestPosition.y[eid] = 2;
-			TestVelocity.vx[eid] = 3;
-			TestVelocity.vy[eid] = 4;
-
-			const snapshot = serializeWorld(world);
-
-			expect(snapshot.entities).toHaveLength(1);
-			const entity = snapshot.entities[0]!;
-			expect(entity.components.Position).toBeDefined();
-			expect(entity.components.Velocity).toBeDefined();
-			expect(entity.components.Velocity!.fields.vx).toBe(3);
-		});
-
-		it('serializes multiple entities', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-
+		it('serializes multiple entities with same component', () => {
 			const eid1 = addEntity(world);
 			addComponent(world, eid1, TestPosition);
 			TestPosition.x[eid1] = 100;
@@ -170,84 +144,35 @@ describe('serialization', () => {
 			addComponent(world, eid2, TestPosition);
 			TestPosition.x[eid2] = 200;
 
-			const snapshot = serializeWorld(world);
-			expect(snapshot.entities).toHaveLength(2);
+			const snapshot = serializeWorld(world, [positionReg]);
+			expect(snapshot.entityCount).toBe(2);
+			const posComp = snapshot.components.find((c) => c.name === 'Position')!;
+			expect(posComp.entities).toContain(eid1);
+			expect(posComp.entities).toContain(eid2);
 		});
 
-		it('skips entities without registered components', () => {
-			// Don't register Position
+		it('serializes entity with multiple components', () => {
 			const eid = addEntity(world);
 			addComponent(world, eid, TestPosition);
+			addComponent(world, eid, TestVelocity);
 			TestPosition.x[eid] = 10;
+			TestVelocity.x[eid] = 5;
 
-			const snapshot = serializeWorld(world);
-			expect(snapshot.entities).toHaveLength(0);
+			const snapshot = serializeWorld(world, [positionReg, velocityReg]);
+			expect(snapshot.components).toHaveLength(2);
+			expect(snapshot.components.find((c) => c.name === 'Position')).toBeDefined();
+			expect(snapshot.components.find((c) => c.name === 'Velocity')).toBeDefined();
 		});
 
-		it('filters entities by ID', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-
-			const eid1 = addEntity(world);
-			addComponent(world, eid1, TestPosition);
-			TestPosition.x[eid1] = 100;
-
-			const eid2 = addEntity(world);
-			addComponent(world, eid2, TestPosition);
-			TestPosition.x[eid2] = 200;
-
-			const snapshot = serializeWorld(world, { entityFilter: [eid1] });
-			expect(snapshot.entities).toHaveLength(1);
-			expect(snapshot.entities[0]!.components.Position!.fields.x).toBe(100);
-		});
-
-		it('filters components by name', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-			registerSerializable({ name: 'Velocity', store: TestVelocity });
-
+		it('only serializes registered components', () => {
 			const eid = addEntity(world);
 			addComponent(world, eid, TestPosition);
 			addComponent(world, eid, TestVelocity);
 
-			const snapshot = serializeWorld(world, { componentFilter: ['Position'] });
-			expect(snapshot.entities).toHaveLength(1);
-			expect(snapshot.entities[0]!.components.Position).toBeDefined();
-			expect(snapshot.entities[0]!.components.Velocity).toBeUndefined();
-		});
-
-		it('includes metadata in snapshot', () => {
-			const snapshot = serializeWorld(world, { metadata: { level: 'dungeon-1' } });
-			expect(snapshot.metadata).toEqual({ level: 'dungeon-1' });
-		});
-
-		it('calls custom serializer', () => {
-			registerSerializable({
-				name: 'Custom',
-				store: TestCustom,
-				serialize: (eid) => customDataStore.get(eid as number),
-			});
-
-			const eid = addEntity(world);
-			addComponent(world, eid, TestCustom);
-			TestCustom.flag[eid] = 1;
-			customDataStore.set(eid as number, 'hello');
-
-			const snapshot = serializeWorld(world);
-			expect(snapshot.entities[0]!.components.Custom!.custom).toBe('hello');
-		});
-	});
-
-	describe('serializeWorldToJSON', () => {
-		it('produces valid JSON', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-
-			const eid = addEntity(world);
-			addComponent(world, eid, TestPosition);
-			TestPosition.x[eid] = 42;
-
-			const json = serializeWorldToJSON(world);
-			const parsed = JSON.parse(json) as SerializedWorld;
-			expect(parsed.version).toBe(1);
-			expect(parsed.entities).toHaveLength(1);
+			// Only register Position
+			const snapshot = serializeWorld(world, [positionReg]);
+			expect(snapshot.components).toHaveLength(1);
+			expect(snapshot.components[0]!.name).toBe('Position');
 		});
 	});
 
@@ -256,259 +181,314 @@ describe('serialization', () => {
 	// =========================================================================
 
 	describe('deserializeWorld', () => {
-		it('restores entities with component data', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-
-			const snapshot: SerializedWorld = {
-				version: 1,
-				timestamp: Date.now(),
-				entities: [
-					{
-						id: 999,
-						components: {
-							Position: {
-								fields: { x: 50, y: 60, z: 3 },
-							},
-						},
-					},
-				],
-			};
-
-			const result = deserializeWorld(snapshot, world);
-
-			expect(result.entityCount).toBe(1);
-			expect(result.componentCount).toBe(1);
-			expect(result.entityMap.size).toBe(1);
-
-			const newEid = result.entityMap.get(999);
-			expect(newEid).toBeDefined();
-			expect(hasComponent(world, newEid!, TestPosition)).toBe(true);
-			expect(TestPosition.x[newEid!]).toBe(50);
-			expect(TestPosition.y[newEid!]).toBe(60);
-			expect(TestPosition.z[newEid!]).toBe(3);
+		it('deserializes an empty snapshot', () => {
+			const snapshot = serializeWorld(world, [positionReg]);
+			const newWorld = deserializeWorld(snapshot);
+			const entities = getAllEntities(newWorld);
+			expect(entities).toHaveLength(0);
 		});
 
-		it('restores multiple entities', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
+		it('round-trip: serialize -> deserialize produces identical state', () => {
+			const eid1 = addEntity(world);
+			addComponent(world, eid1, TestPosition);
+			TestPosition.x[eid1] = 123.456;
+			TestPosition.y[eid1] = -78.9;
+			TestPosition.z[eid1] = 42;
+			TestPosition.absolute[eid1] = 1;
 
-			const snapshot: SerializedWorld = {
-				version: 1,
-				timestamp: Date.now(),
-				entities: [
-					{ id: 1, components: { Position: { fields: { x: 10, y: 20, z: 0 } } } },
-					{ id: 2, components: { Position: { fields: { x: 30, y: 40, z: 0 } } } },
-				],
-			};
+			const eid2 = addEntity(world);
+			addComponent(world, eid2, TestVelocity);
+			TestVelocity.x[eid2] = 5.5;
+			TestVelocity.y[eid2] = -3.3;
+			TestVelocity.maxSpeed[eid2] = 10;
+			TestVelocity.friction[eid2] = 0.8;
 
-			const result = deserializeWorld(snapshot, world);
-			expect(result.entityCount).toBe(2);
+			const snapshot = serializeWorld(world, [positionReg, velocityReg]);
+			const newWorld = deserializeWorld(snapshot);
 
-			const eid1 = result.entityMap.get(1)!;
-			const eid2 = result.entityMap.get(2)!;
-			expect(TestPosition.x[eid1]).toBe(10);
-			expect(TestPosition.x[eid2]).toBe(30);
+			// Check entity count
+			const entities = getAllEntities(newWorld);
+			expect(entities).toHaveLength(2);
+
+			// Find the entities in the new world
+			const positions = entities.filter((e) => hasComponent(newWorld, e, TestPosition));
+			const velocities = entities.filter((e) => hasComponent(newWorld, e, TestVelocity));
+
+			expect(positions).toHaveLength(1);
+			expect(velocities).toHaveLength(1);
+
+			// Check values
+			const newPosEid = positions[0]!;
+			expect(TestPosition.x[newPosEid]).toBeCloseTo(123.456);
+			expect(TestPosition.y[newPosEid]).toBeCloseTo(-78.9);
+			expect(TestPosition.z[newPosEid]).toBe(42);
+			expect(TestPosition.absolute[newPosEid]).toBe(1);
+
+			const newVelEid = velocities[0]!;
+			expect(TestVelocity.x[newVelEid]).toBeCloseTo(5.5);
+			expect(TestVelocity.y[newVelEid]).toBeCloseTo(-3.3);
+			expect(TestVelocity.maxSpeed[newVelEid]).toBe(10);
+			expect(TestVelocity.friction[newVelEid]).toBeCloseTo(0.8);
 		});
 
-		it('restores multiple components per entity', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-			registerSerializable({ name: 'Velocity', store: TestVelocity });
-
-			const snapshot: SerializedWorld = {
-				version: 1,
-				timestamp: Date.now(),
-				entities: [
-					{
-						id: 1,
-						components: {
-							Position: { fields: { x: 5, y: 10, z: 0 } },
-							Velocity: { fields: { vx: 1, vy: -1 } },
-						},
-					},
-				],
-			};
-
-			const result = deserializeWorld(snapshot, world);
-			expect(result.componentCount).toBe(2);
-
-			const eid = result.entityMap.get(1)!;
-			expect(TestPosition.x[eid]).toBe(5);
-			expect(TestVelocity.vx[eid]).toBe(1);
-			expect(TestVelocity.vy[eid]).toBeCloseTo(-1);
-		});
-
-		it('skips unregistered components gracefully', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-
-			const snapshot: SerializedWorld = {
-				version: 1,
-				timestamp: Date.now(),
-				entities: [
-					{
-						id: 1,
-						components: {
-							Position: { fields: { x: 5, y: 10, z: 0 } },
-							UnknownComponent: { fields: { foo: 99 } },
-						},
-					},
-				],
-			};
-
-			const result = deserializeWorld(snapshot, world);
-			expect(result.componentCount).toBe(1);
-		});
-
-		it('creates new world when option is set', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-
-			const snapshot: SerializedWorld = {
-				version: 1,
-				timestamp: Date.now(),
-				entities: [{ id: 1, components: { Position: { fields: { x: 1, y: 2, z: 0 } } } }],
-			};
-
-			const result = deserializeWorld(snapshot, world, { createNew: true });
-			expect(result.world).not.toBe(world);
-			expect(result.entityCount).toBe(1);
-		});
-
-		it('clears world before deserializing when option is set', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-
-			// Add entity to world first
-			const existingEid = addEntity(world);
-			addComponent(world, existingEid, TestPosition);
-
-			const snapshot: SerializedWorld = {
-				version: 1,
-				timestamp: Date.now(),
-				entities: [{ id: 1, components: { Position: { fields: { x: 1, y: 2, z: 0 } } } }],
-			};
-
-			const result = deserializeWorld(snapshot, world, { clearWorld: true });
-			expect(result.entityCount).toBe(1);
-		});
-
-		it('calls custom deserializer', () => {
-			registerSerializable({
-				name: 'Custom',
-				store: TestCustom,
-				deserialize: (eid, data) => {
-					customDataStore.set(eid as number, data as string);
-				},
-			});
-
-			const snapshot: SerializedWorld = {
-				version: 1,
-				timestamp: Date.now(),
-				entities: [
-					{
-						id: 1,
-						components: {
-							Custom: { fields: { flag: 1 }, custom: 'restored' },
-						},
-					},
-				],
-			};
-
-			const result = deserializeWorld(snapshot, world);
-			const newEid = result.entityMap.get(1)!;
-			expect(TestCustom.flag[newEid]).toBe(1);
-			expect(customDataStore.get(newEid as number)).toBe('restored');
-		});
-	});
-
-	describe('deserializeWorldFromJSON', () => {
-		it('parses JSON and restores world state', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-
-			const json = JSON.stringify({
-				version: 1,
-				timestamp: Date.now(),
-				entities: [{ id: 1, components: { Position: { fields: { x: 42, y: 84, z: 0 } } } }],
-			});
-
-			const result = deserializeWorldFromJSON(json, world);
-			expect(result.entityCount).toBe(1);
-			const eid = result.entityMap.get(1)!;
-			expect(TestPosition.x[eid]).toBe(42);
-		});
-	});
-
-	// =========================================================================
-	// ROUND-TRIP
-	// =========================================================================
-
-	describe('round-trip serialization', () => {
-		it('preserves data through serialize/deserialize cycle', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
-			registerSerializable({ name: 'Velocity', store: TestVelocity });
-
+		it('handles multiple components on same entity', () => {
 			const eid = addEntity(world);
 			addComponent(world, eid, TestPosition);
 			addComponent(world, eid, TestVelocity);
-			TestPosition.x[eid] = 123.456;
-			TestPosition.y[eid] = -78.9;
-			TestPosition.z[eid] = 42;
-			TestVelocity.vx[eid] = 5.5;
-			TestVelocity.vy[eid] = -3.3;
+			TestPosition.x[eid] = 100;
+			TestVelocity.x[eid] = 10;
 
-			const json = serializeWorldToJSON(world);
-			const newWorld = createWorld();
-			const result = deserializeWorldFromJSON(json, newWorld);
+			const snapshot = serializeWorld(world, [positionReg, velocityReg]);
+			const newWorld = deserializeWorld(snapshot);
 
-			const newEid = result.entityMap.get(eid as number)!;
-			expect(TestPosition.x[newEid]).toBeCloseTo(123.456, 2);
-			expect(TestPosition.y[newEid]).toBeCloseTo(-78.9, 1);
-			expect(TestPosition.z[newEid]).toBe(42);
-			expect(TestVelocity.vx[newEid]).toBeCloseTo(5.5, 1);
-			expect(TestVelocity.vy[newEid]).toBeCloseTo(-3.3, 1);
+			const entities = getAllEntities(newWorld);
+			expect(entities).toHaveLength(1);
+			const newEid = entities[0]!;
+
+			expect(hasComponent(newWorld, newEid, TestPosition)).toBe(true);
+			expect(hasComponent(newWorld, newEid, TestVelocity)).toBe(true);
+			expect(TestPosition.x[newEid]).toBe(100);
+			expect(TestVelocity.x[newEid]).toBe(10);
 		});
 
-		it('preserves custom data through round-trip', () => {
-			registerSerializable({
-				name: 'Custom',
-				store: TestCustom,
-				serialize: (eid) => customDataStore.get(eid as number),
-				deserialize: (eid, data) => {
-					customDataStore.set(eid as number, data as string);
-				},
-			});
+		it('handles large world with 100+ entities', () => {
+			// Create 150 entities with various components
+			for (let i = 0; i < 150; i++) {
+				const eid = addEntity(world);
+				addComponent(world, eid, TestPosition);
+				TestPosition.x[eid] = i;
+				TestPosition.y[eid] = i * 2;
 
-			const eid = addEntity(world);
-			addComponent(world, eid, TestCustom);
-			TestCustom.flag[eid] = 1;
-			customDataStore.set(eid as number, 'test-data');
+				if (i % 2 === 0) {
+					addComponent(world, eid, TestVelocity);
+					TestVelocity.x[eid] = i * 0.5;
+				}
 
-			const json = serializeWorldToJSON(world);
-			customDataStore.clear();
+				if (i % 3 === 0) {
+					addComponent(world, eid, TestHealth);
+					TestHealth.current[eid] = 100;
+					TestHealth.max[eid] = 100;
+				}
+			}
 
-			const newWorld = createWorld();
-			const result = deserializeWorldFromJSON(json, newWorld);
-			const newEid = result.entityMap.get(eid as number)!;
+			const snapshot = serializeWorld(world, [positionReg, velocityReg, healthReg]);
+			expect(snapshot.entityCount).toBe(150);
 
-			expect(TestCustom.flag[newEid]).toBe(1);
-			expect(customDataStore.get(newEid as number)).toBe('test-data');
+			const newWorld = deserializeWorld(snapshot);
+			const entities = getAllEntities(newWorld);
+			expect(entities).toHaveLength(150);
+
+			// Verify some entities
+			const withVelocity = entities.filter((e) => hasComponent(newWorld, e, TestVelocity));
+			const withHealth = entities.filter((e) => hasComponent(newWorld, e, TestHealth));
+			expect(withVelocity.length).toBeGreaterThanOrEqual(70);
+			expect(withHealth.length).toBeGreaterThanOrEqual(45);
 		});
 	});
 
 	// =========================================================================
-	// CLONE SNAPSHOT
+	// DELTA COMPRESSION
 	// =========================================================================
 
-	describe('cloneSnapshot', () => {
-		it('creates a deep copy', () => {
-			registerSerializable({ name: 'Position', store: TestPosition });
+	describe('createWorldDelta', () => {
+		it('detects added entities', () => {
+			const snapshot1 = serializeWorld(world, [positionReg]);
 
+			const eid = addEntity(world);
+			addComponent(world, eid, TestPosition);
+			TestPosition.x[eid] = 100;
+
+			const snapshot2 = serializeWorld(world, [positionReg]);
+			const delta = createWorldDelta(snapshot1, snapshot2);
+
+			expect(delta.addedEntities).toContain(eid);
+			expect(delta.removedEntities).toHaveLength(0);
+			expect(delta.changedComponents.length).toBeGreaterThan(0);
+		});
+
+		it('detects removed entities', () => {
+			const eid = addEntity(world);
+			addComponent(world, eid, TestPosition);
+
+			const snapshot1 = serializeWorld(world, [positionReg]);
+
+			removeEntity(world, eid);
+
+			const snapshot2 = serializeWorld(world, [positionReg]);
+			const delta = createWorldDelta(snapshot1, snapshot2);
+
+			expect(delta.addedEntities).toHaveLength(0);
+			expect(delta.removedEntities).toContain(eid);
+		});
+
+		it('detects changed component values', () => {
+			const eid = addEntity(world);
+			addComponent(world, eid, TestPosition);
+			TestPosition.x[eid] = 10;
+			TestPosition.y[eid] = 20;
+
+			const snapshot1 = serializeWorld(world, [positionReg]);
+
+			// Modify values
+			TestPosition.x[eid] = 100;
+			TestPosition.y[eid] = 200;
+
+			const snapshot2 = serializeWorld(world, [positionReg]);
+			const delta = createWorldDelta(snapshot1, snapshot2);
+
+			expect(delta.addedEntities).toHaveLength(0);
+			expect(delta.removedEntities).toHaveLength(0);
+			expect(delta.changedComponents.length).toBeGreaterThan(0);
+
+			const posChanged = delta.changedComponents.find((c) => c.name === 'Position');
+			expect(posChanged).toBeDefined();
+			expect(posChanged!.entities).toContain(eid);
+		});
+
+		it('detects component additions (not entity additions)', () => {
+			const eid = addEntity(world);
+			addComponent(world, eid, TestPosition);
+
+			const snapshot1 = serializeWorld(world, [positionReg, velocityReg]);
+
+			// Add new component to existing entity
+			addComponent(world, eid, TestVelocity);
+			TestVelocity.x[eid] = 5;
+
+			const snapshot2 = serializeWorld(world, [positionReg, velocityReg]);
+			const delta = createWorldDelta(snapshot1, snapshot2);
+
+			expect(delta.addedEntities).toHaveLength(0);
+			expect(delta.changedComponents.length).toBeGreaterThan(0);
+			const velChanged = delta.changedComponents.find((c) => c.name === 'Velocity');
+			expect(velChanged).toBeDefined();
+		});
+
+		it('handles multiple entities with adds, removes, and changes', () => {
+			const eid1 = addEntity(world);
+			addComponent(world, eid1, TestPosition);
+			TestPosition.x[eid1] = 10;
+
+			const eid2 = addEntity(world);
+			addComponent(world, eid2, TestPosition);
+			TestPosition.x[eid2] = 20;
+
+			const snapshot1 = serializeWorld(world, [positionReg]);
+
+			// Remove eid1
+			removeEntity(world, eid1);
+
+			// Modify eid2
+			TestPosition.x[eid2] = 999;
+
+			// Add eid3 (bitecs might reuse eid1, so just check counts)
+			const eid3 = addEntity(world);
+			addComponent(world, eid3, TestPosition);
+			TestPosition.x[eid3] = 30;
+
+			const snapshot2 = serializeWorld(world, [positionReg]);
+			const delta = createWorldDelta(snapshot1, snapshot2);
+
+			// Should detect the new entity (might be reused ID)
+			expect(delta.addedEntities.length + delta.changedComponents.length).toBeGreaterThan(0);
+			// eid2 should be in changedComponents or the values should reflect the change
+			const posChanged = delta.changedComponents.find((c) => c.name === 'Position');
+			expect(posChanged).toBeDefined();
+		});
+	});
+
+	describe('applyWorldDelta', () => {
+		it('applies added entities', () => {
+			const baseSnapshot = serializeWorld(world, [positionReg]);
+
+			const eid = addEntity(world);
+			addComponent(world, eid, TestPosition);
+			TestPosition.x[eid] = 100;
+
+			const currentSnapshot = serializeWorld(world, [positionReg]);
+			const delta = createWorldDelta(baseSnapshot, currentSnapshot);
+
+			// Apply delta to fresh world
+			const newWorld = deserializeWorld(baseSnapshot);
+			applyWorldDelta(newWorld, delta, [positionReg]);
+
+			const entities = getAllEntities(newWorld);
+			expect(entities.length).toBeGreaterThan(0);
+		});
+
+		it('applies removed entities', () => {
+			const eid = addEntity(world);
+			addComponent(world, eid, TestPosition);
+
+			const snapshot1 = serializeWorld(world, [positionReg]);
+
+			removeEntity(world, eid);
+
+			const snapshot2 = serializeWorld(world, [positionReg]);
+			const delta = createWorldDelta(snapshot1, snapshot2);
+
+			// Apply delta to world with entity
+			const newWorld = deserializeWorld(snapshot1);
+			expect(getAllEntities(newWorld)).toHaveLength(1);
+
+			applyWorldDelta(newWorld, delta, [positionReg]);
+
+			expect(getAllEntities(newWorld)).toHaveLength(0);
+		});
+
+		it('applies changed component values', () => {
 			const eid = addEntity(world);
 			addComponent(world, eid, TestPosition);
 			TestPosition.x[eid] = 10;
 
-			const snapshot = serializeWorld(world);
-			const clone = cloneSnapshot(snapshot);
+			const snapshot1 = serializeWorld(world, [positionReg]);
 
-			expect(clone).toEqual(snapshot);
-			expect(clone).not.toBe(snapshot);
-			expect(clone.entities).not.toBe(snapshot.entities);
+			TestPosition.x[eid] = 999;
+
+			const snapshot2 = serializeWorld(world, [positionReg]);
+			const delta = createWorldDelta(snapshot1, snapshot2);
+
+			const newWorld = deserializeWorld(snapshot1);
+			const newEntities = getAllEntities(newWorld);
+			const newEid = newEntities[0]!;
+
+			// Before applying delta
+			expect(TestPosition.x[newEid]).toBe(10);
+
+			applyWorldDelta(newWorld, delta, [positionReg]);
+
+			// After applying delta
+			expect(TestPosition.x[newEid]).toBe(999);
+		});
+
+		it('correctly handles complex delta (add, remove, change)', () => {
+			const eid1 = addEntity(world);
+			addComponent(world, eid1, TestPosition);
+			TestPosition.x[eid1] = 10;
+
+			const eid2 = addEntity(world);
+			addComponent(world, eid2, TestPosition);
+			TestPosition.x[eid2] = 20;
+
+			const snapshot1 = serializeWorld(world, [positionReg]);
+
+			// Changes
+			removeEntity(world, eid1);
+			TestPosition.x[eid2] = 200;
+			const eid3 = addEntity(world);
+			addComponent(world, eid3, TestPosition);
+			TestPosition.x[eid3] = 30;
+
+			const snapshot2 = serializeWorld(world, [positionReg]);
+			const delta = createWorldDelta(snapshot1, snapshot2);
+
+			// Apply to fresh world
+			const newWorld = deserializeWorld(snapshot1);
+			applyWorldDelta(newWorld, delta, [positionReg]);
+
+			const entities = getAllEntities(newWorld);
+			// Should have eid2 and eid3, not eid1
+			expect(entities).toHaveLength(2);
 		});
 	});
 });
