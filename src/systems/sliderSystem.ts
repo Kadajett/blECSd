@@ -40,23 +40,32 @@ import {
 	sendEvent,
 } from '../components/stateMachine';
 import type { Entity, World } from '../core/types';
+import { getWorldStore } from '../core/worldStore';
 import { SliderRangeSchema, SliderStepSchema } from '../schemas/components';
 
 // =============================================================================
-// INTERNAL STORES (NOT EXPORTED FROM COMPONENT)
+// WORLD-SCOPED STORES (REPLACED MODULE-LEVEL SINGLETONS)
 // =============================================================================
 
-/** Store for slider display configuration */
-const displayStore = new Map<Entity, SliderDisplay>();
+/** Get world-scoped store for slider display configuration */
+function getDisplayStore(world: World): Map<Entity, SliderDisplay> {
+	return getWorldStore<Entity, SliderDisplay>(world, 'slider:display');
+}
 
-/** Store for slider change callbacks */
-const changeCallbacks = new Map<Entity, SliderChangeCallback[]>();
+/** Get world-scoped store for slider change callbacks */
+function getChangeCallbacks(world: World): Map<Entity, SliderChangeCallback[]> {
+	return getWorldStore<Entity, SliderChangeCallback[]>(world, 'slider:changeCallbacks');
+}
 
-/** Store for drag start callbacks */
-const dragStartCallbacks = new Map<Entity, (() => void)[]>();
+/** Get world-scoped store for drag start callbacks */
+function getDragStartCallbacks(world: World): Map<Entity, (() => void)[]> {
+	return getWorldStore<Entity, (() => void)[]>(world, 'slider:dragStartCallbacks');
+}
 
-/** Store for drag end callbacks */
-const dragEndCallbacks = new Map<Entity, (() => void)[]>();
+/** Get world-scoped store for drag end callbacks */
+function getDragEndCallbacks(world: World): Map<Entity, (() => void)[]> {
+	return getWorldStore<Entity, (() => void)[]>(world, 'slider:dragEndCallbacks');
+}
 
 // =============================================================================
 // INTERNAL HELPERS
@@ -94,14 +103,15 @@ function fireSliderCallbacks(eid: Entity, callbackMap: Map<Entity, Array<() => v
  * Handle slider state change callbacks.
  */
 function handleSliderStateChange(
+	world: World,
 	eid: Entity,
 	previousState: SliderState,
 	newState: SliderState,
 ): void {
 	if (previousState !== 'dragging' && newState === 'dragging') {
-		fireSliderCallbacks(eid, dragStartCallbacks);
+		fireSliderCallbacks(eid, getDragStartCallbacks(world));
 	} else if (previousState === 'dragging' && newState !== 'dragging') {
-		fireSliderCallbacks(eid, dragEndCallbacks);
+		fireSliderCallbacks(eid, getDragEndCallbacks(world));
 	}
 }
 
@@ -230,7 +240,7 @@ export function sendSliderEvent(world: World, eid: Entity, event: SliderEvent): 
 	if (result) {
 		const newState = getSliderState(world, eid);
 		markDirty(world, eid);
-		handleSliderStateChange(eid, previousState, newState);
+		handleSliderStateChange(world, eid, previousState, newState);
 	}
 
 	return result;
@@ -337,7 +347,7 @@ export function setSliderValue(world: World, eid: Entity, value: number): void {
 		markDirty(world, eid);
 
 		// Fire change callbacks
-		const callbacks = changeCallbacks.get(eid);
+		const callbacks = getChangeCallbacks(world).get(eid);
 		if (callbacks) {
 			for (const cb of callbacks) {
 				cb(newValue);
@@ -597,7 +607,7 @@ export function setShowSliderValue(world: World, eid: Entity, show: boolean): vo
  * @param options - Display options
  */
 export function setSliderDisplay(world: World, eid: Entity, options: SliderDisplayOptions): void {
-	const existing = displayStore.get(eid);
+	const existing = getDisplayStore(world).get(eid);
 	const orientation = getSliderOrientation(world, eid);
 
 	const defaultTrack =
@@ -605,7 +615,7 @@ export function setSliderDisplay(world: World, eid: Entity, options: SliderDispl
 	const defaultFill =
 		orientation === SliderOrientation.Vertical ? DEFAULT_FILL_CHAR_VERTICAL : DEFAULT_FILL_CHAR;
 
-	displayStore.set(eid, {
+	getDisplayStore(world).set(eid, {
 		trackChar: options.trackChar ?? existing?.trackChar ?? defaultTrack,
 		thumbChar: options.thumbChar ?? existing?.thumbChar ?? DEFAULT_THUMB_CHAR,
 		fillChar: options.fillChar ?? existing?.fillChar ?? defaultFill,
@@ -633,7 +643,7 @@ export function getSliderDisplay(world: World, eid: Entity): SliderDisplay {
 		orientation === SliderOrientation.Vertical ? DEFAULT_FILL_CHAR_VERTICAL : DEFAULT_FILL_CHAR;
 
 	return (
-		displayStore.get(eid) ?? {
+		getDisplayStore(world).get(eid) ?? {
 			trackChar: defaultTrack,
 			thumbChar: DEFAULT_THUMB_CHAR,
 			fillChar: defaultFill,
@@ -653,8 +663,8 @@ export function getSliderDisplay(world: World, eid: Entity): SliderDisplay {
  * @param _world - The ECS world
  * @param eid - The entity ID
  */
-export function clearSliderDisplay(_world: World, eid: Entity): void {
-	displayStore.delete(eid);
+export function clearSliderDisplay(world: World, eid: Entity): void {
+	getDisplayStore(world).delete(eid);
 }
 
 // =============================================================================
@@ -677,16 +687,16 @@ export function clearSliderDisplay(_world: World, eid: Entity): void {
  * ```
  */
 export function onSliderChange(
-	_world: World,
+	world: World,
 	eid: Entity,
 	callback: SliderChangeCallback,
 ): () => void {
-	const callbacks = changeCallbacks.get(eid) ?? [];
+	const callbacks = getChangeCallbacks(world).get(eid) ?? [];
 	callbacks.push(callback);
-	changeCallbacks.set(eid, callbacks);
+	getChangeCallbacks(world).set(eid, callbacks);
 
 	return () => {
-		const cbs = changeCallbacks.get(eid);
+		const cbs = getChangeCallbacks(world).get(eid);
 		if (cbs) {
 			const idx = cbs.indexOf(callback);
 			if (idx !== -1) {
@@ -704,13 +714,13 @@ export function onSliderChange(
  * @param callback - The callback function
  * @returns Unsubscribe function
  */
-export function onSliderDragStart(_world: World, eid: Entity, callback: () => void): () => void {
-	const callbacks = dragStartCallbacks.get(eid) ?? [];
+export function onSliderDragStart(world: World, eid: Entity, callback: () => void): () => void {
+	const callbacks = getDragStartCallbacks(world).get(eid) ?? [];
 	callbacks.push(callback);
-	dragStartCallbacks.set(eid, callbacks);
+	getDragStartCallbacks(world).set(eid, callbacks);
 
 	return () => {
-		const cbs = dragStartCallbacks.get(eid);
+		const cbs = getDragStartCallbacks(world).get(eid);
 		if (cbs) {
 			const idx = cbs.indexOf(callback);
 			if (idx !== -1) {
@@ -728,13 +738,13 @@ export function onSliderDragStart(_world: World, eid: Entity, callback: () => vo
  * @param callback - The callback function
  * @returns Unsubscribe function
  */
-export function onSliderDragEnd(_world: World, eid: Entity, callback: () => void): () => void {
-	const callbacks = dragEndCallbacks.get(eid) ?? [];
+export function onSliderDragEnd(world: World, eid: Entity, callback: () => void): () => void {
+	const callbacks = getDragEndCallbacks(world).get(eid) ?? [];
 	callbacks.push(callback);
-	dragEndCallbacks.set(eid, callbacks);
+	getDragEndCallbacks(world).set(eid, callbacks);
 
 	return () => {
-		const cbs = dragEndCallbacks.get(eid);
+		const cbs = getDragEndCallbacks(world).get(eid);
 		if (cbs) {
 			const idx = cbs.indexOf(callback);
 			if (idx !== -1) {
@@ -750,10 +760,10 @@ export function onSliderDragEnd(_world: World, eid: Entity, callback: () => void
  * @param _world - The ECS world
  * @param eid - The entity ID
  */
-export function clearSliderCallbacks(_world: World, eid: Entity): void {
-	changeCallbacks.delete(eid);
-	dragStartCallbacks.delete(eid);
-	dragEndCallbacks.delete(eid);
+export function clearSliderCallbacks(world: World, eid: Entity): void {
+	getChangeCallbacks(world).delete(eid);
+	getDragStartCallbacks(world).delete(eid);
+	getDragEndCallbacks(world).delete(eid);
 }
 
 // =============================================================================
@@ -892,8 +902,10 @@ export function renderSliderString(_world: World, eid: Entity, width: number): s
 
 /**
  * Resets the slider store. Used for testing.
+ *
+ * @param world - The ECS world
  */
-export function resetSliderStore(): void {
+export function resetSliderStore(world: World): void {
 	sliderStore.isSlider.fill(0);
 	sliderStore.value.fill(0);
 	sliderStore.min.fill(0);
@@ -901,8 +913,8 @@ export function resetSliderStore(): void {
 	sliderStore.step.fill(1);
 	sliderStore.orientation.fill(0);
 	sliderStore.showValue.fill(0);
-	displayStore.clear();
-	changeCallbacks.clear();
-	dragStartCallbacks.clear();
-	dragEndCallbacks.clear();
+	getDisplayStore(world).clear();
+	getChangeCallbacks(world).clear();
+	getDragStartCallbacks(world).clear();
+	getDragEndCallbacks(world).clear();
 }
