@@ -170,6 +170,45 @@ export {
 	createClipboardManager,
 	streamPaste,
 } from './clipboardManager';
+// Conflict resolution (CRDTs for collaborative editing)
+export type {
+	CharId,
+	CharNode,
+	ConflictResult,
+	LWWMap,
+	LWWRegister,
+	TextCRDT,
+	TextOp,
+} from './conflictResolution';
+export {
+	applyRemoteOp,
+	ConflictResolution,
+	compactDocument,
+	createLWWMap,
+	createLWWRegister,
+	createTextCRDT,
+	deleteChar,
+	deleteText,
+	getDocumentOps,
+	getLWWMapKeys,
+	getLWWMapSize,
+	getLWWMapValue,
+	getLWWMetadata,
+	getLWWValue,
+	getTextLength,
+	getTextValue,
+	getTombstoneCount,
+	getTotalNodeCount,
+	hasLWWMapKey,
+	insertChar,
+	insertText,
+	mergeLWWMaps,
+	mergeLWWRegisters,
+	resolveLWWConflict,
+	setLWWMapValue,
+	setLWWValue,
+	TextOpSchema,
+} from './conflictResolution';
 // Artificial cursor
 export type {
 	ArtificialCursor,
@@ -449,8 +488,75 @@ export {
 	MouseEventSchema,
 	parseMouseSequence,
 } from './mouseParser';
+// Multi-cursor overlay system (collaborative cursors)
+export type {
+	CursorCell,
+	CursorLabel,
+	CursorPosition as OverlayCursorPosition,
+	OverlayConfig,
+	OverlayEvent,
+	OverlayEventHandler,
+	OverlayManager,
+	OverlaySelection,
+	SessionOverlay,
+} from './multiCursor';
+export {
+	addSessionOverlay,
+	buildFocusMap,
+	clearCursorOverlay,
+	clearSelectionOverlay,
+	createOverlayManager,
+	cursorCellToAnsi,
+	cursorLabelToAnsi,
+	getActiveCursors,
+	getOverlayState,
+	getSessionOverlay,
+	getSessionOverlayCount,
+	getSessionsFocusingEntity,
+	MultiCursor,
+	OverlayConfigSchema,
+	onOverlayEvent,
+	pruneInactiveCursors,
+	removeSessionOverlay,
+	renderCursorLabels,
+	renderCursorOverlays,
+	renderOverlaysToAnsi,
+	resetOverlayState,
+	setCursorOverlay,
+	setFocusOverlay,
+	setLabelVisibility,
+	setSelectionOverlay,
+} from './multiCursor';
 // Output buffering (internal)
 export type { CursorPosition, OutputBuffer, OutputBufferOptions } from './outputBuffer';
+// Presence system
+export type {
+	CursorPosition as PresenceCursorPosition,
+	PresenceConfig,
+	PresenceEvent,
+	PresenceEventHandler,
+	PresenceManager,
+	PresenceUser,
+	UserStatus,
+} from './presence';
+export {
+	addUser,
+	createPresenceManager,
+	formatPresenceBar,
+	getActiveUsers,
+	getPresenceState,
+	getUser,
+	getUserCount,
+	getUserCursors,
+	moveUserCursor,
+	onPresenceEvent,
+	Presence,
+	PresenceConfigSchema,
+	removeUser,
+	resetPresenceState,
+	setUserFocus,
+	updatePresenceStatus,
+} from './presence';
 // Process utilities (internal)
 export type { EditorOptions, ExecOptions, ExecResult, SpawnOptions } from './process';
 export { exec, execSync, getDefaultEditor, processUtils, readEditor, spawn } from './process';
