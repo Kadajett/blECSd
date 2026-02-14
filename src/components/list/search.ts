@@ -233,7 +233,11 @@ export function findNextMatch(world: World, eid: Entity): boolean {
  * });
  * ```
  */
-export function onListSearchChange(_world: World, eid: Entity, callback: (query: string) => void): () => void {
+export function onListSearchChange(
+	_world: World,
+	eid: Entity,
+	callback: (query: string) => void,
+): () => void {
 	const callbacks = searchChangeCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	searchChangeCallbacks.set(eid, callbacks);

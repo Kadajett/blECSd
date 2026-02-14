@@ -309,14 +309,14 @@ const stateMap = new WeakMap<object, VirtualizedListState>();
  */
 function updateStore(state: VirtualizedListState, newStore: VirtualizedLineStore): void {
 	state.store = newStore;
-	updateLineStore(state.eid, newStore);
+	updateLineStore(state.world, state.eid, newStore);
 	setTotalLineCount(state.world, state.eid, newStore.lineCount);
 
 	// Trim if max lines exceeded
 	if (state.maxLines > 0 && newStore.lineCount > state.maxLines) {
 		const trimmed = trimToLineCount(newStore, state.maxLines);
 		state.store = trimmed;
-		updateLineStore(state.eid, trimmed);
+		updateLineStore(state.world, state.eid, trimmed);
 		setTotalLineCount(state.world, state.eid, trimmed.lineCount);
 	}
 
@@ -400,7 +400,7 @@ export function createVirtualizedList(
 	}
 
 	// Register store with render system
-	registerLineStore(eid, store);
+	registerLineStore(world, eid, store);
 
 	// Set up viewport
 	setVirtualViewport(world, eid, {
@@ -434,7 +434,7 @@ export function createVirtualizedList(
 		renderConfig.showLineNumbers = validated.style.showLineNumbers;
 	if (validated.style?.lineNumberWidth !== undefined)
 		renderConfig.lineNumberWidth = validated.style.lineNumberWidth;
-	setLineRenderConfig(eid, renderConfig as Partial<LineRenderConfig>);
+	setLineRenderConfig(world, eid, renderConfig as Partial<LineRenderConfig>);
 
 	// Apply border
 	if (validated.border) {
@@ -609,14 +609,14 @@ export function createVirtualizedList(
 
 		// Style
 		setStyle(style: VirtualizedListStyle) {
-			setLineRenderConfig(eid, styleToConfig(style));
+			setLineRenderConfig(world, eid, styleToConfig(style));
 			markDirty(world, eid);
 			return widget;
 		},
 
 		// Lifecycle
 		destroy() {
-			cleanupEntityResources(eid);
+			cleanupEntityResources(world, eid);
 			stateMap.delete(stateKey);
 			removeEntity(world, eid);
 		},
