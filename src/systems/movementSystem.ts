@@ -72,16 +72,14 @@ function getVelocityComponent(world: World): unknown {
 /**
  * Query all entities with the Velocity component.
  *
- * PERF: Converts iterator to array for system processing.
- * Array allocation is unavoidable here as we need to iterate over entities.
+ * PERF: Returns iterable query result to avoid per-frame allocation.
  *
  * @param world - The ECS world
- * @returns Array of entity IDs with Velocity component
+ * @returns Iterable of entity IDs with Velocity component
  */
-export function queryMovement(world: World): number[] {
+export function queryMovement(world: World): Iterable<number> {
 	const component = getVelocityComponent(world);
-	// PERF: Array.from() allocation necessary for system iteration
-	return Array.from(query(world, [component]));
+	return query(world, [component]);
 }
 
 /**

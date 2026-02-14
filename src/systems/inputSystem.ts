@@ -690,29 +690,39 @@ export function clearEntityInput(world: World, eid: Entity): void {
 	}
 }
 
+// Module-level scratch array for input receiver queries
+// Reused across calls to avoid per-call allocation
+const scratchReceivers: number[] = [];
+
 /**
  * Query all entities that can receive input.
  * Returns entities with either Interactive or Focusable components.
  *
- * PERF: Processes iterators directly to minimize allocations.
+ * PERF: Reuses module-level scratch array to avoid per-call allocation.
+ * The returned array is only valid until the next call to this function.
  *
  * @param world - The ECS world
- * @returns Array of entity IDs that can receive input
+ * @returns Array of entity IDs that can receive input (reused buffer)
  */
 export function queryInputReceivers(world: World): number[] {
-	// PERF: Use Set to deduplicate, add directly from iterators
-	const set = new Set<number>();
+	scratchReceivers.length = 0;
+	const seen = new Set<number>();
 
 	// Add all interactive entities
 	for (const eid of query(world, [Interactive])) {
-		set.add(eid);
+		if (!seen.has(eid)) {
+			seen.add(eid);
+			scratchReceivers.push(eid);
+		}
 	}
 
-	// Add all focusable entities (Set handles deduplication)
+	// Add all focusable entities (deduplicate)
 	for (const eid of query(world, [Focusable])) {
-		set.add(eid);
+		if (!seen.has(eid)) {
+			seen.add(eid);
+			scratchReceivers.push(eid);
+		}
 	}
 
-	// PERF: Single Array.from() at the end (unavoidable for return type)
-	return Array.from(set);
+	return scratchReceivers;
 }

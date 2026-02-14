@@ -77,19 +77,22 @@ describe('animationSystem', () => {
 });
 
 describe('queryAnimation', () => {
-	it('returns array', () => {
+	it('returns iterable', () => {
 		const world = createWorld();
 		const entities = queryAnimation(world);
 
-		expect(Array.isArray(entities)).toBe(true);
+		// queryAnimation now returns an iterable, not an array
+		expect(typeof entities[Symbol.iterator]).toBe('function');
 	});
 
 	it('handles empty world', () => {
 		const world = createWorld();
 		const entities = queryAnimation(world);
 
-		expect(Array.isArray(entities)).toBe(true);
-		expect(entities.length).toBeGreaterThanOrEqual(0);
+		// queryAnimation now returns an iterable, not an array
+		const entitiesArray = Array.from(entities);
+		expect(Array.isArray(entitiesArray)).toBe(true);
+		expect(entitiesArray.length).toBeGreaterThanOrEqual(0);
 	});
 });
 
