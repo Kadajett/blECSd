@@ -231,7 +231,7 @@ export function createLoading(world: World, config: LoadingConfig = {}): Loading
  * Creates the LoadingWidget interface for an entity.
  */
 function createLoadingWidgetInterface(world: World, eid: Entity): LoadingWidget {
-	return {
+	const widget: LoadingWidget = {
 		get eid() {
 			return eid;
 		},
@@ -240,14 +240,14 @@ function createLoadingWidgetInterface(world: World, eid: Entity): LoadingWidget 
 			loadingVisibleStore.set(eid, true);
 			setVisible(world, eid, true);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		hide() {
 			loadingVisibleStore.set(eid, false);
 			setVisible(world, eid, false);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		isVisible() {
@@ -259,13 +259,13 @@ function createLoadingWidgetInterface(world: World, eid: Entity): LoadingWidget 
 			const y = Position.y[eid] ?? 0;
 			setPosition(world, eid, x + dx, y + dy);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		setPosition(x: number, y: number) {
 			setPosition(world, eid, x, y);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		getPosition() {
@@ -279,7 +279,7 @@ function createLoadingWidgetInterface(world: World, eid: Entity): LoadingWidget 
 			loadingMessageStore.set(eid, message);
 			updateLoadingContent(world, eid);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		getMessage() {
@@ -290,12 +290,12 @@ function createLoadingWidgetInterface(world: World, eid: Entity): LoadingWidget 
 			setSpinnerFrames(eid, chars);
 			updateLoadingContent(world, eid);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		setInterval(ms: number) {
 			setSpinnerInterval(eid, ms);
-			return this;
+			return widget;
 		},
 
 		getSpinnerChar() {
@@ -306,7 +306,7 @@ function createLoadingWidgetInterface(world: World, eid: Entity): LoadingWidget 
 			resetSpinner(eid);
 			updateLoadingContent(world, eid);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		destroy() {
@@ -316,6 +316,8 @@ function createLoadingWidgetInterface(world: World, eid: Entity): LoadingWidget 
 			removeEntity(world, eid);
 		},
 	};
+
+	return widget;
 }
 
 /**

@@ -608,7 +608,16 @@ export function createImage(world: World, config: ImageConfig = {}): ImageWidget
  * Creates the ImageWidget interface for an entity.
  */
 function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
-	return {
+	const stopAnimationFn = (): ImageWidget => {
+		const timer = imageAnimationTimerStore.get(eid);
+		if (timer !== undefined) {
+			clearTimeout(timer);
+			imageAnimationTimerStore.set(eid, undefined);
+		}
+		return widget;
+	};
+
+	const widget: ImageWidget = {
 		get eid() {
 			return eid;
 		},
@@ -617,14 +626,14 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			imageVisibleStore.set(eid, true);
 			setVisible(world, eid, true);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		hide() {
 			imageVisibleStore.set(eid, false);
 			setVisible(world, eid, false);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		isVisible() {
@@ -636,13 +645,13 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			const y = Position.y[eid] ?? 0;
 			setPosition(world, eid, x + dx, y + dy);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		setPosition(x: number, y: number) {
 			setPosition(world, eid, x, y);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		getPosition() {
@@ -656,13 +665,13 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			// Clear animation state when setting a single image
 			imageAnimationFramesStore.set(eid, []);
 			imageAnimationDelaysStore.set(eid, []);
-			this.stopAnimation();
+			stopAnimationFn();
 
 			imageBitmapStore.set(eid, bitmap);
 			clearImageCache(eid); // Invalidate cache
 			renderImageContent(world, eid);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		getImage() {
@@ -682,7 +691,7 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			clearImageCache(eid); // Invalidate cache
 			renderImageContent(world, eid);
 			markDirty(world, eid);
-			return this;
+			return widget;
 		},
 
 		getRenderMode() {
@@ -697,7 +706,7 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 				renderImageContent(world, eid);
 				markDirty(world, eid);
 			}
-			return this;
+			return widget;
 		},
 
 		render() {
@@ -726,7 +735,7 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			}
 
 			// Stop existing animation
-			this.stopAnimation();
+			stopAnimationFn();
 
 			// Store animation data
 			imageAnimationFramesStore.set(eid, frames);
@@ -741,7 +750,7 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			renderImageContent(world, eid);
 			markDirty(world, eid);
 
-			return this;
+			return widget;
 		},
 
 		startAnimation() {
@@ -749,11 +758,11 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			const delays = imageAnimationDelaysStore.get(eid);
 
 			if (!frames || frames.length === 0 || !delays || delays.length === 0) {
-				return this; // No animation to start
+				return widget; // No animation to start
 			}
 
 			// Stop existing animation timer
-			this.stopAnimation();
+			stopAnimationFn();
 
 			const loopCount = imageAnimationLoopCountStore.get(eid) ?? 1;
 
@@ -793,7 +802,7 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 					if (shouldStopAfterLoop(currentLoop)) {
 						imageCurrentFrameStore.set(eid, 0);
 						updateFrame(0);
-						this.stopAnimation();
+						stopAnimationFn();
 						return;
 					}
 				}
@@ -808,17 +817,10 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			const timer = setTimeout(advanceFrame, initialDelay);
 			imageAnimationTimerStore.set(eid, timer as unknown as ReturnType<typeof setInterval>);
 
-			return this;
+			return widget;
 		},
 
-		stopAnimation() {
-			const timer = imageAnimationTimerStore.get(eid);
-			if (timer !== undefined) {
-				clearTimeout(timer);
-				imageAnimationTimerStore.set(eid, undefined);
-			}
-			return this;
-		},
+		stopAnimation: stopAnimationFn,
 
 		isAnimating() {
 			return imageAnimationTimerStore.get(eid) !== undefined;
@@ -831,7 +833,7 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 		setFrame(index: number) {
 			const frames = imageAnimationFramesStore.get(eid);
 			if (!frames || frames.length === 0) {
-				return this; // No frames to set
+				return widget; // No frames to set
 			}
 
 			const clampedIndex = Math.max(0, Math.min(index, frames.length - 1));
@@ -844,12 +846,12 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 				markDirty(world, eid);
 			}
 
-			return this;
+			return widget;
 		},
 
 		destroy() {
 			// Stop animation and clear timer
-			this.stopAnimation();
+			stopAnimationFn();
 
 			// Clear all state
 			Image.isImage[eid] = 0;
@@ -871,6 +873,8 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			removeEntity(world, eid);
 		},
 	};
+
+	return widget;
 }
 
 // =============================================================================
