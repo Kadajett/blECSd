@@ -353,3 +353,126 @@ export function renderYAxisLabel(value: number, width: number): string {
 	const label = formatNumber(value, width);
 	return label.padStart(width, ' ');
 }
+
+// =============================================================================
+// BRAILLE BAR RENDERING
+// =============================================================================
+
+/**
+ * Calculates the braille bit pattern for a partial fill.
+ *
+ * Braille cells have 2 columns x 4 rows. For horizontal bars,
+ * we use all 4 rows in each column.
+ *
+ * @param fraction - Fill fraction (0.0 = empty, 0.5 = left column, 1.0 = full)
+ * @returns Braille bit pattern (0-255)
+ *
+ * @example
+ * ```typescript
+ * const pattern = brailleFillPattern(0.0); // 0x00 (empty)
+ * const pattern = brailleFillPattern(0.5); // 0x47 (left column)
+ * const pattern = brailleFillPattern(1.0); // 0xFF (full)
+ * ```
+ */
+export function brailleFillPattern(fraction: number): number {
+	// Clamp to 0-1
+	const clamped = Math.max(0, Math.min(1, fraction));
+
+	// Empty cell
+	if (clamped === 0) {
+		return 0x00;
+	}
+
+	// Full cell - all 8 dots
+	if (clamped === 1) {
+		return 0xff;
+	}
+
+	// Partial fill - only left column (dots 1,2,3,7)
+	// Left column bits: 0x01 | 0x02 | 0x04 | 0x40 = 0x47
+	if (clamped < 1) {
+		return 0x47;
+	}
+
+	return 0x00;
+}
+
+/**
+ * Renders a horizontal bar using braille dots for sub-cell precision.
+ *
+ * Each braille cell has 2 columns of dots, giving 2x horizontal resolution.
+ * A cell can be: empty (no dots), left column only, or both columns (full).
+ *
+ * @param fillFraction - Fill fraction (0.0 to 1.0)
+ * @param widthCells - Width in braille cells
+ * @returns String of braille characters representing the bar
+ *
+ * @example
+ * ```typescript
+ * const bar = renderBrailleBar(0.75, 10); // 75% filled bar, 10 cells wide
+ * ```
+ */
+export function renderBrailleBar(fillFraction: number, widthCells: number): string {
+	if (widthCells <= 0) {
+		return '';
+	}
+
+	// Clamp fill fraction
+	const clamped = Math.max(0, Math.min(1, fillFraction));
+
+	// Calculate how many pixels are filled (2 pixels per cell)
+	const totalPixels = widthCells * 2;
+	const filledPixels = Math.round(clamped * totalPixels);
+
+	// Build the bar
+	const chars: string[] = [];
+	for (let cellIdx = 0; cellIdx < widthCells; cellIdx++) {
+		const cellStartPixel = cellIdx * 2;
+		const cellEndPixel = cellStartPixel + 2;
+
+		let pattern = 0;
+		if (filledPixels >= cellEndPixel) {
+			// Both columns filled
+			pattern = 0xff;
+		} else if (filledPixels > cellStartPixel) {
+			// Only left column filled
+			pattern = 0x47;
+		} else {
+			// Empty
+			pattern = 0x00;
+		}
+
+		chars.push(String.fromCharCode(BRAILLE_BASE | pattern));
+	}
+
+	return chars.join('');
+}
+
+/**
+ * Renders a horizontal bar with color gradient interpolation across cells.
+ *
+ * Same as renderBrailleBar but with color gradient. Note: This function
+ * returns a plain string; color must be applied separately per-cell
+ * in the rendering system.
+ *
+ * @param fillFraction - Fill fraction (0.0 to 1.0)
+ * @param widthCells - Width in braille cells
+ * @param _startColor - Gradient start color (reserved for future use)
+ * @param _endColor - Gradient end color (reserved for future use)
+ * @returns String of braille characters representing the bar
+ *
+ * @example
+ * ```typescript
+ * const bar = renderBrailleGradientBar(0.5, 20, 0xff00ff00, 0xffff0000);
+ * ```
+ */
+export function renderBrailleGradientBar(
+	fillFraction: number,
+	widthCells: number,
+	_startColor: number,
+	_endColor: number,
+): string {
+	// For now, gradient colors are handled by the caller
+	// This function just returns the bar pattern
+	return renderBrailleBar(fillFraction, widthCells);
+}

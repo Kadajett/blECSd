@@ -640,6 +640,222 @@ describe('Gauge widget', () => {
 		});
 	});
 
+	describe('Braille rendering mode', () => {
+		describe('Configuration', () => {
+			it('validates renderMode field', () => {
+				const result = GaugeConfigSchema.safeParse({
+					renderMode: 'braille',
+				});
+				expect(result.success).toBe(true);
+			});
+
+			it('defaults to block mode', () => {
+				const widget = createGauge(world);
+				expect(widget.getRenderMode()).toBe('block');
+			});
+
+			it('creates gauge in braille mode', () => {
+				const widget = createGauge(world, { renderMode: 'braille' });
+				expect(widget.getRenderMode()).toBe('braille');
+			});
+
+			it('validates gradient colors', () => {
+				const result = GaugeConfigSchema.safeParse({
+					renderMode: 'braille',
+					gradientStart: '#00ff00',
+					gradientEnd: '#ff0000',
+				});
+				expect(result.success).toBe(true);
+			});
+		});
+
+		describe('Braille bar rendering', () => {
+			it('renders braille characters in braille mode', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 0.5,
+					width: 10,
+					showPercentage: false,
+				});
+				const content = getContent(world, widget.eid);
+				// Braille chars should be present (Unicode range 0x2800-0x28FF)
+				expect(content).toBeDefined();
+				if (content) {
+					const hasbraille = [...content].some((char) => {
+						const code = char.charCodeAt(0);
+						return code >= 0x2800 && code <= 0x28ff;
+					});
+					expect(hasbraille).toBe(true);
+				}
+			});
+
+			it('renders 0% fill in braille mode', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 0.0,
+					width: 10,
+					showPercentage: false,
+				});
+				const content = getContent(world, widget.eid);
+				expect(content).toBeDefined();
+			});
+
+			it('renders 100% fill in braille mode', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 1.0,
+					width: 10,
+					showPercentage: false,
+				});
+				const content = getContent(world, widget.eid);
+				expect(content).toBeDefined();
+			});
+
+			it('renders partial fill in braille mode', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 0.75,
+					width: 10,
+					showPercentage: false,
+				});
+				const content = getContent(world, widget.eid);
+				expect(content).toBeDefined();
+			});
+		});
+
+		describe('Mode switching', () => {
+			it('switches from block to braille mode', () => {
+				const widget = createGauge(world, {
+					renderMode: 'block',
+					value: 0.5,
+					width: 10,
+				});
+				const content1 = getContent(world, widget.eid);
+
+				widget.setRenderMode('braille');
+				const content2 = getContent(world, widget.eid);
+
+				expect(widget.getRenderMode()).toBe('braille');
+				expect(content1).not.toBe(content2);
+			});
+
+			it('switches from braille to block mode', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 0.5,
+					width: 10,
+				});
+				const content1 = getContent(world, widget.eid);
+
+				widget.setRenderMode('block');
+				const content2 = getContent(world, widget.eid);
+
+				expect(widget.getRenderMode()).toBe('block');
+				expect(content1).not.toBe(content2);
+			});
+
+			it('returns widget for chaining', () => {
+				const widget = createGauge(world);
+				const result = widget.setRenderMode('braille');
+				expect(result).toBe(widget);
+			});
+		});
+
+		describe('Braille mode with text overlay', () => {
+			it('overlays label on braille bar', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 0.5,
+					label: 'CPU',
+					width: 30,
+					height: 1,
+				});
+				const content = getContent(world, widget.eid);
+				expect(content).toContain('CPU');
+			});
+
+			it('overlays percentage on braille bar', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 0.75,
+					showPercentage: true,
+					width: 30,
+					height: 1,
+				});
+				const content = getContent(world, widget.eid);
+				expect(content).toContain('75%');
+			});
+
+			it('renders label on second line in multi-line mode', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 0.5,
+					label: 'CPU',
+					width: 20,
+					height: 2,
+				});
+				const content = getContent(world, widget.eid);
+				const lines = content?.split('\n');
+				expect(lines?.[1]).toContain('CPU');
+			});
+		});
+
+		describe('Braille mode with gradients', () => {
+			it('accepts gradient colors', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 0.5,
+					gradientStart: '#00ff00',
+					gradientEnd: '#ff0000',
+					width: 20,
+				});
+				expect(widget).toBeDefined();
+				expect(widget.getRenderMode()).toBe('braille');
+			});
+
+			it('renders with gradient colors', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 0.75,
+					gradientStart: 0xff00ff00,
+					gradientEnd: 0xffff0000,
+					width: 20,
+				});
+				const content = getContent(world, widget.eid);
+				expect(content).toBeDefined();
+			});
+		});
+
+		describe('Braille mode updates', () => {
+			it('updates content when value changes', () => {
+				const widget = createGauge(world, {
+					renderMode: 'braille',
+					value: 0.3,
+					width: 20,
+					showPercentage: false,
+				});
+				const content1 = getContent(world, widget.eid);
+
+				widget.setValue(0.7);
+				const content2 = getContent(world, widget.eid);
+
+				expect(content1).not.toBe(content2);
+			});
+
+			it('updates content when switching modes', () => {
+				const widget = createGauge(world, {
+					renderMode: 'block',
+					value: 0.5,
+					width: 20,
+				});
+
+				widget.setRenderMode('braille');
+				const content = getContent(world, widget.eid);
+				expect(content).toBeDefined();
+			});
+		});
+	});
+
 	describe('resetGaugeStore', () => {
 		it('clears all gauge data', () => {
 			const widget1 = createGauge(world, { showPercentage: true });
