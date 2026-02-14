@@ -1,8 +1,11 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import type { Bitmap } from '../media/render/ansi';
 import {
+	calculateAspectRatioDimensions,
+	clearAllImageCaches,
+	clearImageCache,
 	createImage,
 	getImageBitmap,
 	getImageCellMap,
@@ -41,7 +44,14 @@ let world: World;
 
 beforeEach(() => {
 	resetImageStore();
+	clearAllImageCaches();
 	world = createWorld();
+	vi.useFakeTimers();
+});
+
+afterEach(() => {
+	vi.restoreAllMocks();
+	vi.useRealTimers();
 });
 
 // =============================================================================
@@ -428,5 +438,267 @@ describe('multiple images', () => {
 		expect(isImage(world, image1.eid)).toBe(false);
 		expect(isImage(world, image2.eid)).toBe(true);
 		expect(getImageBitmap(image2.eid)).toEqual(green);
+	});
+});
+
+// =============================================================================
+// ASPECT RATIO
+// =============================================================================
+
+describe('calculateAspectRatioDimensions', () => {
+	it('should return zero dimensions for zero-size source', () => {
+		const result = calculateAspectRatioDimensions(0, 0, 100, 100, true);
+		expect(result).toEqual({ width: 0, height: 0 });
+	});
+
+	it('should preserve aspect ratio when only width is specified', () => {
+		// 100x50 image, want width 40
+		const result = calculateAspectRatioDimensions(100, 50, 40, undefined, true);
+		expect(result).toEqual({ width: 40, height: 20 });
+	});
+
+	it('should preserve aspect ratio when only height is specified', () => {
+		// 100x50 image, want height 30
+		const result = calculateAspectRatioDimensions(100, 50, undefined, 30, true);
+		expect(result).toEqual({ width: 60, height: 30 });
+	});
+
+	it('should fit within bounds (letterbox) when both dimensions specified and preserving', () => {
+		// 100x50 image, want to fit in 40x40 (preserving aspect)
+		const result = calculateAspectRatioDimensions(100, 50, 40, 40, true);
+		// Source aspect is 2:1, target is 1:1, so constrain by width
+		expect(result).toEqual({ width: 40, height: 20 });
+	});
+
+	it('should not preserve aspect ratio when preserve=false', () => {
+		const result = calculateAspectRatioDimensions(100, 50, 40, 60, false);
+		expect(result).toEqual({ width: 40, height: 60 });
+	});
+
+	it('should use source dimensions when no target dimensions specified', () => {
+		const result = calculateAspectRatioDimensions(100, 50, undefined, undefined, true);
+		expect(result).toEqual({ width: 100, height: 50 });
+	});
+});
+
+// =============================================================================
+// IMAGE CACHING
+// =============================================================================
+
+describe('image caching', () => {
+	it('should cache rendered cell maps', () => {
+		const bitmap = createTestBitmap(2, 2, 128, 128, 128);
+		const image = createImage(world, { bitmap });
+
+		// First render
+		const output1 = image.render();
+
+		// Second render should use cache
+		const output2 = image.render();
+
+		expect(output1).toBe(output2);
+	});
+
+	it('should invalidate cache on setImage', () => {
+		const bitmap1 = createTestBitmap(2, 2, 128, 128, 128);
+		const bitmap2 = createTestBitmap(2, 2, 255, 255, 255);
+
+		const image = createImage(world, { bitmap: bitmap1 });
+		const output1 = image.render();
+
+		image.setImage(bitmap2);
+		const output2 = image.render();
+
+		// Outputs should differ because we changed the image
+		expect(output1).not.toBe(output2);
+	});
+
+	it('should invalidate cache on setRenderMode', () => {
+		const bitmap = createTestBitmap(2, 2, 128, 128, 128);
+		const image = createImage(world, { bitmap, renderMode: 'color' });
+		const output1 = image.render();
+
+		image.setRenderMode('ascii');
+		const output2 = image.render();
+
+		// Outputs should differ because render mode changed
+		expect(output1).not.toBe(output2);
+	});
+
+	it('should clear cache for specific entity', () => {
+		const bitmap = createTestBitmap(2, 2, 128, 128, 128);
+		const image = createImage(world, { bitmap });
+		image.render(); // Populate cache
+
+		clearImageCache(image.eid);
+
+		// Image should still render correctly
+		const output = image.render();
+		expect(output).toBeTruthy();
+	});
+
+	it('should clear all caches', () => {
+		const bitmap = createTestBitmap(2, 2, 128, 128, 128);
+		const image1 = createImage(world, { bitmap });
+		const image2 = createImage(world, { bitmap });
+
+		image1.render();
+		image2.render();
+
+		clearAllImageCaches();
+
+		// Verify images still render
+		expect(image1.render()).toBeTruthy();
+		expect(image2.render()).toBeTruthy();
+	});
+});
+
+// =============================================================================
+// ANIMATED IMAGES
+// =============================================================================
+
+describe('animated images', () => {
+	it('should create an animated image', () => {
+		const frame1 = createTestBitmap(2, 2, 255, 0, 0);
+		const frame2 = createTestBitmap(2, 2, 0, 255, 0);
+
+		const image = createImage(world, {});
+		image.setAnimatedImage([frame1, frame2], [100, 100], 0);
+
+		expect(image.getCurrentFrame()).toBe(0);
+		expect(image.isAnimating()).toBe(false);
+	});
+
+	it('should start and stop animation', () => {
+		const frame1 = createTestBitmap(2, 2, 255, 0, 0);
+		const frame2 = createTestBitmap(2, 2, 0, 255, 0);
+
+		const image = createImage(world, {});
+		image.setAnimatedImage([frame1, frame2], [100, 100], 0);
+
+		image.startAnimation();
+		expect(image.isAnimating()).toBe(true);
+
+		image.stopAnimation();
+		expect(image.isAnimating()).toBe(false);
+	});
+
+	it('should advance frames during animation', () => {
+		const frame1 = createTestBitmap(2, 2, 255, 0, 0);
+		const frame2 = createTestBitmap(2, 2, 0, 255, 0);
+
+		const image = createImage(world, {});
+		image.setAnimatedImage([frame1, frame2], [100, 100], 0);
+
+		image.startAnimation();
+		expect(image.getCurrentFrame()).toBe(0);
+
+		// Advance time by 100ms
+		vi.advanceTimersByTime(100);
+		expect(image.getCurrentFrame()).toBe(1);
+
+		// Advance time by another 100ms
+		vi.advanceTimersByTime(100);
+		expect(image.getCurrentFrame()).toBe(0); // Looped back
+
+		image.stopAnimation();
+	});
+
+	it('should respect loop count', () => {
+		const frame1 = createTestBitmap(2, 2, 255, 0, 0);
+		const frame2 = createTestBitmap(2, 2, 0, 255, 0);
+
+		const image = createImage(world, {});
+		image.setAnimatedImage([frame1, frame2], [100, 100], 1); // Only 1 loop
+
+		image.startAnimation();
+		expect(image.isAnimating()).toBe(true);
+
+		// Advance through first loop
+		vi.advanceTimersByTime(100);
+		expect(image.getCurrentFrame()).toBe(1);
+
+		vi.advanceTimersByTime(100);
+		expect(image.getCurrentFrame()).toBe(0);
+
+		// Animation should stop after completing the loop
+		expect(image.isAnimating()).toBe(false);
+	});
+
+	it('should sets specific frame', () => {
+		const frame1 = createTestBitmap(2, 2, 255, 0, 0);
+		const frame2 = createTestBitmap(2, 2, 0, 255, 0);
+		const frame3 = createTestBitmap(2, 2, 0, 0, 255);
+
+		const image = createImage(world, {});
+		image.setAnimatedImage([frame1, frame2, frame3], [100, 100, 100], 0);
+
+		expect(image.getCurrentFrame()).toBe(0);
+
+		image.setFrame(2);
+		expect(image.getCurrentFrame()).toBe(2);
+
+		image.setFrame(0);
+		expect(image.getCurrentFrame()).toBe(0);
+	});
+
+	it('should validate empty frames array', () => {
+		const image = createImage(world, {});
+
+		expect(() => {
+			image.setAnimatedImage([], [], 0);
+		}).toThrow('frames array cannot be empty');
+	});
+
+	it('should validate frame delays length mismatch', () => {
+		const frame1 = createTestBitmap(2, 2, 255, 0, 0);
+		const image = createImage(world, {});
+
+		expect(() => {
+			image.setAnimatedImage([frame1], [100, 200], 0);
+		}).toThrow('frames and delays arrays must have the same length');
+	});
+
+	it('should validate positive frame delays', () => {
+		const frame1 = createTestBitmap(2, 2, 255, 0, 0);
+		const image = createImage(world, {});
+
+		expect(() => {
+			image.setAnimatedImage([frame1], [0], 0);
+		}).toThrow('all frame delays must be positive numbers');
+	});
+
+	it('should clears animation timers on destroy', () => {
+		const frame1 = createTestBitmap(2, 2, 255, 0, 0);
+		const frame2 = createTestBitmap(2, 2, 0, 255, 0);
+
+		const image = createImage(world, {});
+		image.setAnimatedImage([frame1, frame2], [100, 100], 0);
+		image.startAnimation();
+
+		expect(image.isAnimating()).toBe(true);
+
+		image.destroy();
+
+		// Animation should be stopped
+		// Advance time and verify no errors occur
+		vi.advanceTimersByTime(1000);
+	});
+
+	it('should clears animation state when setting a single image', () => {
+		const frame1 = createTestBitmap(2, 2, 255, 0, 0);
+		const frame2 = createTestBitmap(2, 2, 0, 255, 0);
+		const singleBitmap = createTestBitmap(2, 2, 128, 128, 128);
+
+		const image = createImage(world, {});
+		image.setAnimatedImage([frame1, frame2], [100, 100], 0);
+		image.startAnimation();
+
+		expect(image.isAnimating()).toBe(true);
+
+		// Setting a single image should stop animation
+		image.setImage(singleBitmap);
+
+		expect(image.isAnimating()).toBe(false);
 	});
 });
