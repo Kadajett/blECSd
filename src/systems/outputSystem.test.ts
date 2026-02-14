@@ -139,7 +139,7 @@ describe('outputSystem', () => {
 				{ x: 10, y: 5, cell: createCell('A', 0xffffffff, 0xff000000) },
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should contain cursor move and character
 			expect(output).toContain('\x1b['); // CSI
@@ -150,7 +150,7 @@ describe('outputSystem', () => {
 			const state = createOutputState();
 			const changes: CellChange[] = [];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			expect(output).toBe('');
 		});
@@ -164,7 +164,7 @@ describe('outputSystem', () => {
 				{ x: 15, y: 5, cell: createCell('Y', 0xffffffff, 0xff000000) },
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Characters should appear in sorted order (X at row 5, Y at row 5, Z at row 10)
 			const xIndex = output.indexOf('X');
@@ -182,7 +182,7 @@ describe('outputSystem', () => {
 				{ x: 11, y: 5, cell: createCell('B', 0xffffffff, 0xff000000) },
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should only have one cursor move sequence
 			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
@@ -195,7 +195,7 @@ describe('outputSystem', () => {
 			// Red text on blue background
 			const changes: CellChange[] = [{ x: 0, y: 0, cell: createCell('X', 0xffff0000, 0xff0000ff) }];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should contain color escape sequences
 			expect(output).toContain('\x1b[38;2;'); // Foreground RGB
@@ -208,7 +208,7 @@ describe('outputSystem', () => {
 				{ x: 0, y: 0, cell: createCell('X', 0xffffffff, 0xff000000, Attr.BOLD) },
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should contain bold sequence
 			expect(output).toContain('\x1b[1m');
@@ -221,7 +221,7 @@ describe('outputSystem', () => {
 				{ x: 1, y: 0, cell: createCell('B', 0xffffffff, 0xff000000) },
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should only have one foreground and one background sequence
 			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
@@ -438,7 +438,7 @@ describe('outputSystem', () => {
 			// Transparent alpha = 0
 			const changes: CellChange[] = [{ x: 0, y: 0, cell: createCell('X', 0x00ffffff, 0x00000000) }];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should use default color codes
 			expect(output).toContain('\x1b[39m'); // Default fg
@@ -455,7 +455,7 @@ describe('outputSystem', () => {
 				},
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			expect(output).toContain('1'); // Bold
 			expect(output).toContain('4'); // Underline
@@ -471,7 +471,7 @@ describe('outputSystem', () => {
 				{ x: 10, y: 5, cell: createCell('X', 0xffffffff, 0xff000000) },
 			];
 
-			const output = generateOutput(state, changes, true);
+			const output = generateOutput(world, state, changes, true);
 
 			// Characters should appear in original order (Z before X) when skipSort is true
 			const zIndex = output.indexOf('Z');
@@ -488,7 +488,7 @@ describe('outputSystem', () => {
 				{ x: 10, y: 5, cell: createCell('X', 0xffffffff, 0xff000000) },
 			];
 
-			const output = generateOutput(state, changes, false);
+			const output = generateOutput(world, state, changes, false);
 
 			// Characters should appear in sorted order (X before Z) when skipSort is false
 			const xIndex = output.indexOf('X');
@@ -532,7 +532,7 @@ describe('outputSystem', () => {
 	describe('style sequence caching', () => {
 		it('generates identical sequences for identical styles', () => {
 			const state = createOutputState();
-			clearStyleCache();
+			clearStyleCache(world);
 
 			// Two cells with identical styles
 			const changes: CellChange[] = [
@@ -540,7 +540,7 @@ describe('outputSystem', () => {
 				{ x: 0, y: 1, cell: createCell('B', 0xffff0000, 0xff0000ff, Attr.BOLD) },
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Both cells should use cached style sequences
 			// Count the occurrences of the style attributes
@@ -556,21 +556,21 @@ describe('outputSystem', () => {
 
 		it('clears the style cache', () => {
 			const state = createOutputState();
-			clearStyleCache();
+			clearStyleCache(world);
 
 			const changes: CellChange[] = [
 				{ x: 0, y: 0, cell: createCell('A', 0xffff0000, 0xff0000ff, Attr.BOLD) },
 			];
 
 			// First render
-			generateOutput(state, changes);
+			generateOutput(world, state, changes);
 
 			// Clear cache (cache should be rebuilt on next use)
-			clearStyleCache();
+			clearStyleCache(world);
 
 			// Second render (should rebuild cached sequences)
 			const state2 = createOutputState();
-			const output2 = generateOutput(state2, changes);
+			const output2 = generateOutput(world, state2, changes);
 
 			expect(output2).toContain('\x1b[1m'); // Should still have bold
 		});
@@ -587,7 +587,7 @@ describe('outputSystem', () => {
 				{ x: 2, y: 0, cell: createCell('C', 0xffff0000, 0xff0000ff, Attr.BOLD) },
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should contain all characters
 			expect(output).toContain('A');
@@ -614,7 +614,7 @@ describe('outputSystem', () => {
 				{ x: 1, y: 0, cell: createCell('B', 0xff00ff00, 0xff0000ff, Attr.BOLD) }, // Different fg
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should have two different foreground color sequences
 			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
@@ -631,7 +631,7 @@ describe('outputSystem', () => {
 				{ x: 2, y: 0, cell: createCell('B', 0xffff0000, 0xff0000ff, Attr.BOLD) }, // Gap at x=1
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should not batch due to gap (run length of 1 for each)
 			// After 'A' at x=0, cursor is at x=1. Moving to x=2 (diff=1) uses implicit advance.
@@ -654,7 +654,7 @@ describe('outputSystem', () => {
 				{ x: 0, y: 1, cell: createCell('B', 0xffff0000, 0xff0000ff, Attr.BOLD) },
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should have two cursor moves (different rows)
 			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
@@ -675,7 +675,7 @@ describe('outputSystem', () => {
 				});
 			}
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should only have one cursor move and one style sequence
 			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
@@ -704,7 +704,7 @@ describe('outputSystem', () => {
 				{ x: 10, y: 1, cell: createCell('C', 0xffffffff, 0xff000000) },
 			];
 
-			const output = generateOutput(state, changes);
+			const output = generateOutput(world, state, changes);
 
 			// Should be a valid string with all characters
 			expect(typeof output).toBe('string');
