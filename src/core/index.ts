@@ -552,18 +552,27 @@ export type {
 	PluginRegistrationResult,
 	PluginRegistry,
 	PluginSystem,
+	PluginThemeDeclaration,
+	PluginWidgetDeclaration,
 } from './plugins';
 export {
+	activatePlugin,
 	clearPlugins,
 	createPluginRegistry,
+	deactivatePlugin,
+	definePlugin,
 	getPluginCount,
 	getPlugins,
 	hasPlugin,
+	isPluginActive,
 	PluginComponentSchema,
 	PluginSchema,
 	PluginSystemSchema,
+	PluginThemeDeclarationSchema,
+	PluginWidgetDeclarationSchema,
 	registerPlugin,
 	unregisterPlugin,
+	validatePluginConfig,
 } from './plugins';
 // Position cache
 export type { CachedPosition, SetPositionCacheOptions } from './positionCache';

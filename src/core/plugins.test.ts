@@ -3,16 +3,22 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import type { Plugin } from './plugins';
 import {
+	activatePlugin,
 	clearPlugins,
 	createPluginRegistry,
+	deactivatePlugin,
+	definePlugin,
 	getPluginCount,
 	getPlugins,
 	hasPlugin,
+	isPluginActive,
 	PluginSchema,
 	registerPlugin,
 	unregisterPlugin,
+	validatePluginConfig,
 } from './plugins';
 import { createScheduler } from './scheduler';
 import type { System, World } from './types';
@@ -517,5 +523,364 @@ describe('scheduler phase integration', () => {
 
 		// Lower priority number = runs first
 		expect(executionOrder).toEqual(['high', 'low']);
+	});
+});
+
+describe('definePlugin', () => {
+	it('creates a plugin from config', () => {
+		const plugin = definePlugin({
+			name: 'test',
+			version: '1.0.0',
+		});
+
+		expect(plugin.name).toBe('test');
+		expect(plugin.version).toBe('1.0.0');
+	});
+
+	it('preserves all fields', () => {
+		const initFn = (w: World): World => w;
+		const activateFn = (_w: World): void => {};
+		const deactivateFn = (_w: World): void => {};
+		const cleanupFn = (w: World): World => w;
+
+		const plugin = definePlugin({
+			name: 'full',
+			version: '2.0.0',
+			dependencies: ['base'],
+			components: [{ name: 'Foo', store: {} }],
+			systems: [{ system: makeSystem('sys'), phase: LoopPhase.UPDATE }],
+			widgets: [{ name: 'my-widget', factory: () => 0, tags: ['ui'] }],
+			themes: [{ name: 'dark', theme: { bg: '#000' } }],
+			init: initFn,
+			onActivate: activateFn,
+			onDeactivate: deactivateFn,
+			cleanup: cleanupFn,
+		});
+
+		expect(plugin.dependencies).toEqual(['base']);
+		expect(plugin.components).toHaveLength(1);
+		expect(plugin.systems).toHaveLength(1);
+		expect(plugin.widgets).toHaveLength(1);
+		expect(plugin.themes).toHaveLength(1);
+		expect(plugin.init).toBe(initFn);
+		expect(plugin.onActivate).toBe(activateFn);
+		expect(plugin.onDeactivate).toBe(deactivateFn);
+		expect(plugin.cleanup).toBe(cleanupFn);
+	});
+});
+
+describe('lifecycle hooks', () => {
+	it('calls onActivate on registration', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		let activated = false;
+		registerPlugin(registry, scheduler, world, {
+			name: 'activate-test',
+			version: '1.0.0',
+			onActivate: () => {
+				activated = true;
+			},
+		});
+
+		expect(activated).toBe(true);
+	});
+
+	it('calls onDeactivate on unregister', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		let deactivated = false;
+		registerPlugin(registry, scheduler, world, {
+			name: 'deactivate-test',
+			version: '1.0.0',
+			onDeactivate: () => {
+				deactivated = true;
+			},
+		});
+
+		unregisterPlugin(registry, scheduler, world, 'deactivate-test');
+		expect(deactivated).toBe(true);
+	});
+
+	it('calls onDeactivate before cleanup on unregister', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		const order: string[] = [];
+		registerPlugin(registry, scheduler, world, {
+			name: 'order-test',
+			version: '1.0.0',
+			onDeactivate: () => {
+				order.push('deactivate');
+			},
+			cleanup: (w: World): World => {
+				order.push('cleanup');
+				return w;
+			},
+		});
+
+		unregisterPlugin(registry, scheduler, world, 'order-test');
+		expect(order).toEqual(['deactivate', 'cleanup']);
+	});
+
+	it('calls onDeactivate during clearPlugins', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		let deactivated = false;
+		registerPlugin(registry, scheduler, world, {
+			name: 'clear-test',
+			version: '1.0.0',
+			onDeactivate: () => {
+				deactivated = true;
+			},
+		});
+
+		clearPlugins(registry, scheduler, world);
+		expect(deactivated).toBe(true);
+	});
+});
+
+describe('activatePlugin / deactivatePlugin', () => {
+	it('deactivates a plugin without removing it', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		const sys = makeSystem('sys');
+		registerPlugin(registry, scheduler, world, {
+			name: 'toggleable',
+			version: '1.0.0',
+			systems: [{ system: sys, phase: LoopPhase.UPDATE }],
+		});
+
+		expect(isPluginActive(registry, 'toggleable')).toBe(true);
+		expect(scheduler.hasSystem(sys)).toBe(true);
+
+		deactivatePlugin(registry, scheduler, world, 'toggleable');
+
+		expect(isPluginActive(registry, 'toggleable')).toBe(false);
+		expect(hasPlugin(registry, 'toggleable')).toBe(true);
+		expect(scheduler.hasSystem(sys)).toBe(false);
+	});
+
+	it('reactivates a deactivated plugin', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		const sys = makeSystem('sys');
+		registerPlugin(registry, scheduler, world, {
+			name: 'reactivatable',
+			version: '1.0.0',
+			systems: [{ system: sys, phase: LoopPhase.UPDATE }],
+		});
+
+		deactivatePlugin(registry, scheduler, world, 'reactivatable');
+		expect(isPluginActive(registry, 'reactivatable')).toBe(false);
+
+		activatePlugin(registry, scheduler, world, 'reactivatable');
+		expect(isPluginActive(registry, 'reactivatable')).toBe(true);
+		expect(scheduler.hasSystem(sys)).toBe(true);
+	});
+
+	it('calls onActivate/onDeactivate hooks', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		const calls: string[] = [];
+		registerPlugin(registry, scheduler, world, {
+			name: 'hooks',
+			version: '1.0.0',
+			onActivate: () => {
+				calls.push('activate');
+			},
+			onDeactivate: () => {
+				calls.push('deactivate');
+			},
+		});
+
+		expect(calls).toEqual(['activate']); // Called on register
+
+		deactivatePlugin(registry, scheduler, world, 'hooks');
+		expect(calls).toEqual(['activate', 'deactivate']);
+
+		activatePlugin(registry, scheduler, world, 'hooks');
+		expect(calls).toEqual(['activate', 'deactivate', 'activate']);
+	});
+
+	it('is idempotent for already-active plugin', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		registerPlugin(registry, scheduler, world, {
+			name: 'idempotent',
+			version: '1.0.0',
+		});
+
+		expect(activatePlugin(registry, scheduler, world, 'idempotent')).toBe(true);
+		expect(isPluginActive(registry, 'idempotent')).toBe(true);
+	});
+
+	it('is idempotent for already-deactivated plugin', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		registerPlugin(registry, scheduler, world, {
+			name: 'idempotent2',
+			version: '1.0.0',
+		});
+
+		deactivatePlugin(registry, scheduler, world, 'idempotent2');
+		expect(deactivatePlugin(registry, scheduler, world, 'idempotent2')).toBe(true);
+	});
+
+	it('returns false for non-existent plugin', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		expect(activatePlugin(registry, scheduler, world, 'nope')).toBe(false);
+		expect(deactivatePlugin(registry, scheduler, world, 'nope')).toBe(false);
+	});
+});
+
+describe('isPluginActive', () => {
+	it('returns false for non-existent plugin', () => {
+		const registry = createPluginRegistry();
+		expect(isPluginActive(registry, 'nope')).toBe(false);
+	});
+
+	it('returns true for registered plugin', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		registerPlugin(registry, scheduler, world, {
+			name: 'active',
+			version: '1.0.0',
+		});
+
+		expect(isPluginActive(registry, 'active')).toBe(true);
+	});
+});
+
+describe('plugin widgets and themes', () => {
+	it('tracks widget declarations in plugin info', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		registerPlugin(registry, scheduler, world, {
+			name: 'widget-plugin',
+			version: '1.0.0',
+			widgets: [
+				{ name: 'bar-chart', factory: () => 0, tags: ['chart'] },
+				{ name: 'pie-chart', factory: () => 0, tags: ['chart'] },
+			],
+		});
+
+		const plugins = getPlugins(registry);
+		expect(plugins[0]?.widgetCount).toBe(2);
+	});
+
+	it('tracks theme declarations in plugin info', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		registerPlugin(registry, scheduler, world, {
+			name: 'theme-plugin',
+			version: '1.0.0',
+			themes: [{ name: 'ocean', theme: { bg: '#006' } }],
+		});
+
+		const plugins = getPlugins(registry);
+		expect(plugins[0]?.themeCount).toBe(1);
+	});
+
+	it('reports active status in plugin info', () => {
+		const registry = createPluginRegistry();
+		const scheduler = createScheduler();
+		const world = createWorld();
+
+		registerPlugin(registry, scheduler, world, {
+			name: 'status-test',
+			version: '1.0.0',
+		});
+
+		let plugins = getPlugins(registry);
+		expect(plugins[0]?.active).toBe(true);
+
+		deactivatePlugin(registry, scheduler, world, 'status-test');
+		plugins = getPlugins(registry);
+		expect(plugins[0]?.active).toBe(false);
+	});
+});
+
+describe('validatePluginConfig', () => {
+	it('returns config when no schema is defined', () => {
+		const plugin = definePlugin({ name: 'no-schema', version: '1.0.0' });
+		const config = { anything: true };
+		expect(validatePluginConfig(plugin, config)).toBe(config);
+	});
+
+	it('validates config against schema', () => {
+		const plugin = definePlugin({
+			name: 'with-schema',
+			version: '1.0.0',
+			configSchema: z.object({
+				maxItems: z.number().positive(),
+				label: z.string(),
+			}),
+		});
+
+		const result = validatePluginConfig(plugin, { maxItems: 10, label: 'test' });
+		expect(result).toEqual({ maxItems: 10, label: 'test' });
+	});
+
+	it('throws for invalid config', () => {
+		const plugin = definePlugin({
+			name: 'strict',
+			version: '1.0.0',
+			configSchema: z.object({
+				maxItems: z.number().positive(),
+			}),
+		});
+
+		expect(() => validatePluginConfig(plugin, { maxItems: -1 })).toThrow();
+	});
+});
+
+describe('PluginSchema v2', () => {
+	it('validates plugin with widgets and themes', () => {
+		const result = PluginSchema.safeParse({
+			name: 'full-v2',
+			version: '1.0.0',
+			widgets: [{ name: 'chart', factory: () => 0 }],
+			themes: [{ name: 'dark', theme: { bg: '#000' } }],
+			onActivate: () => {},
+			onDeactivate: () => {},
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it('rejects invalid widget declaration', () => {
+		const result = PluginSchema.safeParse({
+			name: 'bad-widget',
+			version: '1.0.0',
+			widgets: [{ name: '' }], // missing factory, empty name
+		});
+
+		expect(result.success).toBe(false);
 	});
 });
