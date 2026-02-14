@@ -85,6 +85,35 @@ export function createOutputState(): OutputState {
 }
 
 // =============================================================================
+// COLOR SEQUENCE CACHE
+// =============================================================================
+
+/**
+ * Cache of packed color values -> ANSI color sequence strings.
+ * Avoids rebuilding color escape sequences for repeated colors.
+ *
+ * Cache keys:
+ * - Background colors: use the color value directly
+ * - Foreground colors: use color value | 0x100000000 to distinguish from bg
+ */
+const colorSequenceCache = new Map<number, string>();
+
+/**
+ * Clears the color sequence cache.
+ * Call this if the cache grows too large (unlikely in typical usage).
+ *
+ * @example
+ * ```typescript
+ * import { clearStyleCache } from 'blecsd';
+ *
+ * clearStyleCache(); // Clear cached color sequences
+ * ```
+ */
+export function clearStyleCache(): void {
+	colorSequenceCache.clear();
+}
+
+// =============================================================================
 // ANSI SEQUENCE GENERATION
 // =============================================================================
 
@@ -131,26 +160,43 @@ function unpackColor(color: number): { r: number; g: number; b: number; a: numbe
 
 /**
  * Generates foreground color sequence (true color).
+ * Uses caching to avoid rebuilding sequences for repeated colors.
  */
 function fgColor(color: number): string {
-	const { r, g, b, a } = unpackColor(color);
-	if (a === 0) {
-		// Transparent/default
-		return sgr(39);
+	// Check cache first
+	const cacheKey = color | 0x100000000; // Set high bit to distinguish fg from bg
+	const cached = colorSequenceCache.get(cacheKey);
+	if (cached !== undefined) {
+		return cached;
 	}
-	return sgr(SGR.FG_256, 2, r, g, b);
+
+	// Build sequence
+	const { r, g, b, a } = unpackColor(color);
+	const sequence = a === 0 ? sgr(39) : sgr(SGR.FG_256, 2, r, g, b);
+
+	// Cache and return
+	colorSequenceCache.set(cacheKey, sequence);
+	return sequence;
 }
 
 /**
  * Generates background color sequence (true color).
+ * Uses caching to avoid rebuilding sequences for repeated colors.
  */
 function bgColor(color: number): string {
-	const { r, g, b, a } = unpackColor(color);
-	if (a === 0) {
-		// Transparent/default
-		return sgr(49);
+	// Check cache first (use color value directly for bg)
+	const cached = colorSequenceCache.get(color);
+	if (cached !== undefined) {
+		return cached;
 	}
-	return sgr(SGR.BG_256, 2, r, g, b);
+
+	// Build sequence
+	const { r, g, b, a } = unpackColor(color);
+	const sequence = a === 0 ? sgr(49) : sgr(SGR.BG_256, 2, r, g, b);
+
+	// Cache and return
+	colorSequenceCache.set(color, sequence);
+	return sequence;
 }
 
 /**
@@ -286,6 +332,9 @@ function generateCellOutput(state: OutputState, change: CellChange): string {
 /**
  * Generates optimized output for all cell changes.
  *
+ * Uses array accumulator for efficient string building and batches
+ * consecutive cells with identical styles to minimize SGR emissions.
+ *
  * @param state - Output state
  * @param changes - Array of cell changes
  * @param skipSort - Skip sorting if changes are already in row-major order
@@ -309,7 +358,8 @@ export function generateOutput(
 		return '';
 	}
 
-	let output = '';
+	// PERF: Array accumulator instead of string concatenation
+	const chunks: string[] = [];
 
 	// PERF: Avoid array spread and allocation when sorting
 	// Sort changes by row then column for optimal cursor movement
@@ -328,11 +378,73 @@ export function generateOutput(
 		sortedChanges = mutableChanges;
 	}
 
-	for (const change of sortedChanges) {
-		output += generateCellOutput(state, change);
+	// PERF: Style run batching - detect consecutive cells with same style
+	let runStartIndex = 0;
+	while (runStartIndex < sortedChanges.length) {
+		const runStart = sortedChanges[runStartIndex];
+		if (!runStart) break;
+
+		// Find the end of this style run
+		let runEndIndex = runStartIndex + 1;
+		while (runEndIndex < sortedChanges.length) {
+			const current = sortedChanges[runEndIndex];
+			const prev = sortedChanges[runEndIndex - 1];
+			if (!current || !prev) break;
+
+			// Check if this cell continues the run:
+			// 1. Same row
+			// 2. Immediately adjacent (x diff of 1)
+			// 3. Same style (fg, bg, attrs)
+			const sameRow = current.y === prev.y;
+			const adjacent = current.x === prev.x + 1;
+			const sameStyle =
+				current.cell.fg === prev.cell.fg &&
+				current.cell.bg === prev.cell.bg &&
+				current.cell.attrs === prev.cell.attrs;
+
+			if (sameRow && adjacent && sameStyle) {
+				runEndIndex++;
+			} else {
+				break;
+			}
+		}
+
+		// Emit the run
+		const runLength = runEndIndex - runStartIndex;
+		if (runLength === 1) {
+			// Single cell - use existing logic
+			const change = sortedChanges[runStartIndex];
+			if (change) {
+				chunks.push(generateCellOutput(state, change));
+			}
+		} else {
+			// Style run - batch emit
+			const firstChange = sortedChanges[runStartIndex];
+			if (firstChange) {
+				// Move cursor to start of run
+				chunks.push(generateCursorMove(state, firstChange.x, firstChange.y));
+
+				// Emit style once for the entire run
+				chunks.push(generateStyleSequences(state, firstChange.cell));
+
+				// Emit all characters in the run
+				for (let i = runStartIndex; i < runEndIndex; i++) {
+					const change = sortedChanges[i];
+					if (change) {
+						chunks.push(change.cell.char);
+					}
+				}
+
+				// Update cursor position (advances by run length)
+				state.lastX = firstChange.x + runLength;
+				state.lastY = firstChange.y;
+			}
+		}
+
+		runStartIndex = runEndIndex;
 	}
 
-	return output;
+	return chunks.join('');
 }
 
 // =============================================================================

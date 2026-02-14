@@ -18,6 +18,7 @@ import {
 	clearOutputBuffer,
 	clearOutputStream,
 	clearScreen,
+	clearStyleCache,
 	createOutputState,
 	createOutputSystem,
 	cursorHome,
@@ -525,6 +526,191 @@ describe('outputSystem', () => {
 			expect(combined).toContain('D');
 			expect(combined).toContain('E');
 			expect(combined).toContain('F');
+		});
+	});
+
+	describe('style sequence caching', () => {
+		it('generates identical sequences for identical styles', () => {
+			const state = createOutputState();
+			clearStyleCache();
+
+			// Two cells with identical styles
+			const changes: CellChange[] = [
+				{ x: 0, y: 0, cell: createCell('A', 0xffff0000, 0xff0000ff, Attr.BOLD) },
+				{ x: 0, y: 1, cell: createCell('B', 0xffff0000, 0xff0000ff, Attr.BOLD) },
+			];
+
+			const output = generateOutput(state, changes);
+
+			// Both cells should use cached style sequences
+			// Count the occurrences of the style attributes
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
+			const boldCount = (output.match(/\x1b\[1m/g) || []).length;
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
+			const fgCount = (output.match(/\x1b\[38;2;255;0;0m/g) || []).length;
+
+			// Should have styles for both cells
+			expect(boldCount).toBeGreaterThan(0);
+			expect(fgCount).toBeGreaterThan(0);
+		});
+
+		it('clears the style cache', () => {
+			const state = createOutputState();
+			clearStyleCache();
+
+			const changes: CellChange[] = [
+				{ x: 0, y: 0, cell: createCell('A', 0xffff0000, 0xff0000ff, Attr.BOLD) },
+			];
+
+			// First render
+			generateOutput(state, changes);
+
+			// Clear cache (cache should be rebuilt on next use)
+			clearStyleCache();
+
+			// Second render (should rebuild cached sequences)
+			const state2 = createOutputState();
+			const output2 = generateOutput(state2, changes);
+
+			expect(output2).toContain('\x1b[1m'); // Should still have bold
+		});
+	});
+
+	describe('style run batching', () => {
+		it('batches consecutive cells with identical styles', () => {
+			const state = createOutputState();
+
+			// Three consecutive cells on same row with identical styles
+			const changes: CellChange[] = [
+				{ x: 0, y: 0, cell: createCell('A', 0xffff0000, 0xff0000ff, Attr.BOLD) },
+				{ x: 1, y: 0, cell: createCell('B', 0xffff0000, 0xff0000ff, Attr.BOLD) },
+				{ x: 2, y: 0, cell: createCell('C', 0xffff0000, 0xff0000ff, Attr.BOLD) },
+			];
+
+			const output = generateOutput(state, changes);
+
+			// Should contain all characters
+			expect(output).toContain('A');
+			expect(output).toContain('B');
+			expect(output).toContain('C');
+
+			// Should only have one cursor move (to start of run)
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
+			const moveCount = (output.match(/\x1b\[\d+;\d+H/g) || []).length;
+			expect(moveCount).toBe(1);
+
+			// Should only have one set of style sequences (for the entire run)
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
+			const boldCount = (output.match(/\x1b\[1m/g) || []).length;
+			expect(boldCount).toBe(1);
+		});
+
+		it('breaks runs when styles change', () => {
+			const state = createOutputState();
+
+			// Two consecutive cells with different styles
+			const changes: CellChange[] = [
+				{ x: 0, y: 0, cell: createCell('A', 0xffff0000, 0xff0000ff, Attr.BOLD) },
+				{ x: 1, y: 0, cell: createCell('B', 0xff00ff00, 0xff0000ff, Attr.BOLD) }, // Different fg
+			];
+
+			const output = generateOutput(state, changes);
+
+			// Should have two different foreground color sequences
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
+			const fgCount = (output.match(/\x1b\[38;2;/g) || []).length;
+			expect(fgCount).toBe(2);
+		});
+
+		it('breaks runs when cells are not adjacent', () => {
+			const state = createOutputState();
+
+			// Two cells with same style but not adjacent
+			const changes: CellChange[] = [
+				{ x: 0, y: 0, cell: createCell('A', 0xffff0000, 0xff0000ff, Attr.BOLD) },
+				{ x: 2, y: 0, cell: createCell('B', 0xffff0000, 0xff0000ff, Attr.BOLD) }, // Gap at x=1
+			];
+
+			const output = generateOutput(state, changes);
+
+			// Should not batch due to gap (run length of 1 for each)
+			// After 'A' at x=0, cursor is at x=1. Moving to x=2 (diff=1) uses implicit advance.
+			// This is optimal - only 1 absolute move needed, second uses implicit advance
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
+			const absoluteMoveCount = (output.match(/\x1b\[\d+;\d+H/g) || []).length;
+			expect(absoluteMoveCount).toBe(1); // Only first cell needs absolute move
+
+			// Both characters should be present
+			expect(output).toContain('A');
+			expect(output).toContain('B');
+		});
+
+		it('breaks runs when row changes', () => {
+			const state = createOutputState();
+
+			// Two cells with same style but different rows
+			const changes: CellChange[] = [
+				{ x: 0, y: 0, cell: createCell('A', 0xffff0000, 0xff0000ff, Attr.BOLD) },
+				{ x: 0, y: 1, cell: createCell('B', 0xffff0000, 0xff0000ff, Attr.BOLD) },
+			];
+
+			const output = generateOutput(state, changes);
+
+			// Should have two cursor moves (different rows)
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
+			const moveCount = (output.match(/\x1b\[\d+;\d+H/g) || []).length;
+			expect(moveCount).toBe(2);
+		});
+
+		it('handles long style runs efficiently', () => {
+			const state = createOutputState();
+
+			// Create 20 consecutive cells with identical styles
+			const changes: CellChange[] = [];
+			for (let i = 0; i < 20; i++) {
+				changes.push({
+					x: i,
+					y: 0,
+					cell: createCell(String.fromCharCode(65 + i), 0xffff0000, 0xff0000ff, Attr.BOLD),
+				});
+			}
+
+			const output = generateOutput(state, changes);
+
+			// Should only have one cursor move and one style sequence
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
+			const moveCount = (output.match(/\x1b\[\d+;\d+H/g) || []).length;
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape sequences are intentional
+			const boldCount = (output.match(/\x1b\[1m/g) || []).length;
+
+			expect(moveCount).toBe(1);
+			expect(boldCount).toBe(1);
+
+			// All characters should be present
+			for (let i = 0; i < 20; i++) {
+				expect(output).toContain(String.fromCharCode(65 + i));
+			}
+		});
+	});
+
+	describe('array-based string building', () => {
+		it('builds output string efficiently', () => {
+			const state = createOutputState();
+
+			// Multiple cells to ensure array accumulation is tested
+			const changes: CellChange[] = [
+				{ x: 0, y: 0, cell: createCell('A', 0xffffffff, 0xff000000) },
+				{ x: 5, y: 0, cell: createCell('B', 0xffffffff, 0xff000000) },
+				{ x: 10, y: 1, cell: createCell('C', 0xffffffff, 0xff000000) },
+			];
+
+			const output = generateOutput(state, changes);
+
+			// Should be a valid string with all characters
+			expect(typeof output).toBe('string');
+			expect(output).toContain('A');
+			expect(output).toContain('B');
+			expect(output).toContain('C');
 		});
 	});
 });
