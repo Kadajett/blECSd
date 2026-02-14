@@ -509,6 +509,7 @@ export function registerCollisionSystem(scheduler: Scheduler, priority = 10): vo
  * Checks if an entity is currently colliding with any other entity.
  * Uses dense iteration over the packed collision store.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity to check
  * @returns true if entity is in any active collision
  *
@@ -516,12 +517,12 @@ export function registerCollisionSystem(scheduler: Scheduler, priority = 10): vo
  * ```typescript
  * import { isColliding } from 'blecsd';
  *
- * if (isColliding(player)) {
+ * if (isColliding(world, player)) {
  *   console.log('Player is touching something!');
  * }
  * ```
  */
-export function isColliding(eid: number): boolean {
+export function isColliding(_world: World, eid: number): boolean {
 	const { data } = collisionState.activePairs;
 	for (let i = 0; i < collisionState.activePairs.size; i++) {
 		const pair = data[i];
@@ -536,6 +537,7 @@ export function isColliding(eid: number): boolean {
  * Checks if an entity is currently in any trigger zone.
  * Uses dense iteration over the packed trigger store.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity to check
  * @returns true if entity is in any active trigger
  *
@@ -543,12 +545,12 @@ export function isColliding(eid: number): boolean {
  * ```typescript
  * import { isInTrigger } from 'blecsd';
  *
- * if (isInTrigger(player)) {
+ * if (isInTrigger(world, player)) {
  *   console.log('Player is in a trigger zone!');
  * }
  * ```
  */
-export function isInTrigger(eid: number): boolean {
+export function isInTrigger(_world: World, eid: number): boolean {
 	const { data } = collisionState.activeTriggers;
 	for (let i = 0; i < collisionState.activeTriggers.size; i++) {
 		const pair = data[i];
@@ -563,6 +565,7 @@ export function isInTrigger(eid: number): boolean {
  * Gets all entities currently colliding with a specific entity.
  * Uses dense iteration over the packed collision store.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity to check
  * @returns Array of entity IDs colliding with this entity
  *
@@ -570,13 +573,13 @@ export function isInTrigger(eid: number): boolean {
  * ```typescript
  * import { getCollidingEntities } from 'blecsd';
  *
- * const enemies = getCollidingEntities(player);
+ * const enemies = getCollidingEntities(world, player);
  * for (const enemy of enemies) {
  *   // Handle collision with each enemy
  * }
  * ```
  */
-export function getCollidingEntities(eid: number): number[] {
+export function getCollidingEntities(_world: World, eid: number): number[] {
 	const colliding: number[] = [];
 	const { data } = collisionState.activePairs;
 	for (let i = 0; i < collisionState.activePairs.size; i++) {
@@ -595,6 +598,7 @@ export function getCollidingEntities(eid: number): number[] {
  * Gets all trigger zones an entity is currently in.
  * Uses dense iteration over the packed trigger store.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity to check
  * @returns Array of entity IDs of triggers this entity is in
  *
@@ -602,13 +606,13 @@ export function getCollidingEntities(eid: number): number[] {
  * ```typescript
  * import { getTriggerZones } from 'blecsd';
  *
- * const zones = getTriggerZones(player);
+ * const zones = getTriggerZones(world, player);
  * for (const zone of zones) {
  *   // Handle being in each zone
  * }
  * ```
  */
-export function getTriggerZones(eid: number): number[] {
+export function getTriggerZones(_world: World, eid: number): number[] {
 	const triggers: number[] = [];
 	const { data } = collisionState.activeTriggers;
 	for (let i = 0; i < collisionState.activeTriggers.size; i++) {
@@ -627,6 +631,7 @@ export function getTriggerZones(eid: number): number[] {
  * Checks if two specific entities are currently colliding.
  * Uses handle-based O(1) lookup via numeric pair key.
  *
+ * @param _world - The ECS world (unused)
  * @param eidA - First entity
  * @param eidB - Second entity
  * @returns true if the entities are colliding
@@ -635,12 +640,12 @@ export function getTriggerZones(eid: number): number[] {
  * ```typescript
  * import { areColliding } from 'blecsd';
  *
- * if (areColliding(player, enemy)) {
+ * if (areColliding(world, player, enemy)) {
  *   // Handle player-enemy collision
  * }
  * ```
  */
-export function areColliding(eidA: number, eidB: number): boolean {
+export function areColliding(_world: World, eidA: number, eidB: number): boolean {
 	const a = Math.min(eidA, eidB);
 	const b = Math.max(eidA, eidB);
 	const key = pairNumericKey(a, b);

@@ -331,7 +331,7 @@ describe('Collision System', () => {
 	describe('isColliding', () => {
 		it('should return false when entity is not colliding', () => {
 			const e1 = addEntity(world);
-			expect(isColliding(e1)).toBe(false);
+			expect(isColliding(world, e1)).toBe(false);
 		});
 
 		it('should return true when entity is colliding', () => {
@@ -344,15 +344,15 @@ describe('Collision System', () => {
 
 			collisionSystem(world);
 
-			expect(isColliding(e1)).toBe(true);
-			expect(isColliding(e2)).toBe(true);
+			expect(isColliding(world, e1)).toBe(true);
+			expect(isColliding(world, e2)).toBe(true);
 		});
 	});
 
 	describe('isInTrigger', () => {
 		it('should return false when entity is not in trigger', () => {
 			const e1 = addEntity(world);
-			expect(isInTrigger(e1)).toBe(false);
+			expect(isInTrigger(world, e1)).toBe(false);
 		});
 
 		it('should return true when entity is in trigger', () => {
@@ -365,14 +365,14 @@ describe('Collision System', () => {
 
 			collisionSystem(world);
 
-			expect(isInTrigger(e1)).toBe(true);
+			expect(isInTrigger(world, e1)).toBe(true);
 		});
 	});
 
 	describe('getCollidingEntities', () => {
 		it('should return empty array when not colliding', () => {
 			const e1 = addEntity(world);
-			expect(getCollidingEntities(e1)).toEqual([]);
+			expect(getCollidingEntities(world, e1)).toEqual([]);
 		});
 
 		it('should return colliding entities', () => {
@@ -388,7 +388,7 @@ describe('Collision System', () => {
 
 			collisionSystem(world);
 
-			const colliding = getCollidingEntities(e1);
+			const colliding = getCollidingEntities(world, e1);
 			expect(colliding).toContain(e2);
 			expect(colliding).toContain(e3);
 			expect(colliding).not.toContain(e1);
@@ -398,7 +398,7 @@ describe('Collision System', () => {
 	describe('getTriggerZones', () => {
 		it('should return empty array when not in any trigger', () => {
 			const e1 = addEntity(world);
-			expect(getTriggerZones(e1)).toEqual([]);
+			expect(getTriggerZones(world, e1)).toEqual([]);
 		});
 
 		it('should return trigger zones entity is in', () => {
@@ -414,7 +414,7 @@ describe('Collision System', () => {
 
 			collisionSystem(world);
 
-			const zones = getTriggerZones(player);
+			const zones = getTriggerZones(world, player);
 			expect(zones).toContain(zone1);
 			expect(zones).toContain(zone2);
 		});
@@ -431,7 +431,7 @@ describe('Collision System', () => {
 
 			collisionSystem(world);
 
-			expect(areColliding(e1, e2)).toBe(false);
+			expect(areColliding(world, e1, e2)).toBe(false);
 		});
 
 		it('should return true when entities are colliding', () => {
@@ -444,8 +444,8 @@ describe('Collision System', () => {
 
 			collisionSystem(world);
 
-			expect(areColliding(e1, e2)).toBe(true);
-			expect(areColliding(e2, e1)).toBe(true); // Order shouldn't matter
+			expect(areColliding(world, e1, e2)).toBe(true);
+			expect(areColliding(world, e2, e1)).toBe(true); // Order shouldn't matter
 		});
 
 		it('should return true for trigger collisions', () => {
@@ -458,7 +458,7 @@ describe('Collision System', () => {
 
 			collisionSystem(world);
 
-			expect(areColliding(e1, e2)).toBe(true);
+			expect(areColliding(world, e1, e2)).toBe(true);
 		});
 	});
 
@@ -542,8 +542,8 @@ describe('Collision System', () => {
 			collisionSystem(world);
 			expect(endHandler).toHaveBeenCalledTimes(2);
 			expect(getActiveCollisionCount()).toBe(1);
-			expect(areColliding(e1, e3)).toBe(true);
-			expect(areColliding(e1, e2)).toBe(false);
+			expect(areColliding(world, e1, e3)).toBe(true);
+			expect(areColliding(world, e1, e2)).toBe(false);
 
 			bus.off('collisionEnd', endHandler);
 		});
@@ -627,7 +627,7 @@ describe('Collision with different collider types', () => {
 
 		collisionSystem(world);
 
-		expect(areColliding(e1, e2)).toBe(true);
+		expect(areColliding(world, e1, e2)).toBe(true);
 	});
 
 	it('should detect circle vs box collision', () => {
@@ -640,7 +640,7 @@ describe('Collision with different collider types', () => {
 
 		collisionSystem(world);
 
-		expect(areColliding(circle, box)).toBe(true);
+		expect(areColliding(world, circle, box)).toBe(true);
 	});
 
 	it('should not detect circle vs box collision when far apart', () => {
@@ -653,6 +653,6 @@ describe('Collision with different collider types', () => {
 
 		collisionSystem(world);
 
-		expect(areColliding(circle, box)).toBe(false);
+		expect(areColliding(world, circle, box)).toBe(false);
 	});
 });
