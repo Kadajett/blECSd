@@ -193,6 +193,31 @@ export {
 	getContextMenuSelectedIndex,
 	handleContextMenuKey,
 } from './contextMenu';
+// Conversation thread widget
+export type {
+	ConversationConfig,
+	ConversationMessage,
+	ConversationState,
+	ConversationWidget,
+	MessageRole,
+} from './conversation';
+export {
+	addMessage,
+	appendToMessage,
+	Conversation,
+	ConversationConfigSchema,
+	collapseMessage,
+	createConversation,
+	createConversationState,
+	endStreamingMessage,
+	expandMessage,
+	formatConversationDisplay,
+	getVisibleMessages,
+	isConversation,
+	resetConversationStore,
+	searchMessages,
+	startStreamingMessage,
+} from './conversation';
 // DevTools widget
 export type {
 	DevToolsComponentInfo,
@@ -854,6 +879,49 @@ export {
 	Toast,
 	ToastConfigSchema,
 } from './toast';
+// Token tracker widget
+export type {
+	ModelPricing,
+	TokenStats,
+	TokenTrackerConfig,
+	TokenTrackerWidget,
+} from './tokenTracker';
+export {
+	createTokenState,
+	createTokenTracker,
+	DEFAULT_MODEL_PRICING,
+	formatTokenDisplay,
+	getTokenStats,
+	isTokenTracker,
+	recordTokens,
+	resetTokenState,
+	resetTokenTrackerStore,
+	TokenTracker,
+	TokenTrackerConfigSchema,
+} from './tokenTracker';
+// Tool-use visualization widget
+export type {
+	ToolCallEntry,
+	ToolCallStatus,
+	ToolUseConfig,
+	ToolUseState,
+	ToolUseWidget,
+} from './toolUse';
+export {
+	addToolCall,
+	createToolUse,
+	createToolUseState,
+	formatToolCallDisplay,
+	getToolCallDuration,
+	getToolCallTimeline,
+	isToolUse,
+	resetToolUseStore,
+	setToolCallError,
+	ToolUse,
+	ToolUseConfigSchema,
+	toggleToolCallExpand,
+	updateToolCallStatus,
+} from './toolUse';
 // Tree widget
 export type {
 	FlattenedNode,
