@@ -429,7 +429,7 @@ describe('renderSystem', () => {
 			};
 
 			const bounds = { x: 10, y: 5, width: 20, height: 10 };
-			renderBackground(ctx, entity, bounds);
+			renderBackground(world, ctx, entity, bounds);
 
 			// Should still be green (transparent didn't overwrite)
 			const cell = getCell(buffer, 10, 5);
@@ -460,7 +460,7 @@ describe('renderSystem', () => {
 			const bounds = { x: 10, y: 5, width: 1, height: 1 };
 
 			// Should not throw
-			expect(() => renderBorder(ctx, entity, bounds)).not.toThrow();
+			expect(() => renderBorder(world, ctx, entity, bounds)).not.toThrow();
 		});
 	});
 

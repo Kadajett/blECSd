@@ -141,10 +141,10 @@ function getContentBounds(
  * ```typescript
  * import { renderBackground } from 'blecsd';
  *
- * renderBackground(ctx, entity, bounds);
+ * renderBackground(world, ctx, entity, bounds);
  * ```
  */
-export function renderBackground(ctx: RenderContext, eid: Entity, bounds: EntityBounds): void {
+export function renderBackground(_world: World, ctx: RenderContext, eid: Entity, bounds: EntityBounds): void {
 	const { world, buffer } = ctx;
 
 	const style = getStyle(world, eid);
@@ -312,10 +312,10 @@ function renderVerticalEdges(
  * ```typescript
  * import { renderBorder } from 'blecsd';
  *
- * renderBorder(ctx, entity, bounds);
+ * renderBorder(world, ctx, entity, bounds);
  * ```
  */
-export function renderBorder(ctx: RenderContext, eid: Entity, bounds: EntityBounds): void {
+export function renderBorder(_world: World, ctx: RenderContext, eid: Entity, bounds: EntityBounds): void {
 	const { world, buffer } = ctx;
 
 	if (!hasBorderVisible(world, eid)) return;
@@ -373,10 +373,10 @@ export function renderContent(
  * ```typescript
  * import { renderScrollbar } from 'blecsd';
  *
- * renderScrollbar(ctx, entity, bounds);
+ * renderScrollbar(world, ctx, entity, bounds);
  * ```
  */
-export function renderScrollbar(_ctx: RenderContext, _eid: Entity, _bounds: EntityBounds): void {
+export function renderScrollbar(_world: World, _ctx: RenderContext, _eid: Entity, _bounds: EntityBounds): void {
 	// Placeholder for scrollbar rendering
 	// Will be implemented when scrollable component is used
 }
@@ -401,10 +401,10 @@ function renderEntity(ctx: RenderContext, eid: Entity): void {
 	}
 
 	// Render background (fills entire bounds)
-	renderBackground(ctx, eid, bounds);
+	renderBackground(world, ctx, eid, bounds);
 
 	// Render border
-	renderBorder(ctx, eid, bounds);
+	renderBorder(world, ctx, eid, bounds);
 
 	// Get content bounds (inside border)
 	const borderThickness = getBorderThickness(world, eid);
@@ -416,7 +416,7 @@ function renderEntity(ctx: RenderContext, eid: Entity): void {
 	}
 
 	// Render scrollbar if needed
-	renderScrollbar(ctx, eid, bounds);
+	renderScrollbar(world, ctx, eid, bounds);
 
 	// Mark entity dirty in unified tracker
 	markEntityDirty(ctx.dirtyTracker, world, eid);
