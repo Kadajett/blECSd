@@ -384,6 +384,45 @@ export function formatDuration(ms: number): string {
  * const lines = formatWorkflowDisplay(state, { width: 60 });
  * ```
  */
+/** Build the label parts array for a single workflow step. */
+function buildStepLabelParts(
+	state: AgentWorkflowState,
+	step: WorkflowStep,
+	showAgent: boolean,
+	showDuration: boolean,
+): readonly string[] {
+	const parts: string[] = [STATUS_ICONS[step.status], step.label];
+
+	if (showAgent && step.agent) {
+		parts.push(`[${step.agent}]`);
+	}
+	if (showDuration && step.startTime !== undefined) {
+		const duration = getStepDuration(step);
+		if (duration !== null) {
+			parts.push(formatDuration(duration));
+		}
+	}
+	const childCount = getStepChildren(state, step.id).length;
+	if (childCount > 0 && step.collapsed) {
+		parts.push(`(+${childCount})`);
+	}
+	return parts;
+}
+
+/** Build detail lines (error or result) for a step. */
+function buildStepDetailLines(step: WorkflowStep, depth: number, width: number): readonly string[] {
+	const indent = ' '.repeat(depth * 2 + 4);
+	if (step.error) {
+		const errorLine = `${indent}\x1b[31m\u2514 ${step.error}\x1b[0m`;
+		return [errorLine.length > width ? errorLine.slice(0, width) : errorLine];
+	}
+	if (step.result && !step.collapsed) {
+		const resultLine = `${indent}\x1b[90m\u2514 ${step.result}\x1b[0m`;
+		return [resultLine.length > width ? resultLine.slice(0, width) : resultLine];
+	}
+	return [];
+}
+
 export function formatWorkflowDisplay(
 	state: AgentWorkflowState,
 	config: AgentWorkflowConfig = {},
@@ -399,48 +438,18 @@ export function formatWorkflowDisplay(
 
 	const lines: string[] = [];
 
-	for (let i = 0; i < visible.length; i++) {
-		const entry = visible[i];
+	for (const entry of visible) {
 		if (!entry) continue;
 		const { step, depth } = entry;
 
-		// Build tree prefix
 		const isLast = isLastSibling(state, step);
 		const prefix = buildTreePrefix(state, step, depth, isLast);
-
-		// Status icon
-		const icon = STATUS_ICONS[step.status];
-
-		// Label parts
-		const parts: string[] = [icon, step.label];
-
-		if (showAgent && step.agent) {
-			parts.push(`[${step.agent}]`);
-		}
-
-		if (showDuration && step.startTime !== undefined) {
-			const duration = getStepDuration(step);
-			if (duration !== null) {
-				parts.push(formatDuration(duration));
-			}
-		}
-
-		// Children indicator
-		const childCount = getStepChildren(state, step.id).length;
-		if (childCount > 0 && step.collapsed) {
-			parts.push(`(+${childCount})`);
-		}
-
+		const parts = buildStepLabelParts(state, step, showAgent, showDuration);
 		const line = `${prefix}${parts.join(' ')}`;
 		lines.push(line.length > width ? line.slice(0, width) : line);
 
-		// Show error or result on next line if present
-		if (step.error) {
-			const errorLine = `${' '.repeat(depth * 2 + 4)}\x1b[31m\u2514 ${step.error}\x1b[0m`;
-			lines.push(errorLine.length > width ? errorLine.slice(0, width) : errorLine);
-		} else if (step.result && !step.collapsed) {
-			const resultLine = `${' '.repeat(depth * 2 + 4)}\x1b[90m\u2514 ${step.result}\x1b[0m`;
-			lines.push(resultLine.length > width ? resultLine.slice(0, width) : resultLine);
+		for (const detail of buildStepDetailLines(step, depth, width)) {
+			lines.push(detail);
 		}
 	}
 
