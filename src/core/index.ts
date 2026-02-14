@@ -109,6 +109,27 @@ export {
 	setAbsolutePosition,
 	setRelativePosition,
 } from './computedPosition';
+// Declarative widget composition
+export type {
+	MountedTree,
+	ReactiveConfig,
+	ReactiveProp,
+	WidgetDescriptor,
+	WidgetType,
+} from './declarative';
+export {
+	bind,
+	el,
+	elRef,
+	hbox,
+	mount,
+	registerDefaultPropSetters,
+	registerPropSetter,
+	registerWidgetFactory,
+	resetDeclarativeRegistrations,
+	unmount,
+	vbox,
+} from './declarative';
 // Legacy dirty rectangle tracking (deprecated - use dirtyTracking instead)
 export type {
 	DirtyRect as LegacyDirtyRect,
