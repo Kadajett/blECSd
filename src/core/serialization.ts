@@ -14,6 +14,19 @@ import {
 	removeEntity,
 } from './ecs';
 import type { Entity, World } from './types';
+import {
+	addEntitiesWithIds,
+	applyComponentToEntity,
+	collectAddedEntitiesData,
+	collectAllEntityIds,
+	collectChangedComponentData,
+	createEntityMapping,
+	createExistingEntityMap,
+	extractEntitySet,
+	findEntityChanges,
+	restoreComponentData,
+	serializeComponentRegistration,
+} from './serialization-helpers';
 
 // =============================================================================
 // SCHEMAS
@@ -185,37 +198,9 @@ export function serializeWorld(
 	const componentData: ComponentData[] = [];
 
 	for (const reg of components) {
-		const entitiesWithComponent: number[] = [];
-		const values: Record<string, number[]> = {};
-
-		// Initialize value arrays
-		for (const field of reg.fields) {
-			values[field] = [];
-		}
-
-		// Collect data for entities that have this component
-		for (const eid of entities) {
-			if (hasComponent(world, eid, reg.component)) {
-				entitiesWithComponent.push(eid);
-
-				// Copy field values
-				for (const field of reg.fields) {
-					const typedArray = reg.component[field];
-					if (typedArray && typeof typedArray[eid] !== 'undefined') {
-						values[field]?.push(typedArray[eid]);
-					} else {
-						values[field]?.push(0);
-					}
-				}
-			}
-		}
-
-		if (entitiesWithComponent.length > 0) {
-			componentData.push({
-				name: reg.name,
-				entities: entitiesWithComponent,
-				values,
-			});
+		const data = serializeComponentRegistration(world, entities, reg, hasComponent);
+		if (data) {
+			componentData.push(data);
 		}
 	}
 
@@ -246,24 +231,11 @@ export function serializeWorld(
  * ```
  */
 export function deserializeWorld(snapshot: WorldSnapshot): World {
-	// Validate snapshot
 	WorldSnapshotSchema.parse(snapshot);
 
 	const world = createWorld();
-	const entityMap = new Map<number, Entity>();
-
-	// First pass: create all entities
-	const allEntityIds = new Set<number>();
-	for (const comp of snapshot.components) {
-		for (const eid of comp.entities) {
-			allEntityIds.add(eid);
-		}
-	}
-
-	for (const originalEid of Array.from(allEntityIds).sort((a, b) => a - b)) {
-		const newEid = addEntity(world);
-		entityMap.set(originalEid, newEid);
-	}
+	const allEntityIds = collectAllEntityIds(snapshot);
+	const entityMap = createEntityMapping(world, allEntityIds, addEntity);
 
 	// Second pass: add components and restore values
 	for (const compData of snapshot.components) {
@@ -279,19 +251,8 @@ export function deserializeWorld(snapshot: WorldSnapshot): World {
 			const newEid = entityMap.get(originalEid);
 			if (newEid === undefined) continue;
 
-			// Add component
 			addComponent(world, newEid, reg.component);
-
-			// Restore field values
-			for (const field of reg.fields) {
-				const values = compData.values[field];
-				if (values && typeof values[i] !== 'undefined') {
-					const typedArray = reg.component[field];
-					if (typedArray) {
-						typedArray[newEid] = values[i];
-					}
-				}
-			}
+			restoreComponentData(reg.component, newEid, compData.values, i, reg.fields);
 		}
 	}
 
@@ -325,147 +286,27 @@ export function createWorldDelta(prev: WorldSnapshot, current: WorldSnapshot): W
 	WorldSnapshotSchema.parse(prev);
 	WorldSnapshotSchema.parse(current);
 
-	// Build entity sets
-	const prevEntities = new Set<number>();
-	for (const comp of prev.components) {
-		for (const eid of comp.entities) {
-			prevEntities.add(eid);
-		}
-	}
+	const prevEntities = extractEntitySet(prev);
+	const currentEntities = extractEntitySet(current);
+	const { added: addedEntities, removed: removedEntities } = findEntityChanges(
+		prevEntities,
+		currentEntities,
+	);
 
-	const currentEntities = new Set<number>();
-	for (const comp of current.components) {
-		for (const eid of comp.entities) {
-			currentEntities.add(eid);
-		}
-	}
-
-	// Find added and removed entities
-	const addedEntities: number[] = [];
-	const removedEntities: number[] = [];
-
-	for (const eid of currentEntities) {
-		if (!prevEntities.has(eid)) {
-			addedEntities.push(eid);
-		}
-	}
-
-	for (const eid of prevEntities) {
-		if (!currentEntities.has(eid)) {
-			removedEntities.push(eid);
-		}
-	}
-
-	// Find changed components
 	const changedComponents: ComponentData[] = [];
 
+	// Find changed components
 	for (const currentComp of current.components) {
 		const prevComp = prev.components.find((c) => c.name === currentComp.name);
-
-		const changedEntities: number[] = [];
-		const changedValues: Record<string, number[]> = {};
-
-		// Initialize value arrays
-		for (const field of Object.keys(currentComp.values)) {
-			changedValues[field] = [];
-		}
-
-		// Check each entity in current component
-		for (let i = 0; i < currentComp.entities.length; i++) {
-			const eid = currentComp.entities[i];
-			if (eid === undefined) continue;
-
-			// Skip newly added entities (they're in addedEntities)
-			if (addedEntities.includes(eid)) continue;
-
-			let hasChanges = false;
-
-			// If entity didn't have this component before, it's a change
-			if (!prevComp || !prevComp.entities.includes(eid)) {
-				hasChanges = true;
-			} else {
-				// Check if any field values changed
-				const prevIndex = prevComp.entities.indexOf(eid);
-				for (const field of Object.keys(currentComp.values)) {
-					const currentValue = currentComp.values[field]?.[i];
-					const prevValue = prevComp.values[field]?.[prevIndex];
-					if (currentValue !== prevValue) {
-						hasChanges = true;
-						break;
-					}
-				}
-			}
-
-			if (hasChanges) {
-				changedEntities.push(eid);
-				for (const field of Object.keys(currentComp.values)) {
-					const value = currentComp.values[field]?.[i];
-					if (value !== undefined) {
-						changedValues[field]?.push(value);
-					}
-				}
-			}
-		}
-
-		if (changedEntities.length > 0) {
-			changedComponents.push({
-				name: currentComp.name,
-				entities: changedEntities,
-				values: changedValues,
-			});
+		const changed = collectChangedComponentData(currentComp, prevComp, addedEntities);
+		if (changed) {
+			changedComponents.push(changed);
 		}
 	}
 
 	// Include full data for added entities
 	for (const currentComp of current.components) {
-		const addedInThisComp: number[] = [];
-		const addedValues: Record<string, number[]> = {};
-
-		// Initialize value arrays
-		for (const field of Object.keys(currentComp.values)) {
-			addedValues[field] = [];
-		}
-
-		for (let i = 0; i < currentComp.entities.length; i++) {
-			const eid = currentComp.entities[i];
-			if (eid === undefined) continue;
-
-			if (addedEntities.includes(eid)) {
-				addedInThisComp.push(eid);
-				for (const field of Object.keys(currentComp.values)) {
-					const value = currentComp.values[field]?.[i];
-					if (value !== undefined) {
-						addedValues[field]?.push(value);
-					}
-				}
-			}
-		}
-
-		if (addedInThisComp.length > 0) {
-			// Check if we already have this component in changedComponents
-			const existing = changedComponents.find((c) => c.name === currentComp.name);
-			if (existing) {
-				// Merge with existing
-				const mergedValues: Record<string, number[]> = {};
-				for (const field of Object.keys(currentComp.values)) {
-					mergedValues[field] = [...(existing.values[field] || []), ...(addedValues[field] || [])];
-				}
-				const merged: ComponentData = {
-					name: existing.name,
-					entities: [...existing.entities, ...addedInThisComp],
-					values: mergedValues,
-				};
-				// Replace existing
-				const idx = changedComponents.indexOf(existing);
-				changedComponents[idx] = merged;
-			} else {
-				changedComponents.push({
-					name: currentComp.name,
-					entities: addedInThisComp,
-					values: addedValues,
-				});
-			}
-		}
+		collectAddedEntitiesData(currentComp, addedEntities, changedComponents);
 	}
 
 	const delta: WorldDelta = {
@@ -510,23 +351,9 @@ export function applyWorldDelta(
 	}
 
 	// Add new entities
-	const entityMap = new Map<number, Entity>();
 	const allEntities = getAllEntities(world);
-	for (const eid of allEntities) {
-		entityMap.set(eid, eid);
-	}
-
-	for (const eid of delta.addedEntities) {
-		if (!entityExists(world, eid as Entity)) {
-			// We need to create entities with specific IDs
-			// bitecs doesn't support this directly, so we create entities until we get the right ID
-			let newEid = addEntity(world);
-			while (newEid !== eid && newEid < eid) {
-				newEid = addEntity(world);
-			}
-			entityMap.set(eid, newEid);
-		}
-	}
+	const entityMap = createExistingEntityMap(allEntities);
+	addEntitiesWithIds(world, delta.addedEntities, entityMap, addEntity, entityExists);
 
 	// Apply component changes
 	for (const compData of delta.changedComponents) {
@@ -539,24 +366,8 @@ export function applyWorldDelta(
 			const eid = compData.entities[i];
 			if (eid === undefined) continue;
 
-			const targetEid = entityMap.get(eid) || (eid as Entity);
-			if (!entityExists(world, targetEid)) continue;
-
-			// Add component if not present
-			if (!hasComponent(world, targetEid, reg.component)) {
-				addComponent(world, targetEid, reg.component);
-			}
-
-			// Update field values
-			for (const field of reg.fields) {
-				const values = compData.values[field];
-				if (values && typeof values[i] !== 'undefined') {
-					const typedArray = reg.component[field];
-					if (typedArray) {
-						typedArray[targetEid] = values[i];
-					}
-				}
-			}
+			const targetEid = (entityMap.get(eid) || eid) as Entity;
+			applyComponentToEntity(world, targetEid, reg, compData, i, hasComponent, addComponent, entityExists);
 		}
 	}
 

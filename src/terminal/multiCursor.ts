@@ -586,6 +586,45 @@ export function renderCursorOverlays(
 	return cells;
 }
 
+/** Push rectangular selection cells for one row into the cells array. */
+function pushRectCells(
+	cells: CursorCell[],
+	row: number,
+	leftCol: number,
+	rightCol: number,
+	color: number,
+	sessionId: string,
+): void {
+	for (let col = Math.max(0, leftCol); col <= rightCol; col++) {
+		cells.push({ x: col, y: row, color, char: overlayConfig.selectionChar, sessionId, isCursor: false });
+	}
+}
+
+/** Compute column range for a stream-selection row. */
+function getStreamColRange(
+	sel: { startLine: number; endLine: number; startCol: number; endCol: number },
+	row: number,
+	startLine: number,
+	endLine: number,
+	width: number,
+): { colStart: number; colEnd: number } {
+	if (row === startLine && row === endLine) {
+		return {
+			colStart: Math.max(0, Math.min(sel.startCol, sel.endCol)),
+			colEnd: Math.min(Math.max(sel.startCol, sel.endCol), width - 1),
+		};
+	}
+	if (row === startLine) {
+		const normalizedStartCol = sel.startLine <= sel.endLine ? sel.startCol : sel.endCol;
+		return { colStart: Math.max(0, normalizedStartCol), colEnd: width - 1 };
+	}
+	if (row === endLine) {
+		const normalizedEndCol = sel.startLine <= sel.endLine ? sel.endCol : sel.startCol;
+		return { colStart: 0, colEnd: Math.min(normalizedEndCol, width - 1) };
+	}
+	return { colStart: 0, colEnd: width - 1 };
+}
+
 /**
  * Render selection cells for a single overlay.
  */
@@ -600,8 +639,6 @@ function renderSelectionCells(
 	}
 
 	const cells: CursorCell[] = [];
-
-	// Normalize start/end
 	const startLine = Math.min(sel.startLine, sel.endLine);
 	const endLine = Math.min(Math.max(sel.startLine, sel.endLine), height - 1);
 
@@ -613,49 +650,15 @@ function renderSelectionCells(
 		const leftCol = Math.min(sel.startCol, sel.endCol);
 		const rightCol = Math.min(Math.max(sel.startCol, sel.endCol), width - 1);
 		for (let row = Math.max(0, startLine); row <= endLine; row++) {
-			for (let col = Math.max(0, leftCol); col <= rightCol; col++) {
-				cells.push({
-					x: col,
-					y: row,
-					color: overlay.color,
-					char: overlayConfig.selectionChar,
-					sessionId: overlay.sessionId,
-					isCursor: false,
-				});
-			}
+			pushRectCells(cells, row, leftCol, rightCol, overlay.color, overlay.sessionId);
 		}
 	} else {
-		// Stream selection
 		for (let row = Math.max(0, startLine); row <= endLine; row++) {
-			let colStart: number;
-			let colEnd: number;
-
-			if (row === startLine && row === endLine) {
-				// Single line
-				colStart = Math.max(0, Math.min(sel.startCol, sel.endCol));
-				colEnd = Math.min(Math.max(sel.startCol, sel.endCol), width - 1);
-			} else if (row === startLine) {
-				const normalizedStartCol = sel.startLine <= sel.endLine ? sel.startCol : sel.endCol;
-				colStart = Math.max(0, normalizedStartCol);
-				colEnd = width - 1;
-			} else if (row === endLine) {
-				colStart = 0;
-				const normalizedEndCol = sel.startLine <= sel.endLine ? sel.endCol : sel.startCol;
-				colEnd = Math.min(normalizedEndCol, width - 1);
-			} else {
-				// Middle line: full width
-				colStart = 0;
-				colEnd = width - 1;
-			}
-
+			const { colStart, colEnd } = getStreamColRange(sel, row, startLine, endLine, width);
 			for (let col = colStart; col <= colEnd; col++) {
 				cells.push({
-					x: col,
-					y: row,
-					color: overlay.color,
-					char: overlayConfig.selectionChar,
-					sessionId: overlay.sessionId,
-					isCursor: false,
+					x: col, y: row, color: overlay.color,
+					char: overlayConfig.selectionChar, sessionId: overlay.sessionId, isCursor: false,
 				});
 			}
 		}

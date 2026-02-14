@@ -10,12 +10,6 @@
 
 import { z } from 'zod';
 
-import { createAnsiBackend as ansiBackendFactory } from './ansi';
-import { createBrailleBackend as brailleBackendFactory } from './braille';
-import { createITerm2Backend as iterm2BackendFactory } from './iterm2';
-import { createKittyBackend as kittyBackendFactory } from './kitty';
-import { createSixelGraphicsBackend as sixelBackendFactory } from './sixel';
-
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -411,41 +405,4 @@ export function getBackendCapabilities(
 	manager: GraphicsManagerState,
 ): GraphicsCapabilities | undefined {
 	return getActiveBackend(manager)?.capabilities;
-}
-
-/**
- * Creates a graphics manager with all backends auto-registered based on detection.
- *
- * This function detects which graphics protocols are supported by the current
- * terminal and automatically registers all available backends. The backends
- * are registered in preference order (kitty > iterm2 > sixel > ansi > braille).
- *
- * @param config - Optional manager configuration (can override preference order)
- * @returns Initialized graphics manager with auto-detected backends
- *
- * @example
- * ```typescript
- * import { createAutoGraphicsManager, renderImage } from 'blecsd';
- *
- * const manager = createAutoGraphicsManager();
- * const output = renderImage(manager, imageData, { x: 0, y: 0 });
- * process.stdout.write(output);
- * ```
- */
-export function createAutoGraphicsManager(
-	config: GraphicsManagerConfig = {},
-): GraphicsManagerState {
-	// Create manager with base config
-	const manager = createGraphicsManager(config);
-
-	// Register all backends
-	// The backends will only report as supported if they're actually available
-	registerBackend(manager, kittyBackendFactory());
-	registerBackend(manager, iterm2BackendFactory());
-	registerBackend(manager, sixelBackendFactory());
-	registerBackend(manager, ansiBackendFactory());
-	registerBackend(manager, brailleBackendFactory());
-
-	// The selectBackend function will choose the best one based on isSupported()
-	return manager;
 }

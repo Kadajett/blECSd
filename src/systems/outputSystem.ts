@@ -349,98 +349,74 @@ function generateCellOutput(state: OutputState, change: CellChange): string {
  * process.stdout.write(output);
  * ```
  */
+/** Sort changes by row then column for optimal cursor movement. */
+function sortChangesByPosition(changes: readonly CellChange[], skipSort: boolean): readonly CellChange[] {
+	if (skipSort) return changes;
+	const mutable = Array.from(changes);
+	mutable.sort((a, b) => (a.y !== b.y ? a.y - b.y : a.x - b.x));
+	return mutable;
+}
+
+/** Find the end index of a style run starting at `startIndex`. */
+function findStyleRunEnd(changes: readonly CellChange[], startIndex: number): number {
+	let endIndex = startIndex + 1;
+	while (endIndex < changes.length) {
+		const current = changes[endIndex];
+		const prev = changes[endIndex - 1];
+		if (!current || !prev) break;
+		const isContinuation =
+			current.y === prev.y &&
+			current.x === prev.x + 1 &&
+			current.cell.fg === prev.cell.fg &&
+			current.cell.bg === prev.cell.bg &&
+			current.cell.attrs === prev.cell.attrs;
+		if (!isContinuation) break;
+		endIndex++;
+	}
+	return endIndex;
+}
+
+/** Emit a batched style run (multiple cells with same style) to chunks. */
+function emitStyleRun(
+	state: OutputState,
+	changes: readonly CellChange[],
+	startIndex: number,
+	endIndex: number,
+	chunks: string[],
+): void {
+	const firstChange = changes[startIndex];
+	if (!firstChange) return;
+	chunks.push(generateCursorMove(state, firstChange.x, firstChange.y));
+	chunks.push(generateStyleSequences(state, firstChange.cell));
+	for (let i = startIndex; i < endIndex; i++) {
+		const change = changes[i];
+		if (change) chunks.push(change.cell.char);
+	}
+	state.lastX = firstChange.x + (endIndex - startIndex);
+	state.lastY = firstChange.y;
+}
+
 export function generateOutput(
 	state: OutputState,
 	changes: readonly CellChange[],
 	skipSort = false,
 ): string {
-	if (changes.length === 0) {
-		return '';
-	}
+	if (changes.length === 0) return '';
 
-	// PERF: Array accumulator instead of string concatenation
 	const chunks: string[] = [];
+	const sortedChanges = sortChangesByPosition(changes, skipSort);
 
-	// PERF: Avoid array spread and allocation when sorting
-	// Sort changes by row then column for optimal cursor movement
-	// Skip sort if changes are already in row-major order (e.g., full redraws)
-	let sortedChanges: readonly CellChange[];
-	if (skipSort) {
-		sortedChanges = changes;
-	} else {
-		// PERF: Convert to array only when we need to sort (unavoidable for sort)
-		// Sort modifies array in place, but we need a mutable copy
-		const mutableChanges = Array.from(changes);
-		mutableChanges.sort((a, b) => {
-			if (a.y !== b.y) return a.y - b.y;
-			return a.x - b.x;
-		});
-		sortedChanges = mutableChanges;
-	}
-
-	// PERF: Style run batching - detect consecutive cells with same style
 	let runStartIndex = 0;
 	while (runStartIndex < sortedChanges.length) {
-		const runStart = sortedChanges[runStartIndex];
-		if (!runStart) break;
+		if (!sortedChanges[runStartIndex]) break;
+		const runEndIndex = findStyleRunEnd(sortedChanges, runStartIndex);
 
-		// Find the end of this style run
-		let runEndIndex = runStartIndex + 1;
-		while (runEndIndex < sortedChanges.length) {
-			const current = sortedChanges[runEndIndex];
-			const prev = sortedChanges[runEndIndex - 1];
-			if (!current || !prev) break;
-
-			// Check if this cell continues the run:
-			// 1. Same row
-			// 2. Immediately adjacent (x diff of 1)
-			// 3. Same style (fg, bg, attrs)
-			const sameRow = current.y === prev.y;
-			const adjacent = current.x === prev.x + 1;
-			const sameStyle =
-				current.cell.fg === prev.cell.fg &&
-				current.cell.bg === prev.cell.bg &&
-				current.cell.attrs === prev.cell.attrs;
-
-			if (sameRow && adjacent && sameStyle) {
-				runEndIndex++;
-			} else {
-				break;
-			}
-		}
-
-		// Emit the run
-		const runLength = runEndIndex - runStartIndex;
-		if (runLength === 1) {
-			// Single cell - use existing logic
+		if (runEndIndex - runStartIndex === 1) {
 			const change = sortedChanges[runStartIndex];
-			if (change) {
-				chunks.push(generateCellOutput(state, change));
-			}
+			if (change) chunks.push(generateCellOutput(state, change));
 		} else {
-			// Style run - batch emit
-			const firstChange = sortedChanges[runStartIndex];
-			if (firstChange) {
-				// Move cursor to start of run
-				chunks.push(generateCursorMove(state, firstChange.x, firstChange.y));
-
-				// Emit style once for the entire run
-				chunks.push(generateStyleSequences(state, firstChange.cell));
-
-				// Emit all characters in the run
-				for (let i = runStartIndex; i < runEndIndex; i++) {
-					const change = sortedChanges[i];
-					if (change) {
-						chunks.push(change.cell.char);
-					}
-				}
-
-				// Update cursor position (advances by run length)
-				state.lastX = firstChange.x + runLength;
-				state.lastY = firstChange.y;
-			}
+			emitStyleRun(state, sortedChanges, runStartIndex, runEndIndex, chunks);
 		}
-
 		runStartIndex = runEndIndex;
 	}
 

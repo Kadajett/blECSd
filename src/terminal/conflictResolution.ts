@@ -552,7 +552,8 @@ export function insertText(doc: TextCRDT, visiblePos: number, text: string): rea
 	const ops: TextOp[] = [];
 
 	for (let i = 0; i < text.length; i++) {
-		const op = insertChar(doc, visiblePos + i, text[i]!);
+		const char = text.charAt(i);
+		const op = insertChar(doc, visiblePos + i, char);
 		ops.push(op);
 	}
 
