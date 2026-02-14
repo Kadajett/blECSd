@@ -17,6 +17,8 @@ import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import type { Bitmap, CellMap, RenderMode } from '../media/render/ansi';
 import { cellMapToString, renderToAnsi } from '../media/render/ansi';
+import type { GraphicsManagerState } from '../terminal/graphics/backend';
+import { renderImage as renderGraphicsImage } from '../terminal/graphics/backend';
 
 // =============================================================================
 // TYPES
@@ -67,6 +69,8 @@ export interface ImageConfig {
 	readonly visible?: boolean;
 	/** Preserve aspect ratio when resizing (default: true) */
 	readonly preserveAspectRatio?: boolean;
+	/** Graphics manager for overlay mode rendering (optional) */
+	readonly graphicsManager?: GraphicsManagerState;
 }
 
 /**
@@ -142,6 +146,8 @@ export interface ImageWidget {
 	setRenderMode(mode: RenderMode): ImageWidget;
 	/** Gets the current render mode */
 	getRenderMode(): RenderMode;
+	/** Sets the graphics manager for overlay mode rendering */
+	setGraphicsManager(manager: GraphicsManagerState): ImageWidget;
 	/** Renders the current bitmap to an ANSI string */
 	render(): string;
 
@@ -285,6 +291,9 @@ const imageCurrentLoopStore = new Map<Entity, number>();
 
 /** Maps entity IDs to their rendered CellMap cache (keyed by render parameters) */
 const imageCellMapCacheStore = new Map<Entity, Map<string, CellMap>>();
+
+/** Maps entity IDs to their graphics manager (for overlay mode) */
+const imageGraphicsManagerStore = new Map<Entity, GraphicsManagerState>();
 
 // =============================================================================
 // INTERNAL HELPERS
@@ -436,8 +445,21 @@ function renderImageContent(world: World, eid: Entity): void {
 
 	const imageType = imageTypeStore.get(eid) ?? 'ansi';
 	if (imageType !== 'ansi') {
-		// Overlay mode: content is empty, bitmap is stored for external rendering
-		setContent(world, eid, '');
+		// Overlay mode: render through graphics manager if available
+		const manager = imageGraphicsManagerStore.get(eid);
+		if (manager) {
+			const x = Position.x[eid] ?? 0;
+			const y = Position.y[eid] ?? 0;
+			const output = renderGraphicsImage(
+				manager,
+				{ width: bitmap.width, height: bitmap.height, data: bitmap.data, format: 'rgba' },
+				{ x, y },
+			);
+			setContent(world, eid, output);
+		} else {
+			// No graphics manager: bitmap stored for manual retrieval via getImage()
+			setContent(world, eid, '');
+		}
 		return;
 	}
 
@@ -563,6 +585,11 @@ export function createImage(world: World, config: ImageConfig = {}): ImageWidget
 	imageCurrentLoopStore.set(eid, 0);
 	imageAnimationTimerStore.set(eid, undefined);
 
+	// Store graphics manager if provided (for overlay mode)
+	if (config.graphicsManager) {
+		imageGraphicsManagerStore.set(eid, config.graphicsManager);
+	}
+
 	// Store and render bitmap if provided
 	if (parsed.bitmap) {
 		imageBitmapStore.set(eid, parsed.bitmap);
@@ -660,6 +687,17 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 
 		getRenderMode() {
 			return imageRenderModeStore.get(eid) ?? 'color';
+		},
+
+		setGraphicsManager(manager: GraphicsManagerState) {
+			imageGraphicsManagerStore.set(eid, manager);
+			// Re-render if in overlay mode with existing bitmap
+			const imageType = imageTypeStore.get(eid) ?? 'ansi';
+			if (imageType === 'overlay') {
+				renderImageContent(world, eid);
+				markDirty(world, eid);
+			}
+			return this;
 		},
 
 		render() {
@@ -829,6 +867,7 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			imageCurrentLoopStore.delete(eid);
 			imageAnimationTimerStore.delete(eid);
 			imageCellMapCacheStore.delete(eid);
+			imageGraphicsManagerStore.delete(eid);
 			removeEntity(world, eid);
 		},
 	};
@@ -926,4 +965,5 @@ export function resetImageStore(): void {
 	imageCurrentLoopStore.clear();
 	imageAnimationTimerStore.clear();
 	imageCellMapCacheStore.clear();
+	imageGraphicsManagerStore.clear();
 }

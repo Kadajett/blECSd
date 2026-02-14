@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import type { Bitmap } from '../media/render/ansi';
+import type { GraphicsBackend } from '../terminal/graphics/backend';
+import { createGraphicsManager, registerBackend } from '../terminal/graphics/backend';
 import {
 	calculateAspectRatioDimensions,
 	clearAllImageCaches,
@@ -700,5 +702,101 @@ describe('animated images', () => {
 		image.setImage(singleBitmap);
 
 		expect(image.isAnimating()).toBe(false);
+	});
+});
+
+// =============================================================================
+// OVERLAY MODE WITH GRAPHICS MANAGER
+// =============================================================================
+
+function createMockGraphicsBackend(name: string, supported: boolean): GraphicsBackend {
+	return {
+		name: name as GraphicsBackend['name'],
+		capabilities: {
+			staticImages: true,
+			animation: false,
+			alphaChannel: true,
+			maxWidth: null,
+			maxHeight: null,
+		},
+		render: vi.fn((_image, _options) => `[${name}-render]`),
+		clear: vi.fn(() => `[${name}-clear]`),
+		isSupported: () => supported,
+	};
+}
+
+describe('overlay mode', () => {
+	it('stores bitmap without rendering in overlay mode (no manager)', () => {
+		const bitmap = createTestBitmap(4, 4, 255, 0, 0);
+		const image = createImage(world, { type: 'overlay', bitmap });
+
+		// Bitmap is stored for manual retrieval
+		expect(image.getImage()).toStrictEqual(bitmap);
+		expect(image.getType()).toBe('overlay');
+	});
+
+	it('renders through graphics manager when provided in config', () => {
+		const bitmap = createTestBitmap(4, 4, 255, 0, 0);
+		const kittyBackend = createMockGraphicsBackend('kitty', true);
+		const manager = createGraphicsManager();
+		registerBackend(manager, kittyBackend);
+
+		createImage(world, {
+			type: 'overlay',
+			bitmap,
+			graphicsManager: manager,
+		});
+
+		// The backend's render function should have been called
+		expect(kittyBackend.render).toHaveBeenCalled();
+	});
+
+	it('renders through graphics manager set via setGraphicsManager', () => {
+		const bitmap = createTestBitmap(4, 4, 0, 255, 0);
+		const image = createImage(world, { type: 'overlay', bitmap });
+
+		const kittyBackend = createMockGraphicsBackend('kitty', true);
+		const manager = createGraphicsManager();
+		registerBackend(manager, kittyBackend);
+
+		// Set the graphics manager after creation
+		image.setGraphicsManager(manager);
+
+		// The backend's render function should have been called during re-render
+		expect(kittyBackend.render).toHaveBeenCalled();
+	});
+
+	it('does not use graphics manager in ansi mode', () => {
+		const bitmap = createTestBitmap(4, 4, 255, 0, 0);
+		const kittyBackend = createMockGraphicsBackend('kitty', true);
+		const manager = createGraphicsManager();
+		registerBackend(manager, kittyBackend);
+
+		createImage(world, {
+			type: 'ansi',
+			bitmap,
+			graphicsManager: manager,
+		});
+
+		// In ANSI mode, the graphics backend should not be used
+		expect(kittyBackend.render).not.toHaveBeenCalled();
+	});
+
+	it('cleans up graphics manager store on destroy', () => {
+		const bitmap = createTestBitmap(4, 4, 255, 0, 0);
+		const manager = createGraphicsManager();
+		registerBackend(manager, createMockGraphicsBackend('kitty', true));
+
+		const image = createImage(world, {
+			type: 'overlay',
+			bitmap,
+			graphicsManager: manager,
+		});
+
+		const eid = image.eid;
+		image.destroy();
+
+		// After destroy, the entity should no longer be an image
+		expect(isImage(world, eid)).toBe(false);
 	});
 });

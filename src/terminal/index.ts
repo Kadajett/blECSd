@@ -291,6 +291,11 @@ export type {
 	VectorRenderOptions,
 } from './graphics';
 export {
+	// Backend name constants
+	ANSI_BACKEND_NAME,
+	// Kitty protocol constants
+	APC_PREFIX,
+	BRAILLE_BACKEND_NAME,
 	canvasToCells as brailleCanvasToCells,
 	// Vector-to-pixel bridge
 	canvasToPixelBitmap,
@@ -310,6 +315,8 @@ export {
 	createITerm2Backend as createITerm2GraphicsBackend,
 	createKittyBackend as createKittyGraphicsBackend,
 	createSixelGraphicsBackend,
+	// Sixel protocol constants
+	DCS_START,
 	DEFAULT_FALLBACK_CHAIN,
 	// Detection
 	detectAnsiSupport,
@@ -332,10 +339,19 @@ export {
 	getBestBackendName,
 	getDot,
 	hasPixelBackend,
+	ITERM2_BACKEND_NAME,
+	KITTY_BACKEND_NAME,
+	KITTY_ST,
+	// iTerm2 protocol constants (ST aliased to avoid collision with ansi ST)
+	OSC_1337_PREFIX,
 	refreshBackend,
 	registerBackend,
 	renderImage,
 	renderVector,
+	SIXEL_BACKEND_NAME,
+	SIXEL_ST,
+	ST as ITERM2_ST,
+	ST_ALT as ITERM2_ST_ALT,
 	selectBackend,
 	setCellColor,
 	setDot,
