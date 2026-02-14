@@ -56,8 +56,8 @@ describe('Slider Component', () => {
 	let eid: Entity;
 
 	beforeEach(() => {
-		resetSliderStore(world);
 		world = createWorld() as World;
+		resetSliderStore(world);
 		eid = addEntity(world) as Entity;
 	});
 

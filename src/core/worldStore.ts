@@ -115,14 +115,15 @@ export function cleanupEntityStores(world: World, entity: Entity): void {
 		return;
 	}
 
-	const stores = w[WORLD_STORES] as Map<string, Map<Entity, unknown>>;
+	const stores = w[WORLD_STORES] as Map<string, unknown>;
 
-	// Remove entity from all Maps
+	// Remove entity from all Maps and Sets
 	for (const store of stores.values()) {
 		if (store instanceof Map) {
-			store.delete(entity);
+			(store as Map<Entity, unknown>).delete(entity);
+		} else if (store instanceof Set) {
+			(store as Set<Entity>).delete(entity);
 		}
-		// Sets don't use entity as key, so skip
 	}
 }
 

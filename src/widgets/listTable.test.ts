@@ -15,9 +15,9 @@ describe('ListTable Widget', () => {
 	let widget: ListTableWidget;
 
 	beforeEach(() => {
+		world = createWorld() as World;
 		resetListStore();
 		resetTableStore(world);
-		world = createWorld() as World;
 		eid = addEntity(world) as Entity;
 	});
 
