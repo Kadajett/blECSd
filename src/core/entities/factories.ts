@@ -362,7 +362,7 @@ export function createListEntity(world: World, config: ListConfig = {}): Entity 
 	initFocusableComponent(world, eid);
 	applyFocusableOptions(world, eid, validated);
 
-	initListInteractive(eid);
+	initListInteractive(world, eid);
 
 	if (validated.parent !== undefined) {
 		setParent(world, eid, validated.parent as Entity);
