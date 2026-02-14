@@ -804,14 +804,6 @@ export {
 	WarningType,
 } from './warnings';
 export { createWorld, resetWorld } from './world';
-// World-scoped storage utilities
-export {
-	cleanupEntityStores,
-	clearWorldStores,
-	getStoreKeys,
-	getWorldSet,
-	getWorldStore,
-} from './worldStore';
 export type {
 	PackedQueryAdapter,
 	PackedQueryAdapterConfig,
@@ -832,6 +824,14 @@ export {
 	setWorldAdapter,
 	syncWorldAdapter,
 } from './worldAdapter';
+// World-scoped storage utilities
+export {
+	cleanupEntityStores,
+	clearWorldStores,
+	getStoreKeys,
+	getWorldSet,
+	getWorldStore,
+} from './worldStore';
 // Z-order management
 export {
 	DEFAULT_Z_INDEX,

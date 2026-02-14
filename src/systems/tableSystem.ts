@@ -711,11 +711,7 @@ function scaleWidthsToFit(widths: number[], maxTotalWidth: number): void {
  * @param maxTotalWidth - Maximum total width (optional)
  * @returns Array of column widths
  */
-export function calculateColumnWidths(
-	world: World,
-	eid: Entity,
-	maxTotalWidth?: number,
-): number[] {
+export function calculateColumnWidths(world: World, eid: Entity, maxTotalWidth?: number): number[] {
 	const data = getDataStore(world).get(eid) ?? [];
 	const columns = getColumnStore(world).get(eid) ?? [];
 	const colCount = tableStore.colCount[eid] ?? 0;

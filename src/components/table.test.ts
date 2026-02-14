@@ -54,8 +54,8 @@ describe('Table Component', () => {
 	let eid: Entity;
 
 	beforeEach(() => {
-		resetTableStore(world);
 		world = createWorld() as World;
+		resetTableStore(world);
 		eid = addEntity(world) as Entity;
 	});
 

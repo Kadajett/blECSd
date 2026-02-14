@@ -386,7 +386,8 @@ function findStyleRunEnd(changes: readonly CellChange[], startIndex: number): nu
 }
 
 /** Emit a batched style run (multiple cells with same style) to chunks. */
-function emitStyleRun(world: World, 
+function emitStyleRun(
+	world: World,
 	state: OutputState,
 	changes: readonly CellChange[],
 	startIndex: number,
@@ -405,7 +406,8 @@ function emitStyleRun(world: World,
 	state.lastY = firstChange.y;
 }
 
-export function generateOutput(world: World, 
+export function generateOutput(
+	world: World,
 	state: OutputState,
 	changes: readonly CellChange[],
 	skipSort = false,
