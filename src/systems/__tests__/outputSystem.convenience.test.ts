@@ -7,9 +7,14 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	beginSyncOutput,
 	bell,
+	cleanup,
 	clearOutputStream,
 	createOutputState,
+	disableBracketedPasteMode,
+	disableFocusReporting,
 	disableMouseTracking,
+	enableBracketedPasteMode,
+	enableFocusReporting,
 	enableMouseTracking,
 	endSyncOutput,
 	getOutputState,
@@ -223,12 +228,116 @@ describe('outputSystem convenience wrappers', () => {
 		});
 	});
 
+	describe('enableBracketedPasteMode', () => {
+		it('should enable bracketed paste mode', () => {
+			enableBracketedPasteMode();
+			expect(capture.output()).toBe('\x1b[?2004h');
+		});
+
+		it('should update OutputState', () => {
+			const state = getOutputState();
+			enableBracketedPasteMode();
+			expect(state.bracketedPaste).toBe(true);
+		});
+	});
+
+	describe('disableBracketedPasteMode', () => {
+		it('should disable bracketed paste mode', () => {
+			enableBracketedPasteMode();
+			capture.reset();
+
+			disableBracketedPasteMode();
+			expect(capture.output()).toBe('\x1b[?2004l');
+		});
+
+		it('should update OutputState', () => {
+			const state = getOutputState();
+			enableBracketedPasteMode();
+			disableBracketedPasteMode();
+			expect(state.bracketedPaste).toBe(false);
+		});
+	});
+
+	describe('enableFocusReporting', () => {
+		it('should enable focus reporting', () => {
+			enableFocusReporting();
+			expect(capture.output()).toBe('\x1b[?1004h');
+		});
+
+		it('should update OutputState', () => {
+			const state = getOutputState();
+			enableFocusReporting();
+			expect(state.focusReporting).toBe(true);
+		});
+	});
+
+	describe('disableFocusReporting', () => {
+		it('should disable focus reporting', () => {
+			enableFocusReporting();
+			capture.reset();
+
+			disableFocusReporting();
+			expect(capture.output()).toBe('\x1b[?1004l');
+		});
+
+		it('should update OutputState', () => {
+			const state = getOutputState();
+			enableFocusReporting();
+			disableFocusReporting();
+			expect(state.focusReporting).toBe(false);
+		});
+	});
+
+	describe('cleanup', () => {
+		it('should disable bracketed paste if enabled', () => {
+			enableBracketedPasteMode();
+			capture.reset();
+
+			cleanup();
+			expect(capture.output()).toContain('\x1b[?2004l');
+		});
+
+		it('should disable focus reporting if enabled', () => {
+			enableFocusReporting();
+			capture.reset();
+
+			cleanup();
+			expect(capture.output()).toContain('\x1b[?1004l');
+		});
+
+		it('should disable mouse tracking if enabled', () => {
+			enableMouseTracking('any');
+			capture.reset();
+
+			cleanup();
+			expect(capture.output()).toContain('\x1b[?1000l');
+			expect(capture.output()).toContain('\x1b[?1002l');
+			expect(capture.output()).toContain('\x1b[?1003l');
+			expect(capture.output()).toContain('\x1b[?1006l');
+		});
+
+		it('should update OutputState for all modes', () => {
+			const state = getOutputState();
+			enableBracketedPasteMode();
+			enableFocusReporting();
+			enableMouseTracking('any');
+
+			cleanup();
+
+			expect(state.bracketedPaste).toBe(false);
+			expect(state.focusReporting).toBe(false);
+			expect(state.mouseTracking).toBe(false);
+		});
+	});
+
 	describe('OutputState initialization', () => {
 		it('should initialize with correct defaults', () => {
 			const state = createOutputState();
 			expect(state.mouseTracking).toBe(false);
 			expect(state.mouseMode).toBe(null);
 			expect(state.syncOutput).toBe(false);
+			expect(state.bracketedPaste).toBe(false);
+			expect(state.focusReporting).toBe(false);
 		});
 	});
 });

@@ -75,6 +75,20 @@ let cleanupInstance: CleanupManager | null = null;
 
 function restoreTerminal(output: Writable): void {
 	try {
+		// Disable all mouse tracking modes
+		output.write('\x1b[?1000l'); // Normal tracking
+		output.write('\x1b[?1002l'); // Button tracking
+		output.write('\x1b[?1003l'); // Any motion tracking
+		output.write('\x1b[?1006l'); // SGR extended mode
+		// Disable bracketed paste
+		output.write('\x1b[?2004l');
+		// Disable focus tracking
+		output.write('\x1b[?1004l');
+		// Disable synchronized output
+		output.write('\x1b[?2026l');
+		// Pop all Kitty keyboard protocol levels
+		output.write('\x1b[<u');
+		// Now do the original cleanup
 		output.write(screen.alternateOff());
 		output.write(cursor.show());
 		output.write(style.reset());

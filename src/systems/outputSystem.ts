@@ -59,6 +59,10 @@ export interface OutputState {
 	mouseMode: string | null;
 	/** Whether synchronized output is active */
 	syncOutput: boolean;
+	/** Whether bracketed paste mode is enabled */
+	bracketedPaste: boolean;
+	/** Whether focus reporting is enabled */
+	focusReporting: boolean;
 }
 
 /**
@@ -75,6 +79,8 @@ export function createOutputState(): OutputState {
 		mouseTracking: false,
 		mouseMode: null,
 		syncOutput: false,
+		bracketedPaste: false,
+		focusReporting: false,
 	};
 }
 
@@ -840,6 +846,72 @@ export function restoreCursorPosition(): void {
 }
 
 /**
+ * Enables bracketed paste mode in the terminal.
+ * When enabled, pasted text is bracketed with special sequences.
+ *
+ * @example
+ * ```typescript
+ * import { enableBracketedPasteMode } from 'blecsd';
+ *
+ * enableBracketedPasteMode();
+ * ```
+ */
+export function enableBracketedPasteMode(): void {
+	writeRaw(`${CSI}?2004h`);
+	const state = getOutputState();
+	state.bracketedPaste = true;
+}
+
+/**
+ * Disables bracketed paste mode in the terminal.
+ *
+ * @example
+ * ```typescript
+ * import { disableBracketedPasteMode } from 'blecsd';
+ *
+ * disableBracketedPasteMode();
+ * ```
+ */
+export function disableBracketedPasteMode(): void {
+	writeRaw(`${CSI}?2004l`);
+	const state = getOutputState();
+	state.bracketedPaste = false;
+}
+
+/**
+ * Enables focus reporting in the terminal.
+ * When enabled, the terminal sends focus in/out events.
+ *
+ * @example
+ * ```typescript
+ * import { enableFocusReporting } from 'blecsd';
+ *
+ * enableFocusReporting();
+ * ```
+ */
+export function enableFocusReporting(): void {
+	writeRaw(`${CSI}?1004h`);
+	const state = getOutputState();
+	state.focusReporting = true;
+}
+
+/**
+ * Disables focus reporting in the terminal.
+ *
+ * @example
+ * ```typescript
+ * import { disableFocusReporting } from 'blecsd';
+ *
+ * disableFocusReporting();
+ * ```
+ */
+export function disableFocusReporting(): void {
+	writeRaw(`${CSI}?1004l`);
+	const state = getOutputState();
+	state.focusReporting = false;
+}
+
+/**
  * Flushes output and resets terminal state.
  * Call this before exiting the application.
  *
@@ -853,6 +925,14 @@ export function restoreCursorPosition(): void {
  */
 export function cleanup(): void {
 	const state = getOutputState();
+
+	if (state.bracketedPaste) {
+		disableBracketedPasteMode();
+	}
+
+	if (state.focusReporting) {
+		disableFocusReporting();
+	}
 
 	if (state.mouseTracking) {
 		disableMouseTracking();
