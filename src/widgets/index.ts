@@ -741,6 +741,35 @@ export {
 	SplitPane,
 	SplitPaneConfigSchema,
 } from './splitPane';
+// Streaming markdown widget
+export type {
+	MarkdownDirtyRegion,
+	StreamingBlock,
+	StreamingBlockType,
+	StreamingMarkdownConfig,
+	StreamingMarkdownProgress,
+	StreamingMarkdownState,
+	StreamingMarkdownTheme,
+	StreamingMarkdownWidget,
+} from './streamingMarkdown';
+export {
+	appendMarkdown,
+	clearMarkdownState,
+	createStreamingMarkdown,
+	createStreamingMarkdownState,
+	formatInline,
+	getMarkdownVisibleLines,
+	isStreamingMarkdown,
+	parseStreamingBlocks,
+	renderAllBlocks,
+	renderBlock as renderStreamingBlock,
+	resetStreamingMarkdownStore,
+	StreamingMarkdown,
+	StreamingMarkdownConfigSchema,
+	scrollMarkdownByLines,
+	scrollMarkdownToLine,
+	wrapText as wrapMarkdownText,
+} from './streamingMarkdown';
 // Streaming text
 export type {
 	StreamDirtyRegion,
