@@ -32,15 +32,8 @@
  * ```
  */
 
-// Types
-export type { DirtyRect, DirtyStats, DirtyTrackerData, EntityBoundsEntry } from './types';
-
-// Tracker creation and management
-export { createDirtyTracker, resizeDirtyTracker } from './tracker';
-
 // Cell-level operations
 export { isCellDirty, markCellDirty, markRegionDirty } from './cells';
-
 // Entity-level operations
 export {
 	isEntityDirty,
@@ -48,7 +41,8 @@ export {
 	removeEntityFromTracking,
 	updateEntityBounds,
 } from './entities';
-
+// Frame management
+export { clearDirtyTracking, forceFullRedrawFlag, markAllEntitiesDirty } from './frame';
 // Query functions
 export {
 	getDirtyEntities,
@@ -57,9 +51,10 @@ export {
 	hasDirtyEntities,
 	needsFullRedraw,
 } from './queries';
-
-// Frame management
-export { clearDirtyTracking, forceFullRedrawFlag, markAllEntitiesDirty } from './frame';
+// Tracker creation and management
+export { createDirtyTracker, resizeDirtyTracker } from './tracker';
+// Types
+export type { DirtyRect, DirtyStats, DirtyTrackerData, EntityBoundsEntry } from './types';
 
 // Viewport helpers
 export { getDirtyRegionsInViewport, regionIntersectsDirty } from './viewport';

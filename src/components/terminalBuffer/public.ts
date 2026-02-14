@@ -9,11 +9,11 @@ import { createAttribute } from '../../terminal/ansi/parser';
 import { cloneCell, createCell, createScreenBuffer } from '../../terminal/screen/cell';
 import { clearScrollback } from '../../utils/virtualScrollback';
 import { markDirty } from '../renderable';
-import { TerminalBuffer } from './component';
 import { isEscapeComplete, processEscapeSequence } from './ansi';
+import { TerminalBuffer } from './component';
+import { getTerminalState } from './state';
 import { terminalStateMap } from './types';
 import { handleNewline, handleTab, writePrintableChar } from './write';
-import { getTerminalState } from './state';
 
 // =============================================================================
 // PUBLIC API FUNCTIONS

@@ -4,25 +4,22 @@
  * @module components/hierarchy
  */
 
-// Component definition
-export { Hierarchy, NULL_ENTITY } from './component';
-
-// Types
-export type { HierarchyData, TraversalCallback, TraversalStackItem } from './types';
-
-// Parent/child operations
-export { appendChild, detach, removeChild, setParent } from './parent';
-
 // Child access and queries
 export {
 	getAncestors,
 	getChildAt,
-	getChildren,
 	getChildIndex,
+	getChildren,
 	getDescendants,
 	getFirstChild,
 	getLastChild,
 } from './children';
+// Component definition
+export { Hierarchy, NULL_ENTITY } from './component';
+// Insertion functions
+export { insertAfter, insertAt, insertBefore, prepend } from './insertion';
+// Parent/child operations
+export { appendChild, detach, removeChild, setParent } from './parent';
 
 // Status and query functions
 export {
@@ -36,10 +33,6 @@ export {
 	isLeaf,
 	isRoot,
 } from './queries';
-
-// Insertion functions
-export { insertAfter, insertAt, insertBefore, prepend } from './insertion';
-
 // Traversal functions
 export {
 	forAncestors,
@@ -49,3 +42,5 @@ export {
 	hasAncestor,
 	hasDescendant,
 } from './traversal';
+// Types
+export type { HierarchyData, TraversalCallback, TraversalStackItem } from './types';

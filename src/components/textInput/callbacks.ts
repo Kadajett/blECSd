@@ -4,6 +4,7 @@
  */
 
 import type { Entity, World } from '../../core/types';
+import { getTextInputConfig } from './config';
 import {
 	cancelCallbacks,
 	configStore,
@@ -11,7 +12,6 @@ import {
 	validationErrors,
 	valueChangeCallbacks,
 } from './types';
-import { getTextInputConfig } from './config';
 import { validateTextInput } from './validation';
 
 /**

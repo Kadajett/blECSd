@@ -7,7 +7,7 @@ import type { Entity, World } from '../../core/types';
 import { focusTextInput, getTextInputState, isTextInput } from './behavior';
 import { getTextInputConfig } from './config';
 import { getCursorPos } from './cursor';
-import { type TextInputAction, type TextInputConfig } from './types';
+import type { TextInputAction, TextInputConfig } from './types';
 
 /** Handle enter key for text input */
 function handleEnterKey(

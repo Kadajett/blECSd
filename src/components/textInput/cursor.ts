@@ -8,14 +8,14 @@ import { markDirty } from '../renderable';
 import { isTextInput } from './behavior';
 import { textInputStore } from './store';
 import {
+	type CursorConfig,
+	type CursorConfigOptions,
 	CursorMode,
+	type CursorModeType,
+	cursorConfigStore,
 	DEFAULT_CURSOR_BLINK_MS,
 	DEFAULT_CURSOR_BLOCK_CHAR,
 	DEFAULT_CURSOR_LINE_CHAR,
-	type CursorConfig,
-	type CursorConfigOptions,
-	type CursorModeType,
-	cursorConfigStore,
 } from './types';
 
 // =============================================================================

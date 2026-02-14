@@ -4,12 +4,12 @@
  */
 
 import {
-	DEFAULT_CAPACITY,
-	type TextInputStore,
 	cancelCallbacks,
 	configStore,
 	cursorConfigStore,
+	DEFAULT_CAPACITY,
 	submitCallbacks,
+	type TextInputStore,
 	validationErrors,
 	valueChangeCallbacks,
 } from './types';

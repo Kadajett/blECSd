@@ -240,7 +240,11 @@ export function clearDragConstraints(world: World, eid: Entity): void {
  * });
  * ```
  */
-export function setDragVerifyCallback(world: World, eid: Entity, callback: DragVerifyCallback | null): void {
+export function setDragVerifyCallback(
+	world: World,
+	eid: Entity,
+	callback: DragVerifyCallback | null,
+): void {
 	if (callback) {
 		getVerifyStore(world).set(eid, callback);
 	} else {

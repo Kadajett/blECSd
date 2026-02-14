@@ -5,12 +5,12 @@
 
 import type { Entity, World } from '../../core/types';
 import {
+	configStore,
 	DEFAULT_CENSOR_CHAR,
 	DEFAULT_PLACEHOLDER,
 	type TextInputConfig,
 	type TextInputConfigOptions,
 	type ValidationTiming,
-	configStore,
 } from './types';
 
 /**

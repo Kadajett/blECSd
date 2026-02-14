@@ -62,7 +62,7 @@ export {
 export { getTerminalCells, renderTerminalToAnsi } from './render';
 
 // Schemas
-export { TerminalBufferConfigSchema, type TerminalBufferConfig } from './schemas';
+export { type TerminalBufferConfig, TerminalBufferConfigSchema } from './schemas';
 
 // State management
 export {
@@ -75,12 +75,12 @@ export {
 } from './state';
 
 // Types
-export { terminalStateMap, type CursorShape, type TerminalState } from './types';
+export { type CursorShape, type TerminalState, terminalStateMap } from './types';
 
 // Wrapper function for setTerminalBuffer that validates config
 import type { Entity, World } from '../../core/types';
+import { type TerminalBufferConfig, TerminalBufferConfigSchema } from './schemas';
 import { setTerminalBuffer as setTerminalBufferInternal } from './state';
-import { TerminalBufferConfigSchema, type TerminalBufferConfig } from './schemas';
 
 /**
  * Sets up a terminal buffer on an entity.

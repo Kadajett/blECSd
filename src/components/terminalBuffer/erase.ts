@@ -45,7 +45,12 @@ export function clearLineSegment(
 /**
  * Clears entire lines.
  */
-export function clearLines(state: TerminalState, width: number, startY: number, endY: number): void {
+export function clearLines(
+	state: TerminalState,
+	width: number,
+	startY: number,
+	endY: number,
+): void {
 	const clearCell = createCell();
 	for (let y = startY; y < endY; y++) {
 		for (let x = 0; x < width; x++) {
@@ -89,7 +94,12 @@ export function eraseStartToCursor(
 /**
  * Erases part of the display.
  */
-export function eraseInDisplay(world: World, eid: Entity, state: TerminalState, mode: number): void {
+export function eraseInDisplay(
+	world: World,
+	eid: Entity,
+	state: TerminalState,
+	mode: number,
+): void {
 	const width = TerminalBuffer.width[eid] ?? 0;
 	const height = TerminalBuffer.height[eid] ?? 0;
 	const cursorX = TerminalBuffer.cursorX[eid] ?? 0;

@@ -15,12 +15,12 @@ import {
 import { textInputStore } from './store';
 import {
 	CursorMode,
+	configStore,
 	DEFAULT_CENSOR_CHAR,
 	DEFAULT_PLACEHOLDER,
 	TEXT_INPUT_STATE_MACHINE_CONFIG,
 	type TextInputEvent,
 	type TextInputState,
-	configStore,
 } from './types';
 
 /**
