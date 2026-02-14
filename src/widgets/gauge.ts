@@ -15,7 +15,7 @@ import { markDirty, setStyle } from '../components/renderable';
 import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { parseColor } from '../utils/color';
-import { formatPercentage } from './chartUtils';
+import { formatPercentage, renderBrailleBar } from './chartUtils';
 
 // =============================================================================
 // TYPES
@@ -65,6 +65,12 @@ export interface GaugeConfig {
 	readonly min?: number;
 	/** Maximum value for display (default: 100) */
 	readonly max?: number;
+	/** Render mode: 'block' uses fill/empty chars, 'braille' uses braille dots (default: 'block') */
+	readonly renderMode?: 'block' | 'braille';
+	/** Gradient start color for braille mode (optional) */
+	readonly gradientStart?: string | number;
+	/** Gradient end color for braille mode (optional) */
+	readonly gradientEnd?: string | number;
 }
 
 /**
@@ -88,6 +94,12 @@ export interface GaugeWidget {
 
 	/** Sets the position */
 	setPosition(x: number, y: number): GaugeWidget;
+
+	/** Sets the render mode */
+	setRenderMode(mode: 'block' | 'braille'): GaugeWidget;
+
+	/** Gets the render mode */
+	getRenderMode(): 'block' | 'braille';
 
 	/** Destroys the widget */
 	destroy(): void;
@@ -124,6 +136,9 @@ export const GaugeConfigSchema = z.object({
 	thresholds: z.array(GaugeThresholdSchema).optional(),
 	min: z.number().default(0),
 	max: z.number().default(100),
+	renderMode: z.enum(['block', 'braille']).default('block'),
+	gradientStart: z.union([z.string(), z.number()]).optional(),
+	gradientEnd: z.union([z.string(), z.number()]).optional(),
 });
 
 // =============================================================================
@@ -167,6 +182,12 @@ interface GaugeState {
 	min: number;
 	/** Max value for display */
 	max: number;
+	/** Render mode */
+	renderMode: 'block' | 'braille';
+	/** Gradient start color (for braille mode) */
+	gradientStart: number | undefined;
+	/** Gradient end color (for braille mode) */
+	gradientEnd: number | undefined;
 }
 
 /** Map of entity to gauge state */
@@ -276,10 +297,30 @@ function renderMultiLineGauge(
 }
 
 /**
- * Renders the gauge content.
+ * Renders the gauge content in braille mode.
  * @internal
  */
-function renderGauge(eid: Entity, state: GaugeState, width: number, height: number): string {
+function renderBrailleGauge(eid: Entity, state: GaugeState, width: number, height: number): string {
+	// Use braille bar rendering for sub-cell precision
+	const bar = renderBrailleBar(state.value, width);
+
+	// Build status text
+	const statusText = buildStatusText(eid, state);
+
+	// Overlay status text on the bar if it fits
+	const lines =
+		height === 1
+			? renderSingleLineGauge(bar, statusText, width)
+			: renderMultiLineGauge(bar, statusText, width, height);
+
+	return lines.join('\n');
+}
+
+/**
+ * Renders the gauge content in block mode.
+ * @internal
+ */
+function renderBlockGauge(eid: Entity, state: GaugeState, width: number, height: number): string {
 	// Calculate the fill width
 	const fillWidth = Math.round(state.value * width);
 	const emptyWidth = width - fillWidth;
@@ -297,6 +338,17 @@ function renderGauge(eid: Entity, state: GaugeState, width: number, height: numb
 			: renderMultiLineGauge(bar, statusText, width, height);
 
 	return lines.join('\n');
+}
+
+/**
+ * Renders the gauge content.
+ * @internal
+ */
+function renderGauge(eid: Entity, state: GaugeState, width: number, height: number): string {
+	if (state.renderMode === 'braille') {
+		return renderBrailleGauge(eid, state, width, height);
+	}
+	return renderBlockGauge(eid, state, width, height);
 }
 
 /**
@@ -385,6 +437,9 @@ export function createGauge(world: World, config: GaugeConfig = {}): GaugeWidget
 		thresholds: validated.thresholds ? [...validated.thresholds] : [],
 		min: validated.min,
 		max: validated.max,
+		renderMode: validated.renderMode,
+		gradientStart: validated.gradientStart ? parseColor(validated.gradientStart) : undefined,
+		gradientEnd: validated.gradientEnd ? parseColor(validated.gradientEnd) : undefined,
 	});
 
 	// Initial render
@@ -426,6 +481,20 @@ export function createGauge(world: World, config: GaugeConfig = {}): GaugeWidget
 			setPosition(world, eid, x, y);
 			markDirty(world, eid);
 			return widget;
+		},
+
+		setRenderMode(mode: 'block' | 'braille'): GaugeWidget {
+			const state = gaugeStateMap.get(eid);
+			if (state) {
+				state.renderMode = mode;
+				updateGaugeContent(world, eid);
+			}
+			return widget;
+		},
+
+		getRenderMode(): 'block' | 'braille' {
+			const state = gaugeStateMap.get(eid);
+			return state?.renderMode ?? 'block';
 		},
 
 		destroy(): void {

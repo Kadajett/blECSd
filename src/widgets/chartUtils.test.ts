@@ -7,6 +7,7 @@ import {
 	BRAILLE_BASE,
 	BRAILLE_DOTS,
 	brailleChar,
+	brailleFillPattern,
 	CHART_COLORS,
 	calculateTickInterval,
 	combineBrailleDots,
@@ -15,6 +16,8 @@ import {
 	generateTicks,
 	getChartColor,
 	interpolateChartColor,
+	renderBrailleBar,
+	renderBrailleGradientBar,
 	renderXAxisLabel,
 	renderYAxisLabel,
 	scaleValue,
@@ -25,6 +28,120 @@ describe('chartUtils', () => {
 		describe('BRAILLE_BASE', () => {
 			it('has correct base value', () => {
 				expect(BRAILLE_BASE).toBe(0x2800);
+			});
+		});
+
+		describe('brailleFillPattern', () => {
+			it('returns 0x00 for empty (0.0)', () => {
+				expect(brailleFillPattern(0.0)).toBe(0x00);
+			});
+
+			it('returns 0xFF for full (1.0)', () => {
+				expect(brailleFillPattern(1.0)).toBe(0xff);
+			});
+
+			it('returns 0x47 for left column (0.5)', () => {
+				expect(brailleFillPattern(0.5)).toBe(0x47);
+			});
+
+			it('returns 0x47 for any partial fill < 1.0', () => {
+				expect(brailleFillPattern(0.25)).toBe(0x47);
+				expect(brailleFillPattern(0.75)).toBe(0x47);
+				expect(brailleFillPattern(0.99)).toBe(0x47);
+			});
+
+			it('clamps negative values to 0', () => {
+				expect(brailleFillPattern(-0.5)).toBe(0x00);
+			});
+
+			it('clamps values > 1 to 1', () => {
+				expect(brailleFillPattern(1.5)).toBe(0xff);
+			});
+		});
+
+		describe('renderBrailleBar', () => {
+			it('renders empty bar for 0% fill', () => {
+				const bar = renderBrailleBar(0.0, 10);
+				expect(bar.length).toBe(10);
+				// All empty braille chars
+				for (let i = 0; i < bar.length; i++) {
+					expect(bar.charCodeAt(i)).toBe(BRAILLE_BASE);
+				}
+			});
+
+			it('renders full bar for 100% fill', () => {
+				const bar = renderBrailleBar(1.0, 10);
+				expect(bar.length).toBe(10);
+				// All full braille chars (0xFF)
+				for (let i = 0; i < bar.length; i++) {
+					expect(bar.charCodeAt(i)).toBe(BRAILLE_BASE | 0xff);
+				}
+			});
+
+			it('renders 50% fill correctly', () => {
+				const bar = renderBrailleBar(0.5, 10);
+				expect(bar.length).toBe(10);
+				// First 5 cells should be full, last 5 empty
+				for (let i = 0; i < 5; i++) {
+					expect(bar.charCodeAt(i)).toBe(BRAILLE_BASE | 0xff);
+				}
+				for (let i = 5; i < 10; i++) {
+					expect(bar.charCodeAt(i)).toBe(BRAILLE_BASE);
+				}
+			});
+
+			it('renders 75% fill with partial cell', () => {
+				const bar = renderBrailleBar(0.75, 10);
+				expect(bar.length).toBe(10);
+				// 0.75 * 20 pixels = 15 pixels = 7 full cells + 1 half cell
+				// First 7 cells full, 8th cell half (left column), last 2 empty
+				for (let i = 0; i < 7; i++) {
+					expect(bar.charCodeAt(i)).toBe(BRAILLE_BASE | 0xff);
+				}
+				expect(bar.charCodeAt(7)).toBe(BRAILLE_BASE | 0x47);
+				for (let i = 8; i < 10; i++) {
+					expect(bar.charCodeAt(i)).toBe(BRAILLE_BASE);
+				}
+			});
+
+			it('handles single cell width', () => {
+				const bar = renderBrailleBar(0.5, 1);
+				expect(bar.length).toBe(1);
+				// 0.5 fill with 1 cell = 1 pixel filled (half cell) = left column only
+				expect(bar.charCodeAt(0)).toBe(BRAILLE_BASE | 0x47);
+			});
+
+			it('returns empty string for zero width', () => {
+				const bar = renderBrailleBar(0.5, 0);
+				expect(bar).toBe('');
+			});
+
+			it('returns empty string for negative width', () => {
+				const bar = renderBrailleBar(0.5, -1);
+				expect(bar).toBe('');
+			});
+
+			it('clamps fill fraction to 0-1 range', () => {
+				const barNegative = renderBrailleBar(-0.5, 10);
+				const barEmpty = renderBrailleBar(0.0, 10);
+				expect(barNegative).toBe(barEmpty);
+
+				const barOver = renderBrailleBar(1.5, 10);
+				const barFull = renderBrailleBar(1.0, 10);
+				expect(barOver).toBe(barFull);
+			});
+		});
+
+		describe('renderBrailleGradientBar', () => {
+			it('renders same pattern as renderBrailleBar', () => {
+				const bar1 = renderBrailleBar(0.75, 10);
+				const bar2 = renderBrailleGradientBar(0.75, 10, 0xff00ff00, 0xffff0000);
+				expect(bar2).toBe(bar1);
+			});
+
+			it('handles all fill fractions', () => {
+				const bar = renderBrailleGradientBar(0.5, 10, 0xff00ff00, 0xffff0000);
+				expect(bar.length).toBe(10);
 			});
 		});
 
