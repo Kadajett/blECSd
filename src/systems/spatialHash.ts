@@ -197,10 +197,11 @@ export function worldToCell(grid: SpatialHashGrid, x: number, y: number): CellCo
  * import { createSpatialHash, insertEntity } from 'blecsd';
  *
  * const grid = createSpatialHash();
- * insertEntity(grid, entity, 10, 20, 2, 3);
+ * insertEntity(world, grid, entity, 10, 20, 2, 3);
  * ```
  */
 export function insertEntity(
+	world: World,
 	grid: SpatialHashGrid,
 	eid: Entity,
 	x: number,
@@ -208,7 +209,7 @@ export function insertEntity(
 	width = 1,
 	height = 1,
 ): void {
-	removeEntityFromGrid(grid, eid);
+	removeEntityFromGrid(world, grid, eid);
 
 	const entityId = eid as number;
 	const occupiedCells = new Set<number>();
@@ -245,10 +246,10 @@ export function insertEntity(
  * ```typescript
  * import { removeEntityFromGrid } from 'blecsd';
  *
- * removeEntityFromGrid(grid, entity);
+ * removeEntityFromGrid(world, grid, entity);
  * ```
  */
-export function removeEntityFromGrid(grid: SpatialHashGrid, eid: Entity): void {
+export function removeEntityFromGrid(_world: World, grid: SpatialHashGrid, eid: Entity): void {
 	const entityId = eid as number;
 	const cells = grid.entityCells.get(entityId);
 	if (!cells) {
@@ -334,13 +335,13 @@ export function queryArea(
  * ```typescript
  * import { getNearbyEntities } from 'blecsd';
  *
- * const candidates = getNearbyEntities(grid, player);
+ * const candidates = getNearbyEntities(world, grid, player);
  * for (const other of candidates) {
  *   // Narrow-phase collision check
  * }
  * ```
  */
-export function getNearbyEntities(grid: SpatialHashGrid, eid: Entity): ReadonlySet<number> {
+export function getNearbyEntities(_world: World, grid: SpatialHashGrid, eid: Entity): ReadonlySet<number> {
 	const entityId = eid as number;
 	const result = new Set<number>();
 
@@ -499,7 +500,7 @@ export function rebuildSpatialHash(grid: SpatialHashGrid, world: World): void {
 		const ox = Collider.offsetX[eid] as number;
 		const oy = Collider.offsetY[eid] as number;
 
-		insertEntity(grid, eid, x + ox, y + oy, w, h);
+		insertEntity(world, grid, eid, x + ox, y + oy, w, h);
 	}
 }
 
@@ -596,10 +597,10 @@ export function getSpatialHashSystemState(): SpatialHashSystemState {
  * // After teleporting an entity, mark it dirty
  * Position.x[entity] = 100;
  * Position.y[entity] = 200;
- * markSpatialDirty(entity);
+ * markSpatialDirty(world, entity);
  * ```
  */
-export function markSpatialDirty(eid: Entity): void {
+export function markSpatialDirty(_world: World, eid: Entity): void {
 	const id = eid as number;
 	if (!systemState.dirtyLookup.has(id)) {
 		addToStore(systemState.dirtyEntities, id);
@@ -696,6 +697,7 @@ function populatePrevCache(state: SpatialHashSystemState, entities: readonly Ent
  * from the grid and position cache.
  */
 function removeStaleEntities(
+	world: World,
 	grid: SpatialHashGrid,
 	state: SpatialHashSystemState,
 	currentEntities: ReadonlySet<number>,
@@ -707,7 +709,7 @@ function removeStaleEntities(
 		}
 	});
 	for (const eid of toRemove) {
-		removeEntityFromGrid(grid, eid);
+		removeEntityFromGrid(world, grid, eid);
 		state.prevBounds.delete(eid);
 	}
 }
@@ -760,7 +762,7 @@ function processDirtyEntities(
 		// Skip entities that no longer have the required components
 		if (!hasComponent(world, eid, Position) || !hasComponent(world, eid, Collider)) continue;
 		const { x, y, w, h } = readEntityBounds(eid);
-		insertEntity(grid, eid, x, y, w, h);
+		insertEntity(world, grid, eid, x, y, w, h);
 	}
 }
 
@@ -830,7 +832,7 @@ export function incrementalSpatialUpdate(
 	}
 
 	// Remove entities that no longer have Position+Collider
-	removeStaleEntities(grid, state, currentEntities);
+	removeStaleEntities(world, grid, state, currentEntities);
 
 	// Detect position/size changes
 	detectDirtyEntities(state, entities);

@@ -91,6 +91,7 @@ export function createPositionCache(): PositionCache {
  * Updates a single entity in the spatial hash only if it has moved.
  * Returns true if the entity was updated.
  *
+ * @param world - The ECS world
  * @param grid - Spatial hash grid
  * @param cache - Position cache
  * @param eid - Entity to check
@@ -101,6 +102,7 @@ export function createPositionCache(): PositionCache {
  * @returns True if entity was updated in the grid
  */
 export function updateEntityIfMoved(
+	world: World,
 	grid: SpatialHashGrid,
 	cache: PositionCache,
 	eid: Entity,
@@ -116,7 +118,7 @@ export function updateEntityIfMoved(
 	}
 
 	// Entity moved - update in grid
-	insertEntity(grid, eid, x, y, w, h);
+	insertEntity(world, grid, eid, x, y, w, h);
 
 	// Update cache in-place when possible to avoid allocation
 	if (prev) {
@@ -263,7 +265,7 @@ export function createIncrementalSpatialSystem(
 				h = Dimensions.height[eid] as number;
 			}
 
-			updateEntityIfMoved(grid, cache, eid, x, y, w, h);
+			updateEntityIfMoved(world, grid, cache, eid, x, y, w, h);
 		}
 
 		return world;

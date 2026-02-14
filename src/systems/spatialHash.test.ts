@@ -58,9 +58,11 @@ function createCollidable(
 
 describe('spatialHash', () => {
 	let grid: SpatialHashGrid;
+	let world: World;
 
 	beforeEach(() => {
 		grid = createSpatialHash({ cellSize: 8 });
+		world = createWorld();
 		resetSpatialHashState();
 	});
 
@@ -112,7 +114,7 @@ describe('spatialHash', () => {
 
 	describe('insertEntity', () => {
 		it('inserts an entity into the grid', () => {
-			insertEntity(grid, 1 as Entity, 4, 4, 1, 1);
+			insertEntity(world, grid, 1 as Entity, 4, 4, 1, 1);
 
 			const stats = getSpatialHashStats(grid);
 			expect(stats.entityCount).toBe(1);
@@ -121,7 +123,7 @@ describe('spatialHash', () => {
 
 		it('inserts entity spanning multiple cells', () => {
 			// Entity from (0,0) to (17,17) with cell size 8
-			insertEntity(grid, 1 as Entity, 0, 0, 17, 17);
+			insertEntity(world, grid, 1 as Entity, 0, 0, 17, 17);
 
 			const stats = getSpatialHashStats(grid);
 			expect(stats.entityCount).toBe(1);
@@ -129,11 +131,11 @@ describe('spatialHash', () => {
 		});
 
 		it('updates position on re-insert', () => {
-			insertEntity(grid, 1 as Entity, 0, 0, 1, 1);
+			insertEntity(world, grid, 1 as Entity, 0, 0, 1, 1);
 			const nearby1 = getEntitiesAtPoint(grid, 0, 0);
 			expect(nearby1.has(1)).toBe(true);
 
-			insertEntity(grid, 1 as Entity, 20, 20, 1, 1);
+			insertEntity(world, grid, 1 as Entity, 20, 20, 1, 1);
 			const nearbyOld = getEntitiesAtPoint(grid, 0, 0);
 			expect(nearbyOld.has(1)).toBe(false);
 
@@ -144,8 +146,8 @@ describe('spatialHash', () => {
 
 	describe('removeEntityFromGrid', () => {
 		it('removes an entity from the grid', () => {
-			insertEntity(grid, 1 as Entity, 4, 4, 1, 1);
-			removeEntityFromGrid(grid, 1 as Entity);
+			insertEntity(world, grid, 1 as Entity, 4, 4, 1, 1);
+			removeEntityFromGrid(world, grid, 1 as Entity);
 
 			const stats = getSpatialHashStats(grid);
 			expect(stats.entityCount).toBe(0);
@@ -153,7 +155,7 @@ describe('spatialHash', () => {
 		});
 
 		it('is a no-op for non-existent entities', () => {
-			removeEntityFromGrid(grid, 999 as Entity);
+			removeEntityFromGrid(world, grid, 999 as Entity);
 			// Should not throw
 		});
 	});
@@ -164,8 +166,8 @@ describe('spatialHash', () => {
 
 	describe('queryArea', () => {
 		it('finds entities in the queried area', () => {
-			insertEntity(grid, 1 as Entity, 4, 4, 1, 1);
-			insertEntity(grid, 2 as Entity, 20, 20, 1, 1);
+			insertEntity(world, grid, 1 as Entity, 4, 4, 1, 1);
+			insertEntity(world, grid, 2 as Entity, 20, 20, 1, 1);
 
 			const results = queryArea(grid, 0, 0, 8, 8);
 			expect(results.has(1)).toBe(true);
@@ -178,8 +180,8 @@ describe('spatialHash', () => {
 		});
 
 		it('finds entities across multiple cells', () => {
-			insertEntity(grid, 1 as Entity, 4, 4, 1, 1);
-			insertEntity(grid, 2 as Entity, 12, 4, 1, 1);
+			insertEntity(world, grid, 1 as Entity, 4, 4, 1, 1);
+			insertEntity(world, grid, 2 as Entity, 12, 4, 1, 1);
 
 			// Query area spanning both cells
 			const results = queryArea(grid, 0, 0, 16, 8);
@@ -194,23 +196,23 @@ describe('spatialHash', () => {
 
 	describe('getNearbyEntities', () => {
 		it('finds entities in same cell', () => {
-			insertEntity(grid, 1 as Entity, 4, 4, 1, 1);
-			insertEntity(grid, 2 as Entity, 5, 5, 1, 1);
-			insertEntity(grid, 3 as Entity, 20, 20, 1, 1);
+			insertEntity(world, grid, 1 as Entity, 4, 4, 1, 1);
+			insertEntity(world, grid, 2 as Entity, 5, 5, 1, 1);
+			insertEntity(world, grid, 3 as Entity, 20, 20, 1, 1);
 
-			const nearby = getNearbyEntities(grid, 1 as Entity);
+			const nearby = getNearbyEntities(world, grid, 1 as Entity);
 			expect(nearby.has(2)).toBe(true);
 			expect(nearby.has(3)).toBe(false);
 		});
 
 		it('excludes the queried entity itself', () => {
-			insertEntity(grid, 1 as Entity, 4, 4, 1, 1);
-			const nearby = getNearbyEntities(grid, 1 as Entity);
+			insertEntity(world, grid, 1 as Entity, 4, 4, 1, 1);
+			const nearby = getNearbyEntities(world, grid, 1 as Entity);
 			expect(nearby.has(1)).toBe(false);
 		});
 
 		it('returns empty set for unknown entity', () => {
-			const nearby = getNearbyEntities(grid, 999 as Entity);
+			const nearby = getNearbyEntities(world, grid, 999 as Entity);
 			expect(nearby.size).toBe(0);
 		});
 	});
@@ -221,7 +223,7 @@ describe('spatialHash', () => {
 
 	describe('getEntitiesInCell', () => {
 		it('returns entities in a specific cell', () => {
-			insertEntity(grid, 1 as Entity, 4, 4, 1, 1);
+			insertEntity(world, grid, 1 as Entity, 4, 4, 1, 1);
 			const entities = getEntitiesInCell(grid, 0, 0);
 			expect(entities.has(1)).toBe(true);
 		});
@@ -234,7 +236,7 @@ describe('spatialHash', () => {
 
 	describe('getEntitiesAtPoint', () => {
 		it('returns entities at a world point', () => {
-			insertEntity(grid, 1 as Entity, 4, 4, 1, 1);
+			insertEntity(world, grid, 1 as Entity, 4, 4, 1, 1);
 			const entities = getEntitiesAtPoint(grid, 4, 4);
 			expect(entities.has(1)).toBe(true);
 		});
@@ -246,8 +248,8 @@ describe('spatialHash', () => {
 
 	describe('clearSpatialHash', () => {
 		it('removes all entities from the grid', () => {
-			insertEntity(grid, 1 as Entity, 4, 4, 1, 1);
-			insertEntity(grid, 2 as Entity, 20, 20, 1, 1);
+			insertEntity(world, grid, 1 as Entity, 4, 4, 1, 1);
+			insertEntity(world, grid, 2 as Entity, 20, 20, 1, 1);
 			clearSpatialHash(grid);
 
 			const stats = getSpatialHashStats(grid);
@@ -258,9 +260,9 @@ describe('spatialHash', () => {
 
 	describe('getSpatialHashStats', () => {
 		it('returns correct statistics', () => {
-			insertEntity(grid, 1 as Entity, 4, 4, 1, 1);
-			insertEntity(grid, 2 as Entity, 5, 5, 1, 1);
-			insertEntity(grid, 3 as Entity, 20, 20, 1, 1);
+			insertEntity(world, grid, 1 as Entity, 4, 4, 1, 1);
+			insertEntity(world, grid, 2 as Entity, 5, 5, 1, 1);
+			insertEntity(world, grid, 3 as Entity, 20, 20, 1, 1);
 
 			const stats = getSpatialHashStats(grid);
 			expect(stats.entityCount).toBe(3);
@@ -362,29 +364,29 @@ describe('spatialHash', () => {
 	describe('markSpatialDirty / getSpatialDirtyCount', () => {
 		it('marks an entity as dirty', () => {
 			expect(getSpatialDirtyCount()).toBe(0);
-			markSpatialDirty(42 as Entity);
+			markSpatialDirty(world,42 as Entity);
 			expect(getSpatialDirtyCount()).toBe(1);
 		});
 
 		it('deduplicates repeated marks for the same entity', () => {
-			markSpatialDirty(10 as Entity);
-			markSpatialDirty(10 as Entity);
-			markSpatialDirty(10 as Entity);
+			markSpatialDirty(world,10 as Entity);
+			markSpatialDirty(world,10 as Entity);
+			markSpatialDirty(world,10 as Entity);
 			expect(getSpatialDirtyCount()).toBe(1);
 		});
 
 		it('tracks multiple distinct entities', () => {
-			markSpatialDirty(1 as Entity);
-			markSpatialDirty(2 as Entity);
-			markSpatialDirty(3 as Entity);
+			markSpatialDirty(world,1 as Entity);
+			markSpatialDirty(world,2 as Entity);
+			markSpatialDirty(world,3 as Entity);
 			expect(getSpatialDirtyCount()).toBe(3);
 		});
 	});
 
 	describe('resetSpatialHashState', () => {
 		it('clears dirty entities and position cache', () => {
-			markSpatialDirty(1 as Entity);
-			markSpatialDirty(2 as Entity);
+			markSpatialDirty(world,1 as Entity);
+			markSpatialDirty(world,2 as Entity);
 			const state = getSpatialHashSystemState();
 			state.prevBounds.set(1 as Entity, { x: 10, y: 0, w: 0, h: 0 });
 			state.initialized = true;
@@ -577,7 +579,7 @@ describe('spatialHash', () => {
 
 			// Move entity and mark dirty via external API
 			Position.x[eid] = 20;
-			markSpatialDirty(eid);
+			markSpatialDirty(world,eid);
 
 			// The system tick should pick up the pre-marked dirty entity
 			spatialHashSystem(world);
