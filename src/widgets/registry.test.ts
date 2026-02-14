@@ -5,6 +5,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import {
@@ -518,6 +519,356 @@ describe('Widget Registry', () => {
 
 				expect(result).toEqual([]);
 			});
+		});
+	});
+
+	describe('config schema validation', () => {
+		it('validates config against schema on create', () => {
+			const configSchema = z.object({
+				width: z.number().positive(),
+				height: z.number().positive(),
+			});
+			const factory: WidgetFactory = vi.fn((_w, _e, config) => ({ config }));
+
+			registry.register('test', {
+				factory,
+				configSchema,
+			});
+
+			registry.create(world, 'test', { width: 10, height: 5 });
+
+			// Verify factory was called with validated config
+			expect(factory).toHaveBeenCalledWith(world, expect.any(Number), { width: 10, height: 5 });
+		});
+
+		it('throws on invalid config with descriptive error', () => {
+			const configSchema = z.object({
+				width: z.number().positive(),
+				height: z.number().positive(),
+			});
+			const factory: WidgetFactory = vi.fn((_w, _e, config) => ({ config }));
+
+			registry.register('test', {
+				factory,
+				configSchema,
+			});
+
+			expect(() => {
+				registry.create(world, 'test', { width: -1, height: 'invalid' });
+			}).toThrow(/Invalid config for widget type 'test'/);
+		});
+
+		it('passes validation with undefined config if schema exists but config is undefined', () => {
+			const configSchema = z.object({
+				width: z.number().optional(),
+			});
+			const factory: WidgetFactory = vi.fn((_w, _e, config) => ({ config }));
+
+			registry.register('test', {
+				factory,
+				configSchema,
+			});
+
+			registry.create(world, 'test');
+
+			expect(factory).toHaveBeenCalledWith(world, expect.any(Number), undefined);
+		});
+
+		it('transforms config according to schema', () => {
+			const configSchema = z.object({
+				value: z.string().transform((val) => Number.parseInt(val, 10)),
+			});
+			const factory: WidgetFactory = vi.fn((_w, _e, config) => ({ config }));
+
+			registry.register('test', {
+				factory,
+				configSchema,
+			});
+
+			registry.create(world, 'test', { value: '42' });
+
+			// Verify factory was called with transformed config
+			expect(factory).toHaveBeenCalledWith(world, expect.any(Number), { value: 42 });
+		});
+
+		it('works with createWithEntity as well', () => {
+			const configSchema = z.object({
+				name: z.string().min(1),
+			});
+			const factory: WidgetFactory = vi.fn((_w, _e, config) => ({ config }));
+
+			registry.register('test', {
+				factory,
+				configSchema,
+			});
+
+			const eid = addEntity(world);
+			const widget = registry.createWithEntity(world, eid, 'test', { name: 'Widget' });
+
+			expect(widget).toEqual({ config: { name: 'Widget' } });
+		});
+
+		it('allows registration without config schema (backward compatibility)', () => {
+			const factory: WidgetFactory = vi.fn((_w, _e, config) => ({ config }));
+
+			registry.register('test', {
+				factory,
+				description: 'Test widget',
+			});
+
+			const widget = registry.create(world, 'test', { anything: true });
+
+			expect(widget).toEqual({ config: { anything: true } });
+		});
+	});
+
+	describe('listByCategory', () => {
+		beforeEach(() => {
+			const factory: WidgetFactory = vi.fn(() => ({ eid: 0 }));
+			registry.register('basicWidget', {
+				factory,
+				category: 'basic',
+			});
+			registry.register('dataWidget', {
+				factory,
+				category: 'data',
+			});
+			registry.register('displayWidget', {
+				factory,
+				category: 'display',
+			});
+			registry.register('noCategory', {
+				factory,
+			});
+		});
+
+		it('returns widgets in a specific category', () => {
+			const basic = registry.listByCategory('basic');
+
+			expect(basic).toEqual(['basicwidget']); // Names are normalized to lowercase
+		});
+
+		it('returns empty array for non-existent category', () => {
+			const result = registry.listByCategory('nonexistent');
+
+			expect(result).toEqual([]);
+		});
+
+		it('is case-insensitive', () => {
+			const result = registry.listByCategory('BASIC');
+
+			expect(result).toEqual(['basicwidget']); // Names are normalized to lowercase
+		});
+
+		it('excludes widgets without category', () => {
+			const basic = registry.listByCategory('basic');
+
+			expect(basic).not.toContain('nocategory');
+		});
+	});
+
+	describe('search', () => {
+		beforeEach(() => {
+			const factory: WidgetFactory = vi.fn(() => ({ eid: 0 }));
+			registry.register('scrollableBox', {
+				factory,
+				description: 'A box with scrolling support',
+			});
+			registry.register('scrollableText', {
+				factory,
+				description: 'Text display with scroll capability',
+			});
+			registry.register('button', {
+				factory,
+				description: 'Clickable button widget',
+			});
+		});
+
+		it('searches widget names', () => {
+			const results = registry.search('scroll');
+
+			expect(results).toContain('scrollablebox'); // Names are normalized to lowercase
+			expect(results).toContain('scrollabletext'); // Names are normalized to lowercase
+			expect(results).not.toContain('button');
+		});
+
+		it('searches widget descriptions', () => {
+			const results = registry.search('click');
+
+			expect(results).toContain('button');
+			expect(results).not.toContain('scrollablebox');
+		});
+
+		it('is case-insensitive', () => {
+			const results = registry.search('SCROLL');
+
+			expect(results).toContain('scrollablebox'); // Names are normalized to lowercase
+			expect(results).toContain('scrollabletext'); // Names are normalized to lowercase
+		});
+
+		it('returns empty array when no matches found', () => {
+			const results = registry.search('nonexistent');
+
+			expect(results).toEqual([]);
+		});
+
+		it('returns sorted results', () => {
+			const results = registry.search('scroll');
+
+			expect(results).toEqual(['scrollablebox', 'scrollabletext']); // Names are normalized to lowercase
+		});
+	});
+
+	describe('info', () => {
+		it('returns complete widget info', () => {
+			const factory: WidgetFactory = vi.fn(() => ({ eid: 0 }));
+			const configSchema = z.object({ width: z.number() });
+
+			registry.register('testWidget', {
+				factory,
+				description: 'Test widget description',
+				category: 'testing',
+				tags: ['test', 'example'],
+				version: '1.0.0',
+				requiredComponents: ['Position', 'Dimensions'],
+				supportedEvents: ['click', 'hover'],
+				configSchema,
+			});
+
+			const info = registry.info('testWidget');
+
+			expect(info).toEqual({
+				name: 'testwidget',
+				description: 'Test widget description',
+				category: 'testing',
+				tags: ['test', 'example'],
+				version: '1.0.0',
+				requiredComponents: ['Position', 'Dimensions'],
+				supportedEvents: ['click', 'hover'],
+				hasConfigSchema: true,
+			});
+		});
+
+		it('returns undefined for non-existent widget', () => {
+			const info = registry.info('nonexistent');
+
+			expect(info).toBeUndefined();
+		});
+
+		it('uses default values for missing fields', () => {
+			const factory: WidgetFactory = vi.fn(() => ({ eid: 0 }));
+
+			registry.register('minimal', {
+				factory,
+			});
+
+			const info = registry.info('minimal');
+
+			expect(info).toEqual({
+				name: 'minimal',
+				description: '',
+				category: '',
+				tags: [],
+				version: '',
+				requiredComponents: [],
+				supportedEvents: [],
+				hasConfigSchema: false,
+			});
+		});
+
+		it('resolves through aliases', () => {
+			const factory: WidgetFactory = vi.fn(() => ({ eid: 0 }));
+
+			registry.register('original', {
+				factory,
+				description: 'Original widget',
+				category: 'test',
+			});
+			registry.alias('alias', 'original');
+
+			const info = registry.info('alias');
+
+			expect(info?.name).toBe('original');
+			expect(info?.description).toBe('Original widget');
+		});
+	});
+
+	describe('builtin widgets metadata', () => {
+		beforeEach(() => {
+			registerBuiltinWidgets(registry);
+		});
+
+		it('box has correct metadata', () => {
+			const info = registry.info('box');
+
+			expect(info?.category).toBe('basic');
+			expect(info?.version).toBe('0.4.0');
+			expect(info?.requiredComponents).toContain('Position');
+			expect(info?.requiredComponents).toContain('Dimensions');
+		});
+
+		it('list has correct metadata', () => {
+			const info = registry.info('list');
+
+			expect(info?.category).toBe('data');
+			expect(info?.version).toBe('0.4.0');
+			expect(info?.supportedEvents).toContain('select');
+		});
+
+		it('panel has correct metadata', () => {
+			const info = registry.info('panel');
+
+			expect(info?.category).toBe('layout');
+			expect(info?.supportedEvents).toContain('close');
+			expect(info?.supportedEvents).toContain('collapse');
+		});
+
+		it('loading has correct metadata', () => {
+			const info = registry.info('loading');
+
+			expect(info?.category).toBe('feedback');
+			expect(info?.tags).toContain('animation');
+		});
+
+		it('scrollableBox has correct metadata', () => {
+			const info = registry.info('scrollableBox');
+
+			expect(info?.category).toBe('layout');
+			expect(info?.requiredComponents).toContain('Scrollable');
+			expect(info?.supportedEvents).toContain('scroll');
+		});
+
+		it('all builtin widgets have category', () => {
+			const types = registry.list();
+
+			for (const type of types) {
+				const info = registry.info(type);
+				expect(info?.category).toBeTruthy();
+			}
+		});
+
+		it('all builtin widgets have version', () => {
+			const types = registry.list();
+
+			for (const type of types) {
+				const info = registry.info(type);
+				expect(info?.version).toBeTruthy();
+			}
+		});
+
+		it('can filter by category', () => {
+			const basicWidgets = registry.listByCategory('basic');
+
+			expect(basicWidgets).toContain('box');
+			expect(basicWidgets).toContain('text');
+			expect(basicWidgets).toContain('line');
+		});
+
+		it('can search builtin widgets', () => {
+			const scrollWidgets = registry.search('scroll');
+
+			expect(scrollWidgets).toContain('scrollablebox'); // Names are normalized to lowercase
+			expect(scrollWidgets).toContain('scrollabletext'); // Names are normalized to lowercase
 		});
 	});
 });
