@@ -595,6 +595,9 @@ export { KNOWN_COMPONENTS };
 // Debug console
 export type { ConsoleLogLevel, DebugConsole, DebugConsoleConfig, LogEntry } from './console';
 export { createDebugConsole, DebugConsoleConfigSchema, debugLog } from './console';
+// Debug toggle
+export type { DebugToggle, DebugToggleConfig, DebugToggleState } from './debugToggle';
+export { createDebugToggle, DebugToggleConfigSchema } from './debugToggle';
 // ECS Inspector (note: inspectEntity and inspectWorld are already exported above)
 export {
 	dumpEntity,
@@ -629,3 +632,14 @@ export {
 	createInputLogger,
 	createMiniProfiler,
 } from './overlay';
+// Slow frame detector
+export type {
+	SlowFrameConfig,
+	SlowFrameDetector,
+	SlowFrameStats,
+} from './slowFrame';
+export {
+	createSlowFrameDetector,
+	renderSlowFrameWarning,
+	SlowFrameConfigSchema,
+} from './slowFrame';
