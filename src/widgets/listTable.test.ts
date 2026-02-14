@@ -16,7 +16,7 @@ describe('ListTable Widget', () => {
 
 	beforeEach(() => {
 		resetListStore();
-		resetTableStore();
+		resetTableStore(world);
 		world = createWorld() as World;
 		eid = addEntity(world) as Entity;
 	});

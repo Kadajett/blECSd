@@ -54,7 +54,7 @@ describe('Table Component', () => {
 	let eid: Entity;
 
 	beforeEach(() => {
-		resetTableStore();
+		resetTableStore(world);
 		world = createWorld() as World;
 		eid = addEntity(world) as Entity;
 	});
@@ -442,7 +442,7 @@ describe('Table Component', () => {
 			attachTableBehavior(world, eid);
 			expect(tableStore.isTable[eid]).toBe(1);
 
-			resetTableStore();
+			resetTableStore(world);
 			expect(tableStore.isTable[eid]).toBe(0);
 		});
 	});
