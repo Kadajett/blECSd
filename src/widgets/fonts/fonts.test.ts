@@ -33,11 +33,11 @@ describe('bitmap fonts', () => {
 			expect(bold.charHeight).toBe(14);
 		});
 
-		it('throws a FontNotFoundError for unknown fonts', () => {
+		it('throws a FontNotFoundError for unknown fonts', async () => {
 			const error = createFontNotFoundError('terminus-14-mono');
 			expect(error.name).toBe('FontNotFoundError');
 
-			expect(loadFont('terminus-14-mono' as never)).rejects.toThrowError(
+			await expect(loadFont('terminus-14-mono' as never)).rejects.toThrowError(
 				/Font 'terminus-14-mono' not found/,
 			);
 		});
