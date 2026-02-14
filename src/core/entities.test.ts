@@ -108,7 +108,7 @@ describe('Entity Factories', () => {
 		resetTextInputStore();
 		resetFormStore();
 		resetProgressBarStore();
-		resetSelectStore();
+		resetSelectStore(world);
 		resetSliderStore();
 		StateMachineStore.clear();
 	});
