@@ -16,6 +16,18 @@ import { LoopPhase } from '../core/types';
 // =============================================================================
 
 /**
+ * Work priority levels for budget-aware scheduling.
+ */
+export enum WorkPriority {
+	/** High priority work (input processing, critical updates) */
+	HIGH = 0,
+	/** Medium priority work (layout, rendering, standard updates) */
+	MEDIUM = 1,
+	/** Low priority work (animations, background tasks) */
+	LOW = 2,
+}
+
+/**
  * Configuration for the frame budget manager.
  */
 export interface FrameBudgetConfig {
@@ -27,6 +39,12 @@ export interface FrameBudgetConfig {
 	readonly rollingWindowSize: number;
 	/** Whether to emit warnings on budget overruns (default: true) */
 	readonly warnOnOverrun: boolean;
+	/** EMA smoothing factor for adaptive budgets (default: 0.1) */
+	readonly emaSmoothingFactor: number;
+	/** Under-budget threshold for budget expansion (default: 0.8 = 80%) */
+	readonly underBudgetThreshold: number;
+	/** Over-budget threshold for budget tightening (default: 0.95 = 95%) */
+	readonly overBudgetThreshold: number;
 }
 
 /**
@@ -37,6 +55,9 @@ export const FrameBudgetConfigSchema = z.object({
 	phaseBudgets: z.record(z.string(), z.number().positive()),
 	rollingWindowSize: z.number().int().positive(),
 	warnOnOverrun: z.boolean(),
+	emaSmoothingFactor: z.number().min(0).max(1),
+	underBudgetThreshold: z.number().min(0).max(1),
+	overBudgetThreshold: z.number().min(0).max(1),
 });
 
 /**
@@ -69,6 +90,41 @@ export interface FrameStats {
 	readonly budgetOverruns: number;
 	readonly systemTimings: readonly SystemTiming[];
 	readonly phaseTimings: Readonly<Record<string, number>>;
+}
+
+/**
+ * Deferred work item in the queue.
+ */
+export interface DeferredWorkItem {
+	readonly id: string;
+	readonly priority: WorkPriority;
+	readonly deferralCount: number;
+	readonly work: () => void;
+}
+
+/**
+ * Frame health status based on performance metrics.
+ */
+export type FrameHealth = 'good' | 'warning' | 'critical';
+
+/**
+ * Frame telemetry data for performance analysis.
+ */
+export interface FrameTelemetry {
+	/** Per-system timing breakdown */
+	readonly systemTimings: readonly SystemTiming[];
+	/** Per-phase budget utilization percentage (0-100+) */
+	readonly budgetUtilization: Readonly<Record<string, number>>;
+	/** Total deferred work items in queue */
+	readonly deferralCount: number;
+	/** Current frame health status */
+	readonly health: FrameHealth;
+	/** P95 frame time in milliseconds */
+	readonly p95FrameMs: number;
+	/** Average frame time in milliseconds */
+	readonly avgFrameMs: number;
+	/** Current FPS */
+	readonly fps: number;
 }
 
 /**
@@ -112,6 +168,13 @@ interface ManagerState {
 	budgetOverruns: number;
 	alerts: BudgetAlert[];
 	onAlert: ((alert: BudgetAlert) => void) | null;
+	// Adaptive budget tracking
+	phaseEMA: Map<LoopPhase, number>;
+	adaptiveBudgets: Map<LoopPhase, number>;
+	// Deferred work queue
+	deferredWork: DeferredWorkItem[];
+	nextWorkId: number;
+	currentFrameStartMs: number;
 }
 
 const DEFAULT_CONFIG: FrameBudgetConfig = {
@@ -119,6 +182,9 @@ const DEFAULT_CONFIG: FrameBudgetConfig = {
 	phaseBudgets: {},
 	rollingWindowSize: 120,
 	warnOnOverrun: true,
+	emaSmoothingFactor: 0.1,
+	underBudgetThreshold: 0.8,
+	overBudgetThreshold: 0.95,
 };
 
 let managerState: ManagerState | null = null;
@@ -192,6 +258,11 @@ export function createFrameBudgetManager(config?: Partial<FrameBudgetConfig>): F
 		budgetOverruns: 0,
 		alerts: [],
 		onAlert: null,
+		phaseEMA: new Map(),
+		adaptiveBudgets: new Map(),
+		deferredWork: [],
+		nextWorkId: 0,
+		currentFrameStartMs: 0,
 	};
 	return getFrameBudgetStats();
 }
@@ -367,6 +438,10 @@ export function resetFrameBudget(): void {
 	managerState.totalFrames = 0;
 	managerState.budgetOverruns = 0;
 	managerState.alerts = [];
+	managerState.phaseEMA.clear();
+	managerState.adaptiveBudgets.clear();
+	managerState.deferredWork = [];
+	managerState.currentFrameStartMs = 0;
 }
 
 /**
@@ -374,6 +449,261 @@ export function resetFrameBudget(): void {
  */
 export function destroyFrameBudgetManager(): void {
 	managerState = null;
+}
+
+/**
+ * Marks the start of a new frame for budget tracking.
+ * Call this at the beginning of your frame loop.
+ */
+export function beginFrame(): void {
+	if (!managerState) return;
+	managerState.currentFrameStartMs = performance.now();
+}
+
+/**
+ * Updates the exponential moving average for a phase and adjusts adaptive budgets.
+ * Call this after recording phase time to enable adaptive budgeting.
+ *
+ * @param phase - The loop phase that just completed
+ */
+export function updateAdaptiveBudget(phase: LoopPhase): void {
+	if (!managerState) return;
+
+	const actualTime = managerState.phaseTotals.get(phase);
+	if (actualTime === undefined) return;
+
+	const configBudget = managerState.config.phaseBudgets[phase];
+	if (configBudget === undefined) return;
+
+	// Update EMA
+	const alpha = managerState.config.emaSmoothingFactor;
+	const prevEMA = managerState.phaseEMA.get(phase) ?? actualTime;
+	const newEMA = alpha * actualTime + (1 - alpha) * prevEMA;
+	managerState.phaseEMA.set(phase, newEMA);
+
+	// Calculate utilization ratio
+	const utilization = newEMA / configBudget;
+
+	// Adjust adaptive budget
+	let adaptiveBudget = managerState.adaptiveBudgets.get(phase) ?? configBudget;
+
+	if (utilization < managerState.config.underBudgetThreshold) {
+		// Under budget: allow more work (increase by 5%)
+		adaptiveBudget = Math.min(configBudget * 1.2, adaptiveBudget * 1.05);
+	} else if (utilization > managerState.config.overBudgetThreshold) {
+		// Over budget: tighten (decrease by 5%)
+		adaptiveBudget = Math.max(configBudget * 0.8, adaptiveBudget * 0.95);
+	}
+	// Otherwise, keep current adaptive budget
+
+	managerState.adaptiveBudgets.set(phase, adaptiveBudget);
+}
+
+/**
+ * Gets the current adaptive budget for a phase.
+ * Falls back to configured budget if adaptive budgeting is not active.
+ *
+ * @param phase - The loop phase
+ * @returns The current adaptive budget in milliseconds
+ */
+export function getAdaptiveBudget(phase: LoopPhase): number {
+	if (!managerState) return 0;
+	const adaptive = managerState.adaptiveBudgets.get(phase);
+	if (adaptive !== undefined) return adaptive;
+	return managerState.config.phaseBudgets[phase] ?? 0;
+}
+
+/**
+ * Checks if work at the given priority level can run within the current frame budget.
+ *
+ * @param priority - Work priority level
+ * @returns True if the work should run, false if it should be deferred
+ */
+export function canRunWork(priority: WorkPriority): boolean {
+	if (!managerState) return true;
+
+	const elapsed = performance.now() - managerState.currentFrameStartMs;
+	const budget = managerState.config.targetFrameMs;
+
+	// Calculate remaining budget percentage
+	const remaining = budget - elapsed;
+	const remainingPct = remaining / budget;
+
+	// Priority thresholds
+	switch (priority) {
+		case WorkPriority.HIGH:
+			// High priority always runs
+			return true;
+		case WorkPriority.MEDIUM:
+			// Medium priority runs if at least 20% budget remains
+			return remainingPct > 0.2;
+		case WorkPriority.LOW:
+			// Low priority runs only if at least 40% budget remains
+			return remainingPct > 0.4;
+		default:
+			return true;
+	}
+}
+
+/**
+ * Defers work to be executed in a future frame when budget allows.
+ *
+ * @param priority - Work priority level
+ * @param work - The work function to defer
+ * @returns A unique ID for the deferred work item
+ */
+export function deferWork(priority: WorkPriority, work: () => void): string {
+	if (!managerState) {
+		// If no manager, execute immediately
+		work();
+		return '';
+	}
+
+	const id = `work-${managerState.nextWorkId++}`;
+	managerState.deferredWork.push({
+		id,
+		priority,
+		deferralCount: 0,
+		work,
+	});
+
+	return id;
+}
+
+/**
+ * Processes deferred work items that fit within the current frame budget.
+ * Items deferred multiple times get priority boosted to prevent starvation.
+ * Call this during idle time in your frame loop.
+ *
+ * @returns The number of work items processed
+ */
+export function processDeferredWork(): number {
+	if (!managerState || managerState.deferredWork.length === 0) return 0;
+
+	// Sort by effective priority (original priority - deferral count)
+	// Lower effective priority runs first
+	const sortedWork = [...managerState.deferredWork].sort((a, b) => {
+		const aEffective = a.priority - Math.min(a.deferralCount * 0.5, 2);
+		const bEffective = b.priority - Math.min(b.deferralCount * 0.5, 2);
+		return aEffective - bEffective;
+	});
+
+	let processed = 0;
+	const remaining: DeferredWorkItem[] = [];
+
+	for (const item of sortedWork) {
+		const effectivePriority = Math.max(
+			0,
+			item.priority - Math.floor(item.deferralCount / 2),
+		) as WorkPriority;
+
+		if (canRunWork(effectivePriority)) {
+			try {
+				item.work();
+				processed++;
+			} catch (err) {
+				// Log error but continue processing other work
+				console.error(`Deferred work ${item.id} failed:`, err);
+				remaining.push(item);
+			}
+		} else {
+			// Can't run this item, increment deferral count
+			remaining.push({
+				...item,
+				deferralCount: item.deferralCount + 1,
+			});
+		}
+	}
+
+	managerState.deferredWork = remaining;
+	return processed;
+}
+
+/**
+ * Cancels a deferred work item by ID.
+ *
+ * @param id - The work item ID returned from deferWork
+ * @returns True if the item was found and cancelled
+ */
+export function cancelDeferredWork(id: string): boolean {
+	if (!managerState) return false;
+
+	const initialLength = managerState.deferredWork.length;
+	managerState.deferredWork = managerState.deferredWork.filter((item) => item.id !== id);
+	return managerState.deferredWork.length < initialLength;
+}
+
+/**
+ * Gets the current deferred work queue size.
+ *
+ * @returns The number of deferred work items
+ */
+export function getDeferredWorkCount(): number {
+	if (!managerState) return 0;
+	return managerState.deferredWork.length;
+}
+
+/**
+ * Determines frame health status based on P95 frame time.
+ *
+ * @param p95FrameMs - P95 frame time in milliseconds
+ * @param targetFrameMs - Target frame time in milliseconds
+ * @returns Frame health status
+ */
+function calculateFrameHealth(p95FrameMs: number, targetFrameMs: number): FrameHealth {
+	const ratio = p95FrameMs / targetFrameMs;
+
+	if (ratio <= 1.0) return 'good';
+	if (ratio <= 1.5) return 'warning';
+	return 'critical';
+}
+
+/**
+ * Gets comprehensive frame telemetry for performance monitoring and debugging.
+ *
+ * @returns Frame telemetry data including timing, budget utilization, and health status
+ *
+ * @example
+ * ```typescript
+ * import { getFrameTelemetry } from 'blecsd';
+ *
+ * const telemetry = getFrameTelemetry();
+ * console.log(`Frame health: ${telemetry.health}`);
+ * console.log(`Deferred work: ${telemetry.deferralCount}`);
+ * for (const [phase, util] of Object.entries(telemetry.budgetUtilization)) {
+ *   console.log(`${phase}: ${util.toFixed(1)}%`);
+ * }
+ * ```
+ */
+export function getFrameTelemetry(): FrameTelemetry {
+	const stats = getFrameBudgetStats();
+
+	const budgetUtilization: Record<string, number> = {};
+	for (const [phaseStr, actualMs] of Object.entries(stats.stats.phaseTimings)) {
+		// Find phase enum value
+		const phaseNum = Object.entries(LoopPhase).find(([_k, v]) => {
+			return typeof v === 'number' && LoopPhase[v] === phaseStr;
+		})?.[1] as LoopPhase | undefined;
+
+		if (phaseNum !== undefined) {
+			const budget = getAdaptiveBudget(phaseNum);
+			if (budget > 0) {
+				budgetUtilization[phaseStr] = (actualMs / budget) * 100;
+			}
+		}
+	}
+
+	const health = calculateFrameHealth(stats.stats.p95FrameMs, stats.config.targetFrameMs);
+
+	return {
+		systemTimings: stats.stats.systemTimings,
+		budgetUtilization,
+		deferralCount: getDeferredWorkCount(),
+		health,
+		p95FrameMs: stats.stats.p95FrameMs,
+		avgFrameMs: stats.stats.avgFrameMs,
+		fps: stats.stats.fps,
+	};
 }
 
 /**
