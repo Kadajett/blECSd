@@ -376,11 +376,11 @@ export interface AABB {
  * ```typescript
  * import { getColliderAABB, Position } from 'blecsd';
  *
- * const bounds = getColliderAABB(entity, Position.x[entity], Position.y[entity]);
+ * const bounds = getColliderAABB(world, entity, Position.x[entity], Position.y[entity]);
  * console.log(`Bounds: ${bounds.minX},${bounds.minY} to ${bounds.maxX},${bounds.maxY}`);
  * ```
  */
-export function getColliderAABB(eid: Entity, posX: number, posY: number): AABB {
+export function getColliderAABB(_world: World, eid: Entity, posX: number, posY: number): AABB {
 	const type = Collider.type[eid] as number;
 	const width = Collider.width[eid] as number;
 	const height = Collider.height[eid] as number;
@@ -496,12 +496,14 @@ export function testCircleAABBOverlap(cx: number, cy: number, radius: number, bo
  * import { testCollision, Position } from 'blecsd';
  *
  * const colliding = testCollision(
+ *   world,
  *   entityA, Position.x[entityA], Position.y[entityA],
  *   entityB, Position.x[entityB], Position.y[entityB]
  * );
  * ```
  */
 export function testCollision(
+	world: World,
 	eidA: Entity,
 	posAX: number,
 	posAY: number,
@@ -531,21 +533,21 @@ export function testCollision(
 
 	// Box vs Box
 	if (typeA === ColliderType.BOX && typeB === ColliderType.BOX) {
-		const aabbA = getColliderAABB(eidA, posAX, posAY);
-		const aabbB = getColliderAABB(eidB, posBX, posBY);
+		const aabbA = getColliderAABB(world, eidA, posAX, posAY);
+		const aabbB = getColliderAABB(world, eidB, posBX, posBY);
 		return testAABBOverlap(aabbA, aabbB);
 	}
 
 	// Circle vs Box
 	if (typeA === ColliderType.CIRCLE && typeB === ColliderType.BOX) {
 		const radiusA = (Collider.width[eidA] as number) / 2;
-		const aabbB = getColliderAABB(eidB, posBX, posBY);
+		const aabbB = getColliderAABB(world, eidB, posBX, posBY);
 		return testCircleAABBOverlap(centerAX, centerAY, radiusA, aabbB);
 	}
 
 	// Box vs Circle
 	if (typeA === ColliderType.BOX && typeB === ColliderType.CIRCLE) {
-		const aabbA = getColliderAABB(eidA, posAX, posAY);
+		const aabbA = getColliderAABB(world, eidA, posAX, posAY);
 		const radiusB = (Collider.width[eidB] as number) / 2;
 		return testCircleAABBOverlap(centerBX, centerBY, radiusB, aabbA);
 	}
@@ -570,12 +572,13 @@ export interface CollisionPair {
  * Creates a normalized collision pair (lower entity ID first).
  * This ensures consistent ordering for collision tracking.
  *
+ * @param _world - The ECS world (unused)
  * @param eidA - First entity
  * @param eidB - Second entity
  * @param isTrigger - Whether this is a trigger collision
  * @returns Normalized collision pair
  */
-export function createCollisionPair(eidA: Entity, eidB: Entity, isTrigger: boolean): CollisionPair {
+export function createCollisionPair(_world: World, eidA: Entity, eidB: Entity, isTrigger: boolean): CollisionPair {
 	// Normalize order so (A,B) and (B,A) produce the same pair
 	if (eidA < eidB) {
 		return { entityA: eidA, entityB: eidB, isTrigger };

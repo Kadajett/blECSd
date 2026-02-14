@@ -283,12 +283,12 @@ function testEntityPair(
 	const posBX = Position.x[eidB] as number;
 	const posBY = Position.y[eidB] as number;
 
-	if (!testCollision(eidA, posAX, posAY, eidB, posBX, posBY)) {
+	if (!testCollision(world, eidA, posAX, posAY, eidB, posBX, posBY)) {
 		return undefined;
 	}
 
 	const triggerB = isTrigger(world, eidB);
-	return createCollisionPair(eidA, eidB, triggerA || triggerB);
+	return createCollisionPair(world, eidA, eidB, triggerA || triggerB);
 }
 
 /**
