@@ -499,7 +499,7 @@ export function createList(
 
 	// Enable multi-select if configured
 	if (validated.multiSelect) {
-		setListMultiSelect(eid, true);
+		setListMultiSelect(world, eid, true);
 	}
 
 	// Apply display styles if provided
@@ -667,16 +667,16 @@ export function createList(
 
 		// Multi-select
 		getSelected(): number[] {
-			return getMultiSelected(eid);
+			return getMultiSelected(world, eid);
 		},
 
 		selectAll(): ListWidget {
-			selectAllItems(eid);
+			selectAllItems(world, eid);
 			return widget;
 		},
 
 		deselectAll(): ListWidget {
-			deselectAllItems(eid);
+			deselectAllItems(world, eid);
 			return widget;
 		},
 
@@ -730,7 +730,7 @@ export function createList(
 					case 'toggleSelect': {
 						const selectedIdx = getSelectedIndex(eid);
 						if (selectedIdx >= 0) {
-							toggleMultiSelect(eid, selectedIdx);
+							toggleMultiSelect(world, eid, selectedIdx);
 						}
 						break;
 					}

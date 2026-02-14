@@ -4,22 +4,23 @@
  * @module components/list/multiSelect
  */
 
-import type { Entity } from '../../core/types';
+import type { Entity, World } from '../../core/types';
 import { getItems } from './items';
 import { multiSelectedStore, multiSelectStore } from './stores';
 
 /**
  * Enables or disables multi-select mode for a list.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @param enabled - Whether multi-select is enabled
  *
  * @example
  * ```typescript
- * setListMultiSelect(eid, true);
+ * setListMultiSelect(world, eid, true);
  * ```
  */
-export function setListMultiSelect(eid: Entity, enabled: boolean): void {
+export function setListMultiSelect(_world: World, eid: Entity, enabled: boolean): void {
 	multiSelectStore.set(eid, enabled);
 	if (enabled && !multiSelectedStore.has(eid)) {
 		multiSelectedStore.set(eid, new Set<number>());
@@ -29,22 +30,24 @@ export function setListMultiSelect(eid: Entity, enabled: boolean): void {
 /**
  * Checks if a list has multi-select enabled.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns true if multi-select is enabled
  */
-export function isListMultiSelect(eid: Entity): boolean {
+export function isListMultiSelect(_world: World, eid: Entity): boolean {
 	return multiSelectStore.get(eid) ?? false;
 }
 
 /**
  * Toggles selection of an item in multi-select mode.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @param index - The item index to toggle
  * @returns true if the item is now selected, false if deselected
  */
-export function toggleMultiSelect(eid: Entity, index: number): boolean {
-	if (!isListMultiSelect(eid)) {
+export function toggleMultiSelect(world: World, eid: Entity, index: number): boolean {
+	if (!isListMultiSelect(world, eid)) {
 		throw new Error('Multi-select is not enabled for this list');
 	}
 
@@ -65,11 +68,12 @@ export function toggleMultiSelect(eid: Entity, index: number): boolean {
 /**
  * Gets all selected indices in multi-select mode.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns Array of selected indices
  */
-export function getMultiSelected(eid: Entity): number[] {
-	if (!isListMultiSelect(eid)) {
+export function getMultiSelected(world: World, eid: Entity): number[] {
+	if (!isListMultiSelect(world, eid)) {
 		throw new Error('Multi-select is not enabled for this list');
 	}
 
@@ -80,10 +84,11 @@ export function getMultiSelected(eid: Entity): number[] {
 /**
  * Selects all items in multi-select mode.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  */
-export function selectAllItems(eid: Entity): void {
-	if (!isListMultiSelect(eid)) {
+export function selectAllItems(world: World, eid: Entity): void {
+	if (!isListMultiSelect(world, eid)) {
 		return;
 	}
 
@@ -100,10 +105,11 @@ export function selectAllItems(eid: Entity): void {
 /**
  * Deselects all items in multi-select mode.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  */
-export function deselectAllItems(eid: Entity): void {
-	if (!isListMultiSelect(eid)) {
+export function deselectAllItems(world: World, eid: Entity): void {
+	if (!isListMultiSelect(world, eid)) {
 		return;
 	}
 
@@ -116,12 +122,13 @@ export function deselectAllItems(eid: Entity): void {
 /**
  * Checks if an item is selected in multi-select mode.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @param index - The item index
  * @returns true if the item is selected
  */
-export function isItemMultiSelected(eid: Entity, index: number): boolean {
-	if (!isListMultiSelect(eid)) {
+export function isItemMultiSelected(world: World, eid: Entity, index: number): boolean {
+	if (!isListMultiSelect(world, eid)) {
 		return false;
 	}
 
