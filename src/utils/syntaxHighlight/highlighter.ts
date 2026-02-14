@@ -4,20 +4,19 @@
  * @module utils/syntaxHighlight/highlighter
  */
 
-import type { Grammar, HighlightCache, HighlightResult, LineEntry } from './types';
 import { DEFAULT_HIGHLIGHT_BATCH, EMPTY_STATE } from './constants';
-import { tokenizeLine, statesEqual } from './tokenizer';
 import {
-	GRAMMAR_JAVASCRIPT,
-	GRAMMAR_PYTHON,
-	GRAMMAR_RUST,
 	GRAMMAR_GO,
-	GRAMMAR_SHELL,
+	GRAMMAR_JAVASCRIPT,
 	GRAMMAR_JSON,
 	GRAMMAR_PLAINTEXT,
+	GRAMMAR_PYTHON,
+	GRAMMAR_RUST,
+	GRAMMAR_SHELL,
 	GRAMMARS,
 } from './grammars';
-
+import { statesEqual, tokenizeLine } from './tokenizer';
+import type { Grammar, HighlightCache, HighlightResult, LineEntry } from './types';
 
 // =============================================================================
 // HIGHLIGHTING

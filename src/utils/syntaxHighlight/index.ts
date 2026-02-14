@@ -7,44 +7,51 @@
  * @module utils/syntaxHighlight
  */
 
-// Re-export types
-export type { Token, TokenType, LineState, LineEntry, Grammar, HighlightCache, HighlightResult, HighlightStats } from './types';
+// Re-export cache management functions
+export {
+	clearHighlightCache,
+	createHighlightCache,
+	getHighlightStats,
+	invalidateAllLines,
+	invalidateLine,
+	invalidateLines,
+	setGrammar,
+} from './cache';
 
 // Re-export constants
 export { DEFAULT_HIGHLIGHT_BATCH, EMPTY_STATE } from './constants';
 
 // Re-export grammars
 export {
-	GRAMMAR_JAVASCRIPT,
-	GRAMMAR_PYTHON,
-	GRAMMAR_RUST,
 	GRAMMAR_GO,
-	GRAMMAR_SHELL,
+	GRAMMAR_JAVASCRIPT,
 	GRAMMAR_JSON,
 	GRAMMAR_PLAINTEXT,
+	GRAMMAR_PYTHON,
+	GRAMMAR_RUST,
+	GRAMMAR_SHELL,
 	GRAMMARS,
 } from './grammars';
-
-// Re-export cache management functions
-export {
-	createHighlightCache,
-	clearHighlightCache,
-	setGrammar,
-	getHighlightStats,
-	invalidateLines,
-	invalidateLine,
-	invalidateAllLines,
-} from './cache';
-
-// Re-export tokenization functions
-export { tokenizeLine, statesEqual } from './tokenizer';
-
 // Re-export highlighting functions
 export {
-	highlightWithCache,
-	highlightVisibleFirst,
 	continueHighlight,
 	detectLanguage,
 	detectLanguageFromContent,
 	getGrammarByName,
+	highlightVisibleFirst,
+	highlightWithCache,
 } from './highlighter';
+
+// Re-export tokenization functions
+export { statesEqual, tokenizeLine } from './tokenizer';
+// Re-export types
+export type {
+	Grammar,
+	HighlightCache,
+	HighlightResult,
+	HighlightStats,
+	LineEntry,
+	LineState,
+	Token,
+	TokenType,
+} from './types';

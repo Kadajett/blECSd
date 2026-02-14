@@ -6,7 +6,6 @@
 
 import type { Grammar, HighlightCache, HighlightStats } from './types';
 
-
 // =============================================================================
 // CACHE MANAGEMENT
 // =============================================================================
@@ -109,4 +108,3 @@ export function invalidateAllLines(cache: HighlightCache): void {
 		cache.dirty.add(i);
 	}
 }
-

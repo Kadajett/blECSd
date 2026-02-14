@@ -6,7 +6,6 @@
 
 import type { Grammar, LineEntry, LineState, Token, TokenType } from './types';
 
-
 // =============================================================================
 // TOKENIZATION
 // =============================================================================
@@ -414,4 +413,3 @@ function handlePunctuation(context: TokenizeContext): boolean {
 	context.pos++;
 	return true;
 }
-

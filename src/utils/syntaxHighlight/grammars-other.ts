@@ -4,10 +4,9 @@
  * @module utils/syntaxHighlight/grammars
  */
 
-import type { Grammar } from './types';
+import { GRAMMAR_GO, GRAMMAR_RUST } from './grammars-systems';
 import { GRAMMAR_JAVASCRIPT, GRAMMAR_PYTHON } from './grammars-web';
-import { GRAMMAR_RUST, GRAMMAR_GO } from './grammars-systems';
-
+import type { Grammar } from './types';
 
 // =============================================================================
 // GRAMMARS
@@ -162,4 +161,3 @@ export const GRAMMARS: readonly Grammar[] = [
 	GRAMMAR_JSON,
 	GRAMMAR_PLAINTEXT,
 ];
-
