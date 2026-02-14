@@ -262,6 +262,107 @@ const SUPPORTED_LANGUAGES = new Set(['javascript', 'typescript', 'json', 'bash',
 // MARKDOWN PARSING (STREAMING-AWARE)
 // =============================================================================
 
+// --- Block type regex patterns ---
+const HR_PATTERN = /^(-{3,}|\*{3,}|_{3,})\s*$/;
+const HEADING_PATTERN = /^(#{1,6})\s+(.*)$/;
+const CODE_FENCE_OPEN = /^```(\w*)/;
+const CODE_FENCE_CLOSE = /^```\s*$/;
+const LIST_ITEM_PATTERN = /^(\s*)([-*+]|\d+\.)\s+(.*)$/;
+const BLOCK_START_PATTERN = /^(#{1,6}\s|```|>|(-{3,}|\*{3,}|_{3,})\s*$)/;
+
+// --- Parse result for sub-parsers ---
+interface ParseResult {
+	readonly block: StreamingBlock;
+	readonly nextIndex: number;
+}
+
+function parseCodeBlock(lines: readonly string[], startIndex: number, lang: string): ParseResult {
+	const codeLines: string[] = [];
+	let i = startIndex;
+	let closed = false;
+	while (i < lines.length) {
+		const codeLine = lines[i];
+		if (codeLine === undefined) {
+			i++;
+			continue;
+		}
+		if (CODE_FENCE_CLOSE.test(codeLine)) {
+			closed = true;
+			i++;
+			break;
+		}
+		codeLines.push(codeLine);
+		i++;
+	}
+	const codeBlock: StreamingBlock = {
+		type: 'code',
+		content: codeLines.join('\n'),
+		complete: closed,
+	};
+	return { block: lang ? { ...codeBlock, language: lang } : codeBlock, nextIndex: i };
+}
+
+function parseBlockquote(lines: readonly string[], startIndex: number): ParseResult {
+	const quoteLines: string[] = [];
+	let i = startIndex;
+	while (i < lines.length) {
+		const qLine = lines[i];
+		if (qLine === undefined || (!qLine.startsWith('>') && qLine.trim() === '')) break;
+		quoteLines.push(qLine.startsWith('>') ? qLine.slice(1).trimStart() : qLine);
+		i++;
+	}
+	return {
+		block: { type: 'blockquote', content: quoteLines.join('\n'), complete: true },
+		nextIndex: i,
+	};
+}
+
+function parseList(lines: readonly string[], startIndex: number, isOrdered: boolean): ParseResult {
+	const listLines: string[] = [];
+	let i = startIndex;
+	while (i < lines.length) {
+		const lLine = lines[i];
+		if (lLine === undefined) break;
+		const itemMatch = LIST_ITEM_PATTERN.exec(lLine);
+		if (itemMatch) {
+			listLines.push(itemMatch[3] ?? lLine);
+			i++;
+			continue;
+		}
+		if (lLine.trim() === '') {
+			i++;
+			break;
+		}
+		if (/^\s+/.test(lLine)) {
+			listLines.push(lLine.trim());
+			i++;
+			continue;
+		}
+		break;
+	}
+	return {
+		block: { type: 'list', content: listLines.join('\n'), listOrdered: isOrdered, complete: true },
+		nextIndex: i,
+	};
+}
+
+function parseParagraph(lines: readonly string[], startIndex: number, firstLine: string): ParseResult {
+	const paraLines: string[] = [firstLine];
+	let i = startIndex;
+	while (i < lines.length) {
+		const pLine = lines[i];
+		if (pLine === undefined || pLine.trim() === '') break;
+		if (BLOCK_START_PATTERN.test(pLine)) break;
+		if (LIST_ITEM_PATTERN.test(pLine)) break;
+		paraLines.push(pLine);
+		i++;
+	}
+	return {
+		block: { type: 'paragraph', content: paraLines.join(' '), complete: true },
+		nextIndex: i,
+	};
+}
+
 /**
  * Parses raw markdown source into blocks, handling incomplete/streaming content.
  *
@@ -284,26 +385,20 @@ export function parseStreamingBlocks(source: string): readonly StreamingBlock[] 
 
 	while (i < lines.length) {
 		const line = lines[i];
-		if (line === undefined) {
-			i++;
-			continue;
-		}
-
-		// Empty line
-		if (line.trim() === '') {
+		if (line === undefined || line.trim() === '') {
 			i++;
 			continue;
 		}
 
 		// Horizontal rule
-		if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+		if (HR_PATTERN.test(line)) {
 			blocks.push({ type: 'hr', content: '', complete: true });
 			i++;
 			continue;
 		}
 
 		// Heading
-		const headingMatch = /^(#{1,6})\s+(.*)$/.exec(line);
+		const headingMatch = HEADING_PATTERN.exec(line);
 		if (headingMatch) {
 			blocks.push({
 				type: 'heading',
@@ -316,105 +411,36 @@ export function parseStreamingBlocks(source: string): readonly StreamingBlock[] 
 		}
 
 		// Code block
-		const codeMatch = /^```(\w*)/.exec(line);
+		const codeMatch = CODE_FENCE_OPEN.exec(line);
 		if (codeMatch) {
-			const lang = codeMatch[1] ?? '';
-			const codeLines: string[] = [];
-			i++;
-			let closed = false;
-			while (i < lines.length) {
-				const codeLine = lines[i];
-				if (codeLine === undefined) {
-					i++;
-					continue;
-				}
-				if (/^```\s*$/.test(codeLine)) {
-					closed = true;
-					i++;
-					break;
-				}
-				codeLines.push(codeLine);
-				i++;
-			}
-			const codeBlock: StreamingBlock = {
-				type: 'code',
-				content: codeLines.join('\n'),
-				complete: closed,
-			};
-			blocks.push(lang ? { ...codeBlock, language: lang } : codeBlock);
+			const result = parseCodeBlock(lines, i + 1, codeMatch[1] ?? '');
+			blocks.push(result.block);
+			i = result.nextIndex;
 			continue;
 		}
 
 		// Blockquote
 		if (line.startsWith('>')) {
-			const quoteLines: string[] = [];
-			while (i < lines.length) {
-				const qLine = lines[i];
-				if (qLine === undefined || (!qLine.startsWith('>') && qLine.trim() === '')) break;
-				if (qLine.startsWith('>')) {
-					quoteLines.push(qLine.slice(1).trimStart());
-				} else {
-					quoteLines.push(qLine);
-				}
-				i++;
-			}
-			blocks.push({
-				type: 'blockquote',
-				content: quoteLines.join('\n'),
-				complete: true,
-			});
+			const result = parseBlockquote(lines, i);
+			blocks.push(result.block);
+			i = result.nextIndex;
 			continue;
 		}
 
-		// List (ordered or unordered)
-		const listMatch = /^(\s*)([-*+]|\d+\.)\s+(.*)$/.exec(line);
+		// List
+		const listMatch = LIST_ITEM_PATTERN.exec(line);
 		if (listMatch) {
 			const isOrdered = /^\d+\./.test(listMatch[2] ?? '');
-			const listLines: string[] = [];
-			while (i < lines.length) {
-				const lLine = lines[i];
-				if (lLine === undefined) break;
-				if (/^(\s*)([-*+]|\d+\.)\s+/.test(lLine)) {
-					const lm = /^(\s*)([-*+]|\d+\.)\s+(.*)$/.exec(lLine);
-					listLines.push(lm?.[3] ?? lLine);
-					i++;
-				} else if (lLine.trim() === '' || /^\s+/.test(lLine)) {
-					// Continuation or blank line within list
-					if (lLine.trim() === '') {
-						i++;
-						break;
-					}
-					listLines.push(lLine.trim());
-					i++;
-				} else {
-					break;
-				}
-			}
-			blocks.push({
-				type: 'list',
-				content: listLines.join('\n'),
-				listOrdered: isOrdered,
-				complete: true,
-			});
+			const result = parseList(lines, i, isOrdered);
+			blocks.push(result.block);
+			i = result.nextIndex;
 			continue;
 		}
 
 		// Paragraph (default)
-		const paraLines: string[] = [line];
-		i++;
-		while (i < lines.length) {
-			const pLine = lines[i];
-			if (pLine === undefined || pLine.trim() === '') break;
-			if (/^(#{1,6}\s|```|>|(-{3,}|\*{3,}|_{3,})\s*$)/.test(pLine)) break;
-			if (/^(\s*)([-*+]|\d+\.)\s+/.test(pLine)) break;
-			paraLines.push(pLine);
-			i++;
-		}
-		blocks.push({
-			type: 'paragraph',
-			content: paraLines.join(' '),
-			complete: true,
-		});
+		const result = parseParagraph(lines, i + 1, line);
+		blocks.push(result.block);
+		i = result.nextIndex;
 	}
 
 	return blocks;
@@ -502,6 +528,59 @@ export function wrapText(text: string, width: number): readonly string[] {
 	return lines;
 }
 
+// --- Per-block-type renderers ---
+
+function renderHeadingBlock(block: StreamingBlock, theme: StreamingMarkdownTheme): readonly string[] {
+	const level = block.headingLevel ?? 1;
+	const prefix = '#'.repeat(level);
+	return [`${theme.heading}${prefix} ${formatInline(block.content, theme)}${theme.reset}`];
+}
+
+function renderCodeBlockLines(block: StreamingBlock, config: StreamingMarkdownConfig): readonly string[] {
+	const { theme, wrapWidth } = config;
+	const lines: string[] = [];
+	const lang = block.language ?? '';
+	const langLabel = lang ? ` ${lang}` : '';
+	const borderChar = '\u2500';
+
+	lines.push(`${theme.codeBlock}\u250c${borderChar.repeat(Math.max(0, wrapWidth - 2 - langLabel.length))}${langLabel}${theme.reset}`);
+
+	const codeLines = block.content.split('\n');
+	const shouldHighlight = config.syntaxHighlight && lang && SUPPORTED_LANGUAGES.has(lang);
+	for (const codeLine of codeLines) {
+		const formatted = shouldHighlight ? highlightCode(codeLine, lang as SupportedLanguage) : codeLine;
+		lines.push(`${theme.codeBlock}\u2502${theme.reset} ${formatted}`);
+	}
+
+	if (!block.complete) {
+		lines.push(`${theme.codeBlock}\u2502 ${theme.thinking}...${theme.reset}`);
+	}
+
+	lines.push(`${theme.codeBlock}\u2514${borderChar.repeat(Math.max(0, wrapWidth - 2))}${theme.reset}`);
+	return lines;
+}
+
+function renderListBlock(block: StreamingBlock, theme: StreamingMarkdownTheme, wrapWidth: number): readonly string[] {
+	const items = block.content.split('\n');
+	const lines: string[] = [];
+	const indent = block.listOrdered ? 4 : 3;
+
+	for (let idx = 0; idx < items.length; idx++) {
+		const item = items[idx];
+		if (item === undefined) continue;
+		const bullet = block.listOrdered
+			? `${theme.bullet}${idx + 1}.${theme.reset}`
+			: `${theme.bullet}\u2022${theme.reset}`;
+		const wrapped = wrapText(item, wrapWidth - indent);
+		for (let j = 0; j < wrapped.length; j++) {
+			const w = wrapped[j];
+			if (w === undefined) continue;
+			lines.push(j === 0 ? `  ${bullet} ${formatInline(w, theme)}` : `${' '.repeat(indent + 1)}${formatInline(w, theme)}`);
+		}
+	}
+	return lines;
+}
+
 /**
  * Renders a single block to output lines.
  *
@@ -516,41 +595,10 @@ export function renderBlock(
 	const { theme, wrapWidth } = config;
 
 	switch (block.type) {
-		case 'heading': {
-			const level = block.headingLevel ?? 1;
-			const prefix = '#'.repeat(level);
-			const formatted = formatInline(block.content, theme);
-			return [`${theme.heading}${prefix} ${formatted}${theme.reset}`];
-		}
-
-		case 'code': {
-			const lines: string[] = [];
-			const lang = block.language ?? '';
-			const langLabel = lang ? ` ${lang}` : '';
-			const borderChar = '\u2500';
-			const topBorder = `${theme.codeBlock}\u250c${borderChar.repeat(Math.max(0, wrapWidth - 2 - langLabel.length))}${langLabel}${theme.reset}`;
-			lines.push(topBorder);
-
-			const codeLines = block.content.split('\n');
-			const shouldHighlight = config.syntaxHighlight && lang && SUPPORTED_LANGUAGES.has(lang);
-
-			for (const codeLine of codeLines) {
-				let formatted = codeLine;
-				if (shouldHighlight) {
-					formatted = highlightCode(codeLine, lang as SupportedLanguage);
-				}
-				lines.push(`${theme.codeBlock}\u2502${theme.reset} ${formatted}`);
-			}
-
-			if (!block.complete) {
-				lines.push(`${theme.codeBlock}\u2502 ${theme.thinking}...${theme.reset}`);
-			}
-
-			const bottomBorder = `${theme.codeBlock}\u2514${borderChar.repeat(Math.max(0, wrapWidth - 2))}${theme.reset}`;
-			lines.push(bottomBorder);
-			return lines;
-		}
-
+		case 'heading':
+			return renderHeadingBlock(block, theme);
+		case 'code':
+			return renderCodeBlockLines(block, config);
 		case 'blockquote': {
 			const quoteLines = block.content.split('\n');
 			return quoteLines.map((line) => {
@@ -560,41 +608,12 @@ export function renderBlock(
 					.join('\n');
 			});
 		}
-
-		case 'list': {
-			const items = block.content.split('\n');
-			const lines: string[] = [];
-			for (let idx = 0; idx < items.length; idx++) {
-				const item = items[idx];
-				if (item === undefined) continue;
-				const bullet = block.listOrdered
-					? `${theme.bullet}${idx + 1}.${theme.reset}`
-					: `${theme.bullet}\u2022${theme.reset}`;
-				const indent = block.listOrdered ? 4 : 3;
-				const wrapped = wrapText(item, wrapWidth - indent);
-				for (let j = 0; j < wrapped.length; j++) {
-					const w = wrapped[j];
-					if (w === undefined) continue;
-					if (j === 0) {
-						lines.push(`  ${bullet} ${formatInline(w, theme)}`);
-					} else {
-						lines.push(`${' '.repeat(indent + 1)}${formatInline(w, theme)}`);
-					}
-				}
-			}
-			return lines;
-		}
-
-		case 'hr': {
-			const hrChar = '\u2500';
-			return [`${theme.hr}${hrChar.repeat(wrapWidth)}${theme.reset}`];
-		}
-
-		case 'paragraph': {
-			const wrapped = wrapText(block.content, wrapWidth);
-			return wrapped.map((line) => formatInline(line, theme));
-		}
-
+		case 'list':
+			return renderListBlock(block, theme, wrapWidth);
+		case 'hr':
+			return [`${theme.hr}${'\u2500'.repeat(wrapWidth)}${theme.reset}`];
+		case 'paragraph':
+			return wrapText(block.content, wrapWidth).map((line) => formatInline(line, theme));
 		case 'empty':
 			return [''];
 	}
