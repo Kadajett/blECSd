@@ -30,6 +30,33 @@ export {
 	toggleCollapsible,
 	toggleSection,
 } from './accordion';
+// Agent workflow visualizer widget
+export type {
+	AgentWorkflowConfig,
+	AgentWorkflowState,
+	AgentWorkflowWidget,
+	WorkflowStep,
+	WorkflowStepStatus,
+} from './agentWorkflow';
+export {
+	AgentWorkflow,
+	AgentWorkflowConfigSchema,
+	addWorkflowStep,
+	createAgentWorkflow,
+	createWorkflowState,
+	DEFAULT_STATUS_COLORS,
+	formatDuration,
+	formatWorkflowDisplay,
+	getStepChildren,
+	getStepDepth,
+	getStepDuration,
+	getVisibleSteps,
+	getWorkflowStats,
+	isAgentWorkflow,
+	resetWorkflowStore,
+	toggleWorkflowCollapse,
+	updateWorkflowStep,
+} from './agentWorkflow';
 // Autocomplete widget
 export type { AutocompleteConfig, AutocompleteWidget } from './autocomplete';
 export {
