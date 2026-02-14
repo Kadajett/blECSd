@@ -596,7 +596,14 @@ function pushRectCells(
 	sessionId: string,
 ): void {
 	for (let col = Math.max(0, leftCol); col <= rightCol; col++) {
-		cells.push({ x: col, y: row, color, char: overlayConfig.selectionChar, sessionId, isCursor: false });
+		cells.push({
+			x: col,
+			y: row,
+			color,
+			char: overlayConfig.selectionChar,
+			sessionId,
+			isCursor: false,
+		});
 	}
 }
 
@@ -657,8 +664,12 @@ function renderSelectionCells(
 			const { colStart, colEnd } = getStreamColRange(sel, row, startLine, endLine, width);
 			for (let col = colStart; col <= colEnd; col++) {
 				cells.push({
-					x: col, y: row, color: overlay.color,
-					char: overlayConfig.selectionChar, sessionId: overlay.sessionId, isCursor: false,
+					x: col,
+					y: row,
+					color: overlay.color,
+					char: overlayConfig.selectionChar,
+					sessionId: overlay.sessionId,
+					isCursor: false,
 				});
 			}
 		}

@@ -584,7 +584,7 @@ export function jumpToLine(
  * @param viewportSize - Viewport size
  * @returns New visible range
  */
-export function scrollBy(
+export function scrollbackScrollBy(
 	buffer: ScrollbackBuffer,
 	currentLine: number,
 	delta: number,
@@ -601,7 +601,7 @@ export function scrollBy(
  * @param viewportSize - Viewport size
  * @returns Visible range at top
  */
-export function scrollToTop(buffer: ScrollbackBuffer, viewportSize: number): LineRange {
+export function scrollbackScrollToTop(buffer: ScrollbackBuffer, viewportSize: number): LineRange {
 	return getLineRange(buffer, 0, viewportSize);
 }
 
@@ -612,7 +612,10 @@ export function scrollToTop(buffer: ScrollbackBuffer, viewportSize: number): Lin
  * @param viewportSize - Viewport size
  * @returns Visible range at bottom
  */
-export function scrollToBottom(buffer: ScrollbackBuffer, viewportSize: number): LineRange {
+export function scrollbackScrollToBottom(
+	buffer: ScrollbackBuffer,
+	viewportSize: number,
+): LineRange {
 	const start = Math.max(0, buffer.totalLines - viewportSize);
 	return getLineRange(buffer, start, buffer.totalLines);
 }

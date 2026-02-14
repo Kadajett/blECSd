@@ -20,9 +20,9 @@ import {
 	getVisibleLines,
 	jumpToLine,
 	loadFromText,
-	scrollBy,
-	scrollToBottom,
-	scrollToTop,
+	scrollbackScrollBy,
+	scrollbackScrollToBottom,
+	scrollbackScrollToTop,
 	trimToLineCount,
 } from './virtualScrollback';
 
@@ -244,7 +244,7 @@ describe('scrollBy', () => {
 			Array.from({ length: 100 }, (_, i) => `line ${i}`),
 		);
 
-		const range = scrollBy(buffer, 0, 10, 20);
+		const range = scrollbackScrollBy(buffer, 0, 10, 20);
 
 		expect(range.startLine).toBe(10);
 		expect(range.lines.length).toBe(20);
@@ -257,7 +257,7 @@ describe('scrollBy', () => {
 			Array.from({ length: 100 }, (_, i) => `line ${i}`),
 		);
 
-		const range = scrollBy(buffer, 50, -10, 20);
+		const range = scrollbackScrollBy(buffer, 50, -10, 20);
 
 		expect(range.startLine).toBe(40);
 	});
@@ -269,7 +269,7 @@ describe('scrollBy', () => {
 			Array.from({ length: 100 }, (_, i) => `line ${i}`),
 		);
 
-		const range = scrollBy(buffer, 5, -100, 20);
+		const range = scrollbackScrollBy(buffer, 5, -100, 20);
 
 		expect(range.startLine).toBe(0);
 	});
@@ -281,7 +281,7 @@ describe('scrollBy', () => {
 			Array.from({ length: 100 }, (_, i) => `line ${i}`),
 		);
 
-		const range = scrollBy(buffer, 50, 100, 20);
+		const range = scrollbackScrollBy(buffer, 50, 100, 20);
 
 		expect(range.startLine).toBe(80); // 100 - 20
 	});
@@ -295,7 +295,7 @@ describe('scrollToTop', () => {
 			Array.from({ length: 100 }, (_, i) => `line ${i}`),
 		);
 
-		const range = scrollToTop(buffer, 20);
+		const range = scrollbackScrollToTop(buffer, 20);
 
 		expect(range.startLine).toBe(0);
 		expect(range.lines[0]?.text).toBe('line 0');
@@ -310,7 +310,7 @@ describe('scrollToBottom', () => {
 			Array.from({ length: 100 }, (_, i) => `line ${i}`),
 		);
 
-		const range = scrollToBottom(buffer, 20);
+		const range = scrollbackScrollToBottom(buffer, 20);
 
 		expect(range.startLine).toBe(80);
 		expect(range.lines[0]?.text).toBe('line 80');
@@ -586,7 +586,7 @@ describe('edge cases', () => {
 
 		expect(getLine(buffer, 0)).toBeUndefined();
 		expect(getLineRange(buffer, 0, 10).lines.length).toBe(0);
-		expect(scrollToBottom(buffer, 10).lines.length).toBe(0);
+		expect(scrollbackScrollToBottom(buffer, 10).lines.length).toBe(0);
 	});
 
 	it('handles single line', () => {
@@ -595,7 +595,7 @@ describe('edge cases', () => {
 
 		expect(buffer.totalLines).toBe(1);
 		expect(getLine(buffer, 0)?.text).toBe('only');
-		expect(scrollToBottom(buffer, 10).lines.length).toBe(1);
+		expect(scrollbackScrollToBottom(buffer, 10).lines.length).toBe(1);
 	});
 
 	it('handles empty lines', () => {

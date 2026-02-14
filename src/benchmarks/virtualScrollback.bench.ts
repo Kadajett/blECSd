@@ -24,9 +24,9 @@ import {
 	getVisibleLines,
 	jumpToLine,
 	type ScrollbackBuffer,
-	scrollBy,
-	scrollToBottom,
-	scrollToTop,
+	scrollbackScrollBy,
+	scrollbackScrollToBottom,
+	scrollbackScrollToTop,
 } from '../utils/virtualScrollback';
 
 // =============================================================================
@@ -207,7 +207,7 @@ describe('Scrolling (ACCEPTANCE: 60fps = <16.67ms)', () => {
 	bench(
 		'scroll by 1 line',
 		() => {
-			scrollBy(buffer100k, 50000, 1, 50);
+			scrollbackScrollBy(buffer100k, 50000, 1, 50);
 		},
 		{
 			setup() {
@@ -219,7 +219,7 @@ describe('Scrolling (ACCEPTANCE: 60fps = <16.67ms)', () => {
 	bench(
 		'scroll by 10 lines',
 		() => {
-			scrollBy(buffer100k, 50000, 10, 50);
+			scrollbackScrollBy(buffer100k, 50000, 10, 50);
 		},
 		{
 			setup() {
@@ -231,7 +231,7 @@ describe('Scrolling (ACCEPTANCE: 60fps = <16.67ms)', () => {
 	bench(
 		'scroll by 100 lines',
 		() => {
-			scrollBy(buffer100k, 50000, 100, 50);
+			scrollbackScrollBy(buffer100k, 50000, 100, 50);
 		},
 		{
 			setup() {
@@ -245,7 +245,7 @@ describe('Scrolling (ACCEPTANCE: 60fps = <16.67ms)', () => {
 		() => {
 			let pos = 0;
 			for (let i = 0; i < 100; i++) {
-				scrollBy(buffer100k, pos, 5, 50);
+				scrollbackScrollBy(buffer100k, pos, 5, 50);
 				pos += 5;
 			}
 		},
@@ -305,7 +305,7 @@ describe('Jump to Line (ACCEPTANCE: <10ms)', () => {
 	bench(
 		'scroll to top in 100K buffer',
 		() => {
-			scrollToTop(buffer100k, 50);
+			scrollbackScrollToTop(buffer100k, 50);
 		},
 		{
 			setup() {
@@ -317,7 +317,7 @@ describe('Jump to Line (ACCEPTANCE: <10ms)', () => {
 	bench(
 		'scroll to bottom in 100K buffer',
 		() => {
-			scrollToBottom(buffer100k, 50);
+			scrollbackScrollToBottom(buffer100k, 50);
 		},
 		{
 			setup() {
@@ -404,7 +404,7 @@ describe('ACCEPTANCE CRITERIA VALIDATION', () => {
 	bench(
 		'ACCEPTANCE: Scroll at 60fps (<16.67ms)',
 		() => {
-			const result = scrollBy(buffer100k, 50000, 10, 50);
+			const result = scrollbackScrollBy(buffer100k, 50000, 10, 50);
 			if (result.loadTimeMs > 16.67) {
 				throw new Error(`Too slow: ${result.loadTimeMs}ms`);
 			}

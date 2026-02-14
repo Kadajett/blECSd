@@ -91,7 +91,7 @@ export {
 	createBigText,
 	isBigText,
 	resetBigTextStore,
-	setText,
+	setBigText,
 } from './bigText';
 // Box widget
 export type {
@@ -193,12 +193,12 @@ export {
 // Content line manipulation
 export {
 	clearLines,
+	contentGetLine,
+	contentGetLineCount,
 	deleteBottom,
 	deleteLine,
 	deleteTop,
 	getBaseLine,
-	getLine,
-	getLineCount,
 	getLines,
 	insertBottom,
 	insertLine,
@@ -812,8 +812,8 @@ export {
 	createStreamingText,
 	getStreamVisibleLines,
 	StreamingTextConfigSchema,
-	scrollByLines,
 	scrollToLine,
+	streamingScrollByLines,
 	stripAnsiSequences,
 	wrapLine,
 } from './streamingText';

@@ -353,7 +353,10 @@ export function scrollToLine(state: StreamingTextState, line: number): Streaming
  * @param delta - Lines to scroll (positive = down, negative = up)
  * @returns Updated state
  */
-export function scrollByLines(state: StreamingTextState, delta: number): StreamingTextState {
+export function streamingScrollByLines(
+	state: StreamingTextState,
+	delta: number,
+): StreamingTextState {
 	return scrollToLine(state, state.scrollTop + delta);
 }
 
@@ -459,7 +462,7 @@ export function createStreamingText(
 		},
 
 		scrollBy(delta: number): StreamingTextWidget {
-			state = scrollByLines(state, delta);
+			state = streamingScrollByLines(state, delta);
 			markDirty(world, eid);
 			return widget;
 		},

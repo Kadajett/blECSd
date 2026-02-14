@@ -18,13 +18,13 @@ import type { Entity, World } from '../core/types';
 
 // Import core inspection functions from internal module
 import {
-	KNOWN_COMPONENTS as _KNOWN_COMPONENTS,
-	collectEntityFlags,
 	formatEntityInspection as _formatEntityInspection,
 	formatWorldInspection as _formatWorldInspection,
 	inspectEntity as _inspectEntity,
 	inspectWorld as _inspectWorld,
+	KNOWN_COMPONENTS as _KNOWN_COMPONENTS,
 	type ComponentInfo,
+	collectEntityFlags,
 	type EntityInspection,
 	type WorldInspection,
 } from './inspect';
@@ -40,7 +40,7 @@ export {
 	_inspectEntity as inspectEntity,
 	_inspectWorld as inspectWorld,
 	_KNOWN_COMPONENTS as KNOWN_COMPONENTS,
-}
+};
 
 // =============================================================================
 // SYSTEM TIMING (re-exported from systemTiming module)

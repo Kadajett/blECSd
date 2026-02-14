@@ -57,13 +57,13 @@ export function getLines(world: World, eid: Entity): string[] {
  *
  * @example
  * ```typescript
- * import { setContent, getLineCount } from 'blecsd';
+ * import { setContent, contentGetLineCount } from 'blecsd';
  *
  * setContent(world, entity, 'Line 1\nLine 2\nLine 3');
- * console.log(getLineCount(world, entity)); // 3
+ * console.log(contentGetLineCount(world, entity)); // 3
  * ```
  */
-export function getLineCount(world: World, eid: Entity): number {
+export function contentGetLineCount(world: World, eid: Entity): number {
 	const content = getContent(world, eid);
 	if (content === '') {
 		return 0;
@@ -88,13 +88,13 @@ export function getLineCount(world: World, eid: Entity): number {
  *
  * @example
  * ```typescript
- * import { setContent, getLine } from 'blecsd';
+ * import { setContent, contentGetLine } from 'blecsd';
  *
  * setContent(world, entity, 'Line 1\nLine 2\nLine 3');
- * console.log(getLine(world, entity, 1)); // 'Line 2'
+ * console.log(contentGetLine(world, entity, 1)); // 'Line 2'
  * ```
  */
-export function getLine(world: World, eid: Entity, index: number): string {
+export function contentGetLine(world: World, eid: Entity, index: number): string {
 	const lines = getLines(world, eid);
 	if (index < 0 || index >= lines.length) {
 		return '';
@@ -153,7 +153,7 @@ export function setLine(world: World, eid: Entity, index: number, line: string):
 export function getBaseLine(world: World, eid: Entity, index: number): string {
 	// Base content is the same as regular content
 	// Scroll offset is applied during rendering, not storage
-	return getLine(world, eid, index);
+	return contentGetLine(world, eid, index);
 }
 
 /**

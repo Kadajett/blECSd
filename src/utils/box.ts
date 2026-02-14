@@ -302,7 +302,7 @@ export function renderBox(
 
 	// Fill interior
 	if (fill && width > 2 && height > 2) {
-		fillRect(buffer, x + 1, y + 1, width - 2, height - 2, fillChar, fg, bg);
+		boxFillRect(buffer, x + 1, y + 1, width - 2, height - 2, fillChar, fg, bg);
 	}
 }
 
@@ -389,10 +389,10 @@ export function renderVLine(
  * import { createCellBuffer, fillRect } from 'blecsd';
  *
  * const buffer = createCellBuffer(80, 24);
- * fillRect(buffer, 5, 2, 20, 10, ' ', 0xffffffff, 0x0000aaff);
+ * boxFillRect(buffer, 5, 2, 20, 10, ' ', 0xffffffff, 0x0000aaff);
  * ```
  */
-export function fillRect(
+export function boxFillRect(
 	buffer: CellBuffer,
 	x: number,
 	y: number,

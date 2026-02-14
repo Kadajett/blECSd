@@ -8,7 +8,7 @@ import { getContent } from '../components/content';
 import { resetFocusState } from '../components/focusable';
 import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
-import { createBigText, loadFontFromPath, resetBigTextStore, setText } from './bigText';
+import { createBigText, loadFontFromPath, resetBigTextStore, setBigText } from './bigText';
 import { loadFont } from './fonts';
 
 describe('BigText widget', () => {
@@ -56,7 +56,7 @@ describe('BigText widget', () => {
 
 		// Font is now cached from createBigText, so setText works synchronously
 		await loadFont('terminus-14-bold');
-		setText(world, eid, 'B', 'terminus-14-bold');
+		setBigText(world, eid, 'B', 'terminus-14-bold');
 
 		const content = getContent(world, eid);
 		expect(content.split('\n')).toMatchSnapshot();

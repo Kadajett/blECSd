@@ -10,12 +10,12 @@ import { addEntity, createWorld } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import {
 	clearLines,
+	contentGetLine,
+	contentGetLineCount,
 	deleteBottom,
 	deleteLine,
 	deleteTop,
 	getBaseLine,
-	getLine,
-	getLineCount,
 	getLines,
 	insertBottom,
 	insertLine,
@@ -68,22 +68,22 @@ describe('contentManipulation', () => {
 	describe('getLineCount', () => {
 		it('returns 0 for empty content', () => {
 			setContent(world, entity, '');
-			expect(getLineCount(world, entity)).toBe(0);
+			expect(contentGetLineCount(world, entity)).toBe(0);
 		});
 
 		it('returns 1 for single line', () => {
 			setContent(world, entity, 'Hello');
-			expect(getLineCount(world, entity)).toBe(1);
+			expect(contentGetLineCount(world, entity)).toBe(1);
 		});
 
 		it('counts multiple lines', () => {
 			setContent(world, entity, 'A\nB\nC');
-			expect(getLineCount(world, entity)).toBe(3);
+			expect(contentGetLineCount(world, entity)).toBe(3);
 		});
 
 		it('counts empty lines', () => {
 			setContent(world, entity, 'A\n\nB');
-			expect(getLineCount(world, entity)).toBe(3);
+			expect(contentGetLineCount(world, entity)).toBe(3);
 		});
 	});
 
@@ -93,18 +93,18 @@ describe('contentManipulation', () => {
 		});
 
 		it('returns line at valid index', () => {
-			expect(getLine(world, entity, 0)).toBe('Line 0');
-			expect(getLine(world, entity, 1)).toBe('Line 1');
-			expect(getLine(world, entity, 2)).toBe('Line 2');
+			expect(contentGetLine(world, entity, 0)).toBe('Line 0');
+			expect(contentGetLine(world, entity, 1)).toBe('Line 1');
+			expect(contentGetLine(world, entity, 2)).toBe('Line 2');
 		});
 
 		it('returns empty string for negative index', () => {
-			expect(getLine(world, entity, -1)).toBe('');
+			expect(contentGetLine(world, entity, -1)).toBe('');
 		});
 
 		it('returns empty string for index out of bounds', () => {
-			expect(getLine(world, entity, 3)).toBe('');
-			expect(getLine(world, entity, 100)).toBe('');
+			expect(contentGetLine(world, entity, 3)).toBe('');
+			expect(contentGetLine(world, entity, 100)).toBe('');
 		});
 	});
 
@@ -526,7 +526,7 @@ describe('contentManipulation', () => {
 
 			function addLogLine(w: World, e: Entity, line: string): void {
 				pushLine(w, e, line);
-				while (getLineCount(w, e) > maxLines) {
+				while (contentGetLineCount(w, e) > maxLines) {
 					shiftLine(w, e);
 				}
 			}
@@ -536,7 +536,7 @@ describe('contentManipulation', () => {
 				addLogLine(world, entity, `Log ${i}`);
 			}
 
-			expect(getLineCount(world, entity)).toBe(5);
+			expect(contentGetLineCount(world, entity)).toBe(5);
 			expect(getLines(world, entity)).toEqual(['Log 3', 'Log 4', 'Log 5', 'Log 6', 'Log 7']);
 		});
 
@@ -544,7 +544,7 @@ describe('contentManipulation', () => {
 			setContent(world, entity, 'A\nB\nC');
 
 			// Save state
-			const originalLine = getLine(world, entity, 1);
+			const originalLine = contentGetLine(world, entity, 1);
 
 			// Make edit
 			setLine(world, entity, 1, 'Modified');
