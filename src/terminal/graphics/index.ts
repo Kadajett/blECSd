@@ -4,6 +4,14 @@
  * @module terminal/graphics
  */
 
+// ANSI backend
+export {
+	ANSI_BACKEND_NAME,
+	clearAnsiImage,
+	createAnsiBackend,
+	cursorPosition as ansiCursorPosition,
+	renderAnsiImage,
+} from './ansi';
 // Backend abstraction
 export type {
 	BackendName,
@@ -16,6 +24,7 @@ export type {
 } from './backend';
 export {
 	clearImage,
+	createAutoGraphicsManager,
 	createGraphicsManager,
 	DEFAULT_FALLBACK_CHAIN,
 	GraphicsCapabilitiesSchema,
@@ -29,6 +38,26 @@ export {
 	renderImage,
 	selectBackend,
 } from './backend';
+// Braille backend
+export {
+	BRAILLE_BACKEND_NAME,
+	clearBrailleImage,
+	createBrailleBackend,
+	cursorPosition as brailleCursorPosition,
+	renderBrailleImage,
+} from './braille';
+// Graphics detection
+export type { EnvChecker, GraphicsDetectionResult } from './detect';
+export {
+	detectAnsiSupport,
+	detectBrailleSupport,
+	detectGraphicsSupport,
+	detectITerm2Support,
+	detectKittySupport,
+	detectSixelSupport,
+	GraphicsDetectionResultSchema,
+	getBestBackendName,
+} from './detect';
 
 // iTerm2 backend
 export type { ITerm2EnvChecker, ITerm2ImageConfig, ITerm2Size, SizeUnit } from './iterm2';
