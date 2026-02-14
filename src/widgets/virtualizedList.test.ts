@@ -21,7 +21,7 @@ describe('VirtualizedList', () => {
 
 	beforeEach(() => {
 		world = createWorld();
-		cleanupVirtualizedRenderSystem();
+		cleanupVirtualizedRenderSystem(world);
 	});
 
 	// ===========================================================================
@@ -108,7 +108,7 @@ describe('VirtualizedList', () => {
 				lines: ['Test'],
 			});
 
-			const store = getLineStore(list.eid);
+			const store = getLineStore(world, list.eid);
 			expect(store).toBeDefined();
 			expect(store?.lineCount).toBe(1);
 		});
@@ -637,7 +637,7 @@ describe('VirtualizedList', () => {
 			list.destroy();
 
 			// Line store should be cleaned up
-			expect(getLineStore(eid)).toBeUndefined();
+			expect(getLineStore(world, eid)).toBeUndefined();
 		});
 
 		it('should refresh widget', () => {

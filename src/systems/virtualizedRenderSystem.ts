@@ -38,6 +38,7 @@ import {
 } from '../components/virtualViewport';
 import { hasComponent, query } from '../core/ecs';
 import type { Entity, System, World } from '../core/types';
+import { getWorldStore } from '../core/worldStore';
 import type { ScreenBufferData } from '../terminal/screen/cell';
 import { Attr, createCell, fillRect, setCell, writeString } from '../terminal/screen/cell';
 import type { DoubleBufferData } from '../terminal/screen/doubleBuffer';
@@ -192,11 +193,19 @@ const DEFAULT_LINE_CONFIG: LineRenderConfig = {
 /** Module-level double buffer reference */
 let virtualizedDoubleBuffer: DoubleBufferData | null = null;
 
-/** Map of entity ID to line store */
-const lineStoreRegistry = new Map<Entity, VirtualizedLineStore>();
+// =============================================================================
+// WORLD-SCOPED STORES (REPLACED MODULE-LEVEL SINGLETONS)
+// =============================================================================
 
-/** Map of entity ID to line render config */
-const lineConfigRegistry = new Map<Entity, LineRenderConfig>();
+/** Get world-scoped registry of entity to line store */
+function getLineStoreRegistry(world: World): Map<Entity, VirtualizedLineStore> {
+	return getWorldStore<Entity, VirtualizedLineStore>(world, 'virtualRender:lineStore');
+}
+
+/** Get world-scoped registry of entity to line render config */
+function getLineConfigRegistry(world: World): Map<Entity, LineRenderConfig> {
+	return getWorldStore<Entity, LineRenderConfig>(world, 'virtualRender:lineConfig');
+}
 
 // =============================================================================
 // PUBLIC API - BUFFER MANAGEMENT
@@ -243,6 +252,7 @@ export function clearVirtualizedRenderBuffer(): void {
  * Registers a line store for an entity.
  * The virtualized render system will use this store to get content.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param store - The line store containing content
  *
@@ -251,41 +261,44 @@ export function clearVirtualizedRenderBuffer(): void {
  * import { registerLineStore, createLineStore } from 'blecsd';
  *
  * const store = createLineStore(largeContent);
- * registerLineStore(entity, store);
+ * registerLineStore(world, entity, store);
  * ```
  */
-export function registerLineStore(eid: Entity, store: VirtualizedLineStore): void {
-	lineStoreRegistry.set(eid, store);
+export function registerLineStore(world: World, eid: Entity, store: VirtualizedLineStore): void {
+	getLineStoreRegistry(world).set(eid, store);
 }
 
 /**
  * Gets the line store for an entity.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns The line store or undefined
  */
-export function getLineStore(eid: Entity): VirtualizedLineStore | undefined {
-	return lineStoreRegistry.get(eid);
+export function getLineStore(world: World, eid: Entity): VirtualizedLineStore | undefined {
+	return getLineStoreRegistry(world).get(eid);
 }
 
 /**
  * Unregisters a line store for an entity.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  */
-export function unregisterLineStore(eid: Entity): void {
-	lineStoreRegistry.delete(eid);
+export function unregisterLineStore(world: World, eid: Entity): void {
+	getLineStoreRegistry(world).delete(eid);
 }
 
 /**
  * Updates the line store for an entity.
  * Use this when content changes (e.g., streaming append).
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param store - The new line store
  */
-export function updateLineStore(eid: Entity, store: VirtualizedLineStore): void {
-	lineStoreRegistry.set(eid, store);
+export function updateLineStore(world: World, eid: Entity, store: VirtualizedLineStore): void {
+	getLineStoreRegistry(world).set(eid, store);
 }
 
 // =============================================================================
@@ -296,6 +309,7 @@ export function updateLineStore(eid: Entity, store: VirtualizedLineStore): void 
  * Sets the line render configuration for an entity.
  * Input is validated against LineRenderConfigSchema.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param config - Partial config (merged with defaults)
  * @throws {z.ZodError} If config values are invalid
@@ -304,14 +318,14 @@ export function updateLineStore(eid: Entity, store: VirtualizedLineStore): void 
  * ```typescript
  * import { setLineRenderConfig } from 'blecsd';
  *
- * setLineRenderConfig(entity, {
+ * setLineRenderConfig(world, entity, {
  *   showLineNumbers: true,
  *   lineNumberWidth: 5,
  *   selectedBg: 0x0000ffff, // Blue selection
  * });
  * ```
  */
-export function setLineRenderConfig(eid: Entity, config: Partial<LineRenderConfig>): void {
+export function setLineRenderConfig(world: World, eid: Entity, config: Partial<LineRenderConfig>): void {
 	// Validate partial config (using schema without defaults to preserve existing values)
 	const validatedConfig = LineRenderConfigFieldsSchema.parse(config);
 
@@ -323,27 +337,29 @@ export function setLineRenderConfig(eid: Entity, config: Partial<LineRenderConfi
 		}
 	}
 
-	const existing = lineConfigRegistry.get(eid) ?? DEFAULT_LINE_CONFIG;
-	lineConfigRegistry.set(eid, { ...existing, ...definedValues });
+	const existing = getLineConfigRegistry(world).get(eid) ?? DEFAULT_LINE_CONFIG;
+	getLineConfigRegistry(world).set(eid, { ...existing, ...definedValues });
 }
 
 /**
  * Gets the line render configuration for an entity.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns The line render config
  */
-export function getLineRenderConfig(eid: Entity): LineRenderConfig {
-	return lineConfigRegistry.get(eid) ?? DEFAULT_LINE_CONFIG;
+export function getLineRenderConfig(world: World, eid: Entity): LineRenderConfig {
+	return getLineConfigRegistry(world).get(eid) ?? DEFAULT_LINE_CONFIG;
 }
 
 /**
  * Clears the line render configuration for an entity.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  */
-export function clearLineRenderConfig(eid: Entity): void {
-	lineConfigRegistry.delete(eid);
+export function clearLineRenderConfig(world: World, eid: Entity): void {
+	getLineConfigRegistry(world).delete(eid);
 }
 
 // =============================================================================
@@ -618,7 +634,7 @@ function renderVirtualizedEntity(ctx: VirtualizedRenderContext, eid: Entity): vo
 	}
 
 	// Get line store
-	const store = lineStoreRegistry.get(eid);
+	const store = getLineStoreRegistry(world).get(eid);
 	if (!store) {
 		return; // No content to render
 	}
@@ -630,7 +646,7 @@ function renderVirtualizedEntity(ctx: VirtualizedRenderContext, eid: Entity): vo
 	}
 
 	// Get render config
-	const config = getLineRenderConfig(eid);
+	const config = getLineRenderConfig(world, eid);
 
 	// Render background
 	renderBackground(ctx, eid, bounds);
@@ -761,19 +777,22 @@ export function createVirtualizedRenderSystem(): System {
 /**
  * Cleans up all resources for the virtualized render system.
  * Call this when shutting down.
+ *
+ * @param world - The ECS world
  */
-export function cleanupVirtualizedRenderSystem(): void {
+export function cleanupVirtualizedRenderSystem(world: World): void {
 	virtualizedDoubleBuffer = null;
-	lineStoreRegistry.clear();
-	lineConfigRegistry.clear();
+	getLineStoreRegistry(world).clear();
+	getLineConfigRegistry(world).clear();
 }
 
 /**
  * Cleans up resources for a specific entity.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  */
-export function cleanupEntityResources(eid: Entity): void {
-	lineStoreRegistry.delete(eid);
-	lineConfigRegistry.delete(eid);
+export function cleanupEntityResources(world: World, eid: Entity): void {
+	getLineStoreRegistry(world).delete(eid);
+	getLineConfigRegistry(world).delete(eid);
 }
