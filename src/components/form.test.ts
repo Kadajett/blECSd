@@ -53,28 +53,28 @@ describe('Form Component', () => {
 			const eid = createBoxEntity(world);
 			attachFormBehavior(world, eid);
 
-			expect(isFormKeysEnabled(eid)).toBe(true);
+			expect(isFormKeysEnabled(world, eid)).toBe(true);
 		});
 
 		it('enables submit on enter by default', () => {
 			const eid = createBoxEntity(world);
 			attachFormBehavior(world, eid);
 
-			expect(isFormSubmitOnEnter(eid)).toBe(true);
+			expect(isFormSubmitOnEnter(world, eid)).toBe(true);
 		});
 
 		it('respects keys option', () => {
 			const eid = createBoxEntity(world);
 			attachFormBehavior(world, eid, { keys: false });
 
-			expect(isFormKeysEnabled(eid)).toBe(false);
+			expect(isFormKeysEnabled(world, eid)).toBe(false);
 		});
 
 		it('respects submitOnEnter option', () => {
 			const eid = createBoxEntity(world);
 			attachFormBehavior(world, eid, { submitOnEnter: false });
 
-			expect(isFormSubmitOnEnter(eid)).toBe(false);
+			expect(isFormSubmitOnEnter(world, eid)).toBe(false);
 		});
 	});
 
@@ -238,7 +238,7 @@ describe('Form Component', () => {
 			attachFormBehavior(world, form);
 
 			const callback = vi.fn();
-			onFormSubmit(form, callback);
+			onFormSubmit(world, form, callback);
 
 			const field = createTextboxEntity(world, {
 				parent: form,
@@ -256,7 +256,7 @@ describe('Form Component', () => {
 			attachFormBehavior(world, form);
 
 			const callback = vi.fn();
-			const unsubscribe = onFormSubmit(form, callback);
+			const unsubscribe = onFormSubmit(world, form, callback);
 			unsubscribe();
 
 			submitForm(world, form);
@@ -289,7 +289,7 @@ describe('Form Component', () => {
 			attachFormBehavior(world, form);
 
 			const callback = vi.fn();
-			onFormReset(form, callback);
+			onFormReset(world, form, callback);
 
 			resetForm(world, form);
 
@@ -301,7 +301,7 @@ describe('Form Component', () => {
 			attachFormBehavior(world, form);
 
 			const callback = vi.fn();
-			const unsubscribe = onFormReset(form, callback);
+			const unsubscribe = onFormReset(world, form, callback);
 			unsubscribe();
 
 			resetForm(world, form);
@@ -317,10 +317,10 @@ describe('Form Component', () => {
 
 			const submitCallback = vi.fn();
 			const resetCallback = vi.fn();
-			onFormSubmit(form, submitCallback);
-			onFormReset(form, resetCallback);
+			onFormSubmit(world, form, submitCallback);
+			onFormReset(world, form, resetCallback);
 
-			clearFormCallbacks(form);
+			clearFormCallbacks(world, form);
 
 			submitForm(world, form);
 			resetForm(world, form);
@@ -364,7 +364,7 @@ describe('Form Component', () => {
 			attachFormBehavior(world, form, { submitOnEnter: true });
 
 			const callback = vi.fn();
-			onFormSubmit(form, callback);
+			onFormSubmit(world, form, callback);
 
 			const handled = handleFormKeyPress(world, form, 'return', false);
 
@@ -377,7 +377,7 @@ describe('Form Component', () => {
 			attachFormBehavior(world, form, { submitOnEnter: false });
 
 			const callback = vi.fn();
-			onFormSubmit(form, callback);
+			onFormSubmit(world, form, callback);
 
 			const handled = handleFormKeyPress(world, form, 'return', false);
 
