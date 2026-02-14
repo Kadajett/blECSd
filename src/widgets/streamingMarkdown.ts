@@ -363,6 +363,56 @@ function parseParagraph(lines: readonly string[], startIndex: number, firstLine:
 	};
 }
 
+/** Parses a single block from the current position. */
+function parseSingleBlock(
+	lines: readonly string[],
+	index: number,
+	line: string,
+): { block: StreamingBlock; nextIndex: number } {
+	// Horizontal rule
+	if (HR_PATTERN.test(line)) {
+		return {
+			block: { type: 'hr', content: '', complete: true },
+			nextIndex: index + 1,
+		};
+	}
+
+	// Heading
+	const headingMatch = HEADING_PATTERN.exec(line);
+	if (headingMatch) {
+		return {
+			block: {
+				type: 'heading',
+				content: headingMatch[2] ?? '',
+				headingLevel: (headingMatch[1] ?? '').length,
+				complete: true,
+			},
+			nextIndex: index + 1,
+		};
+	}
+
+	// Code block
+	const codeMatch = CODE_FENCE_OPEN.exec(line);
+	if (codeMatch) {
+		return parseCodeBlock(lines, index + 1, codeMatch[1] ?? '');
+	}
+
+	// Blockquote
+	if (line.startsWith('>')) {
+		return parseBlockquote(lines, index);
+	}
+
+	// List
+	const listMatch = LIST_ITEM_PATTERN.exec(line);
+	if (listMatch) {
+		const isOrdered = /^\d+\./.test(listMatch[2] ?? '');
+		return parseList(lines, index, isOrdered);
+	}
+
+	// Paragraph (default)
+	return parseParagraph(lines, index + 1, line);
+}
+
 /**
  * Parses raw markdown source into blocks, handling incomplete/streaming content.
  *
@@ -390,55 +440,7 @@ export function parseStreamingBlocks(source: string): readonly StreamingBlock[] 
 			continue;
 		}
 
-		// Horizontal rule
-		if (HR_PATTERN.test(line)) {
-			blocks.push({ type: 'hr', content: '', complete: true });
-			i++;
-			continue;
-		}
-
-		// Heading
-		const headingMatch = HEADING_PATTERN.exec(line);
-		if (headingMatch) {
-			blocks.push({
-				type: 'heading',
-				content: headingMatch[2] ?? '',
-				headingLevel: (headingMatch[1] ?? '').length,
-				complete: true,
-			});
-			i++;
-			continue;
-		}
-
-		// Code block
-		const codeMatch = CODE_FENCE_OPEN.exec(line);
-		if (codeMatch) {
-			const result = parseCodeBlock(lines, i + 1, codeMatch[1] ?? '');
-			blocks.push(result.block);
-			i = result.nextIndex;
-			continue;
-		}
-
-		// Blockquote
-		if (line.startsWith('>')) {
-			const result = parseBlockquote(lines, i);
-			blocks.push(result.block);
-			i = result.nextIndex;
-			continue;
-		}
-
-		// List
-		const listMatch = LIST_ITEM_PATTERN.exec(line);
-		if (listMatch) {
-			const isOrdered = /^\d+\./.test(listMatch[2] ?? '');
-			const result = parseList(lines, i, isOrdered);
-			blocks.push(result.block);
-			i = result.nextIndex;
-			continue;
-		}
-
-		// Paragraph (default)
-		const result = parseParagraph(lines, i + 1, line);
+		const result = parseSingleBlock(lines, i, line);
 		blocks.push(result.block);
 		i = result.nextIndex;
 	}
