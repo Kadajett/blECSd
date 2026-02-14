@@ -232,7 +232,7 @@ describe('dirtyTracking', () => {
 			const eid = addEntity(world);
 			tracker.dirtyEntities.add(eid);
 
-			removeEntityFromTracking(tracker, eid);
+			removeEntityFromTracking(world, tracker, eid);
 
 			expect(tracker.dirtyEntities.has(eid)).toBe(false);
 		});
@@ -240,7 +240,7 @@ describe('dirtyTracking', () => {
 		it('should remove entity from bounds cache', () => {
 			const eid = createEntityWithLayout(10, 5, 5, 3);
 			markEntityDirty(tracker, world, eid);
-			removeEntityFromTracking(tracker, eid);
+			removeEntityFromTracking(world, tracker, eid);
 
 			expect(tracker.entityBoundsCache.has(eid)).toBe(false);
 		});

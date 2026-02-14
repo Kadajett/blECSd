@@ -312,7 +312,7 @@ describe('Entity Tracking', () => {
 			'remove 100 entities from tracking',
 			() => {
 				for (const eid of entities) {
-					removeEntityFromTracking(tracker, eid);
+					removeEntityFromTracking(world, tracker, eid);
 				}
 			},
 			{

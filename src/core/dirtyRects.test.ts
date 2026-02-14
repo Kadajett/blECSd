@@ -238,7 +238,7 @@ describe('markEntityDirty', () => {
 
 		markEntityDirty(tracker, world, eid);
 
-		expect(isEntityDirty(tracker, eid)).toBe(true);
+		expect(isEntityDirty(world, tracker, eid)).toBe(true);
 		expect(tracker.dirtyEntities.has(eid)).toBe(true);
 	});
 
@@ -317,7 +317,7 @@ describe('removeEntityFromTracking', () => {
 		expect(tracker.dirtyEntities.has(eid)).toBe(true);
 		expect(tracker.entityBounds.has(eid)).toBe(true);
 
-		removeEntityFromTracking(tracker, eid);
+		removeEntityFromTracking(world, tracker, eid);
 
 		expect(tracker.dirtyEntities.has(eid)).toBe(false);
 		expect(tracker.entityBounds.has(eid)).toBe(false);
@@ -331,7 +331,7 @@ describe('removeEntityFromTracking', () => {
 		updateEntityBounds(tracker, world, eid, true);
 		clearDirtyTracking(tracker);
 
-		removeEntityFromTracking(tracker, eid);
+		removeEntityFromTracking(world, tracker, eid);
 
 		// Old position should be marked dirty
 		expect(isCellDirty(tracker, 10, 5)).toBe(true);

@@ -190,10 +190,10 @@ export function markEntityDirty(tracker: DirtyTracker, world: World, eid: Entity
  * @example
  * ```typescript
  * // Entity destroyed - clean up tracking
- * removeEntityFromTracking(tracker, destroyedEntity);
+ * removeEntityFromTracking(world, tracker, destroyedEntity);
  * ```
  */
-export function removeEntityFromTracking(tracker: DirtyTracker, eid: Entity): void {
+export function removeEntityFromTracking(_world: World, tracker: DirtyTracker, eid: Entity): void {
 	tracker.dirtyEntities.delete(eid);
 	tracker.entityBoundsCache.delete(eid);
 }

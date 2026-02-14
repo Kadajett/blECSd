@@ -371,10 +371,11 @@ export function updateEntityBounds(
  * Removes an entity from dirty tracking.
  * Call when entity is destroyed.
  *
+ * @param _world - The ECS world (unused)
  * @param tracker - The dirty tracker
  * @param eid - The entity ID
  */
-export function removeEntityFromTracking(tracker: DirtyTrackerData, eid: Entity): void {
+export function removeEntityFromTracking(_world: World, tracker: DirtyTrackerData, eid: Entity): void {
 	const prevBounds = tracker.entityBounds.get(eid);
 
 	// Mark previous position dirty (entity was here, now gone)
@@ -395,11 +396,12 @@ export function removeEntityFromTracking(tracker: DirtyTrackerData, eid: Entity)
 /**
  * Checks if an entity is marked dirty.
  *
+ * @param _world - The ECS world (unused)
  * @param tracker - The dirty tracker
  * @param eid - The entity ID
  * @returns true if entity is dirty
  */
-export function isEntityDirty(tracker: DirtyTrackerData, eid: Entity): boolean {
+export function isEntityDirty(_world: World, tracker: DirtyTrackerData, eid: Entity): boolean {
 	return tracker.dirtyEntities.has(eid);
 }
 
