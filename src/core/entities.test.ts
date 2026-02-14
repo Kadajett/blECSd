@@ -456,7 +456,7 @@ describe('Entity Factories', () => {
 		it('creates a checkbox with default display characters', () => {
 			const eid = createCheckboxEntity(world);
 
-			const display = getCheckboxDisplay(eid);
+			const display = getCheckboxDisplay(world, eid);
 			expect(display.checkedChar).toBe('☑');
 			expect(display.uncheckedChar).toBe('☐');
 		});
@@ -467,7 +467,7 @@ describe('Entity Factories', () => {
 				uncheckedChar: '[ ]',
 			});
 
-			const display = getCheckboxDisplay(eid);
+			const display = getCheckboxDisplay(world, eid);
 			expect(display.checkedChar).toBe('[x]');
 			expect(display.uncheckedChar).toBe('[ ]');
 		});
