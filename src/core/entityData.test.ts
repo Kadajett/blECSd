@@ -21,7 +21,7 @@ import type { Entity, World } from './types';
 
 describe('entityData', () => {
 	// entityData functions don't use world, but API requires it
-	const world = null as any as World;
+	const world = null as unknown as World;
 	const entity1 = 1 as Entity;
 	const entity2 = 2 as Entity;
 

@@ -316,7 +316,11 @@ export function updateLineStore(_world: World, eid: Entity, store: VirtualizedLi
  * });
  * ```
  */
-export function setLineRenderConfig(_world: World, eid: Entity, config: Partial<LineRenderConfig>): void {
+export function setLineRenderConfig(
+	_world: World,
+	eid: Entity,
+	config: Partial<LineRenderConfig>,
+): void {
 	// Validate partial config (using schema without defaults to preserve existing values)
 	const validatedConfig = LineRenderConfigFieldsSchema.parse(config);
 
