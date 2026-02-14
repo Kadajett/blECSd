@@ -925,7 +925,7 @@ describe('List Component', () => {
 				setVisibleCount(world, eid, 3);
 				setFirstVisible(world, eid, 5);
 
-				const info = getScrollInfo(eid, 2);
+				const info = getScrollInfo(world, eid, 2);
 
 				expect(info.firstVisible).toBe(5);
 				expect(info.nearEnd).toBe(true); // 5 + 3 = 8, 10 - 2 = 8
