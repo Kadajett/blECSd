@@ -9,7 +9,7 @@ import { blur, focus, setFocusable } from '../components/focusable';
 import { setPadding } from '../components/padding';
 import { setPosition } from '../components/position';
 import { setStyle } from '../components/renderable';
-import { setScrollable, setViewport } from '../components/scrollable';
+import { setScrollable, setViewport } from '../systems/scrollableSystem';
 import {
 	attachTextInputBehavior,
 	emitSubmit,

@@ -35,7 +35,8 @@ import {
 	resetProgressBarStore,
 } from '../components/progressBar';
 import { Renderable } from '../components/renderable';
-import { hasScrollable, Scrollable } from '../components/scrollable';
+import { Scrollable } from '../components/scrollable';
+import { hasScrollable } from '../systems/scrollableSystem';
 import {
 	getSelectDisplay,
 	getSelectedIndex,

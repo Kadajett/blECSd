@@ -14,7 +14,8 @@ import { Interactive, type InteractiveOptions, setInteractive } from '../../comp
 import { Padding, type PaddingOptions, setPadding } from '../../components/padding';
 import { Position } from '../../components/position';
 import { Renderable, type StyleOptions, setStyle } from '../../components/renderable';
-import { Scrollable, type ScrollableOptions, setScrollable } from '../../components/scrollable';
+import { Scrollable, type ScrollableOptions } from '../../components/scrollable';
+import { setScrollable } from '../../systems/scrollableSystem';
 import { setSliderDisplay } from '../../components/slider';
 import { addComponent } from '../ecs';
 import type { Entity, World } from '../types';

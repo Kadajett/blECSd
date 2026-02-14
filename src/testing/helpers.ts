@@ -13,7 +13,7 @@ import { Padding } from '../components/padding';
 import { setPosition } from '../components/position';
 import type { StyleOptions } from '../components/renderable';
 import { Renderable, setStyle } from '../components/renderable';
-import { setScrollable } from '../components/scrollable';
+import { setScrollable } from '../systems/scrollableSystem';
 import { addComponent, addEntity, createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { Entity, World } from '../core/types';

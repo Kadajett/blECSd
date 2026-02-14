@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { getFocusedEntity } from '../components/focusable';
 import { appendChild } from '../components/hierarchy';
 import { setInteractive } from '../components/interactive';
-import { setScroll } from '../components/scrollable';
+import { setScroll } from '../systems/scrollableSystem';
 import { addEntity } from '../core/ecs';
 import type { World } from '../core/types';
 import { getCell } from '../terminal/screen/cell';

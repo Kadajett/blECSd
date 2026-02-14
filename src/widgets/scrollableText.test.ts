@@ -7,7 +7,7 @@ import { getDimensions } from '../components/dimensions';
 import { resetFocusState } from '../components/focusable';
 import { getPosition } from '../components/position';
 import { getRenderable, hexToColor } from '../components/renderable';
-import { getScrollable } from '../components/scrollable';
+import { getScrollable } from '../systems/scrollableSystem';
 import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import { resetScrollableBoxStore } from './scrollableBox';

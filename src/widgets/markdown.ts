@@ -8,7 +8,7 @@ import { setContent } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { setPosition } from '../components/position';
 import { markDirty, Renderable, setStyle } from '../components/renderable';
-import { setScrollable } from '../components/scrollable';
+import { setScrollable } from '../systems/scrollableSystem';
 import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { parseColor } from '../utils/color';

@@ -5,7 +5,7 @@
 
 import { getContent, setContent } from '../components/content';
 import { markDirty } from '../components/renderable';
-import { getScroll, hasScrollable, setScroll } from '../components/scrollable';
+import { getScroll, hasScrollable, setScroll } from '../systems/scrollableSystem';
 import type { Entity, World } from '../core/types';
 
 /**

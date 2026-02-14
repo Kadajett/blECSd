@@ -24,6 +24,13 @@ import { setPadding } from '../components/padding';
 import { moveBy, setPosition } from '../components/position';
 import { markDirty, setStyle, setVisible } from '../components/renderable';
 import {
+	type ScrollableData,
+	type ScrollableOptions,
+	ScrollbarVisibility,
+	type ScrollPercentage,
+	type ScrollPosition,
+} from '../components/scrollable';
+import {
 	canScroll,
 	canScrollX,
 	canScrollY,
@@ -36,11 +43,6 @@ import {
 	isAtLeft,
 	isAtRight,
 	isAtTop,
-	type ScrollableData,
-	type ScrollableOptions,
-	ScrollbarVisibility,
-	type ScrollPercentage,
-	type ScrollPosition,
 	scrollToBottom,
 	scrollToLeft,
 	scrollToRight,
@@ -49,7 +51,7 @@ import {
 	setScrollPercentage,
 	setScrollSize,
 	setViewport,
-} from '../components/scrollable';
+} from '../systems/scrollableSystem';
 import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { parseColor } from '../utils/color';

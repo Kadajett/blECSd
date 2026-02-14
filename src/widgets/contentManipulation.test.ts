@@ -5,7 +5,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getContent, resetContentStore, setContent } from '../components/content';
 import { Renderable } from '../components/renderable';
-import { getScroll, setScrollable } from '../components/scrollable';
+import { getScroll, setScrollable } from '../systems/scrollableSystem';
 import { addEntity, createWorld } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import {

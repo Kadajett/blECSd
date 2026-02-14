@@ -813,25 +813,33 @@ export type {
 	ScrollPercentage,
 	ScrollPosition,
 } from './scrollable';
+export { Scrollable, ScrollbarVisibility } from './scrollable';
 export {
 	canScroll,
+	canScrollX,
+	canScrollY,
 	getScroll,
 	getScrollable,
 	getScrollPercentage,
 	hasScrollable,
 	isAtBottom,
+	isAtLeft,
+	isAtRight,
 	isAtTop,
-	Scrollable,
-	ScrollbarVisibility,
 	scrollBy,
 	scrollTo,
 	scrollToBottom,
+	scrollToLeft,
+	scrollToRight,
 	scrollToTop,
+	setClampEnabled,
 	setScroll,
 	setScrollable,
 	setScrollbarVisibility,
+	setScrollPercentage,
 	setScrollSize,
-} from './scrollable';
+	setViewport,
+} from '../systems/scrollableSystem';
 // Scrollbar component
 export type {
 	ScrollbarData,

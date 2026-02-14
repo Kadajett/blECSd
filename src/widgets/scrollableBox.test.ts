@@ -11,7 +11,7 @@ import { getParent } from '../components/hierarchy';
 import { getPadding } from '../components/padding';
 import { getPosition } from '../components/position';
 import { getRenderable, hexToColor } from '../components/renderable';
-import { hasScrollable } from '../components/scrollable';
+import { hasScrollable } from '../systems/scrollableSystem';
 import { addEntity, createWorld } from '../core/ecs';
 import type { World } from '../core/types';
 import {
