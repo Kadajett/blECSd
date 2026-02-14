@@ -9,6 +9,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Pre-1.0**: Minor version bumps for breaking changes, patch for fixes and features
 - **Post-1.0**: Standard [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## [0.5.0] - 2026-02-13
+
+### Added
+
+#### Unified Graphics Backend
+- **`createAutoGraphicsManager()`** - Auto-detects and selects the best graphics protocol (Kitty > iTerm2 > Sixel > ANSI > Braille > ASCII)
+- **`createGraphicsManager()`** / **`registerBackend()`** - Manual backend management with configurable fallback chains
+- **`detectGraphicsSupport()`** - Probes terminal environment for graphics protocol support
+- **`selectBackend()`** / **`refreshBackend()`** - Dynamic backend selection and hot-swapping
+- Backend name constants: `KITTY_BACKEND_NAME`, `ITERM2_BACKEND_NAME`, `SIXEL_BACKEND_NAME`, `ANSI_BACKEND_NAME`, `BRAILLE_BACKEND_NAME`
+- Protocol constants: `APC_PREFIX`, `KITTY_ST`, `OSC_1337_PREFIX`, `DCS_START`, `SIXEL_ST`
+- Zod schemas: `GraphicsCapabilitiesSchema`, `GraphicsManagerConfigSchema`, `ImageDataSchema`, `GraphicsRenderOptionsSchema`, `GraphicsDetectionResultSchema`
+
+#### Vector Graphics Primitives
+- **`createBrailleCanvas()`** - Create a braille dot-coordinate drawing surface (2x4 dots per cell)
+- Drawing functions: `drawBrailleLine()`, `drawBrailleRect()`, `fillBrailleRect()`, `drawBrailleCircle()`, `fillBrailleCircle()`, `drawBrailleArc()`, `drawBrailleBezier()`, `drawBrailleEllipse()`
+- Canvas utilities: `setDot()`, `clearDot()`, `getDot()`, `setCellColor()`, `dotToCell()`, `cellToDot()`
+- Output: `brailleCanvasToString()`, `brailleCanvasToCells()`
+
+#### Vector-to-Pixel Bridge
+- **`renderVector()`** - Renders BrailleCanvas through best available backend (pixel or braille fallback)
+- **`canvasToPixelBitmap()`** - Converts vector drawings to RGBA pixel bitmaps for Kitty/iTerm2/Sixel
+- **`hasPixelBackend()`** - Checks if a pixel-capable backend is active
+
+#### Image Widget Enhancements
+- **Overlay mode with GraphicsManager**: `createImage(world, { type: 'overlay', graphicsManager })` renders through auto-detected protocol
+- **`setGraphicsManager()`** - Dynamically assign a graphics manager to an image widget
+- **Aspect ratio preservation**: `calculateAspectRatioDimensions()` with letterbox fitting
+- **GIF animation**: `setAnimatedImage()`, `startAnimation()`, `stopAnimation()`, `setFrame()`
+- **Image caching**: `clearImageCache()`, `clearAllImageCaches()` for render cache management
+
+#### Chart Rendering Upgrade
+- **Braille gauge mode**: `setRenderMode('braille')` on gauge widget for 4x vertical resolution
+- **Gradient gauge bars**: `gradientStart`/`gradientEnd` color options
+- **Chart utilities**: `brailleFillPattern()`, `renderBrailleBar()`, `renderBrailleGradientBar()`
+
+#### Terminal Graphics Capability Proposal
+- Technical proposal document for standardized graphics capability negotiation protocol (`docs/proposals/terminal-graphics-capability-negotiation.md`)
+
 ## [0.4.2] - 2026-02-13
 
 ### Fixed

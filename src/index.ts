@@ -6,7 +6,7 @@
  * @packageDocumentation
  */
 
-export const VERSION = '0.4.2';
+export const VERSION = '0.5.0';
 
 // 3D module exported as namespace to avoid top-level name collisions
 export * as three from './3d';
