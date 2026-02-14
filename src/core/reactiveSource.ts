@@ -193,3 +193,259 @@ export function createDerivedSignal<T, R>(
 		return combiner(...values);
 	});
 }
+
+/**
+ * Minimal interface for a readable stream.
+ */
+interface ReadableStream {
+	on(event: string, listener: (...args: unknown[]) => void): void;
+	removeListener(event: string, listener: (...args: unknown[]) => void): void;
+	destroy?(): void;
+}
+
+/**
+ * Options for stream signal creation.
+ */
+interface StreamSignalOptions<T> {
+	/**
+	 * Transform function to convert Buffer chunks to signal values.
+	 * Defaults to converting Buffer to string.
+	 */
+	transform?: (chunk: Buffer) => T;
+	/**
+	 * Initial value for the signal.
+	 */
+	initialValue: T;
+	/**
+	 * Whether to destroy the stream on dispose. Defaults to false.
+	 */
+	destroyOnDispose?: boolean;
+}
+
+/**
+ * Creates a signal from a Node.js Readable stream.
+ * Updates on each 'data' event with the transformed chunk value.
+ *
+ * @param readable - A readable stream (Node.js Readable or compatible)
+ * @param options - Stream signal options
+ * @returns Tuple of [getter, dispose]
+ *
+ * @example
+ * ```typescript
+ * import { createStreamSignal } from 'blecsd';
+ * import { createReadStream } from 'fs';
+ *
+ * const stream = createReadStream('./data.txt', { encoding: 'utf8' });
+ * const [data, dispose] = createStreamSignal(stream, {
+ *   initialValue: '',
+ *   transform: (chunk) => chunk.toString('utf8')
+ * });
+ *
+ * console.log(data()); // Latest chunk from stream
+ *
+ * dispose(); // Clean up listeners
+ * ```
+ */
+export function createStreamSignal<T>(
+	readable: ReadableStream,
+	options: StreamSignalOptions<T>,
+): [SignalGetter<T>, Dispose] {
+	const {
+		transform = (chunk: Buffer): T => chunk.toString('utf8') as T,
+		initialValue,
+		destroyOnDispose = false,
+	} = options;
+	const [value, setValue] = createSignal(initialValue);
+
+	const dataListener = (...args: unknown[]): void => {
+		const chunk = args[0] as Buffer;
+		setValue(transform(chunk));
+	};
+
+	const errorListener = (...args: unknown[]): void => {
+		// On error, keep the previous value but log the error
+		const err = args[0] as Error;
+		console.error('Stream error:', err);
+	};
+
+	readable.on('data', dataListener);
+	readable.on('error', errorListener);
+
+	const dispose = (): void => {
+		readable.removeListener('data', dataListener);
+		readable.removeListener('error', errorListener);
+		if (destroyOnDispose && readable.destroy) {
+			readable.destroy();
+		}
+	};
+
+	return [value, dispose];
+}
+
+/**
+ * Subscribe function type for callback signal.
+ * Takes a callback and returns an unsubscribe function.
+ */
+type Subscribe<T> = (callback: (value: T) => void) => () => void;
+
+/**
+ * Creates a signal from a generic subscribe/unsubscribe pattern.
+ * This is a universal adapter for WebSocket, EventEmitter, and other callback-based sources.
+ *
+ * @param subscribe - Function that takes a callback and returns an unsubscribe function
+ * @param initialValue - Initial value for the signal
+ * @returns Tuple of [getter, dispose]
+ *
+ * @example
+ * ```typescript
+ * import { createCallbackSignal } from 'blecsd';
+ *
+ * // WebSocket example
+ * const ws = new WebSocket('ws://localhost:8080');
+ * const [message, dispose] = createCallbackSignal<string>(
+ *   (callback) => {
+ *     const handler = (event: MessageEvent) => callback(event.data);
+ *     ws.addEventListener('message', handler);
+ *     return () => ws.removeEventListener('message', handler);
+ *   },
+ *   ''
+ * );
+ *
+ * console.log(message()); // Latest WebSocket message
+ *
+ * dispose(); // Unsubscribe
+ * ```
+ */
+export function createCallbackSignal<T>(
+	subscribe: Subscribe<T>,
+	initialValue: T,
+): [SignalGetter<T>, Dispose] {
+	const [value, setValue] = createSignal(initialValue);
+
+	const unsubscribe = subscribe((newValue: T) => {
+		setValue(newValue);
+	});
+
+	return [value, unsubscribe];
+}
+
+/**
+ * Creates a signal that polls an async function at regular intervals.
+ * Handles promises and errors gracefully.
+ *
+ * @param fn - Async function to poll
+ * @param intervalMs - Polling interval in milliseconds
+ * @param initialValue - Initial value for the signal
+ * @returns Tuple of [getter, dispose]
+ *
+ * @example
+ * ```typescript
+ * import { createPollingSignal } from 'blecsd';
+ *
+ * const [apiData, dispose] = createPollingSignal(
+ *   async () => {
+ *     const response = await fetch('https://api.example.com/status');
+ *     return response.json();
+ *   },
+ *   5000, // Poll every 5 seconds
+ *   { status: 'unknown' }
+ * );
+ *
+ * console.log(apiData()); // Latest API response
+ *
+ * dispose(); // Stop polling
+ * ```
+ */
+export function createPollingSignal<T>(
+	fn: () => Promise<T>,
+	intervalMs: number,
+	initialValue: T,
+): [SignalGetter<T>, Dispose] {
+	const [value, setValue] = createSignal(initialValue);
+	let isDisposed = false;
+
+	const poll = async (): Promise<void> => {
+		if (isDisposed) {
+			return;
+		}
+
+		try {
+			const result = await fn();
+			if (!isDisposed) {
+				setValue(result);
+			}
+		} catch (err) {
+			// On error, keep the previous value
+			console.error('Polling error:', err);
+		}
+	};
+
+	// Start first poll immediately
+	void poll();
+
+	const intervalId = setInterval(() => {
+		void poll();
+	}, intervalMs);
+
+	const dispose = (): void => {
+		isDisposed = true;
+		clearInterval(intervalId);
+	};
+
+	return [value, dispose];
+}
+
+/**
+ * Minimal interface for an event emitter.
+ */
+interface EventEmitter {
+	on(eventName: string, listener: (...args: unknown[]) => void): void;
+	removeListener(eventName: string, listener: (...args: unknown[]) => void): void;
+}
+
+/**
+ * Creates a signal from a Node.js EventEmitter event.
+ * Updates whenever the specified event is emitted.
+ *
+ * @param emitter - Event emitter instance
+ * @param eventName - Name of the event to listen to
+ * @param initialValue - Initial value for the signal (optional)
+ * @returns Tuple of [getter, dispose]
+ *
+ * @example
+ * ```typescript
+ * import { createEventSignal } from 'blecsd';
+ * import { EventEmitter } from 'events';
+ *
+ * const emitter = new EventEmitter();
+ * const [message, dispose] = createEventSignal<string>(emitter, 'message', '');
+ *
+ * emitter.emit('message', 'Hello');
+ * console.log(message()); // "Hello"
+ *
+ * emitter.emit('message', 'World');
+ * console.log(message()); // "World"
+ *
+ * dispose(); // Remove listener
+ * ```
+ */
+export function createEventSignal<T>(
+	emitter: EventEmitter,
+	eventName: string,
+	initialValue?: T,
+): [SignalGetter<T | undefined>, Dispose] {
+	const [value, setValue] = createSignal<T | undefined>(initialValue);
+
+	const listener = (...args: unknown[]): void => {
+		const payload = args[0] as T;
+		setValue(payload);
+	};
+
+	emitter.on(eventName, listener);
+
+	const dispose = (): void => {
+		emitter.removeListener(eventName, listener);
+	};
+
+	return [value, dispose];
+}
