@@ -15,20 +15,14 @@ import {
 } from './ecs';
 import type { Entity, World } from './types';
 import {
-	addComponentToEntity,
 	addEntitiesWithIds,
 	applyComponentToEntity,
-	applyComponentValues,
-	buildComponentValues,
 	collectAddedEntitiesData,
 	collectAllEntityIds,
 	collectChangedComponentData,
-	collectEntityIds,
 	createEntityMapping,
 	createExistingEntityMap,
 	extractEntitySet,
-	extractFieldValues,
-	findComponentByName,
 	findEntityChanges,
 	restoreComponentData,
 	serializeComponentRegistration,

@@ -7,13 +7,14 @@
  */
 
 import type { ComponentData, ComponentFieldData, WorldSnapshot } from './serialization';
+import type { Entity, World } from './types';
 
 // =============================================================================
 // SERIALIZE HELPERS
 // =============================================================================
 
 /** Collects entity IDs from a component. */
-export function collectEntityIds(component: unknown, entities: readonly number[]): number[] {
+export function collectEntityIds(_component: unknown, entities: readonly number[]): number[] {
 	const ids: number[] = [];
 	for (const eid of entities) {
 		ids.push(eid);
@@ -63,10 +64,10 @@ export function buildComponentValues(
 
 /** Serializes a single component registration. */
 export function serializeComponentRegistration(
-	world: unknown,
+	world: World,
 	entities: readonly number[],
 	reg: { name: string; component: unknown; fields: readonly string[] },
-	hasComponent: (world: unknown, eid: unknown, component: unknown) => boolean,
+	hasComponent: (world: World, eid: Entity, component: unknown) => boolean,
 ): ComponentData | null {
 	const entitiesWithComponent: number[] = [];
 	const values: Record<string, number[]> = {};
@@ -122,9 +123,9 @@ export function collectAllEntityIds(snapshot: WorldSnapshot): Set<number> {
 
 /** Creates entities and builds entity ID mapping. */
 export function createEntityMapping(
-	world: unknown,
+	world: World,
 	entityIds: Set<number>,
-	addEntity: (world: unknown) => number,
+	addEntity: (world: World) => number,
 ): Map<number, number> {
 	const entityMap = new Map<number, number>();
 	const sortedIds = Array.from(entityIds).sort((a, b) => a - b);
@@ -158,12 +159,12 @@ export function restoreComponentData(
 
 /** Adds component to an entity during deserialization. */
 export function addComponentToEntity(
-	world: unknown,
+	world: World,
 	eid: number,
 	component: unknown,
 	values: ComponentFieldData,
 	index: number,
-	addComponent: (world: unknown, eid: unknown, component: unknown) => void,
+	addComponent: (world: World, eid: Entity, component: unknown) => void,
 ): void {
 	addComponent(world, eid, component);
 
@@ -354,11 +355,11 @@ export function createExistingEntityMap(entities: readonly number[]): Map<number
 
 /** Adds entities with specific IDs to world. */
 export function addEntitiesWithIds(
-	world: unknown,
+	world: World,
 	entityIds: readonly number[],
 	entityMap: Map<number, number>,
-	addEntity: (world: unknown) => number,
-	entityExists: (world: unknown, eid: unknown) => boolean,
+	addEntity: (world: World) => number,
+	entityExists: (world: World, eid: Entity) => boolean,
 ): void {
 	for (const eid of entityIds) {
 		if (!entityExists(world, eid)) {
@@ -374,14 +375,14 @@ export function addEntitiesWithIds(
 
 /** Applies component data to a single entity. */
 export function applyComponentToEntity(
-	world: unknown,
+	world: World,
 	eid: number,
 	componentReg: { component: unknown; fields: readonly string[] },
 	compData: ComponentData,
 	index: number,
-	hasComponent: (world: unknown, eid: unknown, component: unknown) => boolean,
-	addComponent: (world: unknown, eid: unknown, component: unknown) => void,
-	entityExists: (world: unknown, eid: unknown) => boolean,
+	hasComponent: (world: World, eid: Entity, component: unknown) => boolean,
+	addComponent: (world: World, eid: Entity, component: unknown) => void,
+	entityExists: (world: World, eid: Entity) => boolean,
 ): void {
 	if (!entityExists(world, eid)) return;
 
