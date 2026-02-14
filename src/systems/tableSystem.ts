@@ -27,19 +27,26 @@ import {
 	tableStore,
 } from '../components/table';
 import type { Entity, World } from '../core/types';
+import { getWorldStore } from '../core/worldStore';
 
 // =============================================================================
-// INTERNAL STORES (NOT EXPORTED FROM COMPONENT)
+// WORLD-SCOPED STORES (REPLACED MODULE-LEVEL SINGLETONS)
 // =============================================================================
 
-/** Store for table cell data */
-const dataStore = new Map<Entity, TableCell[][]>();
+/** Get world-scoped store for table cell data */
+function getDataStore(world: World): Map<Entity, TableCell[][]> {
+	return getWorldStore<Entity, TableCell[][]>(world, 'table:data');
+}
 
-/** Store for table column configuration */
-const columnStore = new Map<Entity, TableColumn[]>();
+/** Get world-scoped store for table column configuration */
+function getColumnStore(world: World): Map<Entity, TableColumn[]> {
+	return getWorldStore<Entity, TableColumn[]>(world, 'table:columns');
+}
 
-/** Store for table display configuration */
-const displayStore = new Map<Entity, TableDisplay>();
+/** Get world-scoped store for table display configuration */
+function getDisplayStore(world: World): Map<Entity, TableDisplay> {
+	return getWorldStore<Entity, TableDisplay>(world, 'table:display');
+}
 
 // =============================================================================
 // COMPONENT FUNCTIONS
@@ -68,7 +75,7 @@ const displayStore = new Map<Entity, TableDisplay>();
  * ```
  */
 export function attachTableBehavior(
-	_world: World,
+	world: World,
 	eid: Entity,
 	options: {
 		headerRows?: number;
@@ -90,8 +97,8 @@ export function attachTableBehavior(
 	Table.pad[eid] = options.pad ?? 1;
 	Table.cellBorders[eid] = options.cellBorders === true ? 1 : 0;
 
-	dataStore.set(eid, []);
-	columnStore.set(eid, []);
+	getDataStore(world).set(eid, []);
+	getColumnStore(world).set(eid, []);
 }
 
 /**
@@ -111,7 +118,7 @@ export function isTable(_world: World, eid: Entity): boolean {
  * @param _world - The ECS world
  * @param eid - The entity ID
  */
-export function detachTableBehavior(_world: World, eid: Entity): void {
+export function detachTableBehavior(world: World, eid: Entity): void {
 	tableStore.isTable[eid] = 0;
 	tableStore.rowCount[eid] = 0;
 	tableStore.colCount[eid] = 0;
@@ -125,9 +132,9 @@ export function detachTableBehavior(_world: World, eid: Entity): void {
 	Table.pad[eid] = 1;
 	Table.cellBorders[eid] = 0;
 
-	dataStore.delete(eid);
-	columnStore.delete(eid);
-	displayStore.delete(eid);
+	getDataStore(world).delete(eid);
+	getColumnStore(world).delete(eid);
+	getDisplayStore(world).delete(eid);
 }
 
 // =============================================================================
@@ -167,7 +174,7 @@ export function setData(
 		row.map((cell) => (typeof cell === 'string' ? { value: cell } : cell)),
 	);
 
-	dataStore.set(eid, data);
+	getDataStore(world).set(eid, data);
 
 	// Update row/column counts
 	tableStore.rowCount[eid] = data.length;
@@ -183,8 +190,8 @@ export function setData(
  * @param eid - The entity ID
  * @returns Table data as array of rows
  */
-export function getData(_world: World, eid: Entity): TableData {
-	return dataStore.get(eid) ?? [];
+export function getData(world: World, eid: Entity): TableData {
+	return getDataStore(world).get(eid) ?? [];
 }
 
 /**
@@ -194,8 +201,8 @@ export function getData(_world: World, eid: Entity): TableData {
  * @param eid - The entity ID
  * @returns Table data as string[][]
  */
-export function getDataAsStrings(_world: World, eid: Entity): string[][] {
-	const data = dataStore.get(eid) ?? [];
+export function getDataAsStrings(world: World, eid: Entity): string[][] {
+	const data = getDataStore(world).get(eid) ?? [];
 	return data.map((row) => row.map((cell) => cell.value));
 }
 
@@ -222,7 +229,7 @@ export function setCell(
 	col: number,
 	value: string | TableCell,
 ): boolean {
-	const data = dataStore.get(eid);
+	const data = getDataStore(world).get(eid);
 	if (!data) {
 		return false;
 	}
@@ -267,12 +274,12 @@ export function setCell(
  * @returns Cell data or undefined if out of bounds
  */
 export function getCell(
-	_world: World,
+	world: World,
 	eid: Entity,
 	row: number,
 	col: number,
 ): TableCell | undefined {
-	const data = dataStore.get(eid);
+	const data = getDataStore(world).get(eid);
 	if (!data || row < 0 || col < 0) {
 		return undefined;
 	}
@@ -305,8 +312,8 @@ export function getCellValue(
  * @param row - Row index (0-based)
  * @returns Row data or undefined if out of bounds
  */
-export function getRow(_world: World, eid: Entity, row: number): TableRow | undefined {
-	const data = dataStore.get(eid);
+export function getRow(world: World, eid: Entity, row: number): TableRow | undefined {
+	const data = getDataStore(world).get(eid);
 	return data?.[row];
 }
 
@@ -318,8 +325,8 @@ export function getRow(_world: World, eid: Entity, row: number): TableRow | unde
  * @param col - Column index (0-based)
  * @returns Column data as array of cells
  */
-export function getColumn(_world: World, eid: Entity, col: number): readonly TableCell[] {
-	const data = dataStore.get(eid) ?? [];
+export function getColumn(world: World, eid: Entity, col: number): readonly TableCell[] {
+	const data = getDataStore(world).get(eid) ?? [];
 	return data.map((row) => row[col] ?? { value: '' });
 }
 
@@ -353,7 +360,7 @@ export function getColCount(_world: World, eid: Entity): number {
  * @param row - Row data
  */
 export function appendRow(world: World, eid: Entity, row: ReadonlyArray<string | TableCell>): void {
-	const data = dataStore.get(eid) ?? [];
+	const data = getDataStore(world).get(eid) ?? [];
 	const newRow = row.map((cell) => (typeof cell === 'string' ? { value: cell } : cell));
 	data.push(newRow);
 
@@ -377,7 +384,7 @@ export function insertRow(
 	index: number,
 	row: ReadonlyArray<string | TableCell>,
 ): void {
-	const data = dataStore.get(eid) ?? [];
+	const data = getDataStore(world).get(eid) ?? [];
 	const newRow = row.map((cell) => (typeof cell === 'string' ? { value: cell } : cell));
 
 	const insertIndex = Math.max(0, Math.min(index, data.length));
@@ -398,7 +405,7 @@ export function insertRow(
  * @returns The removed row or undefined
  */
 export function removeRow(world: World, eid: Entity, index: number): TableRow | undefined {
-	const data = dataStore.get(eid);
+	const data = getDataStore(world).get(eid);
 	if (!data || index < 0 || index >= data.length) {
 		return undefined;
 	}
@@ -420,7 +427,7 @@ export function removeRow(world: World, eid: Entity, index: number): TableRow | 
  * @param eid - The entity ID
  */
 export function clearData(world: World, eid: Entity): void {
-	dataStore.set(eid, []);
+	getDataStore(world).set(eid, []);
 	tableStore.rowCount[eid] = 0;
 	tableStore.colCount[eid] = 0;
 	markDirty(world, eid);
@@ -447,10 +454,10 @@ export function clearData(world: World, eid: Entity): void {
  * ```
  */
 export function setHeaders(world: World, eid: Entity, columns: readonly TableColumn[]): void {
-	columnStore.set(eid, [...columns]);
+	getColumnStore(world).set(eid, [...columns]);
 
 	// Insert header row if data exists and doesn't have headers
-	const data = dataStore.get(eid) ?? [];
+	const data = getDataStore(world).get(eid) ?? [];
 	const headerRowCount = tableStore.headerRows[eid] ?? 1;
 
 	if (headerRowCount > 0) {
@@ -481,8 +488,8 @@ export function setHeaders(world: World, eid: Entity, columns: readonly TableCol
  * @param eid - The entity ID
  * @returns Column configuration
  */
-export function getColumns(_world: World, eid: Entity): readonly TableColumn[] {
-	return columnStore.get(eid) ?? [];
+export function getColumns(world: World, eid: Entity): readonly TableColumn[] {
+	return getColumnStore(world).get(eid) ?? [];
 }
 
 /**
@@ -492,8 +499,8 @@ export function getColumns(_world: World, eid: Entity): readonly TableColumn[] {
  * @param eid - The entity ID
  * @returns Header row data
  */
-export function getHeaderRows(_world: World, eid: Entity): readonly TableRow[] {
-	const data = dataStore.get(eid) ?? [];
+export function getHeaderRows(world: World, eid: Entity): readonly TableRow[] {
+	const data = getDataStore(world).get(eid) ?? [];
 	const headerRowCount = tableStore.headerRows[eid] ?? 1;
 	return data.slice(0, headerRowCount);
 }
@@ -505,8 +512,8 @@ export function getHeaderRows(_world: World, eid: Entity): readonly TableRow[] {
  * @param eid - The entity ID
  * @returns Data rows
  */
-export function getDataRows(_world: World, eid: Entity): readonly TableRow[] {
-	const data = dataStore.get(eid) ?? [];
+export function getDataRows(world: World, eid: Entity): readonly TableRow[] {
+	const data = getDataStore(world).get(eid) ?? [];
 	const headerRowCount = tableStore.headerRows[eid] ?? 1;
 	return data.slice(headerRowCount);
 }
@@ -545,8 +552,8 @@ export function getHeaderRowCount(_world: World, eid: Entity): number {
  * @param eid - The entity ID
  * @param options - Display options
  */
-export function setTableDisplay(_world: World, eid: Entity, options: TableDisplayOptions): void {
-	const existing = displayStore.get(eid);
+export function setTableDisplay(world: World, eid: Entity, options: TableDisplayOptions): void {
+	const existing = getDisplayStore(world).get(eid);
 	const altRowBg = options.altRowBg ?? existing?.altRowBg;
 	const selectedFg = options.selectedFg ?? existing?.selectedFg;
 	const selectedBg = options.selectedBg ?? existing?.selectedBg;
@@ -562,7 +569,7 @@ export function setTableDisplay(_world: World, eid: Entity, options: TableDispla
 		...(selectedFg !== undefined && { selectedFg }),
 		...(selectedBg !== undefined && { selectedBg }),
 	};
-	displayStore.set(eid, display);
+	getDisplayStore(world).set(eid, display);
 }
 
 /**
@@ -572,9 +579,9 @@ export function setTableDisplay(_world: World, eid: Entity, options: TableDispla
  * @param eid - The entity ID
  * @returns Display configuration
  */
-export function getTableDisplay(_world: World, eid: Entity): TableDisplay {
+export function getTableDisplay(world: World, eid: Entity): TableDisplay {
 	return (
-		displayStore.get(eid) ?? {
+		getDisplayStore(world).get(eid) ?? {
 			headerFg: DEFAULT_HEADER_FG,
 			headerBg: DEFAULT_HEADER_BG,
 			cellFg: DEFAULT_CELL_FG,
@@ -591,8 +598,8 @@ export function getTableDisplay(_world: World, eid: Entity): TableDisplay {
  * @param world - The ECS world (unused, kept for API consistency)
  * @param eid - The entity ID
  */
-export function clearTableDisplay(_world: World, eid: Entity): void {
-	displayStore.delete(eid);
+export function clearTableDisplay(world: World, eid: Entity): void {
+	getDisplayStore(world).delete(eid);
 }
 
 // =============================================================================
@@ -705,12 +712,12 @@ function scaleWidthsToFit(widths: number[], maxTotalWidth: number): void {
  * @returns Array of column widths
  */
 export function calculateColumnWidths(
-	_world: World,
+	world: World,
 	eid: Entity,
 	maxTotalWidth?: number,
 ): number[] {
-	const data = dataStore.get(eid) ?? [];
-	const columns = columnStore.get(eid) ?? [];
+	const data = getDataStore(world).get(eid) ?? [];
+	const columns = getColumnStore(world).get(eid) ?? [];
 	const colCount = tableStore.colCount[eid] ?? 0;
 	const padding = tableStore.pad[eid] ?? 1;
 
@@ -778,7 +785,7 @@ function renderRow(
  * @returns Array of rendered line strings
  */
 export function renderTableLines(world: World, eid: Entity, width: number): string[] {
-	const data = dataStore.get(eid) ?? [];
+	const data = getDataStore(world).get(eid) ?? [];
 	const colWidths = calculateColumnWidths(world, eid, width);
 	const padding = tableStore.pad[eid] ?? 1;
 	const cellBorders = tableStore.cellBorders[eid] === 1;
@@ -805,14 +812,14 @@ export function renderTableLines(world: World, eid: Entity, width: number): stri
 /**
  * Resets the table store. Used for testing.
  */
-export function resetTableStore(): void {
+export function resetTableStore(world: World): void {
 	tableStore.isTable.fill(0);
 	tableStore.rowCount.fill(0);
 	tableStore.colCount.fill(0);
 	tableStore.headerRows.fill(1);
 	tableStore.pad.fill(1);
 	tableStore.cellBorders.fill(0);
-	dataStore.clear();
-	columnStore.clear();
-	displayStore.clear();
+	getDataStore(world).clear();
+	getColumnStore(world).clear();
+	getDisplayStore(world).clear();
 }

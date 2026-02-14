@@ -12,6 +12,7 @@ import { getParent, NULL_ENTITY } from '../components/hierarchy';
 import { getPosition, Position, setPosition, setZIndex } from '../components/position';
 import type { EventBus } from '../core/events';
 import type { Entity, World } from '../core/types';
+import { getWorldStore } from '../core/worldStore';
 import { isDraggable } from '../systems/interactiveSystem';
 
 /**
@@ -143,15 +144,19 @@ export interface DragState {
 	verifyCallback: DragVerifyCallback | null;
 }
 
-/**
- * Store for entity drag constraints.
- */
-const constraintStore = new Map<Entity, DragConstraints>();
+// =============================================================================
+// WORLD-SCOPED STORES (REPLACED MODULE-LEVEL SINGLETONS)
+// =============================================================================
 
-/**
- * Store for entity drag verification callbacks.
- */
-const verifyStore = new Map<Entity, DragVerifyCallback>();
+/** Get world-scoped store for drag constraints */
+function getConstraintStore(world: World): Map<Entity, DragConstraints> {
+	return getWorldStore<Entity, DragConstraints>(world, 'drag:constraints');
+}
+
+/** Get world-scoped store for drag verification callbacks */
+function getVerifyStore(world: World): Map<Entity, DragVerifyCallback> {
+	return getWorldStore<Entity, DragVerifyCallback>(world, 'drag:verify');
+}
 
 /**
  * Creates a new drag state.
@@ -190,8 +195,8 @@ function createDragState(): DragState {
  * });
  * ```
  */
-export function setDragConstraints(eid: Entity, constraints: DragConstraints): void {
-	constraintStore.set(eid, constraints);
+export function setDragConstraints(world: World, eid: Entity, constraints: DragConstraints): void {
+	getConstraintStore(world).set(eid, constraints);
 }
 
 /**
@@ -200,8 +205,8 @@ export function setDragConstraints(eid: Entity, constraints: DragConstraints): v
  * @param eid - The entity ID
  * @returns Drag constraints or empty object
  */
-export function getDragConstraints(eid: Entity): DragConstraints {
-	return constraintStore.get(eid) ?? {};
+export function getDragConstraints(world: World, eid: Entity): DragConstraints {
+	return getConstraintStore(world).get(eid) ?? {};
 }
 
 /**
@@ -209,8 +214,8 @@ export function getDragConstraints(eid: Entity): DragConstraints {
  *
  * @param eid - The entity ID
  */
-export function clearDragConstraints(eid: Entity): void {
-	constraintStore.delete(eid);
+export function clearDragConstraints(world: World, eid: Entity): void {
+	getConstraintStore(world).delete(eid);
 }
 
 /**
@@ -235,22 +240,23 @@ export function clearDragConstraints(eid: Entity): void {
  * });
  * ```
  */
-export function setDragVerifyCallback(eid: Entity, callback: DragVerifyCallback | null): void {
+export function setDragVerifyCallback(world: World, eid: Entity, callback: DragVerifyCallback | null): void {
 	if (callback) {
-		verifyStore.set(eid, callback);
+		getVerifyStore(world).set(eid, callback);
 	} else {
-		verifyStore.delete(eid);
+		getVerifyStore(world).delete(eid);
 	}
 }
 
 /**
  * Gets the drag verification callback for an entity.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns The verification callback or null
  */
-export function getDragVerifyCallback(eid: Entity): DragVerifyCallback | null {
-	return verifyStore.get(eid) ?? null;
+export function getDragVerifyCallback(world: World, eid: Entity): DragVerifyCallback | null {
+	return getVerifyStore(world).get(eid) ?? null;
 }
 
 /**
@@ -494,8 +500,8 @@ export function createDragSystem(eventBus: EventBus<DragEventMap>) {
 			state.offsetY = mouseY - pos.y;
 			state.lastX = pos.x;
 			state.lastY = pos.y;
-			state.constraints = getDragConstraints(eid);
-			state.verifyCallback = getDragVerifyCallback(eid);
+			state.constraints = getDragConstraints(world, eid);
+			state.verifyCallback = getDragVerifyCallback(world, eid);
 
 			// Bring to front if configured
 			if (state.constraints.bringToFront) {
@@ -596,7 +602,7 @@ export function createDragSystem(eventBus: EventBus<DragEventMap>) {
  * Resets all drag-related stores.
  * Useful for testing.
  */
-export function resetDragStores(): void {
-	constraintStore.clear();
-	verifyStore.clear();
+export function resetDragStores(world: World): void {
+	getConstraintStore(world).clear();
+	getVerifyStore(world).clear();
 }

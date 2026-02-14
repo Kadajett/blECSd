@@ -40,7 +40,7 @@ describe('virtualizedRenderSystem', () => {
 	beforeEach(() => {
 		world = createWorld();
 		clearVirtualizedRenderBuffer();
-		cleanupVirtualizedRenderSystem();
+		cleanupVirtualizedRenderSystem(world);
 	});
 
 	// ===========================================================================
@@ -85,19 +85,19 @@ describe('virtualizedRenderSystem', () => {
 			const eid = addEntity(world);
 			const store = createLineStore('Line 1\nLine 2');
 
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
-			expect(getLineStore(eid)).toBe(store);
+			expect(getLineStore(world, eid)).toBe(store);
 		});
 
 		it('should unregister line store', () => {
 			const eid = addEntity(world);
 			const store = createLineStore('Content');
 
-			registerLineStore(eid, store);
-			unregisterLineStore(eid);
+			registerLineStore(world, eid, store);
+			unregisterLineStore(world, eid);
 
-			expect(getLineStore(eid)).toBeUndefined();
+			expect(getLineStore(world, eid)).toBeUndefined();
 		});
 
 		it('should update line store', () => {
@@ -105,10 +105,10 @@ describe('virtualizedRenderSystem', () => {
 			const store1 = createLineStore('Original');
 			const store2 = createLineStore('Updated');
 
-			registerLineStore(eid, store1);
-			updateLineStore(eid, store2);
+			registerLineStore(world, eid, store1);
+			updateLineStore(world, eid, store2);
 
-			expect(getLineStore(eid)).toBe(store2);
+			expect(getLineStore(world, eid)).toBe(store2);
 		});
 	});
 
@@ -119,7 +119,7 @@ describe('virtualizedRenderSystem', () => {
 	describe('line render config', () => {
 		it('should return default config for unconfigured entity', () => {
 			const eid = addEntity(world);
-			const config = getLineRenderConfig(eid);
+			const config = getLineRenderConfig(world, eid);
 
 			expect(config.fg).toBe(0xffffffff);
 			expect(config.bg).toBe(0x000000ff);
@@ -129,9 +129,9 @@ describe('virtualizedRenderSystem', () => {
 		it('should set and merge config', () => {
 			const eid = addEntity(world);
 
-			setLineRenderConfig(eid, { showLineNumbers: true, lineNumberWidth: 5 });
+			setLineRenderConfig(world, eid, { showLineNumbers: true, lineNumberWidth: 5 });
 
-			const config = getLineRenderConfig(eid);
+			const config = getLineRenderConfig(world, eid);
 			expect(config.showLineNumbers).toBe(true);
 			expect(config.lineNumberWidth).toBe(5);
 			expect(config.fg).toBe(0xffffffff); // Default preserved
@@ -140,10 +140,10 @@ describe('virtualizedRenderSystem', () => {
 		it('should override existing config values', () => {
 			const eid = addEntity(world);
 
-			setLineRenderConfig(eid, { fg: 0xff0000ff });
-			setLineRenderConfig(eid, { bg: 0x00ff00ff });
+			setLineRenderConfig(world, eid, { fg: 0xff0000ff });
+			setLineRenderConfig(world, eid, { bg: 0x00ff00ff });
 
-			const config = getLineRenderConfig(eid);
+			const config = getLineRenderConfig(world, eid);
 			expect(config.fg).toBe(0xff0000ff);
 			expect(config.bg).toBe(0x00ff00ff);
 		});
@@ -151,10 +151,10 @@ describe('virtualizedRenderSystem', () => {
 		it('should clear config', () => {
 			const eid = addEntity(world);
 
-			setLineRenderConfig(eid, { showLineNumbers: true });
-			clearLineRenderConfig(eid);
+			setLineRenderConfig(world, eid, { showLineNumbers: true });
+			clearLineRenderConfig(world, eid);
 
-			const config = getLineRenderConfig(eid);
+			const config = getLineRenderConfig(world, eid);
 			expect(config.showLineNumbers).toBe(false); // Back to default
 		});
 	});
@@ -206,7 +206,7 @@ describe('virtualizedRenderSystem', () => {
 			// Create content
 			const lines = ['Line 0', 'Line 1', 'Line 2', 'Line 3', 'Line 4'];
 			const store = createLineStoreFromLines(lines);
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
 			// Set viewport
 			setVirtualViewport(world, eid, {
@@ -256,7 +256,7 @@ describe('virtualizedRenderSystem', () => {
 			Renderable.visible[eid] = 0;
 
 			const store = createLineStore('Content');
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
 			setVirtualViewport(world, eid, {
 				totalLineCount: 1,
@@ -275,7 +275,7 @@ describe('virtualizedRenderSystem', () => {
 			const eid = createTestEntity(world, 0, 0, 40, 10);
 
 			const store = createLineStore('Content');
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
 			setVirtualViewport(world, eid, {
 				totalLineCount: 1,
@@ -297,9 +297,9 @@ describe('virtualizedRenderSystem', () => {
 			const eid = createTestEntity(world, 0, 0, 40, 10);
 
 			const store = createLineStoreFromLines(['Content']);
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
-			setLineRenderConfig(eid, {
+			setLineRenderConfig(world, eid, {
 				showLineNumbers: true,
 				lineNumberWidth: 5,
 			});
@@ -326,9 +326,9 @@ describe('virtualizedRenderSystem', () => {
 			const eid = createTestEntity(world, 0, 0, 40, 10);
 
 			const store = createLineStoreFromLines(['Line 0', 'Line 1', 'Line 2']);
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
-			setLineRenderConfig(eid, {
+			setLineRenderConfig(world, eid, {
 				selectedBg: 0x0000ffff, // Blue
 			});
 
@@ -355,9 +355,9 @@ describe('virtualizedRenderSystem', () => {
 			const eid = createTestEntity(world, 0, 0, 40, 10);
 
 			const store = createLineStoreFromLines(['Line 0', 'Line 1', 'Line 2']);
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
-			setLineRenderConfig(eid, {
+			setLineRenderConfig(world, eid, {
 				cursorBg: 0x00ff00ff, // Green
 			});
 
@@ -385,7 +385,7 @@ describe('virtualizedRenderSystem', () => {
 
 			const lines = Array.from({ length: 100 }, (_, i) => `Line ${i}`);
 			const store = createLineStoreFromLines(lines);
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
 			setVirtualViewport(world, eid, {
 				totalLineCount: 100,
@@ -411,7 +411,7 @@ describe('virtualizedRenderSystem', () => {
 
 			// Only 3 lines but viewport shows 10
 			const store = createLineStoreFromLines(['A', 'B', 'C']);
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
 			setVirtualViewport(world, eid, {
 				totalLineCount: 3,
@@ -474,7 +474,7 @@ describe('virtualizedRenderSystem', () => {
 
 			const lines = Array.from({ length: 100 }, (_, i) => `Line ${i}`);
 			const store = createLineStoreFromLines(lines);
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
 			virtualizedRenderSystem(world);
 
@@ -494,7 +494,7 @@ describe('virtualizedRenderSystem', () => {
 
 			const lines = Array.from({ length: 5 }, (_, i) => `Line ${i}`);
 			const store = createLineStoreFromLines(lines);
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
 			virtualizedRenderSystem(world);
 
@@ -536,7 +536,7 @@ describe('virtualizedRenderSystem', () => {
 			setBorder(world, eid, { type: BorderType.Line });
 
 			const store = createLineStoreFromLines(['Content']);
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
 			// Account for border in visible lines (8 instead of 10)
 			setVirtualViewport(world, eid, {
@@ -564,26 +564,26 @@ describe('virtualizedRenderSystem', () => {
 			const eid = addEntity(world);
 			const store = createLineStore('Content');
 
-			registerLineStore(eid, store);
-			setLineRenderConfig(eid, { showLineNumbers: true });
+			registerLineStore(world, eid, store);
+			setLineRenderConfig(world, eid, { showLineNumbers: true });
 
-			cleanupVirtualizedRenderSystem();
+			cleanupVirtualizedRenderSystem(world);
 
-			expect(getLineStore(eid)).toBeUndefined();
-			expect(getLineRenderConfig(eid).showLineNumbers).toBe(false);
+			expect(getLineStore(world, eid)).toBeUndefined();
+			expect(getLineRenderConfig(world, eid).showLineNumbers).toBe(false);
 		});
 
 		it('should clean up entity resources', () => {
 			const eid = addEntity(world);
 			const store = createLineStore('Content');
 
-			registerLineStore(eid, store);
-			setLineRenderConfig(eid, { showLineNumbers: true });
+			registerLineStore(world, eid, store);
+			setLineRenderConfig(world, eid, { showLineNumbers: true });
 
-			cleanupEntityResources(eid);
+			cleanupEntityResources(world, eid);
 
-			expect(getLineStore(eid)).toBeUndefined();
-			expect(getLineRenderConfig(eid).showLineNumbers).toBe(false);
+			expect(getLineStore(world, eid)).toBeUndefined();
+			expect(getLineRenderConfig(world, eid).showLineNumbers).toBe(false);
 		});
 	});
 
@@ -629,7 +629,7 @@ describe('virtualizedRenderSystem', () => {
 				(_, i) => `Line ${i.toString().padStart(5, '0')}`,
 			);
 			const store = createLineStoreFromLines(lines);
-			registerLineStore(eid, store);
+			registerLineStore(world, eid, store);
 
 			setVirtualViewport(world, eid, {
 				totalLineCount: 10000,

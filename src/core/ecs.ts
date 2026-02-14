@@ -23,6 +23,7 @@ import {
 } from 'bitecs';
 
 import type { Entity, World } from './types';
+import { cleanupEntityStores } from './worldStore';
 
 // =============================================================================
 // ENTITY OPERATIONS
@@ -64,6 +65,8 @@ export function addEntity(world: World): Entity {
  * ```
  */
 export function removeEntity(world: World, eid: Entity): void {
+	// Clean up all world-scoped stores for this entity
+	cleanupEntityStores(world, eid);
 	bitEcsRemoveEntity(world, eid);
 }
 

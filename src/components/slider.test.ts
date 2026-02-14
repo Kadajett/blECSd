@@ -56,8 +56,8 @@ describe('Slider Component', () => {
 	let eid: Entity;
 
 	beforeEach(() => {
-		resetSliderStore();
 		world = createWorld() as World;
+		resetSliderStore(world);
 		eid = addEntity(world) as Entity;
 	});
 
@@ -573,7 +573,7 @@ describe('Slider Component', () => {
 			attachSliderBehavior(world, eid);
 			expect(sliderStore.isSlider[eid]).toBe(1);
 
-			resetSliderStore();
+			resetSliderStore(world);
 			expect(sliderStore.isSlider[eid]).toBe(0);
 		});
 	});

@@ -56,7 +56,7 @@ describe('Select Component', () => {
 
 	beforeEach(() => {
 		world = createWorld() as World;
-		resetSelectStore();
+		resetSelectStore(world);
 		StateMachineStore.clear();
 	});
 
@@ -606,7 +606,7 @@ describe('Select Component', () => {
 			setSelectDisplay(world, eid, { closedIndicator: 'X' });
 			onSelectChange(world, eid, vi.fn());
 
-			resetSelectStore();
+			resetSelectStore(world);
 
 			expect(selectStore.isSelect[eid]).toBe(0);
 			expect(selectStore.selectedIndex[eid]).toBe(-1);

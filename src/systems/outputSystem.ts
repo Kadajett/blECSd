@@ -6,6 +6,7 @@
 
 import type { Writable } from 'node:stream';
 import type { System, World } from '../core/types';
+import { getWorldStore } from '../core/worldStore';
 import type { Cell, CellChange } from '../terminal/screen/cell';
 import { Attr } from '../terminal/screen/cell';
 import type { DoubleBufferData } from '../terminal/screen/doubleBuffer';
@@ -85,32 +86,37 @@ export function createOutputState(): OutputState {
 }
 
 // =============================================================================
-// COLOR SEQUENCE CACHE
+// WORLD-SCOPED STORES (REPLACED MODULE-LEVEL SINGLETONS)
 // =============================================================================
 
 /**
- * Cache of packed color values -> ANSI color sequence strings.
- * Avoids rebuilding color escape sequences for repeated colors.
+ * Get world-scoped color sequence cache.
+ * Note: This is a memoization cache that could theoretically be shared globally
+ * (color values are deterministic), but scoped to world for consistency.
  *
  * Cache keys:
  * - Background colors: use the color value directly
  * - Foreground colors: use color value | 0x100000000 to distinguish from bg
  */
-const colorSequenceCache = new Map<number, string>();
+function getColorSequenceCache(world: World): Map<number, string> {
+	return getWorldStore<number, string>(world, 'output:colorCache');
+}
 
 /**
  * Clears the color sequence cache.
  * Call this if the cache grows too large (unlikely in typical usage).
  *
+ * @param world - The ECS world
+ *
  * @example
  * ```typescript
  * import { clearStyleCache } from 'blecsd';
  *
- * clearStyleCache(); // Clear cached color sequences
+ * clearStyleCache(world); // Clear cached color sequences
  * ```
  */
-export function clearStyleCache(): void {
-	colorSequenceCache.clear();
+export function clearStyleCache(world: World): void {
+	getColorSequenceCache(world).clear();
 }
 
 // =============================================================================
@@ -162,10 +168,10 @@ function unpackColor(color: number): { r: number; g: number; b: number; a: numbe
  * Generates foreground color sequence (true color).
  * Uses caching to avoid rebuilding sequences for repeated colors.
  */
-function fgColor(color: number): string {
+function fgColor(world: World, color: number): string {
 	// Check cache first
 	const cacheKey = color | 0x100000000; // Set high bit to distinguish fg from bg
-	const cached = colorSequenceCache.get(cacheKey);
+	const cached = getColorSequenceCache(world).get(cacheKey);
 	if (cached !== undefined) {
 		return cached;
 	}
@@ -175,7 +181,7 @@ function fgColor(color: number): string {
 	const sequence = a === 0 ? sgr(39) : sgr(SGR.FG_256, 2, r, g, b);
 
 	// Cache and return
-	colorSequenceCache.set(cacheKey, sequence);
+	getColorSequenceCache(world).set(cacheKey, sequence);
 	return sequence;
 }
 
@@ -183,9 +189,9 @@ function fgColor(color: number): string {
  * Generates background color sequence (true color).
  * Uses caching to avoid rebuilding sequences for repeated colors.
  */
-function bgColor(color: number): string {
+function bgColor(world: World, color: number): string {
 	// Check cache first (use color value directly for bg)
-	const cached = colorSequenceCache.get(color);
+	const cached = getColorSequenceCache(world).get(color);
 	if (cached !== undefined) {
 		return cached;
 	}
@@ -195,7 +201,7 @@ function bgColor(color: number): string {
 	const sequence = a === 0 ? sgr(49) : sgr(SGR.BG_256, 2, r, g, b);
 
 	// Cache and return
-	colorSequenceCache.set(color, sequence);
+	getColorSequenceCache(world).set(color, sequence);
 	return sequence;
 }
 
@@ -262,7 +268,7 @@ function generateCursorMove(state: OutputState, x: number, y: number): string {
  * Generates style sequences for a cell.
  * @internal
  */
-function generateStyleSequences(state: OutputState, cell: Cell): string {
+function generateStyleSequences(world: World, state: OutputState, cell: Cell): string {
 	let output = '';
 
 	// Check if we need a full reset (simpler than tracking all attr changes)
@@ -292,13 +298,13 @@ function generateStyleSequences(state: OutputState, cell: Cell): string {
 
 	// Set foreground color (if changed)
 	if (cell.fg !== state.lastFg) {
-		output += fgColor(cell.fg);
+		output += fgColor(world, cell.fg);
 		state.lastFg = cell.fg;
 	}
 
 	// Set background color (if changed)
 	if (cell.bg !== state.lastBg) {
-		output += bgColor(cell.bg);
+		output += bgColor(world, cell.bg);
 		state.lastBg = cell.bg;
 	}
 
@@ -309,7 +315,7 @@ function generateStyleSequences(state: OutputState, cell: Cell): string {
  * Generates output for a single cell change.
  * @internal
  */
-function generateCellOutput(state: OutputState, change: CellChange): string {
+function generateCellOutput(world: World, state: OutputState, change: CellChange): string {
 	const { x, y, cell } = change;
 	let output = '';
 
@@ -317,7 +323,7 @@ function generateCellOutput(state: OutputState, change: CellChange): string {
 	output += generateCursorMove(state, x, y);
 
 	// Style changes
-	output += generateStyleSequences(state, cell);
+	output += generateStyleSequences(world, state, cell);
 
 	// Character
 	output += cell.char;
@@ -380,7 +386,7 @@ function findStyleRunEnd(changes: readonly CellChange[], startIndex: number): nu
 }
 
 /** Emit a batched style run (multiple cells with same style) to chunks. */
-function emitStyleRun(
+function emitStyleRun(world: World, 
 	state: OutputState,
 	changes: readonly CellChange[],
 	startIndex: number,
@@ -390,7 +396,7 @@ function emitStyleRun(
 	const firstChange = changes[startIndex];
 	if (!firstChange) return;
 	chunks.push(generateCursorMove(state, firstChange.x, firstChange.y));
-	chunks.push(generateStyleSequences(state, firstChange.cell));
+	chunks.push(generateStyleSequences(world, state, firstChange.cell));
 	for (let i = startIndex; i < endIndex; i++) {
 		const change = changes[i];
 		if (change) chunks.push(change.cell.char);
@@ -399,7 +405,7 @@ function emitStyleRun(
 	state.lastY = firstChange.y;
 }
 
-export function generateOutput(
+export function generateOutput(world: World, 
 	state: OutputState,
 	changes: readonly CellChange[],
 	skipSort = false,
@@ -416,9 +422,9 @@ export function generateOutput(
 
 		if (runEndIndex - runStartIndex === 1) {
 			const change = sortedChanges[runStartIndex];
-			if (change) chunks.push(generateCellOutput(state, change));
+			if (change) chunks.push(generateCellOutput(world, state, change));
 		} else {
-			emitStyleRun(state, sortedChanges, runStartIndex, runEndIndex, chunks);
+			emitStyleRun(world, state, sortedChanges, runStartIndex, runEndIndex, chunks);
 		}
 		runStartIndex = runEndIndex;
 	}
@@ -554,9 +560,9 @@ export function resetOutputState(): void {
  * scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
  * ```
  */
-export const outputSystem: System = (_world: World): World => {
+export const outputSystem: System = (world: World): World => {
 	if (!outputStream || !outputDoubleBuffer) {
-		return _world;
+		return world;
 	}
 
 	// PERF: Get state once at start to avoid repeated function calls
@@ -572,12 +578,12 @@ export const outputSystem: System = (_world: World): World => {
 		// Still swap and clear even if no changes
 		swapBuffers(outputDoubleBuffer);
 		clearDirtyRegions(outputDoubleBuffer);
-		return _world;
+		return world;
 	}
 
 	// PERF: Generate output with pre-fetched state
 	// Skip sorting for full redraws since collectAllCells() already returns row-major order
-	const output = generateOutput(state, changes, isFullRedraw);
+	const output = generateOutput(world, state, changes, isFullRedraw);
 
 	// Write to stream (only if we have output)
 	if (output.length > 0) {
@@ -588,7 +594,7 @@ export const outputSystem: System = (_world: World): World => {
 	swapBuffers(outputDoubleBuffer);
 	clearDirtyRegions(outputDoubleBuffer);
 
-	return _world;
+	return world;
 };
 
 /**

@@ -31,25 +31,36 @@ import {
 	sendEvent,
 } from '../components/stateMachine';
 import type { Entity, World } from '../core/types';
+import { getWorldStore } from '../core/worldStore';
 
 // =============================================================================
-// INTERNAL STORES (NOT EXPORTED FROM COMPONENT)
+// WORLD-SCOPED STORES (REPLACED MODULE-LEVEL SINGLETONS)
 // =============================================================================
 
-/** Store for select options */
-const optionsStore = new Map<Entity, SelectOption[]>();
+/** Get world-scoped store for select options */
+function getOptionsStore(world: World): Map<Entity, SelectOption[]> {
+	return getWorldStore<Entity, SelectOption[]>(world, 'select:options');
+}
 
-/** Store for select display configuration */
-const displayStore = new Map<Entity, SelectDisplay>();
+/** Get world-scoped store for select display configuration */
+function getDisplayStore(world: World): Map<Entity, SelectDisplay> {
+	return getWorldStore<Entity, SelectDisplay>(world, 'select:display');
+}
 
-/** Store for select change callbacks */
-const changeCallbacks = new Map<Entity, SelectCallback[]>();
+/** Get world-scoped store for select change callbacks */
+function getChangeCallbacks(world: World): Map<Entity, SelectCallback[]> {
+	return getWorldStore<Entity, SelectCallback[]>(world, 'select:changeCallbacks');
+}
 
-/** Store for select open callbacks */
-const openCallbacks = new Map<Entity, (() => void)[]>();
+/** Get world-scoped store for select open callbacks */
+function getOpenCallbacks(world: World): Map<Entity, (() => void)[]> {
+	return getWorldStore<Entity, (() => void)[]>(world, 'select:openCallbacks');
+}
 
-/** Store for select close callbacks */
-const closeCallbacks = new Map<Entity, (() => void)[]>();
+/** Get world-scoped store for select close callbacks */
+function getCloseCallbacks(world: World): Map<Entity, (() => void)[]> {
+	return getWorldStore<Entity, (() => void)[]>(world, 'select:closeCallbacks');
+}
 
 // =============================================================================
 // INTERNAL HELPERS
@@ -72,19 +83,21 @@ function fireCallbacks(eid: Entity, callbackMap: Map<Entity, Array<() => void>>)
 /**
  * Handle select state change callbacks.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @param previousState - The previous state
  * @param newState - The new state
  */
 function handleSelectStateChange(
+	world: World,
 	eid: Entity,
 	previousState: SelectState,
 	newState: SelectState,
 ): void {
 	if (previousState !== 'open' && newState === 'open') {
-		fireCallbacks(eid, openCallbacks);
+		fireCallbacks(eid, getOpenCallbacks(world));
 	} else if (previousState === 'open' && newState !== 'open') {
-		fireCallbacks(eid, closeCallbacks);
+		fireCallbacks(eid, getCloseCallbacks(world));
 	}
 }
 
@@ -121,7 +134,7 @@ export function attachSelectBehavior(
 	selectStore.highlightedIndex[eid] = selectedIndex >= 0 ? selectedIndex : 0;
 	selectStore.optionCount[eid] = options.length;
 
-	optionsStore.set(eid, [...options]);
+	getOptionsStore(world).set(eid, [...options]);
 
 	attachStateMachine(world, eid, SELECT_STATE_MACHINE_CONFIG);
 }
@@ -214,7 +227,7 @@ export function sendSelectEvent(world: World, eid: Entity, event: SelectEvent): 
 	if (result) {
 		const newState = getSelectState(world, eid);
 		markDirty(world, eid);
-		handleSelectStateChange(eid, previousState, newState);
+		handleSelectStateChange(world, eid, previousState, newState);
 	}
 
 	return result;
@@ -291,8 +304,8 @@ export function enableSelect(world: World, eid: Entity): boolean {
  * @param eid - The entity ID
  * @returns Array of options
  */
-export function getSelectOptions(_world: World, eid: Entity): readonly SelectOption[] {
-	return optionsStore.get(eid) ?? [];
+export function getSelectOptions(world: World, eid: Entity): readonly SelectOption[] {
+	return getOptionsStore(world).get(eid) ?? [];
 }
 
 /**
@@ -303,7 +316,7 @@ export function getSelectOptions(_world: World, eid: Entity): readonly SelectOpt
  * @param options - New options array
  */
 export function setSelectOptions(world: World, eid: Entity, options: SelectOption[]): void {
-	optionsStore.set(eid, [...options]);
+	getOptionsStore(world).set(eid, [...options]);
 	selectStore.optionCount[eid] = options.length;
 
 	// Reset selection if current selection is out of bounds
@@ -337,8 +350,8 @@ export function getOptionCount(_world: World, eid: Entity): number {
  * @param index - The option index
  * @returns The option or undefined
  */
-export function getOptionAt(_world: World, eid: Entity, index: number): SelectOption | undefined {
-	const options = optionsStore.get(eid);
+export function getOptionAt(world: World, eid: Entity, index: number): SelectOption | undefined {
+	const options = getOptionsStore(world).get(eid);
 	return options?.[index];
 }
 
@@ -403,7 +416,7 @@ export function getSelectedLabel(world: World, eid: Entity): string | undefined 
  * @returns true if selection changed
  */
 export function selectOptionByIndex(world: World, eid: Entity, index: number): boolean {
-	const options = optionsStore.get(eid);
+	const options = getOptionsStore(world).get(eid);
 	if (!options || index < 0 || index >= options.length) {
 		return false;
 	}
@@ -419,7 +432,7 @@ export function selectOptionByIndex(world: World, eid: Entity, index: number): b
 
 	// Fire change callbacks
 	const option = options[index];
-	const callbacks = changeCallbacks.get(eid);
+	const callbacks = getChangeCallbacks(world).get(eid);
 	if (callbacks && option) {
 		for (const cb of callbacks) {
 			cb(option.value, option.label, index);
@@ -441,7 +454,7 @@ export function selectOptionByIndex(world: World, eid: Entity, index: number): b
  * @returns true if selection changed
  */
 export function selectOptionByValue(world: World, eid: Entity, value: string): boolean {
-	const options = optionsStore.get(eid);
+	const options = getOptionsStore(world).get(eid);
 	if (!options) {
 		return false;
 	}
@@ -564,9 +577,9 @@ export function selectHighlighted(world: World, eid: Entity): boolean {
  * @param eid - The entity ID
  * @param options - Display options
  */
-export function setSelectDisplay(_world: World, eid: Entity, options: SelectDisplayOptions): void {
-	const existing = displayStore.get(eid);
-	displayStore.set(eid, {
+export function setSelectDisplay(world: World, eid: Entity, options: SelectDisplayOptions): void {
+	const existing = getDisplayStore(world).get(eid);
+	getDisplayStore(world).set(eid, {
 		closedIndicator:
 			options.closedIndicator ?? existing?.closedIndicator ?? DEFAULT_CLOSED_INDICATOR,
 		openIndicator: options.openIndicator ?? existing?.openIndicator ?? DEFAULT_OPEN_INDICATOR,
@@ -582,9 +595,9 @@ export function setSelectDisplay(_world: World, eid: Entity, options: SelectDisp
  * @param eid - The entity ID
  * @returns Display configuration
  */
-export function getSelectDisplay(_world: World, eid: Entity): SelectDisplay {
+export function getSelectDisplay(world: World, eid: Entity): SelectDisplay {
 	return (
-		displayStore.get(eid) ?? {
+		getDisplayStore(world).get(eid) ?? {
 			closedIndicator: DEFAULT_CLOSED_INDICATOR,
 			openIndicator: DEFAULT_OPEN_INDICATOR,
 			selectedMark: DEFAULT_SELECTED_MARK,
@@ -599,8 +612,8 @@ export function getSelectDisplay(_world: World, eid: Entity): SelectDisplay {
  * @param _world - The ECS world
  * @param eid - The entity ID
  */
-export function clearSelectDisplay(_world: World, eid: Entity): void {
-	displayStore.delete(eid);
+export function clearSelectDisplay(world: World, eid: Entity): void {
+	getDisplayStore(world).delete(eid);
 }
 
 /**
@@ -635,13 +648,13 @@ export function getSelectIndicator(world: World, eid: Entity): string {
  * });
  * ```
  */
-export function onSelectChange(_world: World, eid: Entity, callback: SelectCallback): () => void {
-	const callbacks = changeCallbacks.get(eid) ?? [];
+export function onSelectChange(world: World, eid: Entity, callback: SelectCallback): () => void {
+	const callbacks = getChangeCallbacks(world).get(eid) ?? [];
 	callbacks.push(callback);
-	changeCallbacks.set(eid, callbacks);
+	getChangeCallbacks(world).set(eid, callbacks);
 
 	return () => {
-		const cbs = changeCallbacks.get(eid);
+		const cbs = getChangeCallbacks(world).get(eid);
 		if (cbs) {
 			const idx = cbs.indexOf(callback);
 			if (idx !== -1) {
@@ -659,13 +672,13 @@ export function onSelectChange(_world: World, eid: Entity, callback: SelectCallb
  * @param callback - The callback function
  * @returns Unsubscribe function
  */
-export function onSelectOpen(_world: World, eid: Entity, callback: () => void): () => void {
-	const callbacks = openCallbacks.get(eid) ?? [];
+export function onSelectOpen(world: World, eid: Entity, callback: () => void): () => void {
+	const callbacks = getOpenCallbacks(world).get(eid) ?? [];
 	callbacks.push(callback);
-	openCallbacks.set(eid, callbacks);
+	getOpenCallbacks(world).set(eid, callbacks);
 
 	return () => {
-		const cbs = openCallbacks.get(eid);
+		const cbs = getOpenCallbacks(world).get(eid);
 		if (cbs) {
 			const idx = cbs.indexOf(callback);
 			if (idx !== -1) {
@@ -683,13 +696,13 @@ export function onSelectOpen(_world: World, eid: Entity, callback: () => void): 
  * @param callback - The callback function
  * @returns Unsubscribe function
  */
-export function onSelectClose(_world: World, eid: Entity, callback: () => void): () => void {
-	const callbacks = closeCallbacks.get(eid) ?? [];
+export function onSelectClose(world: World, eid: Entity, callback: () => void): () => void {
+	const callbacks = getCloseCallbacks(world).get(eid) ?? [];
 	callbacks.push(callback);
-	closeCallbacks.set(eid, callbacks);
+	getCloseCallbacks(world).set(eid, callbacks);
 
 	return () => {
-		const cbs = closeCallbacks.get(eid);
+		const cbs = getCloseCallbacks(world).get(eid);
 		if (cbs) {
 			const idx = cbs.indexOf(callback);
 			if (idx !== -1) {
@@ -705,10 +718,10 @@ export function onSelectClose(_world: World, eid: Entity, callback: () => void):
  * @param _world - The ECS world
  * @param eid - The entity ID
  */
-export function clearSelectCallbacks(_world: World, eid: Entity): void {
-	changeCallbacks.delete(eid);
-	openCallbacks.delete(eid);
-	closeCallbacks.delete(eid);
+export function clearSelectCallbacks(world: World, eid: Entity): void {
+	getChangeCallbacks(world).delete(eid);
+	getOpenCallbacks(world).delete(eid);
+	getCloseCallbacks(world).delete(eid);
 }
 
 // =============================================================================
@@ -805,15 +818,17 @@ export function handleSelectKeyPress(world: World, eid: Entity, key: string): Se
 
 /**
  * Resets the select store. Used for testing.
+ *
+ * @param world - The ECS world
  */
-export function resetSelectStore(): void {
+export function resetSelectStore(world: World): void {
 	selectStore.isSelect.fill(0);
 	selectStore.selectedIndex.fill(-1);
 	selectStore.highlightedIndex.fill(0);
 	selectStore.optionCount.fill(0);
-	optionsStore.clear();
-	displayStore.clear();
-	changeCallbacks.clear();
-	openCallbacks.clear();
-	closeCallbacks.clear();
+	getOptionsStore(world).clear();
+	getDisplayStore(world).clear();
+	getChangeCallbacks(world).clear();
+	getOpenCallbacks(world).clear();
+	getCloseCallbacks(world).clear();
 }

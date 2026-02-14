@@ -14,8 +14,8 @@ describe('Table Widget', () => {
 	let widget: TableWidget;
 
 	beforeEach(() => {
-		resetTableStore();
 		world = createWorld() as World;
+		resetTableStore(world);
 		eid = addEntity(world) as Entity;
 	});
 
