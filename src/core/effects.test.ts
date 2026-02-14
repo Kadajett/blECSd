@@ -111,7 +111,7 @@ describe('effects', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			expect(hasStoredStyle(entity)).toBe(false);
+			expect(hasStoredStyle(world, entity)).toBe(false);
 		});
 
 		it('hasStoredStyle returns true after effect applied', () => {
@@ -122,14 +122,14 @@ describe('effects', () => {
 
 			applyFocusEffect(world, entity);
 
-			expect(hasStoredStyle(entity)).toBe(true);
+			expect(hasStoredStyle(world, entity)).toBe(true);
 		});
 
 		it('getStoredStyle returns undefined for new entity', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			expect(getStoredStyle(entity)).toBeUndefined();
+			expect(getStoredStyle(world, entity)).toBeUndefined();
 		});
 
 		it('clearStoredStyle removes stored data', () => {
@@ -139,9 +139,9 @@ describe('effects', () => {
 			setFocusable(world, entity, { focusable: true, focusEffectFg: 0xff0000ff });
 
 			applyFocusEffect(world, entity);
-			clearStoredStyle(entity);
+			clearStoredStyle(world, entity);
 
-			expect(hasStoredStyle(entity)).toBe(false);
+			expect(hasStoredStyle(world, entity)).toBe(false);
 		});
 
 		it('clearAllStoredStyles removes all stored data', () => {
@@ -157,8 +157,8 @@ describe('effects', () => {
 			applyFocusEffect(world, entity2);
 			clearAllStoredStyles();
 
-			expect(hasStoredStyle(entity1)).toBe(false);
-			expect(hasStoredStyle(entity2)).toBe(false);
+			expect(hasStoredStyle(world, entity1)).toBe(false);
+			expect(hasStoredStyle(world, entity2)).toBe(false);
 		});
 	});
 
@@ -184,7 +184,7 @@ describe('effects', () => {
 
 			applyFocusEffect(world, entity);
 
-			const stored = getStoredStyle(entity);
+			const stored = getStoredStyle(world, entity);
 			expect(stored?.original.fg).toBe(0xffffffff);
 		});
 
@@ -267,7 +267,7 @@ describe('effects', () => {
 			applyFocusEffect(world, entity);
 			removeFocusEffect(world, entity);
 
-			expect(hasStoredStyle(entity)).toBe(false);
+			expect(hasStoredStyle(world, entity)).toBe(false);
 		});
 
 		it('does nothing if not applied', () => {
@@ -301,7 +301,7 @@ describe('effects', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			expect(hasFocusEffectApplied(entity)).toBe(false);
+			expect(hasFocusEffectApplied(world, entity)).toBe(false);
 		});
 
 		it('returns true after application', () => {
@@ -312,7 +312,7 @@ describe('effects', () => {
 
 			applyFocusEffect(world, entity);
 
-			expect(hasFocusEffectApplied(entity)).toBe(true);
+			expect(hasFocusEffectApplied(world, entity)).toBe(true);
 		});
 
 		it('returns false after removal', () => {
@@ -324,7 +324,7 @@ describe('effects', () => {
 			applyFocusEffect(world, entity);
 			removeFocusEffect(world, entity);
 
-			expect(hasFocusEffectApplied(entity)).toBe(false);
+			expect(hasFocusEffectApplied(world, entity)).toBe(false);
 		});
 	});
 
@@ -350,7 +350,7 @@ describe('effects', () => {
 
 			applyHoverEffect(world, entity);
 
-			const stored = getStoredStyle(entity);
+			const stored = getStoredStyle(world, entity);
 			expect(stored?.original.bg).toBe(0x111111ff);
 		});
 
@@ -389,7 +389,7 @@ describe('effects', () => {
 			applyHoverEffect(world, entity);
 			removeHoverEffect(world, entity);
 
-			expect(hasStoredStyle(entity)).toBe(false);
+			expect(hasStoredStyle(world, entity)).toBe(false);
 		});
 	});
 
@@ -398,7 +398,7 @@ describe('effects', () => {
 			const world = createWorld();
 			const entity = addEntity(world);
 
-			expect(hasHoverEffectApplied(entity)).toBe(false);
+			expect(hasHoverEffectApplied(world, entity)).toBe(false);
 		});
 
 		it('returns true after application', () => {
@@ -409,7 +409,7 @@ describe('effects', () => {
 
 			applyHoverEffect(world, entity);
 
-			expect(hasHoverEffectApplied(entity)).toBe(true);
+			expect(hasHoverEffectApplied(world, entity)).toBe(true);
 		});
 	});
 
@@ -428,7 +428,7 @@ describe('effects', () => {
 			removeFocusEffect(world, entity);
 
 			// Hover effect should still be active
-			expect(hasHoverEffectApplied(entity)).toBe(true);
+			expect(hasHoverEffectApplied(world, entity)).toBe(true);
 			expect(Renderable.bg[entity]).toBe(0x333333ff);
 		});
 
@@ -446,7 +446,7 @@ describe('effects', () => {
 			removeHoverEffect(world, entity);
 
 			// Focus effect should still be active
-			expect(hasFocusEffectApplied(entity)).toBe(true);
+			expect(hasFocusEffectApplied(world, entity)).toBe(true);
 			expect(Renderable.fg[entity]).toBe(0xff0000ff);
 		});
 
@@ -466,7 +466,7 @@ describe('effects', () => {
 
 			expect(Renderable.fg[entity]).toBe(0xffffffff);
 			expect(Renderable.bg[entity]).toBe(0x000000ff);
-			expect(hasStoredStyle(entity)).toBe(false);
+			expect(hasStoredStyle(world, entity)).toBe(false);
 		});
 	});
 
@@ -512,7 +512,7 @@ describe('effects', () => {
 
 			expect(Renderable.fg[entity]).toBe(0xffffffff);
 			expect(Renderable.bg[entity]).toBe(0x000000ff);
-			expect(hasStoredStyle(entity)).toBe(false);
+			expect(hasStoredStyle(world, entity)).toBe(false);
 		});
 
 		it('does nothing if no effects applied', () => {
@@ -538,7 +538,7 @@ describe('effects', () => {
 
 			syncEffects(world, entity);
 
-			expect(hasFocusEffectApplied(entity)).toBe(true);
+			expect(hasFocusEffectApplied(world, entity)).toBe(true);
 			expect(Renderable.fg[entity]).toBe(0xff0000ff);
 		});
 
@@ -553,7 +553,7 @@ describe('effects', () => {
 			// Entity is not actually focused
 			syncEffects(world, entity);
 
-			expect(hasFocusEffectApplied(entity)).toBe(false);
+			expect(hasFocusEffectApplied(world, entity)).toBe(false);
 			expect(Renderable.fg[entity]).toBe(0xffffffff);
 		});
 
@@ -567,7 +567,7 @@ describe('effects', () => {
 
 			syncEffects(world, entity);
 
-			expect(hasHoverEffectApplied(entity)).toBe(true);
+			expect(hasHoverEffectApplied(world, entity)).toBe(true);
 			expect(Renderable.bg[entity]).toBe(0x333333ff);
 		});
 
@@ -582,7 +582,7 @@ describe('effects', () => {
 			// Entity is not actually hovered
 			syncEffects(world, entity);
 
-			expect(hasHoverEffectApplied(entity)).toBe(false);
+			expect(hasHoverEffectApplied(world, entity)).toBe(false);
 			expect(Renderable.bg[entity]).toBe(0x000000ff);
 		});
 	});
@@ -641,7 +641,7 @@ describe('effects', () => {
 				hover: { bg: 0x333333ff },
 			});
 
-			const config = getEffects(entity);
+			const config = getEffects(world, entity);
 			expect(config).toBeDefined();
 			expect(config?.focus?.fg).toBe(0xff0000ff);
 			expect(config?.hover?.bg).toBe(0x333333ff);
@@ -676,7 +676,7 @@ describe('effects', () => {
 			});
 
 			applyPressEffect(world, entity);
-			expect(hasPressEffectApplied(entity)).toBe(true);
+			expect(hasPressEffectApplied(world, entity)).toBe(true);
 			expect(Renderable.bg[entity]).toBe(0x222222ff);
 		});
 
@@ -694,7 +694,7 @@ describe('effects', () => {
 			applyPressEffect(world, entity);
 			removePressEffect(world, entity);
 
-			expect(hasPressEffectApplied(entity)).toBe(false);
+			expect(hasPressEffectApplied(world, entity)).toBe(false);
 		});
 
 		it('does nothing without press config', () => {
@@ -705,7 +705,7 @@ describe('effects', () => {
 			setEffects(world, entity, {});
 			applyPressEffect(world, entity);
 
-			expect(hasPressEffectApplied(entity)).toBe(false);
+			expect(hasPressEffectApplied(world, entity)).toBe(false);
 		});
 	});
 
@@ -721,7 +721,7 @@ describe('effects', () => {
 			});
 
 			applyDisabledEffect(world, entity);
-			expect(hasDisabledEffectApplied(entity)).toBe(true);
+			expect(hasDisabledEffectApplied(world, entity)).toBe(true);
 			expect(Renderable.fg[entity]).toBe(0x808080ff);
 		});
 
@@ -738,7 +738,7 @@ describe('effects', () => {
 			applyDisabledEffect(world, entity);
 			removeDisabledEffect(world, entity);
 
-			expect(hasDisabledEffectApplied(entity)).toBe(false);
+			expect(hasDisabledEffectApplied(world, entity)).toBe(false);
 		});
 	});
 
@@ -752,10 +752,10 @@ describe('effects', () => {
 				press: { bg: 0x222222ff },
 			});
 
-			expect(hasAnyEffectApplied(entity)).toBe(false);
+			expect(hasAnyEffectApplied(world, entity)).toBe(false);
 
 			applyPressEffect(world, entity);
-			expect(hasAnyEffectApplied(entity)).toBe(true);
+			expect(hasAnyEffectApplied(world, entity)).toBe(true);
 		});
 
 		it('getEffectState returns all effect states', () => {
@@ -768,7 +768,7 @@ describe('effects', () => {
 				press: { bg: 0x222222ff },
 			});
 
-			const state = getEffectState(entity);
+			const state = getEffectState(world, entity);
 			expect(state.focus).toBe(false);
 			expect(state.hover).toBe(false);
 			expect(state.press).toBe(false);
@@ -777,7 +777,7 @@ describe('effects', () => {
 			applyFocusEffect(world, entity);
 			applyPressEffect(world, entity);
 
-			const newState = getEffectState(entity);
+			const newState = getEffectState(world, entity);
 			expect(newState.focus).toBe(true);
 			expect(newState.press).toBe(true);
 		});
@@ -800,8 +800,8 @@ describe('effects', () => {
 
 			clearEffects(world, entity);
 
-			expect(getEffects(entity)).toBeUndefined();
-			expect(hasAnyEffectApplied(entity)).toBe(false);
+			expect(getEffects(world, entity)).toBeUndefined();
+			expect(hasAnyEffectApplied(world, entity)).toBe(false);
 		});
 	});
 
@@ -813,12 +813,12 @@ describe('effects', () => {
 			setFocusable(world, entity, { focusable: true, focusEffectFg: 0xff0000ff });
 
 			applyFocusEffect(world, entity);
-			expect(hasStoredStyle(entity)).toBe(true);
+			expect(hasStoredStyle(world, entity)).toBe(true);
 
-			clearEffectState(entity);
+			clearEffectState(world, entity);
 
-			expect(hasStoredStyle(entity)).toBe(false);
-			expect(hasFocusEffectApplied(entity)).toBe(false);
+			expect(hasStoredStyle(world, entity)).toBe(false);
+			expect(hasFocusEffectApplied(world, entity)).toBe(false);
 		});
 	});
 });
