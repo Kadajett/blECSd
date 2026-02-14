@@ -3,16 +3,16 @@
  * @module systems/scrollableSystem
  */
 
-import { addComponent, hasComponent } from '../core/ecs';
-import type { Entity, World } from '../core/types';
 import {
 	Scrollable,
-	ScrollbarVisibility,
-	type ScrollPosition,
-	type ScrollPercentage,
 	type ScrollableData,
 	type ScrollableOptions,
+	ScrollbarVisibility,
+	type ScrollPercentage,
+	type ScrollPosition,
 } from '../components/scrollable';
+import { addComponent, hasComponent } from '../core/ecs';
+import type { Entity, World } from '../core/types';
 import { ScrollableOptionsSchema } from '../schemas/components';
 
 /**

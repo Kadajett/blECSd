@@ -6,11 +6,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import {
-	SLIDER_STATE_MACHINE_CONFIG,
-	SliderOrientation,
-	sliderStore,
-} from './slider';
-import {
 	attachSliderBehavior,
 	blurSlider,
 	clearSliderCallbacks,
@@ -54,6 +49,7 @@ import {
 	startDragging,
 	stopDragging,
 } from '../systems/sliderSystem';
+import { SLIDER_STATE_MACHINE_CONFIG, SliderOrientation, sliderStore } from './slider';
 
 describe('Slider Component', () => {
 	let world: World;

@@ -6,8 +6,8 @@
 
 import { Focusable, hasFocusable, isFocused } from '../components/focusable';
 import { Interactive } from '../components/interactive';
-import { hasInteractive, isHovered } from '../systems/interactiveSystem';
 import { hasRenderable, markDirty, Renderable, type StyleData } from '../components/renderable';
+import { hasInteractive, isHovered } from '../systems/interactiveSystem';
 import type { Entity, World } from './types';
 
 // =============================================================================

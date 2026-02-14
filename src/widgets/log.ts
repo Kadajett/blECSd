@@ -38,6 +38,8 @@ import {
 	type ScrollPercentage,
 	type ScrollPosition,
 } from '../components/scrollable';
+import { removeEntity } from '../core/ecs';
+import type { Entity, World } from '../core/types';
 import {
 	canScroll,
 	canScrollX,
@@ -60,8 +62,6 @@ import {
 	setScrollSize,
 	setViewport,
 } from '../systems/scrollableSystem';
-import { removeEntity } from '../core/ecs';
-import type { Entity, World } from '../core/types';
 import { parseColor } from '../utils/color';
 import { formatDate } from '../utils/time';
 

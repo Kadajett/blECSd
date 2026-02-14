@@ -1,14 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { setDimensions } from '../components/dimensions';
-import { getFocusedEntity } from '../components/focusable';
+import { getFocusedEntity, isFocused } from '../components/focusable';
 import { appendChild } from '../components/hierarchy';
-import { isFocused } from '../components/focusable';
-import { isHovered } from '../systems/interactiveSystem';
 import { setPosition, setZIndex } from '../components/position';
 import { setStyle } from '../components/renderable';
 import { addEntity } from '../core/ecs';
 import type { World } from '../core/types';
 import { focusEntity, focusNext, focusPrev, getFocused } from '../systems/focusSystem';
+import { isHovered } from '../systems/interactiveSystem';
 import { renderText } from '../systems/renderSystem';
 import { getCell } from '../terminal/screen/cell';
 import type { IntegrationTestContext } from './integration';

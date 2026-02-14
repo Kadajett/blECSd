@@ -8,7 +8,7 @@
  */
 
 import { z } from 'zod';
-import type { Entity, World } from '../core/types';
+import { markDirty } from '../components/renderable';
 import type {
 	SliderChangeCallback,
 	SliderDisplay,
@@ -33,8 +33,13 @@ import {
 	SliderOrientation,
 	sliderStore,
 } from '../components/slider';
-import { markDirty } from '../components/renderable';
-import { attachStateMachine, getState, hasStateMachine, sendEvent } from '../components/stateMachine';
+import {
+	attachStateMachine,
+	getState,
+	hasStateMachine,
+	sendEvent,
+} from '../components/stateMachine';
+import type { Entity, World } from '../core/types';
 import { SliderRangeSchema, SliderStepSchema } from '../schemas/components';
 
 // =============================================================================

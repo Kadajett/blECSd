@@ -7,7 +7,7 @@
  * @module systems/selectSystem
  */
 
-import type { Entity, World } from '../core/types';
+import { markDirty } from '../components/renderable';
 import type {
 	SelectCallback,
 	SelectDisplay,
@@ -24,8 +24,13 @@ import {
 	SELECT_STATE_MACHINE_CONFIG,
 	selectStore,
 } from '../components/select';
-import { markDirty } from '../components/renderable';
-import { attachStateMachine, getState, hasStateMachine, sendEvent } from '../components/stateMachine';
+import {
+	attachStateMachine,
+	getState,
+	hasStateMachine,
+	sendEvent,
+} from '../components/stateMachine';
+import type { Entity, World } from '../core/types';
 
 // =============================================================================
 // INTERNAL STORES (NOT EXPORTED FROM COMPONENT)

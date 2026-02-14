@@ -3,7 +3,6 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { setInteractive } from '../systems/interactiveSystem';
 import { isFocused, makeFocusable } from '../components/focusable';
 import { setPosition } from '../components/position';
 import { setStyle, setVisible } from '../components/renderable';
@@ -11,6 +10,7 @@ import { resetScreenSingleton } from '../components/screen';
 import { addEntity, createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { World } from '../core/types';
+import { setInteractive } from '../systems/interactiveSystem';
 import {
 	blurAll,
 	clearFocusStack,

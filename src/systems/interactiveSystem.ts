@@ -3,8 +3,6 @@
  * @module systems/interactiveSystem
  */
 
-import { addComponent, hasComponent } from '../core/ecs';
-import type { Entity, World } from '../core/types';
 import {
 	DEFAULT_FOCUS_BG,
 	DEFAULT_FOCUS_FG,
@@ -14,6 +12,8 @@ import {
 	type InteractiveData,
 	type InteractiveOptions,
 } from '../components/interactive';
+import { addComponent, hasComponent } from '../core/ecs';
+import type { Entity, World } from '../core/types';
 
 /**
  * Initializes an Interactive component with default values.

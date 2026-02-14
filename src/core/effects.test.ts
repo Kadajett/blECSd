@@ -4,9 +4,9 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Focusable, focus, resetFocusState, setFocusable } from '../components/focusable';
-import { setHovered, setInteractive } from '../systems/interactiveSystem';
 import { Renderable } from '../components/renderable';
 import { addComponent, addEntity, createWorld } from '../core/ecs';
+import { setHovered, setInteractive } from '../systems/interactiveSystem';
 import {
 	applyCustomEffect,
 	applyDisabledEffect,

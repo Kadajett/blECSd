@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
-import { Interactive } from './interactive';
 import {
 	clearInteractionState,
 	disable,
@@ -31,6 +30,7 @@ import {
 	setKeyable,
 	setPressed,
 } from '../systems/interactiveSystem';
+import { Interactive } from './interactive';
 
 describe('Interactive component', () => {
 	describe('setInteractive', () => {

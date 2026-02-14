@@ -4,9 +4,9 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetListStore } from '../components/list';
-import { resetTableStore } from '../components/table';
 import { addEntity, createWorld } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { resetTableStore } from '../systems/tableSystem';
 import { createListTable, isListTableWidget, type ListTableWidget } from './listTable';
 
 describe('ListTable Widget', () => {

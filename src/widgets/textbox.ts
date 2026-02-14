@@ -9,7 +9,6 @@ import { blur, focus, setFocusable } from '../components/focusable';
 import { setPadding } from '../components/padding';
 import { setPosition } from '../components/position';
 import { setStyle } from '../components/renderable';
-import { setScrollable } from '../systems/scrollableSystem';
 import {
 	attachTextInputBehavior,
 	emitSubmit,
@@ -24,6 +23,7 @@ import {
 } from '../components/textInput';
 import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { setScrollable } from '../systems/scrollableSystem';
 import { parseColor } from '../utils/color';
 import {
 	type CursorPosition,

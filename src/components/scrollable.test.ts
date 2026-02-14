@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
-import { Scrollable, ScrollbarVisibility } from './scrollable';
 import {
 	canScroll,
 	canScrollX,
@@ -27,6 +26,7 @@ import {
 	setScrollSize,
 	setViewport,
 } from '../systems/scrollableSystem';
+import { Scrollable, ScrollbarVisibility } from './scrollable';
 
 describe('Scrollable component', () => {
 	describe('setScrollable', () => {

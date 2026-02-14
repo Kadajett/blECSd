@@ -14,12 +14,12 @@ import { setContent } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { setFocusable } from '../components/focusable';
 import { appendChild } from '../components/hierarchy';
-import { setClickable } from '../systems/interactiveSystem';
 import { setPadding } from '../components/padding';
 import { setPosition } from '../components/position';
 import { markDirty, setStyle, setVisible } from '../components/renderable';
 import { addEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { setClickable } from '../systems/interactiveSystem';
 import { parseColor } from '../utils/color';
 import { createBox } from './box';
 

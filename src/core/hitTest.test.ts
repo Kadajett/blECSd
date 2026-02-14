@@ -4,9 +4,9 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { setDimensions } from '../components/dimensions';
-import { setInteractive } from '../systems/interactiveSystem';
 import { setPosition } from '../components/position';
 import { addEntity, createWorld } from '../core/ecs';
+import { setInteractive } from '../systems/interactiveSystem';
 import {
 	createClickableCache,
 	getAllClickablesAt,

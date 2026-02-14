@@ -2,15 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { addEntity, createWorld } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import {
-	DEFAULT_CLOSED_INDICATOR,
-	DEFAULT_OPEN_INDICATOR,
-	DEFAULT_SELECTED_MARK,
-	DEFAULT_SEPARATOR,
-	SELECT_STATE_MACHINE_CONFIG,
-	type SelectOption,
-	selectStore,
-} from './select';
-import {
 	attachSelectBehavior,
 	clearSelectCallbacks,
 	clearSelectDisplay,
@@ -49,6 +40,15 @@ import {
 	setSelectOptions,
 	toggleSelect,
 } from '../systems/selectSystem';
+import {
+	DEFAULT_CLOSED_INDICATOR,
+	DEFAULT_OPEN_INDICATOR,
+	DEFAULT_SELECTED_MARK,
+	DEFAULT_SEPARATOR,
+	SELECT_STATE_MACHINE_CONFIG,
+	type SelectOption,
+	selectStore,
+} from './select';
 import { StateMachineStore } from './stateMachine';
 
 describe('Select Component', () => {

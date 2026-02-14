@@ -27,11 +27,11 @@ import {
 import { setContent } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
-import { setInteractive } from '../systems/interactiveSystem';
 import { moveBy, Position, setPosition } from '../components/position';
 import { markDirty } from '../components/renderable';
 import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { setInteractive } from '../systems/interactiveSystem';
 
 // =============================================================================
 // TYPES

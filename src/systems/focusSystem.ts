@@ -35,13 +35,13 @@
 
 import { NULL_ENTITY } from '../components/hierarchy';
 import { Interactive } from '../components/interactive';
-import { isFocusable, setFocusedState } from '../systems/interactiveSystem';
 import { Position } from '../components/position';
 import { isEffectivelyVisible, markDirty, Renderable } from '../components/renderable';
 import { getScreen, Screen, setScreenFocus } from '../components/screen';
 import { query } from '../core/ecs';
 import { createEventBus, type EventBus } from '../core/events';
 import type { Entity, System, World } from '../core/types';
+import { isFocusable, setFocusedState } from '../systems/interactiveSystem';
 
 // =============================================================================
 // TYPES

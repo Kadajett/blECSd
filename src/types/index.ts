@@ -598,10 +598,6 @@ export type {
 	/** Select store */
 	SelectStore,
 } from '../components/select';
-export type {
-	/** Select action */
-	SelectAction,
-} from '../systems/selectSystem';
 // Slider
 export type {
 	/** Slider change callback */
@@ -619,11 +615,6 @@ export type {
 	/** Slider store */
 	SliderStore,
 } from '../components/slider';
-export type {
-	/** Slider action */
-	SliderAction,
-} from '../systems/sliderSystem';
-
 // Table
 export type {
 	/** Cell alignment */
@@ -664,6 +655,14 @@ export type {
 	/** Text input store */
 	TextInputStore,
 } from '../components/textInput';
+export type {
+	/** Select action */
+	SelectAction,
+} from '../systems/selectSystem';
+export type {
+	/** Slider action */
+	SliderAction,
+} from '../systems/sliderSystem';
 
 // =============================================================================
 // CONFIG TYPES
