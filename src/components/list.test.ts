@@ -663,12 +663,12 @@ describe('List Component', () => {
 	describe('Search Mode', () => {
 		it('should enable search mode', () => {
 			attachListBehavior(world, eid, [], { search: true });
-			expect(isListSearchEnabled(eid)).toBe(true);
+			expect(isListSearchEnabled(world, eid)).toBe(true);
 		});
 
 		it('should disable search mode by default', () => {
 			attachListBehavior(world, eid);
-			expect(isListSearchEnabled(eid)).toBe(false);
+			expect(isListSearchEnabled(world, eid)).toBe(false);
 		});
 
 		it('should start search when enabled', () => {
@@ -697,10 +697,10 @@ describe('List Component', () => {
 			attachListBehavior(world, eid, [], { search: true });
 			focusList(world, eid);
 			startListSearch(world, eid);
-			expect(getListSearchQuery(eid)).toBe('');
+			expect(getListSearchQuery(world, eid)).toBe('');
 
 			setListSearchQuery(world, eid, 'test');
-			expect(getListSearchQuery(eid)).toBe('test');
+			expect(getListSearchQuery(world, eid)).toBe('test');
 		});
 
 		it('should append to search query', () => {
@@ -709,10 +709,10 @@ describe('List Component', () => {
 			startListSearch(world, eid);
 
 			appendToSearchQuery(world, eid, 't');
-			expect(getListSearchQuery(eid)).toBe('t');
+			expect(getListSearchQuery(world, eid)).toBe('t');
 
 			appendToSearchQuery(world, eid, 'e');
-			expect(getListSearchQuery(eid)).toBe('te');
+			expect(getListSearchQuery(world, eid)).toBe('te');
 		});
 
 		it('should backspace search query', () => {
@@ -722,7 +722,7 @@ describe('List Component', () => {
 			setListSearchQuery(world, eid, 'test');
 
 			backspaceSearchQuery(world, eid);
-			expect(getListSearchQuery(eid)).toBe('tes');
+			expect(getListSearchQuery(world, eid)).toBe('tes');
 		});
 
 		it('should clear search query', () => {
@@ -732,7 +732,7 @@ describe('List Component', () => {
 			setListSearchQuery(world, eid, 'test');
 
 			clearSearchQuery(world, eid);
-			expect(getListSearchQuery(eid)).toBe('');
+			expect(getListSearchQuery(world, eid)).toBe('');
 		});
 
 		it('should find and select by text', () => {
@@ -767,7 +767,7 @@ describe('List Component', () => {
 			startListSearch(world, eid);
 
 			const queries: string[] = [];
-			const unsubscribe = onListSearchChange(eid, (query) => queries.push(query));
+			const unsubscribe = onListSearchChange(world, eid, (query) => queries.push(query));
 
 			setListSearchQuery(world, eid, 'a');
 			setListSearchQuery(world, eid, 'ab');

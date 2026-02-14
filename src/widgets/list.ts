@@ -636,7 +636,7 @@ export function createList(
 		},
 
 		getSearchQuery(): string {
-			return getListSearchQuery(eid);
+			return getListSearchQuery(world, eid);
 		},
 
 		isSearching(): boolean {
@@ -662,7 +662,7 @@ export function createList(
 		},
 
 		onSearchChange(callback: (query: string) => void): () => void {
-			return onListSearchChange(eid, callback);
+			return onListSearchChange(world, eid, callback);
 		},
 
 		// Multi-select

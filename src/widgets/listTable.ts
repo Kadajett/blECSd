@@ -748,7 +748,7 @@ export function createListTable(
 		},
 
 		getSearchQuery(): string {
-			return getListSearchQuery(eid);
+			return getListSearchQuery(world, eid);
 		},
 
 		isSearching(): boolean {
@@ -770,7 +770,7 @@ export function createListTable(
 		},
 
 		onSearchChange(callback: (query: string) => void): () => void {
-			return onListSearchChange(eid, callback);
+			return onListSearchChange(world, eid, callback);
 		},
 
 		// Key handling
