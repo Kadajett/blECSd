@@ -26,11 +26,8 @@ import { detectBrailleSupport, type EnvChecker } from './detect';
 
 /**
  * Braille backend name.
- *
- * Note: We use 'ascii' as the BackendName since braille is a text-based
- * rendering mode and 'braille' is not in the BackendName union.
  */
-export const BRAILLE_BACKEND_NAME: BackendName = 'ascii';
+export const BRAILLE_BACKEND_NAME: BackendName = 'braille';
 
 // =============================================================================
 // CURSOR POSITIONING

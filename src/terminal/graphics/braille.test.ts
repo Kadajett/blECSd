@@ -164,7 +164,7 @@ describe('createBrailleBackend', () => {
 	it('creates backend with correct name', () => {
 		const backend = createBrailleBackend();
 		expect(backend.name).toBe(BRAILLE_BACKEND_NAME);
-		expect(backend.name).toBe('ascii');
+		expect(backend.name).toBe('braille');
 	});
 
 	it('creates backend with correct capabilities', () => {

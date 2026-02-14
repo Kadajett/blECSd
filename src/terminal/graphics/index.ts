@@ -147,3 +147,26 @@ export {
 	SIXEL_ST,
 	SixelBackendConfigSchema,
 } from './sixel';
+
+// Vector drawing primitives
+export type { BrailleCanvas, RenderedCell } from './vector';
+export {
+	canvasToCells,
+	canvasToString,
+	cellToDot,
+	clearBrailleCanvas,
+	clearDot,
+	createBrailleCanvas,
+	dotToCell,
+	drawArc,
+	drawBezier,
+	drawCircle,
+	drawEllipse,
+	drawLine,
+	drawRect,
+	fillCircle,
+	fillRect,
+	getDot,
+	setCellColor,
+	setDot,
+} from './vector';

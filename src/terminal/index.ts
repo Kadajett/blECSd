@@ -275,6 +275,66 @@ export {
 	parseGpmEventBuffer,
 	parseGpmModifiers,
 } from './gpmClient';
+// Graphics protocol backends
+export type {
+	BackendName,
+	BrailleCanvas,
+	EnvChecker,
+	GraphicsBackend,
+	GraphicsCapabilities,
+	GraphicsDetectionResult,
+	GraphicsManagerConfig,
+	GraphicsManagerState,
+	ImageData as GraphicsImageData,
+	RenderedCell,
+	RenderOptions as GraphicsRenderOptions,
+} from './graphics';
+export {
+	canvasToCells as brailleCanvasToCells,
+	canvasToString as brailleCanvasToString,
+	cellToDot,
+	clearBrailleCanvas,
+	clearDot,
+	// Backend abstraction
+	clearImage,
+	// Graphics backend factories (aliased to avoid collision with 3D render backends)
+	createAnsiBackend as createAnsiGraphicsBackend,
+	createAutoGraphicsManager,
+	createBrailleBackend as createBrailleGraphicsBackend,
+	// Vector drawing (aliased to avoid collision with canvas/3d draw functions)
+	createBrailleCanvas,
+	createGraphicsManager,
+	createITerm2Backend as createITerm2GraphicsBackend,
+	createKittyBackend as createKittyGraphicsBackend,
+	createSixelGraphicsBackend,
+	DEFAULT_FALLBACK_CHAIN,
+	// Detection
+	detectAnsiSupport,
+	detectBrailleSupport,
+	detectGraphicsSupport,
+	detectITerm2Support,
+	detectKittySupport,
+	detectSixelSupport,
+	dotToCell,
+	drawArc as drawBrailleArc,
+	drawBezier as drawBrailleBezier,
+	drawCircle as drawBrailleCircle,
+	drawEllipse as drawBrailleEllipse,
+	drawLine as drawBrailleLine,
+	drawRect as drawBrailleRect,
+	fillCircle as fillBrailleCircle,
+	fillRect as fillBrailleRect,
+	getActiveBackend,
+	getBackendCapabilities,
+	getBestBackendName,
+	getDot,
+	refreshBackend,
+	registerBackend,
+	renderImage,
+	selectBackend,
+	setCellColor,
+	setDot,
+} from './graphics';
 // Input control
 export type {
 	InputControlEventData,

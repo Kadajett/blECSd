@@ -144,7 +144,7 @@ describe('GraphicsManagerConfigSchema', () => {
 
 describe('DEFAULT_FALLBACK_CHAIN', () => {
 	it('should have correct order', () => {
-		expect(DEFAULT_FALLBACK_CHAIN).toEqual(['kitty', 'iterm2', 'sixel', 'ansi', 'ascii']);
+		expect(DEFAULT_FALLBACK_CHAIN).toEqual(['kitty', 'iterm2', 'sixel', 'ansi', 'braille', 'ascii']);
 	});
 });
 

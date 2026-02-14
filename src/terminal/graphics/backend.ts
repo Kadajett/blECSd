@@ -10,6 +10,12 @@
 
 import { z } from 'zod';
 
+import { createAnsiBackend as ansiBackendFactory } from './ansi';
+import { createBrailleBackend as brailleBackendFactory } from './braille';
+import { createITerm2Backend as iterm2BackendFactory } from './iterm2';
+import { createKittyBackend as kittyBackendFactory } from './kitty';
+import { createSixelGraphicsBackend as sixelBackendFactory } from './sixel';
+
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -96,7 +102,7 @@ export interface RenderOptions {
 /**
  * Graphics backend name.
  */
-export type BackendName = 'kitty' | 'iterm2' | 'sixel' | 'ansi' | 'ascii';
+export type BackendName = 'kitty' | 'iterm2' | 'sixel' | 'ansi' | 'ascii' | 'braille';
 
 /**
  * A graphics backend that can render images to the terminal.
@@ -185,6 +191,7 @@ export const DEFAULT_FALLBACK_CHAIN: readonly BackendName[] = [
 	'iterm2',
 	'sixel',
 	'ansi',
+	'braille',
 	'ascii',
 ];
 
@@ -239,7 +246,9 @@ export interface GraphicsManagerConfig {
  * Zod schema for GraphicsManagerConfig.
  */
 export const GraphicsManagerConfigSchema = z.object({
-	preferenceOrder: z.array(z.enum(['kitty', 'iterm2', 'sixel', 'ansi', 'ascii'])).optional(),
+	preferenceOrder: z
+		.array(z.enum(['kitty', 'iterm2', 'sixel', 'ansi', 'braille', 'ascii']))
+		.optional(),
 });
 
 /**
@@ -426,24 +435,16 @@ export function getBackendCapabilities(
 export function createAutoGraphicsManager(
 	config: GraphicsManagerConfig = {},
 ): GraphicsManagerState {
-	// Import backend factories dynamically to avoid circular dependencies
-	// These are imported locally to ensure they're loaded when needed
-	const { createKittyBackend } = require('./kitty');
-	const { createITerm2Backend } = require('./iterm2');
-	const { createSixelGraphicsBackend } = require('./sixel');
-	const { createAnsiBackend } = require('./ansi');
-	const { createBrailleBackend } = require('./braille');
-
 	// Create manager with base config
 	const manager = createGraphicsManager(config);
 
 	// Register all backends
 	// The backends will only report as supported if they're actually available
-	registerBackend(manager, createKittyBackend());
-	registerBackend(manager, createITerm2Backend());
-	registerBackend(manager, createSixelGraphicsBackend());
-	registerBackend(manager, createAnsiBackend());
-	registerBackend(manager, createBrailleBackend());
+	registerBackend(manager, kittyBackendFactory());
+	registerBackend(manager, iterm2BackendFactory());
+	registerBackend(manager, sixelBackendFactory());
+	registerBackend(manager, ansiBackendFactory());
+	registerBackend(manager, brailleBackendFactory());
 
 	// The selectBackend function will choose the best one based on isSupported()
 	return manager;
