@@ -288,9 +288,12 @@ export type {
 	ImageData as GraphicsImageData,
 	RenderedCell,
 	RenderOptions as GraphicsRenderOptions,
+	VectorRenderOptions,
 } from './graphics';
 export {
 	canvasToCells as brailleCanvasToCells,
+	// Vector-to-pixel bridge
+	canvasToPixelBitmap,
 	canvasToString as brailleCanvasToString,
 	cellToDot,
 	clearBrailleCanvas,
@@ -328,9 +331,11 @@ export {
 	getBackendCapabilities,
 	getBestBackendName,
 	getDot,
+	hasPixelBackend,
 	refreshBackend,
 	registerBackend,
 	renderImage,
+	renderVector,
 	selectBackend,
 	setCellColor,
 	setDot,

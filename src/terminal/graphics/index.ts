@@ -170,3 +170,11 @@ export {
 	setCellColor,
 	setDot,
 } from './vector';
+
+// Vector-to-pixel bridge
+export type { VectorRenderOptions } from './vectorBridge';
+export {
+	canvasToPixelBitmap,
+	hasPixelBackend,
+	renderVector,
+} from './vectorBridge';
