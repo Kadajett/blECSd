@@ -162,7 +162,8 @@
     "size:why": "size-limit --why",
     "verify-pack": "./scripts/verify-pack.sh",
     "doccheck": "tsx scripts/doccheck.ts",
-    "playground": "tsx playground/index.ts"
+    "playground": "tsx playground/index.ts",
+    "gallery": "tsx playground/gallery.ts"
   },
   "size-limit": [
     {
