@@ -97,7 +97,8 @@ describe('reactiveSource', () => {
 			vi.advanceTimersByTime(500 - 16); // Halfway
 			expect(progress()).toBeCloseTo(0.5, 2);
 
-			vi.advanceTimersByTime(500); // End
+			// Advance past duration to trigger final interval tick
+			vi.advanceTimersByTime(516); // Past end
 			expect(progress()).toBe(1);
 
 			dispose();
@@ -106,7 +107,8 @@ describe('reactiveSource', () => {
 		it('stops at 1 and does not exceed', () => {
 			const [progress, dispose] = createTimerSignal(1000);
 
-			vi.advanceTimersByTime(1000);
+			// Advance past duration to trigger final interval tick
+			vi.advanceTimersByTime(1016);
 			expect(progress()).toBe(1);
 
 			vi.advanceTimersByTime(1000); // Extra time
@@ -131,7 +133,8 @@ describe('reactiveSource', () => {
 		it('automatically stops at completion', () => {
 			const [progress] = createTimerSignal(100);
 
-			vi.advanceTimersByTime(100);
+			// Advance past duration to trigger final interval tick
+			vi.advanceTimersByTime(112);
 			expect(progress()).toBe(1);
 
 			// Timer should have stopped
