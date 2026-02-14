@@ -464,7 +464,11 @@ export function setChecked(world: World, eid: Entity, checked: boolean): boolean
  * unsubscribe();
  * ```
  */
-export function onCheckboxChange(_world: World, eid: Entity, callback: (checked: boolean) => void): () => void {
+export function onCheckboxChange(
+	_world: World,
+	eid: Entity,
+	callback: (checked: boolean) => void,
+): () => void {
 	let callbacks = changeCallbacks.get(eid);
 	if (!callbacks) {
 		callbacks = [];
@@ -586,7 +590,11 @@ export interface CheckboxDisplayOptions {
  * });
  * ```
  */
-export function setCheckboxDisplay(_world: World, eid: Entity, options: CheckboxDisplayOptions): void {
+export function setCheckboxDisplay(
+	_world: World,
+	eid: Entity,
+	options: CheckboxDisplayOptions,
+): void {
 	const current = displayStore.get(eid) ?? {
 		checkedChar: DEFAULT_CHECKED_CHAR,
 		uncheckedChar: DEFAULT_UNCHECKED_CHAR,

@@ -394,7 +394,7 @@ describe('List Component', () => {
 
 		it('should activate selected item', () => {
 			const callback = vi.fn();
-			onListActivate(eid, callback);
+			onListActivate(world, eid, callback);
 
 			setSelectedIndex(world, eid, 0);
 			expect(activateSelected(world, eid)).toBe(true);
@@ -476,27 +476,27 @@ describe('List Component', () => {
 		});
 
 		it('should get default display', () => {
-			const display = getListDisplay(eid);
+			const display = getListDisplay(world, eid);
 			expect(display.selectedPrefix).toBe('> ');
 			expect(display.unselectedPrefix).toBe('  ');
 		});
 
 		it('should set display options', () => {
-			setListDisplay(eid, {
+			setListDisplay(world, eid, {
 				selectedPrefix: '* ',
 				unselectedPrefix: '- ',
 				selectedFg: 0xffff00ff,
 			});
-			const display = getListDisplay(eid);
+			const display = getListDisplay(world, eid);
 			expect(display.selectedPrefix).toBe('* ');
 			expect(display.unselectedPrefix).toBe('- ');
 			expect(display.selectedFg).toBe(0xffff00ff);
 		});
 
 		it('should clear display', () => {
-			setListDisplay(eid, { selectedPrefix: '* ' });
-			clearListDisplay(eid);
-			const display = getListDisplay(eid);
+			setListDisplay(world, eid, { selectedPrefix: '* ' });
+			clearListDisplay(world, eid);
+			const display = getListDisplay(world, eid);
 			expect(display.selectedPrefix).toBe('> '); // back to default
 		});
 	});
@@ -532,7 +532,7 @@ describe('List Component', () => {
 
 		it('should call onSelect callback when selection changes', () => {
 			const callback = vi.fn();
-			onListSelect(eid, callback);
+			onListSelect(world, eid, callback);
 
 			setSelectedIndex(world, eid, 0);
 			expect(callback).toHaveBeenCalledWith(0, { text: 'Item 1', value: 'item1' });
@@ -540,7 +540,7 @@ describe('List Component', () => {
 
 		it('should unsubscribe from callbacks', () => {
 			const callback = vi.fn();
-			const unsubscribe = onListSelect(eid, callback);
+			const unsubscribe = onListSelect(world, eid, callback);
 
 			unsubscribe();
 			setSelectedIndex(world, eid, 0);
@@ -551,10 +551,10 @@ describe('List Component', () => {
 			const selectCallback = vi.fn();
 			const activateCallback = vi.fn();
 
-			onListSelect(eid, selectCallback);
-			onListActivate(eid, activateCallback);
+			onListSelect(world, eid, selectCallback);
+			onListActivate(world, eid, activateCallback);
 
-			clearListCallbacks(eid);
+			clearListCallbacks(world, eid);
 
 			setSelectedIndex(world, eid, 0);
 			activateSelected(world, eid);

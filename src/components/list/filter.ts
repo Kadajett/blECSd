@@ -49,10 +49,11 @@ export function setListFilter(world: World, eid: Entity, filterText: string): vo
 /**
  * Gets the current filter text.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns The current filter text
  */
-export function getListFilter(eid: Entity): string {
+export function getListFilter(_world: World, eid: Entity): string {
 	return filterStore.get(eid) ?? '';
 }
 
@@ -75,10 +76,11 @@ export function clearListFilter(world: World, eid: Entity): void {
 /**
  * Gets the filtered (visible) items based on current filter.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns Array of filtered items
  */
-export function getFilteredItems(eid: Entity): readonly ListItem[] {
+export function getFilteredItems(_world: World, eid: Entity): readonly ListItem[] {
 	const filter = filterStore.get(eid);
 	if (filter === undefined || filter === '') {
 		return getItems(eid);

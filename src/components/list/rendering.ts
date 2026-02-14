@@ -18,7 +18,7 @@ import { getVisibleItems } from './virtualization';
  * @returns Array of rendered line strings
  */
 export function renderListItems(world: World, eid: Entity, width: number): string[] {
-	const display = getListDisplay(eid);
+	const display = getListDisplay(world, eid);
 	const visibleItems = getVisibleItems(world, eid);
 	const selectedIndex = listStore.selectedIndex[eid] ?? -1;
 	const lines: string[] = [];

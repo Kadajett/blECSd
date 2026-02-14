@@ -762,11 +762,11 @@ export function createListTable(
 
 		// Events
 		onSelect(callback: ListSelectCallback): () => void {
-			return onListSelect(eid, callback);
+			return onListSelect(world, eid, callback);
 		},
 
 		onActivate(callback: ListSelectCallback): () => void {
-			return onListActivate(eid, callback);
+			return onListActivate(world, eid, callback);
 		},
 
 		onSearchChange(callback: (query: string) => void): () => void {
@@ -827,7 +827,7 @@ export function createListTable(
 
 		// Lifecycle
 		destroy(): void {
-			clearListCallbacks(eid);
+			clearListCallbacks(world, eid);
 			clearSearchQuery(world, eid);
 			detachTableBehavior(world, eid);
 			removeEntity(world, eid);
