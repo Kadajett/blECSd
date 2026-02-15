@@ -273,7 +273,7 @@ describe('Collision Bounds', () => {
 				height: 2,
 			});
 
-			const aabb = getColliderAABB(eid, 10, 20);
+			const aabb = getColliderAABB(world, eid, 10, 20);
 			expect(aabb.minX).toBe(8); // 10 - 4/2
 			expect(aabb.maxX).toBe(12); // 10 + 4/2
 			expect(aabb.minY).toBe(19); // 20 - 2/2
@@ -287,7 +287,7 @@ describe('Collision Bounds', () => {
 				width: 6, // diameter
 			});
 
-			const aabb = getColliderAABB(eid, 10, 20);
+			const aabb = getColliderAABB(world, eid, 10, 20);
 			expect(aabb.minX).toBe(7); // 10 - 3
 			expect(aabb.maxX).toBe(13); // 10 + 3
 			expect(aabb.minY).toBe(17); // 20 - 3
@@ -304,7 +304,7 @@ describe('Collision Bounds', () => {
 				offsetY: -3,
 			});
 
-			const aabb = getColliderAABB(eid, 10, 20);
+			const aabb = getColliderAABB(world, eid, 10, 20);
 			// center = (10+5, 20-3) = (15, 17)
 			expect(aabb.minX).toBe(14); // 15 - 1
 			expect(aabb.maxX).toBe(16); // 15 + 1
@@ -402,9 +402,9 @@ describe('Collision Testing', () => {
 			setCollider(world, b, { type: ColliderType.BOX, width: 4, height: 4 });
 
 			// Overlapping at (0,0) and (2,2)
-			expect(testCollision(a, 0, 0, b, 2, 2)).toBe(true);
+			expect(testCollision(world, a, 0, 0, b, 2, 2)).toBe(true);
 			// Not overlapping
-			expect(testCollision(a, 0, 0, b, 10, 10)).toBe(false);
+			expect(testCollision(world, a, 0, 0, b, 10, 10)).toBe(false);
 		});
 
 		it('should detect circle vs circle collision', () => {
@@ -414,9 +414,9 @@ describe('Collision Testing', () => {
 			setCollider(world, b, { type: ColliderType.CIRCLE, width: 4 }); // radius 2
 
 			// Overlapping
-			expect(testCollision(a, 0, 0, b, 3, 0)).toBe(true);
+			expect(testCollision(world, a, 0, 0, b, 3, 0)).toBe(true);
 			// Not overlapping
-			expect(testCollision(a, 0, 0, b, 10, 0)).toBe(false);
+			expect(testCollision(world, a, 0, 0, b, 10, 0)).toBe(false);
 		});
 
 		it('should detect circle vs box collision', () => {
@@ -426,9 +426,9 @@ describe('Collision Testing', () => {
 			setCollider(world, box, { type: ColliderType.BOX, width: 4, height: 4 });
 
 			// Overlapping
-			expect(testCollision(circle, 0, 0, box, 3, 0)).toBe(true);
+			expect(testCollision(world, circle, 0, 0, box, 3, 0)).toBe(true);
 			// Not overlapping
-			expect(testCollision(circle, 0, 0, box, 10, 0)).toBe(false);
+			expect(testCollision(world, circle, 0, 0, box, 10, 0)).toBe(false);
 		});
 
 		it('should detect box vs circle collision', () => {
@@ -438,9 +438,9 @@ describe('Collision Testing', () => {
 			setCollider(world, circle, { type: ColliderType.CIRCLE, width: 4 }); // radius 2
 
 			// Overlapping
-			expect(testCollision(box, 0, 0, circle, 3, 0)).toBe(true);
+			expect(testCollision(world, box, 0, 0, circle, 3, 0)).toBe(true);
 			// Not overlapping
-			expect(testCollision(box, 0, 0, circle, 10, 0)).toBe(false);
+			expect(testCollision(world, box, 0, 0, circle, 10, 0)).toBe(false);
 		});
 
 		it('should include offset in collision test', () => {
@@ -451,41 +451,47 @@ describe('Collision Testing', () => {
 
 			// Without offset, they would overlap at (0,0) and (1,0)
 			// With offset, a's center is at (5, 0), so they don't overlap
-			expect(testCollision(a, 0, 0, b, 1, 0)).toBe(false);
+			expect(testCollision(world, a, 0, 0, b, 1, 0)).toBe(false);
 			// But they overlap when b is at (5, 0)
-			expect(testCollision(a, 0, 0, b, 5, 0)).toBe(true);
+			expect(testCollision(world, a, 0, 0, b, 5, 0)).toBe(true);
 		});
 	});
 });
 
 describe('Collision Pairs', () => {
+	let world: ReturnType<typeof createWorld>;
+
+	beforeEach(() => {
+		world = createWorld();
+	});
+
 	describe('createCollisionPair', () => {
 		it('should normalize pair order (lower ID first)', () => {
-			const pair1 = createCollisionPair(5, 3, false);
+			const pair1 = createCollisionPair(world, 5, 3, false);
 			expect(pair1.entityA).toBe(3);
 			expect(pair1.entityB).toBe(5);
 
-			const pair2 = createCollisionPair(3, 5, false);
+			const pair2 = createCollisionPair(world, 3, 5, false);
 			expect(pair2.entityA).toBe(3);
 			expect(pair2.entityB).toBe(5);
 		});
 
 		it('should preserve trigger flag', () => {
-			const pair = createCollisionPair(1, 2, true);
+			const pair = createCollisionPair(world, 1, 2, true);
 			expect(pair.isTrigger).toBe(true);
 		});
 	});
 
 	describe('collisionPairKey', () => {
 		it('should generate consistent key regardless of order', () => {
-			const pair1 = createCollisionPair(5, 3, false);
-			const pair2 = createCollisionPair(3, 5, false);
+			const pair1 = createCollisionPair(world, 5, 3, false);
+			const pair2 = createCollisionPair(world, 3, 5, false);
 			expect(collisionPairKey(pair1)).toBe(collisionPairKey(pair2));
 		});
 
 		it('should generate unique keys for different pairs', () => {
-			const pair1 = createCollisionPair(1, 2, false);
-			const pair2 = createCollisionPair(1, 3, false);
+			const pair1 = createCollisionPair(world, 1, 2, false);
+			const pair2 = createCollisionPair(world, 1, 3, false);
 			expect(collisionPairKey(pair1)).not.toBe(collisionPairKey(pair2));
 		});
 	});
