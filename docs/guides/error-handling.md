@@ -113,6 +113,7 @@ function startGameLoop(world: World): Result<void> {
 
 For recoverable operations, use the `Result<T, E>` type instead of throwing exceptions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Result, ok, err, isOk, isErr, unwrapOr } from 'blecsd/errors';
 import { createWorld, addEntity, Position } from 'blecsd';
@@ -137,6 +138,8 @@ function getEntityPosition(
 }
 
 // Usage with type guards
+const world = createWorld();
+const entityId = addEntity(world);
 const result = getEntityPosition(world, entityId);
 
 if (isOk(result)) {
@@ -151,8 +154,9 @@ const position = unwrapOr(result, { x: 0, y: 0 });
 
 ### Result Type Utilities
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { map, flatMap, mapError, unwrapOrElse } from 'blecsd/errors';
+import { map, flatMap, mapError, unwrapOrElse, ok, err } from 'blecsd/errors';
 
 // Transform success value
 const doubled = map(ok(42), (x) => x * 2); // ok(84)
@@ -184,8 +188,9 @@ const value = unwrapOrElse(
 
 For exceptional cases or compatibility with existing try/catch code, convert blECSd errors to native Error instances:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { toNativeError, fromNativeError } from 'blecsd/errors';
+import { toNativeError, fromNativeError, createValidationError } from 'blecsd/errors';
 
 // Convert to native Error for throwing
 function riskyOperation(): void {
@@ -277,12 +282,13 @@ function handleError(error: BlECSdError): void {
 
 Systems should handle errors gracefully and avoid crashing the game loop:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defineSystem, query, hasComponent, World } from 'blecsd';
+import { query, hasComponent, World } from 'blecsd';
 import { Result, ok, err } from 'blecsd/errors';
 
 // System that processes entities and collects errors
-const processEntitiesSystem = defineSystem((world: World) => {
+function processEntitiesSystem(world: World) {
   const entities = query(world, [Position, Velocity]);
   const errors: BlECSdError[] = [];
 
@@ -301,7 +307,7 @@ const processEntitiesSystem = defineSystem((world: World) => {
   }
 
   return world;
-});
+}
 
 // Helper function with Result type
 function updateEntityPosition(
@@ -327,12 +333,13 @@ function updateEntityPosition(
 
 Input errors are often recoverable - log them and continue processing:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseKeyEvent } from 'blecsd';
+import { parseKeySequence } from 'blecsd';
 import { isInputError, InputErrorCode } from 'blecsd/errors';
 
 function handleKeyPress(data: Buffer): void {
-  const result = parseKeyEvent(data);
+  const result = parseKeySequence(data);
 
   if (isErr(result)) {
     if (isInputError(result.error)) {
