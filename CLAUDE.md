@@ -57,15 +57,15 @@ Explicit return types, no `any` (use `unknown` + type guards), defined interface
 
 ## Where Does This Logic Go? (Decision Tree)
 
-| Question | Answer | Location |
-|----------|--------|----------|
-| Is it pure data storage (typed arrays, stores)? | Yes | `components/` (200 lines max) |
-| Does it query entities and transform state? | Yes | `systems/` |
-| Does it combine components into a user-facing API? | Yes | `widgets/` (300 lines/sub-file max) |
-| Is it a pure function with no ECS dependency? | Yes | `utils/` |
-| Does it validate config or input? | Yes | `schemas/` |
-| Does it handle terminal I/O? | Yes | `terminal/` |
-| Is it an ECS primitive (addEntity, etc.)? | Yes | `core/` |
+| Question | If yes, put it in... |
+|----------|----------------------|
+| Is it pure data storage (typed arrays, stores)? | `components/` (200 lines max) |
+| Does it query entities and transform state? | `systems/` |
+| Does it combine components into a user-facing API? | `widgets/` (300 lines/sub-file max) |
+| Is it a pure function with no ECS dependency? | `utils/` |
+| Does it validate config or input? | `schemas/` |
+| Does it handle terminal I/O? | `terminal/` |
+| Is it an ECS primitive (addEntity, etc.)? | `core/` |
 
 **Rule:** Components = data only. Systems = logic. Never put business logic in component files.
 
@@ -75,10 +75,10 @@ Several function names exist in multiple modules. The public API (`index.ts`) re
 
 | Function | Canonical Module | Also In | Notes |
 |----------|-----------------|---------|-------|
-| `moveCursor` | `components/virtualViewport` | `terminal/backends/helpers`, `terminal/cursor/artificial`, `terminal/screen/csr`, `components/textInput/cursor` | 5 versions. ECS version takes `(world, eid, delta)`. Terminal versions take raw coordinates. |
+| `moveCursor` | `components/textInput/cursor` | `components/virtualViewport` (as `moveViewportCursor`), `systems/outputSystem`, `terminal/backends/helpers`, `terminal/cursor/artificial`, `terminal/screen/csr` | 6+ versions. Public API exports text-input version. ECS versions take `(world, eid, delta)`. Terminal versions use raw coordinates. |
 | `fillRect` | `terminal/screen/cell` | `terminal/graphics/vector`, `3d/rasterizer/pixelBuffer` | Public API exports terminal version. 3D version operates on `PixelFramebuffer`. |
 | `getText` | `components/content` | `utils/rope` | Public API exports components version `(world, eid)`. Rope version takes `(rope)`. |
-| `moveCursorUp/Down` | `components/terminalBuffer/cursor` | `widgets/textEditing`, `utils/cursorNavigation` | Three implementations with different signatures. |
+| `moveCursorUp/Down` | `utils/cursorNavigation` | `components/terminalBuffer/cursor` (internal), `widgets/textEditing` (internal) | Public API exports navigation util. Component/widget versions are internal with different signatures. |
 
 When importing, always check which module you need. Use explicit paths for non-canonical versions.
 
