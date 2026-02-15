@@ -22,7 +22,7 @@ import type { FileManagerState } from './types';
  * Builds display content string from entries.
  * @internal
  */
-export function buildContent(state: FileManagerState): string {
+export function buildContent(eid: Entity, state: FileManagerState): string {
 	const lines: string[] = [];
 
 	// Show full path (truncate if too long)
@@ -33,8 +33,10 @@ export function buildContent(state: FileManagerState): string {
 	}
 	lines.push(`[${displayPath}]`);
 
+	const selectedIdx = FileManager.selectedIndex[eid] ?? 0;
+
 	// Parent directory entry
-	const parentPrefix = FileManager.selectedIndex[0] === -1 ? '> ' : '  ';
+	const parentPrefix = selectedIdx === -1 ? '> ' : '  ';
 	const parentIcon = state.showIcons ? `${PARENT_DIR_ICON} ` : '';
 	lines.push(`${parentPrefix}${parentIcon}${PARENT_DIR_ENTRY}`);
 
@@ -42,7 +44,7 @@ export function buildContent(state: FileManagerState): string {
 	for (let i = 0; i < state.entries.length; i++) {
 		const entry = state.entries[i];
 		if (!entry) continue;
-		const isSelected = i === FileManager.selectedIndex[0];
+		const isSelected = i === selectedIdx;
 		const prefix = isSelected ? '> ' : '  ';
 		const icon = state.showIcons ? (entry.isDirectory ? `${DIR_ICON} ` : `${FILE_ICON} `) : '';
 		lines.push(`${prefix}${icon}${entry.name}`);
@@ -56,7 +58,7 @@ export function buildContent(state: FileManagerState): string {
  * @internal
  */
 export function updateDisplay(world: World, eid: Entity, state: FileManagerState): void {
-	const content = buildContent(state);
+	const content = buildContent(eid, state);
 	setContent(world, eid, content, { align: TextAlign.Left, valign: TextVAlign.Top });
 	markDirty(world, eid);
 }

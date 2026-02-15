@@ -69,13 +69,19 @@ export const imageAnimationLoopCountStore = new Map<Entity, number>();
 export const imageCurrentFrameStore = new Map<Entity, number>();
 
 /** Maps entity IDs to their animation timer handle */
-export const imageAnimationTimerStore = new Map<Entity, ReturnType<typeof setInterval> | undefined>();
+export const imageAnimationTimerStore = new Map<
+	Entity,
+	ReturnType<typeof setTimeout> | undefined
+>();
 
 /** Maps entity IDs to their current loop iteration */
 export const imageCurrentLoopStore = new Map<Entity, number>();
 
 /** Maps entity IDs to their rendered CellMap cache (keyed by render parameters) */
 export const imageCellMapCacheStore = new Map<Entity, Map<string, CellMap>>();
+
+/** Maps entity IDs to their render version (incremented on bitmap/mode changes for cache invalidation) */
+export const imageRenderVersionStore = new Map<Entity, number>();
 
 /** Maps entity IDs to their graphics manager (for overlay mode) */
 export const imageGraphicsManagerStore = new Map<Entity, GraphicsManagerState>();

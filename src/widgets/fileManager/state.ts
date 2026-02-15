@@ -27,8 +27,8 @@ import type { FileEntry, FileManagerState } from './types';
 export const FileManager = {
 	/** Tag indicating this is a file manager widget (1 = yes) */
 	isFileManager: new Uint8Array(DEFAULT_CAPACITY),
-	/** Currently selected index */
-	selectedIndex: new Uint32Array(DEFAULT_CAPACITY),
+	/** Currently selected index (-1 = parent directory selected) */
+	selectedIndex: new Int32Array(DEFAULT_CAPACITY),
 };
 
 // =============================================================================

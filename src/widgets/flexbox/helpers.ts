@@ -66,11 +66,13 @@ export function applyFlexLayout(
 
 		// Calculate main axis positioning
 		const { positions, sizes } = distributeMainAxis(
+			world,
 			line.children,
 			mainSize,
 			lineMainSize,
 			state.gap,
 			state.justifyContent,
+			isRow,
 		);
 
 		// Position children in this line
@@ -184,10 +186,10 @@ export function calculateFlexLines(
 		const itemSize = currentLine.length === 0 ? childMainSize : gap + childMainSize;
 
 		if (currentLine.length > 0 && currentMainSize + itemSize > containerMainSize) {
-			// Start new line
+			// Start new line - currentMainSize already includes gaps between items
 			lines.push({
 				children: currentLine,
-				mainSize: currentMainSize - gap,
+				mainSize: currentMainSize,
 				crossSize: calculateLineCrossSize(world, currentLine, isRow),
 			});
 			currentLine = [child];
@@ -202,7 +204,7 @@ export function calculateFlexLines(
 	if (currentLine.length > 0) {
 		lines.push({
 			children: currentLine,
-			mainSize: currentMainSize - (currentLine.length > 0 ? gap : 0),
+			mainSize: currentMainSize,
 			crossSize: calculateLineCrossSize(world, currentLine, isRow),
 		});
 	}
@@ -281,11 +283,13 @@ function getCrossSize(world: World, entity: Entity, isRow: boolean): number {
  * @internal
  */
 export function distributeMainAxis(
+	world: World,
 	children: FlexChildState[],
 	containerSize: number,
 	contentSize: number,
 	gap: number,
 	justifyContent: JustifyContent,
+	isRow: boolean,
 ): { positions: number[]; sizes: number[] } {
 	const positions: number[] = [];
 	const sizes: number[] = [];
@@ -298,7 +302,7 @@ export function distributeMainAxis(
 	const availableSpace = containerSize - totalGap;
 
 	// Calculate child sizes with flex grow/shrink
-	const childSizes = calculateFlexSizes(children, availableSpace, contentSize);
+	const childSizes = calculateFlexSizes(world, children, availableSpace, contentSize, isRow);
 
 	// Calculate positions based on justifyContent
 	const actualContentSize = childSizes.reduce((sum, size) => sum + size, 0) + totalGap;
@@ -328,9 +332,11 @@ export function distributeMainAxis(
  * @internal
  */
 function calculateFlexSizes(
+	world: World,
 	children: FlexChildState[],
 	availableSpace: number,
 	contentSize: number,
+	isRow: boolean,
 ): number[] {
 	// Calculate total flex grow/shrink
 	let totalFlex = 0;
@@ -345,12 +351,8 @@ function calculateFlexSizes(
 	// Distribute space
 	const childSizes: number[] = [];
 	for (const child of children) {
-		let size = 0;
-		if (child.flexBasis === 'auto') {
-			size = 10; // Default size
-		} else {
-			size = child.flexBasis;
-		}
+		// When flexBasis is 'auto', derive from the child's measured main-axis size
+		let size = getMainSize(world, child.entity, isRow, child.flexBasis);
 
 		if (freeSpace > 0 && totalFlex > 0) {
 			// Grow

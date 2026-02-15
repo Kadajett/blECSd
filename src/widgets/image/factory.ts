@@ -31,6 +31,7 @@ import {
 	imageGraphicsManagerStore,
 	imagePreserveAspectRatioStore,
 	imageRenderModeStore,
+	imageRenderVersionStore,
 	imageTypeStore,
 	imageVisibleStore,
 } from './state';
@@ -116,7 +117,8 @@ export function createImage(world: World, config: ImageConfig = {}): ImageWidget
 	imageVisibleStore.set(eid, parsed.visible);
 	imagePreserveAspectRatioStore.set(eid, parsed.preserveAspectRatio);
 
-	// Initialize animation stores
+	// Initialize render version and animation stores
+	imageRenderVersionStore.set(eid, 0);
 	imageAnimationFramesStore.set(eid, []);
 	imageAnimationDelaysStore.set(eid, []);
 	imageAnimationLoopCountStore.set(eid, 1);
@@ -326,7 +328,7 @@ function createImageWidgetInterface(world: World, eid: number): ImageWidget {
 
 				const delay = delays[frameIndex] ?? 100;
 				const newTimer = setTimeout(advance, delay);
-				imageAnimationTimerStore.set(eid, newTimer as unknown as ReturnType<typeof setInterval>);
+				imageAnimationTimerStore.set(eid, newTimer as ReturnType<typeof setTimeout>);
 			};
 
 			const advanceFrame = (): void => {
@@ -354,7 +356,7 @@ function createImageWidgetInterface(world: World, eid: number): ImageWidget {
 			// Start with the first frame's delay
 			const initialDelay = delays[imageCurrentFrameStore.get(eid) ?? 0] ?? 100;
 			const timer = setTimeout(advanceFrame, initialDelay);
-			imageAnimationTimerStore.set(eid, timer as unknown as ReturnType<typeof setInterval>);
+			imageAnimationTimerStore.set(eid, timer as ReturnType<typeof setTimeout>);
 
 			return widget;
 		},
@@ -408,6 +410,7 @@ function createImageWidgetInterface(world: World, eid: number): ImageWidget {
 			imageCurrentLoopStore.delete(eid);
 			imageAnimationTimerStore.delete(eid);
 			imageCellMapCacheStore.delete(eid);
+			imageRenderVersionStore.delete(eid);
 			imageGraphicsManagerStore.delete(eid);
 			removeEntity(world, eid);
 		},

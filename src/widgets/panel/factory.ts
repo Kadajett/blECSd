@@ -35,12 +35,28 @@ import type { PanelConfig, PanelWidget, TitleAlign, ValidatedPanelConfig } from 
 
 /**
  * Parses a position value to a number.
+ *
+ * Supports numeric values, alignment keywords (left/top/center/right/bottom),
+ * and percentage strings like "50%".
  */
 function parsePositionToNumber(value: string | number | undefined): number {
 	if (value === undefined) return 0;
 	if (typeof value === 'number') return value;
-	if (value === 'left' || value === 'top') return 0;
-	return 0;
+
+	const normalized = value.toLowerCase();
+	if (normalized === 'left' || normalized === 'top') return 0;
+	if (normalized === 'center' || normalized === 'middle') return 50;
+	if (normalized === 'right' || normalized === 'bottom') return 100;
+
+	// Handle percentage strings like "50%"
+	if (normalized.endsWith('%')) {
+		const numeric = Number.parseFloat(normalized.slice(0, -1));
+		if (Number.isFinite(numeric)) return numeric;
+	}
+
+	// Try parsing as a plain number string
+	const numeric = Number(value);
+	return Number.isFinite(numeric) ? numeric : 0;
 }
 
 /**

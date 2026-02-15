@@ -70,6 +70,31 @@ export function defaultRatios(count: number): number[] {
 }
 
 /**
+ * Creates zero-sized viewports when no space is available for panes.
+ * Prevents overflow that would occur from forcing minimum 1-cell pane sizes.
+ */
+function createZeroSizeViewports(
+	containerX: number,
+	containerY: number,
+	containerWidth: number,
+	containerHeight: number,
+	direction: SplitDirection,
+	paneCount: number,
+): PaneViewport[] {
+	const viewports: PaneViewport[] = [];
+	const isHorizontal = direction === 'horizontal';
+	for (let i = 0; i < paneCount; i++) {
+		viewports.push({
+			x: containerX,
+			y: containerY,
+			width: isHorizontal ? 0 : containerWidth,
+			height: isHorizontal ? containerHeight : 0,
+		});
+	}
+	return viewports;
+}
+
+/**
  * Computes pane viewports from ratios, container bounds, and direction.
  */
 export function computeViewports(
@@ -91,6 +116,18 @@ export function computeViewports(
 			: containerHeight - totalDividerSpace;
 
 	const clampedSpace = Math.max(0, availableSpace);
+
+	if (clampedSpace === 0) {
+		return createZeroSizeViewports(
+			containerX,
+			containerY,
+			containerWidth,
+			containerHeight,
+			direction,
+			paneCount,
+		);
+	}
+
 	const viewports: PaneViewport[] = [];
 	let offset = 0;
 	let usedPaneSpace = 0;

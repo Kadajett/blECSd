@@ -19,6 +19,7 @@ import {
 	imageDitherStore,
 	imageGraphicsManagerStore,
 	imageRenderModeStore,
+	imageRenderVersionStore,
 	imageTypeStore,
 } from './state';
 
@@ -139,6 +140,9 @@ function createCacheKey(
  */
 export function clearImageCache(eid: Entity): void {
 	imageCellMapCacheStore.delete(eid);
+	// Increment render version so stale cache keys cannot match
+	const version = imageRenderVersionStore.get(eid) ?? 0;
+	imageRenderVersionStore.set(eid, version + 1);
 }
 
 /**
@@ -201,11 +205,10 @@ export function renderImageContent(world: World, eid: Entity): void {
 	const mode = imageRenderModeStore.get(eid) ?? 'color';
 	const dither = imageDitherStore.get(eid) ?? false;
 
-	// Create cache key
-	// Use a simple hash of bitmap data pointer (not content) for cache key
-	// This is a simplification - in a real scenario, you'd hash the data or use a unique ID
-	const bitmapDataPtr = bitmap.data.byteOffset;
-	const cacheKey = createCacheKey(bitmapDataPtr, mode, dither, bitmap.width, bitmap.height);
+	// Create cache key using render version for reliable invalidation.
+	// The version is incremented whenever bitmap or render settings change.
+	const renderVersion = imageRenderVersionStore.get(eid) ?? 0;
+	const cacheKey = createCacheKey(renderVersion, mode, dither, bitmap.width, bitmap.height);
 
 	// Check cache
 	let cache = imageCellMapCacheStore.get(eid);
