@@ -21,14 +21,23 @@ blECSd provides three layers of abstraction for building terminal UIs:
 **Components** are the foundation - they hold data in typed arrays for efficient processing.
 
 ```typescript
-import { Position, Dimensions, Renderable, Content } from 'blecsd';
+import { createWorld, addEntity, addComponent, Position, Dimensions, setContent } from 'blecsd';
+
+const world = createWorld();
+const eid = addEntity(world);
+
+// Add components first
+addComponent(world, eid, Position);
+addComponent(world, eid, Dimensions);
 
 // Components are just data containers
 Position.x[eid] = 10;
 Position.y[eid] = 5;
 Dimensions.width[eid] = 40;
 Dimensions.height[eid] = 10;
-Content.text[eid] = 'Hello, World!';
+
+// Content uses a helper function (strings are stored separately from typed arrays)
+setContent(world, eid, 'Hello, World!');
 ```
 
 **Characteristics**:
@@ -49,7 +58,9 @@ Content.text[eid] = 'Hello, World!';
 **Entity factories** create entities with pre-configured components. They return entity IDs.
 
 ```typescript
-import { createBoxEntity, createButtonEntity } from 'blecsd';
+import { createWorld, createBoxEntity, createButtonEntity, Position, setContent, BorderType } from 'blecsd';
+
+const world = createWorld();
 
 // Factory creates entity and sets up components
 const box = createBoxEntity(world, {
@@ -87,23 +98,26 @@ setContent(world, box, 'New text');
 **Widgets** are higher-level wrappers that add methods and manage internal state.
 
 ```typescript
-import { createList, createModal, createFileManager } from 'blecsd/widgets';
+import { createWorld, addEntity, createList, createModal, createFileManager } from 'blecsd';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 // Widget returns an object with methods
 const list = createList(world, entity, {
   items: ['Item 1', 'Item 2', 'Item 3'],
-  selectedIndex: 0,
 });
 
 // Widget has methods
 list.selectNext();
-list.selectPrevious();
+list.selectPrev();
 list.addItem('Item 4');
 list.removeItem(1);
-list.getSelectedValue(); // "Item 2"
+list.getSelectedItem()?.text; // "Item 2"
 
-// Widget manages internal state
-console.log(list.state);
+// Widget state is accessed via component functions
+import { getListState } from 'blecsd';
+const state = getListState(world, entity);
 ```
 
 **Characteristics**:
@@ -244,6 +258,7 @@ modal.show();
 
 ✅ **Prototyping**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Quick UI for testing ideas
 const chart = createLineChart(world, entity, {
@@ -434,7 +449,7 @@ All three approaches are valid - choose based on your requirements.
 Mix factories and components:
 
 ```typescript
-import { createWorld, createBoxEntity, createTextEntity, createButtonEntity } from 'blecsd';
+import { createWorld, createBoxEntity, createTextEntity, createButtonEntity, addEntity } from 'blecsd';
 
 const world = createWorld();
 
@@ -454,10 +469,10 @@ const title = createTextEntity(world, {
   text: 'Dashboard',
 });
 
-// Widgets can be added later if needed
-const chart = createLineChart(world, chartEntity, {
+// Other widgets can be added later if needed
+const button = createButtonEntity(world, {
   parent: dashboard,
-  data: [1, 2, 3, 4, 5],
+  label: 'Refresh',
 });
 ```
 
@@ -465,6 +480,7 @@ const chart = createLineChart(world, chartEntity, {
 
 Use components directly:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addEntity, addComponent, Position, CustomComponent } from 'blecsd';
 
@@ -495,18 +511,16 @@ function frameworkSystem(world: World): World {
 Use widgets for quick iteration:
 
 ```typescript
-import { createFileManager, createModal, createLineChart } from 'blecsd/widgets';
+import { createWorld, createFileManager, createModal } from 'blecsd';
+
+const world = createWorld();
 
 // Quick prototype with pre-built widgets
-const fileManager = createFileManager(world, entity, {
-  directory: '/home/user',
+const fileManager = createFileManager(world, {
+  cwd: '/home/user',
 });
 
-const chart = createLineChart(world, chartEntity, {
-  data: [1, 2, 3],
-});
-
-const modal = createModal(world, modalEntity, {
+const modal = createModal(world, {
   title: 'Info',
   message: 'File uploaded',
 });
