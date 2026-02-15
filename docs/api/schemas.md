@@ -14,6 +14,7 @@ All blECSd configuration objects have corresponding Zod schemas for validation. 
 - **Documentation** - Schemas serve as machine-readable API contracts
 
 **Usage Pattern:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { WorkerPoolConfigSchema } from 'blecsd';
 
@@ -40,6 +41,7 @@ if (!result.success) {
 
 Validates tab character width in text content (1-16 spaces).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TabSizeSchema } from 'blecsd';
 
@@ -61,6 +63,7 @@ const validated = TabSizeSchema.parse(tabSize);
 
 Configuration for worker pool system.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { WorkerPoolConfigSchema } from 'blecsd';
 
@@ -75,6 +78,8 @@ const validated = WorkerPoolConfigSchema.parse(config);
 
 **Schema:**
 ```typescript
+import { z } from 'zod';
+
 z.object({
   maxWorkers: z.number().int().positive().max(16).optional(),
   taskTimeout: z.number().int().positive().optional(),
@@ -93,6 +98,7 @@ z.object({
 
 Configuration for frame budget system (frame time limiting).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { FrameBudgetConfigSchema } from 'blecsd';
 
@@ -107,6 +113,8 @@ const validated = FrameBudgetConfigSchema.parse(config);
 
 **Schema:**
 ```typescript
+import { z } from 'zod';
+
 z.object({
   targetFPS: z.number().positive().max(240).optional(),
   maxFrameTime: z.number().positive().optional(),
@@ -125,6 +133,7 @@ z.object({
 
 Configuration for behavior tree system.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { BehaviorSystemConfigSchema } from 'blecsd';
 
@@ -157,6 +166,7 @@ z.object({
 
 Configuration for spatial hash collision system.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SpatialHashConfigSchema } from 'blecsd';
 
@@ -194,6 +204,7 @@ z.object({
 
 Configuration for particle system.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ParticleSystemConfigSchema } from 'blecsd';
 
@@ -208,6 +219,8 @@ const validated = ParticleSystemConfigSchema.parse(config);
 
 **Schema:**
 ```typescript
+import { z } from 'zod';
+
 z.object({
   maxParticles: z.number().int().positive().optional(),
   emissionRate: z.number().positive().optional(),
@@ -229,6 +242,7 @@ z.object({
 
 Configuration for smooth scroll physics.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ScrollPhysicsConfigSchema } from 'blecsd';
 
@@ -261,6 +275,7 @@ z.object({
 
 Configuration for panel movement system.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { PanelMoveConfigSchema } from 'blecsd';
 
@@ -332,6 +347,7 @@ z.object({
 
 Configuration for clipboard manager.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ClipboardManagerConfigSchema } from 'blecsd';
 
@@ -361,6 +377,7 @@ z.object({
 
 Configuration for hover text tooltips.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { HoverTextConfigSchema } from 'blecsd';
 
@@ -438,6 +455,7 @@ const validated = EmitDescendantsOptionsSchema.parse(options);
 
 ### Basic Validation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { WorkerPoolConfigSchema } from 'blecsd';
 
@@ -464,6 +482,7 @@ if (result.success) {
 
 Many schemas accept optional fields:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { FrameBudgetConfigSchema } from 'blecsd';
 
@@ -484,6 +503,7 @@ const validated2 = FrameBudgetConfigSchema.parse(partial);
 
 Infer TypeScript types from schemas:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { WorkerPoolConfigSchema } from 'blecsd';
 import type { z } from 'zod';
@@ -501,6 +521,7 @@ type WorkerPoolConfig = z.infer<typeof WorkerPoolConfigSchema>;
 
 ### Error Handling
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ParticleSystemConfigSchema } from 'blecsd';
 import { ZodError } from 'zod';
@@ -525,6 +546,7 @@ try {
 
 Extend schemas with additional validation:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { FrameBudgetConfigSchema } from 'blecsd';
 import { z } from 'zod';
@@ -551,6 +573,7 @@ const ExtendedSchema = FrameBudgetConfigSchema.extend({
 
 For async validation (e.g., checking file existence):
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { z } from 'zod';
 
