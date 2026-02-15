@@ -394,7 +394,7 @@ export function createButton(world: World, config: ButtonConfig = {}): ButtonWid
 
 		// Events
 		onClick(callback: () => void): ButtonWidget {
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 			return widget;
 		},
 
@@ -402,7 +402,7 @@ export function createButton(world: World, config: ButtonConfig = {}): ButtonWid
 		destroy(): void {
 			ButtonWidgetComponent.isButtonWidget[eid] = 0;
 			buttonWidgetStateMap.delete(eid);
-			clearButtonCallbacks(eid);
+			clearButtonCallbacks(world, eid);
 			removeEntity(world, eid);
 		},
 	};

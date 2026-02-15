@@ -8,7 +8,7 @@
  * @module core/entityData
  */
 
-import type { Entity } from './types';
+import type { Entity, World } from './types';
 
 /**
  * Type for stored data values.
@@ -29,6 +29,7 @@ const entityDataStore = new Map<Entity, EntityDataMap>();
 /**
  * Gets a value stored on an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @param key - The key to retrieve
  * @param defaultValue - Default value if key doesn't exist
@@ -39,16 +40,21 @@ const entityDataStore = new Map<Entity, EntityDataMap>();
  * import { getEntityData, setEntityData } from 'blecsd';
  *
  * // Store and retrieve data
- * setEntityData(playerEntity, 'score', 100);
- * const score = getEntityData(playerEntity, 'score', 0);
+ * setEntityData(world, playerEntity, 'score', 100);
+ * const score = getEntityData(world, playerEntity, 'score', 0);
  * console.log(score); // 100
  *
  * // With default value
- * const health = getEntityData(playerEntity, 'health', 100);
+ * const health = getEntityData(world, playerEntity, 'health', 100);
  * console.log(health); // 100 (default, since not set)
  * ```
  */
-export function getEntityData<T = DataValue>(eid: Entity, key: string, defaultValue?: T): T {
+export function getEntityData<T = DataValue>(
+	_world: World,
+	eid: Entity,
+	key: string,
+	defaultValue?: T,
+): T {
 	const data = entityDataStore.get(eid);
 	if (!data) {
 		return defaultValue as T;
@@ -63,6 +69,7 @@ export function getEntityData<T = DataValue>(eid: Entity, key: string, defaultVa
 /**
  * Sets a value on an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @param key - The key to set
  * @param value - The value to store
@@ -72,18 +79,18 @@ export function getEntityData<T = DataValue>(eid: Entity, key: string, defaultVa
  * import { setEntityData } from 'blecsd';
  *
  * // Store primitive values
- * setEntityData(entity, 'name', 'Player 1');
- * setEntityData(entity, 'level', 5);
- * setEntityData(entity, 'isActive', true);
+ * setEntityData(world, entity, 'name', 'Player 1');
+ * setEntityData(world, entity, 'level', 5);
+ * setEntityData(world, entity, 'isActive', true);
  *
  * // Store objects
- * setEntityData(entity, 'inventory', { gold: 100, items: [] });
+ * setEntityData(world, entity, 'inventory', { gold: 100, items: [] });
  *
  * // Store functions
- * setEntityData(entity, 'onDeath', () => console.log('Game over'));
+ * setEntityData(world, entity, 'onDeath', () => console.log('Game over'));
  * ```
  */
-export function setEntityData(eid: Entity, key: string, value: DataValue): void {
+export function setEntityData(_world: World, eid: Entity, key: string, value: DataValue): void {
 	let data = entityDataStore.get(eid);
 	if (!data) {
 		data = new Map();
@@ -95,6 +102,7 @@ export function setEntityData(eid: Entity, key: string, value: DataValue): void 
 /**
  * Checks if an entity has data stored for a specific key.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @param key - The key to check
  * @returns True if the key exists
@@ -103,13 +111,13 @@ export function setEntityData(eid: Entity, key: string, value: DataValue): void 
  * ```typescript
  * import { hasEntityData, setEntityData } from 'blecsd';
  *
- * if (!hasEntityData(entity, 'initialized')) {
+ * if (!hasEntityData(world, entity, 'initialized')) {
  *   initializeEntity(entity);
- *   setEntityData(entity, 'initialized', true);
+ *   setEntityData(world, entity, 'initialized', true);
  * }
  * ```
  */
-export function hasEntityData(eid: Entity, key: string): boolean {
+export function hasEntityData(_world: World, eid: Entity, key: string): boolean {
 	const data = entityDataStore.get(eid);
 	return data?.has(key) ?? false;
 }
@@ -117,6 +125,7 @@ export function hasEntityData(eid: Entity, key: string): boolean {
 /**
  * Deletes a specific key from an entity's data.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @param key - The key to delete
  * @returns True if the key existed and was deleted
@@ -125,12 +134,12 @@ export function hasEntityData(eid: Entity, key: string): boolean {
  * ```typescript
  * import { deleteEntityData, setEntityData } from 'blecsd';
  *
- * setEntityData(entity, 'temporaryBuff', { damage: 10 });
+ * setEntityData(world, entity, 'temporaryBuff', { damage: 10 });
  * // Later...
- * deleteEntityData(entity, 'temporaryBuff');
+ * deleteEntityData(world, entity, 'temporaryBuff');
  * ```
  */
-export function deleteEntityData(eid: Entity, key: string): boolean {
+export function deleteEntityData(_world: World, eid: Entity, key: string): boolean {
 	const data = entityDataStore.get(eid);
 	return data?.delete(key) ?? false;
 }
@@ -138,6 +147,7 @@ export function deleteEntityData(eid: Entity, key: string): boolean {
 /**
  * Gets all keys stored on an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns Array of keys
  *
@@ -145,14 +155,14 @@ export function deleteEntityData(eid: Entity, key: string): boolean {
  * ```typescript
  * import { getEntityDataKeys, setEntityData } from 'blecsd';
  *
- * setEntityData(entity, 'name', 'Player');
- * setEntityData(entity, 'score', 100);
+ * setEntityData(world, entity, 'name', 'Player');
+ * setEntityData(world, entity, 'score', 100);
  *
- * const keys = getEntityDataKeys(entity);
+ * const keys = getEntityDataKeys(world, entity);
  * console.log(keys); // ['name', 'score']
  * ```
  */
-export function getEntityDataKeys(eid: Entity): string[] {
+export function getEntityDataKeys(_world: World, eid: Entity): string[] {
 	const data = entityDataStore.get(eid);
 	return data ? Array.from(data.keys()) : [];
 }
@@ -160,6 +170,7 @@ export function getEntityDataKeys(eid: Entity): string[] {
 /**
  * Gets all data stored on an entity as a plain object.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns Object with all stored key-value pairs
  *
@@ -167,14 +178,14 @@ export function getEntityDataKeys(eid: Entity): string[] {
  * ```typescript
  * import { getAllEntityData, setEntityData } from 'blecsd';
  *
- * setEntityData(entity, 'name', 'Player');
- * setEntityData(entity, 'score', 100);
+ * setEntityData(world, entity, 'name', 'Player');
+ * setEntityData(world, entity, 'score', 100);
  *
- * const allData = getAllEntityData(entity);
+ * const allData = getAllEntityData(world, entity);
  * console.log(allData); // { name: 'Player', score: 100 }
  * ```
  */
-export function getAllEntityData(eid: Entity): Record<string, DataValue> {
+export function getAllEntityData(_world: World, eid: Entity): Record<string, DataValue> {
 	const data = entityDataStore.get(eid);
 	if (!data) {
 		return {};
@@ -189,6 +200,7 @@ export function getAllEntityData(eid: Entity): Record<string, DataValue> {
 /**
  * Sets multiple values on an entity at once.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @param data - Object with key-value pairs to set
  *
@@ -196,7 +208,7 @@ export function getAllEntityData(eid: Entity): Record<string, DataValue> {
  * ```typescript
  * import { setEntityDataBulk } from 'blecsd';
  *
- * setEntityDataBulk(entity, {
+ * setEntityDataBulk(world, entity, {
  *   name: 'Player 1',
  *   score: 0,
  *   lives: 3,
@@ -204,15 +216,20 @@ export function getAllEntityData(eid: Entity): Record<string, DataValue> {
  * });
  * ```
  */
-export function setEntityDataBulk(eid: Entity, data: Record<string, DataValue>): void {
+export function setEntityDataBulk(
+	_world: World,
+	eid: Entity,
+	data: Record<string, DataValue>,
+): void {
 	for (const [key, value] of Object.entries(data)) {
-		setEntityData(eid, key, value);
+		setEntityData(_world, eid, key, value);
 	}
 }
 
 /**
  * Clears all data stored on an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  *
  * @example
@@ -220,10 +237,10 @@ export function setEntityDataBulk(eid: Entity, data: Record<string, DataValue>):
  * import { clearEntityData } from 'blecsd';
  *
  * // Clear all custom data when entity is destroyed
- * clearEntityData(entity);
+ * clearEntityData(world, entity);
  * ```
  */
-export function clearEntityData(eid: Entity): void {
+export function clearEntityData(_world: World, eid: Entity): void {
 	entityDataStore.delete(eid);
 }
 
@@ -262,6 +279,7 @@ export function getEntityDataCount(): number {
 /**
  * Checks if an entity has any data stored.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns True if the entity has any stored data
  *
@@ -269,12 +287,12 @@ export function getEntityDataCount(): number {
  * ```typescript
  * import { hasAnyEntityData } from 'blecsd';
  *
- * if (hasAnyEntityData(entity)) {
+ * if (hasAnyEntityData(world, entity)) {
  *   console.log('Entity has custom data');
  * }
  * ```
  */
-export function hasAnyEntityData(eid: Entity): boolean {
+export function hasAnyEntityData(_world: World, eid: Entity): boolean {
 	const data = entityDataStore.get(eid);
 	return data !== undefined && data.size > 0;
 }
@@ -283,6 +301,7 @@ export function hasAnyEntityData(eid: Entity): boolean {
  * Updates a value on an entity using a transform function.
  * If the key doesn't exist, the transform receives undefined.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @param key - The key to update
  * @param transform - Function to transform the current value
@@ -291,23 +310,24 @@ export function hasAnyEntityData(eid: Entity): boolean {
  * ```typescript
  * import { updateEntityData, setEntityData } from 'blecsd';
  *
- * setEntityData(entity, 'score', 100);
+ * setEntityData(world, entity, 'score', 100);
  *
  * // Increment score
- * updateEntityData(entity, 'score', (current) => (current ?? 0) + 10);
+ * updateEntityData(world, entity, 'score', (current) => (current ?? 0) + 10);
  *
  * // Toggle boolean
- * updateEntityData(entity, 'visible', (current) => !current);
+ * updateEntityData(world, entity, 'visible', (current) => !current);
  *
  * // Append to array
- * updateEntityData(entity, 'items', (current) => [...(current ?? []), newItem]);
+ * updateEntityData(world, entity, 'items', (current) => [...(current ?? []), newItem]);
  * ```
  */
 export function updateEntityData<T = DataValue>(
+	_world: World,
 	eid: Entity,
 	key: string,
 	transform: (current: T | undefined) => T,
 ): void {
-	const current = getEntityData<T>(eid, key);
-	setEntityData(eid, key, transform(current));
+	const current = getEntityData<T>(_world, eid, key);
+	setEntityData(_world, eid, key, transform(current));
 }

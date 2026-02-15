@@ -130,18 +130,18 @@ export const movementSystem: System = (world: World): World => {
 	for (const eid of entities) {
 		// Apply acceleration if present
 		if (hasAcceleration(world, eid)) {
-			applyAccelerationToEntity(eid, dt);
+			applyAccelerationToEntity(world, eid, dt);
 		}
 
 		// Apply friction
-		applyFrictionToEntity(eid, dt);
+		applyFrictionToEntity(world, eid, dt);
 
 		// Clamp to max speed
-		clampSpeedForEntity(eid);
+		clampSpeedForEntity(world, eid);
 
 		// Apply velocity to position
 		if (hasComponent(world, eid, Position)) {
-			applyVelocityToEntity(eid, dt);
+			applyVelocityToEntity(world, eid, dt);
 		}
 	}
 
@@ -222,18 +222,18 @@ export function updateMovements(
 
 		// Apply acceleration if present
 		if (hasAcceleration(world, eid)) {
-			applyAccelerationToEntity(eid, deltaTime);
+			applyAccelerationToEntity(world, eid, deltaTime);
 		}
 
 		// Apply friction
-		applyFrictionToEntity(eid, deltaTime);
+		applyFrictionToEntity(world, eid, deltaTime);
 
 		// Clamp to max speed
-		clampSpeedForEntity(eid);
+		clampSpeedForEntity(world, eid);
 
 		// Apply velocity to position
 		if (hasComponent(world, eid, Position)) {
-			applyVelocityToEntity(eid, deltaTime);
+			applyVelocityToEntity(world, eid, deltaTime);
 		}
 	}
 }

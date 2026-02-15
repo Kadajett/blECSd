@@ -309,7 +309,7 @@ describe('styleInheritance', () => {
 
 			computeInheritedStyle(world, entity);
 
-			expect(hasValidStyleCache(entity)).toBe(true);
+			expect(hasValidStyleCache(world, entity)).toBe(true);
 		});
 
 		it('uses cached style on subsequent calls', () => {
@@ -350,9 +350,9 @@ describe('styleInheritance', () => {
 			addComponent(world, entity, Renderable);
 
 			computeInheritedStyle(world, entity);
-			invalidateStyleCache(entity);
+			invalidateStyleCache(world, entity);
 
-			expect(hasValidStyleCache(entity)).toBe(false);
+			expect(hasValidStyleCache(world, entity)).toBe(false);
 		});
 
 		it('invalidateAllStyleCaches increments generation', () => {
@@ -374,8 +374,8 @@ describe('styleInheritance', () => {
 			computeInheritedStyle(world, entity2);
 			invalidateAllStyleCaches();
 
-			expect(hasValidStyleCache(entity1)).toBe(false);
-			expect(hasValidStyleCache(entity2)).toBe(false);
+			expect(hasValidStyleCache(world, entity1)).toBe(false);
+			expect(hasValidStyleCache(world, entity2)).toBe(false);
 		});
 
 		it('cache recomputes after invalidation', () => {
@@ -385,7 +385,7 @@ describe('styleInheritance', () => {
 			Renderable.fg[entity] = COLORS_RGBA.RED;
 
 			computeInheritedStyle(world, entity);
-			invalidateStyleCache(entity);
+			invalidateStyleCache(world, entity);
 			Renderable.fg[entity] = COLORS_RGBA.GREEN;
 			const style = computeInheritedStyle(world, entity);
 
@@ -508,8 +508,8 @@ describe('styleInheritance', () => {
 
 			precomputeStyles(world, [entity1, entity2]);
 
-			expect(hasValidStyleCache(entity1)).toBe(true);
-			expect(hasValidStyleCache(entity2)).toBe(true);
+			expect(hasValidStyleCache(world, entity1)).toBe(true);
+			expect(hasValidStyleCache(world, entity2)).toBe(true);
 		});
 	});
 

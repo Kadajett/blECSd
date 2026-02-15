@@ -444,6 +444,7 @@ export function getTimerProgress(world: World, eid: Entity): number {
 /**
  * Registers a callback invoked each time the timer fires.
  *
+ * @param world - The ECS world
  * @param eid - The entity with the timer
  * @param callback - Function to call when timer fires
  *
@@ -451,12 +452,12 @@ export function getTimerProgress(world: World, eid: Entity): number {
  * ```typescript
  * import { onTimerFire } from 'blecsd';
  *
- * onTimerFire(entity, (world, eid) => {
+ * onTimerFire(world, entity, (world, eid) => {
  *   console.log('Timer fired!');
  * });
  * ```
  */
-export function onTimerFire(eid: Entity, callback: TimerCallback): void {
+export function onTimerFire(_world: World, eid: Entity, callback: TimerCallback): void {
 	const existing = callbackStore.get(eid as number) ?? {};
 	existing.onFire = callback;
 	callbackStore.set(eid as number, existing);
@@ -465,6 +466,7 @@ export function onTimerFire(eid: Entity, callback: TimerCallback): void {
 /**
  * Registers a callback invoked when the timer completes all repeats.
  *
+ * @param world - The ECS world
  * @param eid - The entity with the timer
  * @param callback - Function to call when timer completes
  *
@@ -472,12 +474,12 @@ export function onTimerFire(eid: Entity, callback: TimerCallback): void {
  * ```typescript
  * import { onTimerComplete } from 'blecsd';
  *
- * onTimerComplete(entity, (world, eid) => {
+ * onTimerComplete(world, entity, (world, eid) => {
  *   console.log('Timer finished!');
  * });
  * ```
  */
-export function onTimerComplete(eid: Entity, callback: TimerCompleteCallback): void {
+export function onTimerComplete(_world: World, eid: Entity, callback: TimerCompleteCallback): void {
 	const existing = callbackStore.get(eid as number) ?? {};
 	existing.onComplete = callback;
 	callbackStore.set(eid as number, existing);
@@ -486,16 +488,17 @@ export function onTimerComplete(eid: Entity, callback: TimerCompleteCallback): v
 /**
  * Clears all callbacks for an entity's timer.
  *
+ * @param world - The ECS world
  * @param eid - The entity to clear callbacks for
  *
  * @example
  * ```typescript
  * import { clearTimerCallbacks } from 'blecsd';
  *
- * clearTimerCallbacks(entity);
+ * clearTimerCallbacks(world, entity);
  * ```
  */
-export function clearTimerCallbacks(eid: Entity): void {
+export function clearTimerCallbacks(_world: World, eid: Entity): void {
 	callbackStore.delete(eid as number);
 }
 

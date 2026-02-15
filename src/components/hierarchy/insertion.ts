@@ -53,7 +53,7 @@ export function prepend(world: World, parent: Entity, child: Entity): Entity {
 
 	// Update depth
 	const parentDepth = Hierarchy.depth[parent] as number;
-	updateDepths(child, parentDepth + 1);
+	updateDepths(world, child, parentDepth + 1);
 
 	return parent;
 }
@@ -115,7 +115,7 @@ export function insertBefore(world: World, child: Entity, sibling: Entity): Enti
 
 	// Update depth
 	const parentDepth = Hierarchy.depth[parent] as number;
-	updateDepths(child, parentDepth + 1);
+	updateDepths(world, child, parentDepth + 1);
 
 	return child;
 }
@@ -174,7 +174,7 @@ export function insertAfter(world: World, child: Entity, sibling: Entity): Entit
 
 	// Update depth
 	const parentDepth = Hierarchy.depth[parent] as number;
-	updateDepths(child, parentDepth + 1);
+	updateDepths(world, child, parentDepth + 1);
 
 	return child;
 }

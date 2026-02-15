@@ -48,7 +48,7 @@ export function setParent(world: World, child: Entity, parent: Entity): Entity {
 	} else {
 		// Orphaned, reset depth
 		Hierarchy.parent[child] = NULL_ENTITY;
-		updateDepths(child, 0);
+		updateDepths(world, child, 0);
 	}
 
 	return child;

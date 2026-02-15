@@ -174,9 +174,10 @@ export function getScrollState(
 /**
  * Removes scroll state for an entity.
  *
+ * @param _world - The ECS world
  * @param eid - Entity ID
  */
-export function removeScrollState(eid: Entity): void {
+export function removeScrollState(_world: World, eid: Entity): void {
 	scrollStates.delete(eid);
 }
 
@@ -248,7 +249,12 @@ export function applyScrollImpulse(
  * smoothScrollTo(entity, null, maxScroll);
  * ```
  */
-export function smoothScrollTo(eid: Entity, targetX: number | null, targetY: number | null): void {
+export function smoothScrollTo(
+	_world: World,
+	eid: Entity,
+	targetX: number | null,
+	targetY: number | null,
+): void {
 	const state = scrollStates.get(eid);
 	if (!state) return;
 
@@ -260,11 +266,12 @@ export function smoothScrollTo(eid: Entity, targetX: number | null, targetY: num
 /**
  * Sets scroll position immediately without animation.
  *
+ * @param _world - The ECS world
  * @param eid - Entity to scroll
  * @param x - X scroll position
  * @param y - Y scroll position
  */
-export function setScrollImmediate(eid: Entity, x: number, y: number): void {
+export function setScrollImmediate(_world: World, eid: Entity, x: number, y: number): void {
 	const state = scrollStates.get(eid);
 	if (!state) return;
 
@@ -280,9 +287,10 @@ export function setScrollImmediate(eid: Entity, x: number, y: number): void {
 /**
  * Marks the start of user scrolling (e.g., mouse drag).
  *
+ * @param _world - The ECS world
  * @param eid - Entity being scrolled
  */
-export function startUserScroll(eid: Entity): void {
+export function startUserScroll(_world: World, eid: Entity): void {
 	const state = scrollStates.get(eid);
 	if (!state) return;
 
@@ -294,11 +302,12 @@ export function startUserScroll(eid: Entity): void {
 /**
  * Marks the end of user scrolling, enabling momentum.
  *
+ * @param _world - The ECS world
  * @param eid - Entity being scrolled
  * @param velocityX - Release velocity X
  * @param velocityY - Release velocity Y
  */
-export function endUserScroll(eid: Entity, velocityX: number, velocityY: number): void {
+export function endUserScroll(_world: World, eid: Entity, velocityX: number, velocityY: number): void {
 	const state = scrollStates.get(eid);
 	if (!state) return;
 
@@ -460,10 +469,11 @@ export function updateScrollPhysics(
 /**
  * Checks if an entity has an active scroll animation.
  *
+ * @param _world - The ECS world
  * @param eid - Entity to check
  * @returns True if the entity is currently scrolling
  */
-export function isScrolling(eid: Entity): boolean {
+export function isScrolling(_world: World, eid: Entity): boolean {
 	const state = scrollStates.get(eid);
 	return state?.isAnimating ?? false;
 }
@@ -471,10 +481,11 @@ export function isScrolling(eid: Entity): boolean {
 /**
  * Gets the current scroll position of an entity.
  *
+ * @param _world - The ECS world
  * @param eid - Entity to query
  * @returns Scroll position or null if no scroll state
  */
-export function getScrollPosition(eid: Entity): { x: number; y: number } | null {
+export function getScrollPosition(_world: World, eid: Entity): { x: number; y: number } | null {
 	const state = scrollStates.get(eid);
 	if (!state) return null;
 	return { x: state.scrollX, y: state.scrollY };

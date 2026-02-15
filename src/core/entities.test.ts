@@ -456,7 +456,7 @@ describe('Entity Factories', () => {
 		it('creates a checkbox with default display characters', () => {
 			const eid = createCheckboxEntity(world);
 
-			const display = getCheckboxDisplay(eid);
+			const display = getCheckboxDisplay(world, eid);
 			expect(display.checkedChar).toBe('☑');
 			expect(display.uncheckedChar).toBe('☐');
 		});
@@ -467,7 +467,7 @@ describe('Entity Factories', () => {
 				uncheckedChar: '[ ]',
 			});
 
-			const display = getCheckboxDisplay(eid);
+			const display = getCheckboxDisplay(world, eid);
 			expect(display.checkedChar).toBe('[x]');
 			expect(display.uncheckedChar).toBe('[ ]');
 		});
@@ -1247,25 +1247,25 @@ describe('Entity Factories', () => {
 		it('creates a form with keys enabled by default', () => {
 			const eid = createFormEntity(world);
 
-			expect(isFormKeysEnabled(eid)).toBe(true);
+			expect(isFormKeysEnabled(world, eid)).toBe(true);
 		});
 
 		it('creates a form with submit on enter enabled by default', () => {
 			const eid = createFormEntity(world);
 
-			expect(isFormSubmitOnEnter(eid)).toBe(true);
+			expect(isFormSubmitOnEnter(world, eid)).toBe(true);
 		});
 
 		it('creates a form with keys disabled', () => {
 			const eid = createFormEntity(world, { keys: false });
 
-			expect(isFormKeysEnabled(eid)).toBe(false);
+			expect(isFormKeysEnabled(world, eid)).toBe(false);
 		});
 
 		it('creates a form with submit on enter disabled', () => {
 			const eid = createFormEntity(world, { submitOnEnter: false });
 
-			expect(isFormSubmitOnEnter(eid)).toBe(false);
+			expect(isFormSubmitOnEnter(world, eid)).toBe(false);
 		});
 
 		it('creates a form with position', () => {

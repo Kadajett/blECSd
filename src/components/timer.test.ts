@@ -199,7 +199,7 @@ describe('Timer component', () => {
 			const eid = addEntity(world);
 			setTimer(world, eid, { duration: 1 });
 			const callback = vi.fn();
-			onTimerFire(eid, callback);
+			onTimerFire(world, eid, callback);
 
 			removeTimer(world, eid);
 
@@ -291,7 +291,7 @@ describe('Timer component', () => {
 			setTimer(world, eid, { duration: 1 });
 
 			const callback = vi.fn();
-			onTimerFire(eid, callback);
+			onTimerFire(world, eid, callback);
 
 			const fired = updateTimers(world, 1.5);
 
@@ -327,7 +327,7 @@ describe('Timer component', () => {
 			setTimer(world, eid, { duration: 1, repeat: 2 });
 
 			const callback = vi.fn();
-			onTimerFire(eid, callback);
+			onTimerFire(world, eid, callback);
 
 			// First fire
 			updateTimers(world, 1.5);
@@ -351,7 +351,7 @@ describe('Timer component', () => {
 			setTimer(world, eid, { duration: 0.5, repeat: TIMER_INFINITE });
 
 			const callback = vi.fn();
-			onTimerFire(eid, callback);
+			onTimerFire(world, eid, callback);
 
 			for (let i = 0; i < 10; i++) {
 				updateTimers(world, 1);
@@ -366,7 +366,7 @@ describe('Timer component', () => {
 			setTimer(world, eid, { duration: 1 });
 
 			const onComplete = vi.fn();
-			onTimerComplete(eid, onComplete);
+			onTimerComplete(world, eid, onComplete);
 
 			updateTimers(world, 2);
 
@@ -390,8 +390,8 @@ describe('Timer component', () => {
 
 			const cb1 = vi.fn();
 			const cb2 = vi.fn();
-			onTimerFire(eid1, cb1);
-			onTimerFire(eid2, cb2);
+			onTimerFire(world, eid1, cb1);
+			onTimerFire(world, eid2, cb2);
 
 			updateTimers(world, 1.5);
 			expect(cb1).toHaveBeenCalledTimes(1);
@@ -412,8 +412,8 @@ describe('Timer component', () => {
 			setTimer(world, eid, { duration: 1 });
 
 			const callback = vi.fn();
-			onTimerFire(eid, callback);
-			clearTimerCallbacks(eid);
+			onTimerFire(world, eid, callback);
+			clearTimerCallbacks(world, eid);
 
 			updateTimers(world, 2);
 			expect(callback).not.toHaveBeenCalled();

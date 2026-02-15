@@ -528,17 +528,26 @@ export function removeEmitter(world: World, eid: Entity): Entity {
 /**
  * Sets the visual appearance config for particles spawned by this emitter.
  *
+ * @param world - The ECS world
  * @param eid - The emitter entity ID
  * @param appearance - Appearance configuration
  */
-export function setEmitterAppearance(eid: Entity, appearance: EmitterAppearance): void {
+export function setEmitterAppearance(
+	_world: World,
+	eid: Entity,
+	appearance: EmitterAppearance,
+): void {
 	emitterAppearances.set(eid, appearance);
 }
 
 /**
  * Gets the appearance config for an emitter.
+ *
+ * @param world - The ECS world
+ * @param eid - The emitter entity ID
+ * @returns Appearance configuration or undefined
  */
-export function getEmitterAppearance(eid: Entity): EmitterAppearance | undefined {
+export function getEmitterAppearance(_world: World, eid: Entity): EmitterAppearance | undefined {
 	return emitterAppearances.get(eid);
 }
 
@@ -548,6 +557,7 @@ export function getEmitterAppearance(eid: Entity): EmitterAppearance | undefined
  * Iterates the packed store's dense data array using a linear for-loop
  * and collects particles matching the given emitter.
  *
+ * @param world - The ECS world
  * @param eid - The emitter entity ID
  * @returns ReadonlySet of particle entity IDs belonging to this emitter
  *
@@ -555,13 +565,13 @@ export function getEmitterAppearance(eid: Entity): EmitterAppearance | undefined
  * ```typescript
  * import { getEmitterParticles } from 'blecsd';
  *
- * const particles = getEmitterParticles(emitterEntity);
+ * const particles = getEmitterParticles(world, emitterEntity);
  * for (const pid of particles) {
  *   console.log('tracked particle:', pid);
  * }
  * ```
  */
-export function getEmitterParticles(eid: Entity): ReadonlySet<number> {
+export function getEmitterParticles(_world: World, eid: Entity): ReadonlySet<number> {
 	const result = new Set<number>();
 	const data = getStoreData(particleTrackingStore);
 	for (let i = 0; i < particleTrackingStore.size; i++) {

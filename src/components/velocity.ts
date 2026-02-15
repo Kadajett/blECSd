@@ -431,10 +431,11 @@ export function removeAcceleration(world: World, eid: Entity): Entity {
 /**
  * Applies acceleration to velocity for a single entity.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @param deltaTime - Time elapsed in seconds
  */
-export function applyAccelerationToEntity(eid: Entity, deltaTime: number): void {
+export function applyAccelerationToEntity(_world: World, eid: Entity, deltaTime: number): void {
 	if (Acceleration.x[eid] === undefined || Velocity.x[eid] === undefined) {
 		return;
 	}
@@ -445,10 +446,11 @@ export function applyAccelerationToEntity(eid: Entity, deltaTime: number): void 
 /**
  * Applies friction to velocity for a single entity.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @param deltaTime - Time elapsed in seconds
  */
-export function applyFrictionToEntity(eid: Entity, deltaTime: number): void {
+export function applyFrictionToEntity(_world: World, eid: Entity, deltaTime: number): void {
 	const friction = Velocity.friction[eid] as number;
 	if (friction <= 0) {
 		return;
@@ -469,9 +471,10 @@ export function applyFrictionToEntity(eid: Entity, deltaTime: number): void {
 /**
  * Clamps velocity to max speed for a single entity.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  */
-export function clampSpeedForEntity(eid: Entity): void {
+export function clampSpeedForEntity(_world: World, eid: Entity): void {
 	const maxSpeed = Velocity.maxSpeed[eid] as number;
 	if (maxSpeed <= 0) {
 		return;
@@ -491,10 +494,11 @@ export function clampSpeedForEntity(eid: Entity): void {
 /**
  * Applies velocity to position for a single entity.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @param deltaTime - Time elapsed in seconds
  */
-export function applyVelocityToEntity(eid: Entity, deltaTime: number): void {
+export function applyVelocityToEntity(_world: World, eid: Entity, deltaTime: number): void {
 	if (Position.x[eid] === undefined || Velocity.x[eid] === undefined) {
 		return;
 	}
@@ -525,17 +529,17 @@ export function updateEntityMovement(world: World, eid: Entity, deltaTime: numbe
 
 	// Apply acceleration if present
 	if (hasAcceleration(world, eid)) {
-		applyAccelerationToEntity(eid, deltaTime);
+		applyAccelerationToEntity(world, eid, deltaTime);
 	}
 
 	// Apply friction
-	applyFrictionToEntity(eid, deltaTime);
+	applyFrictionToEntity(world, eid, deltaTime);
 
 	// Clamp to max speed
-	clampSpeedForEntity(eid);
+	clampSpeedForEntity(world, eid);
 
 	// Apply velocity to position
 	if (hasPosition(world, eid)) {
-		applyVelocityToEntity(eid, deltaTime);
+		applyVelocityToEntity(world, eid, deltaTime);
 	}
 }

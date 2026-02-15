@@ -19,10 +19,11 @@ import type { ListItem, ListScrollInfo } from './types';
 /**
  * Gets the first visible item index.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns First visible index
  */
-export function getFirstVisible(eid: Entity): number {
+export function getFirstVisible(_world: World, eid: Entity): number {
 	return listStore.firstVisible[eid] ?? 0;
 }
 
@@ -78,10 +79,11 @@ export function setFirstVisible(world: World, eid: Entity, index: number): void 
 /**
  * Gets the number of visible items.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns Number of visible items
  */
-export function getVisibleCount(eid: Entity): number {
+export function getVisibleCount(_world: World, eid: Entity): number {
 	return listStore.visibleCount[eid] ?? 0;
 }
 
@@ -164,10 +166,14 @@ export function scrollPage(world: World, eid: Entity, direction: 1 | -1): boolea
 /**
  * Gets the visible items for rendering.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns Array of visible items with their indices
  */
-export function getVisibleItems(eid: Entity): Array<{ index: number; item: ListItem }> {
+export function getVisibleItems(
+	_world: World,
+	eid: Entity,
+): Array<{ index: number; item: ListItem }> {
 	const items = itemsStore.get(eid) ?? [];
 	const firstVisible = listStore.firstVisible[eid] ?? 0;
 	const visibleCount = listStore.visibleCount[eid] ?? items.length;
@@ -199,10 +205,11 @@ export function setTotalCount(world: World, eid: Entity, count: number): void {
 /**
  * Gets the total item count (may be larger than loaded items).
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns Total item count
  */
-export function getTotalCount(eid: Entity): number {
+export function getTotalCount(_world: World, eid: Entity): number {
 	const total = listStore.totalCount[eid] ?? 0;
 	// If totalCount is 0 (not explicitly set), fall back to itemCount
 	if (total === 0) {
@@ -241,7 +248,7 @@ export function getLazyLoadCallback(
  *
  * @param eid - The entity ID
  */
-export function clearLazyLoadCallback(eid: Entity): void {
+export function clearLazyLoadCallback(_world: World, eid: Entity): void {
 	lazyLoadCallbacks.delete(eid);
 }
 
@@ -285,7 +292,7 @@ export function setListLoading(world: World, eid: Entity, loading: boolean): voi
  * @param eid - The entity ID
  * @returns true if loading
  */
-export function isListLoading(eid: Entity): boolean {
+export function isListLoading(_world: World, eid: Entity): boolean {
 	return listStore.isLoading[eid] === 1;
 }
 
@@ -295,7 +302,7 @@ export function isListLoading(eid: Entity): boolean {
  * @param eid - The entity ID
  * @param text - Placeholder text to show while loading
  */
-export function setLoadingPlaceholder(eid: Entity, text: string): void {
+export function setLoadingPlaceholder(_world: World, eid: Entity, text: string): void {
 	loadingPlaceholderStore.set(eid, text);
 }
 
@@ -305,7 +312,7 @@ export function setLoadingPlaceholder(eid: Entity, text: string): void {
  * @param eid - The entity ID
  * @returns Loading placeholder text
  */
-export function getLoadingPlaceholder(eid: Entity): string {
+export function getLoadingPlaceholder(_world: World, eid: Entity): string {
 	return loadingPlaceholderStore.get(eid) ?? DEFAULT_LOADING_PLACEHOLDER;
 }
 
@@ -370,7 +377,7 @@ export async function loadItems(
  * @param eid - The entity ID
  * @returns Object with needsLoad flag and range to load
  */
-export function checkNeedsLoad(eid: Entity): {
+export function checkNeedsLoad(_world: World, eid: Entity): {
 	needsLoad: boolean;
 	startIndex: number;
 	count: number;
@@ -405,7 +412,7 @@ export function checkNeedsLoad(eid: Entity): {
  * @param threshold - Items from end to trigger nearEnd (default: visibleCount)
  * @returns Scroll information
  */
-export function getScrollInfo(eid: Entity, threshold?: number): ListScrollInfo {
+export function getScrollInfo(_world: World, eid: Entity, threshold?: number): ListScrollInfo {
 	const firstVisible = listStore.firstVisible[eid] ?? 0;
 	const visibleCount = listStore.visibleCount[eid] ?? 0;
 	const loadedCount = listStore.itemCount[eid] ?? 0;

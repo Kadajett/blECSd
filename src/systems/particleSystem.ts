@@ -155,7 +155,7 @@ export function burstParticles(
 		return [];
 	}
 
-	const appearance = getEmitterAppearance(emitterId);
+	const appearance = getEmitterAppearance(world, emitterId);
 	if (!appearance) {
 		return [];
 	}
@@ -283,7 +283,7 @@ function processEmitterSpawning(
 	currentCount: number,
 	archetypeName?: string,
 ): number {
-	const appearance = getEmitterAppearance(emitterId);
+	const appearance = getEmitterAppearance(world, emitterId);
 	if (!appearance) return currentCount;
 
 	const rate = ParticleEmitter.rate[emitterId] as number;

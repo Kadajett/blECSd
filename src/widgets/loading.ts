@@ -287,23 +287,23 @@ function createLoadingWidgetInterface(world: World, eid: Entity): LoadingWidget 
 		},
 
 		setSpinnerChars(chars: readonly string[]) {
-			setSpinnerFrames(eid, chars);
+			setSpinnerFrames(world, eid, chars);
 			updateLoadingContent(world, eid);
 			markDirty(world, eid);
 			return widget;
 		},
 
 		setInterval(ms: number) {
-			setSpinnerInterval(eid, ms);
+			setSpinnerInterval(world, eid, ms);
 			return widget;
 		},
 
 		getSpinnerChar() {
-			return getSpinnerChar(eid);
+			return getSpinnerChar(world, eid);
 		},
 
 		reset() {
-			resetSpinner(eid);
+			resetSpinner(world, eid);
 			updateLoadingContent(world, eid);
 			markDirty(world, eid);
 			return widget;
@@ -325,7 +325,7 @@ function createLoadingWidgetInterface(world: World, eid: Entity): LoadingWidget 
  */
 function updateLoadingContent(world: World, eid: Entity): void {
 	const message = loadingMessageStore.get(eid) ?? '';
-	const spinner = getSpinnerChar(eid);
+	const spinner = getSpinnerChar(world, eid);
 	const content = `${spinner} ${message}`;
 	setContent(world, eid, content);
 }
@@ -421,7 +421,7 @@ export function isLoadingWidget(world: World, eid: Entity): boolean {
 export function updateLoadingAnimation(world: World, eid: Entity, deltaMs: number): boolean {
 	if (!isLoadingWidget(world, eid)) return false;
 
-	const frameChanged = updateSpinner(eid, deltaMs);
+	const frameChanged = updateSpinner(world, eid, deltaMs);
 	if (frameChanged) {
 		updateLoadingContent(world, eid);
 		markDirty(world, eid);

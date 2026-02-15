@@ -330,7 +330,7 @@ describe('velocity', () => {
 			setVelocity(world, eid, 0, 0);
 			setAcceleration(world, eid, 10, 20);
 
-			applyAccelerationToEntity(eid, 0.1);
+			applyAccelerationToEntity(world, eid, 0.1);
 
 			expect(Velocity.x[eid]).toBeCloseTo(1); // 10 * 0.1
 			expect(Velocity.y[eid]).toBeCloseTo(2); // 20 * 0.1
@@ -341,8 +341,8 @@ describe('velocity', () => {
 			setVelocity(world, eid, 5, 5);
 			setAcceleration(world, eid, 10, 10);
 
-			applyAccelerationToEntity(eid, 0.1);
-			applyAccelerationToEntity(eid, 0.1);
+			applyAccelerationToEntity(world, eid, 0.1);
+			applyAccelerationToEntity(world, eid, 0.1);
 
 			expect(Velocity.x[eid]).toBeCloseTo(7); // 5 + 1 + 1
 			expect(Velocity.y[eid]).toBeCloseTo(7);
@@ -354,7 +354,7 @@ describe('velocity', () => {
 			const eid = addEntity(world);
 			setVelocityOptions(world, eid, { x: 10, y: 10, friction: 0.5 });
 
-			applyFrictionToEntity(eid, 0.1);
+			applyFrictionToEntity(world, eid, 0.1);
 
 			expect(Velocity.x[eid]).toBeLessThan(10);
 			expect(Velocity.y[eid]).toBeLessThan(10);
@@ -364,7 +364,7 @@ describe('velocity', () => {
 			const eid = addEntity(world);
 			setVelocityOptions(world, eid, { x: 10, y: 10, friction: 0 });
 
-			applyFrictionToEntity(eid, 0.1);
+			applyFrictionToEntity(world, eid, 0.1);
 
 			expect(Velocity.x[eid]).toBe(10);
 			expect(Velocity.y[eid]).toBe(10);
@@ -375,7 +375,7 @@ describe('velocity', () => {
 			setVelocityOptions(world, eid, { x: 10, y: 10, friction: 1 });
 
 			// With friction=1, should stop after 1 second
-			applyFrictionToEntity(eid, 1);
+			applyFrictionToEntity(world, eid, 1);
 
 			expect(Velocity.x[eid]).toBe(0);
 			expect(Velocity.y[eid]).toBe(0);
@@ -387,7 +387,7 @@ describe('velocity', () => {
 			const eid = addEntity(world);
 			setVelocityOptions(world, eid, { x: 30, y: 40, maxSpeed: 25 });
 
-			clampSpeedForEntity(eid);
+			clampSpeedForEntity(world, eid);
 
 			const speed = getSpeed(world, eid);
 			expect(speed).toBeCloseTo(25);
@@ -397,7 +397,7 @@ describe('velocity', () => {
 			const eid = addEntity(world);
 			setVelocityOptions(world, eid, { x: 30, y: 40, maxSpeed: 25 });
 
-			clampSpeedForEntity(eid);
+			clampSpeedForEntity(world, eid);
 
 			// Should maintain 3:4 ratio
 			const ratio = (Velocity.x[eid] as number) / (Velocity.y[eid] as number);
@@ -408,7 +408,7 @@ describe('velocity', () => {
 			const eid = addEntity(world);
 			setVelocityOptions(world, eid, { x: 3, y: 4, maxSpeed: 100 });
 
-			clampSpeedForEntity(eid);
+			clampSpeedForEntity(world, eid);
 
 			expect(Velocity.x[eid]).toBe(3);
 			expect(Velocity.y[eid]).toBe(4);
@@ -418,7 +418,7 @@ describe('velocity', () => {
 			const eid = addEntity(world);
 			setVelocityOptions(world, eid, { x: 1000, y: 1000, maxSpeed: 0 });
 
-			clampSpeedForEntity(eid);
+			clampSpeedForEntity(world, eid);
 
 			expect(Velocity.x[eid]).toBe(1000);
 			expect(Velocity.y[eid]).toBe(1000);
@@ -431,7 +431,7 @@ describe('velocity', () => {
 			setPosition(world, eid, 10, 10);
 			setVelocity(world, eid, 5, -5);
 
-			applyVelocityToEntity(eid, 0.1);
+			applyVelocityToEntity(world, eid, 0.1);
 
 			expect(Position.x[eid]).toBeCloseTo(10.5); // 10 + 5*0.1
 			expect(Position.y[eid]).toBeCloseTo(9.5); // 10 + (-5)*0.1

@@ -13,10 +13,11 @@ import { itemsStore, listStore, searchChangeCallbacks, searchQueryStore } from '
 /**
  * Checks if search mode is enabled for the list.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns true if search is enabled
  */
-export function isListSearchEnabled(eid: Entity): boolean {
+export function isListSearchEnabled(_world: World, eid: Entity): boolean {
 	return listStore.searchEnabled[eid] === 1;
 }
 
@@ -54,7 +55,7 @@ export function startListSearch(world: World, eid: Entity): boolean {
 	if (!isList(world, eid)) {
 		return false;
 	}
-	if (!isListSearchEnabled(eid)) {
+	if (!isListSearchEnabled(world, eid)) {
 		return false;
 	}
 
@@ -87,10 +88,11 @@ export function endListSearch(world: World, eid: Entity): boolean {
 /**
  * Gets the current search query.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns The current search query or empty string
  */
-export function getListSearchQuery(eid: Entity): string {
+export function getListSearchQuery(_world: World, eid: Entity): string {
 	return searchQueryStore.get(eid) ?? '';
 }
 
@@ -225,12 +227,16 @@ export function findNextMatch(world: World, eid: Entity): boolean {
  *
  * @example
  * ```typescript
- * const unsubscribe = onListSearchChange(eid, (query) => {
+ * const unsubscribe = onListSearchChange(world, eid, (query) => {
  *   console.log(`Search: ${query}`);
  * });
  * ```
  */
-export function onListSearchChange(eid: Entity, callback: (query: string) => void): () => void {
+export function onListSearchChange(
+	_world: World,
+	eid: Entity,
+	callback: (query: string) => void,
+): () => void {
 	const callbacks = searchChangeCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	searchChangeCallbacks.set(eid, callbacks);

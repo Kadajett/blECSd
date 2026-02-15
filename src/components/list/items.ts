@@ -12,10 +12,11 @@ import type { ListItem } from './types';
 /**
  * Gets all items from a list.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns Array of list items
  */
-export function getItems(eid: Entity): readonly ListItem[] {
+export function getItems(_world: World, eid: Entity): readonly ListItem[] {
 	return itemsStore.get(eid) ?? [];
 }
 
@@ -105,11 +106,12 @@ export function removeItem(world: World, eid: Entity, index: number): ListItem |
 /**
  * Gets an item by index.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @param index - The item index
  * @returns The item or undefined
  */
-export function getItem(eid: Entity, index: number): ListItem | undefined {
+export function getItem(_world: World, eid: Entity, index: number): ListItem | undefined {
 	const items = itemsStore.get(eid);
 	return items?.[index];
 }
@@ -137,10 +139,11 @@ export function updateItem(world: World, eid: Entity, index: number, item: ListI
 /**
  * Gets the number of items in the list.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns Number of items
  */
-export function getItemCount(eid: Entity): number {
+export function getItemCount(_world: World, eid: Entity): number {
 	return listStore.itemCount[eid] ?? 0;
 }
 

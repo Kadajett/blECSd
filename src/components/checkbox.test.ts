@@ -376,7 +376,7 @@ describe('Checkbox Component', () => {
 
 		it('should register callback', () => {
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			toggleCheckbox(world, eid);
 
@@ -386,7 +386,7 @@ describe('Checkbox Component', () => {
 
 		it('should return unsubscribe function', () => {
 			const callback = vi.fn();
-			const unsubscribe = onCheckboxChange(eid, callback);
+			const unsubscribe = onCheckboxChange(world, eid, callback);
 
 			unsubscribe();
 
@@ -399,8 +399,8 @@ describe('Checkbox Component', () => {
 			const callback1 = vi.fn();
 			const callback2 = vi.fn();
 
-			onCheckboxChange(eid, callback1);
-			onCheckboxChange(eid, callback2);
+			onCheckboxChange(world, eid, callback1);
+			onCheckboxChange(world, eid, callback2);
 
 			toggleCheckbox(world, eid);
 
@@ -410,7 +410,7 @@ describe('Checkbox Component', () => {
 
 		it('should call callback with correct value on check', () => {
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			checkCheckbox(world, eid);
 
@@ -420,7 +420,7 @@ describe('Checkbox Component', () => {
 		it('should call callback with correct value on uncheck', () => {
 			checkCheckbox(world, eid);
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			uncheckCheckbox(world, eid);
 
@@ -429,7 +429,7 @@ describe('Checkbox Component', () => {
 
 		it('should call callback on each toggle', () => {
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			toggleCheckbox(world, eid);
 			expect(callback).toHaveBeenLastCalledWith(true);
@@ -442,7 +442,7 @@ describe('Checkbox Component', () => {
 
 		it('should not call callback when disabled', () => {
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			disableCheckbox(world, eid);
 			toggleCheckbox(world, eid);
@@ -455,9 +455,9 @@ describe('Checkbox Component', () => {
 		it('should remove all callbacks for entity', () => {
 			attachCheckboxBehavior(world, eid);
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
-			clearCheckboxCallbacks(eid);
+			clearCheckboxCallbacks(world, eid);
 
 			toggleCheckbox(world, eid);
 
@@ -471,10 +471,10 @@ describe('Checkbox Component', () => {
 
 			const callback1 = vi.fn();
 			const callback2 = vi.fn();
-			onCheckboxChange(eid, callback1);
-			onCheckboxChange(eid2, callback2);
+			onCheckboxChange(world, eid, callback1);
+			onCheckboxChange(world, eid2, callback2);
 
-			clearCheckboxCallbacks(eid);
+			clearCheckboxCallbacks(world, eid);
 
 			toggleCheckbox(world, eid);
 			toggleCheckbox(world, eid2);
@@ -491,7 +491,7 @@ describe('Checkbox Component', () => {
 
 		it('should toggle on Enter', () => {
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			const result = handleCheckboxKeyPress(world, eid, 'enter');
 
@@ -501,7 +501,7 @@ describe('Checkbox Component', () => {
 
 		it('should toggle on return', () => {
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			const result = handleCheckboxKeyPress(world, eid, 'return');
 
@@ -511,7 +511,7 @@ describe('Checkbox Component', () => {
 
 		it('should toggle on Space', () => {
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			const result = handleCheckboxKeyPress(world, eid, 'space');
 
@@ -528,7 +528,7 @@ describe('Checkbox Component', () => {
 			disableCheckbox(world, eid);
 
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			const result = handleCheckboxKeyPress(world, eid, 'enter');
 
@@ -547,7 +547,7 @@ describe('Checkbox Component', () => {
 		it('should reset all checkbox data', () => {
 			attachCheckboxBehavior(world, eid);
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			resetCheckboxStore();
 
@@ -564,7 +564,7 @@ describe('Checkbox Component', () => {
 		it('should handle full toggle cycle', () => {
 			attachCheckboxBehavior(world, eid);
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			expect(getCheckboxState(world, eid)).toBe('unchecked');
 
@@ -582,7 +582,7 @@ describe('Checkbox Component', () => {
 		it('should handle keyboard navigation flow', () => {
 			attachCheckboxBehavior(world, eid);
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			expect(getCheckboxState(world, eid)).toBe('unchecked');
 
@@ -598,7 +598,7 @@ describe('Checkbox Component', () => {
 		it('should handle disable/enable flow', () => {
 			attachCheckboxBehavior(world, eid);
 			const callback = vi.fn();
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 
 			disableCheckbox(world, eid);
 			expect(isCheckboxDisabled(world, eid)).toBe(true);
@@ -644,19 +644,19 @@ describe('Checkbox Component', () => {
 
 		describe('getCheckboxDisplay', () => {
 			it('should return defaults for entity without custom display', () => {
-				const display = getCheckboxDisplay(eid);
+				const display = getCheckboxDisplay(world, eid);
 
 				expect(display.checkedChar).toBe(DEFAULT_CHECKED_CHAR);
 				expect(display.uncheckedChar).toBe(DEFAULT_UNCHECKED_CHAR);
 			});
 
 			it('should return custom display after setCheckboxDisplay', () => {
-				setCheckboxDisplay(eid, {
+				setCheckboxDisplay(world, eid, {
 					checkedChar: '[X]',
 					uncheckedChar: '[_]',
 				});
 
-				const display = getCheckboxDisplay(eid);
+				const display = getCheckboxDisplay(world, eid);
 				expect(display.checkedChar).toBe('[X]');
 				expect(display.uncheckedChar).toBe('[_]');
 			});
@@ -664,48 +664,48 @@ describe('Checkbox Component', () => {
 
 		describe('setCheckboxDisplay', () => {
 			it('should set checked character only', () => {
-				setCheckboxDisplay(eid, { checkedChar: '✓' });
+				setCheckboxDisplay(world, eid, { checkedChar: '✓' });
 
-				const display = getCheckboxDisplay(eid);
+				const display = getCheckboxDisplay(world, eid);
 				expect(display.checkedChar).toBe('✓');
 				expect(display.uncheckedChar).toBe(DEFAULT_UNCHECKED_CHAR);
 			});
 
 			it('should set unchecked character only', () => {
-				setCheckboxDisplay(eid, { uncheckedChar: '○' });
+				setCheckboxDisplay(world, eid, { uncheckedChar: '○' });
 
-				const display = getCheckboxDisplay(eid);
+				const display = getCheckboxDisplay(world, eid);
 				expect(display.checkedChar).toBe(DEFAULT_CHECKED_CHAR);
 				expect(display.uncheckedChar).toBe('○');
 			});
 
 			it('should set both characters', () => {
-				setCheckboxDisplay(eid, {
+				setCheckboxDisplay(world, eid, {
 					checkedChar: '●',
 					uncheckedChar: '○',
 				});
 
-				const display = getCheckboxDisplay(eid);
+				const display = getCheckboxDisplay(world, eid);
 				expect(display.checkedChar).toBe('●');
 				expect(display.uncheckedChar).toBe('○');
 			});
 
 			it('should update existing display', () => {
-				setCheckboxDisplay(eid, { checkedChar: 'A' });
-				setCheckboxDisplay(eid, { checkedChar: 'B' });
+				setCheckboxDisplay(world, eid, { checkedChar: 'A' });
+				setCheckboxDisplay(world, eid, { checkedChar: 'B' });
 
-				const display = getCheckboxDisplay(eid);
+				const display = getCheckboxDisplay(world, eid);
 				expect(display.checkedChar).toBe('B');
 			});
 
 			it('should preserve other character when updating one', () => {
-				setCheckboxDisplay(eid, {
+				setCheckboxDisplay(world, eid, {
 					checkedChar: '✓',
 					uncheckedChar: '✗',
 				});
-				setCheckboxDisplay(eid, { checkedChar: '●' });
+				setCheckboxDisplay(world, eid, { checkedChar: '●' });
 
-				const display = getCheckboxDisplay(eid);
+				const display = getCheckboxDisplay(world, eid);
 				expect(display.checkedChar).toBe('●');
 				expect(display.uncheckedChar).toBe('✗');
 			});
@@ -714,7 +714,7 @@ describe('Checkbox Component', () => {
 		describe('getCheckboxChar', () => {
 			beforeEach(() => {
 				attachCheckboxBehavior(world, eid);
-				setCheckboxDisplay(eid, {
+				setCheckboxDisplay(world, eid, {
 					checkedChar: '[X]',
 					uncheckedChar: '[_]',
 				});
@@ -742,14 +742,14 @@ describe('Checkbox Component', () => {
 
 		describe('clearCheckboxDisplay', () => {
 			it('should remove custom display', () => {
-				setCheckboxDisplay(eid, {
+				setCheckboxDisplay(world, eid, {
 					checkedChar: 'X',
 					uncheckedChar: 'O',
 				});
 
-				clearCheckboxDisplay(eid);
+				clearCheckboxDisplay(world, eid);
 
-				const display = getCheckboxDisplay(eid);
+				const display = getCheckboxDisplay(world, eid);
 				expect(display.checkedChar).toBe(DEFAULT_CHECKED_CHAR);
 				expect(display.uncheckedChar).toBe(DEFAULT_UNCHECKED_CHAR);
 			});
@@ -757,23 +757,23 @@ describe('Checkbox Component', () => {
 			it('should not affect other entities', () => {
 				const eid2 = addEntity(world);
 
-				setCheckboxDisplay(eid, { checkedChar: 'A' });
-				setCheckboxDisplay(eid2, { checkedChar: 'B' });
+				setCheckboxDisplay(world, eid, { checkedChar: 'A' });
+				setCheckboxDisplay(world, eid2, { checkedChar: 'B' });
 
-				clearCheckboxDisplay(eid);
+				clearCheckboxDisplay(world, eid);
 
-				expect(getCheckboxDisplay(eid).checkedChar).toBe(DEFAULT_CHECKED_CHAR);
-				expect(getCheckboxDisplay(eid2).checkedChar).toBe('B');
+				expect(getCheckboxDisplay(world, eid).checkedChar).toBe(DEFAULT_CHECKED_CHAR);
+				expect(getCheckboxDisplay(world, eid2).checkedChar).toBe('B');
 			});
 		});
 
 		describe('resetCheckboxStore', () => {
 			it('should clear display store', () => {
-				setCheckboxDisplay(eid, { checkedChar: 'X' });
+				setCheckboxDisplay(world, eid, { checkedChar: 'X' });
 
 				resetCheckboxStore();
 
-				expect(getCheckboxDisplay(eid).checkedChar).toBe(DEFAULT_CHECKED_CHAR);
+				expect(getCheckboxDisplay(world, eid).checkedChar).toBe(DEFAULT_CHECKED_CHAR);
 			});
 		});
 	});

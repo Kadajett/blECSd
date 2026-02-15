@@ -686,12 +686,12 @@ export function createListTable(
 			return widget;
 		},
 
-		getSelectedIndex(): number {
-			return getSelectedIndex(eid);
+		getSelectedIndex(world, ): number {
+			return getSelectedIndex(world, eid);
 		},
 
 		getSelectedRow(): TableRow | undefined {
-			const selectedIdx = getSelectedIndex(eid);
+			const selectedIdx = getSelectedIndex(world, eid);
 			if (selectedIdx < 0) {
 				return undefined;
 			}
@@ -748,7 +748,7 @@ export function createListTable(
 		},
 
 		getSearchQuery(): string {
-			return getListSearchQuery(eid);
+			return getListSearchQuery(world, eid);
 		},
 
 		isSearching(): boolean {
@@ -762,15 +762,15 @@ export function createListTable(
 
 		// Events
 		onSelect(callback: ListSelectCallback): () => void {
-			return onListSelect(eid, callback);
+			return onListSelect(world, eid, callback);
 		},
 
 		onActivate(callback: ListSelectCallback): () => void {
-			return onListActivate(eid, callback);
+			return onListActivate(world, eid, callback);
 		},
 
 		onSearchChange(callback: (query: string) => void): () => void {
-			return onListSearchChange(eid, callback);
+			return onListSearchChange(world, eid, callback);
 		},
 
 		// Key handling
@@ -827,7 +827,7 @@ export function createListTable(
 
 		// Lifecycle
 		destroy(): void {
-			clearListCallbacks(eid);
+			clearListCallbacks(world, eid);
 			clearSearchQuery(world, eid);
 			detachTableBehavior(world, eid);
 			removeEntity(world, eid);

@@ -220,7 +220,7 @@ export function getEntitySummary(world: World, eid: Entity): string {
 	const parts: string[] = [];
 
 	// Entity ID and name
-	const name = hasEntityData(eid, 'name') ? getEntityData<string>(eid, 'name') : null;
+	const name = hasEntityData(world, eid, 'name') ? getEntityData<string>(world, eid, 'name') : null;
 	parts.push(`Entity ${eid}${name ? ` (${name})` : ''}`);
 
 	// Position

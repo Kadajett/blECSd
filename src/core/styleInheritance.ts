@@ -79,6 +79,7 @@ export function getCacheGeneration(): number {
  * Invalidates the computed style cache for an entity and its descendants.
  * Call this when a style property changes.
  *
+ * @param _world - The ECS world
  * @param eid - The entity whose cache to invalidate
  *
  * @example
@@ -87,10 +88,10 @@ export function getCacheGeneration(): number {
  *
  * // After changing style, invalidate cache
  * setStyle(world, entity, { fg: 0xff0000ff });
- * invalidateStyleCache(entity);
+ * invalidateStyleCache(world, entity);
  * ```
  */
-export function invalidateStyleCache(eid: Entity): void {
+export function invalidateStyleCache(_world: World, eid: Entity): void {
 	computedStyleCache.delete(eid);
 }
 
@@ -122,10 +123,11 @@ export function clearStyleCache(): void {
 /**
  * Checks if an entity has a valid cached computed style.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns true if valid cache exists
  */
-export function hasValidStyleCache(eid: Entity): boolean {
+export function hasValidStyleCache(_world: World, eid: Entity): boolean {
 	const cached = computedStyleCache.get(eid);
 	return cached !== undefined && cached.timestamp === cacheGeneration;
 }

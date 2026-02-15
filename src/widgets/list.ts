@@ -274,9 +274,9 @@ export interface ListWidget {
 	/** Selects the item at the given index */
 	select(index: number): ListWidget;
 	/** Gets the currently selected index */
-	getSelectedIndex(): number;
+	getSelectedIndex(world, ): number;
 	/** Gets the currently selected item */
-	getSelectedItem(): ListItem | undefined;
+	getSelectedItem(world, ): ListItem | undefined;
 	/** Selects the previous item */
 	selectPrev(): ListWidget;
 	/** Selects the next item */
@@ -391,7 +391,7 @@ export const ListWidgetConfigSchema = z.object({
  * Applies list style options to display options.
  * Helper function to reduce complexity in createList.
  */
-function applyListStyleOptions(eid: Entity, style: ListStyleConfig): void {
+function applyListStyleOptions(world: World, eid: Entity, style: ListStyleConfig): void {
 	const displayOptions: ListDisplayOptions = {};
 	if (style.selected?.prefix !== undefined) {
 		displayOptions.selectedPrefix = style.selected.prefix;
@@ -414,7 +414,7 @@ function applyListStyleOptions(eid: Entity, style: ListStyleConfig): void {
 	if (style.disabledFg !== undefined) {
 		displayOptions.disabledFg = style.disabledFg;
 	}
-	setListDisplay(eid, displayOptions);
+	setListDisplay(world, eid, displayOptions);
 }
 
 /**
@@ -499,12 +499,12 @@ export function createList(
 
 	// Enable multi-select if configured
 	if (validated.multiSelect) {
-		setListMultiSelect(eid, true);
+		setListMultiSelect(world, eid, true);
 	}
 
 	// Apply display styles if provided
 	if (validated.style) {
-		applyListStyleOptions(eid, validated.style as ListStyleConfig);
+		applyListStyleOptions(world, eid, validated.style as ListStyleConfig);
 	}
 
 	// Create the widget object with chainable methods
@@ -554,11 +554,11 @@ export function createList(
 		},
 
 		getItems(): readonly ListItem[] {
-			return getItems(eid);
+			return getItems(world, eid);
 		},
 
 		addItem(text: string, value?: string): ListWidget {
-			const currentItems = [...getItems(eid)];
+			const currentItems = [...getItems(world, eid)];
 			currentItems.push({ text, value: value ?? text });
 			setItems(world, eid, currentItems);
 			return widget;
@@ -580,12 +580,12 @@ export function createList(
 			return widget;
 		},
 
-		getSelectedIndex(): number {
-			return getSelectedIndex(eid);
+		getSelectedIndex(world, ): number {
+			return getSelectedIndex(world, eid);
 		},
 
-		getSelectedItem(): ListItem | undefined {
-			return getSelectedItem(eid);
+		getSelectedItem(world, ): ListItem | undefined {
+			return getSelectedItem(world, eid);
 		},
 
 		selectPrev(): ListWidget {
@@ -636,7 +636,7 @@ export function createList(
 		},
 
 		getSearchQuery(): string {
-			return getListSearchQuery(eid);
+			return getListSearchQuery(world, eid);
 		},
 
 		isSearching(): boolean {
@@ -650,33 +650,33 @@ export function createList(
 
 		// Events
 		onSelect(callback: ListSelectCallback): () => void {
-			return onListSelect(eid, callback);
+			return onListSelect(world, eid, callback);
 		},
 
 		onActivate(callback: ListSelectCallback): () => void {
-			return onListActivate(eid, callback);
+			return onListActivate(world, eid, callback);
 		},
 
 		onCancel(callback: () => void): () => void {
-			return onListCancel(eid, callback);
+			return onListCancel(world, eid, callback);
 		},
 
 		onSearchChange(callback: (query: string) => void): () => void {
-			return onListSearchChange(eid, callback);
+			return onListSearchChange(world, eid, callback);
 		},
 
 		// Multi-select
 		getSelected(): number[] {
-			return getMultiSelected(eid);
+			return getMultiSelected(world, eid);
 		},
 
 		selectAll(): ListWidget {
-			selectAllItems(eid);
+			selectAllItems(world, eid);
 			return widget;
 		},
 
 		deselectAll(): ListWidget {
-			deselectAllItems(eid);
+			deselectAllItems(world, eid);
 			return widget;
 		},
 
@@ -692,7 +692,7 @@ export function createList(
 		},
 
 		getVisibleItems(): readonly ListItem[] {
-			return getFilteredItems(eid);
+			return getFilteredItems(world, eid);
 		},
 
 		// Key handling
@@ -724,13 +724,13 @@ export function createList(
 						activateSelected(world, eid);
 						break;
 					case 'cancel':
-						triggerListCancel(eid);
+						triggerListCancel(world, eid);
 						blurList(world, eid);
 						break;
 					case 'toggleSelect': {
-						const selectedIdx = getSelectedIndex(eid);
+						const selectedIdx = getSelectedIndex(world, eid);
 						if (selectedIdx >= 0) {
-							toggleMultiSelect(eid, selectedIdx);
+							toggleMultiSelect(world, eid, selectedIdx);
 						}
 						break;
 					}
@@ -757,7 +757,7 @@ export function createList(
 
 		// Lifecycle
 		destroy(): void {
-			clearListCallbacks(eid);
+			clearListCallbacks(world, eid);
 			clearSearchQuery(world, eid);
 			removeEntity(world, eid);
 		},

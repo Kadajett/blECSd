@@ -314,7 +314,7 @@ describe('Button Component', () => {
 
 		it('should register callback', () => {
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			sendButtonEvent(world, eid, 'mouseenter');
 			sendButtonEvent(world, eid, 'mousedown');
@@ -325,7 +325,7 @@ describe('Button Component', () => {
 
 		it('should return unsubscribe function', () => {
 			const callback = vi.fn();
-			const unsubscribe = onButtonPress(eid, callback);
+			const unsubscribe = onButtonPress(world, eid, callback);
 
 			unsubscribe();
 
@@ -340,8 +340,8 @@ describe('Button Component', () => {
 			const callback1 = vi.fn();
 			const callback2 = vi.fn();
 
-			onButtonPress(eid, callback1);
-			onButtonPress(eid, callback2);
+			onButtonPress(world, eid, callback1);
+			onButtonPress(world, eid, callback2);
 
 			sendButtonEvent(world, eid, 'mouseenter');
 			sendButtonEvent(world, eid, 'mousedown');
@@ -353,7 +353,7 @@ describe('Button Component', () => {
 
 		it('should only call callback on press (mouseup from pressed)', () => {
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			sendButtonEvent(world, eid, 'mouseenter');
 			expect(callback).not.toHaveBeenCalled();
@@ -367,7 +367,7 @@ describe('Button Component', () => {
 
 		it('should not call callback when leaving pressed via mouseleave', () => {
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			sendButtonEvent(world, eid, 'mouseenter');
 			sendButtonEvent(world, eid, 'mousedown');
@@ -384,7 +384,7 @@ describe('Button Component', () => {
 
 		it('should programmatically press button', () => {
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			const result = pressButton(world, eid);
 
@@ -401,7 +401,7 @@ describe('Button Component', () => {
 		it('should return false for disabled buttons', () => {
 			disableButton(world, eid);
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			const result = pressButton(world, eid);
 
@@ -411,7 +411,7 @@ describe('Button Component', () => {
 
 		it('should work from any non-disabled state', () => {
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			// From idle
 			pressButton(world, eid);
@@ -433,9 +433,9 @@ describe('Button Component', () => {
 		it('should remove all callbacks for entity', () => {
 			attachButtonBehavior(world, eid);
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
-			clearButtonCallbacks(eid);
+			clearButtonCallbacks(world, eid);
 
 			sendButtonEvent(world, eid, 'mouseenter');
 			sendButtonEvent(world, eid, 'mousedown');
@@ -451,10 +451,10 @@ describe('Button Component', () => {
 
 			const callback1 = vi.fn();
 			const callback2 = vi.fn();
-			onButtonPress(eid, callback1);
-			onButtonPress(eid2, callback2);
+			onButtonPress(world, eid, callback1);
+			onButtonPress(world, eid2, callback2);
 
-			clearButtonCallbacks(eid);
+			clearButtonCallbacks(world, eid);
 
 			pressButton(world, eid);
 			pressButton(world, eid2);
@@ -471,7 +471,7 @@ describe('Button Component', () => {
 
 		it('should trigger press on Enter when focused', () => {
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			sendButtonEvent(world, eid, 'focus');
 			const result = handleButtonKeyPress(world, eid, 'enter');
@@ -482,7 +482,7 @@ describe('Button Component', () => {
 
 		it('should trigger press on return when focused', () => {
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			sendButtonEvent(world, eid, 'focus');
 			const result = handleButtonKeyPress(world, eid, 'return');
@@ -493,7 +493,7 @@ describe('Button Component', () => {
 
 		it('should trigger press on Space when focused', () => {
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			sendButtonEvent(world, eid, 'focus');
 			const result = handleButtonKeyPress(world, eid, 'space');
@@ -504,7 +504,7 @@ describe('Button Component', () => {
 
 		it('should return false for non-focused buttons', () => {
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			const result = handleButtonKeyPress(world, eid, 'enter');
 
@@ -523,7 +523,7 @@ describe('Button Component', () => {
 			disableButton(world, eid);
 
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			const result = handleButtonKeyPress(world, eid, 'enter');
 
@@ -542,7 +542,7 @@ describe('Button Component', () => {
 		it('should reset all button data', () => {
 			attachButtonBehavior(world, eid);
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			resetButtonStore();
 
@@ -559,7 +559,7 @@ describe('Button Component', () => {
 		it('should handle full mouse click flow', () => {
 			attachButtonBehavior(world, eid);
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			expect(getButtonState(world, eid)).toBe('idle');
 
@@ -580,7 +580,7 @@ describe('Button Component', () => {
 		it('should handle keyboard navigation flow', () => {
 			attachButtonBehavior(world, eid);
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			expect(getButtonState(world, eid)).toBe('idle');
 
@@ -597,7 +597,7 @@ describe('Button Component', () => {
 		it('should handle disable/enable flow', () => {
 			attachButtonBehavior(world, eid);
 			const callback = vi.fn();
-			onButtonPress(eid, callback);
+			onButtonPress(world, eid, callback);
 
 			disableButton(world, eid);
 			expect(isButtonDisabled(world, eid)).toBe(true);

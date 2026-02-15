@@ -288,7 +288,7 @@ export function applyListScrollableOptions(
 	}
 }
 
-export function initListInteractive(eid: Entity): void {
+export function initListInteractive(_world: World, eid: Entity): void {
 	Interactive.clickable[eid] = 1;
 	Interactive.draggable[eid] = 0;
 	Interactive.hoverable[eid] = 0;
