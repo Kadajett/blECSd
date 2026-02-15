@@ -450,7 +450,9 @@ setContent(world, entity, 'Hello, World!');
 ## Parent-Child Hierarchies
 
 ```typescript
-import { setParent, getChildren } from 'blecsd';
+import { createWorld, createBoxEntity, setParent, getChildren } from 'blecsd';
+
+const world = createWorld();
 
 const parent = createBoxEntity(world, { x: 10, y: 5, width: 50, height: 20 });
 const child1 = createBoxEntity(world, { x: 2, y: 2, width: 20, height: 5 });
