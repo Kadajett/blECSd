@@ -4,7 +4,7 @@
  * @module components/list/rendering
  */
 
-import type { Entity } from '../../core/types';
+import type { Entity, World } from '../../core/types';
 import { getListDisplay } from './display';
 import { listStore } from './stores';
 import { getVisibleItems } from './virtualization';
@@ -16,9 +16,9 @@ import { getVisibleItems } from './virtualization';
  * @param width - Available width
  * @returns Array of rendered line strings
  */
-export function renderListItems(eid: Entity, width: number): string[] {
-	const display = getListDisplay(eid);
-	const visibleItems = getVisibleItems(eid);
+export function renderListItems(_world: World, eid: Entity, width: number): string[] {
+	const display = getListDisplay(_world, eid);
+	const visibleItems = getVisibleItems(_world, eid);
 	const selectedIndex = listStore.selectedIndex[eid] ?? -1;
 	const lines: string[] = [];
 

@@ -398,7 +398,7 @@ export function createCheckboxEntity(world: World, config: CheckboxConfig = {}):
 	applyFocusableOptions(world, eid, validated);
 
 	// Set up checkbox display characters
-	setCheckboxDisplay(eid, {
+	setCheckboxDisplay(world, eid, {
 		checkedChar: validated.checkedChar ?? DEFAULT_CHECKED_CHAR,
 		uncheckedChar: validated.uncheckedChar ?? DEFAULT_UNCHECKED_CHAR,
 	});
@@ -747,12 +747,12 @@ export function createRadioButtonEntity(world: World, config: RadioButtonConfig 
 
 	// Set value if provided
 	if (validated.value !== undefined) {
-		setRadioValue(eid, validated.value);
+		setRadioValue(world, eid, validated.value);
 	}
 
 	// Set display characters if provided
 	if (validated.selectedChar !== undefined || validated.unselectedChar !== undefined) {
-		setRadioButtonDisplay(eid, {
+		setRadioButtonDisplay(world, eid, {
 			selectedChar: validated.selectedChar,
 			unselectedChar: validated.unselectedChar,
 		});

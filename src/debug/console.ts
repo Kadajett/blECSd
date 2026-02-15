@@ -296,7 +296,7 @@ export function createDebugConsole(world: World, config: DebugConsoleConfig = {}
 			bg: parseColor(validated.theme.bg),
 		});
 		hideEntity(world, eid);
-		setEntityData(eid, 'name', '__debug_console__');
+		setEntityData(world, eid, 'name', '__debug_console__');
 
 		return eid;
 	}
@@ -319,7 +319,7 @@ export function createDebugConsole(world: World, config: DebugConsoleConfig = {}
 			bg: 0x00000000, // Transparent
 		});
 		setContent(world, eid, 'Debug Console\n─────────────');
-		setEntityData(eid, 'name', '__debug_log_panel__');
+		setEntityData(world, eid, 'name', '__debug_log_panel__');
 
 		return eid;
 	}

@@ -8,7 +8,7 @@
  * @module core/entityData
  */
 
-import type { Entity } from './types';
+import type { Entity, World } from './types';
 
 /**
  * Type for stored data values.
@@ -48,7 +48,12 @@ const entityDataStore = new Map<Entity, EntityDataMap>();
  * console.log(health); // 100 (default, since not set)
  * ```
  */
-export function getEntityData<T = DataValue>(eid: Entity, key: string, defaultValue?: T): T {
+export function getEntityData<T = DataValue>(
+	_world: World,
+	eid: Entity,
+	key: string,
+	defaultValue?: T,
+): T {
 	const data = entityDataStore.get(eid);
 	if (!data) {
 		return defaultValue as T;
@@ -83,7 +88,7 @@ export function getEntityData<T = DataValue>(eid: Entity, key: string, defaultVa
  * setEntityData(entity, 'onDeath', () => console.log('Game over'));
  * ```
  */
-export function setEntityData(eid: Entity, key: string, value: DataValue): void {
+export function setEntityData(_world: World, eid: Entity, key: string, value: DataValue): void {
 	let data = entityDataStore.get(eid);
 	if (!data) {
 		data = new Map();
@@ -109,7 +114,7 @@ export function setEntityData(eid: Entity, key: string, value: DataValue): void 
  * }
  * ```
  */
-export function hasEntityData(eid: Entity, key: string): boolean {
+export function hasEntityData(_world: World, eid: Entity, key: string): boolean {
 	const data = entityDataStore.get(eid);
 	return data?.has(key) ?? false;
 }
@@ -130,7 +135,7 @@ export function hasEntityData(eid: Entity, key: string): boolean {
  * deleteEntityData(entity, 'temporaryBuff');
  * ```
  */
-export function deleteEntityData(eid: Entity, key: string): boolean {
+export function deleteEntityData(_world: World, eid: Entity, key: string): boolean {
 	const data = entityDataStore.get(eid);
 	return data?.delete(key) ?? false;
 }
@@ -152,7 +157,7 @@ export function deleteEntityData(eid: Entity, key: string): boolean {
  * console.log(keys); // ['name', 'score']
  * ```
  */
-export function getEntityDataKeys(eid: Entity): string[] {
+export function getEntityDataKeys(_world: World, eid: Entity): string[] {
 	const data = entityDataStore.get(eid);
 	return data ? Array.from(data.keys()) : [];
 }
@@ -174,7 +179,7 @@ export function getEntityDataKeys(eid: Entity): string[] {
  * console.log(allData); // { name: 'Player', score: 100 }
  * ```
  */
-export function getAllEntityData(eid: Entity): Record<string, DataValue> {
+export function getAllEntityData(_world: World, eid: Entity): Record<string, DataValue> {
 	const data = entityDataStore.get(eid);
 	if (!data) {
 		return {};
@@ -204,9 +209,13 @@ export function getAllEntityData(eid: Entity): Record<string, DataValue> {
  * });
  * ```
  */
-export function setEntityDataBulk(eid: Entity, data: Record<string, DataValue>): void {
+export function setEntityDataBulk(
+	_world: World,
+	eid: Entity,
+	data: Record<string, DataValue>,
+): void {
 	for (const [key, value] of Object.entries(data)) {
-		setEntityData(eid, key, value);
+		setEntityData(_world, eid, key, value);
 	}
 }
 
@@ -223,7 +232,7 @@ export function setEntityDataBulk(eid: Entity, data: Record<string, DataValue>):
  * clearEntityData(entity);
  * ```
  */
-export function clearEntityData(eid: Entity): void {
+export function clearEntityData(_world: World, eid: Entity): void {
 	entityDataStore.delete(eid);
 }
 
@@ -274,7 +283,7 @@ export function getEntityDataCount(): number {
  * }
  * ```
  */
-export function hasAnyEntityData(eid: Entity): boolean {
+export function hasAnyEntityData(_world: World, eid: Entity): boolean {
 	const data = entityDataStore.get(eid);
 	return data !== undefined && data.size > 0;
 }
@@ -304,10 +313,11 @@ export function hasAnyEntityData(eid: Entity): boolean {
  * ```
  */
 export function updateEntityData<T = DataValue>(
+	_world: World,
 	eid: Entity,
 	key: string,
 	transform: (current: T | undefined) => T,
 ): void {
-	const current = getEntityData<T>(eid, key);
-	setEntityData(eid, key, transform(current));
+	const current = getEntityData<T>(_world, eid, key);
+	setEntityData(_world, eid, key, transform(current));
 }

@@ -140,7 +140,7 @@ export function hasSpinner(_world: World, eid: Entity): boolean {
  * @param eid - Entity ID
  * @returns Current frame character, or empty string if not found
  */
-export function getSpinnerChar(eid: Entity): string {
+export function getSpinnerChar(_world: World, eid: Entity): string {
 	const frames = spinnerFrameStore.get(eid);
 	if (!frames) return '';
 
@@ -154,7 +154,7 @@ export function getSpinnerChar(eid: Entity): string {
  * @param eid - Entity ID
  * @returns Spinner data, or null if not found
  */
-export function getSpinnerData(eid: Entity): SpinnerData | null {
+export function getSpinnerData(_world: World, eid: Entity): SpinnerData | null {
 	const frames = spinnerFrameStore.get(eid);
 	if (!frames) return null;
 
@@ -173,7 +173,7 @@ export function getSpinnerData(eid: Entity): SpinnerData | null {
  * @param eid - Entity ID
  * @param interval - New interval in ms
  */
-export function setSpinnerInterval(eid: Entity, interval: number): void {
+export function setSpinnerInterval(_world: World, eid: Entity, interval: number): void {
 	Spinner.interval[eid] = interval;
 }
 
@@ -183,7 +183,7 @@ export function setSpinnerInterval(eid: Entity, interval: number): void {
  * @param eid - Entity ID
  * @param frames - New frame characters
  */
-export function setSpinnerFrames(eid: Entity, frames: readonly string[]): void {
+export function setSpinnerFrames(_world: World, eid: Entity, frames: readonly string[]): void {
 	spinnerFrameStore.set(eid, frames);
 	Spinner.frameCount[eid] = frames.length;
 
@@ -200,7 +200,7 @@ export function setSpinnerFrames(eid: Entity, frames: readonly string[]): void {
  * @param eid - Entity ID
  * @returns The new frame index
  */
-export function advanceSpinnerFrame(eid: Entity): number {
+export function advanceSpinnerFrame(_world: World, eid: Entity): number {
 	const frameCount = Spinner.frameCount[eid] ?? 1;
 	const nextFrame = ((Spinner.frame[eid] ?? 0) + 1) % frameCount;
 	Spinner.frame[eid] = nextFrame;
@@ -214,12 +214,12 @@ export function advanceSpinnerFrame(eid: Entity): number {
  * @param deltaMs - Time elapsed since last update (ms)
  * @returns true if frame changed
  */
-export function updateSpinner(eid: Entity, deltaMs: number): boolean {
+export function updateSpinner(_world: World, eid: Entity, deltaMs: number): boolean {
 	const elapsed = (Spinner.elapsed[eid] ?? 0) + deltaMs;
 	const interval = Spinner.interval[eid] ?? DEFAULT_SPINNER_INTERVAL;
 
 	if (elapsed >= interval) {
-		advanceSpinnerFrame(eid);
+		advanceSpinnerFrame(_world, eid);
 		Spinner.elapsed[eid] = elapsed % interval;
 		return true;
 	}
@@ -233,7 +233,7 @@ export function updateSpinner(eid: Entity, deltaMs: number): boolean {
  *
  * @param eid - Entity ID
  */
-export function resetSpinner(eid: Entity): void {
+export function resetSpinner(_world: World, eid: Entity): void {
 	Spinner.frame[eid] = 0;
 	Spinner.elapsed[eid] = 0;
 }

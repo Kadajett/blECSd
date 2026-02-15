@@ -68,7 +68,7 @@ describe('spinner component', () => {
 			addSpinner(world, eid, { frames });
 
 			expect(Spinner.frameCount[eid]).toBe(3);
-			expect(getSpinnerChar(eid)).toBe('a');
+			expect(getSpinnerChar(world, eid)).toBe('a');
 		});
 
 		it('adds spinner with custom interval', () => {
@@ -110,17 +110,18 @@ describe('spinner component', () => {
 
 			addSpinner(world, eid, { frames: ['X', 'Y', 'Z'] });
 
-			expect(getSpinnerChar(eid)).toBe('X');
+			expect(getSpinnerChar(world, eid)).toBe('X');
 
 			Spinner.frame[eid] = 1;
-			expect(getSpinnerChar(eid)).toBe('Y');
+			expect(getSpinnerChar(world, eid)).toBe('Y');
 
 			Spinner.frame[eid] = 2;
-			expect(getSpinnerChar(eid)).toBe('Z');
+			expect(getSpinnerChar(world, eid)).toBe('Z');
 		});
 
 		it('returns empty string for non-existent spinner', () => {
-			expect(getSpinnerChar(999)).toBe('');
+			const world = createWorld();
+			expect(getSpinnerChar(world, 999)).toBe('');
 		});
 	});
 
@@ -132,7 +133,7 @@ describe('spinner component', () => {
 
 			addSpinner(world, eid, { frames, interval: 150 });
 
-			const data = getSpinnerData(eid);
+			const data = getSpinnerData(world, eid);
 			expect(data).toEqual({
 				frame: 0,
 				frameCount: 2,
@@ -143,7 +144,8 @@ describe('spinner component', () => {
 		});
 
 		it('returns null for non-existent spinner', () => {
-			expect(getSpinnerData(999)).toBeNull();
+			const world = createWorld();
+			expect(getSpinnerData(world, 999)).toBeNull();
 		});
 	});
 
@@ -153,7 +155,7 @@ describe('spinner component', () => {
 			const eid = addEntity(world);
 
 			addSpinner(world, eid);
-			setSpinnerInterval(eid, 50);
+			setSpinnerInterval(world, eid, 50);
 
 			expect(Spinner.interval[eid]).toBe(50);
 		});
@@ -165,10 +167,10 @@ describe('spinner component', () => {
 			const eid = addEntity(world);
 
 			addSpinner(world, eid, { frames: ['X'] });
-			setSpinnerFrames(eid, ['A', 'B', 'C']);
+			setSpinnerFrames(world, eid, ['A', 'B', 'C']);
 
 			expect(Spinner.frameCount[eid]).toBe(3);
-			expect(getSpinnerChar(eid)).toBe('A');
+			expect(getSpinnerChar(world, eid)).toBe('A');
 		});
 
 		it('resets frame if out of bounds', () => {
@@ -178,7 +180,7 @@ describe('spinner component', () => {
 			addSpinner(world, eid, { frames: ['X', 'Y', 'Z'] });
 			Spinner.frame[eid] = 2;
 
-			setSpinnerFrames(eid, ['A', 'B']); // Only 2 frames now
+			setSpinnerFrames(world, eid, ['A', 'B']); // Only 2 frames now
 
 			expect(Spinner.frame[eid]).toBe(0);
 		});
@@ -191,10 +193,10 @@ describe('spinner component', () => {
 
 			addSpinner(world, eid, { frames: ['A', 'B', 'C'] });
 
-			expect(advanceSpinnerFrame(eid)).toBe(1);
+			expect(advanceSpinnerFrame(world, eid)).toBe(1);
 			expect(Spinner.frame[eid]).toBe(1);
 
-			expect(advanceSpinnerFrame(eid)).toBe(2);
+			expect(advanceSpinnerFrame(world, eid)).toBe(2);
 			expect(Spinner.frame[eid]).toBe(2);
 		});
 
@@ -205,7 +207,7 @@ describe('spinner component', () => {
 			addSpinner(world, eid, { frames: ['A', 'B', 'C'] });
 			Spinner.frame[eid] = 2;
 
-			expect(advanceSpinnerFrame(eid)).toBe(0);
+			expect(advanceSpinnerFrame(world, eid)).toBe(0);
 			expect(Spinner.frame[eid]).toBe(0);
 		});
 	});
@@ -217,10 +219,10 @@ describe('spinner component', () => {
 
 			addSpinner(world, eid, { interval: 100 });
 
-			updateSpinner(eid, 30);
+			updateSpinner(world, eid, 30);
 			expect(Spinner.elapsed[eid]).toBe(30);
 
-			updateSpinner(eid, 30);
+			updateSpinner(world, eid, 30);
 			expect(Spinner.elapsed[eid]).toBe(60);
 		});
 
@@ -230,10 +232,10 @@ describe('spinner component', () => {
 
 			addSpinner(world, eid, { interval: 100 });
 
-			expect(updateSpinner(eid, 50)).toBe(false);
+			expect(updateSpinner(world, eid, 50)).toBe(false);
 			expect(Spinner.frame[eid]).toBe(0);
 
-			expect(updateSpinner(eid, 60)).toBe(true);
+			expect(updateSpinner(world, eid, 60)).toBe(true);
 			expect(Spinner.frame[eid]).toBe(1);
 		});
 
@@ -243,7 +245,7 @@ describe('spinner component', () => {
 
 			addSpinner(world, eid, { interval: 100, frames: ['A', 'B', 'C'] });
 
-			expect(updateSpinner(eid, 150)).toBe(true);
+			expect(updateSpinner(world, eid, 150)).toBe(true);
 			expect(Spinner.frame[eid]).toBe(1);
 			expect(Spinner.elapsed[eid]).toBe(50); // Remainder
 		});
@@ -258,7 +260,7 @@ describe('spinner component', () => {
 			Spinner.frame[eid] = 2;
 			Spinner.elapsed[eid] = 50;
 
-			resetSpinner(eid);
+			resetSpinner(world, eid);
 
 			expect(Spinner.frame[eid]).toBe(0);
 			expect(Spinner.elapsed[eid]).toBe(0);

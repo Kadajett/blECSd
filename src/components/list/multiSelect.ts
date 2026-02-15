@@ -4,7 +4,7 @@
  * @module components/list/multiSelect
  */
 
-import type { Entity } from '../../core/types';
+import type { Entity, World } from '../../core/types';
 import { getItems } from './items';
 import { multiSelectedStore, multiSelectStore } from './stores';
 
@@ -19,7 +19,7 @@ import { multiSelectedStore, multiSelectStore } from './stores';
  * setListMultiSelect(eid, true);
  * ```
  */
-export function setListMultiSelect(eid: Entity, enabled: boolean): void {
+export function setListMultiSelect(_world: World, eid: Entity, enabled: boolean): void {
 	multiSelectStore.set(eid, enabled);
 	if (enabled && !multiSelectedStore.has(eid)) {
 		multiSelectedStore.set(eid, new Set<number>());
@@ -32,7 +32,7 @@ export function setListMultiSelect(eid: Entity, enabled: boolean): void {
  * @param eid - The entity ID
  * @returns true if multi-select is enabled
  */
-export function isListMultiSelect(eid: Entity): boolean {
+export function isListMultiSelect(_world: World, eid: Entity): boolean {
 	return multiSelectStore.get(eid) ?? false;
 }
 
@@ -43,8 +43,8 @@ export function isListMultiSelect(eid: Entity): boolean {
  * @param index - The item index to toggle
  * @returns true if the item is now selected, false if deselected
  */
-export function toggleMultiSelect(eid: Entity, index: number): boolean {
-	if (!isListMultiSelect(eid)) {
+export function toggleMultiSelect(_world: World, eid: Entity, index: number): boolean {
+	if (!isListMultiSelect(_world, eid)) {
 		throw new Error('Multi-select is not enabled for this list');
 	}
 
@@ -68,8 +68,8 @@ export function toggleMultiSelect(eid: Entity, index: number): boolean {
  * @param eid - The entity ID
  * @returns Array of selected indices
  */
-export function getMultiSelected(eid: Entity): number[] {
-	if (!isListMultiSelect(eid)) {
+export function getMultiSelected(_world: World, eid: Entity): number[] {
+	if (!isListMultiSelect(_world, eid)) {
 		throw new Error('Multi-select is not enabled for this list');
 	}
 
@@ -82,12 +82,12 @@ export function getMultiSelected(eid: Entity): number[] {
  *
  * @param eid - The entity ID
  */
-export function selectAllItems(eid: Entity): void {
-	if (!isListMultiSelect(eid)) {
+export function selectAllItems(_world: World, eid: Entity): void {
+	if (!isListMultiSelect(_world, eid)) {
 		return;
 	}
 
-	const items = getItems(eid);
+	const items = getItems(_world, eid);
 	const selected = multiSelectedStore.get(eid);
 	if (selected) {
 		selected.clear();
@@ -102,8 +102,8 @@ export function selectAllItems(eid: Entity): void {
  *
  * @param eid - The entity ID
  */
-export function deselectAllItems(eid: Entity): void {
-	if (!isListMultiSelect(eid)) {
+export function deselectAllItems(_world: World, eid: Entity): void {
+	if (!isListMultiSelect(_world, eid)) {
 		return;
 	}
 
@@ -120,8 +120,8 @@ export function deselectAllItems(eid: Entity): void {
  * @param index - The item index
  * @returns true if the item is selected
  */
-export function isItemMultiSelected(eid: Entity, index: number): boolean {
-	if (!isListMultiSelect(eid)) {
+export function isItemMultiSelected(_world: World, eid: Entity, index: number): boolean {
+	if (!isListMultiSelect(_world, eid)) {
 		return false;
 	}
 

@@ -220,7 +220,7 @@ export function createCheckbox(world: World, config: CheckboxConfig = {}): Check
 	attachCheckboxBehavior(world, eid, validated.checked);
 
 	// Set display characters
-	setCheckboxDisplay(eid, {
+	setCheckboxDisplay(world, eid, {
 		checkedChar: validated.checkedChar,
 		uncheckedChar: validated.uncheckedChar,
 	});
@@ -376,7 +376,7 @@ export function createCheckbox(world: World, config: CheckboxConfig = {}): Check
 
 		// Events
 		onChange(callback: (checked: boolean) => void): CheckboxWidget {
-			onCheckboxChange(eid, callback);
+			onCheckboxChange(world, eid, callback);
 			return widget;
 		},
 
@@ -384,8 +384,8 @@ export function createCheckbox(world: World, config: CheckboxConfig = {}): Check
 		destroy(): void {
 			CheckboxWidgetComponent.isCheckboxWidget[eid] = 0;
 			checkboxWidgetStateMap.delete(eid);
-			clearCheckboxCallbacks(eid);
-			clearCheckboxDisplay(eid);
+			clearCheckboxCallbacks(world, eid);
+			clearCheckboxDisplay(world, eid);
 			removeEntity(world, eid);
 		},
 	};

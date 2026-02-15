@@ -321,11 +321,11 @@ export function createRadioGroup(world: World, config: RadioGroupConfig = {}): R
 		},
 
 		getSelectedValue(): string | null {
-			return getSelectedValue(eid);
+			return getSelectedValue(world, eid);
 		},
 
 		onChange(callback: (value: string | null) => void): RadioGroupWidget {
-			onRadioSelect(eid, (value) => {
+			onRadioSelect(world, eid, (value) => {
 				callback(value);
 			});
 			return widget;
@@ -334,7 +334,7 @@ export function createRadioGroup(world: World, config: RadioGroupConfig = {}): R
 		destroy(): void {
 			RadioGroupWidgetComponent.isRadioGroupWidget[eid] = 0;
 			radioGroupWidgetStateMap.delete(eid);
-			clearRadioSetCallbacks(eid);
+			clearRadioSetCallbacks(world, eid);
 			removeEntity(world, eid);
 		},
 	};
@@ -385,10 +385,10 @@ export function createRadioButton(world: World, config: RadioButtonConfig = {}):
 	attachRadioButtonBehavior(world, eid, validated.groupId);
 
 	// Set value
-	setRadioValue(eid, validated.value);
+	setRadioValue(world, eid, validated.value);
 
 	// Set display characters
-	setRadioButtonDisplay(eid, {
+	setRadioButtonDisplay(world, eid, {
 		selectedChar: validated.selectedChar,
 		unselectedChar: validated.unselectedChar,
 	});
@@ -453,7 +453,7 @@ export function createRadioButton(world: World, config: RadioButtonConfig = {}):
 
 		// Value and Label
 		getValue(): string {
-			return getRadioValue(eid) ?? '';
+			return getRadioValue(world, eid) ?? '';
 		},
 
 		setLabel(label: string): RadioButtonWidget {
@@ -546,7 +546,7 @@ export function createRadioButton(world: World, config: RadioButtonConfig = {}):
 		destroy(): void {
 			RadioButtonWidgetComponent.isRadioButtonWidget[eid] = 0;
 			radioButtonWidgetStateMap.delete(eid);
-			clearRadioButtonDisplay(eid);
+			clearRadioButtonDisplay(world, eid);
 			removeEntity(world, eid);
 		},
 	};

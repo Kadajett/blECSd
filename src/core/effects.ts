@@ -211,7 +211,7 @@ function getOrCreateStoredStyle(world: World, eid: Entity): StoredStyle {
  * @param eid - The entity ID
  * @returns Stored style data or undefined
  */
-export function getStoredStyle(eid: Entity): StoredStyle | undefined {
+export function getStoredStyle(_world: World, eid: Entity): StoredStyle | undefined {
 	return storedStyles.get(eid);
 }
 
@@ -221,7 +221,7 @@ export function getStoredStyle(eid: Entity): StoredStyle | undefined {
  * @param eid - The entity ID
  * @returns true if entity has stored style
  */
-export function hasStoredStyle(eid: Entity): boolean {
+export function hasStoredStyle(_world: World, eid: Entity): boolean {
 	return storedStyles.has(eid);
 }
 
@@ -231,7 +231,7 @@ export function hasStoredStyle(eid: Entity): boolean {
  *
  * @param eid - The entity ID
  */
-export function clearStoredStyle(eid: Entity): void {
+export function clearStoredStyle(_world: World, eid: Entity): void {
 	storedStyles.delete(eid);
 }
 
@@ -250,7 +250,7 @@ export function clearAllStoredStyles(): void {
 /**
  * Applies a resolved effect to an entity's renderable.
  */
-function applyResolvedEffect(eid: Entity, effect: ResolvedEffect): void {
+function applyResolvedEffect(_world: World, eid: Entity, effect: ResolvedEffect): void {
 	if (effect.fg !== undefined) Renderable.fg[eid] = effect.fg;
 	if (effect.bg !== undefined) Renderable.bg[eid] = effect.bg;
 	if (effect.bold !== undefined) Renderable.bold[eid] = effect.bold ? 1 : 0;
@@ -262,7 +262,7 @@ function applyResolvedEffect(eid: Entity, effect: ResolvedEffect): void {
 /**
  * Restores an entity's style from stored original.
  */
-function restoreOriginalStyle(eid: Entity, original: StyleData): void {
+function restoreOriginalStyle(_world: World, eid: Entity, original: StyleData): void {
 	Renderable.fg[eid] = original.fg;
 	Renderable.bg[eid] = original.bg;
 	Renderable.bold[eid] = original.bold ? 1 : 0;
@@ -326,7 +326,7 @@ export function applyFocusEffect(world: World, eid: Entity): void {
 		(effect as { bg: number }).bg = focusEffectBg;
 	}
 
-	applyResolvedEffect(eid, effect);
+	applyResolvedEffect(world, eid, effect);
 	stored.focusApplied = true;
 	markDirty(world, eid);
 }
@@ -358,7 +358,7 @@ export function removeFocusEffect(world: World, eid: Entity): void {
 	if (stored.hoverApplied) {
 		reapplyHoverEffect(world, eid, stored);
 	} else {
-		restoreOriginalStyle(eid, stored.original);
+		restoreOriginalStyle(world, eid, stored.original);
 		storedStyles.delete(eid);
 	}
 
@@ -371,7 +371,7 @@ export function removeFocusEffect(world: World, eid: Entity): void {
  * @param eid - The entity ID
  * @returns true if focus effect is applied
  */
-export function hasFocusEffectApplied(eid: Entity): boolean {
+export function hasFocusEffectApplied(_world: World, eid: Entity): boolean {
 	const stored = storedStyles.get(eid);
 	return stored?.focusApplied ?? false;
 }
@@ -389,7 +389,7 @@ function reapplyHoverEffect(world: World, eid: Entity, stored: StoredStyle): voi
 	}
 
 	// Start from original, then apply hover
-	restoreOriginalStyle(eid, stored.original);
+	restoreOriginalStyle(world, eid, stored.original);
 
 	const effect: ResolvedEffect = {};
 	const hoverEffectFg = Interactive.hoverEffectFg[eid] as number;
@@ -402,7 +402,7 @@ function reapplyHoverEffect(world: World, eid: Entity, stored: StoredStyle): voi
 		(effect as { bg: number }).bg = hoverEffectBg;
 	}
 
-	applyResolvedEffect(eid, effect);
+	applyResolvedEffect(world, eid, effect);
 }
 
 /**
@@ -455,7 +455,7 @@ export function applyHoverEffect(world: World, eid: Entity): void {
 		(effect as { bg: number }).bg = hoverEffectBg;
 	}
 
-	applyResolvedEffect(eid, effect);
+	applyResolvedEffect(world, eid, effect);
 	stored.hoverApplied = true;
 	markDirty(world, eid);
 }
@@ -487,7 +487,7 @@ export function removeHoverEffect(world: World, eid: Entity): void {
 	if (stored.focusApplied) {
 		reapplyFocusEffect(world, eid, stored);
 	} else {
-		restoreOriginalStyle(eid, stored.original);
+		restoreOriginalStyle(world, eid, stored.original);
 		storedStyles.delete(eid);
 	}
 
@@ -503,7 +503,7 @@ function reapplyFocusEffect(world: World, eid: Entity, stored: StoredStyle): voi
 	}
 
 	// Start from original, then apply focus
-	restoreOriginalStyle(eid, stored.original);
+	restoreOriginalStyle(world, eid, stored.original);
 
 	const effect: ResolvedEffect = {};
 	const focusEffectFg = Focusable.focusEffectFg[eid] as number;
@@ -516,7 +516,7 @@ function reapplyFocusEffect(world: World, eid: Entity, stored: StoredStyle): voi
 		(effect as { bg: number }).bg = focusEffectBg;
 	}
 
-	applyResolvedEffect(eid, effect);
+	applyResolvedEffect(world, eid, effect);
 }
 
 /**
@@ -525,7 +525,7 @@ function reapplyFocusEffect(world: World, eid: Entity, stored: StoredStyle): voi
  * @param eid - The entity ID
  * @returns true if hover effect is applied
  */
-export function hasHoverEffectApplied(eid: Entity): boolean {
+export function hasHoverEffectApplied(_world: World, eid: Entity): boolean {
 	const stored = storedStyles.get(eid);
 	return stored?.hoverApplied ?? false;
 }
@@ -562,7 +562,7 @@ export function applyCustomEffect(world: World, eid: Entity, config: EffectConfi
 	getOrCreateStoredStyle(world, eid);
 
 	const resolved = resolveEffectConfig(world, eid, config);
-	applyResolvedEffect(eid, resolved);
+	applyResolvedEffect(world, eid, resolved);
 	markDirty(world, eid);
 }
 
@@ -586,7 +586,7 @@ export function removeAllEffects(world: World, eid: Entity): void {
 		return;
 	}
 
-	restoreOriginalStyle(eid, stored.original);
+	restoreOriginalStyle(world, eid, stored.original);
 	storedStyles.delete(eid);
 	markDirty(world, eid);
 }
@@ -615,8 +615,8 @@ export function syncEffects(world: World, eid: Entity): void {
 	const focused = hasFocusable(world, eid) && isFocused(world, eid);
 	const hovered = hasInteractive(world, eid) && isHovered(world, eid);
 
-	const focusApplied = hasFocusEffectApplied(eid);
-	const hoverApplied = hasHoverEffectApplied(eid);
+	const focusApplied = hasFocusEffectApplied(world, eid);
+	const hoverApplied = hasHoverEffectApplied(world, eid);
 
 	// Sync focus effect
 	if (focused && !focusApplied) {
@@ -778,7 +778,7 @@ export function setEffects(world: World, eid: Entity, config: EffectsConfig): vo
  * @param eid - The entity ID
  * @returns The effects configuration or undefined
  */
-export function getEffects(eid: Entity): EffectsConfig | undefined {
+export function getEffects(_world: World, eid: Entity): EffectsConfig | undefined {
 	return effectConfigs.get(eid);
 }
 
@@ -797,7 +797,7 @@ export function clearEffects(world: World, eid: Entity): void {
 /**
  * Gets or creates custom effect state for an entity.
  */
-function getOrCreateCustomState(eid: Entity): CustomEffectState {
+function getOrCreateCustomState(_world: World, eid: Entity): CustomEffectState {
 	let state = customEffectStates.get(eid);
 	if (!state) {
 		state = { pressApplied: false, disabledApplied: false };
@@ -831,7 +831,7 @@ export function applyPressEffect(world: World, eid: Entity): void {
 		return;
 	}
 
-	const state = getOrCreateCustomState(eid);
+	const state = getOrCreateCustomState(world, eid);
 	if (state.pressApplied) {
 		return;
 	}
@@ -840,7 +840,7 @@ export function applyPressEffect(world: World, eid: Entity): void {
 	getOrCreateStoredStyle(world, eid);
 
 	const resolved = resolveEffectConfig(world, eid, config.press);
-	applyResolvedEffect(eid, resolved);
+	applyResolvedEffect(world, eid, resolved);
 	state.pressApplied = true;
 	markDirty(world, eid);
 }
@@ -888,7 +888,7 @@ export function applyDisabledEffect(world: World, eid: Entity): void {
 		return;
 	}
 
-	const state = getOrCreateCustomState(eid);
+	const state = getOrCreateCustomState(world, eid);
 	if (state.disabledApplied) {
 		return;
 	}
@@ -897,7 +897,7 @@ export function applyDisabledEffect(world: World, eid: Entity): void {
 	getOrCreateStoredStyle(world, eid);
 
 	const resolved = resolveEffectConfig(world, eid, config.disabled);
-	applyResolvedEffect(eid, resolved);
+	applyResolvedEffect(world, eid, resolved);
 	state.disabledApplied = true;
 	markDirty(world, eid);
 }
@@ -926,7 +926,7 @@ export function removeDisabledEffect(world: World, eid: Entity): void {
  * @param eid - The entity ID
  * @returns true if press effect is applied
  */
-export function hasPressEffectApplied(eid: Entity): boolean {
+export function hasPressEffectApplied(_world: World, eid: Entity): boolean {
 	return customEffectStates.get(eid)?.pressApplied ?? false;
 }
 
@@ -936,7 +936,7 @@ export function hasPressEffectApplied(eid: Entity): boolean {
  * @param eid - The entity ID
  * @returns true if disabled effect is applied
  */
-export function hasDisabledEffectApplied(eid: Entity): boolean {
+export function hasDisabledEffectApplied(_world: World, eid: Entity): boolean {
 	return customEffectStates.get(eid)?.disabledApplied ?? false;
 }
 
@@ -946,12 +946,12 @@ export function hasDisabledEffectApplied(eid: Entity): boolean {
  * @param eid - The entity ID
  * @returns true if any effect is active
  */
-export function hasAnyEffectApplied(eid: Entity): boolean {
+export function hasAnyEffectApplied(_world: World, eid: Entity): boolean {
 	return (
-		hasFocusEffectApplied(eid) ||
-		hasHoverEffectApplied(eid) ||
-		hasPressEffectApplied(eid) ||
-		hasDisabledEffectApplied(eid)
+		hasFocusEffectApplied(_world, eid) ||
+		hasHoverEffectApplied(_world, eid) ||
+		hasPressEffectApplied(_world, eid) ||
+		hasDisabledEffectApplied(_world, eid)
 	);
 }
 
@@ -961,17 +961,20 @@ export function hasAnyEffectApplied(eid: Entity): boolean {
  * @param eid - The entity ID
  * @returns Object describing which effects are applied
  */
-export function getEffectState(eid: Entity): {
+export function getEffectState(
+	_world: World,
+	eid: Entity,
+): {
 	focus: boolean;
 	hover: boolean;
 	press: boolean;
 	disabled: boolean;
 } {
 	return {
-		focus: hasFocusEffectApplied(eid),
-		hover: hasHoverEffectApplied(eid),
-		press: hasPressEffectApplied(eid),
-		disabled: hasDisabledEffectApplied(eid),
+		focus: hasFocusEffectApplied(_world, eid),
+		hover: hasHoverEffectApplied(_world, eid),
+		press: hasPressEffectApplied(_world, eid),
+		disabled: hasDisabledEffectApplied(_world, eid),
 	};
 }
 
@@ -981,7 +984,7 @@ export function getEffectState(eid: Entity): {
  *
  * @param eid - The entity ID
  */
-export function clearEffectState(eid: Entity): void {
+export function clearEffectState(_world: World, eid: Entity): void {
 	storedStyles.delete(eid);
 	effectConfigs.delete(eid);
 	customEffectStates.delete(eid);

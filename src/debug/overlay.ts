@@ -192,7 +192,7 @@ export function createDebugOverlay(world: World, config: DebugOverlayConfig = {}
 		});
 		showEntity(world, eid);
 		setContent(world, eid, 'Loading...');
-		setEntityData(eid, 'name', '__debug_overlay__');
+		setEntityData(world, eid, 'name', '__debug_overlay__');
 
 		return eid;
 	}
