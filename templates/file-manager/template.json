@@ -1,0 +1,9 @@
+{
+	"name": "file-manager",
+	"version": "0.0.1",
+	"description": "Terminal file manager demonstrating blECSd architecture",
+	"category": "app",
+	"tags": ["filesystem", "navigation", "panels"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}

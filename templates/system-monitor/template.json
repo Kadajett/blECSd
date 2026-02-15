@@ -1,0 +1,9 @@
+{
+	"name": "system-monitor",
+	"version": "0.0.1",
+	"description": "htop-like real-time system stats dashboard",
+	"category": "app",
+	"tags": ["dashboard", "monitoring", "real-time"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}

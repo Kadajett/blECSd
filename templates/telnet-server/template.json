@@ -1,0 +1,9 @@
+{
+	"name": "telnet-server",
+	"version": "0.0.1",
+	"description": "Serve blECSd UIs to remote clients over telnet",
+	"category": "app",
+	"tags": ["server", "networking", "remote"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}

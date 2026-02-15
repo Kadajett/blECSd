@@ -1,0 +1,10 @@
+{
+	"name": "roguelike",
+	"version": "0.0.1",
+	"description": "Classic roguelike dungeon crawler with ECS-driven gameplay",
+	"category": "game",
+	"tags": ["game", "roguelike", "dungeon", "ecs"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0",
+	"placeholder": true
+}

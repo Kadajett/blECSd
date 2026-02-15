@@ -1,0 +1,9 @@
+{
+	"name": "big-text",
+	"version": "0.0.1",
+	"description": "BigText widget showcase with various fonts and styles",
+	"category": "demo",
+	"tags": ["demo", "ascii-art", "bigtext", "fonts"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}
