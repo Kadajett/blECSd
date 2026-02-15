@@ -69,7 +69,7 @@ describe('debug utilities', () => {
 		it('includes entity name if set', () => {
 			const eid = addEntity(world);
 			setPosition(world, eid, 0, 0);
-			setEntityData(eid, 'name', 'TestEntity');
+			setEntityData(world, eid, 'name', 'TestEntity');
 
 			const info = inspectEntity(world, eid);
 
@@ -104,7 +104,7 @@ describe('debug utilities', () => {
 		it('formats entity info as string', () => {
 			const eid = addEntity(world);
 			setPosition(world, eid, 10, 20);
-			setEntityData(eid, 'name', 'MyBox');
+			setEntityData(world, eid, 'name', 'MyBox');
 
 			const info = inspectEntity(world, eid);
 			const formatted = formatEntityInspection(info);
@@ -317,7 +317,7 @@ describe('debug utilities', () => {
 			const eid = addEntity(world);
 			setPosition(world, eid, 10, 20);
 			setDimensions(world, eid, 40, 10);
-			setEntityData(eid, 'name', 'TestBox');
+			setEntityData(world, eid, 'name', 'TestBox');
 
 			const summary = getEntitySummary(world, eid);
 

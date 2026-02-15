@@ -240,7 +240,7 @@ export function sendCheckboxEvent(world: World, eid: Entity, event: CheckboxEven
 		const wasCheckedOrUnchecked = previousState === 'checked' || previousState === 'unchecked';
 		const isNowCheckedOrUnchecked = newState === 'checked' || newState === 'unchecked';
 		if (wasCheckedOrUnchecked && isNowCheckedOrUnchecked && previousState !== newState) {
-			emitChange(eid, newState === 'checked');
+			emitChange(world, eid, newState === 'checked');
 		}
 	}
 
@@ -463,7 +463,11 @@ export function setChecked(world: World, eid: Entity, checked: boolean): boolean
  * unsubscribe();
  * ```
  */
-export function onCheckboxChange(eid: Entity, callback: (checked: boolean) => void): () => void {
+export function onCheckboxChange(
+	_world: World,
+	eid: Entity,
+	callback: (checked: boolean) => void,
+): () => void {
 	let callbacks = changeCallbacks.get(eid);
 	if (!callbacks) {
 		callbacks = [];
@@ -488,7 +492,7 @@ export function onCheckboxChange(eid: Entity, callback: (checked: boolean) => vo
  * @param eid - Entity ID
  * @param checked - New checked state
  */
-function emitChange(eid: Entity, checked: boolean): void {
+function emitChange(_world: World, eid: Entity, checked: boolean): void {
 	const callbacks = changeCallbacks.get(eid);
 	if (callbacks) {
 		for (const callback of callbacks) {
@@ -510,7 +514,7 @@ function emitChange(eid: Entity, checked: boolean): void {
  * removeEntity(world, checkboxEntity);
  * ```
  */
-export function clearCheckboxCallbacks(eid: Entity): void {
+export function clearCheckboxCallbacks(_world: World, eid: Entity): void {
 	changeCallbacks.delete(eid);
 }
 
@@ -583,7 +587,11 @@ export interface CheckboxDisplayOptions {
  * });
  * ```
  */
-export function setCheckboxDisplay(eid: Entity, options: CheckboxDisplayOptions): void {
+export function setCheckboxDisplay(
+	_world: World,
+	eid: Entity,
+	options: CheckboxDisplayOptions,
+): void {
 	const current = displayStore.get(eid) ?? {
 		checkedChar: DEFAULT_CHECKED_CHAR,
 		uncheckedChar: DEFAULT_UNCHECKED_CHAR,
@@ -609,7 +617,7 @@ export function setCheckboxDisplay(eid: Entity, options: CheckboxDisplayOptions)
  *   : display.uncheckedChar;
  * ```
  */
-export function getCheckboxDisplay(eid: Entity): CheckboxDisplay {
+export function getCheckboxDisplay(_world: World, eid: Entity): CheckboxDisplay {
 	return (
 		displayStore.get(eid) ?? {
 			checkedChar: DEFAULT_CHECKED_CHAR,
@@ -632,7 +640,7 @@ export function getCheckboxDisplay(eid: Entity): CheckboxDisplay {
  * ```
  */
 export function getCheckboxChar(world: World, eid: Entity): string {
-	const display = getCheckboxDisplay(eid);
+	const display = getCheckboxDisplay(world, eid);
 	const state = getCheckboxState(world, eid);
 
 	if (state === 'checked') {
@@ -647,6 +655,6 @@ export function getCheckboxChar(world: World, eid: Entity): string {
  *
  * @param eid - Entity ID
  */
-export function clearCheckboxDisplay(eid: Entity): void {
+export function clearCheckboxDisplay(_world: World, eid: Entity): void {
 	displayStore.delete(eid);
 }

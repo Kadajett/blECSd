@@ -124,7 +124,7 @@ export const DEFAULT_MASK = 0xffff;
 /**
  * Initializes collider component with default values.
  */
-function initCollider(eid: Entity): void {
+function initCollider(_world: World, eid: Entity): void {
 	Collider.type[eid] = ColliderType.BOX;
 	Collider.width[eid] = 1;
 	Collider.height[eid] = 1;
@@ -169,7 +169,7 @@ function initCollider(eid: Entity): void {
 export function setCollider(world: World, eid: Entity, options: ColliderOptions = {}): Entity {
 	if (!hasComponent(world, eid, Collider)) {
 		addComponent(world, eid, Collider);
-		initCollider(eid);
+		initCollider(world, eid);
 	}
 
 	if (options.type !== undefined) Collider.type[eid] = options.type;
@@ -261,7 +261,7 @@ export function removeCollider(world: World, eid: Entity): Entity {
 export function setCollisionLayer(world: World, eid: Entity, layer: number): Entity {
 	if (!hasComponent(world, eid, Collider)) {
 		addComponent(world, eid, Collider);
-		initCollider(eid);
+		initCollider(world, eid);
 	}
 	Collider.layer[eid] = layer;
 	return eid;
@@ -286,7 +286,7 @@ export function setCollisionLayer(world: World, eid: Entity, layer: number): Ent
 export function setCollisionMask(world: World, eid: Entity, mask: number): Entity {
 	if (!hasComponent(world, eid, Collider)) {
 		addComponent(world, eid, Collider);
-		initCollider(eid);
+		initCollider(world, eid);
 	}
 	Collider.mask[eid] = mask;
 	return eid;
@@ -303,7 +303,7 @@ export function setCollisionMask(world: World, eid: Entity, mask: number): Entit
 export function setTrigger(world: World, eid: Entity, isTrigger: boolean): Entity {
 	if (!hasComponent(world, eid, Collider)) {
 		addComponent(world, eid, Collider);
-		initCollider(eid);
+		initCollider(world, eid);
 	}
 	Collider.isTrigger[eid] = isTrigger ? 1 : 0;
 	return eid;
@@ -380,7 +380,7 @@ export interface AABB {
  * console.log(`Bounds: ${bounds.minX},${bounds.minY} to ${bounds.maxX},${bounds.maxY}`);
  * ```
  */
-export function getColliderAABB(eid: Entity, posX: number, posY: number): AABB {
+export function getColliderAABB(_world: World, eid: Entity, posX: number, posY: number): AABB {
 	const type = Collider.type[eid] as number;
 	const width = Collider.width[eid] as number;
 	const height = Collider.height[eid] as number;
@@ -502,6 +502,7 @@ export function testCircleAABBOverlap(cx: number, cy: number, radius: number, bo
  * ```
  */
 export function testCollision(
+	_world: World,
 	eidA: Entity,
 	posAX: number,
 	posAY: number,
@@ -531,21 +532,21 @@ export function testCollision(
 
 	// Box vs Box
 	if (typeA === ColliderType.BOX && typeB === ColliderType.BOX) {
-		const aabbA = getColliderAABB(eidA, posAX, posAY);
-		const aabbB = getColliderAABB(eidB, posBX, posBY);
+		const aabbA = getColliderAABB(_world, eidA, posAX, posAY);
+		const aabbB = getColliderAABB(_world, eidB, posBX, posBY);
 		return testAABBOverlap(aabbA, aabbB);
 	}
 
 	// Circle vs Box
 	if (typeA === ColliderType.CIRCLE && typeB === ColliderType.BOX) {
 		const radiusA = (Collider.width[eidA] as number) / 2;
-		const aabbB = getColliderAABB(eidB, posBX, posBY);
+		const aabbB = getColliderAABB(_world, eidB, posBX, posBY);
 		return testCircleAABBOverlap(centerAX, centerAY, radiusA, aabbB);
 	}
 
 	// Box vs Circle
 	if (typeA === ColliderType.BOX && typeB === ColliderType.CIRCLE) {
-		const aabbA = getColliderAABB(eidA, posAX, posAY);
+		const aabbA = getColliderAABB(_world, eidA, posAX, posAY);
 		const radiusB = (Collider.width[eidB] as number) / 2;
 		return testCircleAABBOverlap(centerBX, centerBY, radiusB, aabbA);
 	}

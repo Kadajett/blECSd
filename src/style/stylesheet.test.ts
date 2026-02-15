@@ -77,7 +77,7 @@ describe('Stylesheet System', () => {
 		it('matches by tag via entityData', () => {
 			const world = createWorld();
 			const eid = addEntity(world);
-			setEntityData(eid, 'widgetTag', 'button');
+			setEntityData(world, eid, 'widgetTag', 'button');
 
 			expect(matchesSelector(world, eid, { tag: 'button' })).toBe(true);
 			expect(matchesSelector(world, eid, { tag: 'box' })).toBe(false);
@@ -95,7 +95,7 @@ describe('Stylesheet System', () => {
 		it('matches by className via entityData', () => {
 			const world = createWorld();
 			const eid = addEntity(world);
-			setEntityData(eid, 'styleClasses', ['primary', 'large']);
+			setEntityData(world, eid, 'styleClasses', ['primary', 'large']);
 
 			expect(matchesSelector(world, eid, { className: 'primary' })).toBe(true);
 			expect(matchesSelector(world, eid, { className: 'large' })).toBe(true);
@@ -115,8 +115,8 @@ describe('Stylesheet System', () => {
 		it('requires all selector criteria to match (AND logic)', () => {
 			const world = createWorld();
 			const eid = addEntity(world);
-			setEntityData(eid, 'widgetTag', 'button');
-			setEntityData(eid, 'styleClasses', ['primary']);
+			setEntityData(world, eid, 'widgetTag', 'button');
+			setEntityData(world, eid, 'styleClasses', ['primary']);
 
 			// Both match
 			expect(matchesSelector(world, eid, { tag: 'button', className: 'primary' })).toBe(true);
@@ -210,7 +210,7 @@ describe('Stylesheet System', () => {
 		it('applies tag-based rules to matching entities', () => {
 			const world = createWorld();
 			const eid = createEntityWithRenderable(world);
-			setEntityData(eid, 'widgetTag', 'box');
+			setEntityData(world, eid, 'widgetTag', 'box');
 
 			const red = packColor(255, 0, 0);
 			let sheet = createStylesheet('test');
@@ -226,7 +226,7 @@ describe('Stylesheet System', () => {
 		it('applies class-based rules to matching entities', () => {
 			const world = createWorld();
 			const eid = createEntityWithRenderable(world);
-			setEntityData(eid, 'styleClasses', ['highlight']);
+			setEntityData(world, eid, 'styleClasses', ['highlight']);
 
 			let sheet = createStylesheet('test');
 			sheet = addRule(sheet, {
@@ -258,8 +258,8 @@ describe('Stylesheet System', () => {
 		it('cascades by specificity: id overrides class overrides tag', () => {
 			const world = createWorld();
 			const eid = createEntityWithRenderable(world);
-			setEntityData(eid, 'widgetTag', 'button');
-			setEntityData(eid, 'styleClasses', ['primary']);
+			setEntityData(world, eid, 'widgetTag', 'button');
+			setEntityData(world, eid, 'styleClasses', ['primary']);
 
 			const red = packColor(255, 0, 0);
 			const green = packColor(0, 255, 0);
@@ -282,8 +282,8 @@ describe('Stylesheet System', () => {
 		it('merges non-overlapping properties from different specificity levels', () => {
 			const world = createWorld();
 			const eid = createEntityWithRenderable(world);
-			setEntityData(eid, 'widgetTag', 'box');
-			setEntityData(eid, 'styleClasses', ['fancy']);
+			setEntityData(world, eid, 'widgetTag', 'box');
+			setEntityData(world, eid, 'styleClasses', ['fancy']);
 
 			const red = packColor(255, 0, 0);
 			const blue = packColor(0, 0, 255);
@@ -304,7 +304,7 @@ describe('Stylesheet System', () => {
 		it('skips entities without Renderable component', () => {
 			const world = createWorld();
 			const eid = addEntity(world); // No Renderable
-			setEntityData(eid, 'widgetTag', 'box');
+			setEntityData(world, eid, 'widgetTag', 'box');
 
 			let sheet = createStylesheet('test');
 			sheet = addRule(sheet, { selector: { tag: 'box' }, style: { bold: true } });
@@ -327,7 +327,7 @@ describe('Stylesheet System', () => {
 		it('handles priority tie-breaking', () => {
 			const world = createWorld();
 			const eid = createEntityWithRenderable(world);
-			setEntityData(eid, 'styleClasses', ['a', 'b']);
+			setEntityData(world, eid, 'styleClasses', ['a', 'b']);
 
 			const red = packColor(255, 0, 0);
 			const green = packColor(0, 255, 0);
@@ -345,7 +345,7 @@ describe('Stylesheet System', () => {
 		it('respects priority override on equal specificity', () => {
 			const world = createWorld();
 			const eid = createEntityWithRenderable(world);
-			setEntityData(eid, 'styleClasses', ['a', 'b']);
+			setEntityData(world, eid, 'styleClasses', ['a', 'b']);
 
 			const red = packColor(255, 0, 0);
 			const green = packColor(0, 255, 0);
@@ -372,7 +372,7 @@ describe('Stylesheet System', () => {
 			const world = createWorld();
 			const eid = createEntityWithRenderable(world);
 			Renderable.dirty[eid] = 0;
-			setEntityData(eid, 'widgetTag', 'box');
+			setEntityData(world, eid, 'widgetTag', 'box');
 
 			let sheet = createStylesheet('test');
 			sheet = addRule(sheet, { selector: { tag: 'box' }, style: { bold: true } });
@@ -387,7 +387,7 @@ describe('Stylesheet System', () => {
 		it('applies matching rules to a single entity', () => {
 			const world = createWorld();
 			const eid = createEntityWithRenderable(world);
-			setEntityData(eid, 'widgetTag', 'button');
+			setEntityData(world, eid, 'widgetTag', 'button');
 
 			let sheet = createStylesheet('test');
 			sheet = addRule(sheet, { selector: { tag: 'button' }, style: { underline: true } });
@@ -425,8 +425,8 @@ describe('Stylesheet System', () => {
 		it('returns all matching rules with specificity', () => {
 			const world = createWorld();
 			const eid = addEntity(world);
-			setEntityData(eid, 'widgetTag', 'button');
-			setEntityData(eid, 'styleClasses', ['primary']);
+			setEntityData(world, eid, 'widgetTag', 'button');
+			setEntityData(world, eid, 'styleClasses', ['primary']);
 
 			let sheet = createStylesheet('test');
 			sheet = addRule(sheet, { selector: { tag: 'button' }, style: { bold: true } });

@@ -154,7 +154,7 @@ export function isForm(_world: World, eid: Entity): boolean {
  * @param eid - Form entity ID
  * @returns True if keys are enabled
  */
-export function isFormKeysEnabled(eid: Entity): boolean {
+export function isFormKeysEnabled(_world: World, eid: Entity): boolean {
 	return ((formStore.flags[eid] as number) & FLAG_KEYS_ENABLED) !== 0;
 }
 
@@ -164,7 +164,7 @@ export function isFormKeysEnabled(eid: Entity): boolean {
  * @param eid - Form entity ID
  * @returns True if submit on Enter is enabled
  */
-export function isFormSubmitOnEnter(eid: Entity): boolean {
+export function isFormSubmitOnEnter(_world: World, eid: Entity): boolean {
 	return ((formStore.flags[eid] as number) & FLAG_SUBMIT_ON_ENTER) !== 0;
 }
 
@@ -422,7 +422,7 @@ export function submitForm(world: World, formEntity: Entity): FormValues {
  * });
  * ```
  */
-export function onFormSubmit(eid: Entity, callback: FormSubmitCallback): () => void {
+export function onFormSubmit(_world: World, eid: Entity, callback: FormSubmitCallback): () => void {
 	const callbacks = submitCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	submitCallbacks.set(eid, callbacks);
@@ -445,7 +445,7 @@ export function onFormSubmit(eid: Entity, callback: FormSubmitCallback): () => v
  * @param callback - Function to call on reset
  * @returns Unsubscribe function
  */
-export function onFormReset(eid: Entity, callback: FormResetCallback): () => void {
+export function onFormReset(_world: World, eid: Entity, callback: FormResetCallback): () => void {
 	const callbacks = resetCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	resetCallbacks.set(eid, callbacks);
@@ -466,7 +466,7 @@ export function onFormReset(eid: Entity, callback: FormResetCallback): () => voi
  *
  * @param eid - Form entity ID
  */
-export function clearFormCallbacks(eid: Entity): void {
+export function clearFormCallbacks(_world: World, eid: Entity): void {
 	submitCallbacks.delete(eid);
 	resetCallbacks.delete(eid);
 }
@@ -552,7 +552,7 @@ export function handleFormKeyPress(
 		return false;
 	}
 
-	if (!isFormKeysEnabled(formEntity)) {
+	if (!isFormKeysEnabled(world, formEntity)) {
 		return false;
 	}
 
@@ -568,7 +568,7 @@ export function handleFormKeyPress(
 
 	// Enter to submit (if enabled)
 	if (key === 'return' || key === 'enter') {
-		if (isFormSubmitOnEnter(formEntity)) {
+		if (isFormSubmitOnEnter(world, formEntity)) {
 			submitForm(world, formEntity);
 			return true;
 		}

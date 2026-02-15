@@ -14,7 +14,7 @@ import { listStore } from './stores';
  * @param eid - The entity ID
  * @returns true if interactive
  */
-export function isListInteractive(eid: Entity): boolean {
+export function isListInteractive(_world: World, eid: Entity): boolean {
 	return listStore.interactive[eid] === 1;
 }
 
@@ -36,7 +36,7 @@ export function setListInteractive(world: World, eid: Entity, interactive: boole
  * @param eid - The entity ID
  * @returns true if mouse enabled
  */
-export function isListMouseEnabled(eid: Entity): boolean {
+export function isListMouseEnabled(_world: World, eid: Entity): boolean {
 	return listStore.mouse[eid] === 1;
 }
 
@@ -58,7 +58,7 @@ export function setListMouse(world: World, eid: Entity, mouse: boolean): void {
  * @param eid - The entity ID
  * @returns true if keys enabled
  */
-export function isListKeysEnabled(eid: Entity): boolean {
+export function isListKeysEnabled(_world: World, eid: Entity): boolean {
 	return listStore.keys[eid] === 1;
 }
 

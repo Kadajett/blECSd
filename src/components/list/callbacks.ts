@@ -4,7 +4,7 @@
  * @module components/list/callbacks
  */
 
-import type { Entity } from '../../core/types';
+import type { Entity, World } from '../../core/types';
 import { activateCallbacks, cancelCallbacks, selectCallbacks } from './stores';
 import type { ListSelectCallback } from './types';
 
@@ -22,7 +22,7 @@ import type { ListSelectCallback } from './types';
  * });
  * ```
  */
-export function onListSelect(eid: Entity, callback: ListSelectCallback): () => void {
+export function onListSelect(_world: World, eid: Entity, callback: ListSelectCallback): () => void {
 	const callbacks = selectCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	selectCallbacks.set(eid, callbacks);
@@ -52,7 +52,11 @@ export function onListSelect(eid: Entity, callback: ListSelectCallback): () => v
  * });
  * ```
  */
-export function onListActivate(eid: Entity, callback: ListSelectCallback): () => void {
+export function onListActivate(
+	_world: World,
+	eid: Entity,
+	callback: ListSelectCallback,
+): () => void {
 	const callbacks = activateCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	activateCallbacks.set(eid, callbacks);
@@ -82,7 +86,7 @@ export function onListActivate(eid: Entity, callback: ListSelectCallback): () =>
  * });
  * ```
  */
-export function onListCancel(eid: Entity, callback: () => void): () => void {
+export function onListCancel(_world: World, eid: Entity, callback: () => void): () => void {
 	const callbacks = cancelCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	cancelCallbacks.set(eid, callbacks);
@@ -103,7 +107,7 @@ export function onListCancel(eid: Entity, callback: () => void): () => void {
  *
  * @param eid - The entity ID
  */
-export function triggerListCancel(eid: Entity): void {
+export function triggerListCancel(_world: World, eid: Entity): void {
 	const callbacks = cancelCallbacks.get(eid);
 	if (callbacks) {
 		for (const callback of callbacks) {
@@ -117,7 +121,7 @@ export function triggerListCancel(eid: Entity): void {
  *
  * @param eid - The entity ID
  */
-export function clearListCallbacks(eid: Entity): void {
+export function clearListCallbacks(_world: World, eid: Entity): void {
 	selectCallbacks.delete(eid);
 	activateCallbacks.delete(eid);
 	cancelCallbacks.delete(eid);

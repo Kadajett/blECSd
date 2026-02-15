@@ -41,59 +41,59 @@ describe('hoverText', () => {
 
 	describe('setHoverText / getHoverText', () => {
 		it('should set hover text from string', () => {
-			setHoverText(entity, 'Hello World');
+			setHoverText(world, entity, 'Hello World');
 
-			const config = getHoverText(entity);
+			const config = getHoverText(world, entity);
 			expect(config?.text).toBe('Hello World');
 		});
 
 		it('should set hover text from config object', () => {
-			setHoverText(entity, {
+			setHoverText(world, entity, {
 				text: 'Custom tooltip',
 				delay: 200,
 				style: { fg: 0xffff0000 },
 			});
 
-			const config = getHoverText(entity);
+			const config = getHoverText(world, entity);
 			expect(config?.text).toBe('Custom tooltip');
 			expect(config?.delay).toBe(200);
 			expect(config?.style?.fg).toBe(0xffff0000);
 		});
 
 		it('should return undefined for entity without hover text', () => {
-			expect(getHoverText(entity)).toBeUndefined();
+			expect(getHoverText(world, entity)).toBeUndefined();
 		});
 	});
 
 	describe('hasHoverText', () => {
 		it('should return false for entity without hover text', () => {
-			expect(hasHoverText(entity)).toBe(false);
+			expect(hasHoverText(world, entity)).toBe(false);
 		});
 
 		it('should return true for entity with hover text', () => {
-			setHoverText(entity, 'Test');
-			expect(hasHoverText(entity)).toBe(true);
+			setHoverText(world, entity, 'Test');
+			expect(hasHoverText(world, entity)).toBe(true);
 		});
 	});
 
 	describe('clearHoverText', () => {
 		it('should remove hover text from entity', () => {
-			setHoverText(entity, 'Test');
-			clearHoverText(entity);
+			setHoverText(world, entity, 'Test');
+			clearHoverText(world, entity);
 
-			expect(hasHoverText(entity)).toBe(false);
+			expect(hasHoverText(world, entity)).toBe(false);
 		});
 	});
 
 	describe('clearAllHoverText', () => {
 		it('should remove all hover text', () => {
-			setHoverText(entity, 'Test 1');
-			setHoverText(entity2, 'Test 2');
+			setHoverText(world, entity, 'Test 1');
+			setHoverText(world, entity2, 'Test 2');
 
 			clearAllHoverText();
 
-			expect(hasHoverText(entity)).toBe(false);
-			expect(hasHoverText(entity2)).toBe(false);
+			expect(hasHoverText(world, entity)).toBe(false);
+			expect(hasHoverText(world, entity2)).toBe(false);
 		});
 	});
 
@@ -103,10 +103,10 @@ describe('hoverText', () => {
 		});
 
 		it('should return correct count', () => {
-			setHoverText(entity, 'Test 1');
+			setHoverText(world, entity, 'Test 1');
 			expect(getHoverTextCount()).toBe(1);
 
-			setHoverText(entity2, 'Test 2');
+			setHoverText(world, entity2, 'Test 2');
 			expect(getHoverTextCount()).toBe(2);
 		});
 	});

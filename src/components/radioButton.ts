@@ -220,7 +220,7 @@ export function isRadioSet(_world: World, eid: Entity): boolean {
  * @param eid - Radio set entity ID
  * @returns Selected button entity ID or 0 if none
  */
-export function getSelectedButton(eid: Entity): Entity {
+export function getSelectedButton(_world: World, eid: Entity): Entity {
 	return radioSetStore.selectedButton[eid] as Entity;
 }
 
@@ -240,7 +240,7 @@ export function getSelectedButton(eid: Entity): Entity {
  * }
  * ```
  */
-export function getSelectedValue(eid: Entity): string | null {
+export function getSelectedValue(_world: World, eid: Entity): string | null {
 	const selectedButton = radioSetStore.selectedButton[eid] as Entity;
 	if (selectedButton === 0) {
 		return null;
@@ -264,7 +264,11 @@ export function getSelectedValue(eid: Entity): string | null {
  * });
  * ```
  */
-export function onRadioSelect(eid: Entity, callback: RadioSelectCallback): () => void {
+export function onRadioSelect(
+	_world: World,
+	eid: Entity,
+	callback: RadioSelectCallback,
+): () => void {
 	const callbacks = selectCallbacks.get(eid) ?? [];
 	callbacks.push(callback);
 	selectCallbacks.set(eid, callbacks);
@@ -285,10 +289,10 @@ export function onRadioSelect(eid: Entity, callback: RadioSelectCallback): () =>
  *
  * @param eid - Radio set entity ID
  */
-function emitSelectChange(eid: Entity): void {
+function emitSelectChange(_world: World, eid: Entity): void {
 	const callbacks = selectCallbacks.get(eid);
 	if (callbacks) {
-		const selectedButton = getSelectedButton(eid);
+		const selectedButton = getSelectedButton(_world, eid);
 		const selectedValue = selectedButton !== 0 ? (valueStore.get(selectedButton) ?? null) : null;
 		for (const callback of callbacks) {
 			callback(selectedValue, selectedButton !== 0 ? selectedButton : null);
@@ -301,7 +305,7 @@ function emitSelectChange(eid: Entity): void {
  *
  * @param eid - Radio set entity ID
  */
-export function clearRadioSetCallbacks(eid: Entity): void {
+export function clearRadioSetCallbacks(_world: World, eid: Entity): void {
 	selectCallbacks.delete(eid);
 }
 
@@ -332,7 +336,7 @@ export function attachRadioButtonBehavior(world: World, eid: Entity, radioSetId?
 	radioButtonStore.machineId[eid] = machineId;
 
 	// Initialize default display
-	setRadioButtonDisplay(eid, {});
+	setRadioButtonDisplay(world, eid, {});
 
 	markDirty(world, eid);
 	return machineId;
@@ -441,7 +445,7 @@ export function isRadioButtonDisabled(world: World, eid: Entity): boolean {
  * @param eid - Radio button entity ID
  * @returns Radio set entity ID or 0 if not in a set
  */
-export function getRadioSet(eid: Entity): Entity {
+export function getRadioSet(_world: World, eid: Entity): Entity {
 	return radioButtonStore.radioSetId[eid] as Entity;
 }
 
@@ -451,7 +455,7 @@ export function getRadioSet(eid: Entity): Entity {
  * @param eid - Radio button entity ID
  * @param radioSetId - Radio set entity ID
  */
-export function setRadioSet(eid: Entity, radioSetId: Entity): void {
+export function setRadioSet(_world: World, eid: Entity, radioSetId: Entity): void {
 	radioButtonStore.radioSetId[eid] = radioSetId;
 }
 
@@ -461,7 +465,7 @@ export function setRadioSet(eid: Entity, radioSetId: Entity): void {
  * @param eid - Radio button entity ID
  * @returns Value string or undefined
  */
-export function getRadioValue(eid: Entity): string | undefined {
+export function getRadioValue(_world: World, eid: Entity): string | undefined {
 	return valueStore.get(eid);
 }
 
@@ -471,7 +475,7 @@ export function getRadioValue(eid: Entity): string | undefined {
  * @param eid - Radio button entity ID
  * @param value - Value string
  */
-export function setRadioValue(eid: Entity, value: string): void {
+export function setRadioValue(_world: World, eid: Entity, value: string): void {
 	valueStore.set(eid, value);
 }
 
@@ -515,7 +519,7 @@ export function selectRadioButton(world: World, eid: Entity): void {
 
 	// Emit selection change
 	if (radioSetId !== 0) {
-		emitSelectChange(radioSetId);
+		emitSelectChange(world, radioSetId);
 	}
 }
 
@@ -538,7 +542,7 @@ export function deselectRadioButton(world: World, eid: Entity): void {
 		const currentlySelected = radioSetStore.selectedButton[radioSetId] as Entity;
 		if (currentlySelected === eid) {
 			radioSetStore.selectedButton[radioSetId] = 0;
-			emitSelectChange(radioSetId);
+			emitSelectChange(world, radioSetId);
 		}
 	}
 
@@ -587,7 +591,11 @@ export function enableRadioButton(world: World, eid: Entity): void {
  * });
  * ```
  */
-export function setRadioButtonDisplay(eid: Entity, options: RadioButtonDisplayOptions): void {
+export function setRadioButtonDisplay(
+	_world: World,
+	eid: Entity,
+	options: RadioButtonDisplayOptions,
+): void {
 	const existing = displayStore.get(eid);
 	displayStore.set(eid, {
 		selectedChar: options.selectedChar ?? existing?.selectedChar ?? DEFAULT_RADIO_SELECTED_CHAR,
@@ -602,7 +610,7 @@ export function setRadioButtonDisplay(eid: Entity, options: RadioButtonDisplayOp
  * @param eid - Radio button entity ID
  * @returns Display configuration
  */
-export function getRadioButtonDisplay(eid: Entity): RadioButtonDisplay {
+export function getRadioButtonDisplay(_world: World, eid: Entity): RadioButtonDisplay {
 	return (
 		displayStore.get(eid) ?? {
 			selectedChar: DEFAULT_RADIO_SELECTED_CHAR,
@@ -627,7 +635,7 @@ export function getRadioButtonDisplay(eid: Entity): RadioButtonDisplay {
  * ```
  */
 export function getRadioButtonChar(world: World, eid: Entity): string {
-	const display = getRadioButtonDisplay(eid);
+	const display = getRadioButtonDisplay(world, eid);
 	if (isRadioSelected(world, eid)) {
 		return display.selectedChar;
 	}
@@ -639,7 +647,7 @@ export function getRadioButtonChar(world: World, eid: Entity): string {
  *
  * @param eid - Radio button entity ID
  */
-export function clearRadioButtonDisplay(eid: Entity): void {
+export function clearRadioButtonDisplay(_world: World, eid: Entity): void {
 	displayStore.delete(eid);
 }
 

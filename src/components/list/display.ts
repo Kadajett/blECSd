@@ -4,7 +4,7 @@
  * @module components/list/display
  */
 
-import type { Entity } from '../../core/types';
+import type { Entity, World } from '../../core/types';
 import {
 	DEFAULT_DISABLED_FG,
 	DEFAULT_ITEM_BG,
@@ -23,7 +23,7 @@ import type { ListDisplay, ListDisplayOptions } from './types';
  * @param eid - The entity ID
  * @param options - Display options
  */
-export function setListDisplay(eid: Entity, options: ListDisplayOptions): void {
+export function setListDisplay(_world: World, eid: Entity, options: ListDisplayOptions): void {
 	const existing = displayStore.get(eid);
 	displayStore.set(eid, {
 		selectedPrefix: options.selectedPrefix ?? existing?.selectedPrefix ?? DEFAULT_SELECTED_PREFIX,
@@ -43,7 +43,7 @@ export function setListDisplay(eid: Entity, options: ListDisplayOptions): void {
  * @param eid - The entity ID
  * @returns Display configuration
  */
-export function getListDisplay(eid: Entity): ListDisplay {
+export function getListDisplay(_world: World, eid: Entity): ListDisplay {
 	return (
 		displayStore.get(eid) ?? {
 			selectedPrefix: DEFAULT_SELECTED_PREFIX,
@@ -62,6 +62,6 @@ export function getListDisplay(eid: Entity): ListDisplay {
  *
  * @param eid - The entity ID
  */
-export function clearListDisplay(eid: Entity): void {
+export function clearListDisplay(_world: World, eid: Entity): void {
 	displayStore.delete(eid);
 }
