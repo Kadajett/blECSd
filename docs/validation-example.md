@@ -72,10 +72,16 @@ registerComponentName(MyCustomComponent, 'MyCustomComponent');
 Use `isEntityValid` for cases where you want to check without throwing:
 
 ```typescript
-import { isEntityValid, Position, Velocity } from 'blecsd';
+import { isEntityValid, Position, Velocity, query, createWorld } from 'blecsd';
 
-if (!isEntityValid(world, entity, [Position, Velocity])) {
-  console.warn(`Entity ${entity} is missing required components, skipping...`);
-  continue;
+const world = createWorld();
+const entities = query(world, [Position]);
+
+for (const entity of entities) {
+  if (!isEntityValid(world, entity, [Position, Velocity])) {
+    console.warn(`Entity ${entity} is missing required components, skipping...`);
+    continue;
+  }
+  // Process entity
 }
 ```
