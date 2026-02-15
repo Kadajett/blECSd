@@ -4,7 +4,7 @@
  * @module components/terminalBuffer/render
  */
 
-import type { Entity } from '../../core/types';
+import type { Entity, World } from '../../core/types';
 import type { Cell } from '../../terminal/screen/cell';
 import { getLineRange } from '../../utils/virtualScrollback';
 import { TerminalBuffer } from './component';
@@ -65,8 +65,8 @@ function renderCell(
  * @param eid - Entity ID
  * @returns ANSI string representation of the terminal
  */
-export function renderTerminalToAnsi(eid: Entity): string {
-	const state = getTerminalState(eid);
+export function renderTerminalToAnsi(_world: World, eid: Entity): string {
+	const state = getTerminalState(_world, eid);
 	if (!state) return '';
 
 	const width = TerminalBuffer.width[eid] ?? 0;
@@ -107,7 +107,7 @@ export function renderTerminalToAnsi(eid: Entity): string {
  * @param eid - Entity ID
  * @returns Readonly array of cells
  */
-export function getTerminalCells(eid: Entity): readonly Cell[] | undefined {
-	const state = getTerminalState(eid);
+export function getTerminalCells(_world: World, eid: Entity): readonly Cell[] | undefined {
+	const state = getTerminalState(_world, eid);
 	return state?.buffer.cells;
 }

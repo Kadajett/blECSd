@@ -41,9 +41,9 @@ describe('Terminal Widget', () => {
 
 			expect(terminal.eid).toBeDefined();
 			expect(isTerminal(world, terminal.eid)).toBe(true);
-			expect(hasTerminalBuffer(terminal.eid)).toBe(true);
+			expect(hasTerminalBuffer(world, terminal.eid)).toBe(true);
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.width).toBe(80);
 			expect(buffer?.height).toBe(24);
 			expect(buffer?.cursorVisible).toBe(true);
@@ -55,7 +55,7 @@ describe('Terminal Widget', () => {
 				height: 40,
 			});
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.width).toBe(120);
 			expect(buffer?.height).toBe(40);
 		});
@@ -75,7 +75,7 @@ describe('Terminal Widget', () => {
 				scrollback: 5000,
 			});
 
-			const state = getTerminalState(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
 			expect(state?.scrollback).toBeDefined();
 		});
 	});
@@ -85,7 +85,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('Hello');
 
-			const cells = getTerminalCells(terminal.eid);
+			const cells = getTerminalCells(world, terminal.eid);
 			expect(cells?.[0]?.char).toBe('H');
 			expect(cells?.[1]?.char).toBe('e');
 			expect(cells?.[2]?.char).toBe('l');
@@ -98,7 +98,7 @@ describe('Terminal Widget', () => {
 			terminal.writeln('Line 1');
 			terminal.writeln('Line 2');
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			// After "Line 1\n", cursor should be at row 1
 			// After "Line 2\n", cursor should be at row 2
 			expect(buffer?.cursorY).toBe(2);
@@ -108,7 +108,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('Hello\rWorld');
 
-			const cells = getTerminalCells(terminal.eid);
+			const cells = getTerminalCells(world, terminal.eid);
 			// \r moves cursor to beginning, "World" overwrites "Hello"
 			expect(cells?.[0]?.char).toBe('W');
 			expect(cells?.[1]?.char).toBe('o');
@@ -121,7 +121,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('Hello\b');
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorX).toBe(4); // Moved back one position
 		});
 
@@ -129,7 +129,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('Hi\tWorld');
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			// 'Hi' puts cursor at 2, tab moves to 8, 'World' puts cursor at 13
 			expect(buffer?.cursorX).toBe(13);
 		});
@@ -141,7 +141,7 @@ describe('Terminal Widget', () => {
 			terminal.write('\n\n\n'); // Move to row 3
 			terminal.write('\x1b[2A'); // Move up 2 rows
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorY).toBe(1);
 		});
 
@@ -149,7 +149,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[3B'); // Move down 3 rows
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorY).toBe(3);
 		});
 
@@ -157,7 +157,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[5C'); // Move right 5 columns
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorX).toBe(5);
 		});
 
@@ -165,7 +165,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('Hello\x1b[3D'); // Write "Hello", move back 3
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorX).toBe(2);
 		});
 
@@ -173,7 +173,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[10;20H'); // Move to row 10, column 20
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorY).toBe(9); // 0-indexed
 			expect(buffer?.cursorX).toBe(19); // 0-indexed
 		});
@@ -182,7 +182,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('Hello\x1b[10G'); // Move to column 10
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorX).toBe(9); // 0-indexed
 		});
 
@@ -191,7 +191,7 @@ describe('Terminal Widget', () => {
 			terminal.write('Hello');
 			terminal.write('\x1b[2J'); // Clear entire display
 
-			const cells = getTerminalCells(terminal.eid);
+			const cells = getTerminalCells(world, terminal.eid);
 			expect(cells?.[0]?.char).toBe(' ');
 			expect(cells?.[1]?.char).toBe(' ');
 		});
@@ -202,7 +202,7 @@ describe('Terminal Widget', () => {
 			terminal.write('\x1b[5G'); // Move to column 5
 			terminal.write('\x1b[K'); // Erase to end of line
 
-			const cells = getTerminalCells(terminal.eid);
+			const cells = getTerminalCells(world, terminal.eid);
 			expect(cells?.[0]?.char).toBe('H');
 			expect(cells?.[4]?.char).toBe(' '); // Erased
 		});
@@ -211,7 +211,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[1;31mRed\x1b[0m');
 
-			const state = getTerminalState(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
 			// After reset, current attr should be default
 			expect(state?.currentAttr.fg.type).toBe(0); // DEFAULT
 			expect(state?.currentAttr.styles).toBe(0); // NONE
@@ -221,7 +221,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[31mR\x1b[32mG\x1b[34mB');
 
-			const cells = getTerminalCells(terminal.eid);
+			const cells = getTerminalCells(world, terminal.eid);
 			// Check that different colors were applied
 			expect(cells?.[0]?.fg).not.toBe(cells?.[1]?.fg);
 			expect(cells?.[1]?.fg).not.toBe(cells?.[2]?.fg);
@@ -231,11 +231,11 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 
 			terminal.write('\x1b[?25l'); // Hide cursor
-			let buffer = getTerminalBuffer(terminal.eid);
+			let buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorVisible).toBe(false);
 
 			terminal.write('\x1b[?25h'); // Show cursor
-			buffer = getTerminalBuffer(terminal.eid);
+			buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorVisible).toBe(true);
 		});
 
@@ -246,7 +246,7 @@ describe('Terminal Widget', () => {
 			terminal.write('\x1b[1;1H'); // Move to 1,1
 			terminal.write('\x1b[u'); // Restore
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorY).toBe(4); // 0-indexed from row 5
 			expect(buffer?.cursorX).toBe(9); // 0-indexed from column 10
 		});
@@ -258,8 +258,8 @@ describe('Terminal Widget', () => {
 			terminal.write('Hello World');
 			terminal.clear();
 
-			const cells = getTerminalCells(terminal.eid);
-			const buffer = getTerminalBuffer(terminal.eid);
+			const cells = getTerminalCells(world, terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 
 			expect(cells?.[0]?.char).toBe(' ');
 			expect(buffer?.cursorX).toBe(0);
@@ -271,8 +271,8 @@ describe('Terminal Widget', () => {
 			terminal.write('\x1b[31mColored text');
 			terminal.reset();
 
-			const state = getTerminalState(terminal.eid);
-			const buffer = getTerminalBuffer(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 
 			expect(state?.currentAttr.fg.type).toBe(0); // DEFAULT
 			expect(buffer?.cursorX).toBe(0);
@@ -290,7 +290,7 @@ describe('Terminal Widget', () => {
 			}
 
 			terminal.scrollUp(5);
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.scrollOffset).toBe(5);
 		});
 
@@ -302,10 +302,10 @@ describe('Terminal Widget', () => {
 			}
 
 			terminal.scrollUp(10);
-			const afterUp = getTerminalBuffer(terminal.eid)?.scrollOffset ?? 0;
+			const afterUp = getTerminalBuffer(world, terminal.eid)?.scrollOffset ?? 0;
 			terminal.scrollDown(3);
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			// Should have decreased by 3
 			expect(buffer?.scrollOffset).toBe(afterUp - 3);
 		});
@@ -318,7 +318,7 @@ describe('Terminal Widget', () => {
 			}
 
 			terminal.scrollToTop();
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			// Scroll offset should be at max (scrollback lines)
 			expect(buffer?.scrollOffset).toBeGreaterThan(0);
 		});
@@ -333,7 +333,7 @@ describe('Terminal Widget', () => {
 			terminal.scrollToTop();
 			terminal.scrollToBottom();
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.scrollOffset).toBe(0);
 		});
 	});
@@ -343,7 +343,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.setCursor(10, 5);
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorX).toBe(10);
 			expect(buffer?.cursorY).toBe(5);
 		});
@@ -353,7 +353,7 @@ describe('Terminal Widget', () => {
 			terminal.hideCursor();
 			terminal.showCursor();
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorVisible).toBe(true);
 		});
 
@@ -361,7 +361,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world);
 			terminal.hideCursor();
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorVisible).toBe(false);
 		});
 	});
@@ -371,7 +371,7 @@ describe('Terminal Widget', () => {
 			const terminal = createTerminal(world, { width: 80, height: 24 });
 			terminal.resize(120, 40);
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.width).toBe(120);
 			expect(buffer?.height).toBe(40);
 		});
@@ -381,7 +381,7 @@ describe('Terminal Widget', () => {
 			terminal.setCursor(70, 20);
 			terminal.resize(40, 10);
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorX).toBe(39);
 			expect(buffer?.cursorY).toBe(9);
 		});
@@ -434,7 +434,7 @@ describe('Terminal Widget', () => {
 			terminal.destroy();
 
 			expect(isTerminal(world, eid)).toBe(false);
-			expect(hasTerminalBuffer(eid)).toBe(false);
+			expect(hasTerminalBuffer(world, eid)).toBe(false);
 		});
 
 		it('should refresh the widget', () => {
@@ -476,7 +476,7 @@ describe('Terminal Widget', () => {
 			const handled = handleTerminalKey(terminal, 'pageup');
 			expect(handled).toBe(true);
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.scrollOffset).toBeGreaterThan(0);
 		});
 
@@ -488,7 +488,7 @@ describe('Terminal Widget', () => {
 
 			handleTerminalKey(terminal, 'home', undefined, true);
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.scrollOffset).toBeGreaterThan(0);
 		});
 
@@ -501,7 +501,7 @@ describe('Terminal Widget', () => {
 			terminal.scrollToTop();
 			handleTerminalKey(terminal, 'end', undefined, true);
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.scrollOffset).toBe(0);
 		});
 	});
@@ -542,7 +542,7 @@ describe('TerminalBuffer Component', () => {
 			// Write more than 10 characters
 			terminal.write('ABCDEFGHIJ12345');
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			expect(buffer?.cursorX).toBe(5); // After wrapping
 			expect(buffer?.cursorY).toBe(1); // Second line
 		});
@@ -557,7 +557,7 @@ describe('TerminalBuffer Component', () => {
 				terminal.writeln(`Line ${i}`);
 			}
 
-			const buffer = getTerminalBuffer(terminal.eid);
+			const buffer = getTerminalBuffer(world, terminal.eid);
 			// Cursor should be on last visible row
 			expect(buffer?.cursorY).toBe(4);
 		});
@@ -568,7 +568,7 @@ describe('TerminalBuffer Component', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[38;5;196mRed'); // Color 196 is bright red
 
-			const state = getTerminalState(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
 			expect(state?.currentAttr.fg.type).toBe(2); // COLOR_256
 			expect(state?.currentAttr.fg.value).toBe(196);
 		});
@@ -577,7 +577,7 @@ describe('TerminalBuffer Component', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[48;5;21mBlue'); // Color 21 is blue
 
-			const state = getTerminalState(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
 			expect(state?.currentAttr.bg.type).toBe(2); // COLOR_256
 			expect(state?.currentAttr.bg.value).toBe(21);
 		});
@@ -588,7 +588,7 @@ describe('TerminalBuffer Component', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[38;2;255;128;64mOrange');
 
-			const state = getTerminalState(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
 			expect(state?.currentAttr.fg.type).toBe(3); // RGB
 			// Packed as (255 << 16) | (128 << 8) | 64
 			expect(state?.currentAttr.fg.value).toBe((255 << 16) | (128 << 8) | 64);
@@ -598,7 +598,7 @@ describe('TerminalBuffer Component', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[48;2;64;128;255mBackground');
 
-			const state = getTerminalState(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
 			expect(state?.currentAttr.bg.type).toBe(3); // RGB
 			expect(state?.currentAttr.bg.value).toBe((64 << 16) | (128 << 8) | 255);
 		});
@@ -609,7 +609,7 @@ describe('TerminalBuffer Component', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[1mBold');
 
-			const state = getTerminalState(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
 			expect((state?.currentAttr.styles ?? 0) & 1).toBe(1); // Bold is bit 0
 		});
 
@@ -617,7 +617,7 @@ describe('TerminalBuffer Component', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[3mItalic');
 
-			const state = getTerminalState(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
 			expect((state?.currentAttr.styles ?? 0) & 4).toBe(4); // Italic is bit 2
 		});
 
@@ -625,7 +625,7 @@ describe('TerminalBuffer Component', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[4mUnderline');
 
-			const state = getTerminalState(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
 			expect((state?.currentAttr.styles ?? 0) & 8).toBe(8); // Underline is bit 3
 		});
 
@@ -633,7 +633,7 @@ describe('TerminalBuffer Component', () => {
 			const terminal = createTerminal(world);
 			terminal.write('\x1b[1;3;4mBoldItalicUnderline');
 
-			const state = getTerminalState(terminal.eid);
+			const state = getTerminalState(world, terminal.eid);
 			// Bold (1) | Italic (4) | Underline (8) = 13
 			expect((state?.currentAttr.styles ?? 0) & 13).toBe(13);
 		});

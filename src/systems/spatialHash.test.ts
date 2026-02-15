@@ -360,31 +360,33 @@ describe('spatialHash', () => {
 	});
 
 	describe('markSpatialDirty / getSpatialDirtyCount', () => {
+		const world = createWorld();
 		it('marks an entity as dirty', () => {
 			expect(getSpatialDirtyCount()).toBe(0);
-			markSpatialDirty(42 as Entity);
+			markSpatialDirty(world, 42 as Entity);
 			expect(getSpatialDirtyCount()).toBe(1);
 		});
 
 		it('deduplicates repeated marks for the same entity', () => {
-			markSpatialDirty(10 as Entity);
-			markSpatialDirty(10 as Entity);
-			markSpatialDirty(10 as Entity);
+			markSpatialDirty(world, 10 as Entity);
+			markSpatialDirty(world, 10 as Entity);
+			markSpatialDirty(world, 10 as Entity);
 			expect(getSpatialDirtyCount()).toBe(1);
 		});
 
 		it('tracks multiple distinct entities', () => {
-			markSpatialDirty(1 as Entity);
-			markSpatialDirty(2 as Entity);
-			markSpatialDirty(3 as Entity);
+			markSpatialDirty(world, 1 as Entity);
+			markSpatialDirty(world, 2 as Entity);
+			markSpatialDirty(world, 3 as Entity);
 			expect(getSpatialDirtyCount()).toBe(3);
 		});
 	});
 
 	describe('resetSpatialHashState', () => {
+		const world = createWorld();
 		it('clears dirty entities and position cache', () => {
-			markSpatialDirty(1 as Entity);
-			markSpatialDirty(2 as Entity);
+			markSpatialDirty(world, 1 as Entity);
+			markSpatialDirty(world, 2 as Entity);
 			const state = getSpatialHashSystemState();
 			state.prevBounds.set(1 as Entity, { x: 10, y: 0, w: 0, h: 0 });
 			state.initialized = true;
@@ -577,7 +579,7 @@ describe('spatialHash', () => {
 
 			// Move entity and mark dirty via external API
 			Position.x[eid] = 20;
-			markSpatialDirty(eid);
+			markSpatialDirty(world, eid);
 
 			// The system tick should pick up the pre-marked dirty entity
 			spatialHashSystem(world);

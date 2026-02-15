@@ -828,7 +828,7 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 			} = parseSpawnOptions(options);
 
 			// Get terminal dimensions (use options if provided, otherwise widget dimensions)
-			const buffer = getTerminalBuffer(eid);
+			const buffer = getTerminalBuffer(world, eid);
 			const cols = optCols ?? buffer?.width ?? 80;
 			const rows = optRows ?? buffer?.height ?? 24;
 
@@ -953,7 +953,7 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 
 		// State Access
 		getDimensions(): { width: number; height: number } {
-			const buffer = getTerminalBuffer(eid);
+			const buffer = getTerminalBuffer(world, eid);
 			return {
 				width: buffer?.width ?? 0,
 				height: buffer?.height ?? 0,
@@ -961,7 +961,7 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 		},
 
 		getCursor(): { x: number; y: number } {
-			const buffer = getTerminalBuffer(eid);
+			const buffer = getTerminalBuffer(world, eid);
 			return {
 				x: buffer?.cursorX ?? 0,
 				y: buffer?.cursorY ?? 0,
@@ -969,11 +969,11 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 		},
 
 		getState(): TerminalState | undefined {
-			return getTerminalState(eid);
+			return getTerminalState(world, eid);
 		},
 
 		getCells(): readonly Cell[] | undefined {
-			return getTerminalCells(eid);
+			return getTerminalCells(world, eid);
 		},
 
 		// Lifecycle
@@ -985,7 +985,7 @@ export function createTerminal(world: World, config: TerminalConfig = {}): Termi
 			Terminal.isTerminal[eid] = 0;
 			Terminal.mouseEnabled[eid] = 0;
 			Terminal.keysEnabled[eid] = 0;
-			removeTerminalBuffer(eid);
+			removeTerminalBuffer(world, eid);
 			ptyStateMap.delete(eid);
 			removeEntity(world, eid);
 		},

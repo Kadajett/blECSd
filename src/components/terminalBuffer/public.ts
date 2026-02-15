@@ -249,7 +249,7 @@ export function resizeTerminalBuffer(
 	width: number,
 	height: number,
 ): void {
-	const state = getTerminalState(eid);
+	const state = getTerminalState(world, eid);
 	if (!state) return;
 
 	const oldWidth = TerminalBuffer.width[eid] ?? 0;

@@ -599,7 +599,7 @@ export function getSpatialHashSystemState(): SpatialHashSystemState {
  * markSpatialDirty(entity);
  * ```
  */
-export function markSpatialDirty(eid: Entity): void {
+export function markSpatialDirty(_world: World, eid: Entity): void {
 	const id = eid as number;
 	if (!systemState.dirtyLookup.has(id)) {
 		addToStore(systemState.dirtyEntities, id);
