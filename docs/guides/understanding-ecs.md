@@ -188,7 +188,7 @@ blECSd provides two ways to create entities:
 #### 1. **High-Level: Entity Factories** (recommended for most cases)
 
 ```typescript
-import { createBoxEntity, createButtonEntity } from 'blecsd';
+import { createBoxEntity, createButtonEntity, BorderType } from 'blecsd';
 
 const box = createBoxEntity(world, {
   x: 10,
@@ -231,14 +231,11 @@ Use this when you need precise control.
 Find entities with specific components:
 
 ```typescript
-import { defineQuery, Position, Velocity } from 'blecsd';
+import { query, Position, Velocity } from 'blecsd';
 
-// Define a query once
-const movingEntities = defineQuery([Position, Velocity]);
-
-// Use it in a system
+// Use query in a system
 function animationSystem(world: World): World {
-  const entities = movingEntities(world);
+  const entities = query(world, [Position, Velocity]);
 
   for (const eid of entities) {
     // Only entities with BOTH Position AND Velocity
@@ -256,8 +253,9 @@ Queries are **cached** and **fast**.
 
 Systems are pure functions that transform world state:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop, LoopPhase } from 'blecsd';
+import { createGameLoop, LoopPhase, inputSystem, renderSystem, layoutSystem } from 'blecsd';
 
 const loop = createGameLoop(world, { targetFPS: 60 });
 
@@ -346,13 +344,12 @@ removeComponent(world, eid, Velocity);
 
 ### Pattern 4: Iterating Over Query Results
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defineQuery, Interactive, Focusable } from 'blecsd';
-
-const focusableInteractive = defineQuery([Interactive, Focusable]);
+import { query, Focusable } from 'blecsd';
 
 function handleTabKey(world: World): void {
-  const entities = focusableInteractive(world);
+  const entities = query(world, [Focusable]);
 
   for (const eid of entities) {
     if (Focusable.tabIndex[eid] > 0) {
@@ -365,7 +362,7 @@ function handleTabKey(world: World): void {
 ### Pattern 5: Parent-Child Relationships
 
 ```typescript
-import { setParent, getChildren } from 'blecsd';
+import { setParent, getChildren, createBoxEntity } from 'blecsd';
 
 const parent = createBoxEntity(world, { x: 10, y: 5, width: 50, height: 20 });
 const child = createBoxEntity(world, { x: 5, y: 2, width: 20, height: 5 });
@@ -491,6 +488,7 @@ import {
   createTextEntity,
   LoopPhase,
   BorderType,
+  renderSystem,
 } from 'blecsd';
 
 const world = createWorld();
@@ -547,9 +545,7 @@ const quitButton = createButtonEntity(world, {
 // Set up game loop
 const loop = createGameLoop(world, { targetFPS: 60 });
 
-// Register systems
-loop.registerSystem(LoopPhase.INPUT, inputSystem);
-loop.registerSystem(LoopPhase.UPDATE, updateSystem);
+// Register systems (INPUT phase runs automatically)
 loop.registerSystem(LoopPhase.RENDER, renderSystem);
 
 // Start

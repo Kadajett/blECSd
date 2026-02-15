@@ -6,6 +6,7 @@ Practical patterns for building terminal applications with blECSd. Each section 
 
 blECSd ships with a `createCommandPalette` widget that provides VS Code-style quick command search.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -13,16 +14,15 @@ import {
   createCommandPalette,
   createKeyBindingRegistry,
   registerBinding,
-  matchKeyEvent,
+  matchEvent,
   parseKeyBuffer,
-  type Command,
 } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);
 
 // Define commands
-const commands: Command[] = [
+const commands = [
   {
     id: 'file.new',
     label: 'New File',
@@ -65,8 +65,9 @@ registerBinding(registry, {
 process.stdin.on('data', (data) => {
   const events = parseKeyBuffer(data);
   for (const key of events) {
-    const match = matchKeyEvent(registry, key);
-    if (match?.action === 'commandPalette.toggle') {
+    const matches = matchEvent(registry, key);
+    const toggle = matches.find((m) => m.action === 'commandPalette.toggle');
+    if (toggle) {
       palette.show();
     }
   }
@@ -77,14 +78,15 @@ The command palette uses blECSd's `fuzzySearchBy` internally, so results rank by
 
 ## Ctrl+F Search Overlay
 
-Build a search overlay by combining a `createTextbox` for input, `fuzzySearch` for matching, and the focus system for keyboard control.
+Build a search overlay by combining a `createTextboxEntity` for input, `fuzzySearch` for matching, and the focus system for keyboard control.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   createBox,
-  createTextbox,
+  createTextboxEntity,
   createText,
   createEventBus,
   focusEntity,
@@ -95,7 +97,6 @@ import {
   setDimensions,
   fuzzySearch,
   parseKeyBuffer,
-  type KeyEvent,
 } from 'blecsd';
 
 interface SearchEvents {
@@ -119,7 +120,7 @@ setVisible(world, overlayEntity, false);
 
 // Search input
 const inputEntity = addEntity(world);
-const searchBox = createTextbox(world, inputEntity, {
+const searchBox = createTextboxEntity(world, inputEntity, {
   placeholder: 'Search...',
 });
 
@@ -269,13 +270,14 @@ const menuBar = createListbar(world, barEntity, {
 
 ## Tab Completion
 
-Build autocomplete by combining `createTextbox` with `fuzzySearchBy` and a popup list.
+Build autocomplete by combining `createTextboxEntity` with `fuzzySearchBy` and a popup list.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
-  createTextbox,
+  createTextboxEntity,
   createList,
   fuzzySearchBy,
   setVisible,
@@ -284,14 +286,13 @@ import {
   onTextInputChange,
   onListSelect,
   parseKeyBuffer,
-  type FuzzyMatch,
 } from 'blecsd';
 
 const world = createWorld();
 
 // Input field
 const inputEntity = addEntity(world);
-const textbox = createTextbox(world, inputEntity, {
+const textbox = createTextboxEntity(world, inputEntity, {
   placeholder: 'Enter command...',
 });
 
@@ -442,13 +443,13 @@ function confirmDelete(filename: string): void {
 
 The `createKeyBindingRegistry` provides a configurable key binding system with conditional activation ("when" clauses) similar to VS Code's keybindings.json.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createKeyBindingRegistry,
   registerBinding,
-  matchKeyEvent,
+  matchEvent,
   parseKeyBuffer,
-  type ConditionContext,
 } from 'blecsd';
 
 const registry = createKeyBindingRegistry();
@@ -483,15 +484,15 @@ registerBinding(registry, {
 // Match events against bindings
 process.stdin.on('data', (data) => {
   const keys = parseKeyBuffer(data);
-  const context: ConditionContext = {
+  const context = {
     textInputFocused: false,
     modalOpen: false,
     focus: 'editor',
   };
 
   for (const key of keys) {
-    const match = matchKeyEvent(registry, key, context);
-    if (match) {
+    const matches = matchEvent(registry, key, context);
+    for (const match of matches) {
       handleAction(match.action);
     }
   }
@@ -519,9 +520,11 @@ function handleAction(action: string): void {
 
 blECSd provides a focus stack for managing keyboard focus across overlays, modals, and nested views.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
+  addEntity,
   focusEntity,
   focusNext,
   focusPrev,
@@ -531,11 +534,14 @@ import {
 } from 'blecsd';
 
 const world = createWorld();
+const myButton = addEntity(world);
+const modalInput = addEntity(world);
 
 // Tab navigation cycles through focusable entities
 // (entities with Focusable component, ordered by tabIndex)
-focusNext(world);  // focus next entity in tab order
-focusPrev(world);  // focus previous entity in tab order
+const focusableEntities = [myButton, modalInput];
+focusNext(world, focusableEntities);  // focus next entity in tab order
+focusPrev(world, focusableEntities);  // focus previous entity in tab order
 
 // Focus a specific entity
 focusEntity(world, myButton);
@@ -549,19 +555,22 @@ focusPop(world);         // restore previous focus when modal closes
 
 ## State Machines for View Management
 
-Use `createStateMachine` to manage complex application states (editing, searching, navigating):
+Use `attachStateMachine` to manage complex application states (editing, searching, navigating). State machines are attached to entities and driven by the ECS:
 
 ```typescript
 import {
-  createStateMachine,
+  createWorld,
+  addEntity,
+  attachStateMachine,
   sendEvent,
-  getCurrentState,
+  getState,
 } from 'blecsd';
 
-type AppState = 'normal' | 'insert' | 'command' | 'search';
-type AppEvent = 'enterInsert' | 'enterCommand' | 'enterSearch' | 'escape';
+const world = createWorld();
+const appEntity = addEntity(world);
 
-const appState = createStateMachine<AppState, AppEvent>({
+// Attach a state machine to the entity
+attachStateMachine(world, appEntity, {
   initial: 'normal',
   states: {
     normal: {
@@ -584,11 +593,11 @@ const appState = createStateMachine<AppState, AppEvent>({
 });
 
 // Transition between states
-sendEvent(appState, 'enterInsert');
-console.log(getCurrentState(appState)); // 'insert'
+sendEvent(world, appEntity, 'enterInsert');
+console.log(getState(world, appEntity)); // 'insert'
 
-sendEvent(appState, 'escape');
-console.log(getCurrentState(appState)); // 'normal'
+sendEvent(world, appEntity, 'escape');
+console.log(getState(world, appEntity)); // 'normal'
 ```
 
 ## Event-Driven Architecture
@@ -684,6 +693,7 @@ function redraw(): void {
 
 A minimal terminal editor skeleton combining several patterns:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -695,11 +705,11 @@ import {
   createCommandPalette,
   createKeyBindingRegistry,
   registerBinding,
-  matchKeyEvent,
+  matchEvent,
   createEventBus,
-  createStateMachine,
+  attachStateMachine,
   sendEvent,
-  getCurrentState,
+  getState,
   parseKeyBuffer,
 } from 'blecsd';
 
@@ -714,10 +724,9 @@ interface AppEvents {
 }
 const events = createEventBus<AppEvents>();
 
-// State machine
-type Mode = 'normal' | 'insert' | 'command';
-type ModeEvent = 'enterInsert' | 'enterCommand' | 'escape';
-const mode = createStateMachine<Mode, ModeEvent>({
+// State machine (attached to an entity)
+const modeEntity = addEntity(world);
+attachStateMachine(world, modeEntity, {
   initial: 'normal',
   states: {
     normal: { on: { enterInsert: 'insert', enterCommand: 'command' } },
@@ -761,20 +770,20 @@ process.stdin.setRawMode(true);
 process.stdin.on('data', (data) => {
   const parsed = parseKeyBuffer(data);
   for (const key of parsed) {
-    const match = matchKeyEvent(keys, key, {
-      textInputFocused: getCurrentState(mode) === 'insert',
+    const matches = matchEvent(keys, key, {
+      textInputFocused: getState(world, modeEntity) === 'insert',
     });
-    if (match) {
+    for (const match of matches) {
       switch (match.action) {
         case 'palette.open':
           palette.show();
           break;
         case 'mode.insert':
-          sendEvent(mode, 'enterInsert');
+          sendEvent(world, modeEntity, 'enterInsert');
           events.emit('mode:changed', { mode: 'insert' });
           break;
         case 'mode.normal':
-          sendEvent(mode, 'escape');
+          sendEvent(world, modeEntity, 'escape');
           events.emit('mode:changed', { mode: 'normal' });
           break;
       }

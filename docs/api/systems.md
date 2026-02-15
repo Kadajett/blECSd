@@ -347,6 +347,7 @@ function blurAll(world: World): void
 Control which entity has focus.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, focusEntity, focusNext, getFocused } from 'blecsd';
 

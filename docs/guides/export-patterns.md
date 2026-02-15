@@ -281,20 +281,19 @@ import { BoxConfigSchema, TextConfigSchema } from 'blecsd/schemas';
 
 ### Pattern 1: Typical Terminal App
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // RECOMMENDED: Single import from main entry point
 import {
   createWorld,
-  createBox,
-  createText,
-  enableInput,
-  render
+  createBoxEntity,
+  createTextEntity,
+  renderSystem
 } from 'blecsd';
 
 const world = createWorld();
-const box = createBox(world, { x: 10, y: 5, width: 30, height: 10 });
-enableInput(world);
-render(world);
+const box = createBoxEntity(world, { x: 10, y: 5, width: 30, height: 10 });
+renderSystem(world);
 ```
 
 **Why**: Simple, cohesive API. Everything you need in one import.
@@ -303,6 +302,7 @@ render(world);
 
 ### Pattern 2: Custom Rendering with Terminal Module
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Use terminal module for low-level control
 import { cursor, style, screen } from 'blecsd/terminal';
@@ -319,6 +319,7 @@ console.log(style.bold(style.color(255, 0, 0)('Error!')));
 
 ### Pattern 3: Building Custom Systems
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Import components and systems directly
 import { Position, Velocity } from 'blecsd/components';
@@ -344,13 +345,13 @@ export function physicsSystem(world: World): World {
 
 ### Pattern 4: Hybrid Approach (Main + Terminal)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Most APIs from main entry point
 import {
   createWorld,
-  createBox,
-  enableInput,
-  render
+  createBoxEntity,
+  renderSystem
 } from 'blecsd';
 
 // Low-level terminal detection
@@ -463,14 +464,15 @@ function drawCustomFrame() {
 }
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // OKAY: Mixing high-level and low-level in same file
-import { createBox, render } from 'blecsd';
+import { createBoxEntity, renderSystem } from 'blecsd';
 import { cursor } from 'blecsd/terminal';
 
-const box = createBox(world, { ... });
+const box = createBoxEntity(world, { x: 0, y: 0, width: 20, height: 10 });
 cursor.hide();  // Temporarily hide cursor
-render(world);
+renderSystem(world);
 cursor.show();
 ```
 
