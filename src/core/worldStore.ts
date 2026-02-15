@@ -43,7 +43,7 @@ const WORLD_STORES = Symbol.for('blecsd:stores');
  * ```
  */
 export function getWorldStore<K, V>(world: World, key: string): Map<K, V> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// biome-ignore lint/suspicious/noExplicitAny: World is an opaque type from bitecs; we need to attach Symbol-keyed stores
 	const w = world as any;
 
 	// Initialize stores namespace on world if it doesn't exist
@@ -76,7 +76,7 @@ export function getWorldStore<K, V>(world: World, key: string): Map<K, V> {
  * ```
  */
 export function getWorldSet<T>(world: World, key: string): Set<T> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// biome-ignore lint/suspicious/noExplicitAny: World is an opaque type from bitecs; we need to attach Symbol-keyed stores
 	const w = world as any;
 
 	if (!w[WORLD_STORES]) {
@@ -108,7 +108,7 @@ export function getWorldSet<T>(world: World, key: string): Set<T> {
  * ```
  */
 export function cleanupEntityStores(world: World, entity: Entity): void {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// biome-ignore lint/suspicious/noExplicitAny: World is an opaque type from bitecs; we need to attach Symbol-keyed stores
 	const w = world as any;
 
 	if (!w[WORLD_STORES]) {
@@ -142,7 +142,7 @@ export function cleanupEntityStores(world: World, entity: Entity): void {
  * ```
  */
 export function clearWorldStores(world: World): void {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// biome-ignore lint/suspicious/noExplicitAny: World is an opaque type from bitecs; we need to attach Symbol-keyed stores
 	const w = world as any;
 
 	if (w[WORLD_STORES]) {
@@ -156,7 +156,7 @@ export function clearWorldStores(world: World): void {
  * @internal
  */
 export function getStoreKeys(world: World): string[] {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// biome-ignore lint/suspicious/noExplicitAny: World is an opaque type from bitecs; we need to attach Symbol-keyed stores
 	const w = world as any;
 
 	if (!w[WORLD_STORES]) {
