@@ -79,7 +79,7 @@ describe('Transform3D component', () => {
 
 			setTransform3D(world, eid, { tx: 5 });
 
-			expect(isDirty(eid)).toBe(true);
+			expect(isDirty(world, eid)).toBe(true);
 		});
 
 		it('returns entity ID for chaining', () => {
@@ -110,7 +110,7 @@ describe('Transform3D component', () => {
 			expect(Transform3D.tx[eid]).toBe(10);
 			expect(Transform3D.ty[eid]).toBe(20);
 			expect(Transform3D.tz[eid]).toBe(30);
-			expect(isDirty(eid)).toBe(true);
+			expect(isDirty(world, eid)).toBe(true);
 		});
 
 		it('adds component if missing', () => {
@@ -134,7 +134,7 @@ describe('Transform3D component', () => {
 			expect(Transform3D.rx[eid]).toBeCloseTo(0.5);
 			expect(Transform3D.ry[eid]).toBeCloseTo(1.0);
 			expect(Transform3D.rz[eid]).toBeCloseTo(1.5);
-			expect(isDirty(eid)).toBe(true);
+			expect(isDirty(world, eid)).toBe(true);
 		});
 	});
 
@@ -149,7 +149,7 @@ describe('Transform3D component', () => {
 			expect(Transform3D.sx[eid]).toBe(2);
 			expect(Transform3D.sy[eid]).toBe(3);
 			expect(Transform3D.sz[eid]).toBe(4);
-			expect(isDirty(eid)).toBe(true);
+			expect(isDirty(world, eid)).toBe(true);
 		});
 	});
 
@@ -158,7 +158,7 @@ describe('Transform3D component', () => {
 			const { world, eid } = setup();
 			setTransform3D(world, eid, {});
 
-			const matrix = getWorldMatrix(eid);
+			const matrix = getWorldMatrix(world, eid);
 
 			expect(matrix).toBeInstanceOf(Float32Array);
 			expect(matrix.length).toBe(16);
@@ -174,11 +174,11 @@ describe('Transform3D component', () => {
 			// Write to eid2's matrix directly
 			Transform3D.worldMatrix[eid2 * 16] = 42;
 
-			const matrix2 = getWorldMatrix(eid2);
+			const matrix2 = getWorldMatrix(world, eid2);
 			expect(matrix2[0]).toBe(42);
 
 			// eid1's matrix should be unaffected
-			const matrix1 = getWorldMatrix(eid1);
+			const matrix1 = getWorldMatrix(world, eid1);
 			expect(matrix1[0]).toBe(0);
 		});
 	});
@@ -189,9 +189,9 @@ describe('Transform3D component', () => {
 			setTransform3D(world, eid, {});
 			Transform3D.dirty[eid] = 0;
 
-			markDirty(eid);
+			markDirty(world, eid);
 
-			expect(isDirty(eid)).toBe(true);
+			expect(isDirty(world, eid)).toBe(true);
 		});
 
 		it('isDirty returns false when clean', () => {
@@ -199,7 +199,7 @@ describe('Transform3D component', () => {
 			setTransform3D(world, eid, {});
 			Transform3D.dirty[eid] = 0;
 
-			expect(isDirty(eid)).toBe(false);
+			expect(isDirty(world, eid)).toBe(false);
 		});
 	});
 

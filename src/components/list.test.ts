@@ -135,7 +135,7 @@ describe('List Component', () => {
 			attachListBehavior(world, eid);
 
 			expect(isList(world, eid)).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(-1);
+			expect(getSelectedIndex(world, eid)).toBe(-1);
 			expect(getItemCount(world, eid)).toBe(0);
 			expect(isListInteractive(eid)).toBe(true);
 			expect(isListMouseEnabled(eid)).toBe(true);
@@ -165,7 +165,7 @@ describe('List Component', () => {
 			expect(isListInteractive(eid)).toBe(false);
 			expect(isListMouseEnabled(eid)).toBe(false);
 			expect(isListKeysEnabled(eid)).toBe(false);
-			expect(getSelectedIndex(eid)).toBe(0);
+			expect(getSelectedIndex(world, eid)).toBe(0);
 			expect(getVisibleCount(world, eid)).toBe(5);
 		});
 
@@ -259,7 +259,7 @@ describe('List Component', () => {
 		it('should adjust selection when adding before selected', () => {
 			setSelectedIndex(world, eid, 1);
 			addItem(world, eid, { text: 'Inserted' }, 0);
-			expect(getSelectedIndex(eid)).toBe(2);
+			expect(getSelectedIndex(world, eid)).toBe(2);
 		});
 
 		it('should remove item', () => {
@@ -277,13 +277,13 @@ describe('List Component', () => {
 		it('should adjust selection when removing before selected', () => {
 			setSelectedIndex(world, eid, 2);
 			removeItem(world, eid, 0);
-			expect(getSelectedIndex(eid)).toBe(1);
+			expect(getSelectedIndex(world, eid)).toBe(1);
 		});
 
 		it('should adjust selection when removing selected', () => {
 			setSelectedIndex(world, eid, 1);
 			removeItem(world, eid, 1);
-			expect(getSelectedIndex(eid)).toBe(1); // stays at same index (now Item 3)
+			expect(getSelectedIndex(world, eid)).toBe(1); // stays at same index (now Item 3)
 		});
 
 		it('should update item', () => {
@@ -299,7 +299,7 @@ describe('List Component', () => {
 			setSelectedIndex(world, eid, 1);
 			clearItems(world, eid);
 			expect(getItemCount(world, eid)).toBe(0);
-			expect(getSelectedIndex(eid)).toBe(-1);
+			expect(getSelectedIndex(world, eid)).toBe(-1);
 		});
 	});
 
@@ -315,16 +315,16 @@ describe('List Component', () => {
 
 		it('should get and set selected index', () => {
 			expect(setSelectedIndex(world, eid, 0)).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(0);
+			expect(getSelectedIndex(world, eid)).toBe(0);
 		});
 
 		it('should get selected item', () => {
 			setSelectedIndex(world, eid, 0);
-			expect(getSelectedItem(eid)?.text).toBe('Item 1');
+			expect(getSelectedItem(world, eid)?.text).toBe('Item 1');
 		});
 
 		it('should return undefined for no selection', () => {
-			expect(getSelectedItem(eid)).toBeUndefined();
+			expect(getSelectedItem(world, eid)).toBeUndefined();
 		});
 
 		it('should not select disabled item', () => {
@@ -339,25 +339,25 @@ describe('List Component', () => {
 		it('should select previous item', () => {
 			setSelectedIndex(world, eid, 3);
 			expect(selectPrev(world, eid)).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(2); // Skips disabled item 2
+			expect(getSelectedIndex(world, eid)).toBe(2); // Skips disabled item 2
 		});
 
 		it('should select next item', () => {
 			setSelectedIndex(world, eid, 0);
 			expect(selectNext(world, eid)).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(2); // Skips disabled item 1
+			expect(getSelectedIndex(world, eid)).toBe(2); // Skips disabled item 1
 		});
 
 		it('should wrap around when selecting prev', () => {
 			setSelectedIndex(world, eid, 0);
 			expect(selectPrev(world, eid, true)).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(3);
+			expect(getSelectedIndex(world, eid)).toBe(3);
 		});
 
 		it('should wrap around when selecting next', () => {
 			setSelectedIndex(world, eid, 3);
 			expect(selectNext(world, eid, true)).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(0);
+			expect(getSelectedIndex(world, eid)).toBe(0);
 		});
 
 		it('should not wrap when disabled', () => {
@@ -368,18 +368,18 @@ describe('List Component', () => {
 		it('should select first item', () => {
 			setSelectedIndex(world, eid, 3);
 			expect(selectFirst(world, eid)).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(0);
+			expect(getSelectedIndex(world, eid)).toBe(0);
 		});
 
 		it('should select last item', () => {
 			setSelectedIndex(world, eid, 0);
 			expect(selectLast(world, eid)).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(3);
+			expect(getSelectedIndex(world, eid)).toBe(3);
 		});
 
 		it('should select by value', () => {
 			expect(selectByValue(world, eid, 'item3')).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(2);
+			expect(getSelectedIndex(world, eid)).toBe(2);
 		});
 
 		it('should fail to select by non-existent value', () => {
@@ -389,7 +389,7 @@ describe('List Component', () => {
 		it('should clear selection', () => {
 			setSelectedIndex(world, eid, 0);
 			clearSelection(world, eid);
-			expect(getSelectedIndex(eid)).toBe(-1);
+			expect(getSelectedIndex(world, eid)).toBe(-1);
 		});
 
 		it('should activate selected item', () => {
@@ -458,7 +458,7 @@ describe('List Component', () => {
 			setSelectedIndex(world, eid, 0);
 			expect(scrollPage(world, eid, 1)).toBe(true);
 			expect(getFirstVisible(world, eid)).toBe(5);
-			expect(getSelectedIndex(eid)).toBe(5);
+			expect(getSelectedIndex(world, eid)).toBe(5);
 		});
 
 		it('should scroll page up', () => {
@@ -466,7 +466,7 @@ describe('List Component', () => {
 			setSelectedIndex(world, eid, 10);
 			expect(scrollPage(world, eid, -1)).toBe(true);
 			expect(getFirstVisible(world, eid)).toBe(5);
-			expect(getSelectedIndex(eid)).toBe(5);
+			expect(getSelectedIndex(world, eid)).toBe(5);
 		});
 	});
 
@@ -742,7 +742,7 @@ describe('List Component', () => {
 			startListSearch(world, eid);
 
 			expect(findAndSelectByText(world, eid, 'ban')).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(1);
+			expect(getSelectedIndex(world, eid)).toBe(1);
 		});
 
 		it('should find next match', () => {
@@ -755,10 +755,10 @@ describe('List Component', () => {
 			setSelectedIndex(world, eid, 0);
 
 			expect(findNextMatch(world, eid)).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(1);
+			expect(getSelectedIndex(world, eid)).toBe(1);
 
 			expect(findNextMatch(world, eid)).toBe(true);
-			expect(getSelectedIndex(eid)).toBe(2);
+			expect(getSelectedIndex(world, eid)).toBe(2);
 		});
 
 		it('should fire search change callback', () => {

@@ -274,9 +274,9 @@ export interface ListWidget {
 	/** Selects the item at the given index */
 	select(index: number): ListWidget;
 	/** Gets the currently selected index */
-	getSelectedIndex(): number;
+	getSelectedIndex(world, ): number;
 	/** Gets the currently selected item */
-	getSelectedItem(): ListItem | undefined;
+	getSelectedItem(world, ): ListItem | undefined;
 	/** Selects the previous item */
 	selectPrev(): ListWidget;
 	/** Selects the next item */
@@ -580,12 +580,12 @@ export function createList(
 			return widget;
 		},
 
-		getSelectedIndex(): number {
-			return getSelectedIndex(eid);
+		getSelectedIndex(world, ): number {
+			return getSelectedIndex(world, eid);
 		},
 
-		getSelectedItem(): ListItem | undefined {
-			return getSelectedItem(eid);
+		getSelectedItem(world, ): ListItem | undefined {
+			return getSelectedItem(world, eid);
 		},
 
 		selectPrev(): ListWidget {
@@ -728,7 +728,7 @@ export function createList(
 						blurList(world, eid);
 						break;
 					case 'toggleSelect': {
-						const selectedIdx = getSelectedIndex(eid);
+						const selectedIdx = getSelectedIndex(world, eid);
 						if (selectedIdx >= 0) {
 							toggleMultiSelect(world, eid, selectedIdx);
 						}

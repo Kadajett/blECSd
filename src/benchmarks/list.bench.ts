@@ -326,7 +326,7 @@ describe('Selection', () => {
 		bench(
 			'get selection',
 			() => {
-				getSelectedIndex(eid);
+				getSelectedIndex(world, eid);
 			},
 			{
 				setup() {
@@ -467,7 +467,7 @@ describe('Scroll Info', () => {
 	bench(
 		'getScrollInfo',
 		() => {
-			getScrollInfo(eid);
+			getScrollInfo(world, eid);
 		},
 		{
 			setup() {

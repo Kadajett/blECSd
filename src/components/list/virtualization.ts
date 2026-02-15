@@ -248,7 +248,7 @@ export function getLazyLoadCallback(
  *
  * @param eid - The entity ID
  */
-export function clearLazyLoadCallback(eid: Entity): void {
+export function clearLazyLoadCallback(_world: World, eid: Entity): void {
 	lazyLoadCallbacks.delete(eid);
 }
 
@@ -292,7 +292,7 @@ export function setListLoading(world: World, eid: Entity, loading: boolean): voi
  * @param eid - The entity ID
  * @returns true if loading
  */
-export function isListLoading(eid: Entity): boolean {
+export function isListLoading(_world: World, eid: Entity): boolean {
 	return listStore.isLoading[eid] === 1;
 }
 
@@ -302,7 +302,7 @@ export function isListLoading(eid: Entity): boolean {
  * @param eid - The entity ID
  * @param text - Placeholder text to show while loading
  */
-export function setLoadingPlaceholder(eid: Entity, text: string): void {
+export function setLoadingPlaceholder(_world: World, eid: Entity, text: string): void {
 	loadingPlaceholderStore.set(eid, text);
 }
 
@@ -312,7 +312,7 @@ export function setLoadingPlaceholder(eid: Entity, text: string): void {
  * @param eid - The entity ID
  * @returns Loading placeholder text
  */
-export function getLoadingPlaceholder(eid: Entity): string {
+export function getLoadingPlaceholder(_world: World, eid: Entity): string {
 	return loadingPlaceholderStore.get(eid) ?? DEFAULT_LOADING_PLACEHOLDER;
 }
 
@@ -377,7 +377,7 @@ export async function loadItems(
  * @param eid - The entity ID
  * @returns Object with needsLoad flag and range to load
  */
-export function checkNeedsLoad(eid: Entity): {
+export function checkNeedsLoad(_world: World, eid: Entity): {
 	needsLoad: boolean;
 	startIndex: number;
 	count: number;
@@ -412,7 +412,7 @@ export function checkNeedsLoad(eid: Entity): {
  * @param threshold - Items from end to trigger nearEnd (default: visibleCount)
  * @returns Scroll information
  */
-export function getScrollInfo(eid: Entity, threshold?: number): ListScrollInfo {
+export function getScrollInfo(_world: World, eid: Entity, threshold?: number): ListScrollInfo {
 	const firstVisible = listStore.firstVisible[eid] ?? 0;
 	const visibleCount = listStore.visibleCount[eid] ?? 0;
 	const loadedCount = listStore.itemCount[eid] ?? 0;

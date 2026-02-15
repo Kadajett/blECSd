@@ -686,12 +686,12 @@ export function createListTable(
 			return widget;
 		},
 
-		getSelectedIndex(): number {
-			return getSelectedIndex(eid);
+		getSelectedIndex(world, ): number {
+			return getSelectedIndex(world, eid);
 		},
 
 		getSelectedRow(): TableRow | undefined {
-			const selectedIdx = getSelectedIndex(eid);
+			const selectedIdx = getSelectedIndex(world, eid);
 			if (selectedIdx < 0) {
 				return undefined;
 			}
