@@ -449,13 +449,14 @@ export function setChecked(world: World, eid: Entity, checked: boolean): boolean
 /**
  * Registers a callback to be called when the checkbox state changes.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param callback - Function to call on change (receives boolean checked state)
  * @returns Unsubscribe function
  *
  * @example
  * ```typescript
- * const unsubscribe = onCheckboxChange(checkbox, (checked) => {
+ * const unsubscribe = onCheckboxChange(world, checkbox, (checked) => {
  *   console.log('Checkbox is now:', checked ? 'checked' : 'unchecked');
  * });
  *
@@ -463,7 +464,7 @@ export function setChecked(world: World, eid: Entity, checked: boolean): boolean
  * unsubscribe();
  * ```
  */
-export function onCheckboxChange(eid: Entity, callback: (checked: boolean) => void): () => void {
+export function onCheckboxChange(_world: World, eid: Entity, callback: (checked: boolean) => void): () => void {
 	let callbacks = changeCallbacks.get(eid);
 	if (!callbacks) {
 		callbacks = [];
@@ -501,16 +502,17 @@ function emitChange(eid: Entity, checked: boolean): void {
  * Removes all change callbacks for a checkbox.
  * Call this when destroying a checkbox entity.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  *
  * @example
  * ```typescript
  * // Clean up before removing entity
- * clearCheckboxCallbacks(checkboxEntity);
+ * clearCheckboxCallbacks(world, checkboxEntity);
  * removeEntity(world, checkboxEntity);
  * ```
  */
-export function clearCheckboxCallbacks(eid: Entity): void {
+export function clearCheckboxCallbacks(_world: World, eid: Entity): void {
 	changeCallbacks.delete(eid);
 }
 
@@ -571,19 +573,20 @@ export interface CheckboxDisplayOptions {
 /**
  * Sets the display characters for a checkbox.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param options - Display options
  *
  * @example
  * ```typescript
  * // Use ASCII characters instead of Unicode
- * setCheckboxDisplay(checkbox, {
+ * setCheckboxDisplay(world, checkbox, {
  *   checkedChar: '[x]',
  *   uncheckedChar: '[ ]',
  * });
  * ```
  */
-export function setCheckboxDisplay(eid: Entity, options: CheckboxDisplayOptions): void {
+export function setCheckboxDisplay(_world: World, eid: Entity, options: CheckboxDisplayOptions): void {
 	const current = displayStore.get(eid) ?? {
 		checkedChar: DEFAULT_CHECKED_CHAR,
 		uncheckedChar: DEFAULT_UNCHECKED_CHAR,
@@ -598,18 +601,19 @@ export function setCheckboxDisplay(eid: Entity, options: CheckboxDisplayOptions)
 /**
  * Gets the display configuration for a checkbox.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @returns Display configuration or defaults if not set
  *
  * @example
  * ```typescript
- * const display = getCheckboxDisplay(checkbox);
+ * const display = getCheckboxDisplay(world, checkbox);
  * const char = isChecked(world, checkbox)
  *   ? display.checkedChar
  *   : display.uncheckedChar;
  * ```
  */
-export function getCheckboxDisplay(eid: Entity): CheckboxDisplay {
+export function getCheckboxDisplay(_world: World, eid: Entity): CheckboxDisplay {
 	return (
 		displayStore.get(eid) ?? {
 			checkedChar: DEFAULT_CHECKED_CHAR,
@@ -632,7 +636,7 @@ export function getCheckboxDisplay(eid: Entity): CheckboxDisplay {
  * ```
  */
 export function getCheckboxChar(world: World, eid: Entity): string {
-	const display = getCheckboxDisplay(eid);
+	const display = getCheckboxDisplay(world, eid);
 	const state = getCheckboxState(world, eid);
 
 	if (state === 'checked') {
@@ -645,8 +649,9 @@ export function getCheckboxChar(world: World, eid: Entity): string {
  * Removes display configuration for a checkbox.
  * Call this when destroying a checkbox entity.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  */
-export function clearCheckboxDisplay(eid: Entity): void {
+export function clearCheckboxDisplay(_world: World, eid: Entity): void {
 	displayStore.delete(eid);
 }

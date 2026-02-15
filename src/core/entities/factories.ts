@@ -398,7 +398,7 @@ export function createCheckboxEntity(world: World, config: CheckboxConfig = {}):
 	applyFocusableOptions(world, eid, validated);
 
 	// Set up checkbox display characters
-	setCheckboxDisplay(eid, {
+	setCheckboxDisplay(world, eid, {
 		checkedChar: validated.checkedChar ?? DEFAULT_CHECKED_CHAR,
 		uncheckedChar: validated.uncheckedChar ?? DEFAULT_UNCHECKED_CHAR,
 	});

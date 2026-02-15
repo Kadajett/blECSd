@@ -1,0 +1,217 @@
+/**
+ * Behavior components (behavior, animation, velocity, collision, health, particle, timer)
+ * @module components/exports/behavior
+ */
+
+// Animation component
+export type {
+	AnimationData,
+	AnimationDefinition,
+	AnimationFrame,
+	AnimationOptions,
+	PlayAnimationOptions,
+} from '../animation';
+export {
+	Animation,
+	AnimationDirection,
+	animationStore,
+	getAnimation,
+	getAnimationByName,
+	getAnimationData,
+	getAnimationIdByName,
+	getEntityAnimation,
+	hasAnimation,
+	isAnimationPlaying,
+	pauseAnimation,
+	playAnimation,
+	playAnimationByName,
+	registerAnimation,
+	removeAnimation,
+	resetAnimationStore,
+	resumeAnimation,
+	setAnimationDirection,
+	setAnimationLoop,
+	setAnimationSpeed,
+	stopAnimation,
+	unregisterAnimation,
+	updateAnimationEntity,
+} from '../animation';
+
+// Behavior component
+export type {
+	BehaviorData,
+	BehaviorDirection,
+	BehaviorOptions,
+	BehaviorStateValue,
+	BehaviorTypeValue,
+	CustomBehaviorCallback,
+	PatrolRoute,
+	Point2D,
+} from '../behavior';
+export {
+	Behavior,
+	BehaviorState,
+	BehaviorType,
+	computeChaseDirection,
+	computeFleeDirection,
+	computePatrolDirection,
+	executeCustomBehavior,
+	getBehavior,
+	getBehaviorState,
+	getBehaviorTarget,
+	getBehaviorType,
+	getCurrentPatrolPoint,
+	getPatrolRoute,
+	hasBehavior,
+	isBehaviorActive,
+	isBehaviorCompleted,
+	isBehaviorWaiting,
+	removeBehavior,
+	resetBehaviorStore,
+	setBehavior,
+	setBehaviorSpeed,
+	setBehaviorTarget,
+	setChase,
+	setCustomBehavior,
+	setDetectionRange,
+	setFlee,
+	setIdle,
+	setPatrol,
+	updateBehaviorTimer,
+} from '../behavior';
+
+// Collision component
+export type { AABB, ColliderData, ColliderOptions, CollisionPair } from '../collision';
+export {
+	Collider,
+	ColliderType,
+	canLayersCollide,
+	collisionPairKey,
+	createCollisionPair,
+	DEFAULT_LAYER,
+	DEFAULT_MASK,
+	getCollider,
+	getColliderAABB,
+	hasCollider,
+	isTrigger,
+	removeCollider,
+	setCollider,
+	setCollisionLayer,
+	setCollisionMask,
+	setTrigger,
+	testAABBOverlap,
+	testCircleAABBOverlap,
+	testCircleOverlap,
+	testCollision,
+} from '../collision';
+
+// Health component
+export type { HealthData, HealthOptions } from '../health';
+export {
+	clearInvulnerable,
+	damage,
+	getHealth,
+	getHealthPercent,
+	Health,
+	hasHealth,
+	heal,
+	isDead,
+	isInvulnerable,
+	removeHealth,
+	setCurrentHealth,
+	setHealth,
+	setInvulnerable,
+	setMaxHealth,
+	setRegen,
+	updateHealth,
+} from '../health';
+
+// Particle and ParticleEmitter components
+export type {
+	EmitterAppearance,
+	EmitterData,
+	EmitterOptions,
+	ParticleData,
+	ParticleOptions,
+	TrackedParticle,
+} from '../particle';
+export {
+	activateEmitter,
+	getEmitter,
+	getEmitterAppearance,
+	getEmitterParticles,
+	getParticle,
+	getParticleColor,
+	getParticleProgress,
+	getParticleTrackingStore,
+	hasEmitter,
+	hasParticle,
+	interpolateColor,
+	isEmitterActive,
+	isParticleDead,
+	Particle,
+	ParticleEmitter,
+	pauseEmitter,
+	removeEmitter,
+	removeParticle,
+	resetParticleStore,
+	setEmitter,
+	setEmitterAppearance,
+	setEmitterGravity,
+	setEmitterRate,
+	setEmitterSpeed,
+	setParticle,
+	trackParticle,
+	untrackParticle,
+} from '../particle';
+
+// Timer component
+export type { TimerCallback, TimerCompleteCallback, TimerData, TimerOptions } from '../timer';
+export {
+	clearTimerCallbacks,
+	getTimer,
+	getTimerProgress,
+	hasTimer,
+	isTimerComplete,
+	isTimerRunning,
+	onTimerComplete,
+	onTimerFire,
+	pauseTimer,
+	removeTimer,
+	resetTimer,
+	resetTimerStore,
+	resumeTimer,
+	setTimer,
+	startTimer,
+	stopTimer,
+	TIMER_INFINITE,
+	Timer,
+	updateTimers,
+} from '../timer';
+
+// Velocity and Acceleration components
+export type { AccelerationData, VelocityData, VelocityOptions } from '../velocity';
+export {
+	Acceleration,
+	addVelocity,
+	applyAccelerationToEntity,
+	applyFrictionToEntity,
+	applyVelocityToEntity,
+	clampSpeedForEntity,
+	clearAcceleration,
+	getAcceleration,
+	getSpeed,
+	getVelocity,
+	hasAcceleration,
+	hasVelocity,
+	removeAcceleration,
+	removeVelocity,
+	setAcceleration,
+	setFriction,
+	setMaxSpeed,
+	setVelocity,
+	setVelocityOptions,
+	stopEntity,
+	updateEntityMovement,
+	Velocity,
+} from '../velocity';
