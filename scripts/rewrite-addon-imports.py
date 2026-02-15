@@ -5,7 +5,7 @@ import os
 import re
 import sys
 
-WD = '/home/kadajett/Dev/gameDev2026/blECSd-Parent/w-addon-extraction'
+WD = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Map of top-level module names to blecsd subpath imports
 MODULE_TO_SUBPATH = {
