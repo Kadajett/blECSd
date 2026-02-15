@@ -182,7 +182,6 @@ export type {
 } from './conflictResolution';
 export {
 	applyRemoteOp,
-	ConflictResolution,
 	compactDocument,
 	createLWWMap,
 	createLWWRegister,
