@@ -91,15 +91,19 @@ Default characters:
 Customize with:
 
 ```typescript
-import { setRadioButtonDisplay } from 'blecsd';
+import { createWorld, addEntity, attachRadioButtonBehavior, setRadioButtonDisplay } from 'blecsd';
 
-setRadioButtonDisplay(eid, {
+const world = createWorld();
+const eid = addEntity(world);
+attachRadioButtonBehavior(world, eid, 'group1');
+
+setRadioButtonDisplay(world, eid, {
   selectedChar: '(•)',
   unselectedChar: '( )',
 });
 
 // Or use other characters
-setRadioButtonDisplay(eid, {
+setRadioButtonDisplay(world, eid, {
   selectedChar: '●',
   unselectedChar: '○',
 });
