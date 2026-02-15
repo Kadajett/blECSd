@@ -391,7 +391,7 @@ export const ListWidgetConfigSchema = z.object({
  * Applies list style options to display options.
  * Helper function to reduce complexity in createList.
  */
-function applyListStyleOptions(eid: Entity, style: ListStyleConfig): void {
+function applyListStyleOptions(world: World, eid: Entity, style: ListStyleConfig): void {
 	const displayOptions: ListDisplayOptions = {};
 	if (style.selected?.prefix !== undefined) {
 		displayOptions.selectedPrefix = style.selected.prefix;
@@ -504,7 +504,7 @@ export function createList(
 
 	// Apply display styles if provided
 	if (validated.style) {
-		applyListStyleOptions(eid, validated.style as ListStyleConfig);
+		applyListStyleOptions(world, eid, validated.style as ListStyleConfig);
 	}
 
 	// Create the widget object with chainable methods
@@ -636,7 +636,7 @@ export function createList(
 		},
 
 		getSearchQuery(): string {
-			return getListSearchQuery(eid);
+			return getListSearchQuery(world, eid);
 		},
 
 		isSearching(): boolean {
@@ -662,7 +662,7 @@ export function createList(
 		},
 
 		onSearchChange(callback: (query: string) => void): () => void {
-			return onListSearchChange(eid, callback);
+			return onListSearchChange(world, eid, callback);
 		},
 
 		// Multi-select
@@ -692,7 +692,7 @@ export function createList(
 		},
 
 		getVisibleItems(): readonly ListItem[] {
-			return getFilteredItems(eid);
+			return getFilteredItems(world, eid);
 		},
 
 		// Key handling
@@ -724,7 +724,7 @@ export function createList(
 						activateSelected(world, eid);
 						break;
 					case 'cancel':
-						triggerListCancel(eid);
+						triggerListCancel(world, eid);
 						blurList(world, eid);
 						break;
 					case 'toggleSelect': {
