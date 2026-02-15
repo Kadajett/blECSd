@@ -208,20 +208,22 @@ function getOrCreateStoredStyle(world: World, eid: Entity): StoredStyle {
 /**
  * Gets the stored style for an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns Stored style data or undefined
  */
-export function getStoredStyle(eid: Entity): StoredStyle | undefined {
+export function getStoredStyle(_world: World, eid: Entity): StoredStyle | undefined {
 	return storedStyles.get(eid);
 }
 
 /**
  * Checks if an entity has stored style data.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns true if entity has stored style
  */
-export function hasStoredStyle(eid: Entity): boolean {
+export function hasStoredStyle(_world: World, eid: Entity): boolean {
 	return storedStyles.has(eid);
 }
 
@@ -229,9 +231,10 @@ export function hasStoredStyle(eid: Entity): boolean {
  * Clears stored style for an entity.
  * Call this when an entity is destroyed.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  */
-export function clearStoredStyle(eid: Entity): void {
+export function clearStoredStyle(_world: World, eid: Entity): void {
 	storedStyles.delete(eid);
 }
 
@@ -368,10 +371,11 @@ export function removeFocusEffect(world: World, eid: Entity): void {
 /**
  * Checks if focus effect is currently applied to an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns true if focus effect is applied
  */
-export function hasFocusEffectApplied(eid: Entity): boolean {
+export function hasFocusEffectApplied(_world: World, eid: Entity): boolean {
 	const stored = storedStyles.get(eid);
 	return stored?.focusApplied ?? false;
 }
@@ -522,10 +526,11 @@ function reapplyFocusEffect(world: World, eid: Entity, stored: StoredStyle): voi
 /**
  * Checks if hover effect is currently applied to an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns true if hover effect is applied
  */
-export function hasHoverEffectApplied(eid: Entity): boolean {
+export function hasHoverEffectApplied(_world: World, eid: Entity): boolean {
 	const stored = storedStyles.get(eid);
 	return stored?.hoverApplied ?? false;
 }
@@ -615,8 +620,8 @@ export function syncEffects(world: World, eid: Entity): void {
 	const focused = hasFocusable(world, eid) && isFocused(world, eid);
 	const hovered = hasInteractive(world, eid) && isHovered(world, eid);
 
-	const focusApplied = hasFocusEffectApplied(eid);
-	const hoverApplied = hasHoverEffectApplied(eid);
+	const focusApplied = hasFocusEffectApplied(world, eid);
+	const hoverApplied = hasHoverEffectApplied(world, eid);
 
 	// Sync focus effect
 	if (focused && !focusApplied) {
@@ -775,10 +780,11 @@ export function setEffects(world: World, eid: Entity, config: EffectsConfig): vo
 /**
  * Gets the effects configuration for an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns The effects configuration or undefined
  */
-export function getEffects(eid: Entity): EffectsConfig | undefined {
+export function getEffects(_world: World, eid: Entity): EffectsConfig | undefined {
 	return effectConfigs.get(eid);
 }
 
@@ -923,55 +929,59 @@ export function removeDisabledEffect(world: World, eid: Entity): void {
 /**
  * Checks if press effect is currently applied.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns true if press effect is applied
  */
-export function hasPressEffectApplied(eid: Entity): boolean {
+export function hasPressEffectApplied(_world: World, eid: Entity): boolean {
 	return customEffectStates.get(eid)?.pressApplied ?? false;
 }
 
 /**
  * Checks if disabled effect is currently applied.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns true if disabled effect is applied
  */
-export function hasDisabledEffectApplied(eid: Entity): boolean {
+export function hasDisabledEffectApplied(_world: World, eid: Entity): boolean {
 	return customEffectStates.get(eid)?.disabledApplied ?? false;
 }
 
 /**
  * Checks if any effect is currently applied to an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns true if any effect is active
  */
-export function hasAnyEffectApplied(eid: Entity): boolean {
+export function hasAnyEffectApplied(_world: World, eid: Entity): boolean {
 	return (
-		hasFocusEffectApplied(eid) ||
-		hasHoverEffectApplied(eid) ||
-		hasPressEffectApplied(eid) ||
-		hasDisabledEffectApplied(eid)
+		hasFocusEffectApplied(_world, eid) ||
+		hasHoverEffectApplied(_world, eid) ||
+		hasPressEffectApplied(_world, eid) ||
+		hasDisabledEffectApplied(_world, eid)
 	);
 }
 
 /**
  * Gets the current effect state for an entity.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  * @returns Object describing which effects are applied
  */
-export function getEffectState(eid: Entity): {
+export function getEffectState(_world: World, eid: Entity): {
 	focus: boolean;
 	hover: boolean;
 	press: boolean;
 	disabled: boolean;
 } {
 	return {
-		focus: hasFocusEffectApplied(eid),
-		hover: hasHoverEffectApplied(eid),
-		press: hasPressEffectApplied(eid),
-		disabled: hasDisabledEffectApplied(eid),
+		focus: hasFocusEffectApplied(_world, eid),
+		hover: hasHoverEffectApplied(_world, eid),
+		press: hasPressEffectApplied(_world, eid),
+		disabled: hasDisabledEffectApplied(_world, eid),
 	};
 }
 
@@ -979,9 +989,10 @@ export function getEffectState(eid: Entity): {
  * Clears all effect-related state for an entity.
  * Call this when an entity is destroyed.
  *
+ * @param _world - The ECS world (unused)
  * @param eid - The entity ID
  */
-export function clearEffectState(eid: Entity): void {
+export function clearEffectState(_world: World, eid: Entity): void {
 	storedStyles.delete(eid);
 	effectConfigs.delete(eid);
 	customEffectStates.delete(eid);
