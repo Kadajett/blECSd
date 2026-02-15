@@ -8,7 +8,7 @@
  */
 
 import { z } from 'zod';
-import type { Entity } from '../core/types';
+import type { Entity, World } from '../core/types';
 
 // =============================================================================
 // CONSTANTS
@@ -640,7 +640,7 @@ export function createHoverTextManager(config: HoverTextManagerConfig = {}): Hov
  * setHoverText(entity, 'Click here to submit');
  * ```
  */
-export function setHoverText(eid: Entity, text: string | HoverTextConfig): void {
+export function setHoverText(_world: World, eid: Entity, text: string | HoverTextConfig): void {
 	hoverTextStore.set(eid, normalizeConfig(text));
 }
 
@@ -649,7 +649,7 @@ export function setHoverText(eid: Entity, text: string | HoverTextConfig): void 
  *
  * @param eid - The entity ID
  */
-export function clearHoverText(eid: Entity): void {
+export function clearHoverText(_world: World, eid: Entity): void {
 	hoverTextStore.delete(eid);
 }
 
@@ -659,7 +659,7 @@ export function clearHoverText(eid: Entity): void {
  * @param eid - The entity ID
  * @returns Hover text config or undefined
  */
-export function getHoverText(eid: Entity): HoverTextConfig | undefined {
+export function getHoverText(_world: World, eid: Entity): HoverTextConfig | undefined {
 	return hoverTextStore.get(eid);
 }
 
@@ -669,7 +669,7 @@ export function getHoverText(eid: Entity): HoverTextConfig | undefined {
  * @param eid - The entity ID
  * @returns true if entity has hover text
  */
-export function hasHoverText(eid: Entity): boolean {
+export function hasHoverText(_world: World, eid: Entity): boolean {
 	return hoverTextStore.has(eid);
 }
 
