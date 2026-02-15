@@ -21,15 +21,15 @@ import {
 	type ValidatedFlexContainerConfig,
 } from './config';
 import { applyFlexLayout } from './helpers';
-import { type FlexContainerState, FlexContainer, flexContainerStateMap } from './state';
+import { FlexContainer, type FlexContainerState, flexContainerStateMap } from './state';
 import type {
+	AlignItems,
 	FlexChildOptions,
 	FlexContainerConfig,
 	FlexContainerWidget,
 	FlexDirection,
-	JustifyContent,
-	AlignItems,
 	FlexWrap,
+	JustifyContent,
 } from './types';
 
 // =============================================================================

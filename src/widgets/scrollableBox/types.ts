@@ -7,11 +7,7 @@
  */
 
 import type { BorderCharset } from '../../components/border';
-import type {
-	ScrollableData,
-	ScrollPercentage,
-	ScrollPosition,
-} from '../../components/scrollable';
+import type { ScrollableData, ScrollPercentage, ScrollPosition } from '../../components/scrollable';
 import type { Entity } from '../../core/types';
 
 // =============================================================================

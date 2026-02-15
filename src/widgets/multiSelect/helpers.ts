@@ -7,7 +7,7 @@
  */
 
 import type { z } from 'zod';
-import { CHECKBOX_CHECKED, CHECKBOX_UNCHECKED, MultiSelectConfigSchema } from './config';
+import { CHECKBOX_CHECKED, CHECKBOX_UNCHECKED, type MultiSelectConfigSchema } from './config';
 import type { MultiSelectState } from './state';
 import type { MultiSelectItem, MultiSelectWidget } from './types';
 

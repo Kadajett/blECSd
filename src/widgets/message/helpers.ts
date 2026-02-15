@@ -24,7 +24,11 @@ import { setPosition } from '../../components/position';
 import { setStyle } from '../../components/renderable';
 import type { Entity, World } from '../../core/types';
 import { parseColor } from '../../utils/color';
-import { DEFAULT_MESSAGE_PADDING, DEFAULT_MESSAGE_STYLES, type ValidatedMessageConfig } from './config';
+import {
+	DEFAULT_MESSAGE_PADDING,
+	DEFAULT_MESSAGE_STYLES,
+	type ValidatedMessageConfig,
+} from './config';
 import { Message, messageStateMap } from './state';
 import type { MessageStyleConfig, MessageType } from './types';
 
@@ -36,7 +40,9 @@ import type { MessageStyleConfig, MessageType } from './types';
  * Gets the appropriate BorderCharset for a named style.
  * @internal
  */
-export function getBorderCharset(ch: 'single' | 'double' | 'rounded' | 'bold' | 'ascii'): BorderCharset {
+export function getBorderCharset(
+	ch: 'single' | 'double' | 'rounded' | 'bold' | 'ascii',
+): BorderCharset {
 	switch (ch) {
 		case 'single':
 			return BORDER_SINGLE;
@@ -70,7 +76,10 @@ export function borderTypeToEnum(type: 'line' | 'bg' | 'none'): BorderType {
  * Gets the style for a message type.
  * @internal
  */
-export function getTypeStyle(type: MessageType, config: ValidatedMessageConfig): MessageStyleConfig {
+export function getTypeStyle(
+	type: MessageType,
+	config: ValidatedMessageConfig,
+): MessageStyleConfig {
 	const customStyles: Record<MessageType, MessageStyleConfig | undefined> = {
 		info: config.infoStyle,
 		warning: config.warningStyle,
@@ -85,7 +94,10 @@ export function getTypeStyle(type: MessageType, config: ValidatedMessageConfig):
  * Calculates dimensions based on content.
  * @internal
  */
-export function calculateDimensions(content: string, padding: number): { width: number; height: number } {
+export function calculateDimensions(
+	content: string,
+	padding: number,
+): { width: number; height: number } {
 	const lines = content.split('\n');
 	const maxLineLength = Math.max(...lines.map((l) => l.length), 10);
 	const lineCount = lines.length;

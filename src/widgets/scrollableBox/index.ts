@@ -8,6 +8,20 @@
  * @module widgets/scrollableBox
  */
 
+// Re-export API functions
+export {
+	isKeysScrollEnabled,
+	isMouseScrollEnabled,
+	isScrollableBox,
+	resetScrollableBoxStore,
+} from './api';
+
+// Re-export configuration schemas
+export { ScrollableBoxConfigSchema } from './config';
+// Re-export factory function
+export { createScrollableBox } from './factory';
+// Re-export state and component
+export { ScrollableBox } from './state';
 // Re-export types
 export type {
 	Align,
@@ -21,20 +35,3 @@ export type {
 	ScrollbarMode,
 	VAlign,
 } from './types';
-
-// Re-export configuration schemas
-export { ScrollableBoxConfigSchema } from './config';
-
-// Re-export state and component
-export { ScrollableBox } from './state';
-
-// Re-export factory function
-export { createScrollableBox } from './factory';
-
-// Re-export API functions
-export {
-	isKeysScrollEnabled,
-	isMouseScrollEnabled,
-	isScrollableBox,
-	resetScrollableBoxStore,
-} from './api';

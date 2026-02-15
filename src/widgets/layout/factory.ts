@@ -12,9 +12,18 @@ import { markDirty, setStyle, setVisible } from '../../components/renderable';
 import { removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { parseColor } from '../../utils/color';
-import { LayoutConfigSchema } from './types';
-import type { LayoutConfig, LayoutWidget, LayoutMode, ChildLayoutData, LayoutPosition, JustifyContent, AlignItems, FlexDirection } from './types';
 import { Layout } from './state';
+import type {
+	AlignItems,
+	ChildLayoutData,
+	FlexDirection,
+	JustifyContent,
+	LayoutConfig,
+	LayoutMode,
+	LayoutPosition,
+	LayoutWidget,
+} from './types';
+import { LayoutConfigSchema } from './types';
 
 // =============================================================================
 // INTERNAL HELPERS
@@ -593,4 +602,3 @@ function applyLayoutPositions(
 		markDirty(world, childEid);
 	}
 }
-

@@ -200,4 +200,3 @@ export const LayoutConfigSchema = z.object({
 	fg: z.union([z.string(), z.number()]).optional(),
 	bg: z.union([z.string(), z.number()]).optional(),
 });
-

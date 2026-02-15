@@ -22,10 +22,7 @@ import { setDimensions } from '../../components/dimensions';
 import { setPadding } from '../../components/padding';
 import { setPosition } from '../../components/position';
 import { setStyle } from '../../components/renderable';
-import {
-	type ScrollableOptions,
-	ScrollbarVisibility,
-} from '../../components/scrollable';
+import { type ScrollableOptions, ScrollbarVisibility } from '../../components/scrollable';
 import type { Entity, World } from '../../core/types';
 import { setScrollable } from '../../systems/scrollableSystem';
 import { parseColor } from '../../utils/color';
@@ -67,7 +64,9 @@ export function valignToEnum(valign: VAlign): TextVAlign {
 /**
  * Gets the appropriate BorderCharset for a named style.
  */
-export function getBorderCharset(ch: 'single' | 'double' | 'rounded' | 'bold' | 'ascii'): BorderCharset {
+export function getBorderCharset(
+	ch: 'single' | 'double' | 'rounded' | 'bold' | 'ascii',
+): BorderCharset {
 	switch (ch) {
 		case 'single':
 			return BORDER_SINGLE;
@@ -264,7 +263,11 @@ export function setupPadding(
  * Sets up content on an entity.
  * @internal
  */
-export function setupContent(world: World, eid: Entity, config: ValidatedScrollableBoxConfig): void {
+export function setupContent(
+	world: World,
+	eid: Entity,
+	config: ValidatedScrollableBoxConfig,
+): void {
 	if (config.content === undefined) return;
 
 	const contentOptions: { align?: TextAlign; valign?: TextVAlign } = {};
@@ -277,7 +280,11 @@ export function setupContent(world: World, eid: Entity, config: ValidatedScrolla
  * Sets up scrollable component on an entity.
  * @internal
  */
-export function setupScrollable(world: World, eid: Entity, config: ValidatedScrollableBoxConfig): void {
+export function setupScrollable(
+	world: World,
+	eid: Entity,
+	config: ValidatedScrollableBoxConfig,
+): void {
 	const scrollableOptions: ScrollableOptions = {};
 
 	// Set scroll size

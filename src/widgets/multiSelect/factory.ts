@@ -20,7 +20,12 @@ import {
 	renderItemLine,
 } from './helpers';
 import { MultiSelect, stateMap } from './state';
-import type { MultiSelectConfig, MultiSelectItem, MultiSelectWidget, SelectionChangeCallback } from './types';
+import type {
+	MultiSelectConfig,
+	MultiSelectItem,
+	MultiSelectWidget,
+	SelectionChangeCallback,
+} from './types';
 
 // =============================================================================
 // FACTORY

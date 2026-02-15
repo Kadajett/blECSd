@@ -8,20 +8,17 @@
  * @module widgets/image
  */
 
-// Re-export types
-export type { AnimatedImageConfig, ImageConfig, ImageType, ImageWidget } from './types';
+// Re-export API functions
+export { getImageBitmap, getImageCellMap, isImage, resetImageStore } from './api';
 
 // Re-export configuration schemas
 export { AnimatedImageConfigSchema, ImageConfigSchema } from './config';
-
-// Re-export state and component
-export { Image } from './state';
-
-// Re-export helper functions
-export { calculateAspectRatioDimensions, clearAllImageCaches, clearImageCache } from './helpers';
-
 // Re-export factory function
 export { createImage } from './factory';
 
-// Re-export API functions
-export { getImageBitmap, getImageCellMap, isImage, resetImageStore } from './api';
+// Re-export helper functions
+export { calculateAspectRatioDimensions, clearAllImageCaches, clearImageCache } from './helpers';
+// Re-export state and component
+export { Image } from './state';
+// Re-export types
+export type { AnimatedImageConfig, ImageConfig, ImageType, ImageWidget } from './types';

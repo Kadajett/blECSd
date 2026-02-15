@@ -7,25 +7,22 @@
  * @module widgets/flexbox
  */
 
-// Re-export types
-export type {
-	FlexDirection,
-	JustifyContent,
-	AlignItems,
-	FlexWrap,
-	FlexChildOptions,
-	FlexContainerConfig,
-	FlexContainerWidget,
-} from './types';
+// Re-export API functions
+export { isFlexContainer, resetFlexContainerStore } from './api';
 
 // Re-export configuration schemas
 export { FlexChildOptionsSchema, FlexContainerConfigSchema } from './config';
-
+// Re-export factory function
+export { addFlexChild, createFlexContainer } from './factory';
 // Re-export state and component
 export { FlexContainer } from './state';
-
-// Re-export factory function
-export { createFlexContainer, addFlexChild } from './factory';
-
-// Re-export API functions
-export { isFlexContainer, resetFlexContainerStore } from './api';
+// Re-export types
+export type {
+	AlignItems,
+	FlexChildOptions,
+	FlexContainerConfig,
+	FlexContainerWidget,
+	FlexDirection,
+	FlexWrap,
+	JustifyContent,
+} from './types';

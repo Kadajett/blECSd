@@ -8,8 +8,7 @@
 
 import { BorderType, setBorder } from '../../components/border';
 import { appendChild } from '../../components/hierarchy';
-import { setVisible } from '../../components/renderable';
-import { setStyle } from '../../components/renderable';
+import { setStyle, setVisible } from '../../components/renderable';
 import type { Entity, World } from '../../core/types';
 import { parseColor } from '../../utils/color';
 import type { ValidatedTabsConfig } from './config';

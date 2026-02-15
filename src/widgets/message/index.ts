@@ -8,40 +8,37 @@
  * @module widgets/message
  */
 
-// Re-export types
-export type {
-	MessageType,
-	PositionValue,
-	BorderConfig,
-	MessageStyleConfig,
-	MessageConfig,
-	MessageWidget,
-} from './types';
+// Re-export API functions
+export {
+	handleMessageClick,
+	handleMessageKey,
+	isDismissOnClick,
+	isDismissOnKey,
+	isMessage,
+	resetMessageStore,
+	showError,
+	showInfo,
+	showSuccess,
+	showWarning,
+} from './api';
 
 // Re-export configuration schema and constants
 export {
-	MessageConfigSchema,
-	DEFAULT_MESSAGE_TIMEOUT,
 	DEFAULT_MESSAGE_PADDING,
 	DEFAULT_MESSAGE_STYLES,
+	DEFAULT_MESSAGE_TIMEOUT,
+	MessageConfigSchema,
 } from './config';
-
-// Re-export state and component
-export { Message } from './state';
-
 // Re-export factory function
 export { createMessage } from './factory';
-
-// Re-export API functions
-export {
-	showInfo,
-	showWarning,
-	showError,
-	showSuccess,
-	isMessage,
-	isDismissOnClick,
-	isDismissOnKey,
-	handleMessageClick,
-	handleMessageKey,
-	resetMessageStore,
-} from './api';
+// Re-export state and component
+export { Message } from './state';
+// Re-export types
+export type {
+	BorderConfig,
+	MessageConfig,
+	MessageStyleConfig,
+	MessageType,
+	MessageWidget,
+	PositionValue,
+} from './types';

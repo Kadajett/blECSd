@@ -31,6 +31,22 @@
  * ```
  */
 
+// Re-export API functions
+export { getSelectedItems, isMultiSelect, onSelectionChange, resetMultiSelectStore } from './api';
+
+// Re-export configuration schemas and constants
+export {
+	CHECKBOX_CHECKED,
+	CHECKBOX_UNCHECKED,
+	DEFAULT_HEIGHT,
+	DEFAULT_WIDTH,
+	MultiSelectConfigSchema,
+} from './config';
+// Re-export factory function
+export { createMultiSelect } from './factory';
+export type { MultiSelectState } from './state';
+// Re-export state and component
+export { MultiSelect, stateMap } from './state';
 // Re-export types
 export type {
 	MultiSelectConfig,
@@ -38,16 +54,3 @@ export type {
 	MultiSelectWidget,
 	SelectionChangeCallback,
 } from './types';
-
-// Re-export configuration schemas and constants
-export { CHECKBOX_CHECKED, CHECKBOX_UNCHECKED, DEFAULT_HEIGHT, DEFAULT_WIDTH, MultiSelectConfigSchema } from './config';
-
-// Re-export state and component
-export { MultiSelect, stateMap } from './state';
-export type { MultiSelectState } from './state';
-
-// Re-export factory function
-export { createMultiSelect } from './factory';
-
-// Re-export API functions
-export { getSelectedItems, isMultiSelect, onSelectionChange, resetMultiSelectStore } from './api';
