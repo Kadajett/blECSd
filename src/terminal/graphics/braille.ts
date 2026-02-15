@@ -10,7 +10,6 @@
  * @module terminal/graphics/braille
  */
 
-import { cellMapToString, renderToAnsi } from '../../media/render/ansi';
 import type {
 	BackendName,
 	GraphicsBackend,
@@ -18,6 +17,7 @@ import type {
 	ImageData,
 	RenderOptions,
 } from './backend';
+import { cellMapToString, renderToAnsi } from './cellRenderer';
 import { detectBrailleSupport, type EnvChecker } from './detect';
 
 // =============================================================================

@@ -330,17 +330,7 @@ export {
 	resetHoverTextStore,
 	setHoverText,
 } from './hoverText';
-// Image widget
-export type { ImageConfig, ImageType, ImageWidget } from './image';
-export {
-	createImage,
-	getImageBitmap,
-	getImageCellMap,
-	Image,
-	ImageConfigSchema,
-	isImage,
-	resetImageStore,
-} from './image';
+// Image widget moved to @blecsd/media package
 // Layout widget
 export type {
 	AlignItems,
