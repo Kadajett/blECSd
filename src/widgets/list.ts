@@ -414,7 +414,7 @@ function applyListStyleOptions(eid: Entity, style: ListStyleConfig): void {
 	if (style.disabledFg !== undefined) {
 		displayOptions.disabledFg = style.disabledFg;
 	}
-	setListDisplay(eid, displayOptions);
+	setListDisplay(world, eid, displayOptions);
 }
 
 /**
@@ -499,7 +499,7 @@ export function createList(
 
 	// Enable multi-select if configured
 	if (validated.multiSelect) {
-		setListMultiSelect(eid, true);
+		setListMultiSelect(world, eid, true);
 	}
 
 	// Apply display styles if provided
@@ -554,11 +554,11 @@ export function createList(
 		},
 
 		getItems(): readonly ListItem[] {
-			return getItems(eid);
+			return getItems(world, eid);
 		},
 
 		addItem(text: string, value?: string): ListWidget {
-			const currentItems = [...getItems(eid)];
+			const currentItems = [...getItems(world, eid)];
 			currentItems.push({ text, value: value ?? text });
 			setItems(world, eid, currentItems);
 			return widget;
@@ -650,15 +650,15 @@ export function createList(
 
 		// Events
 		onSelect(callback: ListSelectCallback): () => void {
-			return onListSelect(eid, callback);
+			return onListSelect(world, eid, callback);
 		},
 
 		onActivate(callback: ListSelectCallback): () => void {
-			return onListActivate(eid, callback);
+			return onListActivate(world, eid, callback);
 		},
 
 		onCancel(callback: () => void): () => void {
-			return onListCancel(eid, callback);
+			return onListCancel(world, eid, callback);
 		},
 
 		onSearchChange(callback: (query: string) => void): () => void {
@@ -667,16 +667,16 @@ export function createList(
 
 		// Multi-select
 		getSelected(): number[] {
-			return getMultiSelected(eid);
+			return getMultiSelected(world, eid);
 		},
 
 		selectAll(): ListWidget {
-			selectAllItems(eid);
+			selectAllItems(world, eid);
 			return widget;
 		},
 
 		deselectAll(): ListWidget {
-			deselectAllItems(eid);
+			deselectAllItems(world, eid);
 			return widget;
 		},
 
@@ -730,7 +730,7 @@ export function createList(
 					case 'toggleSelect': {
 						const selectedIdx = getSelectedIndex(eid);
 						if (selectedIdx >= 0) {
-							toggleMultiSelect(eid, selectedIdx);
+							toggleMultiSelect(world, eid, selectedIdx);
 						}
 						break;
 					}
@@ -757,7 +757,7 @@ export function createList(
 
 		// Lifecycle
 		destroy(): void {
-			clearListCallbacks(eid);
+			clearListCallbacks(world, eid);
 			clearSearchQuery(world, eid);
 			removeEntity(world, eid);
 		},

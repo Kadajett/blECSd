@@ -92,7 +92,7 @@ export function getFilteredItems(world: World, eid: Entity): readonly ListItem[]
 	}
 
 	// Fallback: calculate on the fly
-	const allItems = getItems(eid);
+	const allItems = getItems(world, eid);
 	const filtered = allItems.filter((item) =>
 		item.text.toLowerCase().includes(filter.toLowerCase()),
 	);
