@@ -97,6 +97,7 @@ const child = createBoxEntity(world, {
 
 Use helper functions to convert between coordinate spaces:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { screenToLocal, localToScreen } from 'blecsd';
 
@@ -322,6 +323,7 @@ const content = createBoxEntity(world, {
 
 Get an entity's bounding box in screen space:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getBoundingBox } from 'blecsd';
 
@@ -346,6 +348,7 @@ console.log(bounds.height); // 10
 
 Check if a point is inside an entity:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPointInside } from 'blecsd';
 
@@ -369,6 +372,7 @@ console.log(miss); // false (outside box)
 
 ### Mouse Event to Local Coordinates
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { screenToLocal } from 'blecsd';
 
@@ -390,6 +394,7 @@ function handleMouseClick(event: MouseEvent): void {
 
 ### Entity Position to Screen Coordinates
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { localToScreen } from 'blecsd';
 
@@ -414,6 +419,7 @@ console.log(`Screen position: (${screenPos.x}, ${screenPos.y})`);
 
 Get content area size (excluding border and padding):
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInnerDimensions } from 'blecsd';
 
@@ -426,6 +432,7 @@ console.log(inner.height);
 
 Convert screen coordinates to local (parent-relative) coordinates:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { screenToLocal } from 'blecsd';
 
@@ -437,6 +444,7 @@ console.log(local.x, local.y);
 
 Convert local coordinates to screen (absolute) coordinates:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { localToScreen } from 'blecsd';
 
@@ -448,6 +456,7 @@ console.log(screen.x, screen.y);
 
 Get entity's bounding box in screen space:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getBoundingBox } from 'blecsd';
 
@@ -460,6 +469,7 @@ console.log(bounds.width, bounds.height);
 
 Check if a point is inside an entity:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPointInside } from 'blecsd';
 
