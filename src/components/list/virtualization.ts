@@ -19,10 +19,11 @@ import type { ListItem, ListScrollInfo } from './types';
 /**
  * Gets the first visible item index.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns First visible index
  */
-export function getFirstVisible(eid: Entity): number {
+export function getFirstVisible(_world: World, eid: Entity): number {
 	return listStore.firstVisible[eid] ?? 0;
 }
 
@@ -78,10 +79,11 @@ export function setFirstVisible(world: World, eid: Entity, index: number): void 
 /**
  * Gets the number of visible items.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns Number of visible items
  */
-export function getVisibleCount(eid: Entity): number {
+export function getVisibleCount(_world: World, eid: Entity): number {
 	return listStore.visibleCount[eid] ?? 0;
 }
 
@@ -203,10 +205,11 @@ export function setTotalCount(world: World, eid: Entity, count: number): void {
 /**
  * Gets the total item count (may be larger than loaded items).
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns Total item count
  */
-export function getTotalCount(eid: Entity): number {
+export function getTotalCount(_world: World, eid: Entity): number {
 	const total = listStore.totalCount[eid] ?? 0;
 	// If totalCount is 0 (not explicitly set), fall back to itemCount
 	if (total === 0) {

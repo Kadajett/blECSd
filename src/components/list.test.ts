@@ -136,7 +136,7 @@ describe('List Component', () => {
 
 			expect(isList(world, eid)).toBe(true);
 			expect(getSelectedIndex(eid)).toBe(-1);
-			expect(getItemCount(eid)).toBe(0);
+			expect(getItemCount(world, eid)).toBe(0);
 			expect(isListInteractive(eid)).toBe(true);
 			expect(isListMouseEnabled(eid)).toBe(true);
 			expect(isListKeysEnabled(eid)).toBe(true);
@@ -149,7 +149,7 @@ describe('List Component', () => {
 			];
 			attachListBehavior(world, eid, items);
 
-			expect(getItemCount(eid)).toBe(2);
+			expect(getItemCount(world, eid)).toBe(2);
 			expect(getItems(world, eid)).toEqual(items);
 		});
 
@@ -166,7 +166,7 @@ describe('List Component', () => {
 			expect(isListMouseEnabled(eid)).toBe(false);
 			expect(isListKeysEnabled(eid)).toBe(false);
 			expect(getSelectedIndex(eid)).toBe(0);
-			expect(getVisibleCount(eid)).toBe(5);
+			expect(getVisibleCount(world, eid)).toBe(5);
 		});
 
 		it('should set initial state to idle', () => {
@@ -239,21 +239,21 @@ describe('List Component', () => {
 
 		it('should set items', () => {
 			setItems(world, eid, [{ text: 'New Item' }]);
-			expect(getItemCount(eid)).toBe(1);
-			expect(getItem(eid, 0)?.text).toBe('New Item');
+			expect(getItemCount(world, eid)).toBe(1);
+			expect(getItem(world, eid, 0)?.text).toBe('New Item');
 		});
 
 		it('should add item at end', () => {
 			addItem(world, eid, { text: 'Item 4', value: 'item4' });
-			expect(getItemCount(eid)).toBe(4);
-			expect(getItem(eid, 3)?.text).toBe('Item 4');
+			expect(getItemCount(world, eid)).toBe(4);
+			expect(getItem(world, eid, 3)?.text).toBe('Item 4');
 		});
 
 		it('should add item at specific index', () => {
 			addItem(world, eid, { text: 'Inserted', value: 'inserted' }, 1);
-			expect(getItemCount(eid)).toBe(4);
-			expect(getItem(eid, 1)?.text).toBe('Inserted');
-			expect(getItem(eid, 2)?.text).toBe('Item 2');
+			expect(getItemCount(world, eid)).toBe(4);
+			expect(getItem(world, eid, 1)?.text).toBe('Inserted');
+			expect(getItem(world, eid, 2)?.text).toBe('Item 2');
 		});
 
 		it('should adjust selection when adding before selected', () => {
@@ -265,8 +265,8 @@ describe('List Component', () => {
 		it('should remove item', () => {
 			const removed = removeItem(world, eid, 1);
 			expect(removed?.text).toBe('Item 2');
-			expect(getItemCount(eid)).toBe(2);
-			expect(getItem(eid, 1)?.text).toBe('Item 3');
+			expect(getItemCount(world, eid)).toBe(2);
+			expect(getItem(world, eid, 1)?.text).toBe('Item 3');
 		});
 
 		it('should return undefined when removing invalid index', () => {
@@ -288,7 +288,7 @@ describe('List Component', () => {
 
 		it('should update item', () => {
 			expect(updateItem(world, eid, 1, { text: 'Updated', value: 'updated' })).toBe(true);
-			expect(getItem(eid, 1)?.text).toBe('Updated');
+			expect(getItem(world, eid, 1)?.text).toBe('Updated');
 		});
 
 		it('should fail to update invalid index', () => {
@@ -298,7 +298,7 @@ describe('List Component', () => {
 		it('should clear items', () => {
 			setSelectedIndex(world, eid, 1);
 			clearItems(world, eid);
-			expect(getItemCount(eid)).toBe(0);
+			expect(getItemCount(world, eid)).toBe(0);
 			expect(getSelectedIndex(eid)).toBe(-1);
 		});
 	});
@@ -416,35 +416,35 @@ describe('List Component', () => {
 		});
 
 		it('should get first visible', () => {
-			expect(getFirstVisible(eid)).toBe(0);
+			expect(getFirstVisible(world, eid)).toBe(0);
 		});
 
 		it('should set first visible', () => {
 			setFirstVisible(world, eid, 5);
-			expect(getFirstVisible(eid)).toBe(5);
+			expect(getFirstVisible(world, eid)).toBe(5);
 		});
 
 		it('should clamp first visible to bounds', () => {
 			setFirstVisible(world, eid, 100);
-			expect(getFirstVisible(eid)).toBe(19);
+			expect(getFirstVisible(world, eid)).toBe(19);
 
 			setFirstVisible(world, eid, -5);
-			expect(getFirstVisible(eid)).toBe(0);
+			expect(getFirstVisible(world, eid)).toBe(0);
 		});
 
 		it('should get visible count', () => {
-			expect(getVisibleCount(eid)).toBe(5);
+			expect(getVisibleCount(world, eid)).toBe(5);
 		});
 
 		it('should set visible count', () => {
 			setVisibleCount(world, eid, 10);
-			expect(getVisibleCount(eid)).toBe(10);
+			expect(getVisibleCount(world, eid)).toBe(10);
 		});
 
 		it('should ensure index is visible', () => {
-			expect(getFirstVisible(eid)).toBe(0);
+			expect(getFirstVisible(world, eid)).toBe(0);
 			ensureVisible(world, eid, 10);
-			expect(getFirstVisible(eid)).toBe(6); // 10 - 5 + 1
+			expect(getFirstVisible(world, eid)).toBe(6); // 10 - 5 + 1
 		});
 
 		it('should get visible items', () => {
@@ -457,7 +457,7 @@ describe('List Component', () => {
 		it('should scroll page down', () => {
 			setSelectedIndex(world, eid, 0);
 			expect(scrollPage(world, eid, 1)).toBe(true);
-			expect(getFirstVisible(eid)).toBe(5);
+			expect(getFirstVisible(world, eid)).toBe(5);
 			expect(getSelectedIndex(eid)).toBe(5);
 		});
 
@@ -465,7 +465,7 @@ describe('List Component', () => {
 			setFirstVisible(world, eid, 10);
 			setSelectedIndex(world, eid, 10);
 			expect(scrollPage(world, eid, -1)).toBe(true);
-			expect(getFirstVisible(eid)).toBe(5);
+			expect(getFirstVisible(world, eid)).toBe(5);
 			expect(getSelectedIndex(eid)).toBe(5);
 		});
 	});
@@ -828,13 +828,13 @@ describe('List Component', () => {
 				attachListBehavior(world, eid, [{ text: 'A' }]);
 				setTotalCount(world, eid, 1000);
 
-				expect(getTotalCount(eid)).toBe(1000);
+				expect(getTotalCount(world, eid)).toBe(1000);
 			});
 
 			it('should default to item count when total not set', () => {
 				attachListBehavior(world, eid, [{ text: 'A' }, { text: 'B' }]);
 
-				expect(getTotalCount(eid)).toBe(2);
+				expect(getTotalCount(world, eid)).toBe(2);
 			});
 		});
 
@@ -999,9 +999,9 @@ describe('List Component', () => {
 
 				appendItems(world, eid, [{ text: 'B' }, { text: 'C' }]);
 
-				expect(getItemCount(eid)).toBe(3);
+				expect(getItemCount(world, eid)).toBe(3);
 				expect(getItems(world, eid)).toHaveLength(3);
-				expect(getItem(eid, 2)?.text).toBe('C');
+				expect(getItem(world, eid, 2)?.text).toBe('C');
 			});
 		});
 
@@ -1017,8 +1017,8 @@ describe('List Component', () => {
 				await loadItems(world, eid, 0, 2);
 
 				expect(callback).toHaveBeenCalledWith(0, 2);
-				expect(getItem(eid, 0)?.text).toBe('Item 1');
-				expect(getItem(eid, 1)?.text).toBe('Item 2');
+				expect(getItem(world, eid, 0)?.text).toBe('Item 1');
+				expect(getItem(world, eid, 1)?.text).toBe('Item 2');
 			});
 
 			it('should set loading state during load', async () => {
@@ -1062,7 +1062,7 @@ describe('List Component', () => {
 				// Should not throw
 				await loadItems(world, eid, 0, 5);
 
-				expect(getItemCount(eid)).toBe(0);
+				expect(getItemCount(world, eid)).toBe(0);
 			});
 		});
 
@@ -1074,7 +1074,7 @@ describe('List Component', () => {
 
 				setFirstVisible(world, eid, 50);
 
-				expect(getFirstVisible(eid)).toBe(50);
+				expect(getFirstVisible(world, eid)).toBe(50);
 			});
 		});
 	});
