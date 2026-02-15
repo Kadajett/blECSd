@@ -404,7 +404,6 @@ describe('Widget Registry', () => {
 			expect(registry.has('listTable')).toBe(true);
 			expect(registry.has('tree')).toBe(true);
 			expect(registry.has('loading')).toBe(true);
-			expect(registry.has('viewport3d')).toBe(true);
 		});
 
 		it('registers aliases', () => {
@@ -429,10 +428,6 @@ describe('Widget Registry', () => {
 			// loading aliases
 			expect(registry.has('spinner')).toBe(true);
 			expect(registry.has('progress')).toBe(true);
-
-			// viewport3d aliases
-			expect(registry.has('3d')).toBe(true);
-			expect(registry.has('viewport')).toBe(true);
 		});
 
 		it('returns registry for chaining', () => {

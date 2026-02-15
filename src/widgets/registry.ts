@@ -441,7 +441,6 @@ import { createTable } from './table';
 import { createTabs } from './tabs';
 import { createText } from './text';
 import { createTree } from './tree';
-import { createViewport3D } from './viewport3d';
 
 /**
  * Builtin widget definitions.
@@ -624,17 +623,6 @@ const BUILTIN_WIDGETS: ReadonlyArray<{
 		requiredComponents: ['Position', 'Dimensions', 'Content'],
 		supportedEvents: ['show', 'hide'],
 		aliases: ['tooltip'],
-	},
-	{
-		name: 'viewport3d',
-		factory: createViewport3D as WidgetFactory,
-		description: '3D rendering viewport with camera and mesh management',
-		tags: ['display', '3d', 'rendering'],
-		category: 'display',
-		version: '0.4.0',
-		requiredComponents: ['Position', 'Dimensions', 'Camera'],
-		supportedEvents: [],
-		aliases: ['3d', 'viewport'],
 	},
 ];
 

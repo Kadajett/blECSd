@@ -9,9 +9,9 @@
  * @module terminal/graphics/vectorBridge
  */
 
-import type { Bitmap } from '../../media/render/ansi';
 import type { GraphicsManagerState, RenderOptions } from './backend';
 import { getActiveBackend, renderImage } from './backend';
+import type { Bitmap } from './cellRenderer';
 import type { BrailleCanvas } from './vector';
 import { canvasToString } from './vector';
 

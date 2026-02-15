@@ -47,6 +47,18 @@ export {
 	cursorPosition as brailleCursorPosition,
 	renderBrailleImage,
 } from './braille';
+// Cell renderer (bitmap-to-terminal conversion)
+export type { AnsiRenderOptions, Bitmap, Cell, CellMap, RenderMode } from './cellRenderer';
+export {
+	AnsiRenderOptionsSchema,
+	blendWithBackground,
+	cellMapToString,
+	luminanceToChar,
+	renderToAnsi,
+	rgbLuminance,
+	rgbTo256Color,
+	scaleBitmap,
+} from './cellRenderer';
 // Graphics detection
 export type { EnvChecker, GraphicsDetectionResult } from './detect';
 export {
