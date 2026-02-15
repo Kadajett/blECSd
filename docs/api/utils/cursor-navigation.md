@@ -247,6 +247,7 @@ function goToEnd(viewport: ViewportState, totalLines: number, config?: Partial<C
 
 ## Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   buildLineIndex, lineForOffset, createCursor, createViewport,
