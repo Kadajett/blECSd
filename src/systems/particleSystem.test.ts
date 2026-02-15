@@ -34,7 +34,7 @@ describe('particleSystem', () => {
 			const emitter = addEntity(world);
 			setPosition(world, emitter, 10, 20);
 			setEmitter(world, emitter, { lifetime: 2, speed: 5 });
-			setEmitterAppearance(emitter, {
+			setEmitterAppearance(world, emitter, {
 				chars: [0x2a],
 				startFg: 0xffff0000,
 				endFg: 0xff0000ff,
@@ -61,7 +61,7 @@ describe('particleSystem', () => {
 			expect(Particle.emitter[pid]).toBe(emitter);
 
 			// Particle is tracked by emitter
-			expect(getEmitterParticles(emitter).has(pid)).toBe(true);
+			expect(getEmitterParticles(world, emitter).has(pid)).toBe(true);
 		});
 
 		it('returns -1 if entity is not an emitter', () => {
@@ -92,7 +92,7 @@ describe('particleSystem', () => {
 			const emitter = addEntity(world);
 			setPosition(world, emitter, 5, 5);
 			setEmitter(world, emitter, { lifetime: 1, burstCount: 5 });
-			setEmitterAppearance(emitter, { chars: [0x2a], startFg: 0 });
+			setEmitterAppearance(world, emitter, { chars: [0x2a], startFg: 0 });
 
 			const spawned = burstParticles(world, emitter);
 			expect(spawned.length).toBe(5);
@@ -105,7 +105,7 @@ describe('particleSystem', () => {
 			const emitter = addEntity(world);
 			setPosition(world, emitter, 0, 0);
 			setEmitter(world, emitter, { lifetime: 1, burstCount: 10 });
-			setEmitterAppearance(emitter, { chars: [0x2a], startFg: 0 });
+			setEmitterAppearance(world, emitter, { chars: [0x2a], startFg: 0 });
 
 			const spawned = burstParticles(world, emitter, 3);
 			expect(spawned.length).toBe(3);
@@ -115,7 +115,7 @@ describe('particleSystem', () => {
 			const emitter = addEntity(world);
 			setPosition(world, emitter, 0, 0);
 			setEmitter(world, emitter, { lifetime: 1, burstCount: 100 });
-			setEmitterAppearance(emitter, { chars: [0x2a], startFg: 0 });
+			setEmitterAppearance(world, emitter, { chars: [0x2a], startFg: 0 });
 
 			const spawned = burstParticles(world, emitter, 100, 10, 5);
 			expect(spawned.length).toBe(5); // 10 max - 5 current = 5 spawnable
@@ -192,13 +192,13 @@ describe('particleSystem', () => {
 		it('removes entity from world', () => {
 			const emitter = addEntity(world);
 			setEmitter(world, emitter, { lifetime: 1 });
-			setEmitterAppearance(emitter, { chars: [0x2a], startFg: 0 });
+			setEmitterAppearance(world, emitter, { chars: [0x2a], startFg: 0 });
 
 			const pid = spawnParticle(world, emitter, { chars: [0x2a], startFg: 0 });
-			expect(getEmitterParticles(emitter).has(pid)).toBe(true);
+			expect(getEmitterParticles(world, emitter).has(pid)).toBe(true);
 
 			killParticle(world, pid);
-			expect(getEmitterParticles(emitter).has(pid)).toBe(false);
+			expect(getEmitterParticles(world, emitter).has(pid)).toBe(false);
 		});
 	});
 
@@ -207,7 +207,7 @@ describe('particleSystem', () => {
 			const emitter = addEntity(world);
 			setPosition(world, emitter, 0, 0);
 			setEmitter(world, emitter, { lifetime: 1, rate: 60, speed: 5 }); // 60/sec = 1/frame
-			setEmitterAppearance(emitter, { chars: [0x2a], startFg: 0 });
+			setEmitterAppearance(world, emitter, { chars: [0x2a], startFg: 0 });
 
 			const emitters: Entity[] = [emitter];
 			const particles: Entity[] = [];
@@ -220,7 +220,7 @@ describe('particleSystem', () => {
 			system(world);
 
 			// Should have spawned at least 1 particle (rate 60 at 1/60 delta = 1 particle)
-			const tracked = getEmitterParticles(emitter);
+			const tracked = getEmitterParticles(world, emitter);
 			expect(tracked.size).toBeGreaterThanOrEqual(1);
 		});
 
@@ -247,7 +247,7 @@ describe('particleSystem', () => {
 			const emitter = addEntity(world);
 			setPosition(world, emitter, 0, 0);
 			setEmitter(world, emitter, { lifetime: 1, rate: 60, active: false });
-			setEmitterAppearance(emitter, { chars: [0x2a], startFg: 0 });
+			setEmitterAppearance(world, emitter, { chars: [0x2a], startFg: 0 });
 
 			const system = createParticleSystem({
 				emitters: () => [emitter],
@@ -256,7 +256,7 @@ describe('particleSystem', () => {
 
 			system(world);
 
-			expect(getEmitterParticles(emitter).size).toBe(0);
+			expect(getEmitterParticles(world, emitter).size).toBe(0);
 		});
 
 		it('skips emitters without appearance', () => {
@@ -270,14 +270,14 @@ describe('particleSystem', () => {
 
 			system(world);
 
-			expect(getEmitterParticles(emitter).size).toBe(0);
+			expect(getEmitterParticles(world, emitter).size).toBe(0);
 		});
 
 		it('respects maxParticles limit', () => {
 			const emitter = addEntity(world);
 			setPosition(world, emitter, 0, 0);
 			setEmitter(world, emitter, { lifetime: 1, rate: 1000 }); // Very high rate
-			setEmitterAppearance(emitter, { chars: [0x2a], startFg: 0 });
+			setEmitterAppearance(world, emitter, { chars: [0x2a], startFg: 0 });
 
 			const system = createParticleSystem({
 				emitters: () => [emitter],
@@ -287,7 +287,7 @@ describe('particleSystem', () => {
 
 			system(world);
 
-			expect(getEmitterParticles(emitter).size).toBeLessThanOrEqual(5);
+			expect(getEmitterParticles(world, emitter).size).toBeLessThanOrEqual(5);
 		});
 	});
 });

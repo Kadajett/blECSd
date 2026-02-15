@@ -128,10 +128,10 @@ describe('Particle component', () => {
 				emitter: emitterId,
 			});
 			trackParticle(emitterId, eid);
-			expect(getEmitterParticles(emitterId).has(eid)).toBe(true);
+			expect(getEmitterParticles(world, emitterId).has(eid)).toBe(true);
 
 			removeParticle(world, eid);
-			expect(getEmitterParticles(emitterId).has(eid)).toBe(false);
+			expect(getEmitterParticles(world, emitterId).has(eid)).toBe(false);
 		});
 	});
 
@@ -337,12 +337,12 @@ describe('ParticleEmitter component', () => {
 
 		it('cleans up appearance and particle tracking', () => {
 			setEmitter(world, eid, { lifetime: 1 });
-			setEmitterAppearance(eid, { chars: [0x2a], startFg: 0 });
+			setEmitterAppearance(world, eid, { chars: [0x2a], startFg: 0 });
 			trackParticle(eid, 99 as Entity);
 
 			removeEmitter(world, eid);
-			expect(getEmitterAppearance(eid)).toBeUndefined();
-			expect(getEmitterParticles(eid).size).toBe(0);
+			expect(getEmitterAppearance(world, eid)).toBeUndefined();
+			expect(getEmitterParticles(world, eid).size).toBe(0);
 		});
 	});
 
@@ -386,12 +386,12 @@ describe('ParticleEmitter component', () => {
 	describe('emitter appearance', () => {
 		it('sets and gets appearance', () => {
 			const appearance = { chars: [0x2a, 0x2e], startFg: 0xffff0000, fadeOut: true };
-			setEmitterAppearance(eid, appearance);
-			expect(getEmitterAppearance(eid)).toEqual(appearance);
+			setEmitterAppearance(world, eid, appearance);
+			expect(getEmitterAppearance(world, eid)).toEqual(appearance);
 		});
 
 		it('returns undefined when not set', () => {
-			expect(getEmitterAppearance(eid)).toBeUndefined();
+			expect(getEmitterAppearance(world, eid)).toBeUndefined();
 		});
 	});
 
@@ -403,18 +403,18 @@ describe('ParticleEmitter component', () => {
 			trackParticle(eid, p1);
 			trackParticle(eid, p2);
 
-			const particles = getEmitterParticles(eid);
+			const particles = getEmitterParticles(world, eid);
 			expect(particles.size).toBe(2);
 			expect(particles.has(p1)).toBe(true);
 			expect(particles.has(p2)).toBe(true);
 
 			untrackParticle(eid, p1);
-			expect(getEmitterParticles(eid).size).toBe(1);
-			expect(getEmitterParticles(eid).has(p1)).toBe(false);
+			expect(getEmitterParticles(world, eid).size).toBe(1);
+			expect(getEmitterParticles(world, eid).has(p1)).toBe(false);
 		});
 
 		it('returns empty set for entity without tracked particles', () => {
-			expect(getEmitterParticles(eid).size).toBe(0);
+			expect(getEmitterParticles(world, eid).size).toBe(0);
 		});
 
 		it('getParticleTrackingStore exposes dense data for iteration', () => {
@@ -443,18 +443,18 @@ describe('ParticleEmitter component', () => {
 
 			trackParticle(eid, p1);
 			trackParticle(eid, p2);
-			expect(getEmitterParticles(eid).size).toBe(2);
+			expect(getEmitterParticles(world, eid).size).toBe(2);
 
 			// Remove p1, then add a new particle to reuse the slot
 			untrackParticle(eid, p1);
-			expect(getEmitterParticles(eid).size).toBe(1);
+			expect(getEmitterParticles(world, eid).size).toBe(1);
 
 			// Add a new particle that may reuse the freed slot
 			const p3 = addEntity(world);
 			trackParticle(eid, p3);
-			expect(getEmitterParticles(eid).size).toBe(2);
-			expect(getEmitterParticles(eid).has(p3)).toBe(true);
-			expect(getEmitterParticles(eid).has(p1)).toBe(false);
+			expect(getEmitterParticles(world, eid).size).toBe(2);
+			expect(getEmitterParticles(world, eid).has(p3)).toBe(true);
+			expect(getEmitterParticles(world, eid).has(p1)).toBe(false);
 		});
 
 		it('tracks particles from multiple emitters independently', () => {
@@ -465,10 +465,10 @@ describe('ParticleEmitter component', () => {
 			trackParticle(eid, p1);
 			trackParticle(emitter2, p2);
 
-			expect(getEmitterParticles(eid).size).toBe(1);
-			expect(getEmitterParticles(eid).has(p1)).toBe(true);
-			expect(getEmitterParticles(emitter2).size).toBe(1);
-			expect(getEmitterParticles(emitter2).has(p2)).toBe(true);
+			expect(getEmitterParticles(world, eid).size).toBe(1);
+			expect(getEmitterParticles(world, eid).has(p1)).toBe(true);
+			expect(getEmitterParticles(world, emitter2).size).toBe(1);
+			expect(getEmitterParticles(world, emitter2).has(p2)).toBe(true);
 		});
 	});
 });
