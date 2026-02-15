@@ -406,7 +406,7 @@ function createCacheKey(
  * clearImageCache(imageEntity);
  * ```
  */
-export function clearImageCache(eid: Entity): void {
+export function clearImageCache(_world: World, eid: Entity): void {
 	imageCellMapCacheStore.delete(eid);
 }
 
@@ -917,7 +917,7 @@ export function isImage(_world: World, eid: Entity): boolean {
  * }
  * ```
  */
-export function getImageBitmap(eid: Entity): Bitmap | undefined {
+export function getImageBitmap(_world: World, eid: Entity): Bitmap | undefined {
 	return imageBitmapStore.get(eid);
 }
 
@@ -937,7 +937,7 @@ export function getImageBitmap(eid: Entity): Bitmap | undefined {
  * }
  * ```
  */
-export function getImageCellMap(eid: Entity): CellMap | undefined {
+export function getImageCellMap(_world: World, eid: Entity): CellMap | undefined {
 	return imageCellMapStore.get(eid);
 }
 

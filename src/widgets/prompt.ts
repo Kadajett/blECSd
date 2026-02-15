@@ -730,7 +730,7 @@ export function prompt(
  * }
  * ```
  */
-export function isPrompt(eid: Entity): boolean {
+export function isPrompt(_world: World, eid: Entity): boolean {
 	return Prompt.isPrompt[eid] === 1;
 }
 

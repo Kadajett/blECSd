@@ -1039,7 +1039,7 @@ export function isVideo(_world: World, eid: Entity): boolean {
  * // 'stopped' | 'playing' | 'paused'
  * ```
  */
-export function getVideoPlaybackState(eid: Entity): VideoPlaybackState | undefined {
+export function getVideoPlaybackState(_world: World, eid: Entity): VideoPlaybackState | undefined {
 	return videoStateStore.get(eid)?.playbackState;
 }
 
@@ -1057,7 +1057,7 @@ export function getVideoPlaybackState(eid: Entity): VideoPlaybackState | undefin
  * // 'mpv' | 'mplayer' | undefined
  * ```
  */
-export function getVideoPlayer(eid: Entity): VideoPlayer | undefined {
+export function getVideoPlayer(_world: World, eid: Entity): VideoPlayer | undefined {
 	return videoStateStore.get(eid)?.player;
 }
 

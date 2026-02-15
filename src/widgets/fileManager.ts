@@ -1032,7 +1032,7 @@ export function resetFileManagerStore(): void {
  * ]);
  * ```
  */
-export function setReadDirFn(eid: Entity, fn: (dirPath: string) => FileEntry[]): void {
+export function setReadDirFn(_world: World, eid: Entity, fn: (dirPath: string) => FileEntry[]): void {
 	const state = fileManagerStateMap.get(eid);
 	if (state) {
 		state.readDirFn = fn;

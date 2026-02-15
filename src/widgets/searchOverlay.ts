@@ -764,7 +764,7 @@ export function isSearchOverlay(_world: World, eid: Entity): boolean {
  * @param eid - The search overlay entity ID
  * @returns The target entity ID or null if not attached
  */
-export function getSearchOverlayTarget(eid: Entity): Entity | null {
+export function getSearchOverlayTarget(_world: World, eid: Entity): Entity | null {
 	const state = stateMap.get(eid);
 	return state?.targetEid ?? null;
 }
@@ -783,7 +783,7 @@ export function getSearchOverlayTarget(eid: Entity): Entity | null {
  * }
  * ```
  */
-export function getSearchOverlayColors(eid: Entity): {
+export function getSearchOverlayColors(_world: World, eid: Entity): {
 	fg: number;
 	bg: number;
 	matchFg: number;

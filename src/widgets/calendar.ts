@@ -846,7 +846,7 @@ export function createCalendar(
  * @param eid - The entity ID
  * @returns true if the entity is a calendar
  */
-export function isCalendar(eid: Entity): boolean {
+export function isCalendar(_world: World, eid: Entity): boolean {
 	return calendarStateMap.has(eid);
 }
 

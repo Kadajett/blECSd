@@ -250,7 +250,7 @@ function closeContextMenu(world: World, eid: Entity): void {
 /**
  * Gets the currently selected item index.
  */
-export function getContextMenuSelectedIndex(eid: Entity): number {
+export function getContextMenuSelectedIndex(_world: World, eid: Entity): number {
 	const state = contextMenuStates.get(eid);
 	return state?.selectedIndex ?? 0;
 }
