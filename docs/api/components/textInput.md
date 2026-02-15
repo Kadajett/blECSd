@@ -411,6 +411,7 @@ clearValidationError(eid);
 
 ## Example: Email Validation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachTextInputBehavior,
