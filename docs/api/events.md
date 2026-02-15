@@ -339,8 +339,9 @@ warnings.on('warning', (event) => {
 #### emitTerminalTooSmallWarning
 
 ```typescript
-import { emitTerminalTooSmallWarning } from 'blecsd';
+import { createWarningEmitter, emitTerminalTooSmallWarning } from 'blecsd';
 
+const warnings = createWarningEmitter();
 emitTerminalTooSmallWarning(warnings, 40, 15, 80, 24);
 // Emits: "Terminal size (40x15) is smaller than recommended (80x24)"
 ```
@@ -355,8 +356,9 @@ emitTerminalTooSmallWarning(warnings, 40, 15, 80, 24);
 #### emitUnsupportedCapabilityWarning
 
 ```typescript
-import { emitUnsupportedCapabilityWarning } from 'blecsd';
+import { createWarningEmitter, emitUnsupportedCapabilityWarning } from 'blecsd';
 
+const warnings = createWarningEmitter();
 emitUnsupportedCapabilityWarning(
   warnings,
   'truecolor',
@@ -372,8 +374,9 @@ emitUnsupportedCapabilityWarning(
 #### emitDeprecatedAPIWarning
 
 ```typescript
-import { emitDeprecatedAPIWarning } from 'blecsd';
+import { createWarningEmitter, emitDeprecatedAPIWarning } from 'blecsd';
 
+const warnings = createWarningEmitter();
 emitDeprecatedAPIWarning(
   warnings,
   'oldFunction()',
@@ -391,8 +394,9 @@ emitDeprecatedAPIWarning(
 #### emitPerformanceWarning
 
 ```typescript
-import { emitPerformanceWarning } from 'blecsd';
+import { createWarningEmitter, emitPerformanceWarning } from 'blecsd';
 
+const warnings = createWarningEmitter();
 emitPerformanceWarning(
   warnings,
   'frame-time',
@@ -506,10 +510,17 @@ import {
   TerminalTooSmallMetadataSchema,
   UnsupportedCapabilityMetadataSchema,
   DeprecatedAPIMetadataSchema,
-  PerformanceIssueMetadataSchema
+  PerformanceIssueMetadataSchema,
+  WarningType
 } from 'blecsd';
 
 // Validate warning event
+const event = {
+  type: WarningType.TERMINAL_TOO_SMALL,
+  message: 'Terminal size (40x15) is smaller than recommended (80x24)',
+  metadata: { width: 40, height: 15, minWidth: 80, minHeight: 24 },
+  timestamp: Date.now(),
+};
 const result = WarningEventSchema.safeParse(event);
 if (!result.success) {
   console.error('Invalid warning:', result.error);
