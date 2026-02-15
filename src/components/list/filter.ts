@@ -27,7 +27,7 @@ export function setListFilter(world: World, eid: Entity, filterText: string): vo
 	filterStore.set(eid, filter);
 
 	// Recalculate filtered items
-	const allItems = getItems(eid);
+	const allItems = getItems(world, eid);
 	const filtered =
 		filter === ''
 			? [...allItems]
@@ -49,10 +49,11 @@ export function setListFilter(world: World, eid: Entity, filterText: string): vo
 /**
  * Gets the current filter text.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns The current filter text
  */
-export function getListFilter(eid: Entity): string {
+export function getListFilter(_world: World, eid: Entity): string {
 	return filterStore.get(eid) ?? '';
 }
 
@@ -66,7 +67,7 @@ export function clearListFilter(world: World, eid: Entity): void {
 	filterStore.delete(eid);
 	filteredItemsCache.delete(eid);
 	listStore.firstVisible[eid] = 0;
-	if (getItems(eid).length > 0) {
+	if (getItems(world, eid).length > 0) {
 		listStore.selectedIndex[eid] = 0;
 	}
 	markDirty(world, eid);
@@ -75,13 +76,14 @@ export function clearListFilter(world: World, eid: Entity): void {
 /**
  * Gets the filtered (visible) items based on current filter.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns Array of filtered items
  */
-export function getFilteredItems(eid: Entity): readonly ListItem[] {
+export function getFilteredItems(world: World, eid: Entity): readonly ListItem[] {
 	const filter = filterStore.get(eid);
 	if (filter === undefined || filter === '') {
-		return getItems(eid);
+		return getItems(world, eid);
 	}
 
 	const cached = filteredItemsCache.get(eid);

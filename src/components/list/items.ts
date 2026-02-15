@@ -12,10 +12,11 @@ import type { ListItem } from './types';
 /**
  * Gets all items from a list.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns Array of list items
  */
-export function getItems(eid: Entity): readonly ListItem[] {
+export function getItems(_world: World, eid: Entity): readonly ListItem[] {
 	return itemsStore.get(eid) ?? [];
 }
 

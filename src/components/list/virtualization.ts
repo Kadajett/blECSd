@@ -164,10 +164,14 @@ export function scrollPage(world: World, eid: Entity, direction: 1 | -1): boolea
 /**
  * Gets the visible items for rendering.
  *
+ * @param world - The ECS world
  * @param eid - The entity ID
  * @returns Array of visible items with their indices
  */
-export function getVisibleItems(eid: Entity): Array<{ index: number; item: ListItem }> {
+export function getVisibleItems(
+	_world: World,
+	eid: Entity,
+): Array<{ index: number; item: ListItem }> {
 	const items = itemsStore.get(eid) ?? [];
 	const firstVisible = listStore.firstVisible[eid] ?? 0;
 	const visibleCount = listStore.visibleCount[eid] ?? items.length;
