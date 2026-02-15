@@ -72,7 +72,7 @@ describe('SmoothScroll', () => {
 		it('sets target position', () => {
 			const state = getScrollState(eid, 100, 500, 80, 24);
 
-			smoothScrollTo(eid, null, 100);
+			smoothScrollTo(world, eid, null, 100);
 
 			expect(state.targetY).toBe(100);
 			expect(state.isAnimating).toBe(true);
@@ -83,7 +83,7 @@ describe('SmoothScroll', () => {
 		it('sets position without animation', () => {
 			const state = getScrollState(eid, 100, 500, 80, 24);
 
-			setScrollImmediate(eid, 10, 50);
+			setScrollImmediate(world, eid, 10, 50);
 
 			expect(state.scrollX).toBe(10);
 			expect(state.scrollY).toBe(50);
@@ -150,20 +150,20 @@ describe('SmoothScroll', () => {
 
 	describe('isScrolling', () => {
 		it('returns false for unknown entity', () => {
-			expect(isScrolling(999 as Entity)).toBe(false);
+			expect(isScrolling(world, 999 as Entity)).toBe(false);
 		});
 
 		it('returns true when animating', () => {
 			const state = getScrollState(eid, 100, 500, 80, 24);
 			state.isAnimating = true;
 
-			expect(isScrolling(eid)).toBe(true);
+			expect(isScrolling(world, eid)).toBe(true);
 		});
 	});
 
 	describe('getScrollPosition', () => {
 		it('returns null for unknown entity', () => {
-			expect(getScrollPosition(999 as Entity)).toBeNull();
+			expect(getScrollPosition(world, 999 as Entity)).toBeNull();
 		});
 
 		it('returns current scroll position', () => {
@@ -171,7 +171,7 @@ describe('SmoothScroll', () => {
 			state.scrollX = 10;
 			state.scrollY = 50;
 
-			const pos = getScrollPosition(eid);
+			const pos = getScrollPosition(world, eid);
 			expect(pos!.x).toBe(10);
 			expect(pos!.y).toBe(50);
 		});
@@ -180,9 +180,9 @@ describe('SmoothScroll', () => {
 	describe('removeScrollState', () => {
 		it('removes state for entity', () => {
 			getScrollState(eid, 100, 500, 80, 24);
-			removeScrollState(eid);
+			removeScrollState(world, eid);
 
-			expect(getScrollPosition(eid)).toBeNull();
+			expect(getScrollPosition(world, eid)).toBeNull();
 		});
 	});
 });
