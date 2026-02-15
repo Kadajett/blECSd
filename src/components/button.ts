@@ -373,13 +373,14 @@ export function enableButton(world: World, eid: Entity): boolean {
 /**
  * Registers a callback to be called when the button is pressed.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  * @param callback - Function to call on press
  * @returns Unsubscribe function
  *
  * @example
  * ```typescript
- * const unsubscribe = onButtonPress(button, () => {
+ * const unsubscribe = onButtonPress(world, button, () => {
  *   console.log('Button was pressed!');
  * });
  *
@@ -387,7 +388,7 @@ export function enableButton(world: World, eid: Entity): boolean {
  * unsubscribe();
  * ```
  */
-export function onButtonPress(eid: Entity, callback: () => void): () => void {
+export function onButtonPress(_world: World, eid: Entity, callback: () => void): () => void {
 	let callbacks = pressCallbacks.get(eid);
 	if (!callbacks) {
 		callbacks = [];
@@ -454,16 +455,17 @@ export function pressButton(world: World, eid: Entity): boolean {
  * Removes all press callbacks for a button.
  * Call this when destroying a button entity.
  *
+ * @param world - The ECS world
  * @param eid - Entity ID
  *
  * @example
  * ```typescript
  * // Clean up before removing entity
- * clearButtonCallbacks(buttonEntity);
+ * clearButtonCallbacks(world, buttonEntity);
  * removeEntity(world, buttonEntity);
  * ```
  */
-export function clearButtonCallbacks(eid: Entity): void {
+export function clearButtonCallbacks(_world: World, eid: Entity): void {
 	pressCallbacks.delete(eid);
 }
 
