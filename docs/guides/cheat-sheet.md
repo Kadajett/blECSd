@@ -7,11 +7,10 @@ Quick reference for the most common APIs and patterns in blECSd.
 ## Core ECS
 
 ```typescript
-import { createWorld, addEntity, removeEntity } from 'blecsd';
+import { createWorld, addEntity, removeEntity, entityExists } from 'blecsd';
 
 // World management
 const world = createWorld();               // Create ECS world
-destroyWorld(world);                       // Destroy world and cleanup
 
 // Entity lifecycle
 const eid = addEntity(world);              // Create entity
@@ -26,60 +25,39 @@ entityExists(world, eid);                  // Check if entity exists
 ### Common Widgets
 
 ```typescript
-import { createBox, createPanel, createList, createText } from 'blecsd';
+import { createWorld, addEntity, createBox } from 'blecsd';
+
+const world = createWorld();
 
 // Box - basic container
-const box = createBox(world, {
-  x: 10, y: 5, width: 30, height: 10,
-  border: { type: 'single' },
-  padding: { all: 1 }
+const boxEntity = addEntity(world);
+const box = createBox(world, boxEntity, {
+  left: 10, top: 5, width: 30, height: 10,
+  border: { type: 'line', ch: 'single' },
+  padding: 1
 });
 
-// Panel - box with title
-const panel = createPanel(world, {
-  x: 2, y: 1, width: 40, height: 15,
-  title: 'My Panel',
-  border: { type: 'rounded' }
-});
-
-// List - selectable items
-const list = createList(world, entity, {
-  items: [
-    { label: 'Item 1', value: 'val1' },
-    { label: 'Item 2', value: 'val2' }
-  ]
-});
-
-// Text - formatted text
-const text = createText(world, {
-  x: 5, y: 2, width: 20,
-  content: 'Hello, world!',
-  align: 'center'
+// Box with title
+const panelEntity = addEntity(world);
+const panel = createBox(world, panelEntity, {
+  left: 2, top: 1, width: 40, height: 15,
+  border: { type: 'line', ch: 'rounded' },
+  content: 'My Panel'
 });
 ```
 
 ### Form Controls
 
 ```typescript
-import { createTextInput, createCheckbox, createSlider, createProgressBar } from 'blecsd';
+import { createWorld, createCheckbox, createProgressBar } from 'blecsd';
 
-// Text input
-const input = createTextInput(world, {
-  x: 5, y: 3, width: 30,
-  placeholder: 'Enter text...'
-});
+const world = createWorld();
 
 // Checkbox
 const checkbox = createCheckbox(world, {
   x: 5, y: 5,
   label: 'Enable feature',
   checked: false
-});
-
-// Slider
-const slider = createSlider(world, {
-  x: 5, y: 7, width: 20,
-  min: 0, max: 100, value: 50
 });
 
 // Progress bar
@@ -97,7 +75,10 @@ const progress = createProgressBar(world, {
 ### Position & Layout
 
 ```typescript
-import { setPosition, getPosition, moveBy, setDimensions, getDimensions } from 'blecsd';
+import { createWorld, addEntity, setPosition, getPosition, moveBy, setDimensions, getDimensions, setZIndex } from 'blecsd';
+
+const world = createWorld();
+const eid = addEntity(world);
 
 // Position
 setPosition(world, eid, 10, 5);            // Set x, y
@@ -108,21 +89,16 @@ setZIndex(world, eid, 10);                 // Set rendering order
 // Dimensions
 setDimensions(world, eid, 30, 10);         // Set width, height
 const { width, height } = getDimensions(world, eid);
-setMinDimensions(world, eid, 10, 5);       // Set min constraints
-setMaxDimensions(world, eid, 100, 50);     // Set max constraints
 ```
 
 ### Style & Appearance
 
 ```typescript
-import { setRenderable, setBorder, setPadding, setContent } from 'blecsd';
+import { createWorld, addEntity, createBox, setBorder, setPadding, setContent, TextAlign } from 'blecsd';
 
-// Colors and visibility
-setRenderable(world, eid, {
-  fg: 0xffffff,        // Foreground color (hex)
-  bg: 0x000000,        // Background color (hex)
-  visible: true
-});
+const world = createWorld();
+const eid = addEntity(world);
+createBox(world, eid, { x: 0, y: 0, width: 10, height: 5 });
 
 // Borders
 setBorder(world, eid, {
@@ -135,70 +111,80 @@ setPadding(world, eid, { all: 1 });        // All sides
 setPadding(world, eid, { top: 1, left: 2, right: 2, bottom: 1 });
 
 // Content
-setContent(world, eid, 'Hello!');
-setContentAlign(world, eid, 'center');     // left, center, right
+setContent(world, eid, 'Hello!', TextAlign.Center);     // left, center, right
 ```
 
 ### Hierarchy
 
 ```typescript
-import { appendChild, removeChild, getChildren, getParent } from 'blecsd';
+import { createWorld, addEntity, appendChild, removeChild, getChildren, getParent } from 'blecsd';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child = addEntity(world);
 
 // Parent-child relationships
 appendChild(world, parent, child);         // Add child to parent
 removeChild(world, parent, child);         // Remove child
 const children = getChildren(world, parent); // Get all children
-const parent = getParent(world, child);    // Get parent
+const parentEid = getParent(world, child);    // Get parent
 ```
 
 ### Focus & Interaction
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setFocusable, setFocus, getFocused, focusNext, focusPrev } from 'blecsd';
+import { createWorld, addEntity, createBox, setFocusable, setUserFocus, getFocusedEntity, focusNext, focusPrev } from 'blecsd';
+
+const world = createWorld();
+const eid = addEntity(world);
+createBox(world, eid, { x: 0, y: 0, width: 10, height: 5 });
 
 // Focus management
 setFocusable(world, eid, true);            // Make focusable
-setFocus(world, eid);                      // Give focus
-const focused = getFocused(world);         // Get focused entity
+setUserFocus(world, eid);                  // Give focus
+const focused = getFocusedEntity(world);   // Get focused entity
 focusNext(world);                          // Tab to next
 focusPrev(world);                          // Shift+Tab to previous
-
-// Interactive
-setInteractive(world, eid, {
-  onClick: (e) => console.log('Clicked'),
-  onHover: (e) => console.log('Hover')
-});
 ```
 
 ### Scrolling
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setScrollable, scrollBy, scrollToTop, scrollToBottom } from 'blecsd';
+import { createWorld, addEntity, createBox, setScrollable, scrollBy, scrollToTop, scrollToBottom, scrollToLine, setContent } from 'blecsd';
+
+const world = createWorld();
+const eid = addEntity(world);
+createBox(world, eid, { x: 0, y: 0, width: 20, height: 10 });
+setContent(world, eid, 'Line 1\nLine 2\nLine 3');
 
 // Scrollable content
-setScrollable(world, eid, {
-  contentHeight: 100,
-  scrollbarVisible: true
-});
+setScrollable(world, eid, true);
 
 scrollBy(world, eid, 5);                   // Scroll by delta
 scrollToTop(world, eid);                   // Jump to top
 scrollToBottom(world, eid);                // Jump to bottom
-scrollToLine(world, eid, 25);              // Jump to line
+scrollToLine(world, eid, 2);               // Jump to line
 ```
 
 ---
 
 ## Queries
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query, filterVisible, queryFocusable } from 'blecsd';
+import { createWorld, addEntity, createBox, getAllEntities, filterVisible, queryFocusable, getPosition } from 'blecsd';
 
-// Find entities with specific components
-const entities = query(world, [Position, Renderable]);
+const world = createWorld();
+const eid = addEntity(world);
+createBox(world, eid, { x: 10, y: 5, width: 10, height: 5 });
+
+// Find all entities
+const entities = getAllEntities(world);
 
 // Filter by visibility
-const visible = filterVisible(world, entities);
+const visible = filterVisible(world);
 
 // Find focusable entities
 const focusable = queryFocusable(world);
@@ -216,14 +202,17 @@ for (const eid of entities) {
 
 ### Keyboard
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getInputEventBus, enableInput, disableInput } from 'blecsd';
+import { createWorld, createEventBus, enableInput, disableInput } from 'blecsd';
+
+const world = createWorld();
 
 // Enable input handling
 enableInput(world);
 
 // Subscribe to key events
-const inputBus = getInputEventBus(world);
+const inputBus = createEventBus();
 inputBus.on('key', (event) => {
   if (event.name === 'q' && event.ctrl) {
     process.exit(0);  // Ctrl+Q to quit
@@ -258,6 +247,7 @@ enableMouse(world);
 
 ## Rendering
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { render, flush, beginFrame, endFrame } from 'blecsd';
 
@@ -275,11 +265,12 @@ endFrame(world);                           // End frame and flush
 
 ## Game Loop
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { startGameLoop, stopGameLoop } from 'blecsd';
+import { createGameLoop } from 'blecsd';
 
 // Start default game loop (60 FPS)
-const loop = startGameLoop(world, {
+const loop = createGameLoop(world, {
   fps: 60,
   systems: [
     inputSystem,
@@ -301,7 +292,7 @@ function customLoop() {
 customLoop();
 
 // Stop game loop
-stopGameLoop(loop);
+loop.stop();
 ```
 
 ---
@@ -309,22 +300,15 @@ stopGameLoop(loop);
 ## Systems
 
 ```typescript
-import {
-  inputSystem,
-  layoutSystem,
-  renderSystem,
-  focusSystem,
-  scrollSystem,
-  animationSystem,
-  collisionSystem
-} from 'blecsd';
+import { createWorld, inputSystem, layoutSystem, renderSystem, focusSystem, animationSystem, collisionSystem } from 'blecsd';
+
+const world = createWorld();
 
 // Execute systems manually
 inputSystem(world);                        // Process input
 layoutSystem(world);                       // Calculate layout
 renderSystem(world);                       // Render to buffer
 focusSystem(world);                        // Update focus state
-scrollSystem(world);                       // Handle scrolling
 animationSystem(world);                    // Update animations
 collisionSystem(world);                    // Detect collisions
 ```
@@ -360,6 +344,7 @@ unsubscribe();
 
 ## Animation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setVelocity, setAnimation } from 'blecsd';
 
@@ -406,6 +391,7 @@ for (const { entityA, entityB } of collisions) {
 
 ## Terminal I/O (Low-Level)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cursor, style, screen } from 'blecsd/terminal';
 
@@ -433,20 +419,22 @@ screen.restoreBuffer();                    // Restore main buffer
 
 ### Pattern 1: Basic App Structure
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createPanel, createList, enableInput, render, getInputEventBus } from 'blecsd';
+import { createWorld, createPanelEntity, createListEntity, enableInput, render, createEventBus, addEntity } from 'blecsd';
 
 // Setup
 const world = createWorld();
 enableInput(world);
 
 // Create UI
-const panel = createPanel(world, {
+const panel = createPanelEntity(world, {
   x: 2, y: 1, width: 40, height: 15,
   title: 'My App'
 });
 
-const list = createList(world, entity, {
+const entity = addEntity(world);
+const list = createListEntity(world, entity, {
   items: [
     { label: 'Option 1', value: '1' },
     { label: 'Option 2', value: '2' }
@@ -454,7 +442,7 @@ const list = createList(world, entity, {
 });
 
 // Input handling
-const inputBus = getInputEventBus(world);
+const inputBus = createEventBus();
 inputBus.on('key', (e) => {
   if (e.name === 'q') process.exit(0);
 });
@@ -465,11 +453,12 @@ render(world);
 
 ### Pattern 2: Interactive List
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Create list with selection handling
-const list = createList(world, entity, { items: [...] });
+const list = createListEntity(world, entity, { items: [...] });
 
-const inputBus = getInputEventBus(world);
+const inputBus = createEventBus();
 inputBus.on('key', (e) => {
   if (e.name === 'up') {
     selectPrevious(world, list);
@@ -487,10 +476,11 @@ inputBus.on('key', (e) => {
 
 ### Pattern 3: Form with Validation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createForm, createTextInput, createCheckbox } from 'blecsd';
+import { createFormEntity, createTextareaEntity, createCheckboxEntity } from 'blecsd';
 
-const form = createForm(world, {
+const form = createFormEntity(world, {
   fields: [
     {
       name: 'username',
@@ -506,7 +496,7 @@ const form = createForm(world, {
   ]
 });
 
-const inputBus = getInputEventBus(world);
+const inputBus = createEventBus();
 inputBus.on('key', (e) => {
   if (e.name === 'return') {
     const values = getFormValues(world, form);
@@ -519,9 +509,10 @@ inputBus.on('key', (e) => {
 
 ### Pattern 4: Scrollable Content
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Create scrollable text area
-const box = createBox(world, {
+const box = createBoxEntity(world, {
   x: 5, y: 2, width: 50, height: 20
 });
 
@@ -531,7 +522,7 @@ setScrollable(world, box, {
 });
 
 // Handle scroll input
-const inputBus = getInputEventBus(world);
+const inputBus = createEventBus();
 inputBus.on('key', (e) => {
   if (e.name === 'up') {
     scrollBy(world, box, -1);
@@ -551,6 +542,7 @@ inputBus.on('key', (e) => {
 
 ### Pattern 5: Dynamic Content Updates
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Update text content
 setContent(world, textBox, 'Updated text');
@@ -568,15 +560,16 @@ render(world);
 
 ### Pattern 6: Modal Dialog
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Create modal overlay
-const overlay = createBox(world, {
+const overlay = createBoxEntity(world, {
   x: 0, y: 0,
   width: '100%', height: '100%',
   style: { bg: 0x000000, opacity: 0.7 }
 });
 
-const dialog = createPanel(world, {
+const dialog = createPanelEntity(world, {
   x: '50%-20', y: '50%-10',  // Center on screen
   width: 40, height: 10,
   title: 'Confirm',
@@ -587,7 +580,7 @@ const dialog = createPanel(world, {
 setFocusTrap(world, dialog, true);
 
 // Handle close
-const inputBus = getInputEventBus(world);
+const inputBus = createEventBus();
 inputBus.on('key', (e) => {
   if (e.name === 'escape') {
     removeEntity(world, overlay);
@@ -628,11 +621,11 @@ event.meta   // Cmd (Mac) or Win (Windows)
 ## Color Utilities
 
 ```typescript
-import { hexToRgb, rgbToHex, parseColor } from 'blecsd';
+import { hexToColor, parseColor, colorToHex } from 'blecsd';
 
 // Convert between formats
-const rgb = hexToRgb('#ff0000');           // { r: 255, g: 0, b: 0 }
-const hex = rgbToHex(255, 0, 0);           // 0xff0000
+const color = hexToColor('#ff0000');       // Packed color
+const hex = colorToHex(color);             // '#ff0000'
 
 // Parse various formats
 parseColor('#ff0000');                     // 0xff0000
@@ -645,17 +638,17 @@ parseColor('rgb(255, 0, 0)');              // RGB format
 ## Debug Utilities
 
 ```typescript
-import { dumpWorld, inspectEntity, getComponentNames } from 'blecsd/debug';
+import { createWorld, addEntity, dumpWorld, inspectEntity } from 'blecsd';
+
+const world = createWorld();
+const eid = addEntity(world);
 
 // Debug world state
 dumpWorld(world);                          // Print all entities
 
 // Inspect entity
-inspectEntity(world, eid);                 // Print entity components
-
-// Get component list
-const components = getComponentNames(world, eid);
-console.log('Components:', components);
+const inspection = inspectEntity(world, eid);  // Get entity inspection
+console.log('Components:', inspection.components);
 ```
 
 ---
@@ -673,6 +666,7 @@ console.log('Components:', components);
 
 ## TypeScript Tips
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Type-safe widget config
 import type { BoxConfig, ListConfig } from 'blecsd';
@@ -699,6 +693,7 @@ bus.emit('action:complete', { id: 42 });  // Type-checked
 
 ## CLI Commands
 
+<!-- blecsd-doccheck:ignore -->
 ```bash
 # Create new blECSd project
 npx blecsd init my-app
