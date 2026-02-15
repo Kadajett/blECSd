@@ -30,33 +30,6 @@ export {
 	toggleCollapsible,
 	toggleSection,
 } from './accordion';
-// Agent workflow visualizer widget
-export type {
-	AgentWorkflowConfig,
-	AgentWorkflowState,
-	AgentWorkflowWidget,
-	WorkflowStep,
-	WorkflowStepStatus,
-} from './agentWorkflow';
-export {
-	AgentWorkflow,
-	AgentWorkflowConfigSchema,
-	addWorkflowStep,
-	createAgentWorkflow,
-	createWorkflowState,
-	DEFAULT_STATUS_COLORS,
-	formatDuration,
-	formatWorkflowDisplay,
-	getStepChildren,
-	getStepDepth,
-	getStepDuration,
-	getVisibleSteps,
-	getWorkflowStats,
-	isAgentWorkflow,
-	resetWorkflowStore,
-	toggleWorkflowCollapse,
-	updateWorkflowStep,
-} from './agentWorkflow';
 // Autocomplete widget
 export type { AutocompleteConfig, AutocompleteWidget } from './autocomplete';
 export {
@@ -220,31 +193,6 @@ export {
 	getContextMenuSelectedIndex,
 	handleContextMenuKey,
 } from './contextMenu';
-// Conversation thread widget
-export type {
-	ConversationConfig,
-	ConversationMessage,
-	ConversationState,
-	ConversationWidget,
-	MessageRole,
-} from './conversation';
-export {
-	addMessage,
-	appendToMessage,
-	Conversation,
-	ConversationConfigSchema,
-	collapseMessage,
-	createConversation,
-	createConversationState,
-	endStreamingMessage,
-	expandMessage,
-	formatConversationDisplay,
-	getVisibleMessages,
-	isConversation,
-	resetConversationStore,
-	searchMessages,
-	startStreamingMessage,
-} from './conversation';
 // DevTools widget
 export type {
 	DevToolsComponentInfo,
@@ -768,35 +716,6 @@ export {
 	SplitPane,
 	SplitPaneConfigSchema,
 } from './splitPane';
-// Streaming markdown widget
-export type {
-	MarkdownDirtyRegion,
-	StreamingBlock,
-	StreamingBlockType,
-	StreamingMarkdownConfig,
-	StreamingMarkdownProgress,
-	StreamingMarkdownState,
-	StreamingMarkdownTheme,
-	StreamingMarkdownWidget,
-} from './streamingMarkdown';
-export {
-	appendMarkdown,
-	clearMarkdownState,
-	createStreamingMarkdown,
-	createStreamingMarkdownState,
-	formatInline,
-	getMarkdownVisibleLines,
-	isStreamingMarkdown,
-	parseStreamingBlocks,
-	renderAllBlocks,
-	renderBlock as renderStreamingBlock,
-	resetStreamingMarkdownStore,
-	StreamingMarkdown,
-	StreamingMarkdownConfigSchema,
-	scrollMarkdownByLines,
-	scrollMarkdownToLine,
-	wrapText as wrapMarkdownText,
-} from './streamingMarkdown';
 // Streaming text
 export type {
 	StreamDirtyRegion,
@@ -935,49 +854,6 @@ export {
 	Toast,
 	ToastConfigSchema,
 } from './toast';
-// Token tracker widget
-export type {
-	ModelPricing,
-	TokenStats,
-	TokenTrackerConfig,
-	TokenTrackerWidget,
-} from './tokenTracker';
-export {
-	createTokenState,
-	createTokenTracker,
-	DEFAULT_MODEL_PRICING,
-	formatTokenDisplay,
-	getTokenStats,
-	isTokenTracker,
-	recordTokens,
-	resetTokenState,
-	resetTokenTrackerStore,
-	TokenTracker,
-	TokenTrackerConfigSchema,
-} from './tokenTracker';
-// Tool-use visualization widget
-export type {
-	ToolCallEntry,
-	ToolCallStatus,
-	ToolUseConfig,
-	ToolUseState,
-	ToolUseWidget,
-} from './toolUse';
-export {
-	addToolCall,
-	createToolUse,
-	createToolUseState,
-	formatToolCallDisplay,
-	getToolCallDuration,
-	getToolCallTimeline,
-	isToolUse,
-	resetToolUseStore,
-	setToolCallError,
-	ToolUse,
-	ToolUseConfigSchema,
-	toggleToolCallExpand,
-	updateToolCallStatus,
-} from './toolUse';
 // Tree widget
 export type {
 	FlattenedNode,
@@ -987,40 +863,6 @@ export type {
 	TreeWidgetConfig,
 } from './tree';
 export { createTree, isTreeWidget, resetTreeStore, TreeWidgetConfigSchema } from './tree';
-// Video widget
-export type {
-	VideoConfig,
-	VideoOutputDriver,
-	VideoPlaybackState,
-	VideoPlayer,
-	VideoProcessHandle,
-	VideoProcessSpawner,
-	VideoWidget,
-} from './video';
-export {
-	buildMplayerArgs,
-	buildMpvArgs,
-	buildPlayerArgs,
-	createVideo,
-	detectVideoPlayer,
-	getVideoPlaybackState,
-	getVideoPlayer,
-	isVideo,
-	MPLAYER_SEARCH_PATHS,
-	MPV_SEARCH_PATHS,
-	resetVideoStore,
-	sendPauseCommand,
-	sendSeekCommand,
-	Video,
-	VideoConfigSchema,
-} from './video';
-// Viewport 3D
-export type { Viewport3DWidget } from './viewport3d';
-export {
-	createViewport3D,
-	isViewport3DWidget,
-	Viewport3DTag,
-} from './viewport3d';
 // VirtualizedList widget
 export type {
 	VirtualizedList,
