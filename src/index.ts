@@ -8,14 +8,9 @@
 
 export const VERSION = '0.5.0';
 
-// 3D module exported as namespace to avoid top-level name collisions
-export * as three from './3d';
-
 // Conflict-free modules
-export * from './audio';
 export * from './debug';
 export * from './errors';
-export * from './game';
 export * from './input';
 export * from './schemas';
 export * from './text';

@@ -37,10 +37,6 @@
       "import": "./dist/terminal/index.js",
       "types": "./dist/terminal/index.d.ts"
     },
-    "./3d": {
-      "import": "./dist/3d/index.js",
-      "types": "./dist/3d/index.d.ts"
-    },
     "./schemas": {
       "import": "./dist/schemas/index.js",
       "types": "./dist/schemas/index.d.ts"
@@ -48,14 +44,6 @@
     "./utils": {
       "import": "./dist/utils/index.js",
       "types": "./dist/utils/index.d.ts"
-    },
-    "./game": {
-      "import": "./dist/game/index.js",
-      "types": "./dist/game/index.d.ts"
-    },
-    "./audio": {
-      "import": "./dist/audio/index.js",
-      "types": "./dist/audio/index.d.ts"
     },
     "./core": {
       "import": "./dist/core/index.js",
@@ -88,9 +76,6 @@
       "errors": [
         "dist/errors/index.d.ts"
       ],
-      "game": [
-        "dist/game/index.d.ts"
-      ],
       "input": [
         "dist/input/index.d.ts"
       ],
@@ -114,12 +99,6 @@
       ],
       "widgets/fonts": [
         "dist/widgets/fonts/index.d.ts"
-      ],
-      "3d": [
-        "dist/3d/index.d.ts"
-      ],
-      "audio": [
-        "dist/audio/index.d.ts"
       ]
     }
   },
