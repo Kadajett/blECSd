@@ -747,12 +747,12 @@ export function createRadioButtonEntity(world: World, config: RadioButtonConfig 
 
 	// Set value if provided
 	if (validated.value !== undefined) {
-		setRadioValue(eid, validated.value);
+		setRadioValue(world, eid, validated.value);
 	}
 
 	// Set display characters if provided
 	if (validated.selectedChar !== undefined || validated.unselectedChar !== undefined) {
-		setRadioButtonDisplay(eid, {
+		setRadioButtonDisplay(world, eid, {
 			selectedChar: validated.selectedChar,
 			unselectedChar: validated.unselectedChar,
 		});

@@ -56,8 +56,8 @@ describe('RadioButton Component', () => {
 			const eid = createBoxEntity(world);
 			attachRadioSetBehavior(world, eid);
 
-			expect(getSelectedButton(eid)).toBe(0);
-			expect(getSelectedValue(eid)).toBeNull();
+			expect(getSelectedButton(world, eid)).toBe(0);
+			expect(getSelectedValue(world, eid)).toBeNull();
 		});
 
 		it('tracks selected button', () => {
@@ -66,12 +66,12 @@ describe('RadioButton Component', () => {
 
 			const button = createBoxEntity(world);
 			attachRadioButtonBehavior(world, button, radioSet);
-			setRadioValue(button, 'option1');
+			setRadioValue(world, button, 'option1');
 
 			selectRadioButton(world, button);
 
-			expect(getSelectedButton(radioSet)).toBe(button);
-			expect(getSelectedValue(radioSet)).toBe('option1');
+			expect(getSelectedButton(world, radioSet)).toBe(button);
+			expect(getSelectedValue(world, radioSet)).toBe('option1');
 		});
 
 		it('calls selection callback', () => {
@@ -79,11 +79,11 @@ describe('RadioButton Component', () => {
 			attachRadioSetBehavior(world, radioSet);
 
 			const callback = vi.fn();
-			onRadioSelect(radioSet, callback);
+			onRadioSelect(world, radioSet, callback);
 
 			const button = createBoxEntity(world);
 			attachRadioButtonBehavior(world, button, radioSet);
-			setRadioValue(button, 'test');
+			setRadioValue(world, button, 'test');
 
 			selectRadioButton(world, button);
 
@@ -95,7 +95,7 @@ describe('RadioButton Component', () => {
 			attachRadioSetBehavior(world, radioSet);
 
 			const callback = vi.fn();
-			const unsubscribe = onRadioSelect(radioSet, callback);
+			const unsubscribe = onRadioSelect(world, radioSet, callback);
 			unsubscribe();
 
 			const button = createBoxEntity(world);
@@ -110,8 +110,8 @@ describe('RadioButton Component', () => {
 			attachRadioSetBehavior(world, radioSet);
 
 			const callback = vi.fn();
-			onRadioSelect(radioSet, callback);
-			clearRadioSetCallbacks(radioSet);
+			onRadioSelect(world, radioSet, callback);
+			clearRadioSetCallbacks(world, radioSet);
 
 			const button = createBoxEntity(world);
 			attachRadioButtonBehavior(world, button, radioSet);
@@ -144,7 +144,7 @@ describe('RadioButton Component', () => {
 			const button = createBoxEntity(world);
 			attachRadioButtonBehavior(world, button, radioSet);
 
-			expect(getRadioSet(button)).toBe(radioSet);
+			expect(getRadioSet(world, button)).toBe(radioSet);
 		});
 
 		it('can set radio set after creation', () => {
@@ -153,9 +153,9 @@ describe('RadioButton Component', () => {
 
 			const button = createBoxEntity(world);
 			attachRadioButtonBehavior(world, button);
-			setRadioSet(button, radioSet);
+			setRadioSet(world, button, radioSet);
 
-			expect(getRadioSet(button)).toBe(radioSet);
+			expect(getRadioSet(world, button)).toBe(radioSet);
 		});
 	});
 
@@ -205,13 +205,13 @@ describe('RadioButton Component', () => {
 			const button2 = createBoxEntity(world);
 			attachRadioButtonBehavior(world, button1, radioSet);
 			attachRadioButtonBehavior(world, button2, radioSet);
-			setRadioValue(button1, 'opt1');
-			setRadioValue(button2, 'opt2');
+			setRadioValue(world, button1, 'opt1');
+			setRadioValue(world, button2, 'opt2');
 
 			selectRadioByValue(world, radioSet, 'opt2');
 
 			expect(isRadioSelected(world, button2)).toBe(true);
-			expect(getSelectedValue(radioSet)).toBe('opt2');
+			expect(getSelectedValue(world, radioSet)).toBe('opt2');
 		});
 	});
 
@@ -220,9 +220,9 @@ describe('RadioButton Component', () => {
 			const eid = createBoxEntity(world);
 			attachRadioButtonBehavior(world, eid);
 
-			setRadioValue(eid, 'testValue');
+			setRadioValue(world, eid, 'testValue');
 
-			expect(getRadioValue(eid)).toBe('testValue');
+			expect(getRadioValue(world, eid)).toBe('testValue');
 		});
 	});
 
@@ -263,7 +263,7 @@ describe('RadioButton Component', () => {
 			const eid = createBoxEntity(world);
 			attachRadioButtonBehavior(world, eid);
 
-			const display = getRadioButtonDisplay(eid);
+			const display = getRadioButtonDisplay(world, eid);
 
 			expect(display.selectedChar).toBe(DEFAULT_RADIO_SELECTED_CHAR);
 			expect(display.unselectedChar).toBe(DEFAULT_RADIO_UNSELECTED_CHAR);
@@ -273,12 +273,12 @@ describe('RadioButton Component', () => {
 			const eid = createBoxEntity(world);
 			attachRadioButtonBehavior(world, eid);
 
-			setRadioButtonDisplay(eid, {
+			setRadioButtonDisplay(world, eid, {
 				selectedChar: '(x)',
 				unselectedChar: '( )',
 			});
 
-			const display = getRadioButtonDisplay(eid);
+			const display = getRadioButtonDisplay(world, eid);
 			expect(display.selectedChar).toBe('(x)');
 			expect(display.unselectedChar).toBe('( )');
 		});
@@ -298,10 +298,10 @@ describe('RadioButton Component', () => {
 			const eid = createBoxEntity(world);
 			attachRadioButtonBehavior(world, eid);
 
-			setRadioButtonDisplay(eid, { selectedChar: '(x)' });
-			clearRadioButtonDisplay(eid);
+			setRadioButtonDisplay(world, eid, { selectedChar: '(x)' });
+			clearRadioButtonDisplay(world, eid);
 
-			const display = getRadioButtonDisplay(eid);
+			const display = getRadioButtonDisplay(world, eid);
 			expect(display.selectedChar).toBe(DEFAULT_RADIO_SELECTED_CHAR);
 		});
 	});
@@ -360,7 +360,7 @@ describe('RadioButton Component', () => {
 			attachRadioButtonBehavior(world, button2, radioSet);
 			attachRadioButtonBehavior(world, button3, radioSet);
 
-			const buttons = getRadioButtonsInSet(radioSet);
+			const buttons = getRadioButtonsInSet(world, radioSet);
 
 			expect(buttons).toContain(button1);
 			expect(buttons).toContain(button2);
@@ -372,7 +372,7 @@ describe('RadioButton Component', () => {
 			const radioSet = createBoxEntity(world);
 			attachRadioSetBehavior(world, radioSet);
 
-			const buttons = getRadioButtonsInSet(radioSet);
+			const buttons = getRadioButtonsInSet(world, radioSet);
 
 			expect(buttons.length).toBe(0);
 		});
