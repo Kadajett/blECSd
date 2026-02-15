@@ -221,10 +221,12 @@ export function getTotalCount(_world: World, eid: Entity): number {
 /**
  * Sets the lazy load callback for loading items on demand.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @param callback - Callback function to load items
  */
 export function setLazyLoadCallback(
+	_world: World,
 	eid: Entity,
 	callback: (startIndex: number, count: number) => Promise<ListItem[]>,
 ): void {
@@ -234,10 +236,12 @@ export function setLazyLoadCallback(
 /**
  * Gets the lazy load callback.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  * @returns Lazy load callback or undefined
  */
 export function getLazyLoadCallback(
+	_world: World,
 	eid: Entity,
 ): ((startIndex: number, count: number) => Promise<ListItem[]>) | undefined {
 	return lazyLoadCallbacks.get(eid);
@@ -246,6 +250,7 @@ export function getLazyLoadCallback(
 /**
  * Clears the lazy load callback.
  *
+ * @param _world - The ECS world
  * @param eid - The entity ID
  */
 export function clearLazyLoadCallback(_world: World, eid: Entity): void {
@@ -377,7 +382,10 @@ export async function loadItems(
  * @param eid - The entity ID
  * @returns Object with needsLoad flag and range to load
  */
-export function checkNeedsLoad(_world: World, eid: Entity): {
+export function checkNeedsLoad(
+	_world: World,
+	eid: Entity,
+): {
 	needsLoad: boolean;
 	startIndex: number;
 	count: number;
@@ -416,7 +424,7 @@ export function getScrollInfo(_world: World, eid: Entity, threshold?: number): L
 	const firstVisible = listStore.firstVisible[eid] ?? 0;
 	const visibleCount = listStore.visibleCount[eid] ?? 0;
 	const loadedCount = listStore.itemCount[eid] ?? 0;
-	const totalCount = getTotalCount(eid);
+	const totalCount = getTotalCount(_world, eid);
 	const scrollThreshold = threshold ?? visibleCount;
 
 	return {

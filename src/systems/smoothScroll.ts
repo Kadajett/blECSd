@@ -307,7 +307,12 @@ export function startUserScroll(_world: World, eid: Entity): void {
  * @param velocityX - Release velocity X
  * @param velocityY - Release velocity Y
  */
-export function endUserScroll(_world: World, eid: Entity, velocityX: number, velocityY: number): void {
+export function endUserScroll(
+	_world: World,
+	eid: Entity,
+	velocityX: number,
+	velocityY: number,
+): void {
 	const state = scrollStates.get(eid);
 	if (!state) return;
 

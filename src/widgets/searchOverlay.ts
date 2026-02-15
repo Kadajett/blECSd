@@ -783,7 +783,10 @@ export function getSearchOverlayTarget(_world: World, eid: Entity): Entity | nul
  * }
  * ```
  */
-export function getSearchOverlayColors(_world: World, eid: Entity): {
+export function getSearchOverlayColors(
+	_world: World,
+	eid: Entity,
+): {
 	fg: number;
 	bg: number;
 	matchFg: number;

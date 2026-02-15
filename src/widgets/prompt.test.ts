@@ -342,7 +342,7 @@ describe('prompt widget', () => {
 
 			p.destroy();
 
-			expect(isPrompt(eid)).toBe(false);
+			expect(isPrompt(world, eid)).toBe(false);
 		});
 
 		it('cleans up state map', () => {
@@ -361,11 +361,12 @@ describe('prompt widget', () => {
 			const world = createWorld();
 			const p = createPrompt(world);
 
-			expect(isPrompt(p.eid)).toBe(true);
+			expect(isPrompt(world, p.eid)).toBe(true);
 		});
 
 		it('returns false for non-prompt entity', () => {
-			expect(isPrompt(999)).toBe(false);
+			const world = createWorld();
+			expect(isPrompt(world, 999)).toBe(false);
 		});
 	});
 
@@ -496,7 +497,7 @@ describe('prompt widget', () => {
 
 			resetPromptStore();
 
-			expect(isPrompt(eid)).toBe(false);
+			expect(isPrompt(world, eid)).toBe(false);
 		});
 	});
 });

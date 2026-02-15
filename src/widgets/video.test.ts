@@ -574,7 +574,7 @@ describe('seek', () => {
 		const video = createVideo(world, { path: '/tmp/v.mp4' });
 		video.seek(-10);
 		// State should store 0
-		expect(getVideoPlaybackState(video.eid)).toBe('stopped');
+		expect(getVideoPlaybackState(world, video.eid)).toBe('stopped');
 	});
 });
 
@@ -720,21 +720,21 @@ describe('helper functions', () => {
 
 	it('getVideoPlaybackState should return state', () => {
 		const video = createVideo(world);
-		expect(getVideoPlaybackState(video.eid)).toBe('stopped');
+		expect(getVideoPlaybackState(world, video.eid)).toBe('stopped');
 	});
 
 	it('getVideoPlaybackState should return undefined for unknown', () => {
-		expect(getVideoPlaybackState(99999 as never)).toBeUndefined();
+		expect(getVideoPlaybackState(world, 99999 as never)).toBeUndefined();
 	});
 
 	it('getVideoPlayer should return player', () => {
 		const video = createVideo(world, { player: 'mplayer' });
-		expect(getVideoPlayer(video.eid)).toBe('mplayer');
+		expect(getVideoPlayer(world, video.eid)).toBe('mplayer');
 	});
 
 	it('getVideoPlayer should return undefined for unset', () => {
 		const video = createVideo(world);
-		expect(getVideoPlayer(video.eid)).toBeUndefined();
+		expect(getVideoPlayer(world, video.eid)).toBeUndefined();
 	});
 });
 

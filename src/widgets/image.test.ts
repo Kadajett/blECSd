@@ -346,14 +346,14 @@ describe('destroy', () => {
 		const eid = image.eid;
 
 		expect(Image.isImage[eid]).toBe(1);
-		expect(getImageBitmap(eid)).toBeDefined();
-		expect(getImageCellMap(eid)).toBeDefined();
+		expect(getImageBitmap(world, eid)).toBeDefined();
+		expect(getImageCellMap(world, eid)).toBeDefined();
 
 		image.destroy();
 
 		expect(Image.isImage[eid]).toBe(0);
-		expect(getImageBitmap(eid)).toBeUndefined();
-		expect(getImageCellMap(eid)).toBeUndefined();
+		expect(getImageBitmap(world, eid)).toBeUndefined();
+		expect(getImageCellMap(world, eid)).toBeUndefined();
 	});
 });
 
@@ -377,12 +377,12 @@ describe('getImageBitmap', () => {
 	it('should return bitmap for image entity', () => {
 		const bitmap = createTestBitmap(3, 3, 0, 255, 0);
 		const image = createImage(world, { bitmap });
-		expect(getImageBitmap(image.eid)).toEqual(bitmap);
+		expect(getImageBitmap(world, image.eid)).toEqual(bitmap);
 	});
 
 	it('should return undefined for entity without bitmap', () => {
 		const image = createImage(world);
-		expect(getImageBitmap(image.eid)).toBeUndefined();
+		expect(getImageBitmap(world, image.eid)).toBeUndefined();
 	});
 });
 
@@ -390,14 +390,14 @@ describe('getImageCellMap', () => {
 	it('should return cellMap after render', () => {
 		const bitmap = createTestBitmap(4, 2, 128, 128, 128);
 		const image = createImage(world, { bitmap });
-		const cellMap = getImageCellMap(image.eid);
+		const cellMap = getImageCellMap(world, image.eid);
 		expect(cellMap).toBeDefined();
 		expect(cellMap?.width).toBe(4);
 	});
 
 	it('should return undefined without bitmap', () => {
 		const image = createImage(world);
-		expect(getImageCellMap(image.eid)).toBeUndefined();
+		expect(getImageCellMap(world, image.eid)).toBeUndefined();
 	});
 });
 
@@ -439,7 +439,7 @@ describe('multiple images', () => {
 		image1.destroy();
 		expect(isImage(world, image1.eid)).toBe(false);
 		expect(isImage(world, image2.eid)).toBe(true);
-		expect(getImageBitmap(image2.eid)).toEqual(green);
+		expect(getImageBitmap(world, image2.eid)).toEqual(green);
 	});
 });
 
@@ -532,7 +532,7 @@ describe('image caching', () => {
 		const image = createImage(world, { bitmap });
 		image.render(); // Populate cache
 
-		clearImageCache(image.eid);
+		clearImageCache(world, image.eid);
 
 		// Image should still render correctly
 		const output = image.render();

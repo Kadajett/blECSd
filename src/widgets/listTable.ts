@@ -247,7 +247,7 @@ export interface ListTableWidget {
 	/** Selects a data row by index (0 = first data row after headers) */
 	select(index: number): ListTableWidget;
 	/** Gets the currently selected row index */
-	getSelectedIndex(): number;
+	getSelectedIndex(world: World): number;
 	/** Gets the currently selected row data */
 	getSelectedRow(): TableRow | undefined;
 	/** Selects the previous row */
@@ -686,7 +686,7 @@ export function createListTable(
 			return widget;
 		},
 
-		getSelectedIndex(world, ): number {
+		getSelectedIndex(world: World): number {
 			return getSelectedIndex(world, eid);
 		},
 

@@ -165,7 +165,7 @@ describe('FileManager widget', () => {
 	describe('createFileManager', () => {
 		it('creates a file manager with default config', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			expect(fm.eid).toBeDefined();
@@ -180,7 +180,7 @@ describe('FileManager widget', () => {
 				left: 10,
 				top: 5,
 			});
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 
 			expect(fm.getCwd()).toContain('test');
 			const pos = getPosition(world, fm.eid);
@@ -207,7 +207,7 @@ describe('FileManager widget', () => {
 	describe('setCwd / getCwd', () => {
 		it('setCwd changes the current directory', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 
 			fm.setCwd('/other');
 
@@ -217,7 +217,7 @@ describe('FileManager widget', () => {
 		it('setCwd refreshes entries', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
 			const readFn = vi.fn(mockReadDir);
-			setReadDirFn(fm.eid, readFn);
+			setReadDirFn(world, fm.eid, readFn);
 
 			fm.setCwd('/test/src');
 
@@ -228,7 +228,7 @@ describe('FileManager widget', () => {
 
 		it('setCwd resets selected index to 0', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			// Move selection down
@@ -242,7 +242,7 @@ describe('FileManager widget', () => {
 
 		it('setCwd returns widget for chaining', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 
 			const result = fm.setCwd('/test/src');
 			expect(result).toBe(fm);
@@ -256,7 +256,7 @@ describe('FileManager widget', () => {
 	describe('getSelected', () => {
 		it('returns the first entry by default', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const selected = fm.getSelected();
@@ -267,7 +267,7 @@ describe('FileManager widget', () => {
 
 		it('returns the entry at the current selected index', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			handleFileManagerKey(world, fm.eid, 'down');
@@ -279,7 +279,7 @@ describe('FileManager widget', () => {
 
 		it('returns undefined when no entries exist', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, () => []);
+			setReadDirFn(world, fm.eid, () => []);
 			fm.refresh();
 
 			expect(fm.getSelected()).toBeUndefined();
@@ -293,7 +293,7 @@ describe('FileManager widget', () => {
 	describe('getEntries', () => {
 		it('returns sorted entries with directories first', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const entries = fm.getEntries();
@@ -318,7 +318,7 @@ describe('FileManager widget', () => {
 
 		it('sorts directories alphabetically', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const entries = fm.getEntries();
@@ -332,7 +332,7 @@ describe('FileManager widget', () => {
 
 		it('sorts files alphabetically', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const entries = fm.getEntries();
@@ -346,7 +346,7 @@ describe('FileManager widget', () => {
 
 		it('hides hidden files by default', () => {
 			const fm = createFileManager(world, { cwd: '/test', showHidden: false });
-			setReadDirFn(fm.eid, mockReadDirWithHidden);
+			setReadDirFn(world, fm.eid, mockReadDirWithHidden);
 			fm.refresh();
 
 			const entries = fm.getEntries();
@@ -356,7 +356,7 @@ describe('FileManager widget', () => {
 
 		it('shows hidden files when showHidden is true', () => {
 			const fm = createFileManager(world, { cwd: '/test', showHidden: true });
-			setReadDirFn(fm.eid, mockReadDirWithHidden);
+			setReadDirFn(world, fm.eid, mockReadDirWithHidden);
 			fm.refresh();
 
 			const entries = fm.getEntries();
@@ -366,7 +366,7 @@ describe('FileManager widget', () => {
 
 		it('filters by file pattern (directories always shown)', () => {
 			const fm = createFileManager(world, { cwd: '/test', filePattern: '*.ts' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const entries = fm.getEntries();
@@ -381,7 +381,7 @@ describe('FileManager widget', () => {
 
 		it('returns empty array when directory read fails', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, () => {
+			setReadDirFn(world, fm.eid, () => {
 				throw new Error('Permission denied');
 			});
 			fm.refresh();
@@ -480,7 +480,7 @@ describe('FileManager widget', () => {
 	describe('setSortBy / getSortBy', () => {
 		it('setSortBy changes sort method', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			fm.setSortBy('size');
@@ -490,7 +490,7 @@ describe('FileManager widget', () => {
 
 		it('setSortBy re-sorts entries', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			fm.setSortBy('size');
@@ -503,7 +503,7 @@ describe('FileManager widget', () => {
 
 		it('sorts by date (newest first)', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			fm.setSortBy('date');
@@ -516,7 +516,7 @@ describe('FileManager widget', () => {
 
 		it('setSortBy returns widget for chaining', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			expect(fm.setSortBy('size')).toBe(fm);
@@ -526,7 +526,7 @@ describe('FileManager widget', () => {
 	describe('toggleHidden', () => {
 		it('toggles hidden file visibility', () => {
 			const fm = createFileManager(world, { cwd: '/test', showHidden: false });
-			setReadDirFn(fm.eid, mockReadDirWithHidden);
+			setReadDirFn(world, fm.eid, mockReadDirWithHidden);
 			fm.refresh();
 
 			const beforeCount = fm.getEntries().length;
@@ -539,7 +539,7 @@ describe('FileManager widget', () => {
 
 		it('resets selected index to 0', () => {
 			const fm = createFileManager(world, { cwd: '/test', showHidden: false });
-			setReadDirFn(fm.eid, mockReadDirWithHidden);
+			setReadDirFn(world, fm.eid, mockReadDirWithHidden);
 			fm.refresh();
 
 			handleFileManagerKey(world, fm.eid, 'down');
@@ -551,7 +551,7 @@ describe('FileManager widget', () => {
 
 		it('returns widget for chaining', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			expect(fm.toggleHidden()).toBe(fm);
@@ -565,7 +565,7 @@ describe('FileManager widget', () => {
 	describe('handleFileManagerKey', () => {
 		it('up moves selection up', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			handleFileManagerKey(world, fm.eid, 'down');
@@ -577,7 +577,7 @@ describe('FileManager widget', () => {
 
 		it('down moves selection down', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			handleFileManagerKey(world, fm.eid, 'down');
@@ -587,7 +587,7 @@ describe('FileManager widget', () => {
 
 		it('up does not go below 0', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			handleFileManagerKey(world, fm.eid, 'up');
@@ -597,7 +597,7 @@ describe('FileManager widget', () => {
 
 		it('down does not exceed entry count', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const entryCount = fm.getEntries().length;
@@ -610,7 +610,7 @@ describe('FileManager widget', () => {
 
 		it('enter on directory navigates into it', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const navCb = vi.fn();
@@ -625,7 +625,7 @@ describe('FileManager widget', () => {
 
 		it('enter on file fires onSelect callback', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const selectCb = vi.fn();
@@ -645,7 +645,7 @@ describe('FileManager widget', () => {
 
 		it('backspace navigates to parent directory', () => {
 			const fm = createFileManager(world, { cwd: '/test/nested' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const navCb = vi.fn();
@@ -664,7 +664,7 @@ describe('FileManager widget', () => {
 
 		it('returns false for unhandled keys', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			expect(handleFileManagerKey(world, fm.eid, 'tab')).toBe(false);
@@ -672,7 +672,7 @@ describe('FileManager widget', () => {
 
 		it('h key toggles hidden files', () => {
 			const fm = createFileManager(world, { cwd: '/test', showHidden: false });
-			setReadDirFn(fm.eid, mockReadDirWithHidden);
+			setReadDirFn(world, fm.eid, mockReadDirWithHidden);
 			fm.refresh();
 
 			const beforeCount = fm.getEntries().length;
@@ -685,7 +685,7 @@ describe('FileManager widget', () => {
 
 		it('n key sorts by name', () => {
 			const fm = createFileManager(world, { cwd: '/test', sortBy: 'size' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			handleFileManagerKey(world, fm.eid, 'n');
@@ -695,7 +695,7 @@ describe('FileManager widget', () => {
 
 		it('s key sorts by size', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			handleFileManagerKey(world, fm.eid, 's');
@@ -705,7 +705,7 @@ describe('FileManager widget', () => {
 
 		it('t key sorts by date', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			handleFileManagerKey(world, fm.eid, 't');
@@ -715,7 +715,7 @@ describe('FileManager widget', () => {
 
 		it('d key fires onDelete callback', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const deleteCb = vi.fn();
@@ -728,7 +728,7 @@ describe('FileManager widget', () => {
 
 		it('r key fires onRename callback', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const renameCb = vi.fn();
@@ -757,7 +757,7 @@ describe('FileManager widget', () => {
 
 		it('supports multiple onSelect callbacks', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const cb1 = vi.fn();
@@ -777,7 +777,7 @@ describe('FileManager widget', () => {
 
 		it('supports multiple onNavigate callbacks', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const cb1 = vi.fn();
@@ -803,7 +803,7 @@ describe('FileManager widget', () => {
 
 		it('supports multiple onDelete callbacks', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const cb1 = vi.fn();
@@ -818,7 +818,7 @@ describe('FileManager widget', () => {
 
 		it('supports multiple onRename callbacks', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			const cb1 = vi.fn();
@@ -840,7 +840,7 @@ describe('FileManager widget', () => {
 		it('reloads entries from the filesystem', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
 			let callCount = 0;
-			setReadDirFn(fm.eid, (dir) => {
+			setReadDirFn(world, fm.eid, (dir) => {
 				callCount++;
 				return mockReadDir(dir);
 			});
@@ -853,7 +853,7 @@ describe('FileManager widget', () => {
 
 		it('clamps selected index when entries shrink', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			fm.refresh();
 
 			// Move to last entry
@@ -863,7 +863,7 @@ describe('FileManager widget', () => {
 			}
 
 			// Replace with fewer entries
-			setReadDirFn(fm.eid, () => [
+			setReadDirFn(world, fm.eid, () => [
 				{ name: 'only.txt', path: '/test/only.txt', isDirectory: false, size: 10, mtime: 1000 },
 			]);
 			fm.refresh();
@@ -873,7 +873,7 @@ describe('FileManager widget', () => {
 
 		it('returns widget for chaining', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 			expect(fm.refresh()).toBe(fm);
 		});
 	});
@@ -952,7 +952,7 @@ describe('FileManager widget', () => {
 	describe('method chaining', () => {
 		it('supports full method chaining', () => {
 			const fm = createFileManager(world, { cwd: '/test', width: 40, height: 20 });
-			setReadDirFn(fm.eid, mockReadDir);
+			setReadDirFn(world, fm.eid, mockReadDir);
 
 			fm.show().setPosition(10, 10).move(5, 5).setCwd('/test').refresh().center(80, 24);
 
@@ -969,7 +969,7 @@ describe('FileManager widget', () => {
 	describe('error handling', () => {
 		it('handles readDir errors gracefully', () => {
 			const fm = createFileManager(world, { cwd: '/test' });
-			setReadDirFn(fm.eid, () => {
+			setReadDirFn(world, fm.eid, () => {
 				throw new Error('EACCES: permission denied');
 			});
 

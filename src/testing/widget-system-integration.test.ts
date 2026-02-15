@@ -328,14 +328,14 @@ describe('Widget-System Integration Tests', () => {
 			// Lists handle their own selection state
 			// Test that selection API works
 			list.select(0);
-			expect(list.getSelectedIndex()).toBe(0);
+			expect(list.getSelectedIndex(world)).toBe(0);
 
 			// Change selection
 			list.select(2);
-			expect(list.getSelectedIndex()).toBe(2);
+			expect(list.getSelectedIndex(world)).toBe(2);
 
 			list.select(1);
-			expect(list.getSelectedIndex()).toBe(1);
+			expect(list.getSelectedIndex(world)).toBe(1);
 		});
 
 		it('handles enter key in list widget', () => {

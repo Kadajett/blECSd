@@ -668,7 +668,7 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 			stopAnimationFn();
 
 			imageBitmapStore.set(eid, bitmap);
-			clearImageCache(eid); // Invalidate cache
+			clearImageCache(world, eid); // Invalidate cache
 			renderImageContent(world, eid);
 			markDirty(world, eid);
 			return widget;
@@ -688,7 +688,7 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 
 		setRenderMode(mode: RenderMode) {
 			imageRenderModeStore.set(eid, mode);
-			clearImageCache(eid); // Invalidate cache
+			clearImageCache(world, eid); // Invalidate cache
 			renderImageContent(world, eid);
 			markDirty(world, eid);
 			return widget;
@@ -746,7 +746,7 @@ function createImageWidgetInterface(world: World, eid: Entity): ImageWidget {
 
 			// Set first frame
 			imageBitmapStore.set(eid, frames[0] as Bitmap);
-			clearImageCache(eid);
+			clearImageCache(world, eid);
 			renderImageContent(world, eid);
 			markDirty(world, eid);
 

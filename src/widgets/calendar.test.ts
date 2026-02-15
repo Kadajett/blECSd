@@ -21,7 +21,7 @@ describe('Calendar Widget', () => {
 			const calendar = createCalendar(world, eid);
 
 			expect(calendar.eid).toBe(eid);
-			expect(isCalendar(eid)).toBe(true);
+			expect(isCalendar(world, eid)).toBe(true);
 
 			const month = calendar.getMonth();
 			expect(month.year).toBeGreaterThan(2020);
@@ -58,7 +58,7 @@ describe('Calendar Widget', () => {
 				showWeekNumbers: true,
 			});
 
-			expect(isCalendar(eid)).toBe(true);
+			expect(isCalendar(world, eid)).toBe(true);
 		});
 
 		it('creates a calendar with marked dates', () => {
@@ -80,7 +80,7 @@ describe('Calendar Widget', () => {
 				firstDayOfWeek: 1, // Monday
 			});
 
-			expect(isCalendar(eid)).toBe(true);
+			expect(isCalendar(world, eid)).toBe(true);
 		});
 
 		it('creates a calendar with min and max dates', () => {
@@ -93,7 +93,7 @@ describe('Calendar Widget', () => {
 				maxDate,
 			});
 
-			expect(isCalendar(eid)).toBe(true);
+			expect(isCalendar(world, eid)).toBe(true);
 		});
 	});
 
@@ -628,11 +628,11 @@ describe('Calendar Widget', () => {
 			const eid = addEntity(world);
 			const calendar = createCalendar(world, eid);
 
-			expect(isCalendar(eid)).toBe(true);
+			expect(isCalendar(world, eid)).toBe(true);
 
 			calendar.destroy();
 
-			expect(isCalendar(eid)).toBe(false);
+			expect(isCalendar(world, eid)).toBe(false);
 		});
 	});
 });

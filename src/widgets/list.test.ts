@@ -33,7 +33,7 @@ describe('List Widget', () => {
 			widget = createList(world, eid);
 
 			expect(widget.getItems()).toEqual([]);
-			expect(widget.getSelectedIndex()).toBe(0);
+			expect(widget.getSelectedIndex(world)).toBe(0);
 		});
 
 		it('should initialize with provided items', () => {
@@ -148,12 +148,12 @@ describe('List Widget', () => {
 		it('should select by index', () => {
 			const result = widget.select(2);
 			expect(result).toBe(widget);
-			expect(widget.getSelectedIndex()).toBe(2);
+			expect(widget.getSelectedIndex(world)).toBe(2);
 		});
 
 		it('should get selected item', () => {
 			widget.select(1);
-			const item = widget.getSelectedItem();
+			const item = widget.getSelectedItem(world);
 			expect(item?.text).toBe('B');
 		});
 
@@ -161,28 +161,28 @@ describe('List Widget', () => {
 			widget.select(2);
 			const result = widget.selectPrev();
 			expect(result).toBe(widget);
-			expect(widget.getSelectedIndex()).toBe(1);
+			expect(widget.getSelectedIndex(world)).toBe(1);
 		});
 
 		it('should select next', () => {
 			widget.select(0);
 			const result = widget.selectNext();
 			expect(result).toBe(widget);
-			expect(widget.getSelectedIndex()).toBe(1);
+			expect(widget.getSelectedIndex(world)).toBe(1);
 		});
 
 		it('should select first', () => {
 			widget.select(2);
 			const result = widget.selectFirst();
 			expect(result).toBe(widget);
-			expect(widget.getSelectedIndex()).toBe(0);
+			expect(widget.getSelectedIndex(world)).toBe(0);
 		});
 
 		it('should select last', () => {
 			widget.select(0);
 			const result = widget.selectLast();
 			expect(result).toBe(widget);
-			expect(widget.getSelectedIndex()).toBe(2);
+			expect(widget.getSelectedIndex(world)).toBe(2);
 		});
 	});
 
@@ -277,14 +277,14 @@ describe('List Widget', () => {
 			widget.select(0);
 			const action = widget.handleKey('down');
 			expect(action?.type).toBe('selectNext');
-			expect(widget.getSelectedIndex()).toBe(1);
+			expect(widget.getSelectedIndex(world)).toBe(1);
 		});
 
 		it('should handle up key', () => {
 			widget.select(2);
 			const action = widget.handleKey('up');
 			expect(action?.type).toBe('selectPrev');
-			expect(widget.getSelectedIndex()).toBe(1);
+			expect(widget.getSelectedIndex(world)).toBe(1);
 		});
 
 		it('should handle enter key', () => {
@@ -449,7 +449,7 @@ describe('List Widget', () => {
 		it('should reset selection when filter changes', () => {
 			widget.select(2);
 			widget.setFilter('App');
-			const selectedIndex = widget.getSelectedIndex();
+			const selectedIndex = widget.getSelectedIndex(world);
 			expect(selectedIndex).toBe(0);
 		});
 	});

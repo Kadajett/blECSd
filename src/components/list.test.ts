@@ -842,28 +842,28 @@ describe('List Component', () => {
 			it('should set and check loading state', () => {
 				attachListBehavior(world, eid);
 
-				expect(isListLoading(eid)).toBe(false);
+				expect(isListLoading(world, eid)).toBe(false);
 
 				setListLoading(world, eid, true);
-				expect(isListLoading(eid)).toBe(true);
+				expect(isListLoading(world, eid)).toBe(true);
 
 				setListLoading(world, eid, false);
-				expect(isListLoading(eid)).toBe(false);
+				expect(isListLoading(world, eid)).toBe(false);
 			});
 		});
 
 		describe('Loading Placeholder', () => {
 			it('should set and get loading placeholder', () => {
 				attachListBehavior(world, eid);
-				setLoadingPlaceholder(eid, 'Please wait...');
+				setLoadingPlaceholder(world, eid, 'Please wait...');
 
-				expect(getLoadingPlaceholder(eid)).toBe('Please wait...');
+				expect(getLoadingPlaceholder(world, eid)).toBe('Please wait...');
 			});
 
 			it('should return default placeholder when not set', () => {
 				attachListBehavior(world, eid);
 
-				expect(getLoadingPlaceholder(eid)).toBe('Loading...');
+				expect(getLoadingPlaceholder(world, eid)).toBe('Loading...');
 			});
 		});
 
@@ -872,19 +872,19 @@ describe('List Component', () => {
 				attachListBehavior(world, eid);
 				const callback = vi.fn().mockResolvedValue([]);
 
-				setLazyLoadCallback(eid, callback);
+				setLazyLoadCallback(world, eid, callback);
 
-				expect(getLazyLoadCallback(eid)).toBe(callback);
+				expect(getLazyLoadCallback(world, eid)).toBe(callback);
 			});
 
 			it('should clear lazy load callback', () => {
 				attachListBehavior(world, eid);
 				const callback = vi.fn().mockResolvedValue([]);
 
-				setLazyLoadCallback(eid, callback);
-				clearLazyLoadCallback(eid);
+				setLazyLoadCallback(world, eid, callback);
+				clearLazyLoadCallback(world, eid);
 
-				expect(getLazyLoadCallback(eid)).toBeUndefined();
+				expect(getLazyLoadCallback(world, eid)).toBeUndefined();
 			});
 		});
 
@@ -899,7 +899,7 @@ describe('List Component', () => {
 				]);
 				setVisibleCount(world, eid, 3);
 
-				const info = getScrollInfo(eid);
+				const info = getScrollInfo(world, eid);
 
 				expect(info.firstVisible).toBe(0);
 				expect(info.visibleCount).toBe(3);
@@ -925,7 +925,7 @@ describe('List Component', () => {
 				setVisibleCount(world, eid, 3);
 				setFirstVisible(world, eid, 5);
 
-				const info = getScrollInfo(eid, 2);
+				const info = getScrollInfo(world, eid, 2);
 
 				expect(info.firstVisible).toBe(5);
 				expect(info.nearEnd).toBe(true); // 5 + 3 = 8, 10 - 2 = 8
@@ -975,7 +975,7 @@ describe('List Component', () => {
 				attachListBehavior(world, eid, [{ text: 'A' }, { text: 'B' }]);
 				setVisibleCount(world, eid, 2);
 
-				const result = checkNeedsLoad(eid);
+				const result = checkNeedsLoad(world, eid);
 
 				expect(result.needsLoad).toBe(false);
 			});
@@ -985,7 +985,7 @@ describe('List Component', () => {
 				setTotalCount(world, eid, 10);
 				setVisibleCount(world, eid, 5);
 
-				const result = checkNeedsLoad(eid);
+				const result = checkNeedsLoad(world, eid);
 
 				expect(result.needsLoad).toBe(true);
 				expect(result.startIndex).toBe(0);
@@ -1012,7 +1012,7 @@ describe('List Component', () => {
 
 				const mockItems: ListItem[] = [{ text: 'Item 1' }, { text: 'Item 2' }];
 				const callback = vi.fn().mockResolvedValue(mockItems);
-				setLazyLoadCallback(eid, callback);
+				setLazyLoadCallback(world, eid, callback);
 
 				await loadItems(world, eid, 0, 2);
 
@@ -1026,15 +1026,15 @@ describe('List Component', () => {
 
 				let loadingDuringCallback = false;
 				const callback = vi.fn().mockImplementation(async () => {
-					loadingDuringCallback = isListLoading(eid);
+					loadingDuringCallback = isListLoading(world, eid);
 					return [{ text: 'A' }];
 				});
-				setLazyLoadCallback(eid, callback);
+				setLazyLoadCallback(world, eid, callback);
 
 				await loadItems(world, eid, 0, 1);
 
 				expect(loadingDuringCallback).toBe(true);
-				expect(isListLoading(eid)).toBe(false);
+				expect(isListLoading(world, eid)).toBe(false);
 			});
 
 			it('should not start another load while loading', async () => {
@@ -1046,7 +1046,7 @@ describe('List Component', () => {
 					await new Promise((resolve) => setTimeout(resolve, 10));
 					return [{ text: 'A' }];
 				});
-				setLazyLoadCallback(eid, callback);
+				setLazyLoadCallback(world, eid, callback);
 
 				// Start loading and immediately try to start another
 				const loadPromise = loadItems(world, eid, 0, 1);

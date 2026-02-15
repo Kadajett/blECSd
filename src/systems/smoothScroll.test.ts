@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { Entity } from '../core/types';
+import { createWorld } from '../core/ecs';
+import type { Entity, World } from '../core/types';
 import {
 	applyScrollImpulse,
 	clearAllScrollStates,
@@ -13,6 +14,7 @@ import {
 } from './smoothScroll';
 
 describe('SmoothScroll', () => {
+	const world = createWorld() as World;
 	const eid = 1 as Entity;
 
 	beforeEach(() => {

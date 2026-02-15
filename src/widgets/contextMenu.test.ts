@@ -205,11 +205,11 @@ describe('contextMenu', () => {
 
 			// Go up from first item (wraps to last)
 			handleContextMenuKey(world, menu, 'up');
-			expect(getContextMenuSelectedIndex(menu)).toBe(1);
+			expect(getContextMenuSelectedIndex(world, menu)).toBe(1);
 
 			// Go down from last item (wraps to first)
 			handleContextMenuKey(world, menu, 'down');
-			expect(getContextMenuSelectedIndex(menu)).toBe(0);
+			expect(getContextMenuSelectedIndex(world, menu)).toBe(0);
 		});
 
 		it('skips disabled items during navigation', () => {
@@ -228,7 +228,7 @@ describe('contextMenu', () => {
 
 			handleContextMenuKey(world, menu, 'down');
 			// Should skip disabled item and go to Item 3
-			expect(getContextMenuSelectedIndex(menu)).toBe(2);
+			expect(getContextMenuSelectedIndex(world, menu)).toBe(2);
 		});
 
 		it('skips separators during navigation', () => {
@@ -247,7 +247,7 @@ describe('contextMenu', () => {
 
 			handleContextMenuKey(world, menu, 'down');
 			// Should skip separator
-			expect(getContextMenuSelectedIndex(menu)).toBe(2);
+			expect(getContextMenuSelectedIndex(world, menu)).toBe(2);
 		});
 	});
 
@@ -265,14 +265,15 @@ describe('contextMenu', () => {
 				items,
 			});
 
-			expect(getContextMenuSelectedIndex(menu)).toBe(0);
+			expect(getContextMenuSelectedIndex(world, menu)).toBe(0);
 
 			handleContextMenuKey(world, menu, 'down');
-			expect(getContextMenuSelectedIndex(menu)).toBe(1);
+			expect(getContextMenuSelectedIndex(world, menu)).toBe(1);
 		});
 
 		it('returns 0 for non-existent menu', () => {
-			expect(getContextMenuSelectedIndex(999999)).toBe(0);
+			const world = createWorld();
+		expect(getContextMenuSelectedIndex(world, 999999)).toBe(0);
 		});
 	});
 });

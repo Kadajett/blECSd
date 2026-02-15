@@ -187,7 +187,10 @@ export function getTerminalState(_world: World, eid: Entity): TerminalState | un
  * @param eid - Entity ID
  * @returns Terminal buffer data
  */
-export function getTerminalBuffer(_world: World, eid: Entity):
+export function getTerminalBuffer(
+	_world: World,
+	eid: Entity,
+):
 	| {
 			width: number;
 			height: number;

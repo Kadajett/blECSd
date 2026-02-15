@@ -476,7 +476,7 @@ describe('SearchOverlay Widget', () => {
 
 			attachSearchOverlay(world, overlay, targetEid, sampleContent);
 
-			expect(getSearchOverlayTarget(overlay.eid)).toBe(targetEid);
+			expect(getSearchOverlayTarget(world, overlay.eid)).toBe(targetEid);
 		});
 
 		it('should search through attached content', () => {
@@ -499,7 +499,7 @@ describe('SearchOverlay Widget', () => {
 
 		it('should get target entity', () => {
 			overlay = createSearchOverlay(world);
-			expect(getSearchOverlayTarget(overlay.eid)).toBeNull();
+			expect(getSearchOverlayTarget(world, overlay.eid)).toBeNull();
 		});
 
 		it('should get colors', () => {
@@ -508,14 +508,14 @@ describe('SearchOverlay Widget', () => {
 				matchBg: 0x222222ff,
 			});
 
-			const colors = getSearchOverlayColors(overlay.eid);
+			const colors = getSearchOverlayColors(world, overlay.eid);
 			expect(colors).toBeDefined();
 			expect(colors?.matchFg).toBe(0x111111ff);
 			expect(colors?.matchBg).toBe(0x222222ff);
 		});
 
 		it('should return null colors for non-overlay entity', () => {
-			const colors = getSearchOverlayColors(eid);
+			const colors = getSearchOverlayColors(world, eid);
 			expect(colors).toBeNull();
 		});
 	});

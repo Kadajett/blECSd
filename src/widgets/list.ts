@@ -274,9 +274,9 @@ export interface ListWidget {
 	/** Selects the item at the given index */
 	select(index: number): ListWidget;
 	/** Gets the currently selected index */
-	getSelectedIndex(world, ): number;
+	getSelectedIndex(world: World): number;
 	/** Gets the currently selected item */
-	getSelectedItem(world, ): ListItem | undefined;
+	getSelectedItem(world: World): ListItem | undefined;
 	/** Selects the previous item */
 	selectPrev(): ListWidget;
 	/** Selects the next item */
@@ -580,11 +580,11 @@ export function createList(
 			return widget;
 		},
 
-		getSelectedIndex(world, ): number {
+		getSelectedIndex(world: World): number {
 			return getSelectedIndex(world, eid);
 		},
 
-		getSelectedItem(world, ): ListItem | undefined {
+		getSelectedItem(world: World): ListItem | undefined {
 			return getSelectedItem(world, eid);
 		},
 
