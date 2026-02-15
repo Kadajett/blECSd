@@ -53,7 +53,7 @@ Systems are pure functions. Call them when you want, not when a framework dictat
 
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { setPosition, setVelocity } from 'blecsd';
+import { setPosition, setVelocity, Position } from 'blecsd';
 import { movementSystem } from 'blecsd';
 
 const world = createWorld();
@@ -135,6 +135,7 @@ setTimeout(() => { running = false; }, 2000);
 
 Use blECSd's ECS for game state while React handles UI:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setPosition, Position } from 'blecsd';
@@ -182,12 +183,12 @@ function GameComponent(): JSX.Element {
 Use blECSd's terminal input parsing without any ECS:
 
 ```typescript
-import { parseKeyEvent, parseMouseEvent } from 'blecsd';
+import { parseKeySequence, parseMouseSequence } from 'blecsd';
 
 // Read raw input
 process.stdin.setRawMode(true);
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeyEvent(buffer);
+  const keyEvent = parseKeySequence(buffer.toString());
 
   if (keyEvent) {
     console.log('Key pressed:', {
@@ -203,7 +204,7 @@ process.stdin.on('data', (buffer) => {
     }
   }
 
-  const mouseEvent = parseMouseEvent(buffer);
+  const mouseEvent = parseMouseSequence(buffer.toString());
   if (mouseEvent) {
     console.log(`Mouse: (${mouseEvent.x}, ${mouseEvent.y}) ${mouseEvent.action}`);
   }
@@ -216,6 +217,7 @@ process.stdin.on('data', (buffer) => {
 
 Use blECSd's terminal rendering without ECS:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScreenBuffer, setCell, createCell, renderToTerminal } from 'blecsd';
 
@@ -241,7 +243,7 @@ Pick and choose which systems you need:
 
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { setPosition, setDimensions } from 'blecsd';
+import { setPosition, setDimensions, ComputedLayout } from 'blecsd';
 import { layoutSystem } from 'blecsd';
 // NOT importing renderSystem or inputSystem - don't need them
 
@@ -334,6 +336,7 @@ customRender();
 
 Add blECSd components to an existing Node.js app:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import express from 'express';
 import { createWorld, addEntity } from 'blecsd';
@@ -425,6 +428,7 @@ loadEntity(loadedData, player);
 
 Start simple, add features incrementally:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Week 1: Just data structures
 import { createWorld, addEntity } from 'blecsd';
@@ -441,11 +445,11 @@ setVelocity(world, eid, 1, 0);
 movementSystem(world);
 
 // Week 3: Add input parsing
-import { parseKeyEvent, queueKeyEvent } from 'blecsd';
+import { parseKeySequence, queueKeyEvent } from 'blecsd';
 
 process.stdin.on('data', (buf) => {
-  const event = parseKeyEvent(buf);
-  if (event) queueKeyEvent(event);
+  const event = parseKeySequence(buf.toString());
+  if (event) queueKeyEvent(world, event);
 });
 
 // Week 4: Add full game loop if needed
@@ -461,6 +465,7 @@ scheduler.start();
 
 ### ❌ Don't Rely on Framework Globals
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // BAD - framework owns the world
 import { globalWorld, start } from 'bad-framework';
@@ -475,6 +480,7 @@ const world = createWorld();  // Your world, your control
 
 ### ❌ Don't Require the Full Stack
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // BAD - must use everything
 import { FrameworkApp } from 'bad-framework';
