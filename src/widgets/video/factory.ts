@@ -11,7 +11,7 @@ import { addEntity, removeEntity } from '../../core/ecs';
 import type { World } from '../../core/types';
 import { buildPlayerArgs, sendPauseCommand, sendSeekCommand } from './commands';
 import { VideoConfigSchema } from './config';
-import { Video, ensurePlayer, videoStateStore } from './state';
+import { ensurePlayer, Video, videoStateStore } from './state';
 import type {
 	VideoConfig,
 	VideoPlayer,

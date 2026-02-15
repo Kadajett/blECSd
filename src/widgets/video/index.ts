@@ -13,6 +13,21 @@
 
 import type { Entity, World } from '../../core/types';
 
+// Re-export commands
+export {
+	buildMplayerArgs,
+	buildMpvArgs,
+	buildPlayerArgs,
+	sendPauseCommand,
+	sendSeekCommand,
+} from './commands';
+
+// Re-export schema
+export { VideoConfigSchema } from './config';
+// Re-export factory
+export { createVideo } from './factory';
+// Re-export state management
+export { detectVideoPlayer, MPLAYER_SEARCH_PATHS, MPV_SEARCH_PATHS, Video } from './state';
 // Re-export types
 export type {
 	VideoConfig,
@@ -23,24 +38,6 @@ export type {
 	VideoProcessSpawner,
 	VideoWidget,
 } from './types';
-
-// Re-export schema
-export { VideoConfigSchema } from './config';
-
-// Re-export state management
-export { MPV_SEARCH_PATHS, MPLAYER_SEARCH_PATHS, Video, detectVideoPlayer } from './state';
-
-// Re-export commands
-export {
-	buildMplayerArgs,
-	buildMpvArgs,
-	buildPlayerArgs,
-	sendPauseCommand,
-	sendSeekCommand,
-} from './commands';
-
-// Re-export factory
-export { createVideo } from './factory';
 
 // Import for utility functions
 import { Video, videoStateStore } from './state';
