@@ -4,7 +4,6 @@ The ScrollableText widget is a thin wrapper over ScrollableBox optimized for rea
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
@@ -34,7 +33,6 @@ logView.scrollToBottom();
 
 Creates a new ScrollableText widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
@@ -383,7 +381,6 @@ text.destroy();
 
 Checks if an entity is a scrollable text widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isScrollableText } from 'blecsd';
 
@@ -448,7 +445,6 @@ type ScrollableTextWidget = ScrollableBoxWidget;
 
 ### Log Viewer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
@@ -480,7 +476,6 @@ appendLog('Ready');
 
 ### Help Text Display
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
@@ -517,7 +512,6 @@ const helpView = createScrollableText(world, addEntity(world), {
 
 ### Auto-Scrolling Terminal Output
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';
@@ -549,7 +543,6 @@ output('drwxr-xr-x 10 user user 4096 Jan 1 11:00 ..');
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableText } from 'blecsd';

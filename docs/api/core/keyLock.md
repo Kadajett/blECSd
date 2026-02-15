@@ -13,7 +13,6 @@ The key lock module provides:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   grabKeys,
@@ -47,7 +46,6 @@ Grabbed keys are consumed but not propagated to the application.
 
 Grabs specified keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { grabKeys } from 'blecsd';
 
@@ -59,7 +57,6 @@ grabKeys(['up', 'down', 'left', 'right', 'space']);
 
 Releases grabbed keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { releaseKeys } from 'blecsd';
 
@@ -70,7 +67,6 @@ releaseKeys(['up', 'down']);
 
 Releases all grabbed keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { releaseAllGrabbedKeys } from 'blecsd';
 
@@ -81,7 +77,6 @@ releaseAllGrabbedKeys();
 
 Checks if a key is grabbed.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isKeyGrabbed } from 'blecsd';
 
@@ -94,7 +89,6 @@ if (isKeyGrabbed('escape')) {
 
 Gets all grabbed keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getGrabbedKeys } from 'blecsd';
 
@@ -110,7 +104,6 @@ Lock all keys at once, with optional exceptions.
 
 Locks all keys from processing.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { lockAllKeys } from 'blecsd';
 
@@ -121,7 +114,6 @@ lockAllKeys();
 
 Unlocks all keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { unlockAllKeys } from 'blecsd';
 
@@ -132,7 +124,6 @@ unlockAllKeys();
 
 Checks if all keys are locked.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { areAllKeysLocked } from 'blecsd';
 
@@ -149,7 +140,6 @@ Keys that bypass the lock when all keys are locked.
 
 Sets keys to ignore (replaces previous list).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setIgnoredKeys } from 'blecsd';
 
@@ -161,7 +151,6 @@ setIgnoredKeys(['escape', 'enter']);
 
 Adds keys to ignored list.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addIgnoredKeys } from 'blecsd';
 
@@ -172,7 +161,6 @@ addIgnoredKeys(['tab']);
 
 Removes keys from ignored list.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { removeIgnoredKeys } from 'blecsd';
 
@@ -183,7 +171,6 @@ removeIgnoredKeys(['tab']);
 
 Clears all ignored keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearIgnoredKeys } from 'blecsd';
 
@@ -194,7 +181,6 @@ clearIgnoredKeys();
 
 Gets all ignored keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getIgnoredKeys } from 'blecsd';
 
@@ -206,7 +192,6 @@ const keys = getIgnoredKeys();
 
 Checks if a key is ignored.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isKeyIgnored } from 'blecsd';
 
@@ -223,7 +208,6 @@ For complex blocking logic.
 
 Sets a custom filter function.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setKeyLockFilter } from 'blecsd';
 
@@ -238,7 +222,6 @@ setKeyLockFilter(null);
 
 Gets the current filter.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getKeyLockFilter } from 'blecsd';
 
@@ -251,7 +234,6 @@ const filter = getKeyLockFilter();
 
 Checks if a key event should be blocked.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { shouldBlockKeyEvent } from 'blecsd';
 
@@ -272,7 +254,6 @@ The function checks in order:
 
 Simplified check by key name only.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isKeyLocked } from 'blecsd';
 
@@ -287,7 +268,6 @@ if (isKeyLocked('a')) {
 
 Applies multiple options at once.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { applyKeyLockOptions } from 'blecsd';
 
@@ -303,7 +283,6 @@ applyKeyLockOptions({
 
 Creates a scoped lock context that auto-restores.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createKeyLockScope } from 'blecsd';
 
@@ -336,7 +315,6 @@ restore1(); // Back to original state
 
 Gets the current state object.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getKeyLockState } from 'blecsd';
 
@@ -349,7 +327,6 @@ console.log(state.grabbedKeys);
 
 Creates a new state with defaults.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createKeyLockState } from 'blecsd';
 
@@ -361,7 +338,6 @@ const state = createKeyLockState();
 
 Resets global state to defaults (for testing).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetKeyLockState } from 'blecsd';
 
@@ -403,7 +379,6 @@ interface KeyLockOptions {
 
 ### Modal Dialog
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createKeyLockScope,
@@ -431,7 +406,6 @@ closeModal();
 
 ### Game Input
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   grabKeys,
@@ -461,7 +435,6 @@ function handleGameInput(event: KeyEvent): void {
 
 ### Custom Input Validation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setKeyLockFilter } from 'blecsd';
 

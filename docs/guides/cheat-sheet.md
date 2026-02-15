@@ -666,7 +666,6 @@ console.log('Components:', inspection.components);
 
 ## TypeScript Tips
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Type-safe widget config
 import type { BoxConfig, ListConfig } from 'blecsd';

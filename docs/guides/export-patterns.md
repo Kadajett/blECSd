@@ -281,7 +281,6 @@ import { BoxConfigSchema, TextConfigSchema } from 'blecsd/schemas';
 
 ### Pattern 1: Typical Terminal App
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // RECOMMENDED: Single import from main entry point
 import {
@@ -464,7 +463,6 @@ function drawCustomFrame() {
 }
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // OKAY: Mixing high-level and low-level in same file
 import { createBoxEntity, renderSystem } from 'blecsd';

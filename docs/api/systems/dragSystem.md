@@ -26,7 +26,6 @@ import {
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

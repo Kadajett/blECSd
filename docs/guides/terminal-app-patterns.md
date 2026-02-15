@@ -6,7 +6,6 @@ Practical patterns for building terminal applications with blECSd. Each section 
 
 blECSd ships with a `createCommandPalette` widget that provides VS Code-style quick command search.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -443,7 +442,6 @@ function confirmDelete(filename: string): void {
 
 The `createKeyBindingRegistry` provides a configurable key binding system with conditional activation ("when" clauses) similar to VS Code's keybindings.json.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createKeyBindingRegistry,
@@ -520,7 +518,6 @@ function handleAction(action: string): void {
 
 blECSd provides a focus stack for managing keyboard focus across overlays, modals, and nested views.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -693,7 +690,6 @@ function redraw(): void {
 
 A minimal terminal editor skeleton combining several patterns:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

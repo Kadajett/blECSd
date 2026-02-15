@@ -4,7 +4,6 @@ The Panel widget is a container with a title bar at the top. It supports optiona
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
@@ -41,7 +40,6 @@ const toolWindow = createPanel(world, addEntity(world), {
 
 Creates a new Panel widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
@@ -348,7 +346,6 @@ panel.destroy();
 
 Checks if an entity is a panel widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPanel } from 'blecsd';
 
@@ -593,7 +590,6 @@ interface PanelWidget {
 
 ## Zod Schemas
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { PanelConfigSchema } from 'blecsd';
 
@@ -615,7 +611,6 @@ if (result.success) {
 
 ### Dialog Panel
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
@@ -641,7 +636,6 @@ if (dialog.isClosable()) {
 
 ### Collapsible Section
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
@@ -669,7 +663,6 @@ if (section.isCollapsed()) {
 
 ### Styled Tool Window
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';
@@ -702,7 +695,6 @@ const toolWindow = createPanel(world, addEntity(world), {
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createPanel } from 'blecsd';

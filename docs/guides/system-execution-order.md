@@ -92,7 +92,6 @@ loop.start();
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, LoopPhase } from 'blecsd';
 

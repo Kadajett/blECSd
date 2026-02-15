@@ -17,7 +17,6 @@ import {
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createHoverTextManager, setHoverText } from 'blecsd';
@@ -177,7 +176,6 @@ hoverManager.setScreenSize(newWidth, newHeight);
 
 For simple use cases without a manager:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setHoverText,

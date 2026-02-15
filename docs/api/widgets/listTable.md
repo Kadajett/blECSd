@@ -10,7 +10,6 @@ import { createListTable, isListTableWidget } from 'blecsd';
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createListTable } from 'blecsd';

@@ -146,7 +146,6 @@ function createInputActionManager(
 
 **Returns:** A new InputActionManager instance.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputActionManager } from 'blecsd';
 
@@ -162,7 +161,6 @@ const actions = createInputActionManager([
 
 Zod schema for validating action bindings at runtime.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ActionBindingSchema } from 'blecsd';
 
@@ -190,7 +188,6 @@ const result = SerializedBindingsSchema.parse(loadedData);
 
 Common action presets for quick setup.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ActionPresets, createInputActionManager } from 'blecsd';
 
@@ -206,7 +203,6 @@ const menu = createInputActionManager(ActionPresets.menu);
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputActionManager, createInputState } from 'blecsd';
 

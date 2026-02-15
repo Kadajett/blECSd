@@ -4,7 +4,6 @@ The Box widget is a basic container for building terminal UI elements. It provid
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
@@ -35,7 +34,6 @@ box.setContent('Updated content').focus().show();
 
 Creates a new Box widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
@@ -297,7 +295,6 @@ const content = getBoxContent(world, boxEntity); // string
 
 Checks if an entity is a box widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isBox } from 'blecsd';
 
@@ -455,7 +452,6 @@ if (result.success) {
 
 ### Basic Container
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
@@ -474,7 +470,6 @@ const box = createBox(world, eid, {
 
 ### Styled Box with Border
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
@@ -503,7 +498,6 @@ const dialog = createBox(world, eid, {
 
 ### Nested Boxes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
@@ -536,7 +530,6 @@ parent.append(childEid);
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
@@ -558,7 +551,6 @@ const box = createBox(world, eid, { left: 0, top: 0 })
 
 ### Focus Management
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createBox } from 'blecsd';
@@ -582,7 +574,6 @@ console.log(box2.isFocused()); // true
 
 ### Dynamic Content Update
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createBox, setBoxContent, getBoxContent } from 'blecsd';

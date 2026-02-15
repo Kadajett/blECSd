@@ -82,7 +82,6 @@ console.log(getLine(world, entity, 1)); // 'Line 2'
 
 Gets a line from the base content (before scroll adjustment). Equivalent to `getLine` since scroll offset is applied during rendering, not storage.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getBaseLine } from 'blecsd';
 
@@ -118,7 +117,6 @@ setLine(world, entity, 1, 'Modified Line');
 
 Sets a line in the base content. Equivalent to `setLine`.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setBaseLine } from 'blecsd';
 
@@ -129,7 +127,6 @@ setBaseLine(world, entity, 0, 'New first line');
 
 Sets all content lines at once. Marks the entity dirty and adjusts scroll if content is now shorter.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setLines } from 'blecsd';
 
@@ -148,7 +145,6 @@ setLines(world, entity, ['Line 1', 'Line 2', 'Line 3']);
 
 Clears all lines and resets scroll position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearLines } from 'blecsd';
 
@@ -266,7 +262,6 @@ deleteBottom(world, entity, 1);
 
 Pushes a line to the bottom (alias for `insertBottom`).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { pushLine } from 'blecsd';
 
@@ -311,7 +306,6 @@ const removed = shiftLine(world, entity);
 
 Adds a line to the top (alias for `insertTop`).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { unshiftLine } from 'blecsd';
 
@@ -383,7 +377,6 @@ All modification functions automatically adjust the scroll position for entities
 
 ### Log Buffer with Maximum Lines
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { pushLine, getLineCount, deleteTop } from 'blecsd';
 
@@ -402,7 +395,6 @@ function addLogEntry(world, entity, message) {
 
 ### Editable Text Buffer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getLine, setLine, insertLine, deleteLine } from 'blecsd';
 

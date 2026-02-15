@@ -79,7 +79,6 @@ screen.render();
 
 ### blECSd: Entity Component System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // NEW: blECSd (ECS)
 import {
@@ -286,7 +285,6 @@ screen.render();
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -515,7 +513,6 @@ screen.render();  // Manual render required
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Update component data
 import { createWorld, addEntity, setContent, Renderable, markDirty } from 'blecsd';
@@ -542,7 +539,6 @@ MyWidget.prototype._render = function() {
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Create custom render system (clean)
 import { createWorld, createGameLoop, query, Position, Renderable, LoopPhase, type World } from 'blecsd';
@@ -885,7 +881,6 @@ npm install blecsd
 
 Create initial structure:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // src/world.ts
 import { createWorld } from 'blecsd';

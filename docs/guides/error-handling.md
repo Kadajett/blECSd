@@ -282,7 +282,6 @@ function handleError(error: BlECSdError): void {
 
 Systems should handle errors gracefully and avoid crashing the game loop:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query, hasComponent, World } from 'blecsd';
 import { Result, ok, err } from 'blecsd/errors';
@@ -333,7 +332,6 @@ function updateEntityPosition(
 
 Input errors are often recoverable - log them and continue processing:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKeySequence } from 'blecsd';
 import { isInputError, InputErrorCode } from 'blecsd/errors';

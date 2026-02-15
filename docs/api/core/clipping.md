@@ -40,7 +40,6 @@ if (isPointVisible(clipRect, x, y)) {
 
 Constants defining overflow behavior.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Overflow } from 'blecsd';
 
@@ -81,7 +80,6 @@ setOverflow(world, container, {
 
 Gets the overflow mode for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getOverflow, Overflow } from 'blecsd';
 
@@ -97,7 +95,6 @@ if (mode === Overflow.HIDDEN) {
 
 Gets the full clipping data for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getClipping } from 'blecsd';
 
@@ -115,7 +112,6 @@ if (clipping) {
 
 Checks if an entity has the Clipping component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasClipping } from 'blecsd';
 
@@ -143,7 +139,6 @@ interface ClipRect {
 
 Creates a clip rect from position and dimensions.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createClipRect } from 'blecsd';
 
@@ -155,7 +150,6 @@ const rect = createClipRect(10, 20, 30, 40);
 
 Creates a clip rect with no bounds.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInfiniteClipRect } from 'blecsd';
 
@@ -281,7 +275,6 @@ const height = getClipRectHeight(clipRect);
 
 Checks if an entity should clip its content.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { shouldClipContent } from 'blecsd';
 
@@ -298,7 +291,6 @@ For managing nested clip contexts during rendering.
 
 Creates a new clip stack.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createClipStack } from 'blecsd';
 

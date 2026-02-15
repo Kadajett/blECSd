@@ -36,7 +36,6 @@ invalidateClickableCache(cache);
 
 Creates a new cache for clickable element sorting.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createClickableCache } from 'blecsd';
 
@@ -223,7 +222,6 @@ interface HitTestOptions {
 
 ## Integration with Input System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createClickableCache,

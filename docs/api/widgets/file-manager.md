@@ -60,7 +60,6 @@ interface FileEntry {
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { FileManagerConfigSchema } from 'blecsd';
 
@@ -80,7 +79,6 @@ const result = FileManagerConfigSchema.safeParse({
 
 Creates a FileManager widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFileManager } from 'blecsd';
 
@@ -253,7 +251,6 @@ handleFileManagerKey(world, fmEid, 'backspace');  // Go to parent directory
 
 ### isFileManager
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isFileManager } from 'blecsd';
 
@@ -282,7 +279,6 @@ setReadDirFn(fmEid, (dir) => [
 
 ### File Picker Dialog
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFileManager } from 'blecsd';
 
@@ -305,7 +301,6 @@ picker.onSelect((entry) => {
 
 ### Directory Browser with Hidden Files
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFileManager, handleFileManagerKey } from 'blecsd';
 
@@ -324,7 +319,6 @@ function onKeyPress(key) {
 
 ### Filtered File Listing
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFileManager } from 'blecsd';
 

@@ -319,7 +319,6 @@ interface ProgressBarState {
 
 **2. Create factory function**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   addEntity,
@@ -526,7 +525,6 @@ setZIndex(world, backEntity, 5);    // Lower = back
 2. **Check dimensions:** Dimensions might be too small
 3. **Check scroll offsets:** Parent might be scrolled
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getComputedBounds, getScroll, Hierarchy } from 'blecsd';
 
@@ -835,7 +833,6 @@ Display a modal dialog that blocks interaction with background UI.
 
 **1. Create modal overlay**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addEntity, addComponent, setPosition, setDimensions, Renderable, setZIndex, type World, type Entity } from 'blecsd';
 
@@ -1567,7 +1564,6 @@ interface AppState {
 
 **2. Serialize current state**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query, hasComponent, Position, Dimensions, Renderable, getZIndex, getFocused } from 'blecsd';
 
@@ -1626,7 +1622,6 @@ function saveState(world: World, filename: string): void {
 
 **4. Load from file**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { readFileSync } from 'node:fs';
 import { addEntity, setPosition, setDimensions, Renderable, setZIndex, focusEntity } from 'blecsd';
@@ -1672,7 +1667,6 @@ function loadState(world: World, filename: string): void {
 
 ### Complete Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -2282,7 +2276,6 @@ loop.registerSystem(LoopPhase.UPDATE, movementSystem);
 
 ### Complete Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -2776,7 +2769,6 @@ eventBus.on('buttonClick', (event) => {
 
 ### Complete Accessible App Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

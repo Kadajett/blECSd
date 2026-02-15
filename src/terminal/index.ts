@@ -318,6 +318,7 @@ export {
 	RGBASchema,
 	RGBSchema,
 } from './colors/palette';
+export { matchColor, matchColorCached, nameToColor } from './colors';
 // Conflict resolution (CRDTs for collaborative editing)
 export type {
 	CharId,
@@ -832,7 +833,7 @@ export { createSuspendManager, suspend, suspendSequences } from './suspend';
 // Synchronized output (internal)
 export type { SynchronizedOutput, SyncOutputOptions } from './syncOutput';
 export { createSynchronizedOutput, isSyncOutputSupported } from './syncOutput';
-// Terminfo (internal)
+// Terminfo
 export type {
 	BooleanCapability,
 	NumberCapability,
@@ -841,7 +842,17 @@ export type {
 	Tput,
 	TputConfig,
 } from './terminfo';
-export { createTput, getDefaultTput, getDefaultXtermData, resetDefaultTput } from './terminfo';
+export {
+	ACS,
+	createTput,
+	detectFeatures,
+	detectTrueColor,
+	detectUnicode,
+	getDefaultTput,
+	getDefaultXtermData,
+	resetDefaultTput,
+	sprintf,
+} from './terminfo';
 // Throttled resize
 export type {
 	ResizeCallback,

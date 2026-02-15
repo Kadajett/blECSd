@@ -189,7 +189,6 @@ console.log(`FPS range: ${min.toFixed(0)} - ${max.toFixed(0)}`);
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createDebugOverlay,

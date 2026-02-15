@@ -80,7 +80,6 @@ setBack(world, background);
 
 Swaps z-index with adjacent sibling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { moveUp, moveDown } from 'blecsd';
 
@@ -148,7 +147,6 @@ const localZ = ZOrder.localZ[entity];
 
 ## Constants
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { DEFAULT_Z_INDEX, MAX_Z_INDEX, MIN_Z_INDEX } from 'blecsd';
 
@@ -161,7 +159,6 @@ MIN_Z_INDEX      // -2147483648
 
 For sibling-relative ordering:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setLocalZ, getLocalZ } from 'blecsd';
 

@@ -261,7 +261,6 @@ for (let i = 0; i < 100000; i++) {
 
 ✅ **FAST - Use virtualization:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createVirtualizedList } from 'blecsd';
 

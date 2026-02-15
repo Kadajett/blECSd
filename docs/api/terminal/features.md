@@ -162,7 +162,6 @@ interface ModernProtocols {
 
 Detects Unicode support based on locale settings.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectUnicode } from 'blecsd';
 

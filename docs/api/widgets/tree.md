@@ -10,7 +10,6 @@ import { createTree, isTreeWidget } from 'blecsd';
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTree } from 'blecsd';

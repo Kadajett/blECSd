@@ -179,7 +179,6 @@ if (data) {
 
 Only one screen can exist per world:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createScreenEntity, hasScreenSingleton, destroyScreen } from 'blecsd';
 

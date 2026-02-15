@@ -52,7 +52,6 @@ interface PhaseManager {
 
 Maps built-in LoopPhase values to their string names.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { BUILTIN_PHASE_NAMES, LoopPhase } from 'blecsd';
 

@@ -67,7 +67,6 @@ import {
 
 Initializes a terminal buffer on an entity. Configuration is validated with Zod.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setTerminalBuffer } from 'blecsd';
 
@@ -85,7 +84,6 @@ All options are optional and use defaults.
 
 ### hasTerminalBuffer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasTerminalBuffer } from 'blecsd';
 
@@ -98,7 +96,6 @@ if (hasTerminalBuffer(entity)) {
 
 Returns scalar terminal state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalBuffer } from 'blecsd';
 
@@ -112,7 +109,6 @@ if (buf) {
 
 Returns the full internal state including cell buffer, scrollback, and parser state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalState } from 'blecsd';
 
@@ -126,7 +122,6 @@ const state = getTerminalState(entity);
 
 Writes a single character at the cursor position. Handles `\n`, `\r`, `\b`, `\t`.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { writeChar } from 'blecsd';
 
@@ -138,7 +133,6 @@ writeChar(world, entity, '\n');
 
 Writes a string with ANSI escape sequence processing. Supports CSI sequences for cursor movement, SGR color codes (basic, 256-color, RGB), erase commands, and DEC private modes (cursor visibility, alternate screen buffer).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { writeToTerminal } from 'blecsd';
 
@@ -150,7 +144,6 @@ writeToTerminal(world, entity, '\x1b[2J');  // Clear screen
 
 ### setCursorPosition / setCursorVisible
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setCursorPosition, setCursorVisible } from 'blecsd';
 
@@ -162,7 +155,6 @@ setCursorVisible(world, entity, false);   // Hide cursor
 
 ### scrollTerminalUp / scrollTerminalDown / scrollTerminalToTop / scrollTerminalToBottom
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   scrollTerminalUp,
@@ -181,7 +173,6 @@ scrollTerminalToBottom(world, entity); // Back to current view
 
 ### clearTerminal / resetTerminal
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearTerminal, resetTerminal } from 'blecsd';
 
@@ -193,7 +184,6 @@ resetTerminal(world, entity);  // Full reset including scrollback and parser sta
 
 Resizes the buffer, preserving existing content where possible.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resizeTerminalBuffer } from 'blecsd';
 
@@ -204,7 +194,6 @@ resizeTerminalBuffer(world, entity, 120, 40);
 
 Removes the terminal buffer and cleans up all state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { removeTerminalBuffer } from 'blecsd';
 
@@ -217,7 +206,6 @@ removeTerminalBuffer(entity);
 
 Renders the terminal buffer to an ANSI string for display. Respects scroll offset.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderTerminalToAnsi } from 'blecsd';
 
@@ -229,7 +217,6 @@ process.stdout.write(output);
 
 Returns the raw cell array for custom rendering.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalCells } from 'blecsd';
 
@@ -239,7 +226,6 @@ const cells = getTerminalCells(entity);
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setTerminalBuffer, writeToTerminal, getTerminalBuffer, renderTerminalToAnsi } from 'blecsd';

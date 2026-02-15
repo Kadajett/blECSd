@@ -99,7 +99,6 @@ if (cam) {
 
 ### hasCamera / removeCamera
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasCamera, removeCamera } from 'blecsd';
 

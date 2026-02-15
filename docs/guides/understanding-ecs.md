@@ -344,7 +344,6 @@ removeComponent(world, eid, Velocity);
 
 ### Pattern 4: Iterating Over Query Results
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query, Focusable } from 'blecsd';
 

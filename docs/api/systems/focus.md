@@ -66,7 +66,6 @@ if (success) {
 
 Get the currently focused entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getFocused } from 'blecsd';
 
@@ -82,7 +81,6 @@ if (focused) {
 
 Remove focus from all entities.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { blurAll } from 'blecsd';
 
@@ -127,7 +125,6 @@ if (key === 'Tab' && shift) {
 
 Focus the first focusable entity in tab order.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focusFirst } from 'blecsd';
 
@@ -140,7 +137,6 @@ focusFirst(world);
 
 Focus the last focusable entity in tab order.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focusLast } from 'blecsd';
 
@@ -155,7 +151,6 @@ focusLast(world);
 
 Get all focusable entities sorted by tab order.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getFocusableEntities } from 'blecsd';
 
@@ -176,7 +171,6 @@ Entities are sorted by:
 
 Get the event bus to subscribe to focus events.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getFocusEventBus } from 'blecsd';
 
@@ -201,7 +195,6 @@ bus.on('blur', ({ entity, nextEntity }) => {
 
 Reset the focus event bus (for testing).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetFocusEventBus } from 'blecsd';
 
@@ -370,7 +363,6 @@ The focus system includes a stack mechanism for managing focus in modal/popup sc
 
 Push current focus onto the stack and focus a new entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focusPush } from 'blecsd';
 
@@ -386,7 +378,6 @@ function openModal(world: World, modalEntity: Entity): void {
 
 Pop the focus stack and restore the previous focus.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focusPop } from 'blecsd';
 
@@ -403,7 +394,6 @@ if (previousFocus) {
 
 Move focus by a specified offset in the tab order.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focusOffset } from 'blecsd';
 
@@ -420,7 +410,6 @@ focusOffset(world, -1);
 
 Save and restore focus without using the stack (for temporary changes).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { saveFocus, restoreFocus } from 'blecsd';
 
@@ -437,7 +426,6 @@ const restored = restoreFocus(world);
 
 Rewind focus to the last valid entity in the stack when the current entity is destroyed.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rewindFocus } from 'blecsd';
 
@@ -449,7 +437,6 @@ rewindFocus(world);
 
 ### Stack Utilities
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getFocusStackDepth,
@@ -501,7 +488,6 @@ closeModal(world);          // restores to original focus
 
 When rendering, check if an entity is focused to apply focus styling:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isFocused, getFocusEffect } from 'blecsd';
 
