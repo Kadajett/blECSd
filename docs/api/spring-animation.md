@@ -4,6 +4,7 @@ Physics-based spring animations for smooth, natural motion. The spring system us
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -225,12 +226,14 @@ Spring physics system that updates all entities with active spring animations. S
 
 **Example:**
 ```typescript
-import { createScheduler, LoopPhase, springSystem } from 'blecsd';
+import { createWorld, createScheduler, LoopPhase, springSystem } from 'blecsd';
 
+const world = createWorld();
 const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.ANIMATION, springSystem);
 
 // In game loop
+const deltaTime = 0.016; // ~60fps
 scheduler.run(world, deltaTime);
 ```
 
@@ -239,7 +242,9 @@ scheduler.run(world, deltaTime);
 ### UI Element Animation
 
 ```typescript
-import { createSpring, setSpringTarget, springSmooth } from 'blecsd';
+import { createWorld, addEntity, setPosition, createSpring, setSpringTarget, springSmooth } from 'blecsd';
+
+const world = createWorld();
 
 // Create a button that smoothly moves on hover
 const button = addEntity(world);
@@ -256,7 +261,9 @@ setSpringTarget(world, button, 10, 5);
 ### Dialog Slide-In Animation
 
 ```typescript
-import { createSpring, setSpringTarget, springSnappy } from 'blecsd';
+import { createWorld, addEntity, setPosition, createSpring, setSpringTarget, springSnappy } from 'blecsd';
+
+const world = createWorld();
 
 // Create dialog off-screen
 const dialog = addEntity(world);
@@ -270,7 +277,9 @@ setSpringTarget(world, dialog, 10, 10);
 ### Bouncy Notification
 
 ```typescript
-import { createSpring, setSpringTarget, springBouncy } from 'blecsd';
+import { createWorld, addEntity, setPosition, createSpring, setSpringTarget, springBouncy } from 'blecsd';
+
+const world = createWorld();
 
 // Create notification
 const notification = addEntity(world);

@@ -201,8 +201,10 @@ function removeEntityFromGrid(grid: SpatialHashGrid, eid: Entity): void
 - `eid` - Entity ID to remove
 
 ```typescript
-import { removeEntityFromGrid } from 'blecsd';
+import { createSpatialHash, removeEntityFromGrid } from 'blecsd';
 
+const grid = createSpatialHash();
+const entity = 1;
 removeEntityFromGrid(grid, entity);
 ```
 
@@ -232,6 +234,8 @@ function queryArea(
 ```typescript
 import { createSpatialHash, queryArea } from 'blecsd';
 
+const grid = createSpatialHash();
+const playerX = 10, playerY = 20;
 const nearby = queryArea(grid, playerX, playerY, 2, 2);
 for (const eid of nearby) {
   // Check narrow-phase collision
@@ -253,8 +257,10 @@ function getNearbyEntities(grid: SpatialHashGrid, eid: Entity): ReadonlySet<numb
 **Returns:** Set of entity IDs that may collide with the given entity.
 
 ```typescript
-import { getNearbyEntities } from 'blecsd';
+import { createSpatialHash, getNearbyEntities } from 'blecsd';
 
+const grid = createSpatialHash();
+const player = 1;
 const candidates = getNearbyEntities(grid, player);
 for (const other of candidates) {
   // Narrow-phase collision check
@@ -281,8 +287,9 @@ function getEntitiesInCell(
 **Returns:** Set of entity IDs in that cell.
 
 ```typescript
-import { getEntitiesInCell } from 'blecsd';
+import { createSpatialHash, getEntitiesInCell } from 'blecsd';
 
+const grid = createSpatialHash();
 const entities = getEntitiesInCell(grid, 3, 5);
 ```
 
@@ -306,8 +313,9 @@ function getEntitiesAtPoint(
 **Returns:** Set of entity IDs at that position.
 
 ```typescript
-import { getEntitiesAtPoint } from 'blecsd';
+import { createSpatialHash, getEntitiesAtPoint } from 'blecsd';
 
+const grid = createSpatialHash();
 const entities = getEntitiesAtPoint(grid, 10, 20);
 ```
 
@@ -320,8 +328,9 @@ function clearSpatialHash(grid: SpatialHashGrid): void
 ```
 
 ```typescript
-import { clearSpatialHash } from 'blecsd';
+import { createSpatialHash, clearSpatialHash } from 'blecsd';
 
+const grid = createSpatialHash();
 clearSpatialHash(grid);
 ```
 
@@ -336,8 +345,9 @@ function getSpatialHashStats(grid: SpatialHashGrid): SpatialHashStats
 **Returns:** Grid statistics.
 
 ```typescript
-import { getSpatialHashStats } from 'blecsd';
+import { createSpatialHash, getSpatialHashStats } from 'blecsd';
 
+const grid = createSpatialHash();
 const stats = getSpatialHashStats(grid);
 console.log(`Cells: ${stats.cellCount}, Entities: ${stats.entityCount}`);
 console.log(`Avg per cell: ${stats.averageEntitiesPerCell.toFixed(2)}`);
@@ -426,8 +436,9 @@ function markSpatialDirty(eid: Entity): void
 ```
 
 ```typescript
-import { markSpatialDirty } from 'blecsd';
+import { markSpatialDirty, Position } from 'blecsd';
 
+const entity = 1;
 // After teleporting an entity, mark it dirty
 Position.x[entity] = 100;
 Position.y[entity] = 200;
@@ -545,6 +556,7 @@ import {
   addEntity,
   setPosition,
   setCollider,
+  Position,
   createSpatialHash,
   setSpatialHashGrid,
   spatialHashSystem,
