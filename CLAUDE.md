@@ -55,6 +55,33 @@ Use Zod at system boundaries for config, input, and data validation.
 ### Strict TypeScript
 Explicit return types, no `any` (use `unknown` + type guards), defined interfaces, branded types for IDs, prefer `readonly`.
 
+## Where Does This Logic Go? (Decision Tree)
+
+| Question | If yes, put it in... |
+|----------|----------------------|
+| Is it pure data storage (typed arrays, stores)? | `components/` (200 lines max) |
+| Does it query entities and transform state? | `systems/` |
+| Does it combine components into a user-facing API? | `widgets/` (300 lines/sub-file max) |
+| Is it a pure function with no ECS dependency? | `utils/` |
+| Does it validate config or input? | `schemas/` |
+| Does it handle terminal I/O? | `terminal/` |
+| Is it an ECS primitive (addEntity, etc.)? | `core/` |
+
+**Rule:** Components = data only. Systems = logic. Never put business logic in component files.
+
+## Module Ownership (Commonly Confused Functions)
+
+Several function names exist in multiple modules. The public API (`index.ts`) re-exports the canonical version:
+
+| Function | Canonical Module | Also In | Notes |
+|----------|-----------------|---------|-------|
+| `moveCursor` | `components/textInput/cursor` | `components/virtualViewport` (as `moveViewportCursor`), `systems/outputSystem`, `terminal/backends/helpers`, `terminal/cursor/artificial`, `terminal/screen/csr` | 6+ versions. Public API exports text-input version. ECS versions take `(world, eid, delta)`. Terminal versions use raw coordinates. |
+| `fillRect` | `terminal/screen/cell` | `terminal/graphics/vector`, `3d/rasterizer/pixelBuffer` | Public API exports terminal version. 3D version operates on `PixelFramebuffer`. |
+| `getText` | `components/content` | `utils/rope` | Public API exports components version `(world, eid)`. Rope version takes `(rope)`. |
+| `moveCursorUp/Down` | `utils/cursorNavigation` | `components/terminalBuffer/cursor` (internal), `widgets/textEditing` (internal) | Public API exports navigation util. Component/widget versions are internal with different signatures. |
+
+When importing, always check which module you need. Use explicit paths for non-canonical versions.
+
 ## Module Structure
 
 ```
@@ -67,6 +94,15 @@ src/
 ├── schemas/        # Zod schemas: config.ts, input.ts, ...
 └── index.ts        # Public API
 ```
+
+## Common Agent Mistakes
+
+1. **Adding `world` to functions that don't need it**: Only add `world` to functions that take `eid: Entity`. Pure utility functions don't need it.
+2. **Putting logic in component files**: Components are data-only. Move business logic to systems.
+3. **Creating new files when existing ones suffice**: Always search `src/` for existing exports first.
+4. **Forgetting to update barrel exports**: When adding new exports, update the module's `index.ts`.
+5. **Using `any` type**: Use `unknown` with type guards instead. Suppress with `biome-ignore` only for ECS internals.
+6. **Missing Zod validation at boundaries**: All config objects must be validated with Zod schemas.
 
 ## Commands
 
@@ -108,55 +144,7 @@ Every public API change needs: JSDoc with `@example`, API reference page in `doc
 
 ## Claude Code Agent Teams
 
-> **Experimental** — enable with `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json or environment.
-
-Agent teams coordinate multiple Claude Code instances. One session leads, others work independently with their own context windows, communicating directly.
-
-### When to Use
-Best for: parallel research/review, independent modules, competing debug hypotheses, cross-layer changes (frontend/backend/tests). Avoid for: sequential tasks, same-file edits, heavily dependent work.
-
-### Teams vs Subagents
-- **Subagents**: own context, report results back only, lower token cost. Best for focused tasks.
-- **Agent teams**: own context, message each other directly, shared task list, higher token cost. Best for collaborative work requiring discussion.
-
-### Key Commands
-- Tell the lead in natural language to create teams, assign tasks, spawn teammates
-- `Shift+Up/Down`: select teammates in in-process mode
-- `Shift+Tab`: toggle delegate mode (lead coordinates only, no implementation)
-- `Ctrl+T`: toggle task list
-
-### Display Modes
-- **In-process** (default): all teammates in main terminal. Works anywhere.
-- **Split panes**: each teammate gets own pane. Requires tmux or iTerm2.
-
-Set via `teammateMode` in settings.json (`"in-process"`, `"tmux"`, `"auto"`) or `--teammate-mode` flag.
-
-### Task Coordination
-Shared task list with pending/in-progress/completed states. Tasks can have dependencies. Lead assigns or teammates self-claim. File locking prevents race conditions.
-
-### Plan Approval
-Request plan approval before implementation: teammate works read-only until lead approves. Lead makes approval decisions autonomously — influence via prompt criteria.
-
-### Hooks
-- `TeammateIdle`: runs when teammate goes idle. Exit code 2 sends feedback and keeps them working.
-- `TaskCompleted`: runs when task marked complete. Exit code 2 prevents completion with feedback.
-
-### Important Limitations
-- No session resumption for in-process teammates (`/resume` won't restore them)
-- One team per session, no nested teams, lead is fixed
-- All teammates inherit lead's permissions at spawn
-- Always use the lead (not teammates) to clean up the team
-- Split panes not supported in VS Code terminal, Windows Terminal, or Ghostty
-
-### Best Practices for Agent Teams
-- Include task-specific details in spawn prompts (teammates don't inherit lead's conversation history)
-- Size tasks as self-contained units with clear deliverables
-- Keep 5-6 tasks per teammate for productivity
-- Break work so each teammate owns different files — avoid file conflicts
-- Monitor and steer; don't let teams run unattended too long
-- Start with research/review tasks before attempting parallel implementation
-- **Limit to 2-3 teammates** — more will crash the terminal
-- Always ensure you're in a tmux session before starting orchestration mode
+Enable with `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Limit to 2-3 teammates (more crashes the terminal). Each teammate needs its own git worktree. Best for parallel independent modules; avoid for same-file edits. See parent `~/.claude/CLAUDE.md` for full orchestration guide.
 
 ## Migration Notes (from Original Blessed)
 
