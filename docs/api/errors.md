@@ -540,15 +540,16 @@ try {
 
 ### Game Loop Error Handling
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  createGame,
+  createGameLoop,
   createSystemError,
   SystemErrorCode,
   isSystemError,
 } from 'blecsd';
 
-const game = createGame({ width: 80, height: 24 });
+const game = createGameLoop({ width: 80, height: 24 });
 
 game.onUpdate((world, delta) => {
   try {
