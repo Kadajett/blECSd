@@ -1247,25 +1247,25 @@ describe('Entity Factories', () => {
 		it('creates a form with keys enabled by default', () => {
 			const eid = createFormEntity(world);
 
-			expect(isFormKeysEnabled(eid)).toBe(true);
+			expect(isFormKeysEnabled(world, eid)).toBe(true);
 		});
 
 		it('creates a form with submit on enter enabled by default', () => {
 			const eid = createFormEntity(world);
 
-			expect(isFormSubmitOnEnter(eid)).toBe(true);
+			expect(isFormSubmitOnEnter(world, eid)).toBe(true);
 		});
 
 		it('creates a form with keys disabled', () => {
 			const eid = createFormEntity(world, { keys: false });
 
-			expect(isFormKeysEnabled(eid)).toBe(false);
+			expect(isFormKeysEnabled(world, eid)).toBe(false);
 		});
 
 		it('creates a form with submit on enter disabled', () => {
 			const eid = createFormEntity(world, { submitOnEnter: false });
 
-			expect(isFormSubmitOnEnter(eid)).toBe(false);
+			expect(isFormSubmitOnEnter(world, eid)).toBe(false);
 		});
 
 		it('creates a form with position', () => {

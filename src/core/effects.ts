@@ -971,7 +971,10 @@ export function hasAnyEffectApplied(_world: World, eid: Entity): boolean {
  * @param eid - The entity ID
  * @returns Object describing which effects are applied
  */
-export function getEffectState(_world: World, eid: Entity): {
+export function getEffectState(
+	_world: World,
+	eid: Entity,
+): {
 	focus: boolean;
 	hover: boolean;
 	press: boolean;

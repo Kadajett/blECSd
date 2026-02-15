@@ -49,7 +49,12 @@ const entityDataStore = new Map<Entity, EntityDataMap>();
  * console.log(health); // 100 (default, since not set)
  * ```
  */
-export function getEntityData<T = DataValue>(_world: World, eid: Entity, key: string, defaultValue?: T): T {
+export function getEntityData<T = DataValue>(
+	_world: World,
+	eid: Entity,
+	key: string,
+	defaultValue?: T,
+): T {
 	const data = entityDataStore.get(eid);
 	if (!data) {
 		return defaultValue as T;
@@ -211,7 +216,11 @@ export function getAllEntityData(_world: World, eid: Entity): Record<string, Dat
  * });
  * ```
  */
-export function setEntityDataBulk(_world: World, eid: Entity, data: Record<string, DataValue>): void {
+export function setEntityDataBulk(
+	_world: World,
+	eid: Entity,
+	data: Record<string, DataValue>,
+): void {
 	for (const [key, value] of Object.entries(data)) {
 		setEntityData(_world, eid, key, value);
 	}

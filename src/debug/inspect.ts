@@ -149,7 +149,9 @@ export function inspectEntity(world: World, eid: Entity): EntityInspection {
 	const children = hasComponent(world, eid, Hierarchy) ? getChildren(world, eid) : [];
 
 	// Get entity name if available
-	const name = hasEntityData(world, eid, 'name') ? (getEntityData<string>(world, eid, 'name') ?? null) : null;
+	const name = hasEntityData(world, eid, 'name')
+		? (getEntityData<string>(world, eid, 'name') ?? null)
+		: null;
 
 	return {
 		entity: eid,

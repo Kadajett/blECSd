@@ -7,35 +7,26 @@
  * @module components
  */
 
+// Behavior and physics components
+export * from './exports/behavior';
+// Content and display components
+export * from './exports/content';
+// Core layout components
+export * from './exports/core';
+// Form control components
+export * from './exports/forms';
+// Graphics components
+export * from './exports/graphics';
+// Input and interaction components
+export * from './exports/input';
+// Layout and viewport components
+export * from './exports/layout';
+// Miscellaneous components
+export * from './exports/misc';
 // System function re-exports
 export * from './exports/systems';
 
-// Core layout components
-export * from './exports/core';
-
-// Layout and viewport components
-export * from './exports/layout';
-
-// Input and interaction components
-export * from './exports/input';
-
-// Form control components
-export * from './exports/forms';
-
-// Content and display components
-export * from './exports/content';
-
-// Behavior and physics components
-export * from './exports/behavior';
-
-// UI widget components
-export * from './exports/widgets';
-
-// Graphics components
-export * from './exports/graphics';
-
 // Terminal-specific components
 export * from './exports/terminal';
-
-// Miscellaneous components
-export * from './exports/misc';
+// UI widget components
+export * from './exports/widgets';

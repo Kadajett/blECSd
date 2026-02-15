@@ -7,29 +7,23 @@
  * @module widgets
  */
 
-// Layout widgets
-export * from './exports/layout';
-
-// Form widgets
-export * from './exports/forms';
-
-// Data display widgets (lists, tables, trees)
-export * from './exports/data';
-
 // Chart widgets
 export * from './exports/charts';
-
-// Text widgets
-export * from './exports/text';
+// Data display widgets (lists, tables, trees)
+export * from './exports/data';
+// Feedback widgets
+export * from './exports/feedback';
+// Form widgets
+export * from './exports/forms';
+// Layout widgets
+export * from './exports/layout';
 
 // Media widgets
 export * from './exports/media';
 
 // Navigation widgets
 export * from './exports/navigation';
-
-// Feedback widgets
-export * from './exports/feedback';
-
 // Special/advanced widgets
 export * from './exports/special';
+// Text widgets
+export * from './exports/text';

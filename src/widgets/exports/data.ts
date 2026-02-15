@@ -4,8 +4,8 @@
  */
 
 export * from '../list';
-export * from '../listTable';
 export * from '../listbar';
+export * from '../listTable';
 export * from '../searchableList';
 export * from '../table';
 export * from '../tree';

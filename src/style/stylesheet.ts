@@ -277,7 +277,12 @@ function getEntityClasses(world: World, eid: Entity): readonly string[] {
 	}
 
 	// Fall back to entityData (global, not world-aware)
-	const classes = getEntityData<readonly string[] | undefined>(world, eid, 'styleClasses', undefined);
+	const classes = getEntityData<readonly string[] | undefined>(
+		world,
+		eid,
+		'styleClasses',
+		undefined,
+	);
 	if (classes !== undefined && Array.isArray(classes)) {
 		return classes;
 	}
