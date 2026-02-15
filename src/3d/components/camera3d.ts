@@ -98,10 +98,11 @@ export function getCamera3D(world: World, eid: Entity): Camera3DData | undefined
 /**
  * Get the cached projection matrix for a camera entity.
  *
+ * @param _world - The ECS world
  * @param eid - Entity ID
  * @returns 16-element Float32Array view
  */
-export function getProjMatrix(eid: Entity): Float32Array {
+export function getProjMatrix(_world: World, eid: Entity): Float32Array {
 	const offset = eid * 16;
 	return Camera3D.projMatrix.subarray(offset, offset + 16);
 }
@@ -109,10 +110,11 @@ export function getProjMatrix(eid: Entity): Float32Array {
 /**
  * Get the cached view matrix for a camera entity.
  *
+ * @param _world - The ECS world
  * @param eid - Entity ID
  * @returns 16-element Float32Array view
  */
-export function getViewMatrix(eid: Entity): Float32Array {
+export function getViewMatrix(_world: World, eid: Entity): Float32Array {
 	const offset = eid * 16;
 	return Camera3D.viewMatrix.subarray(offset, offset + 16);
 }
