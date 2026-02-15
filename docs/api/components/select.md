@@ -43,7 +43,7 @@ attachSelectBehavior(world, eid, [
 ], 1);  // Default to index 1 (Medium)
 
 // Listen for changes
-onSelectChange(eid, (value, label, index) => {
+onSelectChange(world, eid, (value, label, index) => {
   console.log(`Selected: ${label} (${value})`);
 });
 
@@ -94,9 +94,13 @@ Default appearance:
 Customize with:
 
 ```typescript
-import { setSelectDisplay } from 'blecsd';
+import { createWorld, addEntity, attachSelectBehavior, setSelectDisplay } from 'blecsd';
 
-setSelectDisplay(eid, {
+const world = createWorld();
+const eid = addEntity(world);
+attachSelectBehavior(world, eid, [{ label: 'Option 1', value: 'opt1' }]);
+
+setSelectDisplay(world, eid, {
   closedIndicator: '↓',
   openIndicator: '↑',
   selectedMark: '✓',
@@ -318,11 +322,11 @@ const countries = [
 
 attachSelectBehavior(world, countrySelect, countries, 0);
 
-setSelectDisplay(countrySelect, {
+setSelectDisplay(world, countrySelect, {
   selectedMark: '✓',
 });
 
-onSelectChange(countrySelect, (value, label) => {
+onSelectChange(world, countrySelect, (value, label) => {
   console.log(`Country: ${label} (${value})`);
   updateShippingOptions(value);
 });
