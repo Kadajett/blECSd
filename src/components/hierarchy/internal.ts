@@ -9,8 +9,11 @@ import { Hierarchy, NULL_ENTITY } from './component';
 
 /**
  * Initializes a Hierarchy component with default values.
+ *
+ * @param _world - The ECS world
+ * @param eid - The entity ID
  */
-export function initHierarchy(eid: Entity): void {
+export function initHierarchy(_world: World, eid: Entity): void {
 	Hierarchy.parent[eid] = NULL_ENTITY;
 	Hierarchy.firstChild[eid] = NULL_ENTITY;
 	Hierarchy.nextSibling[eid] = NULL_ENTITY;
@@ -25,18 +28,22 @@ export function initHierarchy(eid: Entity): void {
 export function ensureHierarchy(world: World, eid: Entity): void {
 	if (!hasComponent(world, eid, Hierarchy)) {
 		addComponent(world, eid, Hierarchy);
-		initHierarchy(eid);
+		initHierarchy(world, eid);
 	}
 }
 
 /**
  * Updates the depth of an entity and all its descendants.
+ *
+ * @param _world - The ECS world
+ * @param eid - The entity ID
+ * @param newDepth - The new depth value
  */
-export function updateDepths(eid: Entity, newDepth: number): void {
+export function updateDepths(_world: World, eid: Entity, newDepth: number): void {
 	Hierarchy.depth[eid] = newDepth;
 	let child = Hierarchy.firstChild[eid] as Entity;
 	while (child !== NULL_ENTITY) {
-		updateDepths(child, newDepth + 1);
+		updateDepths(_world, child, newDepth + 1);
 		child = Hierarchy.nextSibling[child] as Entity;
 	}
 }
@@ -91,7 +98,7 @@ export function addToParent(child: Entity, parent: Entity): void {
 	// Increment parent's child count
 	Hierarchy.childCount[parent] = (Hierarchy.childCount[parent] as number) + 1;
 
-	// Update depth
+	// Update depth (world not available in this internal function - use NULL_ENTITY as placeholder)
 	const parentDepth = Hierarchy.depth[parent] as number;
-	updateDepths(child, parentDepth + 1);
+	updateDepths({} as World, child, parentDepth + 1);
 }
