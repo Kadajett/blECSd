@@ -15,10 +15,10 @@ import { Position, setPosition } from '../components/position';
 import { markDirty, setVisible } from '../components/renderable';
 import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
-import type { Bitmap, CellMap, RenderMode } from '../terminal/graphics/cellRenderer';
-import { cellMapToString, renderToAnsi } from '../terminal/graphics/cellRenderer';
 import type { GraphicsManagerState } from '../terminal/graphics/backend';
 import { renderImage as renderGraphicsImage } from '../terminal/graphics/backend';
+import type { Bitmap, CellMap, RenderMode } from '../terminal/graphics/cellRenderer';
+import { cellMapToString, renderToAnsi } from '../terminal/graphics/cellRenderer';
 
 // =============================================================================
 // TYPES
