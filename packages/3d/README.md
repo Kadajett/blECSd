@@ -53,6 +53,73 @@ const viewport = new Viewport3D(world, {
 viewport.render();
 ```
 
+## Namespace Imports
+
+The @blecsd/3d package provides namespace objects that group related functions for API discoverability. These frozen objects make it easy to explore available functions via IDE autocomplete:
+
+```typescript
+import { vec3, mat4, projection } from '@blecsd/3d';
+
+// Vector operations
+const v1 = vec3.create(1, 0, 0);
+const v2 = vec3.create(0, 1, 0);
+const sum = vec3.add(v1, v2);
+const normalized = vec3.normalize(sum);
+
+// Matrix operations
+const m = mat4.identity();
+const translated = mat4.translate(m, 0, 0, -5);
+const rotated = mat4.rotateY(translated, Math.PI / 4);
+
+// Projection matrices
+const proj = projection.perspective({ fov: Math.PI / 3, aspect: 16/9, near: 0.1, far: 100 });
+const view = projection.lookAt(vec3.create(0, 0, 5), vec3.create(0, 0, 0), vec3.create(0, 1, 0));
+```
+
+### Available Namespaces
+
+| Namespace | Purpose | Key Methods |
+|-----------|---------|-------------|
+| `vec3` | 3D vector operations | `create`, `add`, `sub`, `scale`, `dot`, `cross`, `normalize`, `length`, `distance` |
+| `mat4` | 4x4 matrix operations | `identity`, `multiply`, `translate`, `rotateX`, `rotateY`, `rotateZ`, `scale`, `invert` |
+| `projection` | Camera and projection matrices | `perspective`, `orthographic`, `lookAt`, `viewportTransform`, `projectVertex`, `buildMVP` |
+| `clipping` | Frustum culling and line clipping | `extractFrustumPlanes`, `isPointInFrustum`, `isSphereInFrustum`, `clipLine` |
+| `pixelBuffer` | Pixel framebuffer operations | `create`, `clear`, `setPixel`, `getPixel`, `fill`, `blit` |
+| `raster` | Rasterization functions | `drawLine`, `drawTriangle`, `fillTriangle`, `scanline` |
+| `transform3d` | 3D transform component helpers | `create`, `setPosition`, `setRotation`, `setScale`, `getMatrix` |
+| `camera3d` | Camera component helpers | `create`, `setFOV`, `setNearFar`, `getProjection`, `getView` |
+| `mesh` | Mesh component helpers | `create`, `setVertices`, `setIndices`, `getBounds` |
+| `backends` | Rendering backend management | `createBraille`, `createHalfblock`, `createSextant`, `createSixel`, `createKitty` |
+
+## Subpath Imports
+
+For tree-shakeable imports, use subpath exports to import only the functions you need:
+
+```typescript
+// Import specific math functions
+import { vec3Add, vec3Cross, vec3Normalize } from '@blecsd/3d/math';
+
+// Import specific backends
+import { BrailleBackend, SixelBackend } from '@blecsd/3d/backends';
+
+// Import components
+import { Transform3D, Camera3D, Mesh } from '@blecsd/3d/components';
+
+// Import loaders
+import { loadObjFile } from '@blecsd/3d/loaders';
+```
+
+Available subpath exports:
+- `@blecsd/3d/math` - Math utilities and primitives
+- `@blecsd/3d/backends` - Rendering backends
+- `@blecsd/3d/components` - ECS components
+- `@blecsd/3d/loaders` - Model loaders
+- `@blecsd/3d/rasterizer` - Rasterization functions
+- `@blecsd/3d/systems` - ECS systems
+- `@blecsd/3d/widgets` - Viewport widget
+- `@blecsd/3d/schemas` - Zod schemas
+- `@blecsd/3d/stores` - State stores
+
 ## API
 
 ### Backends

@@ -54,6 +54,82 @@ const cells = renderToANSI(png, {
 });
 ```
 
+## Namespace Imports
+
+The @blecsd/media package provides namespace objects that group related functions for media processing. These frozen objects make it easy to explore available functions via IDE autocomplete:
+
+```typescript
+import { gif, png, ansiRender, imageWidget, videoWidget } from '@blecsd/media';
+
+// GIF parsing with nested namespaces
+const gifResult = gif.parse.parseGIF(buffer);
+if (gifResult.success) {
+  const rgba = gif.frame.frameToRGBA(gifResult.data.frames[0]);
+  const decompressed = gif.lzw.decompressLZW(data, minCodeSize);
+}
+
+// PNG parsing with nested namespaces
+const pngResult = png.parse.parsePNG(buffer);
+if (pngResult.success) {
+  const pixels = png.pixels.extractPixels(pngResult.data);
+  const filtered = png.filters.reconstructFilters(scanlines);
+}
+
+// ANSI rendering
+const bitmap = { width: 100, height: 50, data: new Uint8Array(...) };
+const cellMap = ansiRender.renderToAnsi(bitmap, { mode: '256-color' });
+const output = ansiRender.cellMapToString(cellMap);
+
+// Image widget operations
+const img = imageWidget.create(world, { width: 40, height: 20, imageData: png });
+imageWidget.setFrame(eid, 0);
+imageWidget.play(eid);
+
+// Video widget operations
+const video = videoWidget.create(world, { width: 40, height: 20, frames });
+videoWidget.play(eid);
+videoWidget.setFPS(eid, 30);
+```
+
+### Available Namespaces
+
+| Namespace | Purpose | Key Methods |
+|-----------|---------|-------------|
+| `gif` | GIF image parsing | Nested: `parse` (parseGIF, validateGIFSignature), `lzw` (decompressLZW, createBitReader), `frame` (frameToRGBA, deinterlace) |
+| `png` | PNG image parsing | Nested: `parse` (parsePNG, parseChunks, parseIHDR), `filters` (reconstructFilters, paethPredictor), `pixels` (extractPixels, parsePLTE) |
+| `ansiRender` | Terminal rendering from bitmaps | `renderToAnsi`, `cellMapToString`, `scaleBitmap`, `rgbTo256Color`, `luminanceToChar` |
+| `imageWidget` | Image widget operations | `create`, `setImageData`, `setFrame`, `play`, `pause`, `stop` |
+| `videoWidget` | Video widget operations | `create`, `play`, `pause`, `stop`, `setFPS`, `seek` |
+| `w3m` | W3M overlay support | `createOverlay`, `showImage`, `hideImage`, `updatePosition` |
+
+## Subpath Imports
+
+For tree-shakeable imports, use subpath exports to import only the functions you need:
+
+```typescript
+// Import specific parsers
+import { parseGIF, frameToRGBA } from '@blecsd/media/gif';
+import { parsePNG, extractPixels } from '@blecsd/media/png';
+
+// Import rendering utilities
+import { renderToAnsi, cellMapToString } from '@blecsd/media/render';
+
+// Import widgets
+import { createImage } from '@blecsd/media/widgets/image';
+import { createVideo } from '@blecsd/media/widgets/video';
+
+// Import W3M overlay
+import { createW3MOverlay } from '@blecsd/media/overlay';
+```
+
+Available subpath exports:
+- `@blecsd/media/gif` - GIF parser and utilities
+- `@blecsd/media/png` - PNG parser and utilities
+- `@blecsd/media/render` - ANSI rendering functions
+- `@blecsd/media/widgets/image` - Image widget
+- `@blecsd/media/widgets/video` - Video widget
+- `@blecsd/media/overlay` - W3M overlay support
+
 ## API
 
 ### Image Parsers

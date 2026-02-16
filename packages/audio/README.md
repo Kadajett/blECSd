@@ -44,6 +44,23 @@ audio.stop('theme');
 audio.dispose();
 ```
 
+## API Style
+
+The @blecsd/audio package uses a direct API without namespace objects. The `AudioManager` returned by `createAudioManager()` provides all methods directly:
+
+```typescript
+import { createAudioManager, AudioChannel } from '@blecsd/audio';
+
+const audio = createAudioManager({ ... });
+
+// All methods are on the manager instance
+audio.load('sound', 'path.mp3', AudioChannel.SFX);
+audio.play('sound', { loop: true });
+audio.setChannelVolume(AudioChannel.MUSIC, 0.5);
+```
+
+This design keeps the audio API simple and focused, since the API surface is intentionally small. The package exports `AudioChannel` as an enum for channel categorization.
+
 ## API
 
 ### Core Functions
