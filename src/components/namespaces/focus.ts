@@ -1,14 +1,14 @@
 /**
- * Focusable component namespace.
+ * Focus component namespace.
  *
  * Provides all operations for entity focus management and tab ordering.
  *
  * @example
  * ```typescript
- * import { focusable } from 'blecsd/components';
- * focusable.makeFocusable(world, eid);
- * focusable.focus(world, eid);
- * focusable.next(world);
+ * import { focus } from 'blecsd/components';
+ * focus.makeFocusable(world, eid);
+ * focus.focus(world, eid);
+ * focus.next(world);
  * ```
  */
 import {
@@ -30,7 +30,7 @@ import {
 	setTabIndex,
 } from '../focusable';
 
-export const focusable = Object.freeze({
+export const focus = Object.freeze({
 	get: getFocusable,
 	has: hasFocusable,
 	set: setFocusable,
@@ -53,4 +53,4 @@ export const focusable = Object.freeze({
 	resetState: resetFocusState,
 });
 
-export type FocusableModule = typeof focusable;
+export type FocusModule = typeof focus;

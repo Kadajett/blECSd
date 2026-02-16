@@ -41,9 +41,9 @@ export type { ContentModule } from './content';
 export { content } from './content';
 export type { DimensionsModule } from './dimensions';
 export { dimensions } from './dimensions';
-export type { FocusableModule } from './focus';
+export type { FocusModule } from './focus';
 // Interaction
-export { focusable } from './focus';
+export { focus } from './focus';
 export type { FormModule } from './form';
 export { form } from './form';
 export type { HealthModule } from './health';
