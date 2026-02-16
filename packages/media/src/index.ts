@@ -9,6 +9,8 @@
 
 // GIF parser with LZW decompression
 export * from './gif';
+// Namespace objects for API discoverability
+export * from './namespaces';
 // W3M overlay support
 export * from './overlay';
 // PNG parser with filters and pixel handling
