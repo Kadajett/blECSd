@@ -282,7 +282,7 @@ export const FileManager = {
 /**
  * Complex state for file manager entities.
  */
-interface FileManagerState {
+export interface FileManagerState {
 	cwd: string;
 	showHidden: boolean;
 	showIcons: boolean;
