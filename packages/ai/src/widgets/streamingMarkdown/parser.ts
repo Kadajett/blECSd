@@ -2,7 +2,7 @@
  * Markdown parsing and rendering for Streaming Markdown Widget.
  */
 
-import { highlightCode, type SupportedLanguage } from 'blecsd';
+import { highlightCode, type SupportedLanguage } from 'blecsd/text';
 import { SUPPORTED_LANGUAGES } from './constants';
 import type { StreamingBlock, StreamingMarkdownConfig, StreamingMarkdownTheme } from './types';
 

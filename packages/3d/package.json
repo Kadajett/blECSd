@@ -1,54 +1,57 @@
 {
   "name": "@blecsd/3d",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Terminal 3D rendering for blECSd - rasterizer, math, OBJ loader, and multiple backends",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./src/index.ts",
-      "types": "./src/index.ts"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     },
     "./backends": {
-      "import": "./src/backends/index.ts",
-      "types": "./src/backends/index.ts"
+      "import": "./dist/backends/index.js",
+      "types": "./dist/backends/index.d.ts"
     },
     "./components": {
-      "import": "./src/components/index.ts",
-      "types": "./src/components/index.ts"
+      "import": "./dist/components/index.js",
+      "types": "./dist/components/index.d.ts"
     },
     "./loaders": {
-      "import": "./src/loaders/index.ts",
-      "types": "./src/loaders/index.ts"
+      "import": "./dist/loaders/index.js",
+      "types": "./dist/loaders/index.d.ts"
     },
     "./math": {
-      "import": "./src/math/index.ts",
-      "types": "./src/math/index.ts"
+      "import": "./dist/math/index.js",
+      "types": "./dist/math/index.d.ts"
     },
     "./rasterizer": {
-      "import": "./src/rasterizer/index.ts",
-      "types": "./src/rasterizer/index.ts"
+      "import": "./dist/rasterizer/index.js",
+      "types": "./dist/rasterizer/index.d.ts"
     },
     "./schemas": {
-      "import": "./src/schemas/index.ts",
-      "types": "./src/schemas/index.ts"
+      "import": "./dist/schemas/index.js",
+      "types": "./dist/schemas/index.d.ts"
     },
     "./stores": {
-      "import": "./src/stores/index.ts",
-      "types": "./src/stores/index.ts"
+      "import": "./dist/stores/index.js",
+      "types": "./dist/stores/index.d.ts"
     },
     "./systems": {
-      "import": "./src/systems/index.ts",
-      "types": "./src/systems/index.ts"
+      "import": "./dist/systems/index.js",
+      "types": "./dist/systems/index.d.ts"
     },
     "./widgets": {
-      "import": "./src/widgets/viewport3d.ts",
-      "types": "./src/widgets/viewport3d.ts"
+      "import": "./dist/widgets/viewport3d.js",
+      "types": "./dist/widgets/viewport3d.d.ts"
     }
   },
   "files": ["dist", "README.md", "LICENSE"],
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
@@ -57,7 +60,7 @@
     "lint": "biome check src/"
   },
   "peerDependencies": {
-    "blecsd": ">=0.5.0"
+    "blecsd": ">=0.6.0"
   },
   "devDependencies": {
     "blecsd": "workspace:*",

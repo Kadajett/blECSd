@@ -15,6 +15,7 @@ export default defineConfig({
 		'src/terminal/index.ts',
 		'src/schemas/index.ts',
 		'src/utils/index.ts',
+		'src/text/index.ts',
 		'src/cli/init.ts',
 	],
 	format: ['esm'],

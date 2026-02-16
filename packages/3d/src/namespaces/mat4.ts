@@ -12,7 +12,6 @@
  * ```
  */
 
-import type { Mat4 } from '../math/mat4';
 import {
 	mat4Determinant,
 	mat4Equals,
@@ -30,7 +29,6 @@ import {
 	mat4Translate,
 	mat4Transpose,
 } from '../math/mat4';
-import type { Vec3 } from '../math/vec3';
 
 export const mat4 = Object.freeze({
 	identity: mat4Identity,
@@ -51,4 +49,3 @@ export const mat4 = Object.freeze({
 });
 
 export type Mat4Module = typeof mat4;
-export type { Mat4, Vec3 };

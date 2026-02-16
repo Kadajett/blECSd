@@ -12,7 +12,6 @@
  * ```
  */
 
-import type { Vec3 } from '../math/vec3';
 import {
 	vec3Add,
 	vec3 as vec3Create,
@@ -50,4 +49,3 @@ export const vec3 = Object.freeze({
 });
 
 export type Vec3Module = typeof vec3;
-export type { Vec3 };

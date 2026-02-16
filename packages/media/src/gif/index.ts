@@ -20,19 +20,19 @@ export type {
 	GIFHeader,
 	GIFParseError,
 	GIFParseOutput,
-	GIFParseResult,
 	GIFVersion,
 } from './parser';
+export type { GIFParseResult } from './types';
 export {
 	DisposalMethod,
 	deinterlace,
 	frameToRGBA,
 	GIF87A_MAGIC,
 	GIF89A_MAGIC,
-	GIFHeaderSchema,
 	parseColorTable,
 	parseGIF,
 	parseGIFHeader,
 	readSubBlocks,
 	validateGIFSignature,
 } from './parser';
+export { GIFHeaderSchema } from './types';

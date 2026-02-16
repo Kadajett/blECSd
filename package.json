@@ -1,6 +1,6 @@
 {
   "name": "blecsd",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A modern, high-performance terminal UI library built on TypeScript and ECS architecture",
   "type": "module",
   "main": "./dist/index.js",
@@ -60,6 +60,10 @@
     "./input": {
       "import": "./dist/input/index.js",
       "types": "./dist/input/index.d.ts"
+    },
+    "./text": {
+      "import": "./dist/text/index.js",
+      "types": "./dist/text/index.d.ts"
     }
   },
   "typesVersions": {
@@ -99,6 +103,9 @@
       ],
       "widgets/fonts": [
         "dist/widgets/fonts/index.d.ts"
+      ],
+      "text": [
+        "dist/text/index.d.ts"
       ]
     }
   },

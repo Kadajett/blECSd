@@ -1,42 +1,45 @@
 {
   "name": "@blecsd/media",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Media rendering for blECSd - GIF/PNG parsers, ANSI rendering, image and video widgets",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./src/index.ts",
-      "types": "./src/index.ts"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     },
     "./gif": {
-      "import": "./src/gif/index.ts",
-      "types": "./src/gif/index.ts"
+      "import": "./dist/gif/index.js",
+      "types": "./dist/gif/index.d.ts"
     },
     "./overlay": {
-      "import": "./src/overlay/index.ts",
-      "types": "./src/overlay/index.ts"
+      "import": "./dist/overlay/index.js",
+      "types": "./dist/overlay/index.d.ts"
     },
     "./png": {
-      "import": "./src/png/index.ts",
-      "types": "./src/png/index.ts"
+      "import": "./dist/png/index.js",
+      "types": "./dist/png/index.d.ts"
     },
     "./render": {
-      "import": "./src/render/index.ts",
-      "types": "./src/render/index.ts"
+      "import": "./dist/render/index.js",
+      "types": "./dist/render/index.d.ts"
     },
     "./widgets/image": {
-      "import": "./src/widgets/image/index.ts",
-      "types": "./src/widgets/image/index.ts"
+      "import": "./dist/widgets/image/index.js",
+      "types": "./dist/widgets/image/index.d.ts"
     },
     "./widgets/video": {
-      "import": "./src/widgets/video/index.ts",
-      "types": "./src/widgets/video/index.ts"
+      "import": "./dist/widgets/video/index.js",
+      "types": "./dist/widgets/video/index.d.ts"
     }
   },
   "files": ["dist", "README.md", "LICENSE"],
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
@@ -45,7 +48,7 @@
     "lint": "biome check src/"
   },
   "peerDependencies": {
-    "blecsd": ">=0.5.0"
+    "blecsd": ">=0.6.0"
   },
   "devDependencies": {
     "blecsd": "workspace:*",

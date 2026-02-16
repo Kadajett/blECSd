@@ -94,7 +94,7 @@ import {
 
 describe('blECSd Tier 1 exports', () => {
 	it('exports VERSION', () => {
-		expect(VERSION).toBe('0.5.0');
+		expect(VERSION).toBe('0.6.0');
 	});
 
 	describe('ECS Core', () => {

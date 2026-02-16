@@ -12,17 +12,12 @@
  */
 
 import {
-	type ClippedLine,
 	clipLine,
 	computeOutcode,
 	extractFrustumPlanes,
-	type FrustumPlane,
 	isPointInFrustum,
 	isSphereInFrustum,
 } from '../math/clipping';
-import type { Mat4 } from '../math/mat4';
-import type { Vec3 } from '../math/vec3';
-import type { ClipRect } from '../schemas/math';
 
 export const clipping = Object.freeze({
 	computeOutcode,
@@ -33,4 +28,3 @@ export const clipping = Object.freeze({
 });
 
 export type ClippingModule = typeof clipping;
-export type { ClippedLine, FrustumPlane, ClipRect, Mat4, Vec3 };

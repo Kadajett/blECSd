@@ -16,7 +16,29 @@ export * from './loaders';
 // Math (vectors, matrices, projection, clipping)
 export * from './math';
 // Namespace objects for API discoverability
-export * from './namespaces';
+// Note: vec3 namespace excluded from top level (collides with vec3() function from math).
+// Access it via: import { vec3 } from '@blecsd/3d/namespaces'
+export {
+	type BackendsModule,
+	backends,
+	type Camera3dModule,
+	camera3d,
+	type ClippingModule,
+	clipping,
+	type Mat4Module,
+	mat4,
+	type MeshModule,
+	mesh,
+	type PixelBufferModule,
+	pixelBuffer,
+	type ProjectionModule,
+	projection,
+	type RasterModule,
+	raster,
+	type Transform3dModule,
+	transform3d,
+	type Vec3Module,
+} from './namespaces';
 // Rasterizer (pixel buffer, line/triangle drawing, shading)
 export * from './rasterizer';
 // Zod schemas (for advanced users and validation)

@@ -11,19 +11,15 @@
  * ```
  */
 
-import type { Mat4 } from '../math/mat4';
 import {
 	buildMVP,
 	lookAt,
 	orthographicMatrix,
 	perspectiveMatrix,
 	projectVertex,
-	type ScreenCoord,
 	unprojectVertex,
 	viewportTransform,
 } from '../math/projection';
-import type { Vec3 } from '../math/vec3';
-import type { OrthographicConfig, PerspectiveConfig, ViewportConfig } from '../schemas/math';
 
 export const projection = Object.freeze({
 	perspective: perspectiveMatrix,
@@ -36,4 +32,3 @@ export const projection = Object.freeze({
 });
 
 export type ProjectionModule = typeof projection;
-export type { Mat4, Vec3, PerspectiveConfig, OrthographicConfig, ViewportConfig, ScreenCoord };
