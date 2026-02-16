@@ -16,14 +16,14 @@
  * graphics.renderImage(manager, imageData, { x: 10, y: 5 });
  *
  * // Create Braille canvas for vector graphics
- * const canvas = graphics.createBrailleCanvas(80, 40);
- * graphics.drawBrailleLine(canvas, 0, 0, 79, 39);
- * graphics.drawBrailleCircle(canvas, 40, 20, 10);
- * const cells = graphics.brailleCanvasToCells(canvas);
+ * const canvas = graphics.braille.createBrailleCanvas(80, 40);
+ * graphics.braille.drawBrailleLine(canvas, 0, 0, 79, 39);
+ * graphics.braille.drawBrailleCircle(canvas, 40, 20, 10);
+ * const cells = graphics.braille.brailleCanvasToCells(canvas);
  *
  * // Detect graphics support
- * const support = graphics.detectGraphicsSupport();
- * if (graphics.hasPixelBackend(manager)) {
+ * const support = graphics.detect.detectGraphicsSupport();
+ * if (graphics.backends.hasPixelBackend(manager)) {
  *   // Use high-quality pixel rendering
  * }
  * ```
@@ -86,71 +86,96 @@ import {
 } from '../graphics';
 
 /**
+ * Braille canvas sub-namespace for vector graphics using Unicode Braille patterns.
+ */
+const braille = Object.freeze({
+	// Braille canvas creation and conversion
+	createBrailleCanvas,
+	clearBrailleCanvas,
+	brailleCanvasToCells,
+	brailleCanvasToString,
+	canvasToPixelBitmap,
+
+	// Braille dot operations
+	getDot,
+	setDot,
+	clearDot,
+	dotToCell,
+	cellToDot,
+	setCellColor,
+
+	// Braille drawing primitives
+	drawBrailleLine,
+	drawBrailleRect,
+	drawBrailleCircle,
+	drawBrailleEllipse,
+	drawBrailleArc,
+	drawBrailleBezier,
+	fillBrailleRect,
+	fillBrailleCircle,
+});
+
+/**
+ * Graphics backends sub-namespace for backend creation and management.
+ */
+const backends = Object.freeze({
+	// Backend creation
+	createAnsiGraphicsBackend,
+	createBrailleGraphicsBackend,
+	createKittyGraphicsBackend,
+	createITerm2GraphicsBackend,
+	createSixelGraphicsBackend,
+
+	// Backend management
+	getActiveBackend,
+	selectBackend,
+	registerBackend,
+	refreshBackend,
+	getBackendCapabilities,
+	getBestBackendName,
+	hasPixelBackend,
+});
+
+/**
+ * Graphics detection sub-namespace for capability detection.
+ */
+const detect = Object.freeze({
+	detectGraphicsSupport,
+	detectAnsiSupport,
+	detectBrailleSupport,
+	detectKittySupport,
+	detectITerm2Support,
+	detectSixelSupport,
+});
+
+/**
  * Graphics protocol namespace.
  */
 export const graphics = Object.freeze({
-	// Backend names
+	// Constants
 	ANSI_BACKEND_NAME,
 	BRAILLE_BACKEND_NAME,
 	ITERM2_BACKEND_NAME,
 	KITTY_BACKEND_NAME,
 	SIXEL_BACKEND_NAME,
-
-	// Protocol constants
 	APC_PREFIX,
 	DCS_START,
 	KITTY_ST,
 	OSC_1337_PREFIX,
 	SIXEL_ST,
-
-	// Other constants
 	DEFAULT_FALLBACK_CHAIN,
 
-	// Braille canvas functions
-	brailleCanvasToCells,
-	brailleCanvasToString,
-	canvasToPixelBitmap,
-	cellToDot,
-	clearBrailleCanvas,
-	clearDot,
-	createBrailleCanvas,
-	dotToCell,
-	drawBrailleArc,
-	drawBrailleBezier,
-	drawBrailleCircle,
-	drawBrailleEllipse,
-	drawBrailleLine,
-	drawBrailleRect,
-	fillBrailleCircle,
-	fillBrailleRect,
-	getDot,
-	setCellColor,
-	setDot,
-
-	// Graphics backend functions
-	clearImage,
-	createAnsiGraphicsBackend,
-	createAutoGraphicsManager,
-	createBrailleGraphicsBackend,
+	// Manager operations
 	createGraphicsManager,
-	createITerm2GraphicsBackend,
-	createKittyGraphicsBackend,
-	createSixelGraphicsBackend,
-	detectAnsiSupport,
-	detectBrailleSupport,
-	detectGraphicsSupport,
-	detectITerm2Support,
-	detectKittySupport,
-	detectSixelSupport,
-	getActiveBackend,
-	getBackendCapabilities,
-	getBestBackendName,
-	hasPixelBackend,
-	refreshBackend,
-	registerBackend,
+	createAutoGraphicsManager,
 	renderImage,
 	renderVector,
-	selectBackend,
+	clearImage,
+
+	// Sub-namespaces
+	braille,
+	backends,
+	detect,
 });
 
 export type GraphicsModule = typeof graphics;
