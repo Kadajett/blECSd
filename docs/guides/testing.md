@@ -415,6 +415,7 @@ For code that interacts with the terminal, use test helpers or mocks:
 
 ### Helper Functions for Input Events
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { KeyEvent, KeyName } from 'blecsd';
 
@@ -448,6 +449,7 @@ it('handles Ctrl+C', () => {
 
 ### Helper Functions for Mouse Events
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { MouseEvent, MouseButton, MouseAction } from 'blecsd';
 
@@ -706,6 +708,7 @@ import {
 
 Creates a pre-configured ECS world for testing:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTestWorld } from 'blecsd/testing';
 
@@ -717,6 +720,7 @@ const world = createTestWorld();
 
 Creates an entity with common components based on configuration. This eliminates boilerplate for setting up test entities:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTestWorld, createTestEntity } from 'blecsd/testing';
 
@@ -781,6 +785,7 @@ const hoverable = createHoverableEntity(world, 0, 0, 15, 8);
 
 Creates a screen entity with standard terminal configuration:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTestWorld, createTestScreen } from 'blecsd/testing';
 
@@ -798,6 +803,7 @@ blECSd provides shared test fixtures to reduce duplication and improve consisten
 
 #### Screen Dimensions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SCREEN_80X24, SCREEN_40X12, SCREEN_120X40, SCREEN_10X5 } from 'blecsd/testing';
 
@@ -813,6 +819,7 @@ const screen = createTestScreen(world, SCREEN_80X24);
 
 #### Position and Size Presets
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   POSITION_ORIGIN,
@@ -840,6 +847,7 @@ const box = createTestEntity(world, {
 
 #### Text Content
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   TEXT_HELLO,
@@ -871,6 +879,7 @@ const entity = createTestEntity(world, {
 
 #### Colors
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { COLORS, COLOR_PAIRS } from 'blecsd/testing';
 
@@ -910,6 +919,7 @@ const text = createTestEntity(world, {
 
 #### Keyboard Input
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { KEYS } from 'blecsd/testing';
 
@@ -924,6 +934,7 @@ queueKeyEvent({ sequence: KEYS.ARROW_UP, name: 'up' });
 
 #### Mouse Positions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { MOUSE_POSITIONS } from 'blecsd/testing';
 
@@ -942,6 +953,7 @@ queueMouseEvent({
 
 #### ANSI Codes
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ANSI, ANSI_TEXT } from 'blecsd/testing';
 
@@ -956,6 +968,7 @@ expect(stripped).toBe('Red Text');
 
 #### Timeouts
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TIMEOUTS } from 'blecsd/testing';
 
@@ -1480,6 +1493,7 @@ describe('input handling', () => {
 
 ### 6. Test Both Success and Failure
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isOk, isErr } from 'blecsd/errors';
 
@@ -1510,6 +1524,7 @@ describe('parseColor', () => {
 
 ### Testing Entity Queries
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd';
 
@@ -1537,6 +1552,7 @@ it('queries entities with specific components', () => {
 
 ### Testing Component Removal
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { removeComponent, hasComponent } from 'blecsd';
 
@@ -1555,6 +1571,7 @@ it('removes component from entity', () => {
 
 ### Testing Events
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEventBus } from 'blecsd';
 

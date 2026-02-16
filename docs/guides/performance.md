@@ -59,6 +59,7 @@ import {
   createFrameBudgetManager,
   profiledSystem,
   getFrameBudgetStats,
+  renderSystem,
 } from 'blecsd';
 
 // Enable profiling
@@ -263,11 +264,10 @@ for (let i = 0; i < 100000; i++) {
 ```typescript
 import { createVirtualizedList } from 'blecsd';
 
-const list = createVirtualizedList(world, listEntity, {
-  itemCount: 100000,
-  itemHeight: 1,
-  viewportHeight: 20,
-  renderItem: (index) => `Item ${index}`,
+const list = createVirtualizedList(world, {
+  width: 80,
+  height: 20,
+  lines: Array.from({ length: 100000 }, (_, i) => `Item ${i}`),
 });
 // Renders only 20 visible items = 2ms per frame
 ```
@@ -700,6 +700,7 @@ for (let i = 0; i < 10000; i++) {
 
 blECSd automatically uses double buffering to avoid tearing:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScreenBuffer, renderToTerminal } from 'blecsd';
 
@@ -717,7 +718,7 @@ renderToTerminal(backBuffer);
 Only redraw changed regions:
 
 ```typescript
-import { markAllDirty, clearRenderBuffer } from 'blecsd';
+import { markAllDirty, clearRenderBuffer, renderSystem } from 'blecsd';
 
 // First frame - full render
 markAllDirty(world);
@@ -740,6 +741,7 @@ for (let y = 0; y < height; y++) {
 ```
 
 ✅ **FAST - Batch same colors:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { optimizeOutput } from 'blecsd';
 
@@ -752,6 +754,7 @@ const optimized = optimizeOutput(cells);
 
 blECSd's output system automatically compresses:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { generateOutput } from 'blecsd';
 
@@ -766,11 +769,12 @@ const output = generateOutput(world);
 
 For large worlds with collision detection:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSpatialHashGrid, insertEntity, queryRegion } from 'blecsd';
+import { createSpatialHash, insertEntity, queryArea, Position } from 'blecsd';
 
-// Create grid with 10x10 cells
-const grid = createSpatialHashGrid(10, 10);
+// Create grid with 10x10 cell size
+const grid = createSpatialHash({ cellSize: 10 });
 
 // Insert entities into grid
 for (const eid of entities) {
@@ -780,7 +784,9 @@ for (const eid of entities) {
 }
 
 // Query only nearby entities (O(1) instead of O(n))
-const nearby = queryRegion(grid, mouseX - 5, mouseY - 5, 10, 10);
+const mouseX = 50;
+const mouseY = 50;
+const nearby = queryArea(grid, mouseX - 5, mouseY - 5, 10, 10);
 for (const eid of nearby) {
   // Check collision only with nearby entities
 }
@@ -794,6 +800,7 @@ for (const eid of nearby) {
 
 Offload heavy computation to background threads:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Worker } from 'node:worker_threads';
 

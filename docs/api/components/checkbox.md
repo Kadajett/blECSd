@@ -76,15 +76,19 @@ Default characters:
 You can customize these:
 
 ```typescript
-import { setCheckboxDisplay } from 'blecsd';
+import { createWorld, addEntity, attachCheckboxBehavior, setCheckboxDisplay } from 'blecsd';
 
-setCheckboxDisplay(eid, {
+const world = createWorld();
+const eid = addEntity(world);
+attachCheckboxBehavior(world, eid);
+
+setCheckboxDisplay(world, eid, {
   checkedChar: '[x]',
   uncheckedChar: '[ ]',
 });
 
 // Or use other Unicode characters
-setCheckboxDisplay(eid, {
+setCheckboxDisplay(world, eid, {
   checkedChar: '✓',
   uncheckedChar: '○',
 });
@@ -159,19 +163,25 @@ if (isCheckboxDisabled(world, eid)) {
 ### Display
 
 ```typescript
+import { createWorld, addEntity, attachCheckboxBehavior, getCheckboxChar, getCheckboxDisplay, setCheckboxDisplay, clearCheckboxDisplay } from 'blecsd';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachCheckboxBehavior(world, eid);
+
 // Get current display character
 const char = getCheckboxChar(world, eid);
 // Returns '☑' or '☐' (or custom)
 
-// Get display configuration
-const display = getCheckboxDisplay(eid);
-// { checkedChar: '☑', uncheckedChar: '☐' }
-
-// Set custom display
-setCheckboxDisplay(eid, {
+// Set custom display first
+setCheckboxDisplay(world, eid, {
   checkedChar: '✓',
   uncheckedChar: '○',
 });
+
+// Get display configuration
+const display = getCheckboxDisplay(eid);
+// { checkedChar: '✓', uncheckedChar: '○' }
 
 // Clear display (revert to defaults)
 clearCheckboxDisplay(eid);

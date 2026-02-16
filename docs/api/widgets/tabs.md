@@ -334,7 +334,6 @@ tabs.destroy();
 
 Checks if an entity is a tabs widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTabs } from 'blecsd';
 
@@ -627,7 +626,6 @@ tabs.removeTab(1); // Remove "Document 1"
 
 ### Lazy Content Loading
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTabs, createBox } from 'blecsd';

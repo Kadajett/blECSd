@@ -9,78 +9,90 @@ blECSd provides **two different APIs** for building terminal applications. This 
 │         Which API Should I Use?                 │
 ├─────────────────────────────────────────────────┤
 │                                                 │
-│  Are you building a game or real-time app?      │
+│  Do you need rapid development or full control? │
 │                                                 │
-│         YES                  NO                 │
+│     Rapid Development      Full Control         │
 │          │                   │                  │
 │          ▼                   ▼                  │
-│    Game API            Low-Level ECS API        │
-│  (Simplified)           (Full Control)          │
+│    Widget API           Low-Level ECS API       │
+│  (Convenience)          (Maximum Flexibility)   │
 │                                                 │
 └─────────────────────────────────────────────────┘
 ```
 
-### Option 1: Game API (High-Level)
+### Option 1: Widget API (High-Level)
 
-**Best for**: Games, real-time applications, rapid prototyping
+**Best for**: Rapid application development, complex UI patterns, prototyping
 
 ```typescript
-import { createGame } from 'blecsd';
+import { createWorld, addEntity, createList, createModal } from 'blecsd';
 
-const game = createGame({ width: 80, height: 24 });
+const world = createWorld();
+const listEntity = addEntity(world);
 
-const player = game.createBox({ x: 10, y: 5, width: 2, height: 2 });
-
-game.onKey('up', () => {
-  // Move player
+// Widgets provide methods and manage state
+const list = createList(world, listEntity, {
+  items: ['Option 1', 'Option 2', 'Option 3'],
+  x: 10,
+  y: 5,
 });
 
-game.onUpdate((dt) => {
-  // Game logic
+// Use widget methods
+list.selectNext();
+list.selectPrev();
+
+const modal = createModal(world, {
+  title: 'Confirm',
+  message: 'Are you sure?',
 });
 
-game.start();
+modal.show();
 ```
 
 **Characteristics**:
 - ✅ Simple, intuitive API
-- ✅ Built-in game loop
-- ✅ Input handling simplified
+- ✅ Pre-built complex behaviors
+- ✅ Methods for common operations
 - ✅ Good for beginners
 - ❌ Less flexibility
-- ❌ Hides ECS details
+- ❌ Trade control for convenience
 
 ---
 
 ### Option 2: Low-Level ECS API
 
-**Best for**: Custom frameworks, tools, complex TUIs, maximum control
+**Best for**: Custom frameworks, tools, complex TUIs, maximum control, performance-critical code
 
 ```typescript
 import {
   createWorld,
-  createGameLoop,
-  createBoxEntity,
-  LoopPhase,
+  addEntity,
+  addComponent,
+  Position,
+  Dimensions,
+  setPosition,
+  setDimensions,
 } from 'blecsd';
 
 const world = createWorld();
-const screen = createScreenEntity(world, { width: 80, height: 24 });
-const player = createBoxEntity(world, { x: 10, y: 5, width: 2, height: 2 });
+const entity = addEntity(world);
 
-const loop = createGameLoop(world, { targetFPS: 60 });
+// Direct component access
+addComponent(world, entity, Position);
+addComponent(world, entity, Dimensions);
 
-loop.registerSystem(LoopPhase.INPUT, inputSystem);
-loop.registerSystem(LoopPhase.UPDATE, updateSystem);
-loop.registerSystem(LoopPhase.RENDER, renderSystem);
+setPosition(world, entity, 10, 5);
+setDimensions(world, entity, 40, 10);
 
-loop.start();
+// Or use entity factories for convenience
+import { createBoxEntity } from 'blecsd';
+const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 ```
 
 **Characteristics**:
 - ✅ Maximum flexibility
 - ✅ Direct ECS access
-- ✅ Custom system pipelines
+- ✅ Custom component combinations
 - ✅ Performance control
 - ❌ Steeper learning curve
 - ❌ More boilerplate
@@ -89,18 +101,19 @@ loop.start();
 
 ## Decision Tree
 
-### Use the **Game API** if:
+### Use the **Widget API** if:
 
-- ✅ You're building a **game or real-time app**
+- ✅ You're building a **complex UI** (modals, file managers, charts)
 - ✅ You want to **get started quickly**
 - ✅ You're **new to ECS**
-- ✅ You want **built-in input handling**
+- ✅ You want **pre-built behaviors**
 - ✅ You're **prototyping** an idea
 
 **Example use cases**:
-- Terminal games (roguelikes, arcade games, puzzle games)
-- Real-time dashboards
-- Interactive demos
+- File managers with pre-built navigation
+- Modal dialogs
+- Interactive menus and lists
+- Dashboards with charts
 - Prototypes
 
 ---
@@ -109,170 +122,175 @@ loop.start();
 
 - ✅ You need **full control** over the ECS world
 - ✅ You're building a **custom framework or tool**
-- ✅ You need **custom system pipelines**
+- ✅ You need **custom component combinations**
 - ✅ You're familiar with **ECS patterns**
 - ✅ You need **maximum performance**
 
 **Example use cases**:
 - Custom TUI frameworks
 - IDE-like applications
-- File managers
+- Performance-critical terminal games
 - Complex data visualization tools
-- Performance-critical applications
+- Applications with unique component needs
 
 ---
 
 ## Comparison
 
-| Feature | Game API | ECS API |
-|---------|----------|---------|
+| Feature | Widget API | ECS API |
+|---------|------------|---------|
 | **Ease of Use** | Easy | Moderate |
 | **Learning Curve** | Gentle | Steep |
 | **Boilerplate** | Minimal | More |
 | **Flexibility** | Limited | Maximum |
 | **ECS Knowledge** | Not required | Required |
-| **Input Handling** | Built-in | Manual |
-| **Game Loop** | Automatic | Manual setup |
+| **State Management** | Automatic | Manual |
+| **Pre-built Behaviors** | Yes | No |
 | **Performance** | Good | Best (with tuning) |
-| **Custom Systems** | Limited | Full control |
+| **Custom Components** | Limited | Full control |
 
 ---
 
 ## Can I Mix Both?
 
-**Yes!** The Game API is built on the ECS API, so you can access the underlying world:
+**Yes!** Widgets are built on components and entity factories, so you can mix freely:
 
 ```typescript
-import { createGame } from 'blecsd';
-import { addComponent, Velocity } from 'blecsd';
+import { createWorld, addEntity, createList, addComponent, Velocity, Position } from 'blecsd';
 
-const game = createGame({ width: 80, height: 24 });
-const player = game.createBox({ x: 10, y: 5, width: 2, height: 2 });
+const world = createWorld();
+const listEntity = addEntity(world);
 
-// Access underlying ECS world
-const world = game.world;
+// Use widget for complex behavior
+const list = createList(world, listEntity, {
+  items: ['Option 1', 'Option 2', 'Option 3'],
+});
 
-// Add physics component directly
-addComponent(world, player, Velocity);
-Velocity.x[player] = 5;
+// Access underlying ECS components
+addComponent(world, listEntity, Velocity);
+Velocity.x[listEntity] = 5;
+
+// Direct component access still works
+Position.y[listEntity] += 10;
 ```
 
-This gives you the **convenience of the Game API** with the **power of the ECS API** when needed.
+This gives you the **convenience of widgets** with the **power of the ECS API** when needed.
 
 ---
 
-## Migrating Between APIs
+## Interoperability
 
-### From Game API to ECS API
+### Widgets on Entity Factories
 
-The Game API is just a wrapper, so you can always drop down to the ECS level:
+Widgets can wrap entities created by factories:
 
 ```typescript
-// Start with Game API
-const game = createGame({ width: 80, height: 24 });
+import { createWorld, createListEntity, createList, Position } from 'blecsd';
 
-// Access the underlying world
-const world = game.world;
-const loop = game.loop;
+const world = createWorld();
 
-// Now you can use ECS API directly
-loop.registerSystem(LoopPhase.ANIMATION, customPhysicsSystem);
+// Create entity with factory
+const entity = createListEntity(world, { items: ['A', 'B', 'C'] });
+
+// Add widget behavior
+const listWidget = createList(world, entity, {});
+
+// Now you have both: entity ID and widget methods
+Position.x[entity] = 10;  // Use as entity
+listWidget.selectNext();  // Use as widget
 ```
 
-### From ECS API to Game API
+### Entity Factories Without Widgets
 
-You can't wrap an existing ECS world in the Game API, but you can create a Game instance and access its world:
+You can use factories without ever touching widgets:
 
 ```typescript
-// If you started with ECS and want Game API convenience
-const game = createGame({ width: 80, height: 24 });
+import { createWorld, createBoxEntity, createTextEntity } from 'blecsd';
 
-// Use game.world for existing ECS code
-yourExistingFunction(game.world);
+const world = createWorld();
 
-// Use game.createBox() etc. for new code
-const box = game.createBox({ x: 10, y: 5, width: 20, height: 10 });
+// Just use factories - no widgets needed
+const box = createBoxEntity(world, { x: 10, y: 5, width: 20, height: 10 });
+const text = createTextEntity(world, { parent: box, text: 'Hello' });
+
+// Direct component access
+import { Position } from 'blecsd';
+Position.x[box] = 15;
 ```
 
 ---
 
 ## Examples
 
-### Game API Example: Snake Game
+### Widget API Example: File Browser
 
 ```typescript
-import { createGame } from 'blecsd';
+import { createWorld, createFileManager } from 'blecsd';
 
-const game = createGame({ title: 'Snake', width: 40, height: 20 });
+const world = createWorld();
 
-const snake = { x: 20, y: 10, dx: 1, dy: 0, body: [] };
-const food = game.createBox({ x: 30, y: 15, width: 1, height: 1 });
-
-game.onKey('up', () => { snake.dy = -1; snake.dx = 0; });
-game.onKey('down', () => { snake.dy = 1; snake.dx = 0; });
-game.onKey('left', () => { snake.dx = -1; snake.dy = 0; });
-game.onKey('right', () => { snake.dx = 1; snake.dy = 0; });
-
-game.onUpdate((dt) => {
-  // Snake logic
-  snake.x += snake.dx;
-  snake.y += snake.dy;
+// Widget handles all the complexity
+const fileManager = createFileManager(world, {
+  cwd: '/home/user',
+  width: 80,
+  height: 24,
 });
 
-game.start();
+// Simple method calls
+fileManager.show();
+fileManager.refresh();
 ```
 
-### ECS API Example: File Manager
+### ECS API Example: Custom File Manager
 
 ```typescript
 import {
   createWorld,
-  createScreenEntity,
   createBoxEntity,
   createListEntity,
-  LoopPhase,
+  addComponent,
+  Position,
+  Dimensions,
 } from 'blecsd';
 
 const world = createWorld();
-const screen = createScreenEntity(world, { width: 80, height: 24 });
 
+// Build your own file manager with full control
 const sidebar = createBoxEntity(world, { x: 0, y: 0, width: 20, height: 24 });
 const fileList = createListEntity(world, {
   parent: sidebar,
   items: ['file1.txt', 'file2.txt', 'file3.txt'],
 });
 
-const loop = createGameLoop(world, { targetFPS: 30 });
+// Custom components for your specific needs
+addComponent(world, fileList, Position);
+Position.y[fileList] = 2;
 
-loop.registerSystem(LoopPhase.INPUT, fileManagerInputSystem);
-loop.registerSystem(LoopPhase.UPDATE, fileManagerUpdateSystem);
-loop.registerSystem(LoopPhase.RENDER, fileManagerRenderSystem);
-
-loop.start();
+// You control when systems run, what components exist, etc.
 ```
 
 ---
 
 ## Next Steps
 
-### If you chose the **Game API**:
+### If you chose the **Widget API**:
 
-1. Read: [Game API Getting Started](./game-api.md)
-2. Try: [Simple Game Tutorial](../tutorials/simple-game.md)
-3. Reference: [Game API Reference](../api/game.md)
+1. Read: [Widgets Reference](../api/widgets.md)
+2. Try: [Widget Examples](../examples/)
+3. Learn: [Widgets vs Components](../architecture/widgets-vs-components.md)
 
 ### If you chose the **ECS API**:
 
 1. Read: [ECS API Getting Started](./ecs-api.md)
 2. Read: [Understanding ECS](../guides/understanding-ecs.md)
 3. Reference: [Entity Factories](../api/entities.md)
-4. Reference: [Game Loop](../api/game-loop.md)
+4. Reference: [Components](../api/components.md)
 
 ---
 
 ## Summary
 
-- **Game API**: Simple, beginner-friendly, great for games and prototypes
-- **ECS API**: Powerful, flexible, best for custom tools and frameworks
+- **Widget API**: Simple, beginner-friendly, great for rapid development and complex UI patterns
+- **ECS API**: Powerful, flexible, best for custom tools and performance-critical applications
 - **Both are valid**: Pick based on your needs, not dogma
-- **You can mix them**: Game API is built on ECS API
+- **You can mix them**: Widgets are built on components and can be combined with ECS code

@@ -55,7 +55,6 @@ q.onConfirm((answer) => {
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { QuestionConfigSchema } from 'blecsd';
 
@@ -74,7 +73,6 @@ const config = QuestionConfigSchema.parse({
 
 Creates a Question widget for yes/no confirmation dialogs.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createQuestion } from 'blecsd';
 
@@ -266,7 +264,6 @@ if (await confirm(world, 'Delete this file?')) {
 
 ### isQuestion
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isQuestion } from 'blecsd';
 
@@ -303,7 +300,6 @@ handleQuestionKey(questionWidget, 'escape');  // Cancels
 
 ### Confirmation Before Destructive Action
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ask } from 'blecsd';
 
@@ -322,7 +318,6 @@ async function handleDelete(world, filename) {
 
 ### Centered Question Dialog
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createQuestion } from 'blecsd';
 

@@ -42,7 +42,7 @@ attachSliderBehavior(world, eid, {
 });
 
 // Listen for changes
-onSliderChange(eid, (value) => {
+onSliderChange(world, eid, (value) => {
   console.log(`Volume: ${value}`);
 });
 
@@ -113,9 +113,13 @@ Default appearance uses these characters:
 Customize with:
 
 ```typescript
-import { setSliderDisplay } from 'blecsd';
+import { createWorld, addEntity, attachSliderBehavior, setSliderDisplay } from 'blecsd';
 
-setSliderDisplay(eid, {
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
+setSliderDisplay(world, eid, {
   trackChar: '─',
   thumbChar: '◆',
   fillChar: '═',
@@ -346,13 +350,13 @@ attachSliderBehavior(world, volumeSlider, {
   showValue: true,
 });
 
-setSliderDisplay(volumeSlider, {
+setSliderDisplay(world, volumeSlider, {
   fillFg: 0x00ff00ff,
   thumbFg: 0xffffffff,
   thumbBg: 0x0066ffff,
 });
 
-onSliderChange(volumeSlider, (value) => {
+onSliderChange(world, volumeSlider, (value) => {
   setAudioVolume(value / 100);
 });
 ```

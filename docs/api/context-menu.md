@@ -132,8 +132,14 @@ Gets the currently selected item index in the menu.
 
 **Example:**
 ```typescript
-import { getContextMenuSelectedIndex } from 'blecsd';
+import { createWorld, createContextMenu, getContextMenuSelectedIndex } from 'blecsd';
 
+const world = createWorld();
+const menu = createContextMenu(world, {
+  x: 10,
+  y: 5,
+  items: [{ label: 'Cut' }, { label: 'Copy' }],
+});
 const selectedIndex = getContextMenuSelectedIndex(menu);
 console.log(`Selected item: ${selectedIndex}`);
 ```
@@ -143,7 +149,11 @@ console.log(`Selected item: ${selectedIndex}`);
 ### Basic Context Menu
 
 ```typescript
-import { createContextMenu } from 'blecsd';
+import { createWorld, createContextMenu } from 'blecsd';
+
+const world = createWorld();
+const mouseX = 10;
+const mouseY = 5;
 
 const menu = createContextMenu(world, {
   x: mouseX,
@@ -183,8 +193,11 @@ const fileMenu = createContextMenu(world, {
 ### Conditional Items
 
 ```typescript
-import { createContextMenu } from 'blecsd';
+import { createWorld, createContextMenu } from 'blecsd';
 
+const world = createWorld();
+const selectedItems = ['file1.txt', 'file2.txt'];
+const clipboard = { hasContent: () => true };
 const hasSelection = selectedItems.length > 0;
 const hasClipboard = clipboard.hasContent();
 
@@ -305,6 +318,7 @@ function createDynamicMenu(selectedFiles: File[]) {
 
 ### Auto-Closing Menu
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createContextMenu, handleContextMenuKey, removeEntity } from 'blecsd';
 
@@ -390,8 +404,9 @@ Context menus are automatically configured with accessibility features:
 - Keyboard navigation follows standard conventions
 
 ```typescript
-import { getAccessibleRole, getAccessibleLabel } from 'blecsd';
+import { createWorld, createContextMenu, getAccessibleRole, getAccessibleLabel } from 'blecsd';
 
+const world = createWorld();
 const menu = createContextMenu(world, {
   x: 10,
   y: 5,

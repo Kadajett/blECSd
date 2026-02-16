@@ -40,7 +40,6 @@ import {
 
 Registers a sprite sheet and returns its numeric ID.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { registerSprite } from 'blecsd';
 
@@ -128,7 +127,6 @@ setSpriteByName(world, entity, 'player');
 
 Returns sprite state for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getSprite } from 'blecsd';
 
@@ -144,7 +142,6 @@ if (sprite) {
 
 Returns the current frame's 2D cell data.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCurrentFrame } from 'blecsd';
 
@@ -164,7 +161,6 @@ if (frame) {
 
 Control frame index directly or step through frames.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setFrame, nextFrame, prevFrame } from 'blecsd';
 
@@ -175,7 +171,6 @@ prevFrame(world, entity);      // Go back, wraps to last at 0
 
 ### hasSprite / getEntitySpriteSheet / removeSprite
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasSprite, getEntitySpriteSheet, removeSprite } from 'blecsd';
 
@@ -189,7 +184,6 @@ removeSprite(world, entity); // Does not affect the sheet in the store
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { registerSprite, setSprite, nextFrame, getCurrentFrame } from 'blecsd';

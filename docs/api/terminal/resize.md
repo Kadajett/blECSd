@@ -49,7 +49,6 @@ disableResizeHandling(program, handler);
 
 Creates a resize handler for the given world.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createResizeHandler } from 'blecsd';
 
@@ -92,7 +91,6 @@ disableResizeHandling(program, handler);
 
 Gets the active resize handler for a world.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getResizeHandler } from 'blecsd';
 
@@ -140,7 +138,6 @@ The SIGWINCH signal is sent by the operating system when the terminal is resized
 
 Gets the resize event bus for subscribing to resize events.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getResizeEventBus } from 'blecsd';
 
@@ -160,7 +157,6 @@ bus.on('resize', ({ width, height, previousWidth, previousHeight }) => {
 
 Resets the resize event bus (for testing).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetResizeEventBus } from 'blecsd';
 

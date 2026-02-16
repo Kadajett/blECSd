@@ -71,7 +71,6 @@ const inputControl = createInputControl(world, program, {
 
 Gets the input control for a world.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInputControl } from 'blecsd';
 
@@ -241,7 +240,6 @@ Convenience functions that operate on a world directly.
 
 ### enableWorldKeys / disableWorldKeys
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableWorldKeys, disableWorldKeys } from 'blecsd';
 
@@ -252,7 +250,6 @@ disableWorldKeys(world);
 
 ### enableWorldMouse / disableWorldMouse
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableWorldMouse, disableWorldMouse, MouseTrackingMode } from 'blecsd';
 
@@ -276,7 +273,6 @@ disableWorldInput(world);
 
 ### MouseTrackingMode
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { MouseTrackingMode } from 'blecsd';
 
@@ -303,7 +299,6 @@ MouseTrackingMode.SGR     // 4 - SGR extended mode (recommended)
 
 Gets the event bus for input control events.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInputControlEventBus } from 'blecsd';
 
@@ -330,7 +325,6 @@ bus.on('mouseDisabled', () => console.log('Mouse disabled'));
 
 Resets the event bus (for testing).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetInputControlEventBus } from 'blecsd';
 

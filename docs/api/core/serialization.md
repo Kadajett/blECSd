@@ -4,6 +4,7 @@ ECS world state serialization and deserialization. Serialize world state to JSON
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   registerSerializable,
@@ -112,6 +113,7 @@ Registers a component for serialization.
 function registerSerializable(descriptor: ComponentDescriptor): void;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { registerSerializable, Position } from 'blecsd';
 

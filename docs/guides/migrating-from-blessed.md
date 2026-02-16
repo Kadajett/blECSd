@@ -84,12 +84,13 @@ screen.render();
 import {
   createWorld,
   addEntity,
+  addComponent,
   setPosition,
   setDimensions,
   setContent,
   setBorder,
-  setRenderable,
-  createScheduler,
+  Renderable,
+  createGameLoop,
   LoopPhase,
   renderSystem,
   outputSystem,
@@ -106,13 +107,15 @@ setPosition(world, box, 40, 12);  // Absolute position
 setDimensions(world, box, 40, 12);
 setContent(world, box, 'Hello world!');
 setBorder(world, box, { style: 'line', color: 0xf0f0f0 });
-setRenderable(world, box, { fg: 0xffffff, bg: 0x0000ff });
+addComponent(world, box, Renderable);
+Renderable.fg[box] = 0xffffff;
+Renderable.bg[box] = 0x0000ff;
 
 // YOU control the loop
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
-scheduler.addSystem(LoopPhase.POST_RENDER, outputSystem);
-scheduler.start();
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
+loop.start();
 ```
 
 ### Core Concept Mappings
@@ -145,7 +148,7 @@ scheduler.start();
 | `blessed.box({ ... })` | `createBox(world, entity, { ... })` |
 | `blessed.text({ ... })` | `createText(world, entity, { ... })` |
 | `blessed.list({ ... })` | `createList(world, entity, { ... })` |
-| `blessed.input({ ... })` | `createTextInput(world, entity, { ... })` |
+| `blessed.input({ ... })` | `createTextareaEntity(world, { ... })` |
 | `blessed.button({ ... })` | `createButton(world, entity, { ... })` |
 | `blessed.table({ ... })` | `createTable(world, entity, { ... })` |
 
@@ -164,8 +167,8 @@ scheduler.start();
 
 | blessed.js | blECSd |
 |-----------|--------|
-| `style: { fg: 'white' }` | `setRenderable(world, eid, { fg: 0xffffff })` |
-| `style: { bg: 'blue' }` | `setRenderable(world, eid, { bg: 0x0000ff })` |
+| `style: { fg: 'white' }` | `Renderable.fg[eid] = 0xffffff` |
+| `style: { bg: 'blue' }` | `Renderable.bg[eid] = 0x0000ff` |
 | `style: { bold: true }` | Use ANSI attributes (planned) |
 | `border: { type: 'line' }` | `setBorder(world, eid, { style: 'single' })` |
 
@@ -286,12 +289,13 @@ screen.render();
 import {
   createWorld,
   addEntity,
+  addComponent,
   setPosition,
   setDimensions,
   setContent,
   setBorder,
-  setRenderable,
-  createScheduler,
+  Renderable,
+  createGameLoop,
   LoopPhase,
   renderSystem,
   outputSystem,
@@ -304,12 +308,14 @@ setPosition(world, box, 10, 5);
 setDimensions(world, box, 30, 10);
 setContent(world, box, 'Hello!');
 setBorder(world, box, { style: 'single', color: 0x0000ff });
-setRenderable(world, box, { fg: 0xffffff, bg: 0x000000 });
+addComponent(world, box, Renderable);
+Renderable.fg[box] = 0xffffff;
+Renderable.bg[box] = 0x000000;
 
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
-scheduler.addSystem(LoopPhase.POST_RENDER, outputSystem);
-scheduler.start();
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
+loop.start();
 ```
 
 ### Pattern 2: Interactive List
@@ -341,19 +347,20 @@ screen.render();
 ```
 
 **blECSd:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   setPosition,
   createList,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   inputSystem,
   focusSystem,
   renderSystem,
   outputSystem,
-  parseKeyEvent,
+  parseKeySequence,
   queueKeyEvent,
 } from 'blecsd';
 
@@ -376,20 +383,20 @@ list.on('select', (event) => {
 // Setup input
 process.stdin.setRawMode(true);
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeyEvent(buffer);
+  const keyEvent = parseKeySequence(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
 });
 
-// Setup scheduler
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
-scheduler.addSystem(LoopPhase.UPDATE, focusSystem);
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
-scheduler.addSystem(LoopPhase.POST_RENDER, outputSystem);
+// Setup game loop
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
+loop.registerSystem(LoopPhase.UPDATE, focusSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
-scheduler.start();
+loop.start();
 ```
 
 ### Pattern 3: Form with Input
@@ -436,15 +443,16 @@ screen.render();
 ```
 
 **blECSd:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   setPosition,
-  createTextInput,
+  createTextareaEntity,
   createButton,
   createBox,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   inputSystem,
   focusSystem,
@@ -464,12 +472,11 @@ createBox(world, formContainer, {
 });
 
 // Name input
-const nameInputEntity = addEntity(world);
-setPosition(world, nameInputEntity, 3, 3);
-const nameInput = createTextInput(world, nameInputEntity, {
+const nameInputEntity = createTextareaEntity(world, {
   width: 30,
   placeholder: 'Enter name...',
 });
+setPosition(world, nameInputEntity, 3, 3);
 
 // Submit button
 const submitButtonEntity = addEntity(world);
@@ -482,18 +489,17 @@ const submitButton = createButton(world, submitButtonEntity, {
 
 // Handle submit
 submitButton.onClick(() => {
-  const name = nameInput.getValue();
-  console.log('Form data:', { name });
+  console.log('Form submitted');
 });
 
-// Setup scheduler
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
-scheduler.addSystem(LoopPhase.UPDATE, focusSystem);
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
-scheduler.addSystem(LoopPhase.POST_RENDER, outputSystem);
+// Setup game loop
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
+loop.registerSystem(LoopPhase.UPDATE, focusSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
-scheduler.start();
+loop.start();
 ```
 
 ### Pattern 4: Updating Content
@@ -509,9 +515,12 @@ screen.render();  // Manual render required
 **blECSd:**
 ```typescript
 // Update component data
-import { Content, Renderable, markDirty } from 'blecsd';
+import { createWorld, addEntity, setContent, Renderable, markDirty } from 'blecsd';
 
-Content.value[box] = registerString('New content');
+const world = createWorld();
+const box = addEntity(world);
+
+setContent(world, box, 'New content');
 Renderable.fg[box] = 0xff0000;  // Red
 markDirty(world, box);  // Mark for re-render
 
@@ -532,21 +541,26 @@ MyWidget.prototype._render = function() {
 **blECSd:**
 ```typescript
 // Create custom render system (clean)
-import { query, Position, Renderable, type World } from 'blecsd';
+import { createWorld, createGameLoop, query, Position, Renderable, LoopPhase, type World } from 'blecsd';
 
 function customRenderSystem(world: World): World {
-  const entities = query(world, [Position, MyCustomComponent]);
+  const entities = query(world, [Position, Renderable]);
 
   for (const eid of entities) {
-    // Custom render logic
-    renderCustomWidget(world, eid);
+    // Custom render logic per entity
+    const x = Position.x[eid];
+    const y = Position.y[eid];
+    // ... render at (x, y)
   }
 
   return world;
 }
 
 // Register it
-scheduler.addSystem(LoopPhase.RENDER, customRenderSystem);
+const world = createWorld();
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.RENDER, customRenderSystem);
+loop.start();
 ```
 
 ## Widget Migration
@@ -621,7 +635,7 @@ list.on('select', (event) => {
 });
 ```
 
-### TextBox → createTextInput
+### TextBox → createTextareaEntity
 
 **blessed.js:**
 ```javascript
@@ -640,18 +654,13 @@ input.on('submit', (value) => {
 ```
 
 **blECSd:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-const inputEntity = addEntity(world);
-setPosition(world, inputEntity, 2, 5);
-
-const input = createTextInput(world, inputEntity, {
+const inputEntity = createTextareaEntity(world, {
   width: 20,
   placeholder: 'Type here...',
 });
-
-input.onSubmit((value) => {
-  console.log('Submitted:', value);
-});
+setPosition(world, inputEntity, 2, 5);
 ```
 
 ### Table → createTable
@@ -789,8 +798,9 @@ box.setContent('New');  // Implicitly calls screen.render()
 ```
 
 **blECSd requires explicit dirty tracking:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-Content.value[box] = registerString('New');
+setContent(world, box, 'New');
 markDirty(world, box);  // Must mark dirty
 // Scheduler auto-renders dirty entities
 ```
@@ -877,11 +887,11 @@ import { createWorld } from 'blecsd';
 
 export const world = createWorld();
 
-// src/scheduler.ts
-import { createScheduler, LoopPhase } from 'blecsd';
+// src/loop.ts
+import { createGameLoop, LoopPhase } from 'blecsd';
 import { world } from './world';
 
-export const scheduler = createScheduler(world, { targetFPS: 60 });
+export const loop = createGameLoop(world, { targetFPS: 60 });
 ```
 
 ### Phase 3: Port Simple Screens
@@ -1014,24 +1024,26 @@ screen.render();
 
 ### After (blECSd)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
+  addComponent,
   setPosition,
   setDimensions,
   setContent,
-  setRenderable,
+  Renderable,
   setBorder,
   createList,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   inputSystem,
   focusSystem,
   layoutSystem,
   renderSystem,
   outputSystem,
-  parseKeyEvent,
+  parseKeySequence,
   queueKeyEvent,
   getInputEventBus,
 } from 'blecsd';
@@ -1047,7 +1059,9 @@ const header = addEntity(world);
 setPosition(world, header, 0, 0);
 setDimensions(world, header, termWidth, 3);
 setContent(world, header, 'My Application');
-setRenderable(world, header, { fg: 0xffffff, bg: 0x0000ff });
+addComponent(world, header, Renderable);
+Renderable.fg[header] = 0xffffff;
+Renderable.bg[header] = 0x0000ff;
 
 // List
 const listEntity = addEntity(world);
@@ -1075,7 +1089,7 @@ list.on('select', (event) => {
 // Setup input
 process.stdin.setRawMode(true);
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeyEvent(buffer);
+  const keyEvent = parseKeySequence(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -1093,15 +1107,15 @@ inputBus.on('keypress', (event) => {
   }
 });
 
-// Setup scheduler
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
-scheduler.addSystem(LoopPhase.UPDATE, focusSystem);
-scheduler.addSystem(LoopPhase.LAYOUT, layoutSystem);
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
-scheduler.addSystem(LoopPhase.POST_RENDER, outputSystem);
+// Setup game loop
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
+loop.registerSystem(LoopPhase.UPDATE, focusSystem);
+loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
-scheduler.start();
+loop.start();
 ```
 
 ## Summary

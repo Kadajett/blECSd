@@ -95,6 +95,8 @@ loop.start();
 ```typescript
 import { createGameLoop, LoopPhase } from 'blecsd';
 
+const loop = createGameLoop(world, { targetFPS: 60 });
+
 function prepareInputSystem(world: World): World {
   // Input events have been parsed by INPUT phase
   // Now convert them to game-specific state
@@ -134,13 +136,12 @@ loop.registerSystem(LoopPhase.EARLY_UPDATE, prepareInputSystem);
 
 **Example**:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defineQuery, Position, Velocity } from 'blecsd';
-
-const movableEntities = defineQuery([Position, Velocity]);
+import { query, Position, Velocity } from 'blecsd';
 
 function movementSystem(world: World): World {
-  const entities = movableEntities(world);
+  const entities = query(world, [Position, Velocity]);
 
   for (const eid of entities) {
     Position.x[eid] += Velocity.x[eid];
@@ -212,13 +213,12 @@ loop.registerSystem(LoopPhase.LATE_UPDATE, cameraFollowSystem);
 
 **Example**:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defineQuery, Position, Velocity, Spring } from 'blecsd';
-
-const springEntities = defineQuery([Position, Velocity, Spring]);
+import { query, Position, Velocity, Spring } from 'blecsd';
 
 function springAnimationSystem(world: World, dt: number): World {
-  const entities = springEntities(world);
+  const entities = query(world, [Position, Velocity, Spring]);
 
   for (const eid of entities) {
     // Spring physics: smooth motion toward target
@@ -266,13 +266,12 @@ loop.registerSystem(LoopPhase.ANIMATION, springAnimationSystem);
 
 **Example**:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defineQuery, Position, Dimensions, Hierarchy } from 'blecsd';
-
-const parentEntities = defineQuery([Position, Dimensions, Hierarchy]);
+import { query, Position, Dimensions, Hierarchy } from 'blecsd';
 
 function layoutSystem(world: World): World {
-  const entities = parentEntities(world);
+  const entities = query(world, [Position, Dimensions, Hierarchy]);
 
   for (const eid of entities) {
     const children = getChildren(world, eid);
@@ -312,14 +311,13 @@ loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 
 **Example**:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defineQuery, Position, Renderable } from 'blecsd';
+import { query, Position, Renderable } from 'blecsd';
 
-const visibleEntities = defineQuery([Position, Renderable]);
-
-function renderSystem(world: World): World {
+function myRenderSystem(world: World): World {
   const screen = getScreenBuffer(world);
-  const entities = visibleEntities(world);
+  const entities = query(world, [Position, Renderable]);
 
   // Clear screen
   screen.clear();

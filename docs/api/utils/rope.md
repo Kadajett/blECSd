@@ -124,7 +124,6 @@ function createRope(text?: string): Rope
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRope } from 'blecsd';
 
@@ -262,7 +261,6 @@ function getLine(rope: Rope, lineNumber: number): LineInfo | undefined
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRope, getLine } from 'blecsd';
 

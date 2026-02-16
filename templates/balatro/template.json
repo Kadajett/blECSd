@@ -1,0 +1,9 @@
+{
+	"name": "balatro",
+	"version": "0.0.1",
+	"description": "Balatro-style poker card game with animations and input handling",
+	"category": "game",
+	"tags": ["game", "cards", "poker", "animations"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}

@@ -408,8 +408,8 @@ isParsingTags(world, eid); // true
 
 Resets the content store. Primarily used for testing.
 
-<!-- blecsd-doccheck:ignore -->
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetContentStore } from 'blecsd';
 

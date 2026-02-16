@@ -64,7 +64,6 @@ The key insight: contiguous memory layout enables CPU cache efficiency. Iteratin
 
 ### PackedStore
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createPackedStore,
@@ -111,7 +110,6 @@ forEachInStore(particles, (particle, handle) => {
 
 For pure entity ID allocation without associated data:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createEntityPool,

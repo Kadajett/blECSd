@@ -1,0 +1,9 @@
+{
+	"name": "3d-cube",
+	"version": "0.0.1",
+	"description": "Rotating wireframe cube rendered in the terminal",
+	"category": "3d",
+	"tags": ["3d", "wireframe", "rotation", "math"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}

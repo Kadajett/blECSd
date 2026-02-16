@@ -1,0 +1,118 @@
+{
+	"version": 1,
+	"templates": [
+		{
+			"name": "file-manager",
+			"category": "app",
+			"description": "Terminal file manager demonstrating blECSd architecture",
+			"tags": ["filesystem", "navigation", "panels"]
+		},
+		{
+			"name": "system-monitor",
+			"category": "app",
+			"description": "htop-like real-time system stats dashboard",
+			"tags": ["dashboard", "monitoring", "real-time"]
+		},
+		{
+			"name": "multiplexer",
+			"category": "app",
+			"description": "tmux-like multi-pane terminal with shell support",
+			"tags": ["terminal", "multiplexer", "panes", "pty"]
+		},
+		{
+			"name": "telnet-server",
+			"category": "app",
+			"description": "Serve blECSd UIs to remote clients over telnet",
+			"tags": ["server", "networking", "remote"]
+		},
+		{
+			"name": "terminal",
+			"category": "app",
+			"description": "Terminal widget with ANSI rendering, scrollback, and optional PTY",
+			"tags": ["terminal", "ansi", "pty", "scrollback"]
+		},
+		{
+			"name": "dashboard",
+			"category": "app",
+			"description": "Multi-widget dashboard with charts, tables, and live data",
+			"tags": ["dashboard", "charts", "layout"],
+			"placeholder": true
+		},
+		{
+			"name": "form-builder",
+			"category": "app",
+			"description": "Interactive form builder with validation and custom fields",
+			"tags": ["forms", "input", "validation"],
+			"placeholder": true
+		},
+		{
+			"name": "markdown-viewer",
+			"category": "app",
+			"description": "Terminal markdown renderer with syntax highlighting",
+			"tags": ["markdown", "rendering", "syntax-highlighting"],
+			"placeholder": true
+		},
+		{
+			"name": "kanban",
+			"category": "app",
+			"description": "Kanban board with drag-and-drop cards and columns",
+			"tags": ["kanban", "project-management", "drag-drop"],
+			"placeholder": true
+		},
+		{
+			"name": "balatro",
+			"category": "game",
+			"description": "Balatro-style poker card game with animations and input handling",
+			"tags": ["game", "cards", "poker", "animations"]
+		},
+		{
+			"name": "roguelike",
+			"category": "game",
+			"description": "Classic roguelike dungeon crawler with ECS-driven gameplay",
+			"tags": ["game", "roguelike", "dungeon", "ecs"],
+			"placeholder": true
+		},
+		{
+			"name": "dvd-bounce",
+			"category": "demo",
+			"description": "Thousands of floating panels with physics and z-order shuffling",
+			"tags": ["demo", "physics", "animation", "performance"]
+		},
+		{
+			"name": "ascii-clock",
+			"category": "demo",
+			"description": "ASCII art clock using the BigText widget",
+			"tags": ["demo", "ascii-art", "time", "bigtext"]
+		},
+		{
+			"name": "big-text",
+			"category": "demo",
+			"description": "BigText widget showcase with various fonts and styles",
+			"tags": ["demo", "ascii-art", "bigtext", "fonts"]
+		},
+		{
+			"name": "3d-cube",
+			"category": "3d",
+			"description": "Rotating wireframe cube rendered in the terminal",
+			"tags": ["3d", "wireframe", "rotation", "math"]
+		},
+		{
+			"name": "3d-obj-viewer",
+			"category": "3d",
+			"description": "OBJ model viewer rendered in the terminal",
+			"tags": ["3d", "obj", "model-viewer", "rendering"]
+		},
+		{
+			"name": "3d-backends",
+			"category": "3d",
+			"description": "Rotating cube rendered with all 5 backends side-by-side",
+			"tags": ["3d", "backends", "comparison", "rendering"]
+		},
+		{
+			"name": "doom",
+			"category": "3d",
+			"description": "Doom source port rendered via Kitty graphics protocol",
+			"tags": ["3d", "doom", "raycasting", "kitty-graphics"]
+		}
+	]
+}

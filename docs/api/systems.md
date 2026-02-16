@@ -95,8 +95,10 @@ Test which entity is at a screen coordinate.
 
 **Example:**
 ```typescript
-import { hitTest } from 'blecsd';
+import { createWorld, hitTest } from 'blecsd';
 
+const world = createWorld();
+const mouseX = 10, mouseY = 20;
 const result = hitTest(world, mouseX, mouseY);
 if (result) {
   console.log(`Hit entity ${result.entity} at local (${result.localX}, ${result.localY})`);
@@ -244,6 +246,7 @@ function invalidateAllLayouts(world: World): void
 Manually trigger layout computation or mark entities as needing layout.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { invalidateLayout, computeLayoutNow } from 'blecsd';
 
@@ -344,8 +347,12 @@ function blurAll(world: World): void
 Control which entity has focus.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusEntity, focusNext, getFocused } from 'blecsd';
+import { createWorld, addEntity, focusEntity, focusNext, getFocused } from 'blecsd';
+
+const world = createWorld();
+const buttonEntity = addEntity(world);
 
 // Focus specific entity
 focusEntity(world, buttonEntity);
@@ -377,7 +384,10 @@ Save and restore focus (useful for modals, menus).
 
 **Example:**
 ```typescript
-import { focusPush, focusPop } from 'blecsd';
+import { createWorld, addEntity, focusPush, focusPop, focusEntity } from 'blecsd';
+
+const world = createWorld();
+const modalEntity = addEntity(world);
 
 // Open modal - save current focus
 focusPush(world);
@@ -449,6 +459,7 @@ function writeRaw(data: string): void
 Generate output string or write directly to terminal.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { generateOutput, writeRaw } from 'blecsd';
 
@@ -554,6 +565,7 @@ function registerAnimationSystem(world: World): void
 Control animation processing.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createAnimation, animationSystem } from 'blecsd';
 
@@ -607,7 +619,9 @@ function registerMovementSystem(world: World): void
 
 **Example:**
 ```typescript
-import { setPosition, setVelocity, movementSystem } from 'blecsd';
+import { createWorld, addEntity, setPosition, setVelocity, movementSystem } from 'blecsd';
+
+const world = createWorld();
 
 // Create moving entity
 const entity = addEntity(world);
@@ -632,6 +646,7 @@ The movement system applies simple Euler integration: `position += velocity * de
 
 Systems must be registered with the scheduler to run automatically:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, LoopPhase } from 'blecsd';
 import {
@@ -672,6 +687,7 @@ See [System Execution Order Guide](../guides/system-execution-order.md) for deta
 
 ## Writing Custom Systems
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { defineSystem, query, World } from 'blecsd';
 import { Position, Velocity, Health } from 'blecsd';

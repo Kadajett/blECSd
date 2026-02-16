@@ -13,7 +13,6 @@ The artificial cursor system provides:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createArtificialCursor,
@@ -51,7 +50,6 @@ function render(time: number) {
 
 Create a new artificial cursor with configurable options.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createArtificialCursor } from 'blecsd';
 
@@ -188,7 +186,6 @@ cursor = setCursorColors(cursor, undefined, undefined);
 
 Update cursor blink state based on elapsed time. Call every frame.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { updateCursorBlink } from 'blecsd';
 
@@ -320,7 +317,6 @@ if (cursor) {
 
 When using artificial cursors, hide the terminal's native cursor.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hideTerminalCursor, showTerminalCursor } from 'blecsd';
 
@@ -347,7 +343,6 @@ import {
 
 ## Example: Text Editor Cursor
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createArtificialCursor,

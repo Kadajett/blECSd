@@ -4,7 +4,6 @@ The ScrollableBox widget is a container that supports scrolling content. It comb
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
@@ -41,7 +40,6 @@ scrollBox.scrollToBottom();
 
 Creates a new ScrollableBox widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
@@ -481,7 +479,6 @@ scrollBox.destroy();
 
 Checks if an entity is a scrollable box widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isScrollableBox } from 'blecsd';
 
@@ -498,7 +495,6 @@ if (isScrollableBox(world, entity)) {
 
 Checks if mouse scrolling is enabled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isMouseScrollEnabled } from 'blecsd';
 
@@ -515,7 +511,6 @@ if (isMouseScrollEnabled(world, entity)) {
 
 Checks if keyboard scrolling is enabled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isKeysScrollEnabled } from 'blecsd';
 
@@ -648,7 +643,6 @@ interface ScrollableBoxWidget {
 
 ## Zod Schemas
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ScrollableBoxConfigSchema } from 'blecsd';
 
@@ -671,7 +665,6 @@ if (result.success) {
 
 ### Basic Scrollable Container
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
@@ -691,7 +684,6 @@ const scrollBox = createScrollableBox(world, eid, {
 
 ### Log Viewer with Auto-Scroll
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
@@ -721,7 +713,6 @@ function addLog(message: string) {
 
 ### Scroll Position Indicator
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';
@@ -750,7 +741,6 @@ function updateStatusBar() {
 
 ### Keyboard Navigation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox, isKeysScrollEnabled } from 'blecsd';
@@ -794,7 +784,6 @@ function onKeyPress(key: string) {
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createScrollableBox } from 'blecsd';

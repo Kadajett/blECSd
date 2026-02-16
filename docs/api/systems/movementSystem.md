@@ -17,7 +17,6 @@ import {
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -163,7 +162,6 @@ position.y += velocity.y * deltaTime;
 
 ## Example: Player Movement
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

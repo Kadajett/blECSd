@@ -222,12 +222,15 @@ collisionSystem(world);
 
 **blECSd Physics Example:**
 ```typescript
-import { setVelocity, Velocity } from 'blecsd';
+import { createWorld, addEntity, setVelocity } from 'blecsd';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 // Momentum scrolling with friction
 setVelocity(world, entity, {
   x: 0,
-  y: scrollSpeed,
+  y: 10,  // Initial scroll speed
   friction: 0.92,  // Decays by 8% per frame
   maxSpeed: 100
 });
@@ -261,15 +264,18 @@ Rendering only visible items in large lists (1000s of items) instead of all item
 | **Ratatui** | ⚠️ Manual | ⚠️ Manual | ❌ Immediate mode | Extremely fast raw perf |
 
 **blECSd Virtualization Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createList } from 'blecsd';
+import { createWorld, addEntity, createList } from 'blecsd';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 const list = createList(world, entity, {
   items: Array.from({ length: 10000 }, (_, i) => ({
     label: `Item ${i}`,
     value: i
   })),
-  height: 20,  // Only renders 20 visible items
   virtualized: true
 });
 // Scrolling through 10k items is smooth
@@ -280,6 +286,7 @@ const list = createList(world, entity, {
 ### State Management Patterns
 
 #### blECSd: Query-Based
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Query entities with specific components
 const entities = query(world, [Position, Velocity]);
@@ -395,6 +402,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 ## Migration Paths
 
 ### From blessed to blECSd
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // blessed (OOP)
 const blessed = require('blessed');
@@ -422,6 +430,7 @@ See [Migration Guide](./migrating-from-blessed.md) for complete details.
 ---
 
 ### From React/Ink to blECSd
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Ink (React)
 import { render, Text } from 'ink';

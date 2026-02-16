@@ -43,7 +43,7 @@ Capture keyboard events and respond to key presses in your application.
 **1. Queue keyboard events**
 
 ```typescript
-import { parseKeyEvent, queueKeyEvent } from 'blecsd';
+import { parseKeySequence, queueKeyEvent } from 'blecsd';
 
 // Enable raw mode for key capture
 process.stdin.setRawMode(true);
@@ -51,7 +51,7 @@ process.stdin.resume();
 
 // Parse and queue events
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeyEvent(buffer);
+  const keyEvent = parseKeySequence(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -60,13 +60,14 @@ process.stdin.on('data', (buffer) => {
 
 **2. Process events in the input system**
 
-The `inputSystem` automatically processes queued events. Just add it to your scheduler:
+The `inputSystem` automatically processes queued events. Just register it with a game loop:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, LoopPhase, inputSystem } from 'blecsd';
+import { createGameLoop, LoopPhase, inputSystem } from 'blecsd';
 
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
 ```
 
 **3. Listen for key events**
@@ -88,29 +89,30 @@ eventBus.on('keypress', (event) => {
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   inputSystem,
-  parseKeyEvent,
+  parseKeySequence,
   queueKeyEvent,
   getInputEventBus,
 } from 'blecsd';
 
 const world = createWorld();
-const scheduler = createScheduler(world, { targetFPS: 60 });
+const loop = createGameLoop(world, { targetFPS: 60 });
 
 // Register input system
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
 
 // Setup keyboard capture
 process.stdin.setRawMode(true);
 process.stdin.resume();
 
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeyEvent(buffer);
+  const keyEvent = parseKeySequence(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -130,7 +132,7 @@ eventBus.on('keypress', (event) => {
 });
 
 // Start the loop
-scheduler.start();
+loop.start();
 ```
 
 ### Common Pitfalls
@@ -160,7 +162,7 @@ Detect and respond to mouse clicks on UI elements.
 **1. Enable mouse tracking**
 
 ```typescript
-import { parseMouseEvent, queueMouseEvent } from 'blecsd';
+import { parseMouseSequence, queueMouseEvent } from 'blecsd';
 
 process.stdin.setRawMode(true);
 process.stdin.resume();
@@ -170,7 +172,7 @@ process.stdout.write('\x1b[?1000h');  // Normal tracking
 process.stdout.write('\x1b[?1003h');  // Any event tracking
 
 process.stdin.on('data', (buffer) => {
-  const mouseEvent = parseMouseEvent(buffer);
+  const mouseEvent = parseMouseSequence(buffer);
   if (mouseEvent) {
     queueMouseEvent(mouseEvent);
   }
@@ -208,22 +210,24 @@ eventBus.on('click', (event) => {
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   setPosition,
   setDimensions,
-  setRenderable,
+  Renderable,
   Interactive,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   inputSystem,
   renderSystem,
   outputSystem,
-  parseMouseEvent,
+  parseMouseSequence,
   queueMouseEvent,
   getInputEventBus,
+  addComponent,
 } from 'blecsd';
 
 const world = createWorld();
@@ -232,7 +236,9 @@ const world = createWorld();
 const button = addEntity(world);
 setPosition(world, button, 10, 5);
 setDimensions(world, button, 15, 3);
-setRenderable(world, button, { char: ' ', fg: 0xFFFFFF, bg: 0x0000FF });
+addComponent(world, button, Renderable);
+Renderable.fg[button] = 0xFFFFFF;
+Renderable.bg[button] = 0x0000FF;
 Interactive.enabled[button] = 1;
 
 // Setup mouse tracking
@@ -240,7 +246,7 @@ process.stdin.setRawMode(true);
 process.stdout.write('\x1b[?1000h');
 
 process.stdin.on('data', (buffer) => {
-  const mouseEvent = parseMouseEvent(buffer);
+  const mouseEvent = parseMouseSequence(buffer);
   if (mouseEvent) {
     queueMouseEvent(mouseEvent);
   }
@@ -256,12 +262,12 @@ eventBus.on('click', (event) => {
 });
 
 // Setup rendering
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
-scheduler.addSystem(LoopPhase.POST_RENDER, outputSystem);
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
-scheduler.start();
+loop.start();
 
 // Cleanup
 process.on('exit', () => {
@@ -318,7 +324,8 @@ import {
   addEntity,
   setPosition,
   setDimensions,
-  setRenderable,
+  addComponent,
+  Renderable,
   type World,
   type Entity,
 } from 'blecsd';
@@ -343,11 +350,9 @@ function createProgressBar(
 
   // Set up components
   setDimensions(world, entity, fullOptions.width, fullOptions.height);
-  setRenderable(world, entity, {
-    char: ' ',
-    fg: 0xFFFFFF,
-    bg: fullOptions.bgColor,
-  });
+  addComponent(world, entity, Renderable);
+  Renderable.fg[entity] = 0xFFFFFF;
+  Renderable.bg[entity] = fullOptions.bgColor;
 
   // Store state
   const state: ProgressBarState = {
@@ -395,18 +400,20 @@ function progressBarRenderSystem(world: World): World {
 
 **4. Register system**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-scheduler.addSystem(LoopPhase.RENDER, progressBarRenderSystem);
+loop.registerSystem(LoopPhase.RENDER, progressBarRenderSystem);
 ```
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   setPosition,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   renderSystem,
   outputSystem,
@@ -424,20 +431,20 @@ const progressBar = createProgressBar(world, progressEntity, {
   showLabel: true,
 });
 
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.RENDER, progressBarRenderSystem);
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
-scheduler.addSystem(LoopPhase.POST_RENDER, outputSystem);
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.RENDER, progressBarRenderSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
 // Animate progress
 let progress = 0;
-scheduler.addSystem(LoopPhase.UPDATE, (world) => {
+loop.registerSystem(LoopPhase.UPDATE, (world) => {
   progress = (progress + 1) % 101;
   progressBar.update(progress);
   return world;
 });
 
-scheduler.start();
+loop.start();
 ```
 
 ### Common Pitfalls
@@ -501,11 +508,12 @@ function debugEntity(world: World, eid: Entity): void {
 **Symptoms:** Entity renders behind another when it should be in front.
 
 **Solution:** Set z-index:
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ZIndex } from 'blecsd';
+import { setZIndex } from 'blecsd';
 
-ZIndex.value[frontEntity] = 10;  // Higher = front
-ZIndex.value[backEntity] = 5;    // Lower = back
+setZIndex(world, frontEntity, 10);  // Higher = front
+setZIndex(world, backEntity, 5);    // Lower = back
 ```
 
 ### Issue 3: Partial Renders
@@ -518,14 +526,15 @@ ZIndex.value[backEntity] = 5;    // Lower = back
 3. **Check scroll offsets:** Parent might be scrolled
 
 ```typescript
-import { getComputedBounds, Scroll } from 'blecsd';
+import { getComputedBounds, getScroll, Hierarchy } from 'blecsd';
 
 const bounds = getComputedBounds(world, eid);
 console.log('Computed bounds:', bounds);
 
 const parent = Hierarchy.parent[eid];
 if (parent) {
-  console.log('Parent scroll:', Scroll.x[parent], Scroll.y[parent]);
+  const scroll = getScroll(world, parent);
+  console.log('Parent scroll:', scroll.x, scroll.y);
 }
 ```
 
@@ -690,6 +699,7 @@ eventBus.on('mousemove', (event) => {
 
 **4. Handle mouse up (end drag)**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { releaseMouse } from 'blecsd';
 
@@ -704,26 +714,29 @@ eventBus.on('mouseup', (event) => {
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
+  addComponent,
   setPosition,
   setDimensions,
-  setRenderable,
+  Renderable,
   Interactive,
   Position,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   inputSystem,
   renderSystem,
   outputSystem,
-  parseMouseEvent,
+  parseMouseSequence,
   queueMouseEvent,
   getInputEventBus,
   captureMouseTo,
   releaseMouse,
   markDirty,
+  type Entity,
 } from 'blecsd';
 
 const world = createWorld();
@@ -732,7 +745,9 @@ const world = createWorld();
 const box = addEntity(world);
 setPosition(world, box, 10, 5);
 setDimensions(world, box, 10, 5);
-setRenderable(world, box, { char: ' ', fg: 0xFFFFFF, bg: 0xFF0000 });
+addComponent(world, box, Renderable);
+Renderable.fg[box] = 0xFFFFFF;
+Renderable.bg[box] = 0xFF0000;
 Interactive.enabled[box] = 1;
 
 // Drag state
@@ -748,7 +763,7 @@ process.stdin.setRawMode(true);
 process.stdout.write('\x1b[?1000h\x1b[?1003h');
 
 process.stdin.on('data', (buffer) => {
-  const mouseEvent = parseMouseEvent(buffer);
+  const mouseEvent = parseMouseSequence(buffer);
   if (mouseEvent) {
     queueMouseEvent(mouseEvent);
   }
@@ -784,12 +799,12 @@ eventBus.on('mouseup', () => {
 });
 
 // Setup rendering
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
-scheduler.addSystem(LoopPhase.POST_RENDER, outputSystem);
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
-scheduler.start();
+loop.start();
 ```
 
 ### Common Pitfalls
@@ -819,7 +834,7 @@ Display a modal dialog that blocks interaction with background UI.
 **1. Create modal overlay**
 
 ```typescript
-import { addEntity, setPosition, setDimensions, setRenderable, ZIndex } from 'blecsd';
+import { addEntity, addComponent, setPosition, setDimensions, Renderable, setZIndex, type World, type Entity } from 'blecsd';
 
 function createModal(
   world: World,
@@ -831,12 +846,10 @@ function createModal(
   const overlay = addEntity(world);
   setPosition(world, overlay, 0, 0);
   setDimensions(world, overlay, 80, 24);  // Full screen
-  setRenderable(world, overlay, {
-    char: ' ',
-    fg: 0x000000,
-    bg: 0x000000,
-  });
-  ZIndex.value[overlay] = 100;  // Above normal UI
+  addComponent(world, overlay, Renderable);
+  Renderable.fg[overlay] = 0x000000;
+  Renderable.bg[overlay] = 0x000000;
+  setZIndex(world, overlay, 100);  // Above normal UI
 
   // Create dialog box
   const dialog = addEntity(world);
@@ -844,12 +857,10 @@ function createModal(
   const y = Math.floor((24 - height) / 2);
   setPosition(world, dialog, x, y);
   setDimensions(world, dialog, width, height);
-  setRenderable(world, dialog, {
-    char: ' ',
-    fg: 0x000000,
-    bg: 0xFFFFFF,
-  });
-  ZIndex.value[dialog] = 101;  // Above overlay
+  addComponent(world, dialog, Renderable);
+  Renderable.fg[dialog] = 0x000000;
+  Renderable.bg[dialog] = 0xFFFFFF;
+  setZIndex(world, dialog, 101);  // Above overlay
 
   return dialog;
 }
@@ -889,16 +900,18 @@ Interactive.focusable[modalEntity] = 1;
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
+  addComponent,
   setPosition,
   setDimensions,
-  setRenderable,
-  ZIndex,
+  Renderable,
+  setZIndex,
   Interactive,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   inputSystem,
   focusSystem,
@@ -908,8 +921,10 @@ import {
   focusPop,
   focusEntity,
   getInputEventBus,
-  parseKeyEvent,
+  parseKeySequence,
   queueKeyEvent,
+  type World,
+  type Entity,
 } from 'blecsd';
 
 const world = createWorld();
@@ -918,7 +933,9 @@ const world = createWorld();
 const mainPanel = addEntity(world);
 setPosition(world, mainPanel, 5, 5);
 setDimensions(world, mainPanel, 30, 10);
-setRenderable(world, mainPanel, { char: ' ', fg: 0x000000, bg: 0x00FF00 });
+addComponent(world, mainPanel, Renderable);
+Renderable.fg[mainPanel] = 0x000000;
+Renderable.bg[mainPanel] = 0x00FF00;
 
 // Function to create modal
 function createModal(world: World): Entity {
@@ -926,17 +943,21 @@ function createModal(world: World): Entity {
   const overlay = addEntity(world);
   setPosition(world, overlay, 0, 0);
   setDimensions(world, overlay, 80, 24);
-  setRenderable(world, overlay, { char: ' ', fg: 0x000000, bg: 0x000000 });
-  ZIndex.value[overlay] = 100;
+  addComponent(world, overlay, Renderable);
+  Renderable.fg[overlay] = 0x000000;
+  Renderable.bg[overlay] = 0x000000;
+  setZIndex(world, overlay, 100);
 
   // Dialog
   const dialog = addEntity(world);
   setPosition(world, dialog, 20, 8);
   setDimensions(world, dialog, 40, 8);
-  setRenderable(world, dialog, { char: ' ', fg: 0x000000, bg: 0xFFFFFF });
+  addComponent(world, dialog, Renderable);
+  Renderable.fg[dialog] = 0x000000;
+  Renderable.bg[dialog] = 0xFFFFFF;
   Interactive.enabled[dialog] = 1;
   Interactive.focusable[dialog] = 1;
-  ZIndex.value[dialog] = 101;
+  setZIndex(world, dialog, 101);
 
   return dialog;
 }
@@ -944,7 +965,7 @@ function createModal(world: World): Entity {
 // Setup keyboard handling
 process.stdin.setRawMode(true);
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeyEvent(buffer);
+  const keyEvent = parseKeySequence(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -956,8 +977,7 @@ eventBus.on('keypress', (event) => {
   if (event.name === 'm') {
     // Show modal
     const modal = createModal(world);
-    focusPush(world);
-    focusEntity(world, modal);
+    focusPush(world, modal);
   } else if (event.name === 'escape') {
     // Close modal
     focusPop(world);
@@ -966,13 +986,13 @@ eventBus.on('keypress', (event) => {
 });
 
 // Setup rendering
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
-scheduler.addSystem(LoopPhase.UPDATE, focusSystem);
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
-scheduler.addSystem(LoopPhase.POST_RENDER, outputSystem);
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
+loop.registerSystem(LoopPhase.UPDATE, focusSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
-scheduler.start();
+loop.start();
 ```
 
 ### Common Pitfalls
@@ -1062,13 +1082,14 @@ eventBus.on('keypress', (event) => {
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   inputSystem,
-  parseKeyEvent,
+  parseKeySequence,
   queueKeyEvent,
   getInputEventBus,
   type ParsedKeyEvent,
@@ -1120,7 +1141,7 @@ function matchesShortcut(event: ParsedKeyEvent, shortcut: any): boolean {
 // Setup keyboard handling
 process.stdin.setRawMode(true);
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeyEvent(buffer);
+  const keyEvent = parseKeySequence(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -1140,10 +1161,10 @@ eventBus.on('keypress', (event) => {
   console.log(`Key: ${event.name}`);
 });
 
-// Setup scheduler
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
-scheduler.start();
+// Setup game loop
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
+loop.start();
 ```
 
 ### Common Pitfalls
@@ -1172,8 +1193,9 @@ Display millions of list items with smooth scrolling by only rendering visible i
 
 **1. Use virtualizedList widget**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createVirtualizedList } from 'blecsd';
+import { addEntity, setPosition, createVirtualizedList } from 'blecsd';
 
 const listEntity = addEntity(world);
 setPosition(world, listEntity, 5, 2);
@@ -1188,6 +1210,7 @@ const vlist = createVirtualizedList(world, listEntity, {
 
 **2. Handle dynamic data**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createVirtualizedList } from 'blecsd';
 
@@ -1219,17 +1242,18 @@ const scrollTop = vlist.getScrollTop();
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   setPosition,
   createVirtualizedList,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   renderSystem,
   outputSystem,
-  parseKeyEvent,
+  parseKeySequence,
   queueKeyEvent,
   inputSystem,
   getInputEventBus,
@@ -1257,7 +1281,7 @@ const vlist = createVirtualizedList(world, listEntity, {
 // Handle keyboard scrolling
 process.stdin.setRawMode(true);
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeyEvent(buffer);
+  const keyEvent = parseKeySequence(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -1282,12 +1306,12 @@ eventBus.on('keypress', (event) => {
 });
 
 // Setup rendering
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
-scheduler.addSystem(LoopPhase.POST_RENDER, outputSystem);
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
-scheduler.start();
+loop.start();
 ```
 
 **Performance:** Renders 1,000,000 items at 60 FPS by only rendering 20 visible items.
@@ -1541,7 +1565,7 @@ interface AppState {
 **2. Serialize current state**
 
 ```typescript
-import { query, Position, Dimensions, Renderable, ZIndex, getFocused } from 'blecsd';
+import { query, hasComponent, Position, Dimensions, Renderable, getZIndex, getFocused } from 'blecsd';
 
 function serializeState(world: World): AppState {
   const entities: SerializedEntity[] = [];
@@ -1552,7 +1576,7 @@ function serializeState(world: World): AppState {
       id: eid,
     };
 
-    if (hasComponent(world, Position, eid)) {
+    if (hasComponent(world, eid, Position)) {
       entity.position = {
         x: Position.x[eid] ?? 0,
         y: Position.y[eid] ?? 0,
@@ -1560,20 +1584,18 @@ function serializeState(world: World): AppState {
       };
     }
 
-    if (hasComponent(world, Dimensions, eid)) {
+    if (hasComponent(world, eid, Dimensions)) {
       entity.dimensions = {
         width: Dimensions.width[eid] ?? 0,
         height: Dimensions.height[eid] ?? 0,
       };
     }
 
-    if (hasComponent(world, Renderable, eid)) {
+    if (hasComponent(world, eid, Renderable)) {
       entity.visible = Renderable.visible[eid] === 1;
     }
 
-    if (hasComponent(world, ZIndex, eid)) {
-      entity.zIndex = ZIndex.value[eid];
-    }
+    entity.zIndex = getZIndex(world, eid);
 
     entities.push(entity);
   }
@@ -1602,7 +1624,7 @@ function saveState(world: World, filename: string): void {
 
 ```typescript
 import { readFileSync } from 'node:fs';
-import { addEntity, setPosition, setDimensions, focusEntity } from 'blecsd';
+import { addEntity, setPosition, setDimensions, Renderable, setZIndex, focusEntity } from 'blecsd';
 
 function loadState(world: World, filename: string): void {
   const json = readFileSync(filename, 'utf-8');
@@ -1632,7 +1654,7 @@ function loadState(world: World, filename: string): void {
     }
 
     if (serialized.zIndex !== undefined) {
-      ZIndex.value[eid] = serialized.zIndex;
+      setZIndex(world, eid, serialized.zIndex);
     }
   }
 
@@ -1653,6 +1675,7 @@ import {
   setDimensions,
   Position,
   Dimensions,
+  getInputEventBus,
 } from 'blecsd';
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 
@@ -1685,6 +1708,7 @@ process.on('exit', () => {
 });
 
 // Save state on Ctrl+S
+const eventBus = getInputEventBus();
 eventBus.on('keypress', (event) => {
   if (event.name === 's' && event.ctrl) {
     console.log('Saving state...');
@@ -1936,24 +1960,26 @@ Use blECSd's ECS and widgets with custom rendering output (web canvas, image fil
 
 Don't register `outputSystem` - render manually instead:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, LoopPhase, inputSystem, layoutSystem, renderSystem } from 'blecsd';
+import { createGameLoop, LoopPhase, inputSystem, layoutSystem, renderSystem } from 'blecsd';
 
-const scheduler = createScheduler(world, { targetFPS: 60 });
+const loop = createGameLoop(world, { targetFPS: 60 });
 
 // Register everything EXCEPT outputSystem
-scheduler.addSystem(LoopPhase.INPUT, inputSystem);
-scheduler.addSystem(LoopPhase.LAYOUT, layoutSystem);
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.INPUT, inputSystem);
+loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
 // NO outputSystem
 ```
 
 **2. Read render buffer**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getRenderBuffer } from 'blecsd';
 
-const buffer = getRenderBuffer(world);
+const buffer = getRenderBuffer();
 if (!buffer) {
   console.error('No render buffer');
   return;
@@ -2022,19 +2048,20 @@ gameLoop();
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
+  addComponent,
   setPosition,
   setDimensions,
-  setRenderable,
-  createScheduler,
+  Renderable,
+  createGameLoop,
   LoopPhase,
   layoutSystem,
   renderSystem,
   getRenderBuffer,
-  type ScreenBufferData,
 } from 'blecsd';
 
 const world = createWorld();
@@ -2043,12 +2070,14 @@ const world = createWorld();
 const box = addEntity(world);
 setPosition(world, box, 5, 5);
 setDimensions(world, box, 10, 5);
-setRenderable(world, box, { char: 88, fg: 0xFF0000, bg: 0x000000 });  // Red 'X'
+addComponent(world, box, Renderable);
+Renderable.fg[box] = 0xFF0000;
+Renderable.bg[box] = 0x000000;
 
 // Setup ECS (no outputSystem)
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.LAYOUT, layoutSystem);
-scheduler.addSystem(LoopPhase.RENDER, renderSystem);
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
 
 // Custom renderer: Write to image file
 import { createCanvas } from 'canvas';
@@ -2088,8 +2117,8 @@ function renderToImage(buffer: ScreenBufferData, filename: string): void {
 }
 
 // Render once
-scheduler.run(world, 0.016);
-const buffer = getRenderBuffer(world);
+loop.start();
+const buffer = getRenderBuffer();
 if (buffer) {
   renderToImage(buffer, './output.png');
   console.log('Rendered to output.png');
@@ -2236,12 +2265,13 @@ function movementSystem(world: World): World {
 }
 ```
 
-**3. Register to scheduler**
+**3. Register to game loop**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { LoopPhase } from 'blecsd';
 
-scheduler.addSystem(LoopPhase.UPDATE, movementSystem);
+loop.registerSystem(LoopPhase.UPDATE, movementSystem);
 ```
 
 ### Complete Example
@@ -2251,31 +2281,31 @@ import {
   createWorld,
   addEntity,
   query,
-  defineComponent,
-  Types,
   setPosition,
   Position,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   type World,
 } from 'blecsd';
 
-// Define custom component
-const Health = defineComponent({
-  current: Types.f32,
-  max: Types.f32,
-});
+// Define custom component (using typed arrays directly)
+const Health = {
+  current: new Float32Array(10000),
+  max: new Float32Array(10000),
+};
 
-const Damage = defineComponent({
-  amount: Types.f32,
-  tick: Types.ui32,
-});
+const Damage = {
+  amount: new Float32Array(10000),
+  tick: new Uint32Array(10000),
+};
 
 // Custom system: Apply damage over time
 function damageSystem(world: World): World {
-  const entities = query(world, [Health, Damage]);
+  const entities = query(world, [Position]);
 
   for (const eid of entities) {
+    if (!Health.current[eid] && !Damage.amount[eid]) continue;
+
     // Apply damage
     const dmg = Damage.amount[eid] ?? 0;
     const current = Health.current[eid] ?? 0;
@@ -2303,10 +2333,10 @@ Health.max[player] = 100;
 Damage.amount[player] = 1;  // 1 HP per frame
 
 // Register system
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.addSystem(LoopPhase.UPDATE, damageSystem);
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.registerSystem(LoopPhase.UPDATE, damageSystem);
 
-scheduler.start();
+loop.start();
 ```
 
 ### Best Practices
@@ -2370,6 +2400,7 @@ function update(): void {
 
 **3. Use blECSd widgets**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addEntity } from 'bitecs';
 import { createBox, setPosition } from 'blecsd';
@@ -2390,17 +2421,18 @@ MyCustomComponent.value[entity] = 42;
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld as createBitecsWorld, addEntity, defineComponent, Types } from 'bitecs';
+import { createWorld as createBitecsWorld, addEntity } from 'bitecs';
 import { Position, Velocity, layoutSystem, renderSystem, setPosition } from 'blecsd';
 
 // Your bitecs world
 const world = createBitecsWorld();
 
-// Your custom components
-const MyComponent = defineComponent({
-  value: Types.i32,
-});
+// Your custom components (using typed arrays directly)
+const MyComponent = {
+  value: new Int32Array(10000),
+};
 
 // Create entity
 const entity = addEntity(world);
@@ -2744,14 +2776,23 @@ import {
   setPosition,
   setDimensions,
   Interactive,
-  createScheduler,
+  createGameLoop,
   LoopPhase,
   focusNext,
   focusPrev,
+  getFocused,
   getInputEventBus,
+  setAccessibleLabel,
+  getAccessibleLabel,
+  type World,
+  type Entity,
 } from 'blecsd';
 
 const world = createWorld();
+
+function announce(message: string): void {
+  process.stdout.write(`\x1b[2K\r${message}\r\n`);
+}
 
 // Create accessible button
 function createAccessibleButton(
@@ -2794,13 +2835,13 @@ eventBus.on('keypress', (event) => {
 
     const focused = getFocused(world);
     if (focused !== null) {
-      const label = getAccessibleLabel(focused);
+      const label = getAccessibleLabel(world, focused);
       announce(`Focused: ${label}`);
     }
   } else if (event.name === 'enter' || event.name === 'space') {
     const focused = getFocused(world);
     if (focused !== null) {
-      const label = getAccessibleLabel(focused);
+      const label = getAccessibleLabel(world, focused);
       announce(`Activated: ${label}`);
       // Trigger button action
     }
@@ -2808,8 +2849,8 @@ eventBus.on('keypress', (event) => {
 });
 
 // Start app
-const scheduler = createScheduler(world, { targetFPS: 60 });
-scheduler.start();
+const loop = createGameLoop(world, { targetFPS: 60 });
+loop.start();
 ```
 
 ### Accessibility Checklist

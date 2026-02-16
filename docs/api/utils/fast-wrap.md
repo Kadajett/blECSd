@@ -125,7 +125,6 @@ function createWrapCache(width: number): WrapCache
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWrapCache } from 'blecsd';
 
@@ -171,7 +170,6 @@ function wrapWithCache(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWrapCache, wrapWithCache } from 'blecsd';
 
@@ -276,7 +274,6 @@ function lineToPosition(cache: WrapCache, lineNumber: number): LinePosition | un
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWrapCache, wrapWithCache, lineToPosition } from 'blecsd';
 
@@ -321,7 +318,6 @@ function getWrapCacheStats(cache: WrapCache): WrapCacheStats
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWrapCache,

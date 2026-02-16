@@ -240,7 +240,9 @@ function emitDescendants<T extends EventMap, K extends keyof T>(
 ### Example: Broadcast to All Children
 
 ```typescript
-import { emitDescendants, createEntityEventBusStore } from 'blecsd';
+import { createWorld, addEntity, emitDescendants, createEntityEventBusStore, appendChild, createEventBus } from 'blecsd';
+
+const world = createWorld();
 
 // Set up entity hierarchy
 const parent = addEntity(world);

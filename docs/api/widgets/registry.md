@@ -4,7 +4,6 @@ The Widget Registry provides centralized widget registration and creation by nam
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWidgetRegistry,
@@ -41,7 +40,6 @@ A widget registry is particularly useful for:
 
 ### Example: Loading UI from Config
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWidgetRegistry, registerBuiltinWidgets } from 'blecsd';
 
@@ -80,7 +78,6 @@ const menu = createFromLayout(world, layout);
 
 Creates a new empty widget registry.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWidgetRegistry } from 'blecsd';
 
@@ -247,7 +244,6 @@ registry.clear();
 
 Registers all builtin blECSd widgets with a registry.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWidgetRegistry, registerBuiltinWidgets } from 'blecsd';
 
@@ -283,7 +279,6 @@ registerBuiltinWidgets(registry);
 
 A pre-configured registry with all builtin widgets registered.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { defaultRegistry } from 'blecsd';
 
@@ -300,7 +295,6 @@ const panel = defaultRegistry.create(world, 'panel', { title: 'Hello' });
 
 Gets all widget type names from the default registry.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getWidgetTypes } from 'blecsd';
 
@@ -312,7 +306,6 @@ const types = getWidgetTypes();
 
 Checks if a name is a valid widget type in the default registry.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isWidgetType } from 'blecsd';
 
@@ -326,7 +319,6 @@ isWidgetType('custom');  // false
 
 Gets widget types by tag from the default registry.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getWidgetsByTag } from 'blecsd';
 
@@ -384,7 +376,6 @@ interface WidgetRegistry {
 
 ### Custom Widget Registration
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWidgetRegistry, registerBuiltinWidgets, createBox } from 'blecsd';
 
@@ -453,7 +444,6 @@ const slot = registry.create(world, 'inventory:slot', { size: 32 });
 
 ### UI Theming
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWidgetRegistry, registerBuiltinWidgets } from 'blecsd';
 

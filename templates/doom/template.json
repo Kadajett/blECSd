@@ -1,0 +1,9 @@
+{
+	"name": "doom",
+	"version": "0.0.1",
+	"description": "Doom source port rendered via Kitty graphics protocol",
+	"category": "3d",
+	"tags": ["3d", "doom", "raycasting", "kitty-graphics"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0"
+}

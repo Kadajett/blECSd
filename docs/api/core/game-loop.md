@@ -225,7 +225,6 @@ loop.start();
 
 ### Manual Stepping (Testing)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, createWorld } from 'blecsd';
 

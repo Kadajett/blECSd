@@ -27,7 +27,6 @@ fmt(10, 20);  // 'Point(10, 20)'
 
 Printf-style string formatting with support for common format specifiers.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sprintf } from 'blecsd';
 
@@ -82,7 +81,6 @@ sprintf('%X', 255);        // 'FF'
 
 ### Width and Precision
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sprintf } from 'blecsd';
 
@@ -263,7 +261,6 @@ fgRgb(255, 128, 0);  // Orange foreground
 
 ### Formatted Output
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sprintf } from 'blecsd';
 
@@ -308,7 +305,6 @@ formatDate(2026, 2, 2);   // '2026-02-02'
 
 ### Debugging Output
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sprintf } from 'blecsd';
 

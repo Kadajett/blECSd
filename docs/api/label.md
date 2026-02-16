@@ -248,8 +248,8 @@ hasLabelText(world, eid); // false (empty label)
 
 Resets the label store. Primarily used for testing.
 
-<!-- blecsd-doccheck:ignore -->
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetLabelStore } from 'blecsd';
 

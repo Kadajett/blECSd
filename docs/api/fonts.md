@@ -7,8 +7,8 @@ Bitmap fonts power ASCII-art text rendering such as the BigText widget. blECSd s
 ```typescript
 import { loadFont, renderChar } from 'blecsd/widgets/fonts';
 
-const font = loadFont('terminus-14-bold');
-const lines = renderChar(font, 'A', { fillChar: '█', emptyChar: ' ' });
+const font = await loadFont('terminus-14-bold');
+const lines = renderChar(font, 'A', { fillChar: '#', emptyChar: ' ' });
 
 lines.forEach((line) => console.log(line));
 ```
@@ -51,7 +51,7 @@ Gets the bitmap data for a specific character.
 ```typescript
 import { getCharBitmap, loadFont } from 'blecsd/widgets/fonts';
 
-const font = loadFont('terminus-14-bold');
+const font = await loadFont('terminus-14-bold');
 const bitmap = getCharBitmap(font, 'A');
 
 if (bitmap) {
@@ -74,7 +74,7 @@ Renders a character to an array of strings using block characters.
 ```typescript
 import { loadFont, renderChar } from 'blecsd/widgets/fonts';
 
-const font = loadFont('terminus-14-bold');
+const font = await loadFont('terminus-14-bold');
 const lines = renderChar(font, 'A', { fillChar: '#', emptyChar: '.' });
 
 lines.forEach((line) => console.log(line));

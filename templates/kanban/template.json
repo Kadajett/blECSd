@@ -1,0 +1,10 @@
+{
+	"name": "kanban",
+	"version": "0.0.1",
+	"description": "Kanban board with drag-and-drop cards and columns",
+	"category": "app",
+	"tags": ["kanban", "project-management", "drag-drop"],
+	"entry": "index.ts",
+	"blecsdVersion": "^0.1.0",
+	"placeholder": true
+}

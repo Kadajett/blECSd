@@ -41,7 +41,6 @@ import {
 
 Registers a new animation definition and returns its numeric ID.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { registerAnimation } from 'blecsd';
 
@@ -104,7 +103,6 @@ const Animation = {
 
 ### AnimationDirection
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { AnimationDirection } from 'blecsd';
 
@@ -134,7 +132,6 @@ playAnimation(world, entity, walkId, {
 
 Same as `playAnimation` but looks up the animation by name.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { playAnimationByName } from 'blecsd';
 
@@ -143,7 +140,6 @@ playAnimationByName(world, entity, 'walk', { loop: true });
 
 ### stopAnimation / pauseAnimation / resumeAnimation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { stopAnimation, pauseAnimation, resumeAnimation } from 'blecsd';
 
@@ -156,7 +152,6 @@ stopAnimation(world, entity);   // Stops and resets to frame 0
 
 Returns a snapshot of the entity's animation state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAnimationData } from 'blecsd';
 
@@ -170,7 +165,6 @@ if (anim?.playing) {
 
 ### isAnimationPlaying / hasAnimation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isAnimationPlaying, hasAnimation } from 'blecsd';
 
@@ -183,7 +177,6 @@ if (hasAnimation(world, entity) && isAnimationPlaying(world, entity)) {
 
 Modify playback properties on a running animation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setAnimationSpeed, setAnimationLoop, setAnimationDirection, AnimationDirection } from 'blecsd';
 
@@ -196,7 +189,6 @@ setAnimationDirection(world, entity, AnimationDirection.REVERSE);
 
 Removes the Animation component and resets all fields to defaults.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { removeAnimation } from 'blecsd';
 
@@ -207,7 +199,6 @@ removeAnimation(world, entity);
 
 Advances animation state for a single entity by delta time. Typically called by the animation system, but can be used manually.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { updateAnimationEntity } from 'blecsd';
 

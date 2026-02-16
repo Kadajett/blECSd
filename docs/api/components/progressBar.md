@@ -86,9 +86,13 @@ Default appearance:
 Customize with:
 
 ```typescript
-import { setProgressBarDisplay } from 'blecsd';
+import { createWorld, addEntity, attachProgressBarBehavior, setProgressBarDisplay } from 'blecsd';
 
-setProgressBarDisplay(eid, {
+const world = createWorld();
+const eid = addEntity(world);
+attachProgressBarBehavior(world, eid, { min: 0, max: 100, value: 0 });
+
+setProgressBarDisplay(world, eid, {
   fillChar: '▓',
   emptyChar: '░',
   fillFg: 0x00ff00ff,
@@ -172,6 +176,12 @@ setProgressOrientation(world, eid, ProgressOrientation.Vertical);
 ### Display
 
 ```typescript
+import { createWorld, addEntity, attachProgressBarBehavior, setShowPercentage, isShowingPercentage, getProgressFillChar, getProgressEmptyChar, setProgressBarDisplay, getProgressBarDisplay, clearProgressBarDisplay, renderProgressString } from 'blecsd';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachProgressBarBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 // Show/hide percentage
 setShowPercentage(world, eid, true);
 if (isShowingPercentage(eid)) {
@@ -182,15 +192,15 @@ if (isShowingPercentage(eid)) {
 const fillChar = getProgressFillChar(eid);
 const emptyChar = getProgressEmptyChar(eid);
 
-// Get display configuration
-const display = getProgressBarDisplay(eid);
-
-// Set display configuration
-setProgressBarDisplay(eid, {
+// Set display configuration first
+setProgressBarDisplay(world, eid, {
   fillChar: '█',
   emptyChar: '░',
   fillFg: 0x00ff00ff,
 });
+
+// Get display configuration
+const display = getProgressBarDisplay(eid);
 
 // Clear display (revert to defaults)
 clearProgressBarDisplay(eid);
@@ -242,7 +252,7 @@ attachProgressBarBehavior(world, downloadProgress, {
   showPercentage: true,
 });
 
-setProgressBarDisplay(downloadProgress, {
+setProgressBarDisplay(world, downloadProgress, {
   fillChar: '█',
   emptyChar: '░',
   fillFg: 0x0088ffff,

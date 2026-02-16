@@ -58,7 +58,6 @@ Factory function that returns the movementSystem.
 function createMovementSystem(): System
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createMovementSystem, createScheduler, LoopPhase } from 'blecsd';
 
@@ -79,7 +78,6 @@ function registerMovementSystem(scheduler: Scheduler, priority?: number): void
 - `scheduler` - The scheduler to register with
 - `priority` - Optional priority within the PHYSICS phase (default: 0)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, registerMovementSystem } from 'blecsd';
 
@@ -115,7 +113,6 @@ function updateMovements(
 ): void
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { updateMovements, queryMovement } from 'blecsd';
 
@@ -127,7 +124,6 @@ updateMovements(world, entities, 0.016); // ~60fps frame
 
 Complete movement setup with velocity, acceleration, and friction:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
