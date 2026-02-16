@@ -552,6 +552,208 @@ const loop = createGameLoop(world, { targetFPS: 60 });
 loop.registerSystem(LoopPhase.POST_RENDER, cleanupSystem);
 ```
 
+## Namespace API
+
+As your application grows, you may want to organize imports using namespace objects. blECSd provides namespace imports from subpaths like `blecsd/components`, `blecsd/systems`, `blecsd/terminal`, and `blecsd/utils`.
+
+### Why Use Namespaces?
+
+Namespace imports help with:
+- Organizing related functions by domain
+- Reducing naming conflicts in larger codebases
+- Making code more maintainable and searchable
+- Creating clearer boundaries between different parts of your application
+
+### Component Namespaces
+
+Instead of importing many individual functions:
+
+```typescript
+import {
+  setPosition,
+  getPosition,
+  moveBy,
+  setDimensions,
+  getDimensions,
+  setContent,
+  getText,
+} from 'blecsd';
+```
+
+Use component namespaces:
+
+```typescript
+import { position, dimensions, content } from 'blecsd/components';
+
+// Position operations
+position.set(world, eid, 10, 5);
+const pos = position.get(world, eid);
+position.moveBy(world, eid, 2, 0);
+
+// Dimensions operations
+dimensions.set(world, eid, { width: 40, height: 10 });
+const size = dimensions.get(world, eid);
+
+// Content operations
+content.setText(world, eid, 'Hello, World!');
+const text = content.getText(world, eid);
+```
+
+### System Namespaces
+
+Systems can also be imported as namespaces:
+
+```typescript
+import { animation, layout, render, input } from 'blecsd/systems';
+import type { World } from 'blecsd';
+
+function gameLoop(world: World): void {
+  // Process input
+  input.processInput(world);
+
+  // Update animations
+  animation.updateAnimations(world);
+
+  // Calculate layout
+  layout.calculateLayout(world);
+
+  // Render to buffer
+  render.renderEntities(world);
+}
+```
+
+### Terminal Namespaces
+
+For low-level terminal operations:
+
+```typescript
+import { cursor, screen, graphics } from 'blecsd/terminal';
+
+// Cursor control
+cursor.hide();
+cursor.to(10, 5);
+process.stdout.write('Hello');
+cursor.show();
+
+// Screen management
+screen.clear();
+screen.alternateOn();
+// ... your app
+screen.alternateOff();
+
+// Graphics primitives
+graphics.drawLine(world, 0, 0, 40, 20, '─');
+graphics.fillRect(world, 5, 5, 30, 10, '█');
+```
+
+### Mixing Approaches
+
+You can mix flat imports and namespace imports freely:
+
+```typescript
+// Core ECS always from 'blecsd'
+import { createWorld, addEntity, query } from 'blecsd';
+
+// Namespaces for organization
+import { position, dimensions, scroll } from 'blecsd/components';
+import { animation, layout } from 'blecsd/systems';
+
+const world = createWorld();
+const eid = addEntity(world);
+
+// Use both styles
+position.set(world, eid, 10, 5);
+dimensions.set(world, eid, { width: 40, height: 10 });
+
+// Systems
+animation.updateAnimations(world);
+layout.calculateLayout(world);
+```
+
+### Complete Example with Namespaces
+
+```typescript
+import { createWorld, addEntity, createGameLoop, LoopPhase } from 'blecsd';
+import { position, dimensions, velocity } from 'blecsd/components';
+import { animation, layout, render } from 'blecsd/systems';
+import { cursor, screen } from 'blecsd/terminal';
+import type { World } from 'blecsd';
+
+// Create world
+const world = createWorld();
+
+// Create entities
+for (let i = 0; i < 10; i++) {
+  const particle = addEntity(world);
+
+  position.set(world, particle, Math.random() * 80, Math.random() * 24);
+  dimensions.set(world, particle, { width: 1, height: 1 });
+  velocity.set(world, particle, {
+    x: (Math.random() - 0.5) * 2,
+    y: (Math.random() - 0.5) * 2,
+  });
+}
+
+// Custom movement system using namespace functions
+function movementSystem(world: World): World {
+  // Get all entities with velocity (using has check)
+  const entities = [];
+  for (let eid = 0; eid < 10000; eid++) {
+    if (velocity.has(world, eid) && position.has(world, eid)) {
+      entities.push(eid);
+    }
+  }
+
+  for (const eid of entities) {
+    const pos = position.get(world, eid);
+    const vel = velocity.get(world, eid);
+
+    if (pos && vel) {
+      position.set(world, eid, pos.x + vel.x, pos.y + vel.y);
+    }
+  }
+
+  return world;
+}
+
+// Setup terminal
+screen.alternateOn();
+cursor.hide();
+
+// Create game loop
+const loop = createGameLoop(world, { targetFPS: 30 });
+
+loop.registerSystem(LoopPhase.UPDATE, movementSystem);
+loop.registerSystem(LoopPhase.ANIMATION, animation.updateAnimations);
+loop.registerSystem(LoopPhase.LAYOUT, layout.calculateLayout);
+loop.registerSystem(LoopPhase.RENDER, render.renderEntities);
+
+loop.start();
+
+// Cleanup on exit
+process.on('SIGINT', () => {
+  loop.stop();
+  cursor.show();
+  screen.alternateOff();
+  process.exit(0);
+});
+```
+
+Note: Namespace imports work best with helper functions like `set()`, `get()`, `has()`. For queries that need component objects, use the flat import style from `'blecsd'` or import component objects directly from their files.
+
+### Namespace Reference
+
+Available namespace subpaths:
+
+| Subpath | Contains |
+|---------|----------|
+| `blecsd/components` | Component namespaces (position, dimensions, content, border, scroll, focus, etc.) |
+| `blecsd/systems` | System namespaces (animation, layout, render, input, output, collision, etc.) |
+| `blecsd/terminal` | Terminal namespaces (cursor, screen, graphics, program, etc.) |
+| `blecsd/utils` | Utility namespaces (colors, textWrap, unicode, rope, etc.) |
+
+See the [Export Patterns Guide](../guides/export-patterns.md) for more details on the three-tier export system.
+
 ## Summary
 
 The ECS API provides:
