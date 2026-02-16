@@ -5,10 +5,10 @@
  * ```typescript
  * import { sattr } from 'blecsd/utils';
  *
- * const attr = sattr.sattr({ fg: 0xffffff, bg: 0x000000, bold: true });
+ * const attr = sattr.create({ fg: 0xffffff, bg: 0x000000, bold: true });
  * const encoded = sattr.encodeStyleAttr(attr);
  * const decoded = sattr.decodeStyleAttr(encoded);
- * const merged = sattr.sattrMerge(attr1, attr2);
+ * const merged = sattr.sattrMerge(attr, decoded);
  * ```
  */
 

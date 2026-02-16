@@ -5,8 +5,8 @@
  * ```typescript
  * import { rope } from 'blecsd/utils';
  *
- * const rope = rope.createRope('Hello World');
- * const updated = rope.insert(rope, 5, ', Beautiful');
+ * const myRope = rope.createRope('Hello World');
+ * const updated = rope.insert(myRope, 5, ', Beautiful');
  * const text = rope.getText(updated);
  * const line = rope.getLine(updated, 0);
  * ```

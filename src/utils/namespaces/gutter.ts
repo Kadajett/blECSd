@@ -7,7 +7,7 @@
  *
  * const config = gutter.createGutterConfig({ mode: 'absolute' });
  * const width = gutter.computeGutterWidth(100);
- * const gutter = gutter.computeVisibleGutter(config, 0, 50, 100);
+ * const result = gutter.computeVisibleGutter(config, 0, 50, 100);
  * ```
  */
 

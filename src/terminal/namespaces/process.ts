@@ -4,27 +4,30 @@
  * Functions for spawning processes, executing shell commands,
  * and interacting with external editors.
  *
+ * Note: Importing this namespace will shadow the Node.js global `process`.
+ * If you need both, use an alias: `import { process as proc } from 'blecsd/terminal'`.
+ *
  * @example
  * ```typescript
- * import { process } from 'blecsd/terminal';
+ * import { process as proc } from 'blecsd/terminal';
  *
  * // Execute command synchronously
- * const result = process.execSync('ls -la');
+ * const result = proc.execSync('ls -la');
  * console.log(result.stdout);
  *
  * // Execute command asynchronously
- * const asyncResult = await process.exec('git status');
+ * const asyncResult = await proc.exec('git status');
  * console.log(asyncResult.stdout);
  *
  * // Spawn long-running process
- * const child = process.spawn('tail', ['-f', 'log.txt'], {
+ * const child = proc.spawn('tail', ['-f', 'log.txt'], {
  *   onStdout: (data) => console.log(data),
  *   onStderr: (data) => console.error(data),
  * });
  *
  * // Open editor
- * const editor = process.getDefaultEditor();
- * const text = await process.readEditor('Initial content', {
+ * const editor = proc.getDefaultEditor();
+ * const text = await proc.readEditor('Initial content', {
  *   editor,
  *   extension: '.md',
  * });

@@ -6,7 +6,7 @@
  * import { fuzzySearch } from 'blecsd/utils';
  *
  * const match = fuzzySearch.fuzzyMatch('hello', 'hlo');
- * const results = fuzzySearch.fuzzySearch(items, 'query');
+ * const results = fuzzySearch.search(items, 'query');
  * const filtered = fuzzySearch.fuzzyFilter(items, 'query', item => item.name);
  * ```
  */
