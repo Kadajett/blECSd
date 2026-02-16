@@ -7,8 +7,8 @@
  * ```typescript
  * import { slider } from 'blecsd/components';
  * slider.attach(world, eid);
- * slider.setValue(world, eid, 50);
- * slider.increment(world, eid);
+ * slider.value.set(world, eid, 50);
+ * slider.value.increment(world, eid);
  * ```
  */
 import {

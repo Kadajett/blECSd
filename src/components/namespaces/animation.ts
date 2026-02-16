@@ -7,7 +7,7 @@
  * ```typescript
  * import { animation } from 'blecsd/components';
  * animation.register({ name: 'fadeIn', frames: [...] });
- * animation.play(world, eid, 'fadeIn');
+ * animation.playByName(world, eid, 'fadeIn');
  * ```
  */
 import {

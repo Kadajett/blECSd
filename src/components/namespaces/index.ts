@@ -41,7 +41,7 @@ export type { ContentModule } from './content';
 export { content } from './content';
 export type { DimensionsModule } from './dimensions';
 export { dimensions } from './dimensions';
-export type { FocusModule } from './focus';
+export type { FocusableModule } from './focus';
 // Interaction
 export { focusable } from './focus';
 export type { FormModule } from './form';

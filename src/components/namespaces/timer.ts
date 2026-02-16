@@ -6,9 +6,9 @@
  * @example
  * ```typescript
  * import { timer } from 'blecsd/components';
- * timer.set(world, eid, { duration: 1000, repeat: 5 });
+ * timer.set(world, eid, { duration: 1, repeat: 5 });
  * timer.start(world, eid);
- * timer.onComplete(world, eid, () => { ... });
+ * timer.callbacks.onComplete(eid, () => { ... });
  * ```
  */
 import {

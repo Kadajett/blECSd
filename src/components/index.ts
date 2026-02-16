@@ -14,7 +14,7 @@ export type {
 	CollisionModule,
 	ContentModule,
 	DimensionsModule,
-	FocusModule,
+	FocusableModule,
 	FormModule,
 	HealthModule,
 	HierarchyModule,

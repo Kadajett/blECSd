@@ -8,7 +8,7 @@
  * import { textInput } from 'blecsd/components';
  * textInput.attach(world, eid, config);
  * textInput.focus(world, eid);
- * textInput.cursor.moveTo(world, eid, 5);
+ * textInput.cursor.set(world, eid, 5);
  * ```
  */
 import {

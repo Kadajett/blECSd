@@ -53,4 +53,4 @@ export const focusable = Object.freeze({
 	resetState: resetFocusState,
 });
 
-export type FocusModule = typeof focusable;
+export type FocusableModule = typeof focusable;

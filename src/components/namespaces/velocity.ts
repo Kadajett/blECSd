@@ -6,8 +6,8 @@
  * @example
  * ```typescript
  * import { velocity } from 'blecsd/components';
- * velocity.set(world, eid, { x: 1, y: 0 });
- * velocity.applyToEntity(world, eid, dt);
+ * velocity.set(world, eid, 1, 0);
+ * velocity.updateMovement(world, eid, dt);
  * velocity.stop(world, eid);
  * ```
  */

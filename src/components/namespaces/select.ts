@@ -8,7 +8,7 @@
  * import { select } from 'blecsd/components';
  * select.attach(world, eid);
  * select.open(world, eid);
- * select.selectByIndex(world, eid, 2);
+ * select.selected.byIndex(world, eid, 2);
  * ```
  */
 import {

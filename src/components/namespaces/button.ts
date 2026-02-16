@@ -8,7 +8,7 @@
  * import { button } from 'blecsd/components';
  * button.attach(world, eid);
  * button.press(world, eid);
- * button.onPress(world, eid, () => { ... });
+ * const unsub = button.onPress(eid, () => { ... });
  * ```
  */
 import {
