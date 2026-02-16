@@ -7,10 +7,13 @@ Bitmap fonts power ASCII-art text rendering such as the BigText widget. blECSd s
 ```typescript
 import { loadFont, renderChar } from 'blecsd/widgets/fonts';
 
-const font = await loadFont('terminus-14-bold');
-const lines = renderChar(font, 'A', { fillChar: '#', emptyChar: ' ' });
+async function main() {
+  const font = await loadFont('terminus-14-bold');
+  const lines = renderChar(font, 'A', { fillChar: '#', emptyChar: ' ' });
 
-lines.forEach((line) => console.log(line));
+  lines.forEach((line) => console.log(line));
+}
+main();
 ```
 
 ---
@@ -28,19 +31,21 @@ lines.forEach((line) => console.log(line));
 
 ### loadFont
 
-Loads a built-in bitmap font by name.
+Loads a built-in bitmap font by name. Returns a Promise.
 
 ```typescript
 import { loadFont } from 'blecsd/widgets/fonts';
 
-const font = loadFont('terminus-14-normal');
-console.log(font.charWidth, font.charHeight); // 8, 14
+async function main() {
+  const font = await loadFont('terminus-14-normal');
+  console.log(font.charWidth, font.charHeight); // 8, 14
+}
 ```
 
 **Parameters:**
 - `name` - Font identifier
 
-**Returns:** `BitmapFont`
+**Returns:** `Promise<BitmapFont>`
 
 ---
 
@@ -51,11 +56,13 @@ Gets the bitmap data for a specific character.
 ```typescript
 import { getCharBitmap, loadFont } from 'blecsd/widgets/fonts';
 
-const font = await loadFont('terminus-14-bold');
-const bitmap = getCharBitmap(font, 'A');
+async function main() {
+  const font = await loadFont('terminus-14-bold');
+  const bitmap = getCharBitmap(font, 'A');
 
-if (bitmap) {
-  console.log(bitmap.width, bitmap.height);
+  if (bitmap) {
+    console.log(bitmap.width, bitmap.height);
+  }
 }
 ```
 
@@ -74,10 +81,12 @@ Renders a character to an array of strings using block characters.
 ```typescript
 import { loadFont, renderChar } from 'blecsd/widgets/fonts';
 
-const font = await loadFont('terminus-14-bold');
-const lines = renderChar(font, 'A', { fillChar: '#', emptyChar: '.' });
+async function main() {
+  const font = await loadFont('terminus-14-bold');
+  const lines = renderChar(font, 'A', { fillChar: '#', emptyChar: '.' });
 
-lines.forEach((line) => console.log(line));
+  lines.forEach((line) => console.log(line));
+}
 ```
 
 **Parameters:**

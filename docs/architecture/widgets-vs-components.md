@@ -98,7 +98,7 @@ setContent(world, box, 'New text');
 **Widgets** are higher-level wrappers that add methods and manage internal state.
 
 ```typescript
-import { createWorld, addEntity, createList, createModal, createFileManager } from 'blecsd';
+import { createWorld, addEntity, createList, getListState } from 'blecsd/widgets';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -116,7 +116,6 @@ list.removeItem(1);
 list.getSelectedItem()?.text; // "Item 2"
 
 // Widget state is accessed via component functions
-import { getListState } from 'blecsd';
 const state = getListState(world, entity);
 ```
 
