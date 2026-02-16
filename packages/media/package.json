@@ -7,8 +7,32 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./gif": {
+      "import": "./src/gif/index.ts",
+      "types": "./src/gif/index.ts"
+    },
+    "./overlay": {
+      "import": "./src/overlay/index.ts",
+      "types": "./src/overlay/index.ts"
+    },
+    "./png": {
+      "import": "./src/png/index.ts",
+      "types": "./src/png/index.ts"
+    },
+    "./render": {
+      "import": "./src/render/index.ts",
+      "types": "./src/render/index.ts"
+    },
+    "./widgets/image": {
+      "import": "./src/widgets/image/index.ts",
+      "types": "./src/widgets/image/index.ts"
+    },
+    "./widgets/video": {
+      "import": "./src/widgets/video/index.ts",
+      "types": "./src/widgets/video/index.ts"
     }
   },
   "files": ["dist", "README.md", "LICENSE"],

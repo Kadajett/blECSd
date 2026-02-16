@@ -7,8 +7,44 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./backends": {
+      "import": "./src/backends/index.ts",
+      "types": "./src/backends/index.ts"
+    },
+    "./components": {
+      "import": "./src/components/index.ts",
+      "types": "./src/components/index.ts"
+    },
+    "./loaders": {
+      "import": "./src/loaders/index.ts",
+      "types": "./src/loaders/index.ts"
+    },
+    "./math": {
+      "import": "./src/math/index.ts",
+      "types": "./src/math/index.ts"
+    },
+    "./rasterizer": {
+      "import": "./src/rasterizer/index.ts",
+      "types": "./src/rasterizer/index.ts"
+    },
+    "./schemas": {
+      "import": "./src/schemas/index.ts",
+      "types": "./src/schemas/index.ts"
+    },
+    "./stores": {
+      "import": "./src/stores/index.ts",
+      "types": "./src/stores/index.ts"
+    },
+    "./systems": {
+      "import": "./src/systems/index.ts",
+      "types": "./src/systems/index.ts"
+    },
+    "./widgets": {
+      "import": "./src/widgets/viewport3d.ts",
+      "types": "./src/widgets/viewport3d.ts"
     }
   },
   "files": ["dist", "README.md", "LICENSE"],
