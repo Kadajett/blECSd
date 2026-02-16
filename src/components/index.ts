@@ -14,7 +14,7 @@ export type {
 	CollisionModule,
 	ContentModule,
 	DimensionsModule,
-	FocusableModule,
+	FocusModule,
 	FormModule,
 	HealthModule,
 	HierarchyModule,
@@ -64,7 +64,7 @@ export {
 	content,
 	dimensions,
 	// Interaction
-	focusable,
+	focus,
 	form,
 	health,
 	// Tree/relationships
@@ -549,7 +549,7 @@ export {
 	DEFAULT_FOCUS_BG,
 	DEFAULT_FOCUS_FG,
 	Focusable,
-	focus,
+	focus as focusEntity,
 	focusNext,
 	focusPrev,
 	getFocusable,
