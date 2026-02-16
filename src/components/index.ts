@@ -3,6 +3,104 @@
  * @module components
  */
 
+export type {
+	AccessibilityModule,
+	AnimationModule,
+	BehaviorModule,
+	BorderModule,
+	ButtonModule,
+	CameraModule,
+	CheckboxModule,
+	CollisionModule,
+	ContentModule,
+	DimensionsModule,
+	FocusableModule,
+	FormModule,
+	HealthModule,
+	HierarchyModule,
+	InteractiveModule,
+	LabelModule,
+	ListModule,
+	PaddingModule,
+	ParticleModule,
+	PositionModule,
+	ProgressBarModule,
+	RadioModule,
+	RenderableModule,
+	ScreenComponentModule,
+	ScrollModule,
+	SelectModule,
+	ShadowModule,
+	SliderModule,
+	SpinnerModule,
+	SpriteModule,
+	StateMachineModule,
+	TableModule,
+	TextInputModule,
+	TileMapModule,
+	TimerModule,
+	UserDataModule,
+	VelocityModule,
+} from './namespaces';
+// ─── Namespaced API (preferred) ───────────────────────────────────────────────
+// Each namespace is a frozen plain object of pure functions. No classes, no
+// `this`, no state. Import these for a clean, organized API.
+//
+// Usage: import { position, content, scroll } from 'blecsd/components';
+//        position.set(world, eid, 10, 5);
+//
+export {
+	// Utility
+	accessibility,
+	// Game/animation
+	animation,
+	behavior,
+	// Visual decoration
+	border,
+	button,
+	camera,
+	checkbox,
+	collision,
+	content,
+	dimensions,
+	// Interaction
+	focusable,
+	form,
+	health,
+	// Tree/relationships
+	hierarchy,
+	interactive,
+	label,
+	list,
+	padding,
+	particle,
+	// Core layout/rendering
+	position,
+	progressBar,
+	radio,
+	renderable,
+	screenComponent,
+	// Scrolling
+	scroll,
+	select,
+	shadow,
+	slider,
+	spinner,
+	sprite,
+	stateMachine,
+	table,
+	// Form controls
+	textInput,
+	tilemap,
+	timer,
+	userData,
+	velocity,
+} from './namespaces';
+
+// ─── Flat exports (existing API, still supported) ────────────────────────────
+// All individual functions remain available for backwards compatibility.
+// The namespaced API above is the preferred way to import.
+
 export {
 	clearInteractionState,
 	disable,
