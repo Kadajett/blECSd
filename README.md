@@ -27,50 +27,124 @@ npm install blecsd
 
 ## Quick Start
 
+Create a terminal app with a bordered panel, text, and keyboard input:
+
 ```typescript
 import {
-  createWorld,
-  addEntity,
-  Position,
-  Dimensions,
-  Border,
-  createBox,
-  createList,
-  createEventBus
+  createWorld, createScreenEntity, createBoxEntity,
+  createTextEntity, createListEntity, setText,
+  inputSystem, layoutSystem, renderSystem, outputSystem, cleanup,
+  enableInput, enableKeys,
 } from 'blecsd';
 
-// Create a world and entity
+// Set up the world and screen
 const world = createWorld();
-const entity = addEntity(world);
+const screen = createScreenEntity(world, { width: 80, height: 24 });
 
-// Set position and dimensions using components
-Position.x[entity] = 2;
-Position.y[entity] = 1;
-Dimensions.width[entity] = 40;
-Dimensions.height[entity] = 10;
-
-// Create a box widget
-const box = createBox(world, entity, {
-  border: { type: 'rounded' },
-  title: 'My Application'
+// A bordered panel
+const panel = createBoxEntity(world, {
+  x: 2, y: 1, width: 40, height: 12,
+  parent: screen,
+  border: { type: 1, top: true, bottom: true, left: true, right: true },
 });
 
-// Create a list in another entity
-const listEntity = addEntity(world);
-const list = createList(world, listEntity, {
-  items: [
-    { label: 'Option 1', value: 'opt1' },
-    { label: 'Option 2', value: 'opt2' },
-    { label: 'Option 3', value: 'opt3' }
-  ]
+// Title text
+createTextEntity(world, {
+  x: 4, y: 2, text: 'My Dashboard', parent: screen,
 });
 
-// Type-safe events
-interface AppEvents {
-  'item:selected': { value: string };
+// A selectable list
+const list = createListEntity(world, {
+  x: 4, y: 4, width: 36, height: 6, parent: screen,
+});
+
+// Enable keyboard input and run the update loop
+enableInput(world, screen);
+enableKeys(world, screen);
+
+function tick(): void {
+  inputSystem(world);
+  layoutSystem(world);
+  renderSystem(world);
+  outputSystem(world);
 }
-const events = createEventBus<AppEvents>();
-events.on('item:selected', (e) => console.log(`Selected: ${e.value}`));
+
+const interval = setInterval(tick, 16);
+process.on('SIGINT', () => { clearInterval(interval); cleanup(world); });
+```
+
+## Namespace Imports
+
+blECSd organizes its API into discoverable namespace objects. Instead of importing dozens of individual functions, import a namespace and explore it with autocomplete:
+
+```typescript
+import { position, scroll, content } from 'blecsd/components';
+import { rope, colors, unicode } from 'blecsd/utils';
+import { cursor, program, screen } from 'blecsd/terminal';
+
+// Position operations
+position.set(world, eid, 10, 5);
+position.moveBy(world, eid, 1, 0);
+position.zIndex.bringToFront(world, eid, siblings);
+
+// Scroll control
+scroll.by(world, eid, 0, 10);
+scroll.toTop(world, eid);
+
+// Text manipulation with rope data structure
+const r = rope.create('Hello');
+const modified = rope.insert(r, 5, ' World');
+const text = rope.getText(modified);
+
+// Color utilities
+const hex = colors.rgbToHex(255, 100, 0);
+const parsed = colors.parseColor('#ff6400');
+```
+
+### Import Tiers
+
+| Tier | Import Path | Use Case |
+|------|-------------|----------|
+| **Tier 1** | `'blecsd'` | ~80 curated essentials (factories, systems, core helpers) |
+| **Tier 2** | `'blecsd/components'`, `'blecsd/utils'`, etc. | Full module access via namespaces |
+| **Tier 3** | Deep imports | Internal only |
+
+Start with Tier 1 for prototyping, then use Tier 2 namespaces as your app grows. See the [Export Patterns Guide](./docs/guides/export-patterns.md) for details.
+
+## Addon Packages
+
+Specialized functionality is available as separate packages:
+
+| Package | Description | Install |
+|---------|-------------|---------|
+| [@blecsd/3d](./packages/3d/) | 3D rendering with braille, halfblock, sixel, kitty backends | `npm i @blecsd/3d` |
+| [@blecsd/ai](./packages/ai/) | LLM UI widgets: conversation, streaming markdown, token tracking | `npm i @blecsd/ai` |
+| [@blecsd/audio](./packages/audio/) | Audio channel management and sound triggers | `npm i @blecsd/audio` |
+| [@blecsd/game](./packages/game/) | High-level `createGame()` API for terminal games | `npm i @blecsd/game` |
+| [@blecsd/media](./packages/media/) | GIF/PNG parsing, ANSI rendering, image/video widgets | `npm i @blecsd/media` |
+
+Each addon package also provides namespace objects for discoverability:
+
+```typescript
+// 3D math via namespaces
+import { vec3, mat4, projection } from '@blecsd/3d';
+const v = vec3.add(vec3.create(1, 0, 0), vec3.create(0, 1, 0));
+const mvp = mat4.multiply(projection.perspective(60, 1.5, 0.1, 100), viewMatrix);
+
+// AI widgets via namespaces
+import { conversation, tokenTracker } from '@blecsd/ai';
+conversation.addMessage(state, { role: 'user', content: 'Hello' });
+
+// Media via namespaces
+import { gif, png } from '@blecsd/media';
+const frames = gif.parse.parseGIF(buffer);
+```
+
+Addon packages also support subpath imports for tree-shaking:
+
+```typescript
+import { vec3Add, vec3Cross } from '@blecsd/3d/math';
+import { parseGIF } from '@blecsd/media/gif';
 ```
 
 ## Widgets
@@ -121,69 +195,38 @@ events.on('item:selected', (e) => console.log(`Selected: ${e.value}`));
 | Viewport3d | 3D scene renderer |
 | VirtualizedList | Efficient list for large datasets |
 
-## Form Controls
-
-| Control | Description |
-|---------|-------------|
-| Textarea | Multi-line text editor with cursor, selection |
-| Textbox | Single-line text input with cursor support |
-| Checkbox | Boolean toggle with customizable characters |
-| RadioButton | Single selection from group |
-| Switch | Toggle switch control |
-| Select | Dropdown selection menu (via List component) |
-| ProgressBar | Progress indicator, horizontal/vertical |
-| Form | Form field management, validation, submit |
-| Button | Clickable button with hover/focus states |
-
 ## Components
 
-blECSd provides ECS components that work with any bitECS world:
+blECSd provides ECS components that work with any bitECS world. Each component has a corresponding namespace object for typed access:
 
-| Component | Purpose |
-|-----------|---------|
-| Animation | Frame-based sprite animations |
-| Behavior | Behavior tree execution |
-| Border | Box borders (single, double, rounded, bold, ascii) |
-| Button | Button state and configuration |
-| Camera | Viewport, target following, bounds |
-| Checkbox | Checkbox state |
-| Collision | AABB/circle collision detection, layers, triggers |
-| Content | Text content, alignment, wrapping, tag parsing |
-| Dimensions | Width, height, min/max constraints, percentages |
-| Focusable | Keyboard focus, tab order |
-| Form | Form field management |
-| Health | Health/damage system |
-| Hierarchy | Parent-child relationships, traversal |
-| Input | Input capture state |
-| Interactive | Click, hover, drag states |
-| Label | Text labels with positioning |
-| List | List widget state |
-| Padding | Inner spacing |
-| Particle | Particle system data |
-| Position | X/Y coordinates, z-index, absolute positioning |
-| ProgressBar | Progress bar state |
-| RadioButton | Radio button state |
-| Renderable | Colors, visibility, dirty tracking |
-| Screen | Screen buffer data |
-| Scrollable | Scroll position, content size, scrollbars |
-| Scrollbar | Scrollbar state |
-| Select | Selection dropdown state |
-| Shadow | Drop shadows with opacity, blending |
-| Slider | Slider state |
-| Spinner | Loading spinner state |
-| Sprite | Sprite sheets, frames |
-| StateMachine | Finite state machine with events, transitions |
-| Table | Table widget state |
-| TerminalBuffer | Terminal emulator buffer |
-| TextInput | Text input state |
-| TextSelection | Text selection state |
-| Tilemap | Tilemap rendering data |
-| Timer | Timer/countdown state |
-| UserData | Custom user data storage |
-| Velocity | Movement with speed, friction, max speed |
-| VirtualViewport | Virtualized content rendering |
+```typescript
+import { position, content, list, scroll } from 'blecsd/components';
 
-See [API Reference](./docs/api/index.md) for the complete list.
+position.set(world, eid, 10, 5);       // set x, y
+content.set(world, eid, 'Hello');       // set text content
+list.select(world, eid, 2);            // select item at index
+scroll.toBottom(world, eid);           // scroll to end
+```
+
+| Component | Namespace | Purpose |
+|-----------|-----------|---------|
+| Animation | `animation` | Frame-based sprite animations |
+| Border | `border` | Box borders (single, double, rounded, bold, ascii) |
+| Camera | `camera` | Viewport, target following, bounds |
+| Collision | `collision` | AABB/circle collision detection, layers, triggers |
+| Content | `content` | Text content, alignment, wrapping, tag parsing |
+| Dimensions | `dimensions` | Width, height, min/max constraints, percentages |
+| Focusable | `focus` | Keyboard focus, tab order |
+| Hierarchy | `hierarchy` | Parent-child relationships, traversal |
+| List | `list` | List widget state, selection, virtualization |
+| Position | `position` | X/Y coordinates, z-index, absolute positioning |
+| Renderable | `renderable` | Colors, visibility, dirty tracking |
+| Scrollable | `scroll` | Scroll position, scrollbars, virtual viewport |
+| Table | `table` | Table state, columns, rows, sorting |
+| TextInput | `textInput` | Text input, cursor, selection, validation |
+| Velocity | `velocity` | Movement with speed, friction, max speed |
+
+See [API Reference](./docs/api/index.md) for the complete list of all 41 components.
 
 ## Systems
 
@@ -221,66 +264,20 @@ blECSd is a library, not a framework:
 4. **You own the world**: Functions take `world` as a parameter; we never hold global state
 
 ```typescript
-// Your world, your control
-import {
-  createWorld,
-  addEntity,
-  Position,
-  Renderable,
-  layoutSystem,
-  renderSystem
-} from 'blecsd';
+import { createWorld, addEntity, layoutSystem, renderSystem } from 'blecsd';
+import { position, renderable } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
 
-// Use components directly - no setters needed
-Position.x[eid] = 10;
-Position.y[eid] = 5;
-Renderable.visible[eid] = 1;
+// Use namespace helpers for typed access
+position.set(world, eid, 10, 5);
+renderable.show(world, eid);
 
 // Call systems when you want
 layoutSystem(world);
 renderSystem(world);
 ```
-
-## PackedStore: Cache-Friendly Storage
-
-blECSd includes a `PackedStore<T>` primitive for systems that iterate over entities in hot paths (rendering, animation, collision). It provides O(1) add/remove/get with dense, cache-friendly iteration.
-
-### The Three-Vector Pattern
-
-PackedStore uses four parallel arrays to keep live data contiguous:
-
-```
-data[]        Dense values, packed into [0, size) with no gaps
-dataIndex[]   Maps handle.index -> position in data[]
-id[]          Maps data position -> handle.index (inverse of dataIndex)
-generations[] Generation counter per slot for stale handle detection
-```
-
-Removals use swap-and-pop: the last element fills the gap, so `data[]` is always contiguous. This means iterating `data[0..size]` hits sequential memory with no pointer chasing, which is 2-5x faster than `Map.forEach` for iteration-heavy workloads.
-
-### createComponentStore\<T\>()
-
-For most code, use `createComponentStore<T>()` instead of PackedStore directly. It provides a Map-like API (`get`, `set`, `has`, `delete`, `forEach`) with two backing modes:
-
-```typescript
-import { createComponentStore } from 'blecsd';
-
-// Iterable mode: backed by PackedStore, dense iteration via forEach/data()
-// Use for stores iterated in hot paths (widget rendering, layout, animation)
-const renderData = createComponentStore<RenderInfo>({ iterable: true });
-
-// Non-iterable mode (default): backed by a plain Map
-// Use for point lookups like callback registries or config
-const callbacks = createComponentStore<() => void>({ iterable: false });
-```
-
-| Mode | Backing | Iteration | Best for |
-|------|---------|-----------|----------|
-| `iterable: true` | PackedStore | Dense, cache-friendly | Hot paths (render, animate, layout) |
-| `iterable: false` | Map | Standard Map iteration | Callbacks, config, point lookups |
 
 ## Use Cases
 
@@ -289,6 +286,8 @@ const callbacks = createComponentStore<() => void>({ iterable: false });
 - **CLI Tools**: Forms, menus, progress indicators
 - **Dev Tools**: Debug panels, profilers, inspectors
 - **Games**: Roguelikes, text adventures, puzzle games
+- **AI Interfaces**: LLM chat, streaming output, token tracking (via @blecsd/ai)
+- **3D Terminals**: Wireframe viewers, model inspectors (via @blecsd/3d)
 
 ## Comparison
 
@@ -312,6 +311,7 @@ Choose blECSd if you want data-oriented design, physics-based animations, or gam
 
 ### API Reference
 - [API Reference](./docs/api/index.md): Components, widgets, systems, terminal I/O
+- [Export Patterns](./docs/guides/export-patterns.md): Import tiers, namespaces, module map
 - [Terminal Widget](./docs/api/widgets/terminal.md): ANSI rendering and PTY shell support
 
 ### Guides
