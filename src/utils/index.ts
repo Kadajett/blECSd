@@ -117,7 +117,13 @@ export {
 	toUnifiedDiff,
 } from './diffRender';
 // Legacy codepage encoding utilities (CP437, etc.)
-export * as encoding from './encoding';
+// Accessed via the `encoding` namespace to avoid collisions (e.g., bufferToString exists in ./box)
+export type {
+	CodePage,
+	ConversionOptions,
+	PartialConversionOptions,
+	UnmappableMode,
+} from './encoding';
 // Fast word wrap with caching
 export type {
 	FastWrapOptions,
@@ -272,6 +278,7 @@ export type {
 	ComponentStoreModule,
 	CursorNavModule,
 	DiffRendererModule,
+	EncodingModule,
 	FastWrapModule,
 	FoldModule,
 	FuzzySearchModule,
@@ -299,6 +306,7 @@ export {
 	componentStore,
 	cursorNav,
 	diffRenderer,
+	encoding,
 	fastWrap,
 	fold,
 	fuzzySearch,
