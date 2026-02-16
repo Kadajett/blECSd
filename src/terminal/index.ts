@@ -242,6 +242,7 @@ export {
 	createClipboardManager,
 	streamPaste,
 } from './clipboardManager';
+export { matchColor, matchColorCached, nameToColor } from './colors';
 export {
 	blend,
 	blendAlpha,
@@ -318,7 +319,6 @@ export {
 	RGBASchema,
 	RGBSchema,
 } from './colors/palette';
-export { matchColor, matchColorCached, nameToColor } from './colors';
 // Conflict resolution (CRDTs for collaborative editing)
 export type {
 	CharId,
