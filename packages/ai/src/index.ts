@@ -8,6 +8,8 @@
  * @module ai
  */
 
+// Namespace objects for API discoverability
+export * from './namespaces';
 // Agent workflow widget
 export * from './widgets/agentWorkflow';
 // Conversation widget
