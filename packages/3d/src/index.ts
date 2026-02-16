@@ -15,6 +15,8 @@ export * from './components';
 export * from './loaders';
 // Math (vectors, matrices, projection, clipping)
 export * from './math';
+// Namespace objects for API discoverability
+export * from './namespaces';
 // Rasterizer (pixel buffer, line/triangle drawing, shading)
 export * from './rasterizer';
 // Zod schemas (for advanced users and validation)
