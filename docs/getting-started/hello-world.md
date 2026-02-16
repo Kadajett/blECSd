@@ -53,6 +53,53 @@ console.log(`Box at ${pos?.x}, ${pos?.y}`);
 console.log(`Content: ${content}`);
 ```
 
+## Alternative: Namespace Imports
+
+For larger applications, you can use namespace imports from `blecsd/components` to organize your code:
+
+```typescript
+import { createWorld, addEntity } from 'blecsd';
+import { position, dimensions, content, border, renderable } from 'blecsd/components';
+import { BorderType } from 'blecsd';
+
+// Create world and entity
+const world = createWorld();
+const box = addEntity(world);
+
+// Position at 5, 3
+position.set(world, box, 5, 3);
+
+// Size 30x5
+dimensions.set(world, box, { width: 30, height: 5 });
+
+// White text on blue background
+renderable.setStyle(world, box, {
+  fg: '#ffffff',
+  bg: '#0066cc',
+});
+
+// Line border on all sides
+border.set(world, box, {
+  type: BorderType.Line,
+  left: true,
+  right: true,
+  top: true,
+  bottom: true,
+});
+
+// Text content
+content.setText(world, box, 'Hello, Terminal!');
+
+// Read back the data
+const pos = position.get(world, box);
+const text = content.getText(world, box);
+
+console.log(`Box at ${pos?.x}, ${pos?.y}`);
+console.log(`Content: ${text}`);
+```
+
+Namespace imports help organize related functions and reduce naming conflicts as your application grows.
+
 ## What Happened
 
 1. **createWorld()** initializes a bitECS world

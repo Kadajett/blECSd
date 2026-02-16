@@ -18,6 +18,8 @@ removeEntity(world, eid);                  // Destroy entity
 entityExists(world, eid);                  // Check if entity exists
 ```
 
+**Note:** Core ECS functions like `createWorld`, `addEntity`, `removeEntity` are always imported from `'blecsd'`. Namespace imports are for components, systems, terminal, and utilities.
+
 ---
 
 ## Widgets
@@ -91,6 +93,22 @@ setDimensions(world, eid, 30, 10);         // Set width, height
 const { width, height } = getDimensions(world, eid);
 ```
 
+**Using namespaces:**
+
+```typescript
+import { position, dimensions } from 'blecsd/components';
+
+// Position
+position.set(world, eid, 10, 5);           // Set x, y
+const { x, y } = position.get(world, eid); // Get position
+position.moveBy(world, eid, 5, 0);         // Move by offset
+position.zIndex.set(world, eid, 10);       // Set rendering order
+
+// Dimensions
+dimensions.set(world, eid, { width: 30, height: 10 });
+const { width, height } = dimensions.get(world, eid);
+```
+
 ### Style & Appearance
 
 ```typescript
@@ -114,6 +132,26 @@ setPadding(world, eid, { top: 1, left: 2, right: 2, bottom: 1 });
 setContent(world, eid, 'Hello!', TextAlign.Center);     // left, center, right
 ```
 
+**Using namespaces:**
+
+```typescript
+import { border, padding, content } from 'blecsd/components';
+
+// Borders
+border.set(world, eid, {
+  type: 'single',      // single, double, rounded, bold, ascii
+  color: 0x0000ff
+});
+
+// Padding
+padding.set(world, eid, { all: 1 });       // All sides
+padding.set(world, eid, { top: 1, left: 2, right: 2, bottom: 1 });
+
+// Content
+content.setText(world, eid, 'Hello!');
+content.setAlign(world, eid, TextAlign.Center);
+```
+
 ### Hierarchy
 
 ```typescript
@@ -128,6 +166,18 @@ appendChild(world, parent, child);         // Add child to parent
 removeChild(world, parent, child);         // Remove child
 const children = getChildren(world, parent); // Get all children
 const parentEid = getParent(world, child);    // Get parent
+```
+
+**Using namespaces:**
+
+```typescript
+import { hierarchy } from 'blecsd/components';
+
+// Parent-child relationships
+hierarchy.appendChild(world, parent, child);
+hierarchy.removeChild(world, parent, child);
+const children = hierarchy.getChildren(world, parent);
+const parentEid = hierarchy.getParent(world, child);
 ```
 
 ### Focus & Interaction
@@ -148,6 +198,19 @@ focusNext(world);                          // Tab to next
 focusPrev(world);                          // Shift+Tab to previous
 ```
 
+**Using namespaces:**
+
+```typescript
+import { focus } from 'blecsd/components';
+
+// Focus management
+focus.makeFocusable(world, eid);
+focus.focus(world, eid);
+const focused = focus.getFocused(world);
+focus.next(world);
+focus.prev(world);
+```
+
 ### Scrolling
 
 <!-- blecsd-doccheck:ignore -->
@@ -166,6 +229,19 @@ scrollBy(world, eid, 5);                   // Scroll by delta
 scrollToTop(world, eid);                   // Jump to top
 scrollToBottom(world, eid);                // Jump to bottom
 scrollToLine(world, eid, 2);               // Jump to line
+```
+
+**Using namespaces:**
+
+```typescript
+import { scroll } from 'blecsd/components';
+
+// Scrollable content
+scroll.set(world, eid, true);
+scroll.by(world, eid, 0, 5);
+scroll.toTop(world, eid);
+scroll.toBottom(world, eid);
+scroll.viewport.toLine(world, eid, 2);
 ```
 
 ---
@@ -412,6 +488,121 @@ screen.clear();                            // Clear screen
 screen.alternateBuffer();                  // Enter alternate buffer
 screen.restoreBuffer();                    // Restore main buffer
 ```
+
+---
+
+## Namespace Imports
+
+For larger applications, use namespace imports to organize related functions and avoid naming conflicts:
+
+### Component Namespaces
+
+```typescript
+import { position, dimensions, content, border, padding } from 'blecsd/components';
+import { scroll, focus, hierarchy, renderable } from 'blecsd/components';
+
+// Position operations
+position.set(world, eid, 10, 5);
+position.moveBy(world, eid, 2, 0);
+const pos = position.get(world, eid);
+
+// Dimensions operations
+dimensions.set(world, eid, { width: 40, height: 10 });
+const size = dimensions.get(world, eid);
+
+// Content operations
+content.setText(world, eid, 'Hello!');
+content.setAlign(world, eid, TextAlign.Center);
+const text = content.getText(world, eid);
+
+// Border and padding
+border.set(world, eid, { type: BorderType.Single });
+padding.set(world, eid, { all: 1 });
+
+// Scrolling
+scroll.by(world, eid, 0, 5);
+scroll.toTop(world, eid);
+
+// Focus management
+focus.makeFocusable(world, eid);
+focus.next(world);
+
+// Hierarchy
+hierarchy.appendChild(world, parent, child);
+const children = hierarchy.getChildren(world, parent);
+```
+
+### System Namespaces
+
+```typescript
+import { animation, layout, render } from 'blecsd/systems';
+import { input, output, collision, spring } from 'blecsd/systems';
+
+// Run systems manually
+input.processInput(world);
+animation.updateAnimations(world);
+layout.calculateLayout(world);
+render.renderEntities(world);
+output.flushOutput(world);
+
+// Collision detection
+collision.detectCollisions(world);
+const collisions = collision.getCollisions(world);
+
+// Spring physics
+spring.updateSprings(world, deltaTime);
+```
+
+### Terminal Namespaces
+
+```typescript
+import { cursor, screen, graphics } from 'blecsd/terminal';
+
+// Cursor operations
+cursor.hide();
+cursor.show();
+cursor.to(10, 5);
+
+// Screen management
+screen.clear();
+screen.alternateOn();
+screen.alternateOff();
+
+// Graphics drawing
+graphics.drawLine(world, x1, y1, x2, y2, char);
+graphics.fillRect(world, x, y, width, height, char);
+```
+
+### Utility Namespaces
+
+```typescript
+import { colors, textWrap, unicode } from 'blecsd/utils';
+
+// Color utilities
+const packed = colors.hexToColor('#ff0000');
+const hex = colors.colorToHex(packed);
+
+// Text wrapping
+const wrapped = textWrap.wrap('Long text...', 40);
+const lines = textWrap.wrapLines('Text', 40);
+
+// Unicode handling
+const width = unicode.stringWidth('Hello 世界');
+const truncated = unicode.truncate('Long string', 20);
+```
+
+### When to Use Namespaces
+
+Use flat imports from `'blecsd'` for:
+- Small scripts and prototypes
+- Simple applications with few imports
+- When you know exactly what you need
+
+Use namespace imports from `'blecsd/components'`, `'blecsd/systems'`, etc. for:
+- Larger applications with many components
+- When you want to organize imports by domain
+- To avoid naming conflicts
+- When building reusable modules
 
 ---
 

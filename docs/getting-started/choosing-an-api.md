@@ -283,8 +283,70 @@ Position.y[fileList] = 2;
 
 1. Read: [ECS API Getting Started](./ecs-api.md)
 2. Read: [Understanding ECS](../guides/understanding-ecs.md)
-3. Reference: [Entity Factories](../api/entities.md)
-4. Reference: [Components](../api/components.md)
+3. Read: [Export Patterns](../guides/export-patterns.md) - Learn about namespace imports
+4. Reference: [Entity Factories](../api/entities.md)
+5. Reference: [Components](../api/components.md)
+
+---
+
+## Import Patterns
+
+blECSd provides a three-tier export system:
+
+### Tier 1: Curated Essentials from `'blecsd'`
+
+The main `'blecsd'` package exports approximately 80 curated functions covering the most common use cases:
+
+```typescript
+import {
+  createWorld,
+  addEntity,
+  setPosition,
+  setDimensions,
+  createBoxEntity,
+} from 'blecsd';
+```
+
+This is the simplest approach and works well for small to medium applications.
+
+### Tier 2: Namespace Imports (Recommended for Larger Apps)
+
+For more complex applications, use namespace imports from subpaths:
+
+```typescript
+import { position, dimensions, content } from 'blecsd/components';
+import { animation, layout, render } from 'blecsd/systems';
+import { cursor, screen, graphics } from 'blecsd/terminal';
+import { colors, textWrap, unicode } from 'blecsd/utils';
+
+// Organized by domain
+position.set(world, eid, 10, 5);
+dimensions.set(world, eid, { width: 40, height: 10 });
+content.setText(world, eid, 'Hello!');
+```
+
+Namespace imports provide:
+- Clear organization by domain (components, systems, terminal, utils)
+- Reduced naming conflicts
+- Better code navigation and searchability
+- Full access to all module functions
+
+### Tier 3: Deep Imports (Internal Only)
+
+Deep imports from specific files are reserved for internal library use and advanced scenarios:
+
+```typescript
+// Not recommended for most users
+import { someInternalFunction } from 'blecsd/components/position';
+```
+
+### Recommendation
+
+- **Small apps**: Use Tier 1 flat imports from `'blecsd'`
+- **Medium to large apps**: Use Tier 2 namespace imports for organization
+- **Advanced/internal**: Use Tier 3 only when necessary
+
+See the [Export Patterns Guide](../guides/export-patterns.md) for complete details on the export system.
 
 ---
 
