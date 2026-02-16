@@ -55,6 +55,41 @@ const tracker = createTokenTracker(world, {
 });
 ```
 
+## Namespace Imports
+
+The @blecsd/ai package provides namespace objects that group related functions for each widget type. These frozen objects make it easy to explore available functions via IDE autocomplete:
+
+```typescript
+import { conversation, streamingMarkdown, tokenTracker } from '@blecsd/ai';
+
+// Conversation operations
+const conv = conversation.createConversation(world, { width: 80, height: 30 });
+conversation.addMessage(eid, { role: 'user', content: 'Hello!' });
+conversation.startStreamingMessage(eid, { role: 'assistant', content: '' });
+conversation.appendToMessage(eid, msgId, 'Hi there!');
+
+// Streaming markdown operations
+const md = streamingMarkdown.createStreamingMarkdown(world, { width: 80, height: 30 });
+streamingMarkdown.appendMarkdown(eid, '## Response\n\n');
+streamingMarkdown.appendMarkdown(eid, 'This is **bold** text.\n');
+streamingMarkdown.scrollMarkdownByLines(eid, -5);
+
+// Token tracking operations
+const tracker = tokenTracker.createTokenTracker(world, { width: 40, height: 10 });
+tokenTracker.recordTokens(eid, { inputTokens: 100, outputTokens: 200 });
+const stats = tokenTracker.getTokenStats(eid);
+```
+
+### Available Namespaces
+
+| Namespace | Purpose | Key Methods |
+|-----------|---------|-------------|
+| `conversation` | Chat-style conversation threads | `createConversation`, `addMessage`, `startStreamingMessage`, `appendToMessage`, `endStreamingMessage`, `collapseMessage`, `expandMessage`, `searchMessages` |
+| `streamingMarkdown` | Real-time markdown rendering | `createStreamingMarkdown`, `appendMarkdown`, `clearMarkdownState`, `scrollMarkdownByLines`, `scrollMarkdownToLine`, `renderBlock`, `renderAllBlocks` |
+| `tokenTracker` | LLM token usage tracking | `createTokenTracker`, `recordTokens`, `resetTokenState`, `getTokenStats`, `formatTokenDisplay` |
+| `toolUse` | Tool/function call visualization | `createToolUse`, `recordToolCall`, `updateToolResult`, `formatToolDisplay` |
+| `agentWorkflow` | Multi-step agent workflow | `createAgentWorkflow`, `addTask`, `updateTaskStatus`, `getWorkflowProgress`, `formatWorkflowDisplay` |
+
 ## API
 
 ### Widgets

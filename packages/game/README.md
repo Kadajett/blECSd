@@ -56,6 +56,34 @@ game.onUpdate((dt) => {
 game.start();
 ```
 
+## API Style
+
+The @blecsd/game package uses a direct API without namespace objects. The `Game` interface returned by `createGame()` provides all methods directly:
+
+```typescript
+import { createGame } from '@blecsd/game';
+
+const game = createGame(config);
+
+// All methods are on the game instance
+game.createBox({ ... });
+game.createText({ ... });
+game.onKey('space', handler);
+game.onUpdate(updateFn);
+game.start();
+```
+
+This design keeps the game creation API simple and focused, since the API surface is intentionally small and user-facing. For advanced ECS operations, you can access the underlying world:
+
+```typescript
+import { addComponent, Position } from 'blecsd';
+
+// Access the underlying ECS world
+const entity = game.createBox({ x: 10, y: 5 });
+addComponent(game.world, entity, Position);
+Position.x[entity] = 20;
+```
+
 ## API
 
 ### Game Creation
