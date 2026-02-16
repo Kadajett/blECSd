@@ -18,6 +18,7 @@ export { type ColorsModule, colors } from './colors';
 export { type ComponentStoreModule, componentStore } from './componentStore';
 export { type CursorNavModule, cursorNav } from './cursorNav';
 export { type DiffRendererModule, diffRenderer } from './diffRenderer';
+export { type EncodingModule, encoding } from './encoding';
 export { type FastWrapModule, fastWrap } from './fastWrap';
 export { type FoldModule, fold } from './fold';
 export { type FuzzySearchModule, fuzzySearch } from './fuzzySearch';

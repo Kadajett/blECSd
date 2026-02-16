@@ -6,7 +6,7 @@ blECSd uses a three-tier export system. Each tier provides a different level of 
 
 ### Tier 1: Curated Essentials (`'blecsd'`)
 
-The top-level import provides ~95 curated exports: the most commonly used functions, types, and schemas. This is the default choice for most applications.
+The top-level import provides ~80 curated exports (64 values + 15 types): the most commonly used functions, types, and schemas. This is the default choice for most applications.
 
 ```typescript
 import {
@@ -108,7 +108,7 @@ const width = unicode.width.stringWidth('Hello');
 
 | Path | Description |
 |------|-------------|
-| `blecsd` | Curated Tier 1 essentials (~95 exports) |
+| `blecsd` | Curated Tier 1 essentials (~80 exports) |
 | `blecsd/core` | ECS primitives, world management, entity factories, schemas |
 | `blecsd/components` | All component definitions, typed getters/setters, and namespaces |
 | `blecsd/systems` | All system functions and namespaces |
@@ -291,7 +291,7 @@ import { rope } from 'blecsd/utils';
 
 ### Q: What changed from the old `export *` approach?
 
-The top-level `'blecsd'` import used to re-export everything (~4,500 symbols). Now it exports ~95 curated symbols. Everything else is still accessible via subpath imports (`blecsd/components`, `blecsd/terminal`, etc.).
+The top-level `'blecsd'` import used to re-export everything (~4,500 symbols). Now it exports ~80 curated symbols (64 values + 15 types). Everything else is still accessible via subpath imports (`blecsd/components`, `blecsd/terminal`, etc.).
 
 ### Q: I was importing X from 'blecsd' and now it's gone. Where did it move?
 
