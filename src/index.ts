@@ -3,41 +3,104 @@
  *
  * A modern terminal UI library built on TypeScript and ECS architecture.
  *
+ * This is the curated top-level API (Tier 1). For full module access, use
+ * subpath imports: `blecsd/components`, `blecsd/terminal`, `blecsd/systems`, etc.
+ *
  * @packageDocumentation
  */
 
 export const VERSION = '0.5.0';
 
-// Conflict-free modules
-export * from './debug';
-export * from './errors';
-export * from './input';
-export * from './schemas';
-export * from './text';
-export * from './types';
+// ─── ECS Core ────────────────────────────────────────────────────────────────
 
-// Modules with name collisions between them require explicit disambiguation.
-// When two modules export the same name, the explicit re-export below wins.
+export { destroyWorld } from './core/disposal';
+export { addComponent, addEntity, hasComponent, removeEntity } from './core/ecs';
+export type { Entity, System, World } from './core/types';
+export { createWorld } from './core/world';
 
-export type { DimensionValue, ListItem, TableCell, TableData } from './components';
-// Components: export all, then re-export names that collide with other modules.
-// Components owns: TextAlign (enum, over utils type alias), getText, setText,
-// scrollBy, scrollToTop, scrollToBottom, etc. (over widgets/bigText or streamingText)
-export * from './components';
+// ─── Entity Factories ────────────────────────────────────────────────────────
+
+export {
+	createBoxEntity,
+	createButtonEntity,
+	createCheckboxEntity,
+	createInputEntity,
+	createListEntity,
+	createScreenEntity,
+	createSelectEntity,
+	createTextEntity,
+} from './core/entities/factories';
+
+// ─── Systems ─────────────────────────────────────────────────────────────────
+
+export { animationSystem } from './systems/animationSystem';
+export { focusSystem } from './systems/focusSystem';
+export { inputSystem } from './systems/inputSystem';
+export { layoutSystem } from './systems/layoutSystem';
+export { cleanup, clearScreen, outputSystem } from './systems/outputSystem';
+export { renderSystem } from './systems/renderSystem';
+
+// ─── Component Helpers ───────────────────────────────────────────────────────
+
+// Content
+export { getText, setText, TextAlign } from './components/content';
+export { getDimensions, setDimensions } from './components/dimensions';
+// Focus
+export { focusNext, focusPrev } from './components/focusable';
+// Hierarchy
+export { prepend } from './components/hierarchy';
+// Position & dimensions
+export {
+	getPosition,
+	getZIndex,
+	normalizeZIndices,
+	setPosition,
+	setZIndex,
+} from './components/position';
+// Visibility
+export { toggle } from './components/renderable';
+// Scroll
 export {
 	ensureCursorVisible,
-	focusNext,
-	focusPrev,
-	getText,
-	prepend,
-	scrollBy,
 	scrollByLines,
 	scrollToBottom,
 	scrollToLine,
 	scrollToTop,
-	setText,
-	TextAlign,
-} from './components';
+} from './components/virtualViewport';
+
+// Z-order
+export { hitTest } from './core/hitTest';
+
+// ─── Terminal I/O ────────────────────────────────────────────────────────────
+
+// Input control (ECS-aware)
+export {
+	disableInput,
+	disableKeys,
+	disableMouse,
+	enableInput,
+	enableKeys,
+	enableMouse,
+} from './systems/interactiveSystem';
+// ANSI utilities
+export { stripAnsi } from './terminal/ansi/parser';
+export { clearBuffer, fillRect, getCell, setCell } from './terminal/screen/cell';
+// Screen buffer operations
+export { createDoubleBuffer } from './terminal/screen/doubleBuffer';
+
+// ─── Schemas ─────────────────────────────────────────────────────────────────
+
+export { BoxConfigSchema, PositionValueSchema, TextConfigSchema } from './core';
+
+// ─── Utility ─────────────────────────────────────────────────────────────────
+
+export { renderText } from './utils/box';
+export { getLine, getLines, getStats } from './utils/rope';
+export { wrapText } from './utils/textWrap';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export type { DimensionValue } from './components';
 export type {
 	BoxConfig,
 	CleanupCallback,
@@ -46,60 +109,11 @@ export type {
 	TextConfig,
 	Unsubscribe,
 } from './core';
-// Core: export all, then re-export names that collide with other modules.
-// Core owns: BoxConfig, CleanupCallback, HitTestResult, PositionValue,
-// TextConfig, Unsubscribe, BoxConfigSchema, hitTest, query, etc.
-export * from './core';
-export {
-	BoxConfigSchema,
-	getZIndex,
-	hitTest,
-	normalizeZIndices,
-	PositionValueSchema,
-	query,
-	setZIndex,
-	TextConfigSchema,
-} from './core';
-export * from './style';
-export type { DirtyRect, PositionCache } from './systems';
-// Systems: export all, then re-export type names that collide.
-// Systems owns: DirtyRect, PositionCache (interface from visibilityCulling)
-export * from './systems';
+export type { DirtyRect } from './systems';
 export type {
-	AttrFlags,
 	Cell,
-	CursorPosition,
-	CursorShape,
 	KeyHandler,
 	MouseHandler,
 	TerminalCapabilities,
 } from './terminal';
-// Terminal: export all, then re-export names that collide with other modules.
-// Terminal owns: AttrFlags, Cell, CursorPosition, CursorShape, KeyHandler,
-// MouseHandler, TerminalCapabilities, and various enable/disable functions.
-export * from './terminal';
-export {
-	clearBuffer,
-	disableInput,
-	disableKeys,
-	disableMouse,
-	enableInput,
-	enableKeys,
-	enableMouse,
-	fillRect,
-	getCell,
-	isCursorVisible,
-	isScreen,
-	resetCursorBlink,
-	setCell,
-	setCursorVisible,
-	stripAnsi,
-} from './terminal';
-
-// Utils: export all. Names like getLine, getLineCount, etc. are owned by utils
-// and win over any collisions from other modules.
-export * from './utils';
-export { getLine, getLineCount, getLines, getStats, renderText } from './utils';
-
-// Widgets: export all
-export * from './widgets';
+export { CursorShape } from './terminal';

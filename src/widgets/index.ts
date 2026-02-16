@@ -6,6 +6,17 @@
  * @module widgets
  */
 
+// ─── Widget-specific entity factories (re-exported from core) ────────────────
+export {
+	createFormEntity,
+	createProgressBarEntity,
+	createRadioButtonEntity,
+	createRadioSetEntity,
+	createSliderEntity,
+	createTextareaEntity,
+	createTextboxEntity,
+} from '../core/entities/factories';
+
 // ─── Namespace exports (new API) ──────────────────────────────────────────────
 export type {
 	AccordionModule,

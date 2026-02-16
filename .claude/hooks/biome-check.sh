@@ -4,6 +4,8 @@
 
 set -euo pipefail
 
+cd "$CLAUDE_PROJECT_DIR"
+
 FILE=$(jq -r '.tool_input.file_path // empty')
 
 # Skip if no file path or file doesn't exist
@@ -17,5 +19,4 @@ case "$FILE" in
 esac
 
 # Run biome check (read-only, just report issues)
-cd "$CLAUDE_PROJECT_DIR"
-npx biome check "$FILE" 2>&1 || true
+pnpm exec biome check "$FILE" 2>&1 || true
