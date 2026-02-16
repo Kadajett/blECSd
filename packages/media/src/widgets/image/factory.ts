@@ -10,8 +10,14 @@ import { markDirty, Position, setDimensions, setPosition, setVisible } from 'ble
 import type { World } from 'blecsd/core';
 import { addEntity, removeEntity } from 'blecsd/core';
 import type { GraphicsManagerState } from 'blecsd/terminal';
-import type { Bitmap, RenderMode } from '../../render/ansi';
 import { cellMapToString, renderToAnsi } from '../../render/ansi';
+import type { Bitmap, RenderMode } from '../../render/ansi-types';
+import {
+	cleanupImageAnimation,
+	setAnimationFrame,
+	setupAnimatedImage,
+	startAnimationLoop,
+} from './animation-helpers';
 import { ImageConfigSchema } from './config';
 import { calculateAspectRatioDimensions, clearImageCache, renderImageContent } from './helpers';
 import {
@@ -260,102 +266,12 @@ function createImageWidgetInterface(world: World, eid: number): ImageWidget {
 		},
 
 		setAnimatedImage(frames: readonly Bitmap[], delays: readonly number[], loopCount = 1) {
-			// Validate inputs
-			if (frames.length === 0) {
-				throw new Error('frames array cannot be empty');
-			}
-			if (frames.length !== delays.length) {
-				throw new Error('frames and delays arrays must have the same length');
-			}
-			for (const delay of delays) {
-				if (delay <= 0) {
-					throw new Error('all frame delays must be positive numbers');
-				}
-			}
-
-			// Stop existing animation
-			stopAnimationFn();
-
-			// Store animation data
-			imageAnimationFramesStore.set(eid, frames);
-			imageAnimationDelaysStore.set(eid, delays);
-			imageAnimationLoopCountStore.set(eid, loopCount);
-			imageCurrentFrameStore.set(eid, 0);
-			imageCurrentLoopStore.set(eid, 0);
-
-			// Set first frame
-			imageBitmapStore.set(eid, frames[0] as Bitmap);
-			clearImageCache(eid);
-			renderImageContent(world, eid);
-			markDirty(world, eid);
-
+			setupAnimatedImage(world, eid, frames, delays, loopCount, stopAnimationFn);
 			return widget;
 		},
 
 		startAnimation() {
-			const frames = imageAnimationFramesStore.get(eid);
-			const delays = imageAnimationDelaysStore.get(eid);
-
-			if (!frames || frames.length === 0 || !delays || delays.length === 0) {
-				return widget; // No animation to start
-			}
-
-			// Stop existing animation timer
-			stopAnimationFn();
-
-			const loopCount = imageAnimationLoopCountStore.get(eid) ?? 1;
-
-			const shouldStopAfterLoop = (currentLoop: number): boolean => {
-				return loopCount > 0 && currentLoop >= loopCount;
-			};
-
-			const updateFrame = (frameIndex: number): void => {
-				const frame = frames[frameIndex];
-				if (frame) {
-					imageBitmapStore.set(eid, frame);
-					renderImageContent(world, eid);
-					markDirty(world, eid);
-				}
-			};
-
-			const scheduleNextFrame = (frameIndex: number, advance: () => void): void => {
-				const timer = imageAnimationTimerStore.get(eid);
-				if (timer !== undefined) {
-					clearTimeout(timer);
-				}
-
-				const delay = delays[frameIndex] ?? 100;
-				const newTimer = setTimeout(advance, delay);
-				imageAnimationTimerStore.set(eid, newTimer as ReturnType<typeof setTimeout>);
-			};
-
-			const advanceFrame = (): void => {
-				let frameIndex = imageCurrentFrameStore.get(eid) ?? 0;
-				frameIndex = (frameIndex + 1) % frames.length;
-
-				// Check if we've completed a loop
-				if (frameIndex === 0) {
-					const currentLoop = (imageCurrentLoopStore.get(eid) ?? 0) + 1;
-					imageCurrentLoopStore.set(eid, currentLoop);
-
-					if (shouldStopAfterLoop(currentLoop)) {
-						imageCurrentFrameStore.set(eid, 0);
-						updateFrame(0);
-						stopAnimationFn();
-						return;
-					}
-				}
-
-				imageCurrentFrameStore.set(eid, frameIndex);
-				updateFrame(frameIndex);
-				scheduleNextFrame(frameIndex, advanceFrame);
-			};
-
-			// Start with the first frame's delay
-			const initialDelay = delays[imageCurrentFrameStore.get(eid) ?? 0] ?? 100;
-			const timer = setTimeout(advanceFrame, initialDelay);
-			imageAnimationTimerStore.set(eid, timer as ReturnType<typeof setTimeout>);
-
+			startAnimationLoop(world, eid, stopAnimationFn);
 			return widget;
 		},
 
@@ -370,29 +286,14 @@ function createImageWidgetInterface(world: World, eid: number): ImageWidget {
 		},
 
 		setFrame(index: number) {
-			const frames = imageAnimationFramesStore.get(eid);
-			if (!frames || frames.length === 0) {
-				return widget; // No frames to set
-			}
-
-			const clampedIndex = Math.max(0, Math.min(index, frames.length - 1));
-			imageCurrentFrameStore.set(eid, clampedIndex);
-
-			const frame = frames[clampedIndex];
-			if (frame) {
-				imageBitmapStore.set(eid, frame);
-				renderImageContent(world, eid);
-				markDirty(world, eid);
-			}
-
+			setAnimationFrame(world, eid, index);
 			return widget;
 		},
 
 		destroy() {
-			// Stop animation and clear timer
 			stopAnimationFn();
+			cleanupImageAnimation(eid);
 
-			// Clear all state
 			Image.isImage[eid] = 0;
 			imageBitmapStore.delete(eid);
 			imageTypeStore.delete(eid);
@@ -401,12 +302,6 @@ function createImageWidgetInterface(world: World, eid: number): ImageWidget {
 			imageCellMapStore.delete(eid);
 			imageVisibleStore.delete(eid);
 			imagePreserveAspectRatioStore.delete(eid);
-			imageAnimationFramesStore.delete(eid);
-			imageAnimationDelaysStore.delete(eid);
-			imageAnimationLoopCountStore.delete(eid);
-			imageCurrentFrameStore.delete(eid);
-			imageCurrentLoopStore.delete(eid);
-			imageAnimationTimerStore.delete(eid);
 			imageCellMapCacheStore.delete(eid);
 			imageRenderVersionStore.delete(eid);
 			imageGraphicsManagerStore.delete(eid);

@@ -4,7 +4,6 @@
  */
 
 import {
-	Dimensions,
 	markDirty,
 	Position,
 	setContent,
@@ -14,107 +13,11 @@ import {
 } from 'blecsd/components';
 import type { World } from 'blecsd/core';
 import { addEntity, removeEntity } from 'blecsd/core';
-import { buildPlayerArgs, sendPauseCommand, sendSeekCommand } from './commands';
+import { sendPauseCommand } from './commands';
 import { VideoConfigSchema } from './config';
-import { ensurePlayer, Video, videoStateStore } from './state';
-import type {
-	VideoConfig,
-	VideoPlayer,
-	VideoProcessSpawner,
-	VideoState,
-	VideoWidget,
-} from './types';
-
-/**
- * Attempts to resume a paused mplayer process.
- * Returns true if resume was handled, false otherwise.
- * @internal
- */
-function tryResumeMplayer(state: VideoState): boolean {
-	if (state.playbackState !== 'paused' || !state.process || state.player !== 'mplayer') {
-		return false;
-	}
-	sendPauseCommand(state.process, 'mplayer');
-	state.playbackState = 'playing';
-	return true;
-}
-
-/**
- * Kills any existing video process on the state.
- * @internal
- */
-function killExistingProcess(state: VideoState): void {
-	if (!state.process) return;
-	state.process.kill();
-	state.process = null;
-}
-
-/**
- * Spawns a new video process and wires up callbacks.
- * @internal
- */
-function spawnVideoProcess(
-	state: VideoState,
-	spawner: VideoProcessSpawner,
-	world: World,
-	eid: number,
-	cols: number,
-	rows: number,
-): void {
-	const args = buildPlayerArgs(state.player as VideoPlayer, state, cols, rows);
-	const handle = spawner.spawn(state.player as VideoPlayer, args);
-	state.process = handle;
-	state.playbackState = 'playing';
-
-	handle.onData((data: string) => {
-		setContent(world, eid, data);
-		markDirty(world, eid);
-		state.onDataCallback?.(data);
-	});
-
-	handle.onExit((code: number) => {
-		state.process = null;
-		state.playbackState = 'stopped';
-		if (code === 0) {
-			state.onEndCallback?.();
-		} else {
-			state.onErrorCallback?.(`Player exited with code ${code}`);
-		}
-	});
-}
-
-/**
- * Starts new video playback: validates state, detects player, spawns process.
- * Returns an error message string if playback cannot start, or null on success.
- * @internal
- */
-function startPlayback(
-	state: VideoState,
-	spawner: VideoProcessSpawner | undefined,
-	world: World,
-	eid: number,
-): string | null {
-	if (!state.path) return 'No video path set';
-
-	killExistingProcess(state);
-
-	if (!ensurePlayer(state, spawner)) {
-		return 'No video player found (mpv or mplayer required)';
-	}
-
-	if (!spawner) return 'No process spawner available';
-
-	const cols = (Dimensions.width[eid] as number) || 80;
-	const rows = (Dimensions.height[eid] as number) || 24;
-
-	try {
-		spawnVideoProcess(state, spawner, world, eid, cols, rows);
-	} catch (err) {
-		return err instanceof Error ? err.message : String(err);
-	}
-
-	return null;
-}
+import { handleSeek, startPlayback, tryResumeMplayer } from './helpers';
+import { Video, videoStateStore } from './state';
+import type { VideoConfig, VideoProcessSpawner, VideoState, VideoWidget } from './types';
 
 /**
  * Creates the VideoWidget interface for an entity.
@@ -244,17 +147,7 @@ function createVideoWidgetInterface(
 			const state = videoStateStore.get(eid);
 			if (!state) return widget;
 
-			state.seekPosition = Math.max(0, seconds);
-
-			if (state.process && state.player === 'mplayer') {
-				sendSeekCommand(state.process, 'mplayer', seconds);
-			} else if (state.playbackState === 'playing') {
-				// For mpv or when process needs restart, stop and replay from position
-				stop();
-				state.seekPosition = Math.max(0, seconds);
-				play();
-			}
-
+			handleSeek(state, seconds, stop, play);
 			return widget;
 		},
 

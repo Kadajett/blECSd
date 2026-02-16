@@ -10,6 +10,16 @@
 
 import type { PNGChunk, PNGHeader } from './parser';
 import { ColorType } from './parser';
+import {
+	parsePLTE,
+	parseTRNS,
+	readChannel8or16,
+	readGraySample,
+	readPaletteIndex,
+} from './pixels-helpers';
+
+// Re-export helpers
+export { parsePLTE, parseTRNS } from './pixels-helpers';
 
 // =============================================================================
 // TYPES
@@ -17,9 +27,6 @@ import { ColorType } from './parser';
 
 /**
  * RGBA pixel data extracted from a PNG image.
- *
- * All pixels are normalized to 8-bit RGBA regardless of the source
- * color type or bit depth.
  *
  * @example
  * ```typescript
@@ -30,39 +37,24 @@ import { ColorType } from './parser';
  *   height: 100,
  *   data: new Uint8Array(100 * 100 * 4),
  * };
- * // Access pixel at (x, y):
- * // const idx = (y * pixels.width + x) * 4;
- * // R = pixels.data[idx], G = pixels.data[idx+1], B = pixels.data[idx+2], A = pixels.data[idx+3]
  * ```
  */
 export interface PixelData {
-	/** Image width in pixels */
 	readonly width: number;
-	/** Image height in pixels */
 	readonly height: number;
-	/** RGBA pixel data, 4 bytes per pixel (R, G, B, A), each 0-255 */
 	readonly data: Uint8Array;
 }
 
-/**
- * Successful pixel extraction result.
- */
 export interface PixelResult {
 	readonly ok: true;
 	readonly pixels: PixelData;
 }
 
-/**
- * Error result from pixel extraction.
- */
 export interface PixelError {
 	readonly ok: false;
 	readonly error: string;
 }
 
-/**
- * Result type for pixel extraction.
- */
 export type PixelOutput = PixelResult | PixelError;
 
 /**
@@ -72,183 +64,6 @@ export interface PaletteEntry {
 	readonly r: number;
 	readonly g: number;
 	readonly b: number;
-}
-
-// =============================================================================
-// PALETTE PARSING
-// =============================================================================
-
-/**
- * Parses a PLTE chunk into an array of palette entries.
- *
- * The PLTE chunk contains 1-256 palette entries, each 3 bytes (R, G, B).
- *
- * @param chunk - The PLTE chunk
- * @returns Array of palette entries
- *
- * @example
- * ```typescript
- * import { parsePLTE } from 'blecsd';
- *
- * const palette = parsePLTE(plteChunk);
- * console.log(palette[0]); // { r: 255, g: 0, b: 0 }
- * ```
- */
-export function parsePLTE(chunk: PNGChunk): readonly PaletteEntry[] {
-	if (chunk.type !== 'PLTE') {
-		throw new Error(`Expected PLTE chunk, got '${chunk.type}'`);
-	}
-	if (chunk.data.length % 3 !== 0) {
-		throw new Error(`Invalid PLTE data length: ${chunk.data.length} (must be divisible by 3)`);
-	}
-	if (chunk.data.length === 0 || chunk.data.length > 768) {
-		throw new Error(`Invalid PLTE entry count: ${chunk.data.length / 3} (must be 1-256)`);
-	}
-
-	const entries: PaletteEntry[] = [];
-	for (let i = 0; i < chunk.data.length; i += 3) {
-		entries.push({
-			r: chunk.data[i] ?? 0,
-			g: chunk.data[i + 1] ?? 0,
-			b: chunk.data[i + 2] ?? 0,
-		});
-	}
-	return entries;
-}
-
-/**
- * Parses a tRNS (transparency) chunk for palette-indexed images.
- *
- * Returns an array of alpha values corresponding to palette indices.
- * Palette entries without a tRNS entry are fully opaque (255).
- *
- * @param chunk - The tRNS chunk
- * @param paletteSize - Number of palette entries
- * @returns Array of alpha values for each palette index
- *
- * @example
- * ```typescript
- * import { parseTRNS } from 'blecsd';
- *
- * const alphas = parseTRNS(trnsChunk, palette.length);
- * // alphas[i] is the alpha value for palette index i
- * ```
- */
-export function parseTRNS(chunk: PNGChunk, paletteSize: number): readonly number[] {
-	if (chunk.type !== 'tRNS') {
-		throw new Error(`Expected tRNS chunk, got '${chunk.type}'`);
-	}
-
-	const alphas: number[] = [];
-	for (let i = 0; i < paletteSize; i++) {
-		alphas.push(i < chunk.data.length ? (chunk.data[i] ?? 255) : 255);
-	}
-	return alphas;
-}
-
-// =============================================================================
-// BIT DEPTH SCALING
-// =============================================================================
-
-/**
- * Scales a value from a given bit depth to 8-bit (0-255).
- *
- * @param value - The input value at the source bit depth
- * @param bitDepth - Source bit depth (1, 2, 4, 8, or 16)
- * @returns Value scaled to 0-255 range
- */
-function scaleTo8Bit(value: number, bitDepth: number): number {
-	switch (bitDepth) {
-		case 1:
-			return value ? 255 : 0;
-		case 2:
-			return (value * 255) / 3;
-		case 4:
-			return (value * 255) / 15;
-		case 8:
-			return value;
-		case 16:
-			return value >> 8;
-		default:
-			return value;
-	}
-}
-
-/**
- * Extracts a sub-byte sample from a byte at a given bit offset.
- *
- * @param byte - The source byte
- * @param bitDepth - Bits per sample (1, 2, or 4)
- * @param index - Sample index within the byte (0 = leftmost/most significant)
- * @returns The extracted sample value
- */
-function extractSubByteSample(byte: number, bitDepth: number, index: number): number {
-	const samplesPerByte = 8 / bitDepth;
-	const shift = (samplesPerByte - 1 - index) * bitDepth;
-	const mask = (1 << bitDepth) - 1;
-	return (byte >> shift) & mask;
-}
-
-// =============================================================================
-// CHANNEL READING HELPERS
-// =============================================================================
-
-/**
- * Reads a single channel value at the given byte offset, handling 8-bit and 16-bit depths.
- */
-function readChannel8or16(rawData: Uint8Array, offset: number, bitDepth: number): number {
-	if (bitDepth === 16) {
-		return scaleTo8Bit(((rawData[offset] ?? 0) << 8) | (rawData[offset + 1] ?? 0), 16);
-	}
-	return rawData[offset] ?? 0;
-}
-
-/**
- * Reads a sample from sub-byte packed data (1, 2, or 4 bits per sample).
- */
-function readSubByteSample(
-	rawData: Uint8Array,
-	rowOffset: number,
-	x: number,
-	bitDepth: number,
-): number {
-	const byteIdx = rowOffset + Math.floor((x * bitDepth) / 8);
-	const sampleIdx = x % (8 / bitDepth);
-	const rawVal = extractSubByteSample(rawData[byteIdx] ?? 0, bitDepth, sampleIdx);
-	return scaleTo8Bit(rawVal, bitDepth);
-}
-
-/**
- * Reads a single grayscale sample at (x, rowOffset) for any bit depth.
- */
-function readGraySample(
-	rawData: Uint8Array,
-	rowOffset: number,
-	x: number,
-	bitDepth: number,
-): number {
-	if (bitDepth < 8) {
-		return readSubByteSample(rawData, rowOffset, x, bitDepth);
-	}
-	const bytesPerSample = bitDepth === 16 ? 2 : 1;
-	return readChannel8or16(rawData, rowOffset + x * bytesPerSample, bitDepth);
-}
-
-/**
- * Reads a palette index at (x, rowOffset) for any bit depth.
- */
-function readPaletteIndex(
-	rawData: Uint8Array,
-	rowOffset: number,
-	x: number,
-	bitDepth: number,
-): number {
-	if (bitDepth < 8) {
-		const byteIdx = rowOffset + Math.floor((x * bitDepth) / 8);
-		const sampleIdx = x % (8 / bitDepth);
-		return extractSubByteSample(rawData[byteIdx] ?? 0, bitDepth, sampleIdx);
-	}
-	return rawData[rowOffset + x] ?? 0;
 }
 
 // =============================================================================
