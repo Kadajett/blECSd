@@ -530,6 +530,6 @@ const modal = createModal(world, {
 ## See Also
 
 - [Entity Factories API](../api/entities.md) - Entity factory documentation
-- [Components Reference](../api/components.md) - Component documentation
-- [Widgets Reference](../api/widgets.md) - Widget documentation
+- Components Reference - Component documentation
+- Widgets Reference - Widget documentation
 - [Understanding ECS](../guides/understanding-ecs.md) - ECS concepts guide

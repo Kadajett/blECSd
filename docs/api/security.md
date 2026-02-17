@@ -155,6 +155,7 @@ if (categories.dcs.length > 0) {
 
 A builder class for combining trusted and untrusted content safely.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 class SafeStringBuilder {
   constructor(defaultOptions?: SanitizeOptions)
@@ -265,6 +266,7 @@ The following sequence types are always stripped (even when `stripAllEscapes: fa
 
 4. **Validate before display** - Use `isSafeForTerminal` to check input before deciding how to handle it.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Recommended pattern
 import { isSafeForTerminal, sanitizeForTerminal } from 'blecsd/terminal';

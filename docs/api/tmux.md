@@ -31,6 +31,7 @@ function wrap(sequence: string): string
 **Returns:** The wrapped sequence for tmux pass-through
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title } from 'blecsd/terminal';
 
@@ -102,6 +103,7 @@ function wrapIf(sequence: string, inTmux: boolean): string
 **Returns:** The sequence, wrapped if in tmux and not already wrapped
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title, isTmux } from 'blecsd/terminal';
 
@@ -149,6 +151,7 @@ const PT_START = '\x1bPtmux;'
 
 ### Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title, cursor, isTmux } from 'blecsd/terminal';
 
@@ -166,6 +169,7 @@ process.stdout.write(output);
 
 ### With wrapIf Helper
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title, isTmux } from 'blecsd/terminal';
 

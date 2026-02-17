@@ -365,7 +365,7 @@ The form automatically extracts values based on field type:
 ## Related
 
 - [TextInput Component](./textInput.md) - Text entry field
-- [Checkbox Component](./checkbox.md) - Boolean toggle
-- [RadioButton Component](./radioButton.md) - Single selection
+- Checkbox Component - Boolean toggle
+- RadioButton Component - Single selection
 - [Select Component](./select.md) - Dropdown selection
 - [Slider Component](./slider.md) - Range selection

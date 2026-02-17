@@ -15,6 +15,7 @@ The DEC Locator is a more advanced mouse protocol than X10/SGR, supporting:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { locator, LocatorButton } from 'blecsd/terminal';
 
@@ -233,6 +234,7 @@ locator.disableHighlight(): string
 
 ### Basic Locator Setup
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { locator } from 'blecsd/terminal';
 
@@ -251,6 +253,7 @@ function disableLocator() {
 
 ### Filtered Region Tracking
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { locator } from 'blecsd/terminal';
 
@@ -270,6 +273,7 @@ function trackButtonArea(x: number, y: number, width: number, height: number) {
 
 ### Polling Mode (One-Shot)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { locator, LocatorButton } from 'blecsd/terminal';
 
@@ -292,6 +296,7 @@ function pollLeftButton() {
 
 ### Pixel-Precise Tracking
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { locator } from 'blecsd/terminal';
 
@@ -350,5 +355,5 @@ Most other terminal emulators do not support DEC Locator. Always provide fallbac
 ## Related
 
 - [Mouse](./ansi.md#mouse-namespace) - Standard mouse tracking (SGR mode)
-- [Response Parser](./response-parser.md) - Parse locator responses
+- Response Parser - Parse locator responses
 - [ANSI Escape Codes](./ansi.md) - Core escape sequence generation

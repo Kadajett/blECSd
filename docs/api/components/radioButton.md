@@ -346,5 +346,5 @@ const values = getFormValues(world, form);
 ## Related
 
 - [Form Component](./form.md) - Form container for field management
-- [Checkbox Component](./checkbox.md) - Boolean toggle (non-exclusive)
+- Checkbox Component - Boolean toggle (non-exclusive)
 - [Select Component](./select.md) - Dropdown selection

@@ -687,5 +687,5 @@ for (const eid of movedEntities) {
 
 - [Collision System](./collisionSystem.md) - Narrow-phase collision detection
 - [Visibility Culling](./visibility-culling.md) - Uses spatial hash for viewport queries
-- [Position Component](../components/position.md)
-- [Collider Component](../components/collider.md)
+- [Position Component](../position.md)
+- [Collider Component](../components/collision.md)

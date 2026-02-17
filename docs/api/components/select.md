@@ -368,5 +368,5 @@ const values = getFormValues(world, form);
 ## Related
 
 - [Form Component](./form.md) - Form container
-- [RadioButton Component](./radioButton.md) - Alternative for few options
-- [Checkbox Component](./checkbox.md) - Boolean toggle
+- RadioButton Component - Alternative for few options
+- Checkbox Component - Boolean toggle

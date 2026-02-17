@@ -525,6 +525,7 @@ setText(world, box, 'New content');
 ### Pattern 5: Custom Rendering
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 // Override _render method (fragile)
 MyWidget.prototype._render = function() {

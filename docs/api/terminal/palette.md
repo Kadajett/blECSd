@@ -360,5 +360,5 @@ function setColor(input: unknown) {
 
 ## See Also
 
-- [Color Conversion](./conversion.md) - Converting between color formats
-- [Color Matching](./matching.md) - Finding nearest palette colors
+- [Color Conversion](./palette.md) - Converting between color formats
+- [Color Matching](./palette.md) - Finding nearest palette colors

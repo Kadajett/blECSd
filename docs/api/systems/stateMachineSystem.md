@@ -351,5 +351,5 @@ function updateComboState(player: Entity) {
 ## Related
 
 - [Animation System](./animationSystem.md) - Sprite animations
-- [State Machine Component](../components/stateMachine.md) - State machine data
-- [Scheduler](../scheduler.md) - System execution
+- [State Machine Component](../components/state-machine.md) - State machine data
+- [Scheduler](../core/scheduler.md) - System execution

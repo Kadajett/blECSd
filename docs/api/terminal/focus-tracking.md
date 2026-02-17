@@ -248,6 +248,6 @@ function update() {
 
 ## See Also
 
-- [Input Stream](./input-stream.md) - Input handler and event processing
+- [Input Stream](./key-parser.md) - Input handler and event processing
 - [Mouse Parser](./mouse-parser.md) - Mouse event parsing (includes FocusEvent type)
 - [ANSI](../ansi.md) - ANSI escape sequences (including focus reporting sequences)

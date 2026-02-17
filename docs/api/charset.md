@@ -41,6 +41,7 @@ function designate(set: CharacterSetId, gn?: CharacterSetRegister): string
 **Returns:** The escape sequence
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { charset } from 'blecsd/terminal';
 
@@ -119,6 +120,7 @@ function smacs(): string     // Alias for enterAcs()
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { charset } from 'blecsd/terminal';
 
@@ -312,6 +314,7 @@ function drawBox(width: number, height: number): string {
 
 Keep normal text and line drawing available:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { charset } from 'blecsd/terminal';
 

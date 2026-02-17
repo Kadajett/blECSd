@@ -557,6 +557,6 @@ Use Text for simple labels and status messages. Use Box when you need borders, p
 ## See Also
 
 - [Box Widget](./box.md) - Container with borders and padding
-- [Content Component](../components/content.md) - Text content management
-- [Position Component](../components/position.md) - Entity positioning
-- [Dimensions Component](../components/dimensions.md) - Widget sizing
+- [Content Component](../content.md) - Text content management
+- [Position Component](../position.md) - Entity positioning
+- [Dimensions Component](../dimensions.md) - Widget sizing

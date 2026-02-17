@@ -270,5 +270,5 @@ if (result.success) {
 
 ## See Also
 
-- [Input Sanitize](./input-sanitize.md) - Sanitizing untrusted text input
+- [Input Sanitize](../security.md) - Sanitizing untrusted text input
 - [Key Parser](./key-parser.md) - Keyboard event parsing

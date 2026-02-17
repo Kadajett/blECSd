@@ -313,6 +313,6 @@ soundToggle.onChange((checked) => {
 
 ## See Also
 
-- [Checkbox Widget](./checkbox.md) - For individual checkboxes
-- [RadioButton Widget](./radioButton.md) - For mutually exclusive options
-- [Button Widget](./button.md) - For action triggers
+- Checkbox Widget - For individual checkboxes
+- RadioButton Widget - For mutually exclusive options
+- Button Widget - For action triggers

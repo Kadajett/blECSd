@@ -286,7 +286,7 @@ Position.y[fileList] = 2;
 
 ### If you chose the **Widget API**:
 
-1. Read: [Widgets Reference](../api/widgets.md)
+1. Read: Widgets Reference
 2. Try: [Widget Examples](../examples/)
 3. Learn: [Widgets vs Components](../architecture/widgets-vs-components.md)
 
@@ -296,7 +296,7 @@ Position.y[fileList] = 2;
 2. Read: [Understanding ECS](../guides/understanding-ecs.md)
 3. Read: [Export Patterns](../guides/export-patterns.md) - Learn about namespace imports
 4. Reference: [Entity Factories](../api/entities.md)
-5. Reference: [Components](../api/components.md)
+5. Reference: Components
 
 ---
 

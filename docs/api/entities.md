@@ -1053,5 +1053,5 @@ Each factory has a corresponding Zod schema for config validation:
 
 ## See Also
 
-- [Components Reference](./components.md) - Component documentation
-- [World & Scheduler](./core.md) - ECS world and system scheduling
+- Components Reference - Component documentation
+- World & Scheduler - ECS world and system scheduling

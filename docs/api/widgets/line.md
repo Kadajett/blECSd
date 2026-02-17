@@ -539,5 +539,5 @@ Common Unicode box-drawing characters for lines:
 
 - [Box Widget](./box.md) - Container with borders
 - [Panel Widget](./panel.md) - Container with title
-- [Position Component](../components/position.md) - Entity positioning
-- [Dimensions Component](../components/dimensions.md) - Widget sizing
+- [Position Component](../position.md) - Entity positioning
+- [Dimensions Component](../dimensions.md) - Widget sizing

@@ -477,6 +477,6 @@ function initTerminal(info: TerminfoData): void {
 
 ## See Also
 
-- [Tput](./tput.md) - Terminal capability interface
+- [Tput](../terminfo.md) - Terminal capability interface
 - [ACS Maps](./acs.md) - Alternate character set handling
-- [Capabilities](./capabilities.md) - Capability name mappings
+- [Capabilities](../capabilities.md) - Capability name mappings

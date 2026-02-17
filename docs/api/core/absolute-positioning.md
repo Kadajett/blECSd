@@ -319,7 +319,7 @@ All `setAbsolute*` functions automatically set absolute mode.
 
 ## See Also
 
-- [Position Component](../components/position.md) - Core positioning system
-- [Positioning](./positioning.md) - Advanced positioning with percentages and keywords
+- [Position Component](../position.md) - Core positioning system
+- [Positioning](../positioning.md) - Advanced positioning with percentages and keywords
 - [Dimensions](../dimensions.md) - Setting element size
-- [Layout System](../systems/layout-system.md) - Automatic layout calculations
+- [Layout System](../systems/layout.md) - Automatic layout calculations

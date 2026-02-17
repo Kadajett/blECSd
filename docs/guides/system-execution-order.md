@@ -596,5 +596,5 @@ loop.registerSystem(LoopPhase.UPDATE, (world) => {
 
 - [Input Priority](./input-priority.md) - Why INPUT phase is always first
 - [Understanding ECS](./understanding-ecs.md) - ECS concepts for newcomers
-- [Game Loop API](../api/game-loop.md) - Game loop API reference
-- [Performance Guide](../performance/optimization.md) - Optimizing system performance
+- [Game Loop API](../api/core/gameLoop.md) - Game loop API reference
+- [Performance Guide](../guides/performance.md) - Optimizing system performance

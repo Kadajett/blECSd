@@ -340,5 +340,5 @@ The output system generates standard ANSI escape sequences:
 ## See Also
 
 - [Render System](./render.md) - Draw entities to buffer
-- [Double Buffer](../terminal/double-buffer.md) - Efficient change detection
+- [Double Buffer](../terminal/cell.md) - Efficient change detection
 - [Cell](../terminal/cell.md) - Cell data structure

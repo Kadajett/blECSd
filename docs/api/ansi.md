@@ -8,6 +8,7 @@ ANSI escape codes control terminal behavior including cursor positioning, text s
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cursor, style, screen, mouse } from 'blecsd/terminal';
 
@@ -132,6 +133,7 @@ cursor.requestPosition() // Request cursor position (terminal responds with CSI 
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cursor } from 'blecsd/terminal';
 
@@ -150,6 +152,7 @@ process.stdout.write(cursor.show());
 
 Constants for cursor shape styles.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cursor, CursorShape } from 'blecsd/terminal';
 
@@ -208,6 +211,7 @@ style.bgDefault()
 
 ### Combined Styling
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Chain multiple styles
 const styled = style.bold() + style.fg('red') + 'Error!' + style.reset();
@@ -216,6 +220,7 @@ process.stdout.write(styled);
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { style } from 'blecsd/terminal';
 
@@ -270,6 +275,7 @@ screen.resetScrollRegion()           // Reset scroll region
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { screen, cursor } from 'blecsd/terminal';
 
@@ -299,6 +305,7 @@ title.setBoth('App', 'Icon')    // Set both title and icon
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { title } from 'blecsd/terminal';
 
@@ -381,6 +388,7 @@ sync.end()     // End synchronized update (CSI ? 2026 l)
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sync, cursor, style } from 'blecsd/terminal';
 

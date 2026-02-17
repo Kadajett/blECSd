@@ -167,8 +167,10 @@ Define custom marker components for the snake, then create factory functions for
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-// Custom marker component (no data needed)
-const SnakeHead = {};
+// Custom marker component (no data needed, just a tag)
+const SnakeHead = withStore(() => ({
+  tag: new Uint8Array(10000),
+}));
 
 // Custom component with data store
 const SnakeBody = withStore(() => ({

@@ -93,6 +93,7 @@ onCleanup(callback: CleanupCallback): () => void
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 const unsubscribe = buffer.onCleanup(() => {
   // Restore cursor visibility
@@ -225,6 +226,7 @@ class Game {
 
 ### Multiple Cleanup Handlers
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 const buffer = new ScreenBuffer(process.stdout);
 
@@ -265,6 +267,7 @@ This is why `vim`, `less`, and other TUI applications don't leave their content 
 
 ScreenBuffer catches errors in cleanup handlers to ensure all handlers run:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 buffer.onCleanup(() => {
   throw new Error('Cleanup error');

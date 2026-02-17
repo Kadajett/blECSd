@@ -479,10 +479,10 @@ for (const childEid of children) {
 
 - **Read**: [Understanding ECS](../guides/understanding-ecs.md) - ECS concepts
 - **Read**: [System Execution Order](../guides/system-execution-order.md) - Loop phases
-- **Read**: [Coordinate System](../api/coordinate-system.md) - Positioning guide
+- **Read**: [Coordinate System](../api/positioning.md) - Positioning guide
 - **Reference**: [Entity Factories](../api/entities.md) - Entity creation API
-- **Reference**: [Components](../api/components.md) - Component reference
-- **Reference**: [Game Loop](../api/game-loop.md) - Loop API
+- **Reference**: Components - Component reference
+- **Reference**: [Game Loop](../api/core/gameLoop.md) - Loop API
 
 ## Common Patterns
 
@@ -778,4 +778,4 @@ The ECS API provides:
 
 **Not ideal for**: Quick prototypes, beginners, simple games
 
-For a simpler API, see the [Game API Getting Started](./game-api.md).
+For a simpler API, see the [Game API Getting Started](./ecs-api.md).

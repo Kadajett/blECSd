@@ -268,7 +268,7 @@ interface PaddingData {
 
 ## See Also
 
-- [Components Reference](./components.md) - All component documentation
+- Components Reference - All component documentation
 - [Entity Factories](./entities.md) - Creating entities with components
 - [Position Component](./position.md) - Element positioning
 - [Dimensions Component](./dimensions.md) - Element sizing

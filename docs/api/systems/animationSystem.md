@@ -215,4 +215,4 @@ attachAnimation(world, cursor, {
 
 - [Movement System](./movementSystem.md) - Velocity-based movement
 - [State Machine System](./stateMachineSystem.md) - State transitions
-- [Scheduler](../scheduler.md) - System execution
+- [Scheduler](../core/scheduler.md) - System execution

@@ -29,6 +29,7 @@ onExit((info) => {
 
 Singleton that coordinates terminal cleanup across multiple Program instances.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 class CleanupManager {
   static get instance(): CleanupManager;
@@ -109,6 +110,7 @@ function registerForCleanup(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { registerForCleanup, screen, cursor } from 'blecsd/terminal';
 
@@ -218,6 +220,7 @@ The CleanupManager installs handlers for:
 
 ### Game Application
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   registerForCleanup,
@@ -273,4 +276,4 @@ onExit(({ reason, error }) => {
 ## Related
 
 - [Suspend/Resume](./suspend.md) - SIGTSTP handling
-- [Process Utilities](./process.md) - Child process management
+- Process Utilities - Child process management

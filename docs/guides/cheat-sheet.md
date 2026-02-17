@@ -923,10 +923,10 @@ npm run build       # Build for production
 
 ## Related Guides
 
-- [Getting Started](/docs/guides/getting-started.md) - Build your first app
-- [ECS Architecture](/docs/guides/ecs-architecture.md) - Understanding ECS
-- [Export Patterns](/docs/guides/export-patterns.md) - Import paths guide
-- [Migrating from blessed](/docs/guides/migrating-from-blessed.md) - Migration guide
+- [Getting Started](../getting-started/installation.md) - Build your first app
+- [ECS Architecture](./understanding-ecs.md) - Understanding ECS
+- [Export Patterns](./export-patterns.md) - Import paths guide
+- [Migrating from blessed](./migrating-from-blessed.md) - Migration guide
 - [API Reference](/docs/api/) - Full API documentation
 
 ---

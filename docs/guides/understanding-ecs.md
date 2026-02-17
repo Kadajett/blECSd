@@ -19,6 +19,7 @@ Instead of objects with methods, you have:
 
 ### Traditional OOP Approach
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // OOP: Objects contain both data AND behavior
 class Button {
@@ -562,7 +563,7 @@ loop.start();
 ## Next Steps
 
 - **Read**: [System Execution Order](./system-execution-order.md) - Understand loop phases
-- **Read**: [Coordinate System](../api/coordinate-system.md) - Learn about positioning
+- **Read**: [Coordinate System](../api/positioning.md) - Learn about positioning
 - **Read**: [Widgets vs Components](../architecture/widgets-vs-components.md) - Understand abstraction layers
 - **Try**: [Simple Game Tutorial](../tutorials/simple-game.md) - Build a real ECS application
 

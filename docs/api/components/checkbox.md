@@ -311,5 +311,5 @@ const values = getFormValues(world, form);
 ## Related
 
 - [Form Component](./form.md) - Form container for field management
-- [RadioButton Component](./radioButton.md) - Single selection from group
+- RadioButton Component - Single selection from group
 - [TextInput Component](./textInput.md) - Text entry field

@@ -171,7 +171,7 @@ ECS systems process entities and update world state. Register with the scheduler
 
 ### Input Stream Handler
 
-See [Input Stream](./input-stream.md) for wrapping NodeJS readable streams.
+See [Input Stream](./terminal/key-parser.md) for wrapping NodeJS readable streams.
 
 ### Input Parsing
 
@@ -199,7 +199,7 @@ Low-level terminal control. Import from `blecsd/terminal`.
 | [Program](./program.md) | High-level terminal control |
 | [Security](./security.md) | Escape sequence sanitization |
 | [Cleanup](./cleanup.md) | Terminal state restoration |
-| [Output Buffer](./output-buffer.md) | Buffered output |
+| Output Buffer | Buffered output |
 | [Screen Buffer](./screen-buffer.md) | Alternate screen management |
 | [Sync Output](./sync-output.md) | Flicker-free rendering |
 | [Tmux](./tmux.md) | Tmux pass-through |

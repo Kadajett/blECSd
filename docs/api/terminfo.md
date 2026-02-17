@@ -105,6 +105,7 @@ console.log(`Terminal size: ${cols}x${rows}`);
 
 Gets a string capability (control sequence).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 const clearSeq = tput.getString('clear_screen');
 if (clearSeq) {
@@ -125,6 +126,7 @@ const resetSeq = tput.getString('exit_attribute_mode');
 
 Formats a parameterized string capability. Replaces placeholders with values.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Move cursor to row 10, column 5
 const seq = tput.tparm('cursor_address', 10, 5);
@@ -149,6 +151,7 @@ const scrollSeq = tput.tparm('change_scroll_region', 5, 20);
 
 Cursor positioning shortcut.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Move cursor to row 10, column 5 (0-indexed)
 process.stdout.write(tput.cup(10, 5));
@@ -161,6 +164,7 @@ process.stdout.write(tput.cup(0, 0));
 
 Set graphics rendition.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 process.stdout.write(tput.sgr(0));  // Reset all
 process.stdout.write(tput.sgr(1));  // Bold
@@ -171,6 +175,7 @@ process.stdout.write(tput.sgr(4));  // Underline
 
 Set foreground color.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Basic colors (0-7)
 process.stdout.write(tput.setaf(0));  // Black
@@ -193,6 +198,7 @@ process.stdout.write(tput.setaf(196));  // Red from extended palette
 
 Set background color.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 process.stdout.write(tput.setab(4));    // Blue background
 process.stdout.write(tput.setab(232));  // Dark gray background

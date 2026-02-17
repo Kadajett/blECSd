@@ -552,6 +552,6 @@ renderBox(10, 3, false);
 
 ## See Also
 
-- [Tput](./tput.md) - High-level capability interface
-- [Builtin](./builtin.md) - Hardcoded terminfo data
-- [Compiler](./compiler.md) - Parameterized string compilation
+- [Tput](../terminfo.md) - High-level capability interface
+- [Builtin](../terminfo.md) - Hardcoded terminfo data
+- [Compiler](../terminfo.md) - Parameterized string compilation

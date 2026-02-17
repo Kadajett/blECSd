@@ -430,6 +430,6 @@ function rebindKey(action: string, newKey: string) {
 
 ## See Also
 
-- [Key Parser](../terminal/keyParser.md) - Key event parsing
-- [Input System](../systems/inputSystem.md) - Input handling system
-- [Input Actions](./inputActions.md) - Action mapping system
+- [Key Parser](../terminal/key-parser.md) - Key event parsing
+- [Input System](../systems/input-system.md) - Input handling system
+- [Input Actions](./keyBindings.md) - Action mapping system

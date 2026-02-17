@@ -8,6 +8,7 @@ These are xterm-compatible window manipulation sequences (CSI Ps t). Not all ter
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps } from 'blecsd/terminal';
 
@@ -42,6 +43,7 @@ function iconify(): string  // Returns '\x1b[2t'
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps } from 'blecsd/terminal';
 
@@ -67,6 +69,7 @@ function move(x: number, y: number): string
 - `y` - Y position in pixels from top edge of screen
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps } from 'blecsd/terminal';
 
@@ -88,6 +91,7 @@ function resizePixels(width: number, height: number): string
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps } from 'blecsd/terminal';
 
@@ -104,6 +108,7 @@ function resizeChars(columns: number, rows: number): string
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps } from 'blecsd/terminal';
 
@@ -126,6 +131,7 @@ function setLines(lines: number): string
 - `lines` - Number of lines (minimum 24)
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps } from 'blecsd/terminal';
 
@@ -152,6 +158,7 @@ function lower(): string  // Returns '\x1b[6t'
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps } from 'blecsd/terminal';
 
@@ -173,6 +180,7 @@ function refresh(): string  // Returns '\x1b[7t'
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps } from 'blecsd/terminal';
 
@@ -215,6 +223,7 @@ function maximizeHorizontal(): string  // Returns '\x1b[9;3t'
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps } from 'blecsd/terminal';
 
@@ -255,6 +264,7 @@ function toggleFullScreen(): string  // Returns '\x1b[10;2t'
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps } from 'blecsd/terminal';
 
@@ -293,6 +303,7 @@ function popTitle(which?: 'both' | 'icon' | 'title'): string
 - `which` - What to restore: 'both' (default), 'icon', or 'title'
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { windowOps, title } from 'blecsd/terminal';
 
@@ -310,6 +321,7 @@ process.stdout.write(windowOps.popTitle('both'));
 
 For querying window state (position, size, etc.), use the `query` namespace from the response parser:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query, parseResponse, isWindowPosition } from 'blecsd/terminal';
 

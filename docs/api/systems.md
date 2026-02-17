@@ -757,4 +757,4 @@ Full documentation for these systems will be added in a future update (tracked i
 - [Understanding ECS](../guides/understanding-ecs.md)
 - [System Execution Order](../guides/system-execution-order.md)
 - [Testing Systems](../guides/testing.md#testing-ecs-systems)
-- [Components API](./components.md)
+- Components API

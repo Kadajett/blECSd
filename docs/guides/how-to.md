@@ -1379,6 +1379,7 @@ interface Command {
 
 **2. Implement command history**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 class CommandHistory {
   private history: Command[] = [];
@@ -1469,6 +1470,7 @@ history.redo();  // Entity moves to (10, 10)
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // [Include Command interface and CommandHistory from above]
 
@@ -2800,6 +2802,7 @@ function applyAccessibilitySettings(
 
 ### 5. Screen Reader Announcements
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 function announce(message: string): void {
   // Write to screen reader buffer

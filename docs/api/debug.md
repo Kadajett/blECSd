@@ -340,6 +340,7 @@ Default log format:
 
 ### Game Development
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDebugLogger, dumpTerminalState } from 'blecsd/terminal';
 
@@ -406,5 +407,5 @@ When the log file exceeds `maxFileSize` (default 10MB), the current file is rena
 
 ## Related
 
-- [Process Utilities](./process.md) - Process spawning
+- Process Utilities - Process spawning
 - [Terminal Detection](./detection.md) - Terminal capability detection

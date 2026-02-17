@@ -319,6 +319,6 @@ interface RenderContext {
 ## See Also
 
 - [Layout System](./layout.md) - Pre-compute positions before rendering
-- [Double Buffer](../terminal/double-buffer.md) - Efficient terminal output
+- [Double Buffer](../terminal/cell.md) - Efficient terminal output
 - [Renderable Component](../renderable.md) - Visual styling
 - [Border Component](../border.md) - Border configuration

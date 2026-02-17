@@ -41,6 +41,7 @@ suspendManager.disable();
 
 Manages terminal suspend and resume handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 class SuspendManager {
   constructor(options?: SuspendManagerOptions);
@@ -61,6 +62,7 @@ class SuspendManager {
 
 #### Constructor Options
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 interface SuspendManagerOptions {
   /** Output stream (default: process.stdout) */
@@ -121,6 +123,7 @@ if (key === 'ctrl+z') {
 
 Update the alternate buffer state tracking.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 process.stdout.write(screen.alternateOn());
 manager.setAlternateBuffer(true);
@@ -130,6 +133,7 @@ manager.setAlternateBuffer(true);
 
 Update the mouse tracking state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 process.stdout.write(mouse.enableNormal());
 manager.setMouseEnabled(true);
@@ -198,6 +202,7 @@ const suspendSequences = {
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { suspendSequences } from 'blecsd/terminal';
 

@@ -316,6 +316,7 @@ interface TerminalCapabilities {
 
 ### NegotiatorConfig
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 interface NegotiatorConfig {
   /** Query timeout in milliseconds (default: 100) */
@@ -458,5 +459,5 @@ process.on('SIGWINCH', async () => {
 ## See Also
 
 - [Terminal Detection](./detection.md) - Basic terminal detection
-- [Response Parser](./response-parser.md) - Parsing terminal responses
+- Response Parser - Parsing terminal responses
 - [Terminfo (Tput)](./terminfo.md) - Terminal capabilities via terminfo

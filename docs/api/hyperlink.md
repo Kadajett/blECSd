@@ -56,6 +56,7 @@ function link(url: string, text: string, options?: HyperlinkOptions): string
 - `options` - Optional `{ id?: string }` for multi-reference links
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hyperlink } from 'blecsd/terminal';
 
@@ -76,6 +77,7 @@ function end(): string
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hyperlink } from 'blecsd/terminal';
 
@@ -128,6 +130,7 @@ function mailto(email: string, text?: string, options?: HyperlinkOptions): strin
 - `options` - Optional link options
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hyperlink } from 'blecsd/terminal';
 
@@ -205,6 +208,7 @@ The following protocols are blocked to prevent security issues:
 
 When displaying links from untrusted sources, always use `safeLink`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hyperlink } from 'blecsd/terminal';
 

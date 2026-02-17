@@ -667,6 +667,6 @@ const entity = unwrapOr(result, null);
 
 ## See Also
 
-- [Game API](./game/index.md) - High-level game creation
-- [Components](./components/index.md) - ECS components
-- [Systems](./systems/index.md) - ECS systems
+- Game API - High-level game creation
+- Components - ECS components
+- Systems - ECS systems

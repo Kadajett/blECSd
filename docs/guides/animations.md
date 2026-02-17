@@ -361,5 +361,5 @@ scheduler.start(world);
 ## See Also
 
 - [Core Concepts](../getting-started/concepts.md) - Scheduler phases
-- [Game Development](./game-development.md) - More animation patterns for games
-- [Velocity Component](../api/velocity.md) - Component reference
+- [Game Development](./system-execution-order.md) - More animation patterns for games
+- [Velocity Component](../api/components/velocity.md) - Component reference

@@ -84,6 +84,7 @@ renderFrame(renderFn: () => void): void
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 syncOut.renderFrame(() => {
   process.stdout.write(screen.clear());
@@ -215,6 +216,7 @@ class Game {
 
 ### Manual Frame Control
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 const syncOut = new SynchronizedOutput(process.stdout);
 
@@ -307,6 +309,6 @@ The terminal internally buffers all content between the sync markers and display
 
 ## Related
 
-- [Output Buffer](./output-buffer.md) - Efficient output buffering
+- Output Buffer - Efficient output buffering
 - [ANSI Escape Codes](./ansi.md) - `sync.begin()` and `sync.end()` functions
 - [Program](./program.md) - High-level terminal control

@@ -153,5 +153,5 @@ if (result.success) {
 ## See Also
 
 - [Mouse Parser](./mouse-parser.md) - Mouse event parsing
-- [Kitty Protocol](./kitty-protocol.md) - Modern keyboard protocol with key release events
+- [Kitty Protocol](./key-parser.md) - Modern keyboard protocol with key release events
 - [Bracketed Paste](./bracketed-paste.md) - Distinguishing pasted text from typed input

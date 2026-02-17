@@ -613,8 +613,8 @@ const current = getBoxContent(world, eid); // 'Status: Ready!'
 
 ## See Also
 
-- [Border Component](../components/border.md) - Border styling
-- [Content Component](../components/content.md) - Text content management
-- [Position Component](../components/position.md) - Entity positioning
-- [Dimensions Component](../components/dimensions.md) - Widget sizing
-- [Focusable Component](../components/focusable.md) - Focus management
+- [Border Component](../border.md) - Border styling
+- [Content Component](../content.md) - Text content management
+- [Position Component](../position.md) - Entity positioning
+- [Dimensions Component](../dimensions.md) - Widget sizing
+- [Focusable Component](../focusable.md) - Focus management

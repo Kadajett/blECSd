@@ -43,6 +43,7 @@ new Program(config?: ProgramConfig)
 
 ### ProgramConfig
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 interface ProgramConfig {
   /** Input stream (default: process.stdin) */
@@ -438,5 +439,5 @@ if (result.success) {
 ## Related
 
 - [ANSI Escape Codes](./ansi.md) - Low-level escape sequences
-- [Output Buffer](./output-buffer.md) - Output buffering
+- Output Buffer - Output buffering
 - [Cleanup](./cleanup.md) - Terminal cleanup handling

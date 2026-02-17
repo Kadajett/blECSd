@@ -720,5 +720,5 @@ layout.append(child.eid).recalculate();
 
 - [Box Widget](./box.md) - Container with borders
 - [Line Widget](./line.md) - Visual separator
-- [Position Component](../components/position.md) - Entity positioning
-- [Dimensions Component](../components/dimensions.md) - Widget sizing
+- [Position Component](../position.md) - Entity positioning
+- [Dimensions Component](../dimensions.md) - Widget sizing

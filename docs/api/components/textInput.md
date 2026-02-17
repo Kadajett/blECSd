@@ -477,5 +477,5 @@ setTextInputConfig(passwordInput, {
 ## Related
 
 - [Form Component](./form.md) - Form container for field management
-- [Checkbox Component](./checkbox.md) - Boolean toggle
+- Checkbox Component - Boolean toggle
 - [Select Component](./select.md) - Dropdown selection

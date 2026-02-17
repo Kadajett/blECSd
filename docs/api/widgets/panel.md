@@ -735,5 +735,5 @@ panel
 
 - [Box Widget](./box.md) - Basic container without title
 - [Layout Widget](./layout.md) - Auto-arranging container
-- [Position Component](../components/position.md) - Entity positioning
-- [Dimensions Component](../components/dimensions.md) - Widget sizing
+- [Position Component](../position.md) - Entity positioning
+- [Dimensions Component](../dimensions.md) - Widget sizing

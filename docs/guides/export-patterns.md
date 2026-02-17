@@ -349,6 +349,6 @@ Use TypeScript autocomplete, or check the module's `index.ts` file. The [API Ref
 
 ## Related Guides
 
-- [Getting Started](/docs/guides/getting-started.md) - Building your first blECSd app
-- [ECS Architecture](/docs/guides/ecs-architecture.md) - Understanding the Entity Component System
-- [Terminal I/O](/docs/api/terminal.md) - Low-level terminal control reference
+- [Getting Started](../getting-started/installation.md) - Building your first blECSd app
+- [ECS Architecture](./understanding-ecs.md) - Understanding the Entity Component System
+- Terminal I/O - Low-level terminal control reference

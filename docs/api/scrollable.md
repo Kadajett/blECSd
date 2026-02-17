@@ -517,5 +517,5 @@ interface ScrollableData {
 
 ## See Also
 
-- [Components Reference](./components.md) - All component documentation
+- Components Reference - All component documentation
 - [Entity Factories](./entities.md) - Creating entities with components

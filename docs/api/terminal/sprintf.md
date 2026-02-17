@@ -357,5 +357,5 @@ const pi = 3.14159;
 
 ## See Also
 
-- [Compiler](./compiler.md) - Parameterized string compilation
-- [Tput](./tput.md) - High-level capability interface
+- [Compiler](../terminfo.md) - Parameterized string compilation
+- [Tput](../terminfo.md) - High-level capability interface

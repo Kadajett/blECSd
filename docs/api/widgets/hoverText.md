@@ -327,5 +327,5 @@ import {
 ## Related
 
 - [Interactive Component](../interactive.md) - Hover state detection
-- [Button Component](../components/button.md) - Interactive buttons
+- Button Component - Interactive buttons
 - [Panel Widget](./panel.md) - Container with title

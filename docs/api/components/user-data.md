@@ -246,5 +246,5 @@ The ECS approach provides:
 
 ## See Also
 
-- [Components](../../getting-started/components.md) - Understanding ECS components
+- Components - Understanding ECS components
 - [Entity Data](../core/entity-data.md) - Alternative typed storage

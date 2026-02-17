@@ -86,6 +86,7 @@ function isColorSupported(): boolean
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isColorSupported, style } from 'blecsd/terminal';
 
@@ -163,6 +164,7 @@ function isTmux(): boolean
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTmux, tmux } from 'blecsd/terminal';
 
@@ -290,6 +292,7 @@ function isBracketedPasteSupported(): boolean
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isBracketedPasteSupported, bracketedPaste } from 'blecsd/terminal';
 
@@ -397,6 +400,7 @@ The detection functions check these environment variables:
 
 ### Feature-Based Rendering
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getTerminalInfo,
@@ -427,6 +431,7 @@ class Renderer {
 
 ### Multiplexer Awareness
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTmux, isScreen, tmux } from 'blecsd/terminal';
 

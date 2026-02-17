@@ -540,4 +540,4 @@ if (!result.success) {
 ## See Also
 
 - [Core Concepts](../getting-started/concepts.md) - Event bus overview
-- [Event Bubbling](/docs/api/core/event-bubbling.md) - Hierarchical event propagation
+- [Event Bubbling](./core/event-bubbling.md) - Hierarchical event propagation

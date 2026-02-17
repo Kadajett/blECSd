@@ -88,6 +88,7 @@ Include:
 
 blECSd follows functional programming principles:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Good: Pure function
 function moveEntity(world: World, eid: Entity, dx: number, dy: number): void {

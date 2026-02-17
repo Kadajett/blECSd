@@ -472,6 +472,6 @@ emitDescendants(
 
 ## See Also
 
-- [Events API](/docs/api/events.md) - Core event bus documentation
-- [Hierarchy Component](/docs/api/components/hierarchy.md) - Parent-child relationships
-- [Core Concepts](../getting-started/concepts.md) - Event system overview
+- [Events API](../events.md) - Core event bus documentation
+- [Hierarchy Component](../hierarchy.md) - Parent-child relationships
+- [Core Concepts](../../getting-started/concepts.md) - Event system overview

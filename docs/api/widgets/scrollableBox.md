@@ -817,6 +817,6 @@ const scrollBox = createScrollableBox(world, eid, { left: 0, top: 0 })
 ## See Also
 
 - [Box Widget](./box.md) - Non-scrollable container
-- [Scrollable Component](../components/scrollable.md) - Underlying scroll component
-- [Position Component](../components/position.md) - Entity positioning
-- [Dimensions Component](../components/dimensions.md) - Widget sizing
+- [Scrollable Component](../scrollable.md) - Underlying scroll component
+- [Position Component](../position.md) - Entity positioning
+- [Dimensions Component](../dimensions.md) - Widget sizing

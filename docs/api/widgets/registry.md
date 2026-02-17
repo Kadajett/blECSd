@@ -492,4 +492,4 @@ const lightRegistry = createThemedRegistry('light');
 
 - [Box Widget](./box.md) - Basic container
 - [Panel Widget](./panel.md) - Container with title bar
-- [Widgets Overview](./index.md) - All widget documentation
+- Widgets Overview - All widget documentation

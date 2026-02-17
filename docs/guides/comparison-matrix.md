@@ -307,6 +307,7 @@ function App() {
 ```
 
 #### Textual: Reactive Attributes
+<!-- blecsd-doccheck:ignore -->
 ```python
 class MyWidget(Widget):
     counter = reactive(0)  # Automatically triggers re-render

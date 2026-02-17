@@ -607,5 +607,5 @@ ColorNameSchema.parse('brightred');
 
 ## See Also
 
-- [Renderable Component](./renderable.md) - Using colors with entity rendering
-- [ANSI Sequences](./ansi.md) - Low-level terminal escape sequences
+- [Renderable Component](../renderable.md) - Using colors with entity rendering
+- [ANSI Sequences](../ansi.md) - Low-level terminal escape sequences

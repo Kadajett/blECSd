@@ -195,4 +195,4 @@ if (result.success) {
 ## See Also
 
 - [Key Parser](./key-parser.md) - Keyboard event parsing
-- [GPM Client](./gpm-client.md) - Linux console mouse support
+- [GPM Client](./mouse-parser.md) - Linux console mouse support

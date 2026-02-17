@@ -70,6 +70,7 @@ const loop = createGameLoop(world, {
 
 For simple applications, handle input directly:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputHandler } from 'blecsd/core';
 

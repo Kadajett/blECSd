@@ -489,5 +489,5 @@ setConstraints(world, label, {
 ## See Also
 
 - [Position Component](./position.md) - Entity positioning
-- [Components Reference](./components.md) - All component documentation
+- Components Reference - All component documentation
 - [Entity Factories](./entities.md) - Creating entities with components
