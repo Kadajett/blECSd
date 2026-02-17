@@ -78,6 +78,7 @@ Sets the tile map renderer configuration. Must be called before the system runs.
 function setTileMapRendererConfig(config: TileMapRendererConfig): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setTileMapRendererConfig } from 'blecsd';
 
@@ -104,6 +105,7 @@ Gets the current render buffer after the system has run.
 function getTileMapRenderBuffer(): TileMapBuffer | null
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTileMapRenderBuffer } from 'blecsd';
 

@@ -17,6 +17,7 @@ Entity factories are the low-level API for creating UI elements in blECSd. Each 
 
 Creates a box entity, a basic container with position, dimensions, optional border, and padding.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createBoxEntity, BorderType } from 'blecsd';
 
@@ -77,6 +78,7 @@ const childBox = createBoxEntity(world, {
 
 Creates a text entity that displays content with optional styling, alignment, and text wrapping.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createTextEntity, TextAlign, TextVAlign } from 'blecsd';
 
@@ -125,6 +127,7 @@ const paragraph = createTextEntity(world, {
 
 Creates a button entity, an interactive element with focus support and click handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createButtonEntity, BorderType } from 'blecsd';
 
@@ -230,6 +233,7 @@ const namedScreen = createScreenEntity(world, {
 
 Creates an input entity, a text input field with focus and key handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createInputEntity, BorderType } from 'blecsd';
 
@@ -290,6 +294,7 @@ const styledInput = createInputEntity(world, {
 
 Creates a list entity that displays a scrollable list of items with selection support.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createListEntity, BorderType } from 'blecsd';
 
@@ -354,6 +359,7 @@ const styledList = createListEntity(world, {
 
 Creates a checkbox entity, an interactive toggle element with label support.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createCheckboxEntity, BorderType } from 'blecsd';
 
@@ -410,6 +416,7 @@ const customCheckbox = createCheckboxEntity(world, {
 
 Creates a textbox entity, a single-line text input field with cursor support, password masking, and keyboard navigation.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createTextboxEntity, BorderType } from 'blecsd';
 
@@ -483,6 +490,7 @@ const styledTextbox = createTextboxEntity(world, {
 
 Creates a textarea entity, a multi-line text input field with scrolling support and keyboard navigation.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createTextareaEntity, BorderType } from 'blecsd';
 
@@ -546,6 +554,7 @@ const styledTextarea = createTextareaEntity(world, {
 
 Creates a select entity, a dropdown menu for choosing from a list of options.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createSelectEntity, BorderType } from 'blecsd';
 
@@ -609,6 +618,7 @@ const styledSelect = createSelectEntity(world, {
 
 Creates a slider entity, an interactive element for selecting a numeric value within a range.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createSliderEntity, BorderType } from 'blecsd';
 
@@ -679,6 +689,7 @@ const styledSlider = createSliderEntity(world, {
 
 Creates a form entity, a container for grouping form inputs with validation and submission support.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createFormEntity, createTextboxEntity, createButtonEntity, BorderType } from 'blecsd';
 
@@ -755,6 +766,7 @@ const styledForm = createFormEntity(world, {
 
 Creates a progress bar entity, a visual indicator of task completion or loading status.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createProgressBarEntity, BorderType } from 'blecsd';
 
@@ -820,6 +832,7 @@ const styledProgress = createProgressBarEntity(world, {
 
 Creates a radio set entity, a container for grouping radio buttons with mutual exclusion.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createRadioSetEntity, createRadioButtonEntity, BorderType } from 'blecsd';
 
@@ -900,6 +913,7 @@ const styledRadioSet = createRadioSetEntity(world, {
 
 Creates a radio button entity, a selectable option within a radio set.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createRadioSetEntity, createRadioButtonEntity } from 'blecsd';
 

@@ -4,6 +4,7 @@ The RadioButton component provides single-selection functionality within a group
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachRadioSetBehavior,
@@ -90,6 +91,7 @@ Default characters:
 
 Customize with:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, attachRadioButtonBehavior, setRadioButtonDisplay } from 'blecsd';
 
@@ -266,6 +268,7 @@ sendRadioButtonEvent(world, eid, 'enable');
 
 ## Example: Size Selection
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

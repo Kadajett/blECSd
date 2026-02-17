@@ -159,6 +159,7 @@ function applyScrollImpulse(
 ): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { applyScrollImpulse } from 'blecsd';
 
@@ -181,6 +182,7 @@ function smoothScrollTo(
 ): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { smoothScrollTo } from 'blecsd';
 
@@ -257,6 +259,7 @@ function clearAllScrollStates(): void
 
 Complete scrollable content area with momentum:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

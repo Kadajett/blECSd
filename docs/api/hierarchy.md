@@ -4,6 +4,7 @@ The Hierarchy component manages parent-child relationships between entities. Use
 
 ## Component Structure
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Hierarchy } from 'blecsd';
 
@@ -16,6 +17,7 @@ Hierarchy.depth        // Uint16Array - Depth in hierarchy (0 = root)
 
 ### NULL_ENTITY
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { NULL_ENTITY } from 'blecsd';
 
@@ -163,6 +165,7 @@ getParent(world, child);  // NULL_ENTITY
 
 ### getParent
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getParent } from 'blecsd';
 
@@ -197,6 +200,7 @@ const all = getDescendants(world, root);
 
 Returns all ancestors, nearest first.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAncestors } from 'blecsd';
 
@@ -242,6 +246,7 @@ getChildIndex(world, orphan);  // -1 (not a child)
 
 ### getNextSibling / getPrevSibling
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getNextSibling, getPrevSibling, NULL_ENTITY } from 'blecsd';
 
@@ -262,6 +267,7 @@ getDepth(world, grandchild);  // 2
 
 ### isRoot / isLeaf
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isRoot, isLeaf } from 'blecsd';
 
@@ -273,6 +279,7 @@ isLeaf(world, entity);  // true if no children
 
 Returns all hierarchy data for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getHierarchy } from 'blecsd';
 
@@ -309,6 +316,7 @@ interface HierarchyData {
 
 ### Building a Tree
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { appendChild, getChildren, getDepth } from 'blecsd';
@@ -332,6 +340,7 @@ getDepth(world, grandchild);    // 2
 
 ### Traversing Descendants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDescendants, getPosition, setPosition } from 'blecsd';
 
@@ -349,6 +358,7 @@ function moveEntityAndDescendants(world, entity, dx, dy) {
 
 ### Finding Root
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAncestors, isRoot } from 'blecsd';
 

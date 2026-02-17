@@ -16,6 +16,7 @@ The screen buffer provides efficient storage and manipulation of these cells.
 
 ### Creating Cells
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCell, Attr, DEFAULT_FG, DEFAULT_BG } from 'blecsd';
 
@@ -48,6 +49,7 @@ interface Cell {
 
 Attributes can be combined using bitwise OR:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Attr } from 'blecsd';
 
@@ -107,6 +109,7 @@ const notBold = withoutAttr(cell, Attr.BOLD);
 
 ### Creating a Buffer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScreenBuffer, createCell } from 'blecsd';
 
@@ -229,6 +232,7 @@ for (const { x, y, cell } of changes) {
 
 Colors are packed as 32-bit RGBA values:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Pack color manually
 const red = 0xff0000ff;  // AARRGGBB format

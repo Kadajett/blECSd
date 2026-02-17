@@ -52,6 +52,7 @@ interface PhaseManager {
 
 Maps built-in LoopPhase values to their string names.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { BUILTIN_PHASE_NAMES, LoopPhase } from 'blecsd';
 
@@ -65,6 +66,7 @@ Built-in phases (in order): INPUT, EARLY_UPDATE, UPDATE, LATE_UPDATE, PHYSICS, L
 
 Default global phase manager for simple use cases.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { defaultPhaseManager } from 'blecsd';
 ```

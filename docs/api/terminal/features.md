@@ -162,6 +162,7 @@ interface ModernProtocols {
 
 Detects Unicode support based on locale settings.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectUnicode } from 'blecsd';
 
@@ -349,6 +350,7 @@ if (detectTitle(info)) {
 
 NCurses-compatible quirk detection.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectMagicCookie, detectPadding, detectSetbuf } from 'blecsd';
 

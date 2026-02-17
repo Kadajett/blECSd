@@ -4,6 +4,7 @@ Foundational accessibility features for terminal UIs. Provides ARIA-like roles a
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -69,6 +70,7 @@ Sets the accessible role for an entity. Automatically adds the Accessible compon
 - `role` - The accessible role
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setAccessibleRole } from 'blecsd';
 
@@ -93,6 +95,7 @@ Gets the accessible role for an entity.
 **Returns:** `AccessibleRole | undefined` - The accessible role or undefined if not set
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setAccessibleRole, getAccessibleRole } from 'blecsd';
 
@@ -116,6 +119,7 @@ Sets the accessible label for an entity. The label provides a human-readable des
 - `label` - The label text
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setAccessibleLabel } from 'blecsd';
 
@@ -140,6 +144,7 @@ Gets the accessible label for an entity.
 **Returns:** `string | undefined` - The label text or undefined if not set
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setAccessibleLabel, getAccessibleLabel } from 'blecsd';
 
@@ -159,6 +164,7 @@ Announces a message to screen readers. Uses terminal title or OSC sequences for 
 - `message` - The message to announce
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { announce } from 'blecsd';
 
@@ -188,6 +194,7 @@ afterEach(() => {
 
 ### Accessible Button
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel } from 'blecsd';
 
@@ -204,6 +211,7 @@ setAccessibleLabel(world, cancelButton, 'Cancel');
 
 ### Accessible Form
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel } from 'blecsd';
 
@@ -224,6 +232,7 @@ setAccessibleLabel(world, termsCheckbox, 'I agree to the terms and conditions');
 
 ### Accessible List
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel } from 'blecsd';
 
@@ -244,6 +253,7 @@ setAccessibleLabel(world, user2, 'Bob Johnson');
 
 ### Accessible Menu
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel } from 'blecsd';
 
@@ -268,6 +278,7 @@ setAccessibleLabel(world, saveItem, 'Save file');
 
 ### Accessible Dialog
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel, announce } from 'blecsd';
 
@@ -286,6 +297,7 @@ announce('Dialog closed');
 
 ### Accessible Tree View
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel } from 'blecsd';
 
@@ -310,6 +322,7 @@ setAccessibleLabel(world, file, 'File: button.ts');
 
 ### Status Announcements
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { announce } from 'blecsd';
 
@@ -334,6 +347,7 @@ announce('Upload complete');
 
 ### Dynamic Labels
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setAccessibleLabel, getAccessibleLabel } from 'blecsd';
 

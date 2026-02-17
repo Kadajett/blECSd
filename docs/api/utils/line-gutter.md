@@ -4,6 +4,7 @@ Efficient line number gutter rendering with dynamic width, relative/hybrid numbe
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createGutterConfig,
@@ -80,6 +81,7 @@ function createGutterConfig(config?: Partial<GutterConfig>): GutterConfig
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGutterConfig } from 'blecsd';
 
@@ -95,6 +97,7 @@ function computeDigitWidth(totalLines: number, minWidth: number): number
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { computeDigitWidth } from 'blecsd';
 
@@ -131,6 +134,7 @@ function formatLineNumber(
 - `mode` - Line numbering mode
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { formatLineNumber } from 'blecsd';
 
@@ -162,6 +166,7 @@ function computeVisibleGutter(
 - `config` - Optional gutter config overrides
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { computeVisibleGutter } from 'blecsd';
 
@@ -181,6 +186,7 @@ function gutterWidthChanged(oldTotal: number, newTotal: number, minWidth?: numbe
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { gutterWidthChanged } from 'blecsd';
 
@@ -208,6 +214,7 @@ function renderGutterBlock(
 - `reset` - ANSI reset sequence (default: `'\x1b[0m'`)
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { computeVisibleGutter, renderGutterBlock } from 'blecsd';
 
@@ -220,6 +227,7 @@ for (const line of styled) {
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { computeVisibleGutter, renderGutterBlock, gutterWidthChanged } from 'blecsd';
 

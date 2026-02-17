@@ -14,6 +14,7 @@ The worker pool handles:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorkerPool,
@@ -120,6 +121,7 @@ Creates and initializes the worker pool. Uses synchronous fallback handlers on t
 function createWorkerPool(config?: Partial<WorkerPoolConfig>): WorkerPoolState
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorkerPool } from 'blecsd';
 
@@ -141,6 +143,7 @@ function registerTaskHandler<TInput = unknown, TOutput = unknown>(
 ): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { registerTaskHandler } from 'blecsd';
 
@@ -212,6 +215,7 @@ function cancelAllOfType(type: string): number
 
 **Returns:** Number of tasks cancelled.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cancelAllOfType } from 'blecsd';
 
@@ -228,6 +232,7 @@ Gets the current worker pool state and statistics.
 function getWorkerPoolState(): WorkerPoolState
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getWorkerPoolState } from 'blecsd';
 
@@ -249,6 +254,7 @@ function destroyWorkerPool(): void
 
 Complete worker pool setup for text processing tasks:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorkerPool,

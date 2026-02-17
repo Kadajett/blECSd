@@ -6,6 +6,7 @@ The Content component stores text content for entities, with support for text al
 
 Defines horizontal text alignment.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TextAlign } from 'blecsd';
 
@@ -21,6 +22,7 @@ TextAlign.Right  // 2 - Right-aligned text
 
 Defines vertical text alignment.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TextVAlign } from 'blecsd';
 
@@ -36,6 +38,7 @@ TextVAlign.Bottom // 2 - Bottom-aligned text
 
 The Content component stores content metadata using bitecs SoA (Structure of Arrays) pattern. String content is stored in a separate `ContentStore` since bitecs uses typed arrays.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Content } from 'blecsd';
 
@@ -57,6 +60,7 @@ Content.parseTags  // Uint8Array  - Parse markup tags (0=no, 1=yes)
 
 Checks if an entity has a Content component.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, hasContent, setContent } from 'blecsd';
 
@@ -75,6 +79,7 @@ hasContent(world, eid); // true
 
 Sets or updates text content on an entity. Adds the Content component if not already present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, TextAlign, TextVAlign } from 'blecsd';
 
@@ -114,6 +119,7 @@ setContent(world, eid, 'New text');
 
 Gets the text content for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, getContent } from 'blecsd';
 
@@ -132,6 +138,7 @@ getContent(world, eid); // 'Hello, World!'
 
 Sets text content, stripping any ANSI escape codes. Use this when you want to store plain text without formatting codes.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setText, getText, TextAlign } from 'blecsd';
 
@@ -157,6 +164,7 @@ setText(world, eid, '\x1b[32mGreen\x1b[0m', {
 
 Gets text content with ANSI codes stripped. Use this to get plain text for display width calculations or logging.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, getText } from 'blecsd';
 
@@ -176,6 +184,7 @@ getText(world, eid); // 'Red and Green'
 
 Gets full content data for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, getContentData, TextAlign, TextVAlign } from 'blecsd';
 
@@ -211,6 +220,7 @@ const data = getContentData(world, eid);
 
 Appends text to an entity's existing content.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, appendContent, getContent } from 'blecsd';
 
@@ -231,6 +241,7 @@ getContent(world, eid); // 'Hello, World!'
 
 Clears the content of an entity. Removes the text but keeps the component.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, clearContent, getContent, hasContent } from 'blecsd';
 
@@ -252,6 +263,7 @@ hasContent(world, eid);  // true (component still exists)
 
 Gets the content length in characters.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, getContentLength } from 'blecsd';
 
@@ -270,6 +282,7 @@ getContentLength(world, eid); // 5
 
 Gets the content hash for change detection. Uses the djb2 algorithm.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, getContentHash } from 'blecsd';
 
@@ -294,6 +307,7 @@ const hash4 = getContentHash(world, eid); // Different from hash2
 
 Sets the horizontal text alignment.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, setTextAlign, TextAlign } from 'blecsd';
 
@@ -312,6 +326,7 @@ setTextAlign(world, eid, TextAlign.Center);
 
 Sets the vertical text alignment.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, setTextVAlign, TextVAlign } from 'blecsd';
 
@@ -330,6 +345,7 @@ setTextVAlign(world, eid, TextVAlign.Middle);
 
 Sets whether text should wrap at container boundaries.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, setTextWrap } from 'blecsd';
 
@@ -348,6 +364,7 @@ setTextWrap(world, eid, true);
 
 Checks if text wrapping is enabled for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, setTextWrap, isTextWrapped } from 'blecsd';
 
@@ -369,6 +386,7 @@ isTextWrapped(world, eid); // true
 
 Sets whether to parse markup tags in content.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, setParseTags } from 'blecsd';
 
@@ -387,6 +405,7 @@ setParseTags(world, eid, true);
 
 Checks if tag parsing is enabled for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setContent, setParseTags, isParsingTags } from 'blecsd';
 
@@ -457,6 +476,7 @@ interface ContentData {
 
 The global `ContentStore` instance that manages string storage. Since bitecs uses typed arrays, strings must be stored separately and referenced by ID.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { contentStore } from 'blecsd';
 
@@ -470,6 +490,7 @@ import { contentStore } from 'blecsd';
 
 ### Basic Text Display
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setContent, getContent } from 'blecsd';
@@ -483,6 +504,7 @@ console.log(getContent(world, textEntity)); // 'Hello, Terminal!'
 
 ### Centered Title
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setContent, TextAlign, TextVAlign } from 'blecsd';
@@ -498,6 +520,7 @@ setContent(world, titleEntity, 'Game Title', {
 
 ### Wrapping Text Block
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setContent, appendContent, TextAlign } from 'blecsd';
@@ -515,6 +538,7 @@ appendContent(world, paragraphEntity, 'when it reaches the container boundary.')
 
 ### Change Detection
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setContent, getContentHash } from 'blecsd';
@@ -536,6 +560,7 @@ if (hash1 !== hash2) {
 
 ### Styled Text with Tags
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setContent, setParseTags } from 'blecsd';

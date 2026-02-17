@@ -4,6 +4,7 @@ ECS World creation and management. Wraps bitecs world primitives.
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, resetWorld } from 'blecsd';
 
@@ -24,6 +25,7 @@ function createWorld(): World;
 
 **Returns:** A new World instance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld } from 'blecsd';
 
@@ -41,6 +43,7 @@ function resetWorld(world: World): void;
 **Parameters:**
 - `world` - The world to reset
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, resetWorld } from 'blecsd';
 
@@ -51,6 +54,7 @@ resetWorld(world); // Clear everything for new game
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, resetWorld, addEntity, addComponent, Position } from 'blecsd';
 

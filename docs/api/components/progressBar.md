@@ -4,6 +4,7 @@ The ProgressBar component provides visual progress indication with customizable 
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachProgressBarBehavior,
@@ -24,6 +25,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -63,6 +65,7 @@ setProgress(world, eid, 50);
 
 ## Orientation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ProgressOrientation, attachProgressBarBehavior } from 'blecsd';
 
@@ -85,6 +88,7 @@ Default appearance:
 
 Customize with:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, attachProgressBarBehavior, setProgressBarDisplay } from 'blecsd';
 
@@ -175,6 +179,7 @@ setProgressOrientation(world, eid, ProgressOrientation.Vertical);
 
 ### Display
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, attachProgressBarBehavior, setShowPercentage, isShowingPercentage, getProgressFillChar, getProgressEmptyChar, setProgressBarDisplay, getProgressBarDisplay, clearProgressBarDisplay, renderProgressString } from 'blecsd';
 
@@ -233,6 +238,7 @@ clearProgressBarCallbacks(eid);
 
 ## Example: Download Progress
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

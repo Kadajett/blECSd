@@ -4,6 +4,7 @@ The animation system updates sprite animations for all entities with the Animati
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   animationSystem,

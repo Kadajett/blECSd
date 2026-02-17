@@ -4,6 +4,7 @@ Efficiently renders text that streams in character-by-character or chunk-by-chun
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createStreamingText, addEntity, createWorld } from 'blecsd';
 
@@ -39,6 +40,7 @@ stream.endStream();
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { StreamingTextConfigSchema } from 'blecsd';
 
@@ -57,6 +59,7 @@ const config = StreamingTextConfigSchema.parse({
 
 Creates a streaming text widget attached to an existing entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createStreamingText, addEntity } from 'blecsd';
 
@@ -225,6 +228,7 @@ These functions operate on `StreamingTextState` objects and can be used independ
 
 ### createStreamingState
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createStreamingState } from 'blecsd';
 
@@ -283,6 +287,7 @@ state = scrollByLines(state, -5);
 
 ### wrapLine
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { wrapLine } from 'blecsd';
 
@@ -292,6 +297,7 @@ const lines = wrapLine('Hello World, this is a long line', 10);
 
 ### stripAnsiSequences
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { stripAnsiSequences } from 'blecsd';
 

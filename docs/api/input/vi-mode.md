@@ -122,6 +122,7 @@ Resolves a vi page action to a concrete scroll amount.
 function resolvePageAmount(amount: 'half' | 'full', viewportHeight: number): number;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resolvePageAmount } from 'blecsd';
 
@@ -177,6 +178,7 @@ function resolveJumpTarget(
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createViState,

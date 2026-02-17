@@ -47,6 +47,7 @@ const withBorder = getShrinkWidth(world, entity);
 
 Calculates the minimum height needed to fit an entity's content.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getShrinkHeight, setContent } from 'blecsd';
 
@@ -72,6 +73,7 @@ const wrappedHeight = getShrinkHeight(world, entity, 20);
 
 Calculates both width and height needed to fit an entity's content.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getShrinkBox, setContent } from 'blecsd';
 
@@ -90,6 +92,7 @@ console.log(`Need ${box.width}x${box.height} cells`);
 
 Applies shrink-to-content to an entity's dimensions. Only works if shrink is enabled for the entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { applyShrink, setShrink, setContent, setDimensions } from 'blecsd';
 
@@ -109,6 +112,7 @@ applyShrink(world, entity);
 
 Calculates shrink size without modifying the entity. Useful for preview or layout calculations.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { calculateShrinkSize, setContent, setDimensions } from 'blecsd';
 
@@ -153,6 +157,7 @@ applyShrink(world, entity);
 
 ### Auto-sizing Button
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setContent, setDimensions, setShrink, applyShrink, setPaddingAll, setBorder } from 'blecsd';

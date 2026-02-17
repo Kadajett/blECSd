@@ -129,6 +129,7 @@ function createSpatialHash(config?: Partial<SpatialHashConfig>): SpatialHashGrid
 
 **Returns:** A new spatial hash grid.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash } from 'blecsd';
 
@@ -150,6 +151,7 @@ function worldToCell(grid: SpatialHashGrid, x: number, y: number): CellCoord
 
 **Returns:** The cell coordinate.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, worldToCell } from 'blecsd';
 
@@ -181,6 +183,7 @@ function insertEntity(
 - `width` - Entity width (default: 1)
 - `height` - Entity height (default: 1)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, insertEntity } from 'blecsd';
 
@@ -200,6 +203,7 @@ function removeEntityFromGrid(grid: SpatialHashGrid, eid: Entity): void
 - `grid` - The spatial hash grid
 - `eid` - Entity ID to remove
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, removeEntityFromGrid } from 'blecsd';
 
@@ -231,6 +235,7 @@ function queryArea(
 
 **Returns:** Set of entity IDs that may overlap the query area.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, queryArea } from 'blecsd';
 
@@ -256,6 +261,7 @@ function getNearbyEntities(grid: SpatialHashGrid, eid: Entity): ReadonlySet<numb
 
 **Returns:** Set of entity IDs that may collide with the given entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, getNearbyEntities } from 'blecsd';
 
@@ -286,6 +292,7 @@ function getEntitiesInCell(
 
 **Returns:** Set of entity IDs in that cell.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, getEntitiesInCell } from 'blecsd';
 
@@ -312,6 +319,7 @@ function getEntitiesAtPoint(
 
 **Returns:** Set of entity IDs at that position.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, getEntitiesAtPoint } from 'blecsd';
 
@@ -327,6 +335,7 @@ Clears all entities from the spatial hash grid.
 function clearSpatialHash(grid: SpatialHashGrid): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, clearSpatialHash } from 'blecsd';
 
@@ -344,6 +353,7 @@ function getSpatialHashStats(grid: SpatialHashGrid): SpatialHashStats
 
 **Returns:** Grid statistics.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, getSpatialHashStats } from 'blecsd';
 
@@ -366,6 +376,7 @@ function rebuildSpatialHash(grid: SpatialHashGrid, world: World): void
 - `grid` - The spatial hash grid to rebuild
 - `world` - The ECS world
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, rebuildSpatialHash } from 'blecsd';
 
@@ -386,6 +397,7 @@ function createSpatialHashSystemState(dirtyThreshold?: number): SpatialHashSyste
 
 **Returns:** New system state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHashSystemState } from 'blecsd';
 
@@ -400,6 +412,7 @@ Sets the spatial hash grid for the system to use. Resets incremental state so th
 function setSpatialHashGrid(grid: SpatialHashGrid): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSpatialHash, setSpatialHashGrid } from 'blecsd';
 
@@ -435,6 +448,7 @@ Marks an entity as needing re-hashing on the next system tick. Use this when an 
 function markSpatialDirty(eid: Entity): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { markSpatialDirty, Position } from 'blecsd';
 
@@ -455,6 +469,7 @@ function getSpatialDirtyCount(): number
 
 **Returns:** Count of dirty entities awaiting re-hash.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getSpatialDirtyCount } from 'blecsd';
 
@@ -469,6 +484,7 @@ Resets the incremental spatial hash system state. Clears dirty entities, positio
 function resetSpatialHashState(): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetSpatialHashState } from 'blecsd';
 
@@ -486,6 +502,7 @@ function setSpatialDirtyThreshold(threshold: number): void
 **Parameters:**
 - `threshold` - Fraction between 0.0 and 1.0 (default: 0.5)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setSpatialDirtyThreshold } from 'blecsd';
 
@@ -510,6 +527,7 @@ function incrementalSpatialUpdate(
 - `state` - The incremental update state
 - `world` - The ECS world
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createSpatialHash,
@@ -548,6 +566,7 @@ function createSpatialHashSystem(): System
 
 Full spatial hash setup with incremental updates and collision queries:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

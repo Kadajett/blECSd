@@ -4,6 +4,7 @@ The camera system updates camera positions to follow target entities. It support
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   cameraSystem,

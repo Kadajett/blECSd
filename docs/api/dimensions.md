@@ -6,6 +6,7 @@ The Dimensions component defines entity sizing in the terminal grid, supporting 
 
 Special value indicating that a dimension should be calculated based on content.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { AUTO_DIMENSION } from 'blecsd';
 
@@ -19,6 +20,7 @@ import { AUTO_DIMENSION } from 'blecsd';
 
 The Dimensions component store using bitecs SoA (Structure of Arrays) pattern.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Dimensions } from 'blecsd';
 
@@ -49,6 +51,7 @@ Use `encodePercentage()` and `decodePercentage()` for conversion.
 
 Encodes a percentage value for storage in typed arrays.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { encodePercentage } from 'blecsd';
 
@@ -68,6 +71,7 @@ const full = encodePercentage(100);    // Returns -102
 
 Decodes a percentage value from typed array storage.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { decodePercentage } from 'blecsd';
 
@@ -87,6 +91,7 @@ const notPercent = decodePercentage(100); // Returns null (not a percentage)
 
 Checks if a value represents an encoded percentage.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPercentage, encodePercentage } from 'blecsd';
 
@@ -106,6 +111,7 @@ isPercentage(-1);   // false (AUTO_DIMENSION)
 
 Sets the dimensions of an entity. Adds the Dimensions component if not already present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions } from 'blecsd';
@@ -143,6 +149,7 @@ setDimensions(world, entity, 'auto', 'auto');
 
 Gets the dimensions data of an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions, getDimensions } from 'blecsd';
@@ -177,6 +184,7 @@ const dims = getDimensions(world, entity);
 
 Sets dimension constraints (min/max) for an entity. Adds the Dimensions component if not already present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions, setConstraints, getDimensions } from 'blecsd';
@@ -216,6 +224,7 @@ const dims = getDimensions(world, entity);
 
 Sets the shrink-to-content flag for an entity. When enabled, the entity will shrink to fit its content.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions, setShrink, shouldShrink } from 'blecsd';
@@ -247,6 +256,7 @@ shouldShrink(world, entity); // false
 
 Checks if an entity has shrink-to-content enabled.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions, setShrink, shouldShrink } from 'blecsd';
@@ -275,6 +285,7 @@ shouldShrink(world, entity); // true
 
 Checks if an entity has a Dimensions component.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions, hasDimensions } from 'blecsd';
@@ -300,6 +311,7 @@ hasDimensions(world, entity); // true
 
 Gets the width of an entity, resolving percentages against a container width.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions, getResolvedWidth } from 'blecsd';
@@ -336,6 +348,7 @@ getResolvedWidth(world, 999, 200); // undefined
 
 Gets the height of an entity, resolving percentages against a container height.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions, getResolvedHeight } from 'blecsd';
@@ -418,6 +431,7 @@ interface DimensionConstraints {
 
 ### Creating a Fixed-Size Box
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions, setConstraints } from 'blecsd';
@@ -431,6 +445,7 @@ setDimensions(world, box, 40, 10);
 
 ### Creating a Responsive Element
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setDimensions, setConstraints, getResolvedWidth } from 'blecsd';

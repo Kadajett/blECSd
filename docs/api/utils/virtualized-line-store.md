@@ -4,6 +4,7 @@ High-performance data structure for storing and accessing millions of lines with
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createLineStore,
@@ -89,6 +90,7 @@ interface LineInfo {
 
 Validation schemas are exported for runtime validation of parameters.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { LineIndexSchema, LineRangeParamsSchema, VisibleLinesParamsSchema, TrimParamsSchema } from 'blecsd';
 ```

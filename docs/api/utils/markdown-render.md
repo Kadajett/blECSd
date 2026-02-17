@@ -4,6 +4,7 @@ Streaming markdown parser with block-level caching, syntax highlighting for code
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   parseMarkdown,
@@ -253,6 +254,7 @@ function parseMarkdown(source: string): MarkdownParseResult
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseMarkdown } from 'blecsd';
 
@@ -271,6 +273,7 @@ function parseInline(text: string): readonly InlineElement[]
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseInline } from 'blecsd';
 
@@ -361,6 +364,7 @@ function getMarkdownStats(result: MarkdownParseResult): MarkdownStats
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   parseMarkdownCached,

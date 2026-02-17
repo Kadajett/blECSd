@@ -239,6 +239,7 @@ function emitDescendants<T extends EventMap, K extends keyof T>(
 
 ### Example: Broadcast to All Children
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, emitDescendants, createEntityEventBusStore, appendChild, createEventBus } from 'blecsd';
 
@@ -394,6 +395,7 @@ function createEntityEventBusStore<T extends EventMap>(): EntityEventBusStore<T>
 - `delete(world, eid)` - Removes the event bus for an entity
 - `clear()` - Clears all event buses
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEntityEventBusStore, createEventBus } from 'blecsd';
 

@@ -4,6 +4,7 @@ Lazy content loading and pagination for huge files. Loads only the visible viewp
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createLazyContent,

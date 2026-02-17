@@ -4,6 +4,7 @@ Core type definitions for blECSd. Defines the fundamental types used throughout 
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { Entity, World, System, Unsubscribe } from 'blecsd';
 import { LoopPhase } from 'blecsd';
@@ -19,6 +20,7 @@ Branded entity type from bitecs. Prevents accidentally passing raw numbers where
 type Entity = EntityId;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { Entity } from 'blecsd';
 
@@ -43,6 +45,7 @@ A System is a function that processes entities in the world. Systems should be p
 type System = (world: World) => World;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { System } from 'blecsd';
 

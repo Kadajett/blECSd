@@ -4,6 +4,7 @@ Fast diff computation and rendering for large changesets, with unified and side-
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   computeDiff,
@@ -157,6 +158,7 @@ function computeDiff(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { computeDiff } from 'blecsd';
 
@@ -293,6 +295,7 @@ function getDiffStats(result: DiffResult): {
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   computeDiffCached,

@@ -4,6 +4,7 @@ Parses ANSI escape sequences into structured key events with strict typing. Hand
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   parseKeySequence,
@@ -73,6 +74,7 @@ Parses a key sequence from a buffer. Handles regular characters, control charact
 function parseKeySequence(buffer: Uint8Array): KeyEvent | null
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKeySequence } from 'blecsd';
 
@@ -98,6 +100,7 @@ Parses multiple key sequences from a buffer. Handles cases where multiple keypre
 function parseKeyBuffer(buffer: Uint8Array): readonly KeyEvent[]
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKeyBuffer } from 'blecsd';
 

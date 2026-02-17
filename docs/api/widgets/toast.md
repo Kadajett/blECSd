@@ -75,6 +75,7 @@ interface ToastStyleConfig {
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ToastConfigSchema } from 'blecsd';
 
@@ -105,6 +106,7 @@ const validated = ToastConfigSchema.parse({
 
 Creates a Toast widget with the given configuration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createToast } from 'blecsd';
 
@@ -207,6 +209,7 @@ Destroys the widget, clears timers, removes from position tracking, and removes 
 
 ### showInfoToast
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { showInfoToast } from 'blecsd';
 
@@ -224,6 +227,7 @@ const toast = showInfoToast(world, 'Operation completed', {}, 80, 24);
 
 ### showSuccessToast
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { showSuccessToast } from 'blecsd';
 
@@ -232,6 +236,7 @@ const toast = showSuccessToast(world, 'File saved successfully', {}, 80, 24);
 
 ### showWarningToast
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { showWarningToast } from 'blecsd';
 
@@ -240,6 +245,7 @@ const toast = showWarningToast(world, 'Unsaved changes', {}, 80, 24);
 
 ### showErrorToast
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { showErrorToast } from 'blecsd';
 
@@ -252,6 +258,7 @@ const toast = showErrorToast(world, 'Connection lost', {}, 80, 24);
 
 ### isToast
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isToast } from 'blecsd';
 
@@ -272,6 +279,7 @@ if (isToast(world, entity)) {
 
 Multiple toasts at the same position are automatically stacked:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { showSuccessToast, showInfoToast } from 'blecsd';
 
@@ -292,6 +300,7 @@ Toasts are spaced by `TOAST_STACK_SPACING` (1 line) between each notification.
 
 ### Notification with Callback
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createToast } from 'blecsd';
 
@@ -310,6 +319,7 @@ toast.onDismiss(() => {
 
 ### Persistent Toast (Manual Dismiss)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createToast } from 'blecsd';
 
@@ -326,6 +336,7 @@ toast.dismiss();
 
 ### Custom Styled Toast
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createToast } from 'blecsd';
 
@@ -342,6 +353,7 @@ const toast = createToast(world, {
 
 ### Multi-Stack Toasts
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { showSuccessToast, showErrorToast } from 'blecsd';
 

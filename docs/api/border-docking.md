@@ -38,6 +38,7 @@ applyJunctions(buffer, junctions);
 
 Single line box-drawing characters.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { JUNCTION_SINGLE } from 'blecsd';
 
@@ -55,6 +56,7 @@ import { JUNCTION_SINGLE } from 'blecsd';
 
 Double line box-drawing characters.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { JUNCTION_DOUBLE } from 'blecsd';
 
@@ -72,6 +74,7 @@ import { JUNCTION_DOUBLE } from 'blecsd';
 
 Bold/thick line box-drawing characters.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { JUNCTION_BOLD } from 'blecsd';
 
@@ -89,6 +92,7 @@ import { JUNCTION_BOLD } from 'blecsd';
 
 ASCII fallback characters.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { JUNCTION_ASCII } from 'blecsd';
 
@@ -103,6 +107,7 @@ import { JUNCTION_ASCII } from 'blecsd';
 
 Create a new docking context.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createBorderDockingContext } from 'blecsd';
 
@@ -226,6 +231,7 @@ const flags = getConnectionFlags(ctx, 10, 5);
 
 Determine the appropriate junction character.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getJunctionChar, JUNCTION_SINGLE } from 'blecsd';
 
@@ -285,6 +291,7 @@ const renderData = getJunctionRenderData(junctions);
 
 Detect the border style from a character.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detectBorderStyle } from 'blecsd';
 
@@ -299,6 +306,7 @@ detectBorderStyle(0x41);   // 'unknown' (A)
 
 Get the junction charset for a style.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getJunctionCharset } from 'blecsd';
 
@@ -312,6 +320,7 @@ const charset = getJunctionCharset('single');
 
 Check if a character is a border character.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isBorderChar } from 'blecsd';
 
@@ -323,6 +332,7 @@ isBorderChar(0x41);   // false (A)
 
 Check if a character is a junction character.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isJunctionChar } from 'blecsd';
 

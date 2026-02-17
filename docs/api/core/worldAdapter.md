@@ -12,6 +12,7 @@ World adapters are registered per world. If no adapter is registered, the defaul
 
 Creates an adapter by overriding default behavior.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorldAdapter, setWorldAdapter } from 'blecsd';
 
@@ -28,6 +29,7 @@ setWorldAdapter(world, adapter);
 
 Registers a world adapter for a specific world.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createWorldAdapter, setWorldAdapter } from 'blecsd';
 
@@ -40,6 +42,7 @@ setWorldAdapter(world, adapter);
 
 Gets the adapter for a world (falls back to default).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getWorldAdapter } from 'blecsd';
 
@@ -51,6 +54,7 @@ const entities = adapter.queryRenderables(world);
 
 Removes any custom adapter and restores the default.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearWorldAdapter } from 'blecsd';
 

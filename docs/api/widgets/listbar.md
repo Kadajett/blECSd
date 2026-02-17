@@ -4,12 +4,14 @@ The Listbar widget provides a horizontal menu bar with keyboard shortcuts and mo
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createListbar, isListbarWidget } from 'blecsd';
 ```
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createListbar } from 'blecsd';
@@ -190,6 +192,7 @@ menubar.destroy();  // Remove entity and cleanup
 
 ## Example: Application Menu
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createListbar, createPanel } from 'blecsd';

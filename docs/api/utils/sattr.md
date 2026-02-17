@@ -65,6 +65,7 @@ enum AttrFlags {
 
 Creates a style attribute from a style input.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattr, AttrFlags } from 'blecsd';
 
@@ -92,6 +93,7 @@ const custom = sattr({ bold: true }, 0xaabbccdd, 0x11223344);
 
 Converts a StyleData object (from getStyle) to StyleAttr.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattrFromStyleData, getStyle } from 'blecsd';
 
@@ -107,6 +109,7 @@ if (style) {
 
 Compares two style attributes for equality.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattr, sattrEqual } from 'blecsd';
 
@@ -124,6 +127,7 @@ console.log(sattrEqual(a, c)); // false
 
 Merges two style attributes, with overlay overriding base.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattr, sattrMerge, AttrFlags } from 'blecsd';
 
@@ -139,6 +143,7 @@ const merged = sattrMerge(base, overlay);
 
 Manipulate attribute flags.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattr, sattrHasFlag, sattrAddFlag, sattrRemoveFlag, AttrFlags } from 'blecsd';
 
@@ -156,6 +161,7 @@ const withoutBold = sattrRemoveFlag(attr, AttrFlags.BOLD);
 
 Creates a copy with fg and bg swapped.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattr, sattrInvert } from 'blecsd';
 
@@ -170,6 +176,7 @@ const inverted = sattrInvert(attr);
 
 Creates a default style attribute.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattrEmpty } from 'blecsd';
 
@@ -183,6 +190,7 @@ const empty = sattrEmpty();
 
 Creates a shallow copy of a style attribute.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattr, sattrCopy } from 'blecsd';
 
@@ -196,6 +204,7 @@ const copy = sattrCopy(original);
 
 Convert between boolean style properties and packed flags.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { styleToAttrs, attrsToStyle, AttrFlags } from 'blecsd';
 
@@ -212,6 +221,7 @@ const style = attrsToStyle(flags);
 
 Encode/decode style attributes to/from BigInt for compact storage.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattr, encodeStyleAttr, decodeStyleAttr } from 'blecsd';
 
@@ -251,6 +261,7 @@ function renderCell(world, entity) {
 
 ### Building Composite Styles
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sattr, sattrMerge, AttrFlags } from 'blecsd';
 

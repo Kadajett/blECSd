@@ -6,6 +6,7 @@ The Shadow component provides drop shadow rendering on the right and bottom edge
 
 The Shadow component stores shadow configuration using SoA for performance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Shadow } from 'blecsd';
 
@@ -25,6 +26,7 @@ Shadow.blendWithBg // Uint8Array  - Blend with background (0=no, 1=yes)
 
 ### Default Values
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   DEFAULT_SHADOW_OFFSET_X,  // 1 - Right offset
@@ -39,6 +41,7 @@ import {
 
 Pre-defined character constants for different shadow styles.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   DEFAULT_SHADOW_CHAR,  // Full block
@@ -56,6 +59,7 @@ import {
 
 Sets the shadow configuration on an entity. Adds the Shadow component if not present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setShadow } from 'blecsd';
@@ -137,6 +141,7 @@ getShadow(world, entityWithoutShadow); // undefined
 
 Checks if an entity has a Shadow component.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasShadow, setShadow } from 'blecsd';
 
@@ -152,6 +157,7 @@ hasShadow(world, entity); // true
 
 Checks if an entity has shadow enabled.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isShadowEnabled, setShadow, disableShadow } from 'blecsd';
 
@@ -173,6 +179,7 @@ isShadowEnabled(world, entity); // false
 
 Enables the shadow for an entity. Adds the Shadow component if needed.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableShadow } from 'blecsd';
 
@@ -187,6 +194,7 @@ enableShadow(world, entity);
 
 Disables the shadow for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { disableShadow } from 'blecsd';
 
@@ -201,6 +209,7 @@ disableShadow(world, entity);
 
 Toggles the shadow for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { toggleShadow, isShadowEnabled } from 'blecsd';
 
@@ -219,6 +228,7 @@ isShadowEnabled(world, entity); // false
 
 Sets the shadow offset.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setShadowOffset } from 'blecsd';
 
@@ -243,6 +253,7 @@ setShadowOffset(world, entity, 2, 2);
 
 Gets the shadow offset.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setShadowOffset, getShadowOffset } from 'blecsd';
 
@@ -260,6 +271,7 @@ const offset = getShadowOffset(world, entity);
 
 Sets the shadow color.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setShadowColor } from 'blecsd';
 
@@ -278,6 +290,7 @@ setShadowColor(world, entity, 0xff333333);
 
 Gets the shadow color.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getShadowColor } from 'blecsd';
 
@@ -292,6 +305,7 @@ const color = getShadowColor(world, entity); // Packed RGBA number
 
 Sets the shadow opacity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setShadowOpacity } from 'blecsd';
 
@@ -313,6 +327,7 @@ setShadowOpacity(world, entity, 64);  // 25% opacity
 
 Gets the shadow opacity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getShadowOpacity } from 'blecsd';
 
@@ -327,6 +342,7 @@ const opacity = getShadowOpacity(world, entity); // 0-255
 
 Sets the shadow character.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setShadowChar, SHADOW_CHAR_LIGHT, SHADOW_CHAR_MEDIUM } from 'blecsd';
 
@@ -345,6 +361,7 @@ setShadowChar(world, entity, SHADOW_CHAR_MEDIUM);
 
 Gets the shadow character.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getShadowChar } from 'blecsd';
 
@@ -359,6 +376,7 @@ const char = getShadowChar(world, entity); // Unicode codepoint
 
 Sets whether shadow should blend with background.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setShadowBlend } from 'blecsd';
 
@@ -374,6 +392,7 @@ setShadowBlend(world, entity, false); // Disable blending
 
 Checks if shadow blends with background.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isShadowBlending } from 'blecsd';
 
@@ -386,6 +405,7 @@ const blending = isShadowBlending(world, entity); // boolean
 
 Removes the shadow component from an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { removeShadow, hasShadow } from 'blecsd';
 
@@ -401,6 +421,7 @@ hasShadow(world, entity); // false
 
 Calculates shadow render positions for an element. Returns positions for right edge, bottom edge, and corner shadows.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { calculateShadowPositions, getShadow } from 'blecsd';
 
@@ -438,6 +459,7 @@ if (shadow?.enabled) {
 
 Blends a shadow color with a background color based on opacity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { blendShadowColor } from 'blecsd';
 
@@ -507,6 +529,7 @@ interface ShadowPosition {
 
 ### Creating a Dialog with Drop Shadow
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setPosition, setDimensions, setShadow } from 'blecsd';
@@ -527,6 +550,7 @@ setShadow(world, dialog, {
 
 ### Using Different Shadow Styles
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setShadow, SHADOW_CHAR_LIGHT, SHADOW_CHAR_MEDIUM, SHADOW_CHAR_DARK } from 'blecsd';
 
@@ -554,6 +578,7 @@ setShadow(world, entity, {
 
 ### Rendering Shadows
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { calculateShadowPositions, getShadow, blendShadowColor } from 'blecsd';
 

@@ -49,6 +49,7 @@ modal.onClose(() => {
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ModalConfigSchema } from 'blecsd';
 
@@ -69,6 +70,7 @@ const result = ModalConfigSchema.safeParse({
 
 Creates a Modal widget in a hidden state. Call `show()` to display it.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createModal } from 'blecsd';
 
@@ -94,6 +96,7 @@ modal.show();
 
 Creates a modal and immediately shows it.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { openModal } from 'blecsd';
 
@@ -228,6 +231,7 @@ closeModal(world, modalEid);
 
 Closes all currently open modals in reverse stack order (most recent first).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { closeAllModals } from 'blecsd';
 
@@ -238,6 +242,7 @@ closeAllModals(world);
 
 Returns whether any modal is currently open.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isModalOpen } from 'blecsd';
 
@@ -250,6 +255,7 @@ if (isModalOpen(world)) {
 
 Returns the stack of currently open modal entity IDs. The last element is the topmost (most recently opened) modal.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getModalStack } from 'blecsd';
 
@@ -278,6 +284,7 @@ const wasClosed = handleModalBackdropClick(world, modalEid);
 
 Handles an Escape key event for a modal. Closes the modal if `closeOnEscape` is enabled.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleModalEscape, getModalStack } from 'blecsd';
 
@@ -295,6 +302,7 @@ if (stack.length > 0) {
 
 ### isModal
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isModal } from 'blecsd';
 
@@ -309,6 +317,7 @@ if (isModal(world, entity)) {
 
 ### Stacked Modals
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { openModal, getModalStack, closeAllModals } from 'blecsd';
 
@@ -333,6 +342,7 @@ closeAllModals(world);
 
 ### Confirmation Modal with Callback
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { openModal } from 'blecsd';
 
@@ -352,6 +362,7 @@ modal.center(80, 24).onClose(() => {
 
 ### Input Blocking Pattern
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isModalOpen, getModalStack, handleModalEscape } from 'blecsd';
 

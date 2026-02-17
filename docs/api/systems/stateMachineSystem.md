@@ -4,6 +4,7 @@ The state machine system updates the `stateAge` for all entities with a StateMac
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   stateMachineSystem,
@@ -20,6 +21,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

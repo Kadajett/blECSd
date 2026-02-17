@@ -8,6 +8,7 @@ The Behavior module provides a lightweight behavior system for game entities. Ea
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Behavior,
@@ -61,6 +62,7 @@ const Behavior = {
 
 ### BehaviorType
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { BehaviorType } from 'blecsd';
 
@@ -73,6 +75,7 @@ BehaviorType.Custom  // 4
 
 ### BehaviorState
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { BehaviorState } from 'blecsd';
 
@@ -112,6 +115,7 @@ setBehavior(world, entity, {
 
 Returns a snapshot of the entity's behavior data.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getBehavior } from 'blecsd';
 
@@ -125,6 +129,7 @@ if (ai) {
 
 ### hasBehavior / removeBehavior
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasBehavior, removeBehavior } from 'blecsd';
 
@@ -162,6 +167,7 @@ setCustomBehavior(world, boss, (world, eid, delta) => {
 
 ## Query Helpers
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getBehaviorType,

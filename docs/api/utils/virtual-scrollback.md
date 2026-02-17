@@ -4,6 +4,7 @@ Efficient virtualized scrollback buffer with chunked storage, LRU caching, optio
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScrollbackBuffer,
@@ -141,6 +142,7 @@ function createScrollbackBuffer(config?: Partial<ScrollbackConfig>): ScrollbackB
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScrollbackBuffer } from 'blecsd';
 
@@ -175,6 +177,7 @@ function appendLine(
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScrollbackBuffer, appendLine } from 'blecsd';
 

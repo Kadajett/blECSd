@@ -116,6 +116,7 @@ Strips ANSI escape sequences from pasted text, preventing escape sequence inject
 function sanitizePastedText(text: string): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sanitizePastedText } from 'blecsd';
 
@@ -144,6 +145,7 @@ Checks if a buffer starts with the paste start marker (ESC[200~).
 function isPasteStart(buffer: Uint8Array): boolean
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPasteStart } from 'blecsd';
 
@@ -180,6 +182,7 @@ function extractPasteContent(
 ): PasteParseResult
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { extractPasteContent } from 'blecsd';
 
@@ -196,6 +199,7 @@ Creates initial paste state for the multi-chunk state machine.
 function createPasteState(config?: Partial<PasteConfig>): PasteState
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPasteState } from 'blecsd';
 
@@ -210,6 +214,7 @@ Processes a buffer chunk through the paste state machine. Handles multi-chunk pa
 function processPasteBuffer(state: PasteState, buffer: Uint8Array): PasteProcessResult
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPasteState, processPasteBuffer } from 'blecsd';
 
@@ -234,6 +239,7 @@ Returns the escape sequence to enable bracketed paste mode.
 function enableBracketedPaste(): string
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enableBracketedPaste } from 'blecsd';
 

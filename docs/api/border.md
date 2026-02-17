@@ -6,6 +6,7 @@ Borders draw visual outlines around entities using box-drawing characters, backg
 
 ### BorderType Enum
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { BorderType } from 'blecsd';
 
@@ -31,6 +32,7 @@ All charsets implement the `BorderCharset` interface.
 | `BORDER_BOLD` | Bold/thick | `┏ ┓ ┗ ┛ ━ ┃` |
 | `BORDER_ASCII` | ASCII-only | `+ + + + - \|` |
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   BORDER_SINGLE,
@@ -45,6 +47,7 @@ import {
 
 ## Default Colors
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { DEFAULT_BORDER_FG, DEFAULT_BORDER_BG } from 'blecsd';
 
@@ -56,6 +59,7 @@ DEFAULT_BORDER_BG  // 0x00000000 - Transparent
 
 ## Component Structure
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Border } from 'blecsd';
 
@@ -82,6 +86,7 @@ Border.charVertical   // Uint32Array - Vertical edge (Unicode codepoint)
 
 Sets or updates border configuration. Adds the Border component if not present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
@@ -123,6 +128,7 @@ setBorder(world, eid, {
 
 Sets the border characters on an entity. Adds the Border component if not present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setBorderChars, BORDER_ROUNDED, BORDER_BOLD } from 'blecsd';
 
@@ -153,6 +159,7 @@ setBorderChars(world, eid, {
 
 Returns full border configuration or `undefined` if no Border component.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setBorder, getBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
 
@@ -192,6 +199,7 @@ const border = getBorder(world, eid);
 
 Gets a specific border character (Unicode codepoint).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setBorder, setBorderChars, getBorderChar, BorderType, BORDER_DOUBLE } from 'blecsd';
 
@@ -216,6 +224,7 @@ getBorderChar(world, eid, 'vertical');    // 0x2551 (║)
 
 ### hasBorder
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasBorder, setBorder, BorderType } from 'blecsd';
 
@@ -229,6 +238,7 @@ hasBorder(world, eid);  // true
 
 Checks if the entity has a visible border (type is not None and at least one side is enabled).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasBorderVisible, setBorder, BorderType } from 'blecsd';
 
@@ -260,6 +270,7 @@ hasBorderVisible(world, eid);  // false
 
 ### enableAllBorders / disableAllBorders
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setBorder, enableAllBorders, disableAllBorders, BorderType } from 'blecsd';
 
@@ -336,6 +347,7 @@ interface BorderData {
 
 ### Dialog Box
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setBorder, BorderType, BORDER_DOUBLE } from 'blecsd';

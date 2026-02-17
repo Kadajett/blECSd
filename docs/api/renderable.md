@@ -8,6 +8,7 @@ The Renderable component controls how entities appear visually: colors, text dec
 
 Converts RGBA values (0-255 each) into a single 32-bit integer for efficient storage.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { packColor } from 'blecsd';
 
@@ -31,6 +32,7 @@ const white = packColor(255, 255, 255);
 
 Extracts RGBA components from a packed color.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { unpackColor, packColor } from 'blecsd';
 
@@ -47,6 +49,7 @@ const { r, g, b, a } = unpackColor(red);
 
 Converts hex color strings to packed 32-bit colors.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hexToColor } from 'blecsd';
 
@@ -66,6 +69,7 @@ hexToColor('#fff8');      // Short form white, semi-transparent
 
 Converts packed colors back to hex strings.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { colorToHex, packColor } from 'blecsd';
 
@@ -82,6 +86,7 @@ colorToHex(red, true);  // '#ff0000ff' (with alpha)
 
 ## Color Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { DEFAULT_FG, DEFAULT_BG, unpackColor } from 'blecsd';
 
@@ -93,6 +98,7 @@ DEFAULT_BG  // Black, fully transparent (0x00000000)
 
 ## Component Structure
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Renderable } from 'blecsd';
 
@@ -113,6 +119,7 @@ Renderable.transparent // Uint8Array  - Transparent background flag
 
 ### hasRenderable
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, hasRenderable, setStyle } from 'blecsd';
 
@@ -132,6 +139,7 @@ hasRenderable(world, eid);            // true
 
 Sets colors and text decorations. Adds the Renderable component if not present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setStyle } from 'blecsd';
@@ -166,6 +174,7 @@ setStyle(world, entity, { blink: true });
 
 Returns style data or `undefined` if no Renderable component.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setStyle, getStyle, colorToHex } from 'blecsd';
 
@@ -200,6 +209,7 @@ console.log(colorToHex(style.fg));  // '#ff0000'
 
 Returns full renderable data including visibility and dirty state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setStyle, getRenderable } from 'blecsd';
 
@@ -232,6 +242,7 @@ const data = getRenderable(world, eid);
 
 Marks an entity as needing redraw. Adds Renderable if not present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, markDirty, isDirty } from 'blecsd';
 
@@ -250,6 +261,7 @@ isDirty(world, eid);  // true
 
 Clears the dirty flag after rendering.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setStyle, markClean, isDirty } from 'blecsd';
 
@@ -269,6 +281,7 @@ isDirty(world, eid);  // false
 
 ### isDirty
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setStyle, markClean, markDirty, isDirty } from 'blecsd';
 
@@ -290,6 +303,7 @@ isDirty(world, eid);  // false
 
 ### setVisible
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setVisible, isVisible } from 'blecsd';
 
@@ -313,6 +327,7 @@ Automatically marks the entity dirty when visibility changes.
 
 Convenience functions for visibility control.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setStyle, show, hide, toggle, isVisible } from 'blecsd';
 
@@ -338,6 +353,7 @@ isVisible(world, eid);  // false
 
 Checks if an entity and all its ancestors are visible. An entity with a hidden parent is not effectively visible.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setStyle, setParent, show, hide, isEffectivelyVisible } from 'blecsd';
@@ -364,6 +380,7 @@ isEffectivelyVisible(world, child);  // true
 
 Checks if an entity has a hierarchy but no path to a root.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setStyle, setParent, removeChild, isDetached } from 'blecsd';

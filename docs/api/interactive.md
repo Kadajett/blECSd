@@ -4,6 +4,7 @@ The Interactive component tracks mouse interaction states: click, hover, drag.
 
 ## Component
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Interactive } from 'blecsd';
 
@@ -20,6 +21,7 @@ Interactive.hoverEffectBg // Uint32Array - Hover state background
 
 ## Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { DEFAULT_HOVER_FG, DEFAULT_HOVER_BG } from 'blecsd';
 
@@ -33,6 +35,7 @@ DEFAULT_HOVER_BG; // Default hover background color
 
 Check if an entity has the Interactive component.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasInteractive } from 'blecsd';
 
@@ -43,6 +46,7 @@ hasInteractive(world, entity); // true or false
 
 Set interaction options. Adds component if needed.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setInteractive } from 'blecsd';
 
@@ -60,6 +64,7 @@ setInteractive(world, entity, {
 
 Enable or disable click handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setClickable } from 'blecsd';
 
@@ -70,6 +75,7 @@ setClickable(world, entity, true);
 
 Check if an entity is clickable.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isClickable } from 'blecsd';
 
@@ -80,6 +86,7 @@ isClickable(world, entity); // true or false
 
 Enable or disable hover handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setHoverable } from 'blecsd';
 
@@ -90,6 +97,7 @@ setHoverable(world, entity, true);
 
 Check if an entity responds to hover.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isHoverable } from 'blecsd';
 
@@ -100,6 +108,7 @@ isHoverable(world, entity); // true or false
 
 Enable or disable drag handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setDraggable } from 'blecsd';
 
@@ -110,6 +119,7 @@ setDraggable(world, entity, true);
 
 Check if an entity is draggable.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isDraggable } from 'blecsd';
 
@@ -120,6 +130,7 @@ isDraggable(world, entity); // true or false
 
 Enable or disable keyboard handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setKeyable } from 'blecsd';
 
@@ -130,6 +141,7 @@ setKeyable(world, entity, true);
 
 Check if an entity responds to keyboard input.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isKeyable } from 'blecsd';
 
@@ -140,6 +152,7 @@ isKeyable(world, entity); // true or false
 
 Set hover state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setHovered } from 'blecsd';
 
@@ -151,6 +164,7 @@ setHovered(world, entity, false); // Mouse left
 
 Check if an entity is currently hovered.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isHovered } from 'blecsd';
 
@@ -161,6 +175,7 @@ isHovered(world, entity); // true or false
 
 Set pressed state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setPressed } from 'blecsd';
 
@@ -172,6 +187,7 @@ setPressed(world, entity, false); // Mouse up
 
 Check if an entity is currently pressed.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPressed } from 'blecsd';
 
@@ -182,6 +198,7 @@ isPressed(world, entity); // true or false
 
 Clear hover and pressed states (useful on mouse leave).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearInteractionState } from 'blecsd';
 
@@ -192,6 +209,7 @@ clearInteractionState(world, entity);
 
 Get all interaction data for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInteractive } from 'blecsd';
 

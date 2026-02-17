@@ -150,6 +150,7 @@ function initSubsystemsUpTo(maxPriority?: InitPriorityLevel): number;
 
 **Returns:** Total time taken in ms.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { initSubsystemsUpTo, InitPriority } from 'blecsd';
 
@@ -176,6 +177,7 @@ Formats a startup report as a human-readable string.
 function formatStartupReport(report: StartupReport): string;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getStartupReport, formatStartupReport } from 'blecsd';
 

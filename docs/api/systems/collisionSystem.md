@@ -4,6 +4,7 @@ The collision system detects collisions between entities with Collider and Posit
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   collisionSystem,

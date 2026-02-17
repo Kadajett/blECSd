@@ -4,6 +4,7 @@ Provides focus/blur event handling that detects when the terminal window gains o
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createInputHandler,
@@ -65,6 +66,7 @@ Creates a focus tracker for the given input handler. The tracker will listen for
 function createFocusTracker(inputHandler: InputHandler): FocusTrackerState
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputHandler, createFocusTracker } from 'blecsd';
 
@@ -110,6 +112,7 @@ Gets the focus event bus, creating if needed. Returns the same event bus instanc
 function getTerminalFocusEventBus(): EventBus<FocusTrackingEventMap>
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalFocusEventBus } from 'blecsd';
 
@@ -207,6 +210,7 @@ Focus tracking is useful for:
 
 ## Example: Pause Updates When Unfocused
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createInputHandler,

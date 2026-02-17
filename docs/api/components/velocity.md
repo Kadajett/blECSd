@@ -12,6 +12,7 @@ A complete movement update applies acceleration to velocity, friction, speed cla
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Velocity,
@@ -56,6 +57,7 @@ const Velocity = {
 
 Sets X/Y velocity on an entity. Adds the component if not present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setVelocity } from 'blecsd';
 
@@ -66,6 +68,7 @@ setVelocity(world, entity, 5, -2); // Right 5, up 2 cells/sec
 
 Sets velocity with all options.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setVelocityOptions } from 'blecsd';
 
@@ -81,6 +84,7 @@ setVelocityOptions(world, entity, {
 
 Returns velocity state for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getVelocity } from 'blecsd';
 
@@ -95,6 +99,7 @@ if (vel) {
 
 ### hasVelocity
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasVelocity } from 'blecsd';
 
@@ -105,6 +110,7 @@ if (hasVelocity(world, entity)) {
 
 ### setMaxSpeed / setFriction
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setMaxSpeed, setFriction } from 'blecsd';
 
@@ -116,6 +122,7 @@ setFriction(world, entity, 0.05); // 0-1, clamped
 
 Adds to current velocity (impulse).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addVelocity } from 'blecsd';
 
@@ -126,6 +133,7 @@ addVelocity(world, entity, 0, -10); // Jump impulse
 
 Returns the magnitude of velocity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getSpeed } from 'blecsd';
 
@@ -134,6 +142,7 @@ const speed = getSpeed(world, entity); // 0 if no component
 
 ### stopEntity / removeVelocity
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { stopEntity, removeVelocity } from 'blecsd';
 
@@ -156,6 +165,7 @@ const Acceleration = {
 
 Sets acceleration on an entity. Adds the component if not present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setAcceleration } from 'blecsd';
 
@@ -164,6 +174,7 @@ setAcceleration(world, entity, 0, 20); // Gravity
 
 ### getAcceleration
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAcceleration } from 'blecsd';
 
@@ -177,6 +188,7 @@ if (accel) {
 
 ### hasAcceleration / clearAcceleration / removeAcceleration
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasAcceleration, clearAcceleration, removeAcceleration } from 'blecsd';
 

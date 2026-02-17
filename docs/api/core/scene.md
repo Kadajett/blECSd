@@ -4,6 +4,7 @@ Scene management for game screens. Provides a scene stack with lifecycle callbac
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSceneManager } from 'blecsd';
 

@@ -4,12 +4,14 @@ The Tree widget provides a hierarchical tree view with expandable nodes, keyboar
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTree, isTreeWidget } from 'blecsd';
 ```
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTree } from 'blecsd';

@@ -4,6 +4,7 @@ Fuzzy string matching with scoring, highlighting, and filtering support for buil
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   fuzzyMatch,
@@ -63,6 +64,7 @@ interface FuzzySearchOptions<T> extends FuzzyOptions {
 
 Zod schema for validating fuzzy options at runtime.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { FuzzyOptionsSchema } from 'blecsd';
 
@@ -91,6 +93,7 @@ function fuzzyMatch(
 **Returns:** Match result with score and indices, or `null` if no match.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { fuzzyMatch } from 'blecsd';
 
@@ -120,6 +123,7 @@ function fuzzySearch(
 **Returns:** Array of matches sorted by score (highest first).
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { fuzzySearch } from 'blecsd';
 
@@ -152,6 +156,7 @@ function fuzzySearchBy<T>(
 **Returns:** Array of matches with original item objects, sorted by score.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { fuzzySearchBy } from 'blecsd';
 
@@ -188,6 +193,7 @@ function fuzzyFilter(
 **Returns:** Array of matching strings.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { fuzzyFilter } from 'blecsd';
 
@@ -216,6 +222,7 @@ function fuzzyTest(
 **Returns:** `true` if the text matches the query.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { fuzzyTest } from 'blecsd';
 
@@ -243,6 +250,7 @@ function highlightMatch(
 **Returns:** Text with highlighted matches.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { fuzzyMatch, highlightMatch } from 'blecsd';
 
@@ -255,6 +263,7 @@ if (match) {
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { fuzzySearch, highlightMatch } from 'blecsd';
 

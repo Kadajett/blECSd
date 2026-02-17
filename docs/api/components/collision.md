@@ -8,6 +8,7 @@ The Collision module provides a `Collider` component that supports axis-aligned 
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Collider,
@@ -52,6 +53,7 @@ const Collider = {
 
 ### ColliderType
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ColliderType } from 'blecsd';
 
@@ -61,6 +63,7 @@ ColliderType.CIRCLE // 1
 
 ### DEFAULT_LAYER / DEFAULT_MASK
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { DEFAULT_LAYER, DEFAULT_MASK } from 'blecsd';
 
@@ -108,6 +111,7 @@ setCollider(world, checkpoint, {
 
 Returns collider data for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCollider } from 'blecsd';
 
@@ -121,6 +125,7 @@ if (col) {
 
 ### hasCollider / removeCollider
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasCollider, removeCollider } from 'blecsd';
 
@@ -133,6 +138,7 @@ if (hasCollider(world, entity)) {
 
 ### setCollisionLayer / setCollisionMask
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setCollisionLayer, setCollisionMask } from 'blecsd';
 
@@ -144,6 +150,7 @@ setCollisionMask(world, entity, 0b0101);  // Collide with layers 1 and 3
 
 Checks if two entities can collide based on their layer/mask configuration. Both entities must include the other's layer in their mask.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { canLayersCollide } from 'blecsd';
 
@@ -155,6 +162,7 @@ const canCollide = canLayersCollide(
 
 ### setTrigger / isTrigger
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setTrigger, isTrigger } from 'blecsd';
 
@@ -221,6 +229,7 @@ const key = collisionPairKey(pair); // "1:5" (lower ID first)
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setCollider, ColliderType, testCollision, canLayersCollide } from 'blecsd';

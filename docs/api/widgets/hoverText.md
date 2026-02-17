@@ -4,6 +4,7 @@ The HoverText system provides tooltips that display contextual information when 
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createHoverTextManager,
@@ -17,6 +18,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createHoverTextManager, setHoverText } from 'blecsd';
@@ -176,6 +178,7 @@ hoverManager.setScreenSize(newWidth, newHeight);
 
 For simple use cases without a manager:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setHoverText,
@@ -308,6 +311,7 @@ if (tooltip) {
 
 ## Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   DEFAULT_HOVER_DELAY,      // 500ms

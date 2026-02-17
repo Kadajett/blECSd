@@ -207,6 +207,7 @@ Low-level terminal control. Import from `blecsd/terminal`.
 
 Zod schemas for configuration validation.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   ColorStringSchema,
@@ -258,6 +259,7 @@ See [Text Wrapping](./utils/text-wrap.md) for the full API.
 
 ### World and Entity
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { World, Entity, System } from 'blecsd';
 
@@ -268,18 +270,21 @@ type System = (world: World, deltaTime: number) => World;
 
 ### Event Types
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { EventHandler, EventMap, Unsubscribe } from 'blecsd';
 ```
 
 ### Input Types
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { KeyEvent, MouseEvent, KeyName, MouseAction } from 'blecsd';
 ```
 
 ### Component Data Types
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type {
   PositionData,

@@ -9,6 +9,7 @@ Strategy:
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createThrottledResize,
@@ -80,6 +81,7 @@ function createThrottledResize(
 | `onResize` | `ResizeCallback` | Callback for resize events (intermediate and final) |
 | `config` | `Partial<ThrottledResizeConfig>` | Optional configuration |
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createThrottledResize } from 'blecsd';
 

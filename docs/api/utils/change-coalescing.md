@@ -4,6 +4,7 @@ Batches multiple text changes within a single frame into a single re-layout/re-r
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createCoalescer,

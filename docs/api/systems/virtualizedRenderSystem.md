@@ -4,6 +4,7 @@ The virtualized render system efficiently renders large content by only drawing 
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   virtualizedRenderSystem,
@@ -195,6 +196,7 @@ clearLineRenderConfig(viewer);
 
 Line render config is validated with Zod:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { LineRenderConfigSchema } from 'blecsd';
 

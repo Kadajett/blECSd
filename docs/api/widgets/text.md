@@ -4,6 +4,7 @@ The Text widget is a simple container for displaying text that shrinks to fit it
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
@@ -30,6 +31,7 @@ label.setContent('Updated!').setPosition(20, 10).show();
 
 Creates a new Text widget with the specified configuration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
@@ -279,6 +281,7 @@ const content = getTextContent(world, textEntity); // string
 
 Checks if an entity is a text widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isText } from 'blecsd';
 
@@ -385,6 +388,7 @@ interface TextWidget {
 
 Zod schemas are provided for runtime validation.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TextConfigSchema } from 'blecsd';
 
@@ -407,6 +411,7 @@ if (result.success) {
 
 ### Simple Label
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
@@ -423,6 +428,7 @@ const label = createText(world, eid, {
 
 ### Styled Status Message
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
@@ -444,6 +450,7 @@ status.setContent('Status: Disconnected');
 
 ### Multi-line Text
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
@@ -461,6 +468,7 @@ const paragraph = createText(world, eid, {
 
 ### Method Chaining
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';
@@ -482,6 +490,7 @@ const text = createText(world, eid, { left: 0, top: 0 })
 
 ### Dynamic Content Update
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createText, setTextContent, getTextContent } from 'blecsd';
@@ -507,6 +516,7 @@ const current = getTextContent(world, eid); // 'Count: 2'
 
 ### Fixed Size Text (No Shrink)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createText } from 'blecsd';

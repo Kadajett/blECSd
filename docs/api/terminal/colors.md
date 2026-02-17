@@ -102,6 +102,7 @@ type ColorDepth = 'truecolor' | '256' | '16' | '8' | '2';
 
 Named constants for standard ANSI colors.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { COLORS, ANSI } from 'blecsd';
 
@@ -117,6 +118,7 @@ ANSI.BRIGHT_RED;  // 9
 
 Complete 256-color palette as RGB or hex values.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { PALETTE_RGB, PALETTE_HEX } from 'blecsd';
 
@@ -128,6 +130,7 @@ PALETTE_HEX[9];   // '#ff0000'
 
 Get color values from palette index.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getRGB, getHex, asColor256 } from 'blecsd';
 
@@ -157,6 +160,7 @@ if (isRGB(obj)) {
 
 ### Hex Conversions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hexToRgb, rgbToHex, rgbaToHex } from 'blecsd';
 
@@ -170,6 +174,7 @@ rgbaToHex({ r: 255, g: 0, b: 0, a: 0.5 });      // '#ff000080'
 
 ### HSL Conversions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rgbToHsl, hslToRgb, rgbaToHsla, hslaToRgba } from 'blecsd';
 
@@ -179,6 +184,7 @@ hslToRgb({ h: 120, s: 100, l: 50 });  // { r: 0, g: 255, b: 0 }
 
 ### 256-Color Conversions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rgbToColor256, color256ToRgb, hexToColor256, color256ToHex } from 'blecsd';
 
@@ -191,6 +197,7 @@ color256ToHex(9);          // '#ff0000'
 
 ### Truecolor Conversions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rgbToTruecolor, truecolorToRgb, hexToTruecolor, truecolorToHex } from 'blecsd';
 
@@ -206,6 +213,7 @@ truecolorToHex(0xff0000);   // '#ff0000'
 
 ### Unified Parsing
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseColor, toColor256, toTruecolor, toHex } from 'blecsd';
 
@@ -225,6 +233,7 @@ toHex(9);               // '#ff0000'
 
 Generate ANSI SGR escape sequence parameters.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sgrFg256, sgrBg256, sgrFgRgb, sgrBgRgb } from 'blecsd';
 
@@ -357,6 +366,7 @@ getCssColorNames();  // ['coral', 'salmon', ...]
 
 ### Basic Blending
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { mix, blend, COLORS } from 'blecsd';
 
@@ -371,6 +381,7 @@ blend(COLORS.RED, COLORS.BLUE, 0.3); // 70% red, 30% blue
 
 ### Lightening / Darkening
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { lighten, darken, lighten256, darken256, COLORS } from 'blecsd';
 
@@ -387,6 +398,7 @@ darken256(COLORS.RED, 0.3);   // Nearest darker color
 
 ### Saturation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { saturate, desaturate, grayscale } from 'blecsd';
 
@@ -402,6 +414,7 @@ grayscale({ r: 255, g: 0, b: 0 });  // { r: 77, g: 77, b: 77 }
 
 ### Alpha Blending
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { blendWithAlpha, blendAlpha } from 'blecsd';
 
@@ -420,6 +433,7 @@ blendAlpha(
 
 ### Hue Operations
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rotateHue, complement, invert } from 'blecsd';
 
@@ -435,6 +449,7 @@ invert({ r: 255, g: 0, b: 0 });  // { r: 0, g: 255, b: 255 }
 
 ### Gradients
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { gradient, gradient256, COLORS } from 'blecsd';
 

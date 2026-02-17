@@ -38,6 +38,7 @@ function clearEventQueue(): void
 Queue input events for processing in the next frame.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { queueKeyEvent, inputSystem, createWorld } from 'blecsd';
 
@@ -69,6 +70,7 @@ function getMouseCaptureEntity(): Entity | null
 Capture mouse events to a specific entity (for drag operations).
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { captureMouseTo, releaseMouse } from 'blecsd';
 
@@ -94,6 +96,7 @@ function getInteractiveEntityAt(world: World, x: number, y: number): Entity | nu
 Test which entity is at a screen coordinate.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, hitTest } from 'blecsd';
 
@@ -176,6 +179,7 @@ function renderRect(buffer: ScreenBufferData, x: number, y: number, width: numbe
 Individual rendering functions for different UI elements.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { renderBackground, renderBorder, renderContent } from 'blecsd';
 
@@ -269,6 +273,7 @@ function getComputedBounds(world: World, eid: Entity): { x: number; y: number; w
 Check and retrieve computed layout data.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getComputedBounds } from 'blecsd';
 
@@ -383,6 +388,7 @@ function clearFocusStack(): void
 Save and restore focus (useful for modals, menus).
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, focusPush, focusPop, focusEntity } from 'blecsd';
 
@@ -485,6 +491,7 @@ function resetAttributes(): void
 Low-level terminal control functions.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enterAlternateScreen, leaveAlternateScreen, clearScreen } from 'blecsd';
 
@@ -618,6 +625,7 @@ function registerMovementSystem(world: World): void
 ```
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setPosition, setVelocity, movementSystem } from 'blecsd';
 

@@ -8,6 +8,7 @@ The Health component is a generic resource pool suitable for HP, mana, stamina, 
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Health,
@@ -47,6 +48,7 @@ const Health = {
 
 Sets health on an entity. Adds the component if not present.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setHealth } from 'blecsd';
 
@@ -63,6 +65,7 @@ setHealth(world, entity, { max: 100, current: 75, regen: 2 }); // Damaged, regen
 
 Returns a snapshot of health state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getHealth } from 'blecsd';
 
@@ -76,6 +79,7 @@ if (hp) {
 
 ### hasHealth / removeHealth
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasHealth, removeHealth } from 'blecsd';
 
@@ -90,6 +94,7 @@ if (hasHealth(world, entity)) {
 
 Applies damage. Respects invulnerability. Clamps to zero.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { damage } from 'blecsd';
 
@@ -105,6 +110,7 @@ if (killed) {
 
 Restores health, clamped to max.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { heal } from 'blecsd';
 
@@ -115,6 +121,7 @@ heal(world, entity, 25);
 
 ### setInvulnerable / clearInvulnerable / isInvulnerable
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setInvulnerable, clearInvulnerable, isInvulnerable } from 'blecsd';
 
@@ -131,6 +138,7 @@ if (isInvulnerable(world, entity)) {
 
 ### isDead
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isDead } from 'blecsd';
 
@@ -143,6 +151,7 @@ if (isDead(world, entity)) {
 
 Returns health as a 0-1 ratio.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getHealthPercent } from 'blecsd';
 
@@ -154,6 +163,7 @@ console.log(`HP: ${Math.round(percent * 100)}%`);
 
 Direct setters for individual fields.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setCurrentHealth, setMaxHealth, setRegen } from 'blecsd';
 

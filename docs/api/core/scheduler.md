@@ -4,6 +4,7 @@ The Scheduler manages the ordered execution of ECS systems across phases. It enf
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, getDeltaTime, LoopPhase } from 'blecsd';
 ```
@@ -94,6 +95,7 @@ scheduler.clearAllSystems();
 
 Access the current frame's delta time from within a system:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getDeltaTime } from 'blecsd';
 

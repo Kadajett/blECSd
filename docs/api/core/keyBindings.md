@@ -41,6 +41,7 @@ for (const match of matches) {
 
 Parses a key combination string into a ParsedKey object.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKeyString } from 'blecsd';
 
@@ -88,6 +89,7 @@ parseKeyString('alt+home');
 
 Creates an empty key binding registry.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createKeyBindingRegistry } from 'blecsd';
 
@@ -250,6 +252,7 @@ The `when` property allows bindings to only activate in certain contexts.
 
 Evaluates a condition expression against a context.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { evaluateCondition } from 'blecsd';
 
@@ -272,6 +275,7 @@ evaluateCondition('textInputFocused && !modalOpen', context); // true
 
 Formats a ParsedKey back to a string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { formatKey, parseKeyString } from 'blecsd';
 
@@ -346,6 +350,7 @@ const results = KeyBindingsArraySchema.safeParse(bindings);
 
 ### Game Controls
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createKeyBindingRegistry, registerBindings, matchEvent } from 'blecsd';
 

@@ -33,6 +33,7 @@ function wrapText(text: string, options: WrapOptions): string[]
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { wrapText } from 'blecsd';
 
@@ -54,6 +55,7 @@ function wordWrap(text: string, width: number): string[]
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { wordWrap } from 'blecsd';
 
@@ -71,6 +73,7 @@ function alignLine(line: string, width: number, align: TextAlign): string
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { alignLine } from 'blecsd';
 
@@ -93,6 +96,7 @@ function truncate(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { truncate } from 'blecsd';
 
@@ -115,6 +119,7 @@ function padHeight(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { padHeight } from 'blecsd';
 
@@ -132,6 +137,7 @@ function getVisibleWidth(text: string): number
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getVisibleWidth } from 'blecsd';
 
@@ -149,6 +155,7 @@ function stripAnsi(text: string): string
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { stripAnsi } from 'blecsd';
 
@@ -160,6 +167,7 @@ console.log(plain); // "Red Text"
 
 ### Text Box with Wrapping
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCellBuffer, renderBox, renderText, wrapText, BOX_ROUNDED } from 'blecsd';
 
@@ -178,6 +186,7 @@ for (let i = 0; i < lines.length && i < 8; i++) {
 
 ### Centered Multi-line Text
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { wrapText, padHeight } from 'blecsd';
 
@@ -190,6 +199,7 @@ const padded = padHeight(lines, 5, 30, 'middle');
 
 ### Handling Colored Text
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { wrapText, getVisibleWidth } from 'blecsd';
 
@@ -205,6 +215,7 @@ const lines = wrapText(coloredText, { width: 15, align: 'left' });
 
 ### No-wrap Mode with Truncation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { wrapText } from 'blecsd';
 

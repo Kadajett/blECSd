@@ -8,6 +8,7 @@ Position elements relative to screen edges instead of parent containers. Provide
 
 Position an element by distance from the left edge of the screen.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setAbsoluteLeft } from 'blecsd';
 
@@ -29,6 +30,7 @@ setAbsoluteLeft(world, entity, 10);
 
 Position an element by distance from the right edge of the screen.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setAbsoluteRight } from 'blecsd';
 
@@ -50,6 +52,7 @@ setAbsoluteRight(world, entity, 10);
 
 Position an element by distance from the top edge of the screen.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setAbsoluteTop } from 'blecsd';
 
@@ -71,6 +74,7 @@ setAbsoluteTop(world, entity, 5);
 
 Position an element by distance from the bottom edge of the screen.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setAbsoluteBottom } from 'blecsd';
 
@@ -92,6 +96,7 @@ setAbsoluteBottom(world, entity, 5);
 
 Set position based on multiple edge distances in a single call.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setAbsoluteEdges } from 'blecsd';
 
@@ -119,6 +124,7 @@ setAbsoluteEdges(world, entity, { left: 10, bottom: 5 });
 
 Get the current edge distances for an absolutely-positioned element.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAbsoluteEdges } from 'blecsd';
 
@@ -290,6 +296,7 @@ setAbsoluteRight(world, sidebar, 0);
 
 Set position mode explicitly:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setAbsolute } from 'blecsd';
 

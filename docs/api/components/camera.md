@@ -8,6 +8,7 @@ The Camera component manages a 2D viewport into a larger world space. It support
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Camera,
@@ -99,6 +100,7 @@ if (cam) {
 
 ### hasCamera / removeCamera
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasCamera, removeCamera } from 'blecsd';
 

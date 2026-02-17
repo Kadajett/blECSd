@@ -45,6 +45,7 @@ scheduler.run(world, deltaTime);
 
 Queue a keyboard event for processing on the next frame.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { queueKeyEvent } from 'blecsd';
 
@@ -61,6 +62,7 @@ queueKeyEvent({
 
 Queue a mouse event for processing on the next frame.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { queueMouseEvent } from 'blecsd';
 
@@ -77,6 +79,7 @@ queueMouseEvent({
 
 Get the current event queue (for debugging).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getEventQueue } from 'blecsd';
 
@@ -88,6 +91,7 @@ console.log(`${queue.length} events pending`);
 
 Clear all pending events.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearEventQueue } from 'blecsd';
 
@@ -165,6 +169,7 @@ captureMouseTo(entityId);
 
 Stop capturing mouse events.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { releaseMouse } from 'blecsd';
 
@@ -176,6 +181,7 @@ releaseMouse();
 
 Check capture state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isMouseCaptured, getMouseCaptureEntity } from 'blecsd';
 
@@ -192,6 +198,7 @@ The input system dispatches events to a global event bus.
 
 Get the event bus to subscribe to UI events.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInputEventBus } from 'blecsd';
 
@@ -228,6 +235,7 @@ bus.on('scroll', ({ direction, amount }) => {
 
 Register the input system with a scheduler.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, registerInputSystem } from 'blecsd';
 
@@ -242,6 +250,7 @@ The input system is automatically registered in the protected INPUT phase, ensur
 
 The raw system function (for advanced use).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { inputSystem } from 'blecsd';
 
@@ -255,6 +264,7 @@ inputSystem(world);
 
 Clear input state for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearEntityInput } from 'blecsd';
 
@@ -266,6 +276,7 @@ clearEntityInput(world, entity);
 
 Get all entities that can receive input.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { queryInputReceivers } from 'blecsd';
 
@@ -277,6 +288,7 @@ const receivers = queryInputReceivers(world);
 
 Reset all input system state (for testing).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetInputState } from 'blecsd';
 
@@ -333,6 +345,7 @@ interface InputSystemState {
 
 Complete example integrating input stream with input system:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

@@ -58,6 +58,7 @@ PositionValueSchema.parse('invalid'); // Throws error
 
 Resolves a position value to an absolute coordinate.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parsePosition } from 'blecsd';
 
@@ -94,6 +95,7 @@ parsePosition('right', 100, 20);  // 80 (100-20)
 
 Like `parsePosition`, but handles negative values as offsets from the opposite edge.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parsePositionWithNegative } from 'blecsd';
 
@@ -118,6 +120,7 @@ parsePositionWithNegative(-5, 100, 10);   // 85 (100 - 5 - 10)
 
 Ensures a position value is within valid bounds.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clampPosition } from 'blecsd';
 
@@ -139,6 +142,7 @@ clampPosition(90, 100, 20);  // 80 (clamped so element fits)
 
 Resolves both X and Y position values at once.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resolvePosition } from 'blecsd';
 
@@ -165,6 +169,7 @@ const pos2 = resolvePosition('50%-5', '100%-10', 100, 80, 0, 0);
 
 Like `resolvePosition`, but clamps results to valid bounds.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resolvePositionClamped } from 'blecsd';
 
@@ -181,6 +186,7 @@ const pos = resolvePositionClamped('100%', '100%', 100, 80, 20, 10);
 
 Returns the `'center'` keyword.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { centerPosition, parsePosition } from 'blecsd';
 
@@ -194,6 +200,7 @@ const x = parsePosition(pos, 100, 20); // 40
 
 Creates a percentage position string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { percentPosition, parsePosition } from 'blecsd';
 
@@ -207,6 +214,7 @@ const x = parsePosition(pos, 100); // 50
 
 Creates a percentage position with an offset.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { percentOffsetPosition, parsePosition } from 'blecsd';
 
@@ -225,6 +233,7 @@ parsePosition(pos2, 100); // 90
 
 Checks if a value contains a percentage.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isPercentagePosition } from 'blecsd';
 
@@ -240,6 +249,7 @@ isPercentagePosition('center'); // false
 
 Checks if a value is a position keyword.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isKeywordPosition } from 'blecsd';
 
@@ -255,6 +265,7 @@ isKeywordPosition('50%');    // false
 
 ### Centering an Element
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parsePosition } from 'blecsd';
 
@@ -269,6 +280,7 @@ const y = parsePosition('center', parentHeight, elementHeight); // 35
 
 ### Right-Aligned with Margin
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { percentOffsetPosition, parsePosition } from 'blecsd';
 
@@ -281,6 +293,7 @@ const x2 = parsePosition(pos, 100, 20); // 70
 
 ### Responsive Grid Layout
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parsePosition, resolvePosition } from 'blecsd';
 

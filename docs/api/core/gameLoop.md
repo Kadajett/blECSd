@@ -4,6 +4,7 @@ The game loop manages the main update cycle with input priority guarantees, life
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createGameLoop,

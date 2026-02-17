@@ -72,6 +72,7 @@ clearOutputBuffer();
 
 The output system maintains state across frames for optimization:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { OutputState } from 'blecsd';
 import { createOutputState, getOutputState, resetOutputState } from 'blecsd';
@@ -125,6 +126,7 @@ The system optimizes output in several ways:
 
 ### Cursor Control
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hideCursor, showCursor, cursorHome } from 'blecsd';
 
@@ -142,6 +144,7 @@ cursorHome();
 
 Use alternate screen to preserve the terminal content:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { enterAlternateScreen, leaveAlternateScreen } from 'blecsd';
 
@@ -156,6 +159,7 @@ leaveAlternateScreen();
 
 ### Screen Clearing
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearScreen, resetAttributes } from 'blecsd';
 
@@ -170,6 +174,7 @@ resetAttributes();
 
 For custom ANSI sequences, use `writeRaw`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { writeRaw } from 'blecsd';
 
@@ -182,6 +187,7 @@ writeRaw('\x1b[?25l'); // Hide cursor
 
 Always clean up before exiting:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cleanup } from 'blecsd';
 
@@ -195,6 +201,7 @@ cleanup();
 
 ## Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

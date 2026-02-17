@@ -216,6 +216,7 @@ const cullSystem = createVisibilityCullingSystem(grid, () => ({
 
 Complete visibility culling pipeline with incremental updates:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

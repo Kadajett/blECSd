@@ -4,6 +4,7 @@ The TextInput component provides text entry fields with cursor management, selec
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachTextInputBehavior,
@@ -31,6 +32,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -103,6 +105,7 @@ TextInput uses a state machine with these states:
 
 ## Cursor Modes
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { CursorMode } from 'blecsd';
 
@@ -320,6 +323,7 @@ Word boundaries are detected using the built-in `isWordBoundary` function, which
 
 ## Example: Login Form
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

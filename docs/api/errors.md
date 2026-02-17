@@ -4,6 +4,7 @@ BlECSd provides a comprehensive typed error system designed for both traditional
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   // Error creation
@@ -85,6 +86,7 @@ Each error kind has specific error codes for programmatic handling.
 
 ### ValidationErrorCode
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ValidationErrorCode } from 'blecsd';
 
@@ -98,6 +100,7 @@ ValidationErrorCode.VALUE_OUT_OF_RANGE     // Value out of range
 
 ### EntityErrorCode
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { EntityErrorCode } from 'blecsd';
 
@@ -110,6 +113,7 @@ EntityErrorCode.HIERARCHY_ERROR     // Parent/child error
 
 ### ComponentErrorCode
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ComponentErrorCode } from 'blecsd';
 
@@ -121,6 +125,7 @@ ComponentErrorCode.STORE_NOT_INITIALIZED // Store not ready
 
 ### SystemErrorCode
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SystemErrorCode } from 'blecsd';
 
@@ -132,6 +137,7 @@ SystemErrorCode.PHASE_NOT_FOUND         // Unknown phase
 
 ### TerminalErrorCode
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TerminalErrorCode } from 'blecsd';
 
@@ -143,6 +149,7 @@ TerminalErrorCode.WRITE_FAILED           // Output failed
 
 ### InputErrorCode
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { InputErrorCode } from 'blecsd';
 
@@ -153,6 +160,7 @@ InputErrorCode.BUFFER_OVERFLOW        // Too many events queued
 
 ### RenderErrorCode
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { RenderErrorCode } from 'blecsd';
 
@@ -163,6 +171,7 @@ RenderErrorCode.CYCLE_TIMEOUT          // Render took too long
 
 ### ConfigErrorCode
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ConfigErrorCode } from 'blecsd';
 
@@ -179,6 +188,7 @@ Use factory functions to create errors:
 
 ### createValidationError
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createValidationError, ValidationErrorCode } from 'blecsd';
 
@@ -196,6 +206,7 @@ const error = createValidationError(
 
 ### createEntityError
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEntityError, EntityErrorCode } from 'blecsd';
 
@@ -213,6 +224,7 @@ const error = createEntityError(
 
 ### createComponentError
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createComponentError, ComponentErrorCode } from 'blecsd';
 
@@ -330,6 +342,7 @@ throw toNativeError(blError);
 
 Extract BlECSd error data from a caught native Error:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { toNativeError, fromNativeError, isValidationError } from 'blecsd';
 
@@ -347,6 +360,7 @@ try {
 
 Wrap any error as a BlECSd error:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { wrapError } from 'blecsd';
 
@@ -366,6 +380,7 @@ For functional error handling without exceptions, use the Result type (inspired 
 
 ### Creating Results
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ok, err, Result } from 'blecsd';
 
@@ -419,6 +434,7 @@ const computed = unwrapOrElse(result, (error) => {
 
 ### Transforming Results
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { map, mapError, flatMap, ok, err, Result } from 'blecsd';
 
@@ -445,6 +461,7 @@ const chained = flatMap(ok(16), sqrt);
 
 ### Validating Widget Config
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createValidationError,

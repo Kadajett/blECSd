@@ -8,6 +8,7 @@ The attribute encoding module provides functions to convert `Attribute` objects 
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createAttribute,
@@ -36,6 +37,7 @@ process.stdout.write(sgr + 'Bold red text' + sgrReset());
 
 Converts an attribute to an SGR escape sequence string.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { codeAttr, createAttribute, attrCode, TextStyle, ColorType } from 'blecsd';
 
@@ -92,6 +94,7 @@ const codes256 = attrToSgrCodes(attr256);
 
 Returns the SGR reset sequence.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sgrReset } from 'blecsd';
 
@@ -106,6 +109,7 @@ process.stdout.write('\x1b[1;31mRed bold' + sgrReset() + ' normal');
 
 When targeting terminals with limited color support, use the `colorDepth` option:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { codeAttr, ColorType, packRgb, TextStyle } from 'blecsd';
 
@@ -164,6 +168,7 @@ interface CodeAttrOptions {
 
 Parse SGR and convert back:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createAttribute,

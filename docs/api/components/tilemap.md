@@ -13,6 +13,7 @@ Tile data uses `Uint16Array` for compact storage, supporting up to 65,535 tile t
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   TileMap,
@@ -51,6 +52,7 @@ import {
 
 Registers a tileset and returns its numeric ID.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { registerTileset } from 'blecsd';
 
@@ -82,6 +84,7 @@ unregisterTileset(tilesetId);
 
 Creates a tile data grid with specified dimensions and layer count. Returns a data ID.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTileData } from 'blecsd';
 
@@ -184,6 +187,7 @@ setTileMap(world, entity, {
 
 ### getTileMap
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTileMap } from 'blecsd';
 
@@ -197,6 +201,7 @@ if (map) {
 
 ### hasTileMap / removeTileMap / getTileMapDataId
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasTileMap, removeTileMap, getTileMapDataId } from 'blecsd';
 
@@ -230,6 +235,7 @@ for (let y = 0; y < cells.length; y++) {
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

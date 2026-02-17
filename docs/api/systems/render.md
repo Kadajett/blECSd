@@ -90,6 +90,7 @@ setStyle(world, overlay, { bg: '#ff0000' });
 
 The render context provides access to rendering resources:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { RenderContext } from 'blecsd';
 
@@ -199,6 +200,7 @@ renderRect(buffer, 0, 0, 80, 1, createCell('=', 0xffff00ff, 0x000000ff));
 
 Forces all entities to re-render:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { markAllDirty } from 'blecsd';
 

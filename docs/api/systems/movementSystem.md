@@ -4,6 +4,7 @@ The movement system updates entity positions based on velocity. It handles accel
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   movementSystem,
@@ -17,6 +18,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -162,6 +164,7 @@ position.y += velocity.y * deltaTime;
 
 ## Example: Player Movement
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

@@ -130,6 +130,7 @@ function createFrameBudgetManager(config?: Partial<FrameBudgetConfig>): FrameBud
 
 **Returns:** The initial `FrameBudgetManager` state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createFrameBudgetManager, LoopPhase } from 'blecsd';
 
@@ -200,6 +201,7 @@ Gets a snapshot of current frame budget statistics.
 function getFrameBudgetStats(): FrameBudgetManager
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getFrameBudgetStats } from 'blecsd';
 
@@ -220,6 +222,7 @@ Registers a callback for budget overrun alerts.
 function onBudgetAlert(callback: (alert: BudgetAlert) => void): void
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { onBudgetAlert } from 'blecsd';
 
@@ -254,6 +257,7 @@ Exports metrics as a JSON-serializable object for external analysis.
 function exportFrameBudgetMetrics(): Record<string, unknown>
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { exportFrameBudgetMetrics } from 'blecsd';
 

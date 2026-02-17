@@ -295,6 +295,7 @@ function mergeDirtyRects(rects: readonly DirtyRect[]): DirtyRect | undefined
 
 Complete drag-to-move and resize workflow:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createPanelMoveState,

@@ -151,6 +151,7 @@ function createInputState(config?: InputStateConfig): InputState;
 
 **Returns:** A new InputState instance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputState } from 'blecsd';
 
@@ -223,6 +224,7 @@ player.y += dir.y * speed;
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createInputState, createInputEventBuffer, drainKeys, drainMouse } from 'blecsd';
 

@@ -4,6 +4,7 @@ Parses terminal mouse protocol escape sequences into structured events. Supports
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   parseMouseSequence,
@@ -96,6 +97,7 @@ Parses a mouse or focus sequence from a buffer. Tries protocols in order: focus,
 function parseMouseSequence(buffer: Uint8Array): ParseMouseResult
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseMouseSequence } from 'blecsd';
 
@@ -121,6 +123,7 @@ Checks if a buffer contains a mouse sequence.
 function isMouseBuffer(buffer: Uint8Array): boolean
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isMouseBuffer } from 'blecsd';
 

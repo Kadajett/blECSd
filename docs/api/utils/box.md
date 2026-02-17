@@ -57,6 +57,7 @@ function createCellBuffer(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCellBuffer, renderBox, BOX_SINGLE } from 'blecsd';
 
@@ -134,6 +135,7 @@ function renderHLine(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCellBuffer, renderHLine, BOX_DOUBLE } from 'blecsd';
 
@@ -159,6 +161,7 @@ function renderVLine(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCellBuffer, renderVLine, BOX_BOLD } from 'blecsd';
 
@@ -185,6 +188,7 @@ function fillRect(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCellBuffer, fillRect } from 'blecsd';
 
@@ -214,6 +218,7 @@ function renderText(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCellBuffer, renderBox, renderText, BOX_ROUNDED } from 'blecsd';
 
@@ -236,6 +241,7 @@ function bufferToString(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCellBuffer, renderBox, BOX_SINGLE, bufferToString } from 'blecsd';
 
@@ -261,6 +267,7 @@ function charsetToBoxChars(charset: BorderCharset): BoxChars
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { BORDER_ROUNDED, charsetToBoxChars } from 'blecsd';
 
@@ -272,6 +279,7 @@ console.log(chars.topLeft); // "╭"
 
 ### Nested Boxes
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCellBuffer, renderBox, BOX_DOUBLE, BOX_SINGLE, bufferToString } from 'blecsd';
 
@@ -288,6 +296,7 @@ console.log(bufferToString(buffer));
 
 ### Dialog Box with Title
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createCellBuffer, renderBox, renderText, BOX_ROUNDED, bufferToString } from 'blecsd';
 

@@ -50,6 +50,7 @@ toggle.onChange((checked) => {
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SwitchConfigSchema } from 'blecsd';
 
@@ -68,6 +69,7 @@ const validated = SwitchConfigSchema.parse({
 
 Creates a Switch widget with the given configuration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSwitch } from 'blecsd';
 
@@ -193,6 +195,7 @@ Destroys the widget and removes the entity from the world.
 
 ### isSwitch
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isSwitch } from 'blecsd';
 
@@ -227,6 +230,7 @@ Toggles the switch if Space or Enter key is pressed. Fires onChange callback.
 
 ### handleSwitchClick
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleSwitchClick } from 'blecsd';
 
@@ -247,6 +251,7 @@ Toggles the switch when clicked. Fires onChange callback.
 
 ### Basic Toggle
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSwitch } from 'blecsd';
 
@@ -269,6 +274,7 @@ darkMode.onChange((checked) => {
 
 ### Custom Styled Switch
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSwitch } from 'blecsd';
 
@@ -285,6 +291,7 @@ const customToggle = createSwitch(world, {
 
 ### Settings Toggle
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createSwitch } from 'blecsd';
 

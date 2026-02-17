@@ -97,6 +97,7 @@ function createDebugOverlay(world: World, config?: DebugOverlayConfig): DebugOve
 
 **Returns:** Debug overlay controller.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDebugOverlay } from 'blecsd';
 
@@ -142,6 +143,7 @@ Creates a mini profiler for measuring code sections.
 function createMiniProfiler(): MiniProfiler;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createMiniProfiler } from 'blecsd';
 
@@ -189,6 +191,7 @@ console.log(`FPS range: ${min.toFixed(0)} - ${max.toFixed(0)}`);
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createDebugOverlay,

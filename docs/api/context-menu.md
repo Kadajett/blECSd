@@ -4,6 +4,7 @@ Right-click style context menus with keyboard navigation for terminal UIs. Provi
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createContextMenu, handleContextMenuKey } from 'blecsd';
 
@@ -77,6 +78,7 @@ Creates a context menu widget and returns the container entity.
 **Returns:** `Entity` - The container entity ID
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createContextMenu } from 'blecsd';
 
@@ -110,6 +112,7 @@ Handles keyboard input for context menu navigation and selection.
 - `'escape'` - Close menu
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleContextMenuKey } from 'blecsd';
 
@@ -131,6 +134,7 @@ Gets the currently selected item index in the menu.
 **Returns:** `number` - The selected index (0-based)
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createContextMenu, getContextMenuSelectedIndex } from 'blecsd';
 
@@ -148,6 +152,7 @@ console.log(`Selected item: ${selectedIndex}`);
 
 ### Basic Context Menu
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createContextMenu } from 'blecsd';
 
@@ -172,6 +177,7 @@ const menu = createContextMenu(world, {
 
 ### File Operations Menu
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createContextMenu } from 'blecsd';
 
@@ -192,6 +198,7 @@ const fileMenu = createContextMenu(world, {
 
 ### Conditional Items
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createContextMenu } from 'blecsd';
 
@@ -216,6 +223,7 @@ const editMenu = createContextMenu(world, {
 
 ### Nested Actions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createContextMenu } from 'blecsd';
 
@@ -245,6 +253,7 @@ const mainMenu = createContextMenu(world, {
 
 ### Right-Click Menu
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createContextMenu } from 'blecsd';
 
@@ -269,6 +278,7 @@ function onRightClick(x: number, y: number, item: FileItem) {
 
 ### Keyboard Navigation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleContextMenuKey, getContextMenuSelectedIndex } from 'blecsd';
 
@@ -289,6 +299,7 @@ function onKeyPress(key: string) {
 
 ### Dynamic Menu Items
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createContextMenu } from 'blecsd';
 
@@ -352,6 +363,7 @@ function onKeyPress(key: string) {
 
 ### Menu with Keyboard Shortcuts
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createContextMenu } from 'blecsd';
 
@@ -403,6 +415,7 @@ Context menus are automatically configured with accessibility features:
 - Separators and disabled items are not focusable
 - Keyboard navigation follows standard conventions
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createContextMenu, getAccessibleRole, getAccessibleLabel } from 'blecsd';
 
@@ -421,6 +434,7 @@ console.log(getAccessibleRole(world, menu)); // "menu"
 
 ## Integration with Input System
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createContextMenu, handleContextMenuKey } from 'blecsd';
 

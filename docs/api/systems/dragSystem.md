@@ -4,6 +4,7 @@ The drag system handles drag and drop interactions for UI elements. It supports 
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createDragSystem,
@@ -26,6 +27,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

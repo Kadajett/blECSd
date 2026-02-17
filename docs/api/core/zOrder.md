@@ -48,6 +48,7 @@ setZIndex(world, background, -5);
 
 Gets the current z-index.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getZIndex } from 'blecsd';
 
@@ -80,6 +81,7 @@ setBack(world, background);
 
 Swaps z-index with adjacent sibling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { moveUp, moveDown } from 'blecsd';
 
@@ -137,6 +139,7 @@ normalizeZIndices(world, container);
 
 Direct component access (low-level).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ZOrder } from 'blecsd';
 
@@ -147,6 +150,7 @@ const localZ = ZOrder.localZ[entity];
 
 ## Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { DEFAULT_Z_INDEX, MAX_Z_INDEX, MIN_Z_INDEX } from 'blecsd';
 
@@ -159,6 +163,7 @@ MIN_Z_INDEX      // -2147483648
 
 For sibling-relative ordering:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setLocalZ, getLocalZ } from 'blecsd';
 

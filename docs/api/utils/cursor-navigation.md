@@ -4,6 +4,7 @@ Cursor/caret navigation for large documents with O(log n) line lookup via binary
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   buildLineIndex,

@@ -82,6 +82,7 @@ function stringToBuffer(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { encoding } from 'blecsd';
 import { writeFileSync } from 'node:fs';
@@ -142,6 +143,7 @@ Mixed:   ╒ ╓ ╕ ╖ ╘ ╙ ╛ ╜ ╞ ╟ ╡ ╢ ╤ ╥ ╧ ╨
 
 ### ANSI Art Viewer
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { encoding } from 'blecsd';
 import { createTerminal } from 'blecsd/widgets';

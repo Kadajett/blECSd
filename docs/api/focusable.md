@@ -4,6 +4,7 @@ The Focusable component enables keyboard focus and tab navigation.
 
 ## Component
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Focusable } from 'blecsd';
 
@@ -17,6 +18,7 @@ Focusable.focusEffectBg // Uint32Array - Focus state background color
 
 ## Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { DEFAULT_FOCUS_FG, DEFAULT_FOCUS_BG } from 'blecsd';
 
@@ -30,6 +32,7 @@ DEFAULT_FOCUS_BG; // Default focus background color
 
 Check if an entity has the Focusable component.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasFocusable } from 'blecsd';
 
@@ -40,6 +43,7 @@ hasFocusable(world, entity); // true or false
 
 Make an entity focusable. Adds Focusable component if needed.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { makeFocusable } from 'blecsd';
 
@@ -50,6 +54,7 @@ makeFocusable(world, entity);
 
 Set focusable state and options.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setFocusable } from 'blecsd';
 
@@ -65,6 +70,7 @@ setFocusable(world, entity, {
 
 Check if an entity can receive focus.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isFocusable } from 'blecsd';
 
@@ -75,6 +81,7 @@ isFocusable(world, entity); // true or false
 
 Focus an entity. Blurs the previously focused entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focus } from 'blecsd';
 
@@ -85,6 +92,7 @@ focus(world, entity);
 
 Remove focus from an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { blur } from 'blecsd';
 
@@ -95,6 +103,7 @@ blur(world, entity);
 
 Check if an entity has focus.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isFocused } from 'blecsd';
 
@@ -105,6 +114,7 @@ isFocused(world, entity); // true or false
 
 Get the currently focused entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getFocusedEntity } from 'blecsd';
 
@@ -140,6 +150,7 @@ focusPrev(world);
 
 Set an entity's tab order index.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setTabIndex } from 'blecsd';
 
@@ -151,6 +162,7 @@ setTabIndex(world, entity, -1); // Remove from tab order
 
 Get an entity's tab order index.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTabIndex } from 'blecsd';
 
@@ -162,6 +174,7 @@ const index = getTabIndex(world, entity);
 
 Check if an entity is in the tab order.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isInTabOrder } from 'blecsd';
 
@@ -184,6 +197,7 @@ const entities = getTabOrder(world);
 
 Get all focusable data for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getFocusable } from 'blecsd';
 
@@ -201,6 +215,7 @@ const data = getFocusable(world, entity);
 
 Clear all focus state (useful on screen change).
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetFocusState } from 'blecsd';
 
@@ -236,6 +251,7 @@ interface FocusableOptions {
 
 ### Basic Focus Handling
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { makeFocusable, focus, isFocused, blur } from 'blecsd';

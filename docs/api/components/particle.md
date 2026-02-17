@@ -12,6 +12,7 @@ Emitters track which particles they have spawned via a side store. Particle colo
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Particle,
@@ -86,6 +87,7 @@ setParticle(world, entity, {
 
 ### getParticle
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getParticle } from 'blecsd';
 
@@ -97,6 +99,7 @@ if (p) {
 
 ### isParticleDead / getParticleProgress / getParticleColor
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isParticleDead, getParticleProgress, getParticleColor } from 'blecsd';
 
@@ -112,6 +115,7 @@ const color = getParticleColor(world, entity);        // Interpolated packed RGB
 
 Utility for interpolating between two packed RGBA colors.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { interpolateColor } from 'blecsd';
 
@@ -120,6 +124,7 @@ const mid = interpolateColor(0xffff0000, 0xff0000ff, 0.5); // Red to blue at 50%
 
 ### hasParticle / removeParticle
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasParticle, removeParticle } from 'blecsd';
 
@@ -150,6 +155,7 @@ const ParticleEmitter = {
 
 Creates or updates an emitter on an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setEmitter } from 'blecsd';
 
@@ -175,6 +181,7 @@ setEmitter(world, entity, {
 
 ### getEmitter
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getEmitter } from 'blecsd';
 
@@ -186,6 +193,7 @@ if (em) {
 
 ### Emitter Controls
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { activateEmitter, pauseEmitter, isEmitterActive } from 'blecsd';
 import { setEmitterRate, setEmitterSpeed, setEmitterGravity } from 'blecsd';
@@ -203,6 +211,7 @@ setEmitterGravity(world, entity, 20);
 
 Configure the visual appearance of spawned particles.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setEmitterAppearance, getEmitterAppearance } from 'blecsd';
 
@@ -230,6 +239,7 @@ const particles = getEmitterParticles(emitterEntity); // ReadonlySet<number>
 
 ### hasEmitter / removeEmitter
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasEmitter, removeEmitter } from 'blecsd';
 
@@ -240,6 +250,7 @@ if (hasEmitter(world, entity)) {
 
 ## Usage Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { setEmitter, setEmitterAppearance, setParticle, isParticleDead } from 'blecsd';

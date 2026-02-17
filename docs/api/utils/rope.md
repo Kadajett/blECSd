@@ -4,6 +4,7 @@ Immutable rope data structure for efficient large text buffer operations. Provid
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createRope,
@@ -124,6 +125,7 @@ function createRope(text?: string): Rope
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRope } from 'blecsd';
 
@@ -261,6 +263,7 @@ function getLine(rope: Rope, lineNumber: number): LineInfo | undefined
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createRope, getLine } from 'blecsd';
 

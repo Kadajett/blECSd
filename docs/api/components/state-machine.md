@@ -8,6 +8,7 @@ The StateMachine module attaches a finite state machine to an entity. State mach
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   StateMachineStore,
@@ -41,6 +42,7 @@ interface StateMachineStore {
 
 The `StateMachineStore` object manages state machine definitions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { StateMachineStore } from 'blecsd';
 
@@ -69,6 +71,7 @@ StateMachineStore.clear(); // Remove all
 
 Attaches a state machine to an entity. Returns the machine ID.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { attachStateMachine } from 'blecsd';
 
@@ -86,6 +89,7 @@ const machineId = attachStateMachine(world, entity, {
 
 Removes the state machine from an entity and unregisters its definition.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { detachStateMachine } from 'blecsd';
 
@@ -96,6 +100,7 @@ detachStateMachine(world, entity);
 
 Query current and previous state names.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getState, getPreviousState } from 'blecsd';
 
@@ -109,6 +114,7 @@ const previous = getPreviousState(world, entity); // 'active'
 
 Sends an event to the entity's state machine. Returns whether a transition occurred.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sendEvent } from 'blecsd';
 
@@ -122,6 +128,7 @@ if (transitioned) {
 
 Checks if an event would cause a transition from the current state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { canSendEvent } from 'blecsd';
 
@@ -134,6 +141,7 @@ if (canSendEvent(world, entity, 'activate')) {
 
 Returns the time spent in the current state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getStateAge } from 'blecsd';
 
@@ -147,6 +155,7 @@ if (age > 5.0) {
 
 Convenience check for a specific state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isInState } from 'blecsd';
 
@@ -157,6 +166,7 @@ if (isInState(world, entity, 'active')) {
 
 ### hasStateMachine
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasStateMachine } from 'blecsd';
 

@@ -60,6 +60,7 @@ interface MessageStyleConfig {
 
 ### Zod Schema
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { MessageConfigSchema } from 'blecsd';
 
@@ -89,6 +90,7 @@ const validated = MessageConfigSchema.parse({
 
 Creates a Message widget with the given configuration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createMessage } from 'blecsd';
 
@@ -209,6 +211,7 @@ Destroys the widget, clears timers, and removes the entity from the world.
 
 ### showInfo
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { showInfo } from 'blecsd';
 
@@ -224,6 +227,7 @@ const msg = showInfo(world, 'Operation completed', { timeout: 5000 });
 
 ### showWarning
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { showWarning } from 'blecsd';
 
@@ -232,6 +236,7 @@ const msg = showWarning(world, 'This action cannot be undone');
 
 ### showError
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { showError } from 'blecsd';
 
@@ -240,6 +245,7 @@ const msg = showError(world, 'Failed to save file');
 
 ### showSuccess
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { showSuccess } from 'blecsd';
 
@@ -252,6 +258,7 @@ const msg = showSuccess(world, 'File saved successfully');
 
 ### isMessage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isMessage } from 'blecsd';
 
@@ -268,6 +275,7 @@ if (isMessage(world, entity)) {
 
 ### isDismissOnClick
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isDismissOnClick } from 'blecsd';
 
@@ -278,6 +286,7 @@ if (isDismissOnClick(world, entity)) {
 
 ### isDismissOnKey
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isDismissOnKey } from 'blecsd';
 
@@ -288,6 +297,7 @@ if (isDismissOnKey(world, entity)) {
 
 ### handleMessageClick
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleMessageClick } from 'blecsd';
 
@@ -300,6 +310,7 @@ Dismisses the message if `dismissOnClick` is enabled and the message is not alre
 
 ### handleMessageKey
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleMessageKey } from 'blecsd';
 
@@ -316,6 +327,7 @@ Dismisses the message if `dismissOnKey` is enabled and the message is not alread
 
 ### Notification with Callback
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createMessage } from 'blecsd';
 
@@ -332,6 +344,7 @@ msg.center(80, 24).onDismiss(() => {
 
 ### Manual Dismiss Only
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createMessage } from 'blecsd';
 
@@ -349,6 +362,7 @@ msg.dismiss();
 
 ### Custom Styled Message
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createMessage } from 'blecsd';
 

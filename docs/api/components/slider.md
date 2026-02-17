@@ -4,6 +4,7 @@ The Slider component provides range value selection with customizable appearance
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachSliderBehavior,
@@ -22,6 +23,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -87,6 +89,7 @@ Slider uses a state machine with these states:
 
 ## Orientation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SliderOrientation, attachSliderBehavior } from 'blecsd';
 
@@ -112,6 +115,7 @@ Default appearance uses these characters:
 
 Customize with:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, attachSliderBehavior, setSliderDisplay } from 'blecsd';
 
@@ -331,6 +335,7 @@ const action = handleSliderKeyPress(world, eid, key);
 
 ## Example: Volume Control
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

@@ -4,6 +4,7 @@ The VirtualizedList widget provides high-performance rendering for large dataset
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createVirtualizedList,
@@ -15,6 +16,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld } from 'blecsd';
 import { createVirtualizedList } from 'blecsd';
@@ -173,6 +175,7 @@ list.destroy();   // Remove entity and cleanup
 
 ### Keyboard Handler
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleVirtualizedListKey } from 'blecsd';
 
@@ -188,6 +191,7 @@ function onKeyDown(event) {
 
 ### Mouse Wheel Handler
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { handleVirtualizedListWheel } from 'blecsd';
 

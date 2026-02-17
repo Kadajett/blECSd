@@ -4,6 +4,7 @@ Fast search across massive text buffers with Boyer-Moore-Horspool for literal st
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   // Search functions

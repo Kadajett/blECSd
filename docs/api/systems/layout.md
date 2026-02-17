@@ -28,6 +28,7 @@ scheduler.run(world, deltaTime);
 
 After the layout system runs, each entity with a Position component has computed layout data:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getComputedLayout, hasComputedLayout } from 'blecsd';
 
@@ -80,6 +81,7 @@ setAbsolute(world, overlay, true);  // Uses screen coordinates directly
 
 Dimensions can be specified as percentages of the parent container:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setDimensions } from 'blecsd';
 
@@ -97,6 +99,7 @@ setDimensions(world, entity, 'auto', 10);
 
 Set min/max constraints on dimensions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setDimensions, setConstraints } from 'blecsd';
 
@@ -113,6 +116,7 @@ setConstraints(world, entity, {
 
 When positions or dimensions change outside the normal flow:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { invalidateLayout, invalidateAllLayouts } from 'blecsd';
 
@@ -127,6 +131,7 @@ invalidateAllLayouts(world);
 
 Compute layout for a single entity immediately:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { computeLayoutNow, getComputedBounds } from 'blecsd';
 

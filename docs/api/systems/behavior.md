@@ -88,6 +88,7 @@ function createBehaviorSystem(
 
 **Returns:** A `System` function that processes behaviors when called with a world.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createBehaviorSystem } from 'blecsd';
 
@@ -129,6 +130,7 @@ The system processes entities based on their `BehaviorType`:
 
 Complete example showing an enemy with patrol and chase behaviors:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

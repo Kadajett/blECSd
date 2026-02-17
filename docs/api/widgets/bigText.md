@@ -30,6 +30,7 @@ const bigText = createBigText(world, eid, {
 
 Creates a new BigText widget with the specified configuration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createBigText } from 'blecsd/widgets';

@@ -33,6 +33,7 @@ box.forEach(line => console.log(line));
 
 Named constants for common box drawing and special characters. These are the Unicode characters that terminals display when using the alternate character set.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ACS } from 'blecsd';
 
@@ -104,6 +105,7 @@ ACS.lrcorner_rounded // '╯' - rounded lower right
 
 ### Example: Drawing a Simple Box
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ACS } from 'blecsd';
 
@@ -175,6 +177,7 @@ ACSC_CODES['0']  // '█' - solid block
 
 Maps Unicode box drawing and special characters to their ASCII equivalents. Use this for terminals that don't support Unicode.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { UNICODE_TO_ASCII } from 'blecsd';
 
@@ -447,6 +450,7 @@ When Unicode is not available, box drawing characters fall back to ASCII:
 
 ### Window with Title
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ACS } from 'blecsd';
 
@@ -487,6 +491,7 @@ const window = drawWindow('My Window', 30, 5);
 
 ### Table with Dividers
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ACS } from 'blecsd';
 

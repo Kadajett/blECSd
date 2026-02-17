@@ -4,6 +4,7 @@ Memory-efficient component storage utilities for measuring, optimizing, and mana
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createSparseStore,

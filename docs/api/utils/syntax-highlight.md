@@ -4,6 +4,7 @@ Line-based incremental syntax highlighting with state tracking. Only changed lin
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   // Cache management

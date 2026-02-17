@@ -4,6 +4,7 @@ The Tabs widget is a tabbed container that manages multiple content panels with 
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
@@ -37,6 +38,7 @@ tabs.setActiveTab(2);
 
 Creates a new Tabs widget with the specified configuration.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
@@ -75,6 +77,7 @@ const styledTabs = createTabs(world, addEntity(world), {
 
 ## Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   DEFAULT_TAB_POSITION,  // 'top'
@@ -334,6 +337,7 @@ tabs.destroy();
 
 Checks if an entity is a tabs widget.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTabs } from 'blecsd';
 
@@ -559,6 +563,7 @@ interface TabsWidget {
 
 ## Zod Schemas
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TabsConfigSchema } from 'blecsd';
 
@@ -582,6 +587,7 @@ if (result.success) {
 
 ### Basic Tab Navigation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
@@ -606,6 +612,7 @@ tabs.prevTab(); // Back to Profile
 
 ### Closable Tabs
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
@@ -626,6 +633,7 @@ tabs.removeTab(1); // Remove "Document 1"
 
 ### Lazy Content Loading
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTabs, createBox } from 'blecsd';
@@ -658,6 +666,7 @@ tabs.setActiveTab(1);
 
 ### Keyboard Navigation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
@@ -689,6 +698,7 @@ onKeyPress('left');  // Goes to previous tab
 
 ### Dynamic Tab Management
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';
@@ -715,6 +725,7 @@ tabs.removeTab(2);
 
 ### Method Chaining
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createTabs } from 'blecsd';

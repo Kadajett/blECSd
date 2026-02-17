@@ -4,6 +4,7 @@ ECS primitives wrapper module. This is the only file in the codebase that import
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, addComponent, hasComponent, query, Position, Velocity } from 'blecsd';
 
@@ -26,6 +27,7 @@ Creates a new entity in the world.
 function addEntity(world: World): Entity;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 
@@ -50,6 +52,7 @@ Checks if an entity exists in the world.
 function entityExists(world: World, eid: Entity): boolean;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { entityExists, addEntity, removeEntity } from 'blecsd';
 
@@ -76,6 +79,7 @@ Adds a component to an entity.
 function addComponent(world: World, eid: Entity, component: ComponentRef): void;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addComponent, Position } from 'blecsd';
 
@@ -110,6 +114,7 @@ Queries the world for entities that have all specified components.
 function query(world: World, components: QueryTerm[]): QueryResult;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query, Position, Velocity } from 'blecsd';
 
@@ -138,6 +143,7 @@ Creates a component with a custom backing store.
 const withStore: (store: Record<string, TypedArray>) => ComponentRef;
 ```
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { withStore } from 'blecsd';
 

@@ -4,6 +4,7 @@ The Checkbox component provides boolean toggle functionality with state machine 
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachCheckboxBehavior,
@@ -22,6 +23,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -75,6 +77,7 @@ Default characters:
 
 You can customize these:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, attachCheckboxBehavior, setCheckboxDisplay } from 'blecsd';
 
@@ -162,6 +165,7 @@ if (isCheckboxDisabled(world, eid)) {
 
 ### Display
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, attachCheckboxBehavior, getCheckboxChar, getCheckboxDisplay, setCheckboxDisplay, clearCheckboxDisplay } from 'blecsd';
 

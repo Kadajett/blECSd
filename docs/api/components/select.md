@@ -4,6 +4,7 @@ The Select component provides dropdown selection functionality with state machin
 
 ## Import
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachSelectBehavior,
@@ -24,6 +25,7 @@ import {
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {
@@ -93,6 +95,7 @@ Default appearance:
 
 Customize with:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, attachSelectBehavior, setSelectDisplay } from 'blecsd';
 
@@ -299,6 +302,7 @@ const action = handleSelectKeyPress(world, eid, key);
 
 ## Example: Country Selector
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import {

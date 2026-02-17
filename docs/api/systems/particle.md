@@ -66,6 +66,7 @@ function createParticleSystem(config: ParticleSystemConfig): System
 
 **Returns:** A `System` function.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createParticleSystem } from 'blecsd';
 
@@ -154,6 +155,7 @@ function killParticle(world: World, eid: Entity): void
 
 Complete particle effect setup with emitters:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

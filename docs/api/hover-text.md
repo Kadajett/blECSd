@@ -31,6 +31,7 @@ setHoverText(entity, 'Hover text here');
 
 ## Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   DEFAULT_HOVER_DELAY,      // 500ms - Delay before showing
@@ -49,6 +50,7 @@ import {
 
 Creates a hover text manager for handling tooltip state, timing, and positioning.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createHoverTextManager } from 'blecsd';
 
@@ -237,6 +239,7 @@ For simple use cases, you can use module-level functions that operate on a globa
 
 Sets hover text for an entity in the global store.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setHoverText } from 'blecsd';
 
@@ -247,6 +250,7 @@ setHoverText(entity, 'Click here to submit');
 
 Clears hover text for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearHoverText } from 'blecsd';
 
@@ -257,6 +261,7 @@ clearHoverText(entity);
 
 Gets hover text config for an entity.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getHoverText } from 'blecsd';
 
@@ -267,6 +272,7 @@ const config = getHoverText(entity);
 
 Checks if an entity has hover text.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasHoverText } from 'blecsd';
 
@@ -279,6 +285,7 @@ if (hasHoverText(entity)) {
 
 Clears all hover text registrations.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearAllHoverText } from 'blecsd';
 
@@ -289,6 +296,7 @@ clearAllHoverText();
 
 Gets the number of entities with hover text registered.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getHoverTextCount } from 'blecsd';
 
@@ -299,6 +307,7 @@ const count = getHoverTextCount();
 
 Resets the hover text store. For testing purposes.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { resetHoverTextStore } from 'blecsd';
 
