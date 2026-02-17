@@ -354,7 +354,8 @@ Control which entity has focus.
 **Example:**
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, focusEntity, focusNext, getFocused } from 'blecsd';
+import { createWorld, addEntity, focusNext, getFocused } from 'blecsd';
+import { focusEntity } from 'blecsd/systems';
 
 const world = createWorld();
 const buttonEntity = addEntity(world);
@@ -390,7 +391,8 @@ Save and restore focus (useful for modals, menus).
 **Example:**
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, focusPush, focusPop, focusEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { focusPush, focusPop, focusEntity } from 'blecsd/systems';
 
 const world = createWorld();
 const modalEntity = addEntity(world);
@@ -656,7 +658,7 @@ Systems must be registered with the scheduler to run automatically:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, LoopPhase } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 import {
   createInputSystem,
   createLayoutSystem,
@@ -697,8 +699,10 @@ See [System Execution Order Guide](../guides/system-execution-order.md) for deta
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defineSystem, query, World } from 'blecsd';
-import { Position, Velocity, Health } from 'blecsd';
+import { defineSystem, World } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Health } from 'blecsd';
+import { Position, Velocity } from 'blecsd/components';
 
 // Define a system
 const damageOverTimeSystem = defineSystem((world: World) => {

@@ -56,7 +56,8 @@ resetWorld(world); // Clear everything for new game
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, resetWorld, addEntity, addComponent, Position } from 'blecsd';
+import { createWorld, resetWorld, addEntity, addComponent } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 // Create a world for each game session
 const world = createWorld();

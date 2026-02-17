@@ -7,7 +7,7 @@ The ScrollableText widget is a thin wrapper over ScrollableBox optimized for rea
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createScrollableText } from 'blecsd';
+import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -37,7 +37,7 @@ Creates a new ScrollableText widget with the specified configuration.
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createScrollableText } from 'blecsd';
+import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -451,7 +451,7 @@ type ScrollableTextWidget = ScrollableBoxWidget;
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createScrollableText } from 'blecsd';
+import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -483,7 +483,7 @@ appendLog('Ready');
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createScrollableText } from 'blecsd';
+import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -520,7 +520,7 @@ const helpView = createScrollableText(world, addEntity(world), {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createScrollableText } from 'blecsd';
+import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -552,7 +552,7 @@ output('drwxr-xr-x 10 user user 4096 Jan 1 11:00 ..');
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createScrollableText } from 'blecsd';
+import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);

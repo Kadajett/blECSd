@@ -132,7 +132,8 @@ function createFrameBudgetManager(config?: Partial<FrameBudgetConfig>): FrameBud
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFrameBudgetManager, LoopPhase } from 'blecsd';
+import { createFrameBudgetManager } from 'blecsd';
+import { LoopPhase } from 'blecsd/core';
 
 const manager = createFrameBudgetManager({
   targetFrameMs: 16.67,

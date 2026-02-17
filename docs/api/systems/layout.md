@@ -15,7 +15,8 @@ The layout system:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, LoopPhase, layoutSystem } from 'blecsd';
+import { layoutSystem } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);

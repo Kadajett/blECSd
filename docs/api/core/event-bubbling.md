@@ -241,7 +241,8 @@ function emitDescendants<T extends EventMap, K extends keyof T>(
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, emitDescendants, createEntityEventBusStore, appendChild, createEventBus } from 'blecsd';
+import { createWorld, addEntity, emitDescendants, createEntityEventBusStore, appendChild } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 const world = createWorld();
 
@@ -397,7 +398,8 @@ function createEntityEventBusStore<T extends EventMap>(): EntityEventBusStore<T>
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createEntityEventBusStore, createEventBus } from 'blecsd';
+import { createEntityEventBusStore } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 const store = createEntityEventBusStore();
 const eventBus = createEventBus();

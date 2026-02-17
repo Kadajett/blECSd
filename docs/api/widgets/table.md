@@ -6,7 +6,8 @@ The Table widget provides a data grid with headers, cell borders, column configu
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTable, isTableWidget } from 'blecsd';
+import { isTableWidget } from 'blecsd';
+import { createTable } from 'blecsd/widgets';
 ```
 
 ## Basic Usage
@@ -14,7 +15,7 @@ import { createTable, isTableWidget } from 'blecsd';
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createTable } from 'blecsd';
+import { createTable } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);

@@ -237,7 +237,8 @@ Register the input system with a scheduler.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, registerInputSystem } from 'blecsd';
+import { registerInputSystem } from 'blecsd';
+import { createScheduler } from 'blecsd/core';
 
 const scheduler = createScheduler();
 registerInputSystem(scheduler);

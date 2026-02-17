@@ -54,7 +54,8 @@ loop.registerSystem(LoopPhase.RENDER, renderSystem);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop, createWorld, LoopPhase } from 'blecsd';
+import { createWorld } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();
 const loop = createGameLoop(world, {
@@ -219,7 +220,8 @@ The PhaseManager allows adding custom phases between built-in phases.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { PhaseManager, LoopPhase } from 'blecsd';
+import { PhaseManager } from 'blecsd';
+import { LoopPhase } from 'blecsd/core';
 
 const manager = new PhaseManager();
 
@@ -267,7 +269,8 @@ isLoopPaused(loop);     // true/false
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop, createWorld, LoopPhase } from 'blecsd';
+import { createWorld } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();
 

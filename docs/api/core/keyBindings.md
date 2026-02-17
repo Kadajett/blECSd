@@ -91,7 +91,7 @@ Creates an empty key binding registry.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createKeyBindingRegistry } from 'blecsd';
+import { createKeyBindingRegistry } from 'blecsd/core';
 
 const registry = createKeyBindingRegistry();
 ```
@@ -102,7 +102,7 @@ Registers a single key binding.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerBinding } from 'blecsd';
+import { registerBinding } from 'blecsd/core';
 
 let registry = createKeyBindingRegistry();
 registry = registerBinding(registry, {
@@ -169,7 +169,7 @@ Matches a key event against the registry and returns all matching bindings.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { matchEvent } from 'blecsd';
+import { matchEvent } from 'blecsd/core';
 
 // Simple match
 const matches = matchEvent(registry, keyEvent);
@@ -352,7 +352,8 @@ const results = KeyBindingsArraySchema.safeParse(bindings);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createKeyBindingRegistry, registerBindings, matchEvent } from 'blecsd';
+import { registerBindings } from 'blecsd';
+import { createKeyBindingRegistry, matchEvent } from 'blecsd/core';
 
 let registry = createKeyBindingRegistry();
 registry = registerBindings(registry, [

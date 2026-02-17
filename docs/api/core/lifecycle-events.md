@@ -6,7 +6,8 @@ Node lifecycle events for tracking entity hierarchy changes. These events integr
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { onReparent, onDestroy, createEventBus } from 'blecsd';
+import { onReparent, onDestroy } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 // Listen for reparent events on an entity
 const unsub = onReparent(entity, (event) => {

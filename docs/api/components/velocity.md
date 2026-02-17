@@ -267,7 +267,8 @@ For high-performance code in systems, access arrays directly:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Velocity, Acceleration } from 'blecsd';
+import { Acceleration } from 'blecsd';
+import { Velocity } from 'blecsd/components';
 
 for (const eid of entities) {
   const vx = Velocity.x[eid];

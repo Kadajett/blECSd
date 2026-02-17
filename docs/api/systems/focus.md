@@ -52,7 +52,7 @@ Focus a specific entity. Automatically blurs the previously focused entity.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusEntity } from 'blecsd';
+import { focusEntity } from 'blecsd/systems';
 
 const success = focusEntity(world, buttonEntity);
 if (success) {
@@ -84,7 +84,7 @@ Remove focus from all entities.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { blurAll } from 'blecsd';
+import { blurAll } from 'blecsd/systems';
 
 blurAll(world);
 ```
@@ -216,7 +216,8 @@ The focus system function. Validates current focus state.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusSystem, createScheduler, LoopPhase } from 'blecsd';
+import { focusSystem } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.INPUT, focusSystem);
@@ -372,7 +373,7 @@ Push current focus onto the stack and focus a new entity.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusPush } from 'blecsd';
+import { focusPush } from 'blecsd/systems';
 
 // Open modal - save current focus and focus modal
 function openModal(world: World, modalEntity: Entity): void {
@@ -388,7 +389,7 @@ Pop the focus stack and restore the previous focus.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusPop } from 'blecsd';
+import { focusPop } from 'blecsd/systems';
 
 // Close modal - restore previous focus
 const previousFocus = focusPop(world);

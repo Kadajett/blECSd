@@ -6,7 +6,7 @@ The Hierarchy component manages parent-child relationships between entities. Use
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Hierarchy } from 'blecsd';
+import { Hierarchy } from 'blecsd/components';
 
 Hierarchy.parent       // Uint32Array - Parent entity ID (0 = no parent)
 Hierarchy.firstChild   // Uint32Array - First child entity ID
@@ -32,7 +32,8 @@ NULL_ENTITY;  // 0 (represents no entity)
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasHierarchy, setParent } from 'blecsd';
+import { hasHierarchy } from 'blecsd';
+import { setParent } from 'blecsd/components';
 
 hasHierarchy(world, entity);  // false
 
@@ -50,7 +51,8 @@ Sets an entity's parent. Adds Hierarchy component if needed. Removes from previo
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setParent, getParent } from 'blecsd';
+import { getParent } from 'blecsd';
+import { setParent } from 'blecsd/components';
 
 setParent(world, child, parent);
 getParent(world, child);  // parent entity ID

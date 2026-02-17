@@ -450,7 +450,8 @@ function markSpatialDirty(eid: Entity): void
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { markSpatialDirty, Position } from 'blecsd';
+import { markSpatialDirty } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 const entity = 1;
 // After teleporting an entity, mark it dirty

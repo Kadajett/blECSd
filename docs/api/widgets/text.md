@@ -7,7 +7,7 @@ The Text widget is a simple container for displaying text that shrinks to fit it
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createText } from 'blecsd';
+import { createText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -34,7 +34,7 @@ Creates a new Text widget with the specified configuration.
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createText } from 'blecsd';
+import { createText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -414,7 +414,7 @@ if (result.success) {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createText } from 'blecsd';
+import { createText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -431,7 +431,7 @@ const label = createText(world, eid, {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createText } from 'blecsd';
+import { createText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -453,7 +453,7 @@ status.setContent('Status: Disconnected');
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createText } from 'blecsd';
+import { createText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -471,7 +471,7 @@ const paragraph = createText(world, eid, {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createText } from 'blecsd';
+import { createText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -493,7 +493,8 @@ const text = createText(world, eid, { left: 0, top: 0 })
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createText, setTextContent, getTextContent } from 'blecsd';
+import { setTextContent, getTextContent } from 'blecsd';
+import { createText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -519,7 +520,7 @@ const current = getTextContent(world, eid); // 'Count: 2'
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createText } from 'blecsd';
+import { createText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);

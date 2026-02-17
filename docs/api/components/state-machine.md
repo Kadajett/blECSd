@@ -73,7 +73,7 @@ Attaches a state machine to an entity. Returns the machine ID.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { attachStateMachine } from 'blecsd';
+import { attachStateMachine } from 'blecsd/components';
 
 const machineId = attachStateMachine(world, entity, {
   initial: 'idle',
@@ -102,7 +102,8 @@ Query current and previous state names.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getState, getPreviousState } from 'blecsd';
+import { getPreviousState } from 'blecsd';
+import { getState } from 'blecsd/components';
 
 const current = getState(world, entity);    // 'idle'
 const previous = getPreviousState(world, entity); // 'active'
@@ -116,7 +117,7 @@ Sends an event to the entity's state machine. Returns whether a transition occur
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sendEvent } from 'blecsd';
+import { sendEvent } from 'blecsd/components';
 
 const transitioned = sendEvent(world, entity, 'activate');
 if (transitioned) {
@@ -191,7 +192,8 @@ updateStateAge(world, entities, deltaTime);
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { attachStateMachine, sendEvent, getState, isInState, updateStateAge } from 'blecsd';
+import { isInState, updateStateAge } from 'blecsd';
+import { attachStateMachine, sendEvent, getState } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);

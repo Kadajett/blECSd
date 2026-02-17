@@ -636,7 +636,8 @@ tabs.removeTab(1); // Remove "Document 1"
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createTabs, createBox } from 'blecsd';
+import { createTabs } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 

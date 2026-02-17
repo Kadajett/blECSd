@@ -191,7 +191,8 @@ reset(): void;
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMemoryProfiler, createWorld, addEntity, Position, Renderable } from 'blecsd';
+import { createMemoryProfiler, createWorld, addEntity } from 'blecsd';
+import { Position, Renderable } from 'blecsd/components';
 
 const profiler = createMemoryProfiler({
   snapshotInterval: 5000,

@@ -27,7 +27,8 @@ Checks if an entity has a Padding component.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, hasPadding, setPadding } from 'blecsd';
+import { createWorld, hasPadding } from 'blecsd';
+import { setPadding } from 'blecsd/components';
 import { addEntity } from 'blecsd';
 
 const world = createWorld();
@@ -47,7 +48,8 @@ Sets individual padding sides on an entity. Adds the Padding component if not al
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, setPadding } from 'blecsd';
+import { createWorld } from 'blecsd';
+import { setPadding } from 'blecsd/components';
 import { addEntity } from 'blecsd';
 
 const world = createWorld();
@@ -138,7 +140,8 @@ Gets the padding data for an entity.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, setPadding, getPadding } from 'blecsd';
+import { createWorld, getPadding } from 'blecsd';
+import { setPadding } from 'blecsd/components';
 import { addEntity } from 'blecsd';
 
 const world = createWorld();
@@ -167,7 +170,8 @@ Gets the total horizontal padding (left + right).
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, setPadding, getHorizontalPadding } from 'blecsd';
+import { createWorld, getHorizontalPadding } from 'blecsd';
+import { setPadding } from 'blecsd/components';
 import { addEntity } from 'blecsd';
 
 const world = createWorld();
@@ -189,7 +193,8 @@ Gets the total vertical padding (top + bottom).
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, setPadding, getVerticalPadding } from 'blecsd';
+import { createWorld, getVerticalPadding } from 'blecsd';
+import { setPadding } from 'blecsd/components';
 import { addEntity } from 'blecsd';
 
 const world = createWorld();
@@ -211,7 +216,8 @@ Checks if an entity has any padding value greater than 0.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, setPadding, setPaddingAll, hasPaddingValue } from 'blecsd';
+import { createWorld, setPaddingAll, hasPaddingValue } from 'blecsd';
+import { setPadding } from 'blecsd/components';
 import { addEntity } from 'blecsd';
 
 const world = createWorld();

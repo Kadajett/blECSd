@@ -6,7 +6,8 @@ A modal overlay/backdrop system with support for stacking multiple modals, backd
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createModal, openModal, closeAllModals } from 'blecsd';
+import { createModal, closeAllModals } from 'blecsd';
+import { openModal } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -98,7 +99,7 @@ Creates a modal and immediately shows it.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { openModal } from 'blecsd';
+import { openModal } from 'blecsd/widgets';
 
 const modal = openModal(world, {
   content: 'Hello World!',
@@ -319,7 +320,8 @@ if (isModal(world, entity)) {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { openModal, getModalStack, closeAllModals } from 'blecsd';
+import { getModalStack, closeAllModals } from 'blecsd';
+import { openModal } from 'blecsd/widgets';
 
 const first = openModal(world, {
   content: 'First modal',
@@ -344,7 +346,7 @@ closeAllModals(world);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { openModal } from 'blecsd';
+import { openModal } from 'blecsd/widgets';
 
 const modal = openModal(world, {
   content: 'Are you sure you want to delete this?',

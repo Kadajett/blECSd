@@ -6,14 +6,15 @@ The Scheduler manages the ordered execution of ECS systems across phases. It enf
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, getDeltaTime, LoopPhase } from 'blecsd';
+import { getDeltaTime } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 ```
 
 ## Basic Usage
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, LoopPhase } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
 
@@ -127,7 +128,8 @@ scheduler.registerSystem(LoopPhase.UPDATE, aiSystem, 20);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, getDeltaTime, LoopPhase } from 'blecsd';
+import { getDeltaTime } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
 

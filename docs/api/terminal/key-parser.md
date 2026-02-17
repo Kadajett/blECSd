@@ -102,7 +102,7 @@ function parseKeyBuffer(buffer: Uint8Array): readonly KeyEvent[]
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseKeyBuffer } from 'blecsd';
+import { parseKeyBuffer } from 'blecsd/terminal';
 
 const events = parseKeyBuffer(Buffer.from('abc'));
 console.log(events.length); // 3

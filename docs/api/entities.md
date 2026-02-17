@@ -129,7 +129,8 @@ Creates a button entity, an interactive element with focus support and click han
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createButtonEntity, BorderType } from 'blecsd';
+import { createWorld, BorderType } from 'blecsd';
+import { createButtonEntity } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -418,7 +419,8 @@ Creates a textbox entity, a single-line text input field with cursor support, pa
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createTextboxEntity, BorderType } from 'blecsd';
+import { createWorld, BorderType } from 'blecsd';
+import { createTextboxEntity } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -691,7 +693,8 @@ Creates a form entity, a container for grouping form inputs with validation and 
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createFormEntity, createTextboxEntity, createButtonEntity, BorderType } from 'blecsd';
+import { createWorld, BorderType } from 'blecsd';
+import { createFormEntity, createTextboxEntity, createButtonEntity } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -768,7 +771,8 @@ Creates a progress bar entity, a visual indicator of task completion or loading 
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createProgressBarEntity, BorderType } from 'blecsd';
+import { createWorld, BorderType } from 'blecsd';
+import { createProgressBarEntity } from 'blecsd/widgets';
 
 const world = createWorld();
 

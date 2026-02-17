@@ -7,7 +7,7 @@ The Panel widget is a container with a title bar at the top. It supports optiona
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd';
+import { createPanel } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -44,7 +44,7 @@ Creates a new Panel widget with the specified configuration.
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd';
+import { createPanel } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -383,7 +383,7 @@ Sets the title of a panel entity.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPanelTitle } from 'blecsd';
+import { setPanelTitle } from 'blecsd/widgets';
 
 setPanelTitle(world, panelEntity, 'New Title');
 ```
@@ -619,7 +619,7 @@ if (result.success) {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd';
+import { createPanel } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -645,7 +645,7 @@ if (dialog.isClosable()) {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd';
+import { createPanel } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -673,7 +673,7 @@ if (section.isCollapsed()) {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd';
+import { createPanel } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -706,7 +706,7 @@ const toolWindow = createPanel(world, addEntity(world), {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd';
+import { createPanel } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);

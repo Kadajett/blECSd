@@ -7,7 +7,7 @@ The Box widget is a basic container for building terminal UI elements. It provid
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createBox } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -38,7 +38,7 @@ Creates a new Box widget with the specified configuration.
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createBox } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -459,7 +459,7 @@ if (result.success) {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createBox } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -478,7 +478,7 @@ const box = createBox(world, eid, {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createBox } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -507,7 +507,7 @@ const dialog = createBox(world, eid, {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createBox } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -540,7 +540,7 @@ parent.append(childEid);
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createBox } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -562,7 +562,7 @@ const box = createBox(world, eid, { left: 0, top: 0 })
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createBox } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -586,7 +586,8 @@ console.log(box2.isFocused()); // true
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createBox, setBoxContent, getBoxContent } from 'blecsd';
+import { setBoxContent, getBoxContent } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);

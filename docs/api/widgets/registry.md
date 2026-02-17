@@ -386,7 +386,8 @@ interface WidgetRegistry {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWidgetRegistry, registerBuiltinWidgets, createBox } from 'blecsd';
+import { createWidgetRegistry, registerBuiltinWidgets } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const registry = createWidgetRegistry();
 registerBuiltinWidgets(registry);

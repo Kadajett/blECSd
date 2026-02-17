@@ -19,7 +19,7 @@ import {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld } from 'blecsd';
-import { createVirtualizedList } from 'blecsd';
+import { createVirtualizedList } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -207,7 +207,8 @@ function onWheel(event) {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld } from 'blecsd';
-import { createVirtualizedList, handleVirtualizedListKey } from 'blecsd';
+import { handleVirtualizedListKey } from 'blecsd';
+import { createVirtualizedList } from 'blecsd/widgets';
 import * as fs from 'fs';
 
 const world = createWorld();

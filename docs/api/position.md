@@ -8,7 +8,7 @@ The Position component uses bitecs SoA (Structure of Arrays) pattern for cache-f
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Position } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 Position.x        // Float32Array - X coordinate in terminal cells
 Position.y        // Float32Array - Y coordinate in terminal cells

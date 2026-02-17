@@ -27,7 +27,8 @@ Calculates the minimum width needed to fit an entity's content.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getShrinkWidth, setContent } from 'blecsd';
+import { getShrinkWidth } from 'blecsd';
+import { setContent } from 'blecsd/components';
 
 setContent(world, entity, 'Hello, World!');
 const minWidth = getShrinkWidth(world, entity);
@@ -49,7 +50,8 @@ Calculates the minimum height needed to fit an entity's content.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getShrinkHeight, setContent } from 'blecsd';
+import { getShrinkHeight } from 'blecsd';
+import { setContent } from 'blecsd/components';
 
 setContent(world, entity, 'Line 1\nLine 2\nLine 3');
 const minHeight = getShrinkHeight(world, entity);
@@ -75,7 +77,8 @@ Calculates both width and height needed to fit an entity's content.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getShrinkBox, setContent } from 'blecsd';
+import { getShrinkBox } from 'blecsd';
+import { setContent } from 'blecsd/components';
 
 setContent(world, entity, 'Hello\nWorld');
 const box = getShrinkBox(world, entity);
@@ -94,7 +97,8 @@ Applies shrink-to-content to an entity's dimensions. Only works if shrink is ena
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { applyShrink, setShrink, setContent, setDimensions } from 'blecsd';
+import { applyShrink, setShrink, setDimensions } from 'blecsd';
+import { setContent } from 'blecsd/components';
 
 setContent(world, entity, 'Hello');
 setDimensions(world, entity, 100, 100);
@@ -114,7 +118,8 @@ Calculates shrink size without modifying the entity. Useful for preview or layou
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { calculateShrinkSize, setContent, setDimensions } from 'blecsd';
+import { calculateShrinkSize, setDimensions } from 'blecsd';
+import { setContent } from 'blecsd/components';
 
 setContent(world, entity, 'Hello');
 setDimensions(world, entity, 100, 100);
@@ -137,7 +142,8 @@ Shrink calculations respect min/max constraints set on the entity:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setConstraints, setShrink, applyShrink, setContent } from 'blecsd';
+import { setConstraints, setShrink, applyShrink } from 'blecsd';
+import { setContent } from 'blecsd/components';
 
 setContent(world, entity, 'Hi'); // Would shrink to 2x1
 setDimensions(world, entity, 100, 100);
@@ -160,7 +166,8 @@ applyShrink(world, entity);
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { setContent, setDimensions, setShrink, applyShrink, setPaddingAll, setBorder } from 'blecsd';
+import { setDimensions, setShrink, applyShrink, setPaddingAll } from 'blecsd';
+import { setContent, setBorder } from 'blecsd/components';
 
 const world = createWorld();
 const button = addEntity(world);

@@ -8,7 +8,7 @@ Type-safe event emitter for decoupling application systems. Events let systems c
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createEventBus } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 interface AppEvents {
   'panel:resized': { width: number; height: number };

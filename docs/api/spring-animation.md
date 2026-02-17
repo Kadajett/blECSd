@@ -234,7 +234,8 @@ Spring physics system that updates all entities with active spring animations. S
 **Example:**
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createScheduler, LoopPhase, springSystem } from 'blecsd';
+import { createWorld, springSystem } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();
 const scheduler = createScheduler();

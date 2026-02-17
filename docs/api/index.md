@@ -104,7 +104,7 @@ Optional game loop with phase ordering.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, LoopPhase } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
 scheduler.add(LoopPhase.UPDATE, (world, delta) => world);
@@ -177,7 +177,8 @@ See [Input Stream](./input-stream.md) for wrapping NodeJS readable streams.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseKeyBuffer, parseMouseSequence } from 'blecsd';
+import { parseMouseSequence } from 'blecsd';
+import { parseKeyBuffer } from 'blecsd/terminal';
 
 const key = parseKeyBuffer(buffer);
 // { name: 'a', ctrl: false, meta: false, shift: false, sequence: 'a' }

@@ -204,7 +204,8 @@ Destruction emits a `destroy` event that can be listened to:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLifecycleEventBus, createEventBus } from 'blecsd';
+import { getLifecycleEventBus } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 const bus = getLifecycleEventBus(entity, createEventBus);
 bus.on('destroy', (event) => {
@@ -223,7 +224,8 @@ bus.on('destroy', (event) => {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop, LoopPhase, flushDestroyQueue } from 'blecsd';
+import { flushDestroyQueue } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const loop = createGameLoop(world, { targetFPS: 60 });
 

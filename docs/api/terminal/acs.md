@@ -367,7 +367,7 @@ Creates a box with the specified dimensions and style.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBox } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 // Single-line box (default)
 const singleBox = createBox(10, 4, 'single');
@@ -526,7 +526,8 @@ console.log(drawTableDivider(widths, 'bottom'));
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBox, stringToAscii } from 'blecsd';
+import { stringToAscii } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 function renderBox(width: number, height: number, useUnicode: boolean): string[] {
   const box = createBox(width, height, 'single');

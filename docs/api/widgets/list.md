@@ -6,7 +6,8 @@ The List widget provides a selectable, scrollable list with keyboard and mouse s
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createList, isListWidget } from 'blecsd';
+import { isListWidget } from 'blecsd';
+import { createList } from 'blecsd/widgets';
 ```
 
 ## Basic Usage
@@ -14,7 +15,7 @@ import { createList, isListWidget } from 'blecsd';
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createList } from 'blecsd';
+import { createList } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);

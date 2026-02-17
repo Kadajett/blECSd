@@ -192,7 +192,8 @@ Auto-padding only applies to sides with borders:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBorder, BorderType, getAutoPadding } from 'blecsd';
+import { BorderType, getAutoPadding } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 // Border only on left and right
 setBorder(world, entity, {

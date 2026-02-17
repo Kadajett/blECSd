@@ -115,7 +115,8 @@ function registerSerializable(descriptor: ComponentDescriptor): void;
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerSerializable, Position } from 'blecsd';
+import { registerSerializable } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 registerSerializable({ name: 'Position', store: Position });
 ```

@@ -6,7 +6,8 @@ Non-blocking notification widget that auto-dismisses. Multiple toasts can be sta
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createToast, showSuccessToast, showErrorToast } from 'blecsd';
+import { showSuccessToast, showErrorToast } from 'blecsd';
+import { createToast } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -108,7 +109,7 @@ Creates a Toast widget with the given configuration.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createToast } from 'blecsd';
+import { createToast } from 'blecsd/widgets';
 
 const toast = createToast(world, {
   content: 'Changes saved',
@@ -302,7 +303,7 @@ Toasts are spaced by `TOAST_STACK_SPACING` (1 line) between each notification.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createToast } from 'blecsd';
+import { createToast } from 'blecsd/widgets';
 
 const toast = createToast(world, {
   content: 'Download complete!',
@@ -321,7 +322,7 @@ toast.onDismiss(() => {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createToast } from 'blecsd';
+import { createToast } from 'blecsd/widgets';
 
 const toast = createToast(world, {
   content: 'Critical: Server disconnected',
@@ -338,7 +339,7 @@ toast.dismiss();
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createToast } from 'blecsd';
+import { createToast } from 'blecsd/widgets';
 
 const toast = createToast(world, {
   content: 'Custom notification',

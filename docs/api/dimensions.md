@@ -22,7 +22,7 @@ The Dimensions component store using bitecs SoA (Structure of Arrays) pattern.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Dimensions } from 'blecsd';
+import { Dimensions } from 'blecsd/components';
 
 // Component arrays
 Dimensions.width     // Float32Array - Width in terminal cells (or encoded percentage)

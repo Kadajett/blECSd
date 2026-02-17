@@ -7,7 +7,7 @@ Core type definitions for blECSd. Defines the fundamental types used throughout 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { Entity, World, System, Unsubscribe } from 'blecsd';
-import { LoopPhase } from 'blecsd';
+import { LoopPhase } from 'blecsd/core';
 ```
 
 ## Types
@@ -82,7 +82,7 @@ enum LoopPhase {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { LoopPhase } from 'blecsd';
+import { LoopPhase } from 'blecsd/core';
 
 loop.registerSystem(LoopPhase.UPDATE, gameLogicSystem);
 loop.registerSystem(LoopPhase.RENDER, renderSystem);
@@ -94,7 +94,8 @@ loop.registerInputSystem(inputSystem); // Always LoopPhase.INPUT
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { Entity, World, System, Unsubscribe } from 'blecsd';
-import { LoopPhase, createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { LoopPhase } from 'blecsd/core';
 
 // Define a system
 const gravitySystem: System = (world: World): World => {

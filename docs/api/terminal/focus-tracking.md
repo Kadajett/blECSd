@@ -68,7 +68,8 @@ function createFocusTracker(inputHandler: InputHandler): FocusTrackerState
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputHandler, createFocusTracker } from 'blecsd';
+import { createFocusTracker } from 'blecsd';
+import { createInputHandler } from 'blecsd/core';
 
 const inputHandler = createInputHandler(process.stdin);
 const tracker = createFocusTracker(inputHandler);

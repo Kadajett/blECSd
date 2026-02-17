@@ -89,7 +89,8 @@ Sets or updates border configuration. Adds the Border component if not present.
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { setBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
+import { BorderType, BORDER_DOUBLE } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -161,7 +162,8 @@ Returns full border configuration or `undefined` if no Border component.
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBorder, getBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
+import { getBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 setBorder(world, eid, {
   type: BorderType.Line,
@@ -201,7 +203,8 @@ Gets a specific border character (Unicode codepoint).
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBorder, setBorderChars, getBorderChar, BorderType, BORDER_DOUBLE } from 'blecsd';
+import { setBorderChars, getBorderChar, BorderType, BORDER_DOUBLE } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 setBorder(world, eid, { type: BorderType.Line });
 setBorderChars(world, eid, BORDER_DOUBLE);
@@ -226,7 +229,8 @@ getBorderChar(world, eid, 'vertical');    // 0x2551 (║)
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasBorder, setBorder, BorderType } from 'blecsd';
+import { hasBorder, BorderType } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 hasBorder(world, eid);  // false
 
@@ -240,7 +244,8 @@ Checks if the entity has a visible border (type is not None and at least one sid
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasBorderVisible, setBorder, BorderType } from 'blecsd';
+import { hasBorderVisible, BorderType } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 // No border component
 hasBorderVisible(world, eid);  // false
@@ -272,7 +277,8 @@ hasBorderVisible(world, eid);  // false
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBorder, enableAllBorders, disableAllBorders, BorderType } from 'blecsd';
+import { enableAllBorders, disableAllBorders, BorderType } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 setBorder(world, eid, {
   type: BorderType.Line,
@@ -350,7 +356,8 @@ interface BorderData {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { setBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
+import { BorderType, BORDER_DOUBLE } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 const world = createWorld();
 const dialog = addEntity(world);
@@ -367,7 +374,8 @@ setBorder(world, dialog, {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBorder, BorderType, BORDER_ROUNDED } from 'blecsd';
+import { BorderType, BORDER_ROUNDED } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 setBorder(world, menu, {
   type: BorderType.Line,
@@ -380,7 +388,8 @@ setBorder(world, menu, {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBorder, BorderType } from 'blecsd';
+import { BorderType } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 setBorder(world, divider, {
   type: BorderType.Line,
@@ -396,7 +405,8 @@ setBorder(world, divider, {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBorder, BorderType, BORDER_ASCII } from 'blecsd';
+import { BorderType, BORDER_ASCII } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 // For terminals without Unicode support
 setBorder(world, element, {

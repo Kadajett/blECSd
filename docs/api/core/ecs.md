@@ -6,7 +6,9 @@ ECS primitives wrapper module. This is the only file in the codebase that import
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, addComponent, hasComponent, query, Position, Velocity } from 'blecsd';
+import { createWorld, addEntity, addComponent, hasComponent } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -81,7 +83,8 @@ function addComponent(world: World, eid: Entity, component: ComponentRef): void;
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addComponent, Position } from 'blecsd';
+import { addComponent } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 addComponent(world, entity, Position);
 Position.x[entity] = 100;
@@ -116,7 +119,8 @@ function query(world: World, components: QueryTerm[]): QueryResult;
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query, Position, Velocity } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
 
 const movingEntities = query(world, [Position, Velocity]);
 for (const eid of movingEntities) {
@@ -145,7 +149,7 @@ const withStore: (store: Record<string, TypedArray>) => ComponentRef;
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { withStore } from 'blecsd';
+import { withStore } from 'blecsd/core';
 
 const CustomPosition = withStore({
   x: new Float32Array(10000),

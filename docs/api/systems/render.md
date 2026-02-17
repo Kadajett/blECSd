@@ -63,7 +63,8 @@ Entities are rendered in z-index order:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPosition, setZIndex, setStyle } from 'blecsd';
+import { setPosition, setZIndex } from 'blecsd';
+import { setStyle } from 'blecsd/components';
 
 // Background panel (z=0)
 const background = addEntity(world);
@@ -128,7 +129,8 @@ Renders the entity's border if configured:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderBorder, setBorder, BorderType } from 'blecsd';
+import { renderBorder, BorderType } from 'blecsd';
+import { setBorder } from 'blecsd/components';
 
 // Set up border
 setBorder(world, entity, { type: BorderType.Line });

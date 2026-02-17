@@ -247,7 +247,8 @@ Nodes are addressed using dot-separated indices:
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createTree, createPanel } from 'blecsd';
+import { createTree } from 'blecsd';
+import { createPanel } from 'blecsd/widgets';
 import * as fs from 'fs';
 
 const world = createWorld();

@@ -113,7 +113,8 @@ function createSmoothScrollSystem(physics?: Partial<ScrollPhysicsConfig>): Syste
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSmoothScrollSystem, LoopPhase } from 'blecsd';
+import { createSmoothScrollSystem } from 'blecsd';
+import { LoopPhase } from 'blecsd/core';
 
 const scrollSystem = createSmoothScrollSystem({
   friction: 0.92,

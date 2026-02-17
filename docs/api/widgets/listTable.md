@@ -252,7 +252,8 @@ table.destroy();  // Remove entity and cleanup
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
-import { createListTable, createPanel } from 'blecsd';
+import { createListTable } from 'blecsd';
+import { createPanel } from 'blecsd/widgets';
 
 const world = createWorld();
 
