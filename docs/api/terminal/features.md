@@ -103,27 +103,24 @@ interface FeatureDetectionOptions {
 Detects modern terminal protocol support (Kitty, iTerm2, Sixel, etc.).
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-const protocols = detectFeatures(getDefaultXtermData());
+const info = getDefaultXtermData();
+const features = detectFeatures(info);
 
-if (protocols.kittyKeyboard) {
-  // Enable enhanced keyboard protocol
+if (features.bracketedPaste) {
+  // Enable bracketed paste mode
 }
 
-if (protocols.hyperlinks) {
-  // Use OSC 8 for clickable links
-}
-
-if (protocols.sixel) {
-  // Can display Sixel graphics
+if (features.focusEvents) {
+  // Enable focus event tracking
 }
 ```
 
 **Parameters:**
 - `info` - Terminfo data object
 
-**Returns:** `ModernProtocols` object
+**Returns:** `TerminalFeatures` object with protocol support flags
 
 ### ModernProtocols
 
@@ -153,7 +150,7 @@ interface ModernProtocols {
 Detects Unicode support based on locale settings.
 
 ```typescript
-import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
+import { detectUnicode } from 'blecsd/terminal';
 
 if (detectUnicode()) {
   console.log('Unicode box drawing available');
@@ -177,9 +174,9 @@ detectUnicode({ forceUnicode: false }); // Always returns false
 Gets the number of colors supported.
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-const colors = detectFeatures(info).colors;
+const colors = detectFeatures(getDefaultXtermData()).colors;
 // 0, 8, 16, 256, or 16777216 (true color)
 ```
 
@@ -192,7 +189,7 @@ Detects 24-bit true color support.
 ```typescript
 import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-if (detectTrueColor(info)) {
+if (detectFeatures(getDefaultXtermData()).trueColor) {
   // Use RGB colors directly
   console.log('\x1b[38;2;255;100;50mTrue color!\x1b[0m');
 }
@@ -212,7 +209,7 @@ Detects 256 color support.
 ```typescript
 import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-if (detect256Color(info)) {
+if (detectFeatures(getDefaultXtermData()).color256) {
   // Use 256-color palette
 }
 ```
@@ -224,9 +221,9 @@ if (detect256Color(info)) {
 Detects if ACS (alternate character set) is broken.
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-if (detectFeatures(info).brokenACS) {
+if (detectFeatures(getDefaultXtermData()).brokenACS) {
   // Use Unicode fallback for box drawing
 } else {
   // Can use ACS characters
@@ -246,9 +243,9 @@ if (detectFeatures(info).brokenACS) {
 Detects if terminal uses PC ROM character set instead of ACS.
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-if (detectFeatures(info).pcRomSet) {
+if (detectFeatures(getDefaultXtermData()).pcRomSet) {
   console.log('Using PC ROM character set');
 }
 ```
@@ -260,9 +257,9 @@ if (detectFeatures(info).pcRomSet) {
 Detects alternate screen buffer support (smcup/rmcup).
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-if (detectFeatures(info).alternateScreen) {
+if (detectFeatures(getDefaultXtermData()).alternateScreen) {
   // Can use alternate screen for full-screen UI
 }
 ```
@@ -274,9 +271,9 @@ if (detectFeatures(info).alternateScreen) {
 Detects mouse tracking support.
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-if (detectFeatures(info).mouse) {
+if (detectFeatures(getDefaultXtermData()).mouse) {
   // Enable mouse tracking
 }
 ```
@@ -288,9 +285,9 @@ if (detectFeatures(info).mouse) {
 Detects focus event reporting support.
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-if (detectFeatures(info).focusEvents) {
+if (detectFeatures(getDefaultXtermData()).focusEvents) {
   // Can track window focus/blur
 }
 ```
@@ -302,9 +299,9 @@ if (detectFeatures(info).focusEvents) {
 Detects bracketed paste mode support.
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-if (detectFeatures(info).bracketedPaste) {
+if (detectFeatures(getDefaultXtermData()).bracketedPaste) {
   // Can differentiate typed vs pasted input
 }
 ```
@@ -316,9 +313,9 @@ if (detectFeatures(info).bracketedPaste) {
 Detects title setting support.
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-if (detectFeatures(info).title) {
+if (detectFeatures(getDefaultXtermData()).title) {
   // Can set window title
 }
 ```
@@ -345,27 +342,13 @@ import { detectFeatures } from 'blecsd/terminal';
 Gets a human-readable summary of detected features.
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-const features = detectFeatures(info);
-const protocols = detectModernProtocols(info);
-const summary = JSON.stringify(features);
+const features = detectFeatures(getDefaultXtermData());
+const summary = JSON.stringify(features, null, 2);
 
 console.log(summary);
-// Colors: 256 (true color)
-// Unicode: yes
-// ACS: ok (31 chars)
-// Alt screen: yes
-// Mouse: yes
-// Focus events: yes
-// Bracketed paste: yes
-//
-// Modern protocols:
-//   - Kitty keyboard
-//   - Kitty graphics
-//   - OSC 8 hyperlinks
-//   - Synchronized output
+// { "colors": 256, "unicode": true, "trueColor": true, ... }
 ```
 
 **Parameters:**
@@ -381,10 +364,10 @@ console.log(summary);
 ### Adaptive Rendering
 
 ```typescript
-import { detectFeatures, detectUnicode, createTput } from 'blecsd/terminal';
+import { detectFeatures, createTput } from 'blecsd/terminal';
 
 const tput = createTput();
-const features = detectFeatures(tput.getData());
+const features = detectFeatures(tput.data);
 
 // Choose box drawing characters
 const boxChars = features.unicode && !features.brokenACS
@@ -392,61 +375,36 @@ const boxChars = features.unicode && !features.brokenACS
   : { topLeft: '+', horizontal: '-', vertical: '|' };
 
 // Choose color depth
-function setColor(r: number, g: number, b: number): string {
-  if (features.trueColor) {
-    return `\x1b[38;2;${r};${g};${b}m`;
-  }
-  if (features.color256) {
-    // Convert to 256-color palette
-    const code = 16 + (36 * Math.round(r / 51)) +
-                 (6 * Math.round(g / 51)) +
-                 Math.round(b / 51);
-    return `\x1b[38;5;${code}m`;
-  }
-  // Fall back to basic colors
-  return '\x1b[37m';
-}
+const colorMode = features.trueColor ? 'truecolor' :
+  features.color256 ? '256' : 'basic';
+console.log(boxChars, colorMode);
 ```
 
 ### Feature-Based Initialization
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-function initTerminal(info: TerminfoData): void {
-  const features = detectFeatures(info);
-  const protocols = detectModernProtocols(info);
+const termFeatures = detectFeatures(getDefaultXtermData());
 
-  // Enable alternate screen if available
-  if (features.alternateScreen) {
-    process.stdout.write('\x1b[?1049h');
-  }
+// Enable alternate screen if available
+if (termFeatures.alternateScreen) {
+  process.stdout.write('\x1b[?1049h');
+}
 
-  // Enable mouse tracking
-  if (features.mouse) {
-    process.stdout.write('\x1b[?1000h\x1b[?1002h\x1b[?1006h');
-  }
+// Enable mouse tracking
+if (termFeatures.mouse) {
+  process.stdout.write('\x1b[?1000h\x1b[?1002h\x1b[?1006h');
+}
 
-  // Enable focus events
-  if (features.focusEvents) {
-    process.stdout.write('\x1b[?1004h');
-  }
+// Enable focus events
+if (termFeatures.focusEvents) {
+  process.stdout.write('\x1b[?1004h');
+}
 
-  // Enable bracketed paste
-  if (features.bracketedPaste) {
-    process.stdout.write('\x1b[?2004h');
-  }
-
-  // Enable Kitty keyboard protocol
-  if (protocols.kittyKeyboard) {
-    process.stdout.write('\x1b[>1u');
-  }
-
-  // Enable synchronized output
-  if (protocols.synchronizedOutput) {
-    // Use BSU/ESU when rendering
-  }
+// Enable bracketed paste
+if (termFeatures.bracketedPaste) {
+  process.stdout.write('\x1b[?2004h');
 }
 ```
 

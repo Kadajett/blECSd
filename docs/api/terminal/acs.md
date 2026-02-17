@@ -101,25 +101,22 @@ ACS.lrcorner_rounded // '╯' - rounded lower right
 ```typescript
 import { ACS } from 'blecsd/terminal';
 
-function drawBox(width: number, height: number): string[] {
-  const lines: string[] = [];
+const width = 20;
+const height = 5;
+const boxLines: string[] = [];
 
-  // Top border
-  lines.push(ACS.ulcorner + ACS.hline.repeat(width - 2) + ACS.urcorner);
+// Top border
+boxLines.push(ACS.ulcorner + ACS.hline.repeat(width - 2) + ACS.urcorner);
 
-  // Middle rows
-  for (let i = 0; i < height - 2; i++) {
-    lines.push(ACS.vline + ' '.repeat(width - 2) + ACS.vline);
-  }
-
-  // Bottom border
-  lines.push(ACS.llcorner + ACS.hline.repeat(width - 2) + ACS.lrcorner);
-
-  return lines;
+// Middle rows
+for (let i = 0; i < height - 2; i++) {
+  boxLines.push(ACS.vline + ' '.repeat(width - 2) + ACS.vline);
 }
 
-const box = drawBox(20, 5);
-box.forEach(line => console.log(line));
+// Bottom border
+boxLines.push(ACS.llcorner + ACS.hline.repeat(width - 2) + ACS.lrcorner);
+
+boxLines.forEach(line => console.log(line));
 // ┌──────────────────┐
 // │                  │
 // │                  │
@@ -276,12 +273,10 @@ Converts a string containing Unicode box drawing characters to ASCII using `UNIC
 ```typescript
 import { UNICODE_TO_ASCII } from 'blecsd/terminal';
 
-function stringToAscii(str: string): string {
-  return [...str].map(c => UNICODE_TO_ASCII[c] ?? c).join('');
-}
-
-stringToAscii('┌──┐');  // '+--+'
-stringToAscii('│Hi│');  // '|Hi|'
+const asciiResult1 = [...'┌──┐'].map(c => UNICODE_TO_ASCII[c] ?? c).join('');
+const asciiResult2 = [...'│Hi│'].map(c => UNICODE_TO_ASCII[c] ?? c).join('');
+console.log(asciiResult1);  // '+--+'
+console.log(asciiResult2);  // '|Hi|'
 ```
 
 ---
@@ -293,12 +288,10 @@ Checks if a character is a Unicode box drawing character using `UNICODE_TO_ASCII
 ```typescript
 import { UNICODE_TO_ASCII } from 'blecsd/terminal';
 
-function isBoxDrawingChar(char: string): boolean {
-  return char in UNICODE_TO_ASCII;
-}
-
-isBoxDrawingChar('┌');  // true
-isBoxDrawingChar('A');  // false
+const isBoxCorner = '┌' in UNICODE_TO_ASCII;
+const isLetter = 'A' in UNICODE_TO_ASCII;
+console.log(isBoxCorner);  // true
+console.log(isLetter);     // false
 ```
 
 ---
@@ -310,12 +303,10 @@ Checks if a string contains any Unicode box drawing characters.
 ```typescript
 import { UNICODE_TO_ASCII } from 'blecsd/terminal';
 
-function containsBoxDrawing(str: string): boolean {
-  return [...str].some(c => c in UNICODE_TO_ASCII);
-}
-
-containsBoxDrawing('┌──┐');         // true
-containsBoxDrawing('Hello World');   // false
+const hasBoxChars1 = [...'┌──┐'].some(c => c in UNICODE_TO_ASCII);
+const hasBoxChars2 = [...'Hello World'].some(c => c in UNICODE_TO_ASCII);
+console.log(hasBoxChars1);  // true
+console.log(hasBoxChars2);  // false
 ```
 
 **Parameters:**
@@ -404,34 +395,33 @@ When Unicode is not available, box drawing characters fall back to ASCII:
 ```typescript
 import { ACS } from 'blecsd/terminal';
 
-function drawWindow(title: string, width: number, height: number): string[] {
-  const lines: string[] = [];
-  const innerWidth = width - 2;
-  const paddedTitle = ` ${title} `.slice(0, innerWidth);
-  const leftPad = Math.floor((innerWidth - paddedTitle.length) / 2);
-  const rightPad = innerWidth - leftPad - paddedTitle.length;
+const windowTitle = 'My Window';
+const windowWidth = 30;
+const windowHeight = 5;
+const windowLines: string[] = [];
+const innerWidth = windowWidth - 2;
+const paddedTitle = ` ${windowTitle} `.slice(0, innerWidth);
+const leftPad = Math.floor((innerWidth - paddedTitle.length) / 2);
+const rightPad = innerWidth - leftPad - paddedTitle.length;
 
-  // Top with title
-  lines.push(
-    ACS.ulcorner +
-    ACS.hline.repeat(leftPad) +
-    paddedTitle +
-    ACS.hline.repeat(rightPad) +
-    ACS.urcorner
-  );
+// Top with title
+windowLines.push(
+  ACS.ulcorner +
+  ACS.hline.repeat(leftPad) +
+  paddedTitle +
+  ACS.hline.repeat(rightPad) +
+  ACS.urcorner
+);
 
-  // Content rows
-  for (let i = 0; i < height - 2; i++) {
-    lines.push(ACS.vline + ' '.repeat(innerWidth) + ACS.vline);
-  }
-
-  // Bottom
-  lines.push(ACS.llcorner + ACS.hline.repeat(innerWidth) + ACS.lrcorner);
-
-  return lines;
+// Content rows
+for (let i = 0; i < windowHeight - 2; i++) {
+  windowLines.push(ACS.vline + ' '.repeat(innerWidth) + ACS.vline);
 }
 
-const window = drawWindow('My Window', 30, 5);
+// Bottom
+windowLines.push(ACS.llcorner + ACS.hline.repeat(innerWidth) + ACS.lrcorner);
+
+windowLines.forEach(line => console.log(line));
 // ┌───────── My Window ──────────┐
 // │                              │
 // │                              │
@@ -444,26 +434,23 @@ const window = drawWindow('My Window', 30, 5);
 ```typescript
 import { ACS } from 'blecsd/terminal';
 
-function drawTableRow(cells: string[], widths: number[]): string {
-  return ACS.vline + cells.map((cell, i) =>
-    cell.padEnd(widths[i])
-  ).join(ACS.vline) + ACS.vline;
-}
+const tableWidths = [10, 8, 12];
 
-function drawTableDivider(widths: number[], position: 'top' | 'middle' | 'bottom'): string {
+const makeRow = (cells: string[]): string =>
+  ACS.vline + cells.map((cell, i) => cell.padEnd(tableWidths[i])).join(ACS.vline) + ACS.vline;
+
+const makeDivider = (position: 'top' | 'middle' | 'bottom'): string => {
   const left = position === 'top' ? ACS.ulcorner : position === 'bottom' ? ACS.llcorner : ACS.ltee;
   const right = position === 'top' ? ACS.urcorner : position === 'bottom' ? ACS.lrcorner : ACS.rtee;
   const mid = position === 'top' ? ACS.ttee : position === 'bottom' ? ACS.btee : ACS.plus;
+  return left + tableWidths.map(w => ACS.hline.repeat(w)).join(mid) + right;
+};
 
-  return left + widths.map(w => ACS.hline.repeat(w)).join(mid) + right;
-}
-
-const widths = [10, 8, 12];
-console.log(drawTableDivider(widths, 'top'));
-console.log(drawTableRow(['Name', 'Age', 'City'], widths));
-console.log(drawTableDivider(widths, 'middle'));
-console.log(drawTableRow(['Alice', '30', 'New York'], widths));
-console.log(drawTableDivider(widths, 'bottom'));
+console.log(makeDivider('top'));
+console.log(makeRow(['Name', 'Age', 'City']));
+console.log(makeDivider('middle'));
+console.log(makeRow(['Alice', '30', 'New York']));
+console.log(makeDivider('bottom'));
 // ┌──────────┬────────┬────────────┐
 // │Name      │Age     │City        │
 // ├──────────┼────────┼────────────┤
@@ -476,28 +463,22 @@ console.log(drawTableDivider(widths, 'bottom'));
 ```typescript
 import { ACS, UNICODE_TO_ASCII } from 'blecsd/terminal';
 
-function drawBoxLines(width: number, height: number): string[] {
-  const inner = width - 2;
-  const lines: string[] = [];
-  lines.push(ACS.ulcorner + ACS.hline.repeat(inner) + ACS.urcorner);
-  for (let i = 0; i < height - 2; i++) {
-    lines.push(ACS.vline + ' '.repeat(inner) + ACS.vline);
-  }
-  lines.push(ACS.llcorner + ACS.hline.repeat(inner) + ACS.lrcorner);
-  return lines;
+const safeWidth = 10;
+const safeHeight = 3;
+const inner = safeWidth - 2;
+const unicodeBox: string[] = [];
+unicodeBox.push(ACS.ulcorner + ACS.hline.repeat(inner) + ACS.urcorner);
+for (let i = 0; i < safeHeight - 2; i++) {
+  unicodeBox.push(ACS.vline + ' '.repeat(inner) + ACS.vline);
 }
-
-function toAscii(line: string): string {
-  return [...line].map(c => UNICODE_TO_ASCII[c] ?? c).join('');
-}
-
-// Unicode terminal
-const box = drawBoxLines(10, 3);
+unicodeBox.push(ACS.llcorner + ACS.hline.repeat(inner) + ACS.lrcorner);
 // ['┌────────┐', '│        │', '└────────┘']
 
 // ASCII-only terminal
-const asciiBox = box.map(toAscii);
+const asciiBox = unicodeBox.map(line => [...line].map(c => UNICODE_TO_ASCII[c] ?? c).join(''));
 // ['+--------+', '|        |', '+--------+']
+console.log(unicodeBox);
+console.log(asciiBox);
 ```
 
 ---

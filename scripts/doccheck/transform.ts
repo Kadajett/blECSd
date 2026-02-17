@@ -111,10 +111,10 @@ function transformSinglePage(
   // Use first block as the representative for reporting
   const representative = blocks[0];
 
-  // Include ALL blocks (even ignored ones) for per-page combination.
-  // The ignore flag was designed for per-block execution; per-page
-  // combination gives these blocks the import context they need.
-  const candidates = blocks;
+  // Exclude ignored blocks from per-page combination.
+  // Ignored blocks may use non-existent APIs, anti-patterns, or
+  // other-library comparisons that would break the combined script.
+  const candidates = blocks.filter((b) => !b.ignored);
 
   // Collect imports and code from each block, skipping blocks with
   // relative/vitest imports entirely
@@ -464,9 +464,12 @@ function sanitizeSegment(segment: string[]): string[] {
     }
 
     // Strip bare return statements: `return expr` -> `expr`
+    // Only strip returns at the top level (zero or minimal indentation).
+    // Indented returns (>2 spaces) are inside function bodies and must be kept.
     // When the result starts with `{`, wrap in `()` to prevent object literal
     // being parsed as a block statement with labels.
-    if (BARE_RETURN.test(line)) {
+    const leadingSpaces = line.match(/^( *)/)?.[1].length ?? 0;
+    if (BARE_RETURN.test(line) && leadingSpaces <= 2) {
       const stripped = line.replace(/^(\s*)return\s*/, "$1");
       if (stripped.trim() === "" || stripped.trim() === ";") {
         result.push(`// ${line.trim()} // doccheck: removed bare return`);

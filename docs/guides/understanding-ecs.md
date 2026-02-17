@@ -19,8 +19,9 @@ Instead of objects with methods, you have:
 
 ### Traditional OOP Approach
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-// OOP: Objects contain both data AND behavior
+// OOP: Objects contain both data AND behavior (anti-pattern in blECSd)
 class Button {
   x: number;
   y: number;
@@ -50,46 +51,37 @@ button.render();
 ### ECS Approach
 
 ```typescript
+import { createWorld, addEntity, query } from 'blecsd/core';
+import { Position, Velocity, setContent } from 'blecsd/components';
+import type { World } from 'blecsd/core';
+
 // ECS: Separate data from behavior
 
-// 1. Components are just data
-const Position = defineComponent({ x: Types.f32, y: Types.f32 });
-const Dimensions = defineComponent({ width: Types.f32, height: Types.f32 });
-const Content = defineComponent({ /* text data */ });
+// 1. Components are pure data stores (Position, Velocity already defined by blECSd)
+const ecsWorld = createWorld();
 
 // 2. Entities are just IDs
-const buttonEntity = addEntity(world);
+const buttonEntity = addEntity(ecsWorld);
 
-// 3. Add components to entities
+// 3. Add components to entities using typed arrays
 Position.x[buttonEntity] = 10;
 Position.y[buttonEntity] = 5;
-setContent(world, buttonEntity, 'Click me');
+setContent(ecsWorld, buttonEntity, 'Click me');
 
 // 4. Systems process entities with specific components
 function movementSystem(world: World): World {
-  // Find all entities with Position and Velocity components
-  const entities = movementQuery(world);
-
-  for (const eid of entities) {
-    // Update position based on velocity
-    Position.x[eid] += Velocity.x[eid];
-    Position.y[eid] += Velocity.y[eid];
-  }
-
-  return world;
+    // Find all entities with Position and Velocity components
+    const entities = query(world, [Position, Velocity]);
+    for (const eid of entities) {
+        // Update position based on velocity
+        Position.x[eid] += Velocity.x[eid] ?? 0;
+        Position.y[eid] += Velocity.y[eid] ?? 0;
+    }
+    return world;
 }
 
-function renderSystem(world: World): World {
-  // Find all entities with Position and Renderable components
-  const entities = renderableQuery(world);
-
-  for (const eid of entities) {
-    // Draw entity at its position
-    draw(Position.x[eid], Position.y[eid], Renderable[eid]);
-  }
-
-  return world;
-}
+// Run the system
+movementSystem(ecsWorld);
 ```
 
 ## Why ECS for Terminal UIs?
@@ -99,15 +91,15 @@ function renderSystem(world: World): World {
 Components use **Structure-of-Arrays** layout for cache-friendly iteration:
 
 ```typescript
-// All X coordinates in one array
-Position.x = [10, 20, 30, 40, ...];
-// All Y coordinates in another array
-Position.y = [5, 10, 15, 20, ...];
+import { Position, Velocity } from 'blecsd/components';
+
+// Position.x and Position.y are Float32Array - all X/Y in one contiguous array
+// This is Structure-of-Arrays (SoA) layout - very cache-friendly
 
 // Iterate over 10,000 entities efficiently
 for (let i = 0; i < 10000; i++) {
-  Position.x[i] += Velocity.x[i];
-  Position.y[i] += Velocity.y[i];
+    Position.x[i] = (Position.x[i] ?? 0) + (Velocity.x[i] ?? 0);
+    Position.y[i] = (Position.y[i] ?? 0) + (Velocity.y[i] ?? 0);
 }
 ```
 
@@ -118,29 +110,34 @@ This is **much faster** than iterating over 10,000 objects with scattered memory
 Build complex entities by combining simple components:
 
 ```typescript
+import { createWorld, addEntity, addComponent } from 'blecsd/core';
+import { Position, Content, Interactive, Focusable, Velocity, Renderable } from 'blecsd/components';
+
+const compWorld = createWorld();
+
 // A static text label
-const label = addEntity(world);
-addComponent(world, label, Position);
-addComponent(world, label, Renderable);
-addComponent(world, label, Content);
+const label = addEntity(compWorld);
+addComponent(compWorld, label, Position);
+addComponent(compWorld, label, Renderable);
+addComponent(compWorld, label, Content);
 
 // A clickable button (label + interaction)
-const button = addEntity(world);
-addComponent(world, button, Position);
-addComponent(world, button, Renderable);
-addComponent(world, button, Content);
-addComponent(world, button, Interactive);  // Now it's clickable
-addComponent(world, button, Focusable);    // Now it can be focused
+const compButton = addEntity(compWorld);
+addComponent(compWorld, compButton, Position);
+addComponent(compWorld, compButton, Renderable);
+addComponent(compWorld, compButton, Content);
+addComponent(compWorld, compButton, Interactive);  // Now it's clickable
+addComponent(compWorld, compButton, Focusable);    // Now it can be focused
 
 // An animated button (button + physics)
-const animatedButton = addEntity(world);
-addComponent(world, animatedButton, Position);
-addComponent(world, animatedButton, Renderable);
-addComponent(world, animatedButton, Content);
-addComponent(world, animatedButton, Interactive);
-addComponent(world, animatedButton, Focusable);
-addComponent(world, animatedButton, Velocity);     // Now it moves
-addComponent(world, animatedButton, Spring);       // Now it bounces
+const animatedButton = addEntity(compWorld);
+addComponent(compWorld, animatedButton, Position);
+addComponent(compWorld, animatedButton, Renderable);
+addComponent(compWorld, animatedButton, Content);
+addComponent(compWorld, animatedButton, Interactive);
+addComponent(compWorld, animatedButton, Focusable);
+addComponent(compWorld, animatedButton, Velocity);     // Now it moves
+// Spring animation: add Velocity and configure spring dynamics in your animation system
 ```
 
 No deep inheritance hierarchies. Just mix and match components.
@@ -150,21 +147,28 @@ No deep inheritance hierarchies. Just mix and match components.
 The same architecture scales from simple CLI tools to complex dashboards to terminal games:
 
 ```typescript
+import { createWorld, addEntity, addComponent } from 'blecsd/core';
+import { Position, Content, Renderable, Interactive, Velocity, Collider, Scrollable } from 'blecsd/components';
+
+const flexWorld = createWorld();
+
 // Simple CLI tool: just text and layout
-const entities = addEntities(world, 10);
-for (const eid of entities) {
-  addComponents(world, eid, [Position, Content, Renderable]);
+for (let i = 0; i < 10; i++) {
+    const eid = addEntity(flexWorld);
+    addComponent(flexWorld, eid, Position);
+    addComponent(flexWorld, eid, Content);
+    addComponent(flexWorld, eid, Renderable);
 }
 
-// Complex dashboard: add scrolling, borders, interactions
-for (const eid of entities) {
-  addComponents(world, eid, [Scrollable, Border, Interactive]);
-}
+// Complex dashboard entity: add scrolling and interactions
+const dashEid = addEntity(flexWorld);
+addComponent(flexWorld, dashEid, Scrollable);
+addComponent(flexWorld, dashEid, Interactive);
 
-// Terminal game: add physics, collision, AI
-for (const eid of entities) {
-  addComponents(world, eid, [Velocity, Collider, AIBehavior]);
-}
+// Terminal game entity: add physics and collision
+const gameEid = addEntity(flexWorld);
+addComponent(flexWorld, gameEid, Velocity);
+addComponent(flexWorld, gameEid, Collider);
 ```
 
 ## How blECSd Uses ECS
@@ -188,23 +192,25 @@ blECSd provides two ways to create entities:
 #### 1. **High-Level: Entity Factories** (recommended for most cases)
 
 ```typescript
-import { createBoxEntity, createButtonEntity } from 'blecsd/core';
+import { createBoxEntity, createButtonEntity, createWorld } from 'blecsd/core';
 import { BorderType } from 'blecsd/components';
 
-const box = createBoxEntity(world, {
-  x: 10,
-  y: 5,
-  width: 40,
-  height: 10,
-  border: { type: BorderType.Line },
+const factoryWorld = createWorld();
+
+const box = createBoxEntity(factoryWorld, {
+    x: 10,
+    y: 5,
+    width: 40,
+    height: 10,
+    border: { type: BorderType.Line },
 });
 
-const button = createButtonEntity(world, {
-  x: 15,
-  y: 8,
-  width: 12,
-  height: 3,
-  label: 'Click me',
+const button = createButtonEntity(factoryWorld, {
+    x: 15,
+    y: 8,
+    width: 12,
+    height: 3,
+    label: 'Click me',
 });
 ```
 
@@ -213,12 +219,13 @@ Entity factories handle component setup for you.
 #### 2. **Low-Level: Manual Component Assembly** (for custom entities)
 
 ```typescript
-import { addEntity, addComponent } from 'blecsd/core';
+import { addEntity, addComponent, createWorld } from 'blecsd/core';
 import { Position, Dimensions } from 'blecsd/components';
 
-const customEntity = addEntity(world);
-addComponent(world, customEntity, Position);
-addComponent(world, customEntity, Dimensions);
+const lowLevelWorld = createWorld();
+const customEntity = addEntity(lowLevelWorld);
+addComponent(lowLevelWorld, customEntity, Position);
+addComponent(lowLevelWorld, customEntity, Dimensions);
 
 Position.x[customEntity] = 10;
 Position.y[customEntity] = 5;
@@ -233,21 +240,23 @@ Use this when you need precise control.
 Find entities with specific components:
 
 ```typescript
-import { query } from 'blecsd/core';
+import { query, createWorld } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
+import type { World } from 'blecsd/core';
 
 // Use query in a system
 function animationSystem(world: World): World {
-  const entities = query(world, [Position, Velocity]);
-
-  for (const eid of entities) {
-    // Only entities with BOTH Position AND Velocity
-    Position.x[eid] += Velocity.x[eid];
-    Position.y[eid] += Velocity.y[eid];
-  }
-
-  return world;
+    const entities = query(world, [Position, Velocity]);
+    for (const eid of entities) {
+        // Only entities with BOTH Position AND Velocity
+        Position.x[eid] = (Position.x[eid] ?? 0) + (Velocity.x[eid] ?? 0);
+        Position.y[eid] = (Position.y[eid] ?? 0) + (Velocity.y[eid] ?? 0);
+    }
+    return world;
 }
+
+const queryWorld = createWorld();
+animationSystem(queryWorld);
 ```
 
 Queries are **cached** and **fast**.
@@ -258,19 +267,24 @@ Systems are pure functions that transform world state:
 
 ```typescript
 import { inputSystem, renderSystem, layoutSystem } from 'blecsd/systems';
-import { createGameLoop, LoopPhase } from 'blecsd/core';
+import { createGameLoop, LoopPhase, createWorld } from 'blecsd/core';
+import type { World } from 'blecsd/core';
 
-const loop = createGameLoop(world, { targetFPS: 60 });
+const sysWorld = createWorld();
+const loop = createGameLoop(sysWorld, { targetFPS: 60 });
+
+// Register input system using the dedicated method (LoopPhase.INPUT is protected)
+loop.registerInputSystem(inputSystem);
 
 // Register systems in specific phases
-loop.registerSystem(LoopPhase.INPUT, inputSystem);
+function gameLogicSystem(world: World): World { return world; }
+function physicsSystem(world: World): World { return world; }
 loop.registerSystem(LoopPhase.UPDATE, gameLogicSystem);
 loop.registerSystem(LoopPhase.ANIMATION, physicsSystem);
 loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 loop.registerSystem(LoopPhase.RENDER, renderSystem);
 
-// Start the loop
-loop.start();
+// Note: call loop.start() in a real app to run the loop
 ```
 
 See [System Execution Order](./system-execution-order.md) for phase details.
@@ -279,8 +293,9 @@ See [System Execution Order](./system-execution-order.md) for phase details.
 
 ### OOP: Objects Own Their Behavior
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-// OOP
+// OOP approach (anti-pattern in blECSd - shown for comparison)
 const button = new Button({ text: 'Click me' });
 button.on('press', handler);
 button.move(10, 0);
@@ -292,13 +307,19 @@ The button object has methods that operate on itself.
 ### ECS: Systems Process Entities
 
 ```typescript
-// ECS
-const button = createButtonEntity(world, { label: 'Click me' });
+import { createButtonEntity, createWorld } from 'blecsd/core';
+import { inputSystem, renderSystem } from 'blecsd/systems';
+import type { World } from 'blecsd/core';
+
+const mentalWorld = createWorld();
+const mentalButton = createButtonEntity(mentalWorld, { label: 'Click me' });
 
 // Systems handle behavior
-inputSystem(world);      // Processes button clicks
-movementSystem(world);   // Moves entities with Velocity
-renderSystem(world);     // Draws entities with Renderable
+function movementSystem(world: World): World { return world; }
+
+inputSystem(mentalWorld);       // Processes button clicks
+movementSystem(mentalWorld);    // Moves entities with Velocity
+renderSystem(mentalWorld);      // Draws entities with Renderable
 ```
 
 Behavior lives in systems, not in the entity.
@@ -318,70 +339,84 @@ Behavior lives in systems, not in the entity.
 ### Pattern 1: Checking if an Entity Has a Component
 
 ```typescript
-import { hasComponent } from 'blecsd/core';
+import { hasComponent, createWorld, addEntity } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
-if (hasComponent(world, eid, Position)) {
-  console.log(`Entity ${eid} has a position`);
+const pat1World = createWorld();
+const pat1Eid = addEntity(pat1World);
+
+if (hasComponent(pat1World, pat1Eid, Position)) {
+  console.log(`Entity ${pat1Eid} has a position`);
 }
 ```
 
 ### Pattern 2: Adding a Component at Runtime
 
 ```typescript
-import { addComponent } from 'blecsd/core';
+import { addComponent, createWorld, addEntity } from 'blecsd/core';
 import { Velocity } from 'blecsd/components';
 
+const pat2World = createWorld();
+const pat2Eid = addEntity(pat2World);
+
 // Make a static entity start moving
-addComponent(world, eid, Velocity);
-Velocity.x[eid] = 5;
-Velocity.y[eid] = 0;
+addComponent(pat2World, pat2Eid, Velocity);
+Velocity.x[pat2Eid] = 5;
+Velocity.y[pat2Eid] = 0;
 ```
 
 ### Pattern 3: Removing a Component
 
 ```typescript
-import { removeComponent } from 'blecsd/core';
+import { removeComponent, addComponent, createWorld, addEntity } from 'blecsd/core';
 import { Velocity } from 'blecsd/components';
 
+const pat3World = createWorld();
+const pat3Eid = addEntity(pat3World);
+addComponent(pat3World, pat3Eid, Velocity);
+
 // Stop an entity from moving
-removeComponent(world, eid, Velocity);
+removeComponent(pat3World, pat3Eid, Velocity);
 ```
 
 ### Pattern 4: Iterating Over Query Results
 
 ```typescript
 import { Focusable } from 'blecsd/components';
-import { query } from 'blecsd/core';
+import { query, createWorld } from 'blecsd/core';
+import type { World } from 'blecsd/core';
 
 function handleTabKey(world: World): void {
-  const entities = query(world, [Focusable]);
+    const entities = query(world, [Focusable]);
 
-  for (const eid of entities) {
-    if (Focusable.tabIndex[eid] > 0) {
-      // Process focusable interactive entities
+    for (const eid of entities) {
+        if ((Focusable.tabIndex[eid] ?? 0) > 0) {
+            // Process focusable interactive entities
+        }
     }
-  }
 }
+
+const pat4World = createWorld();
+handleTabKey(pat4World);
 ```
 
 ### Pattern 5: Parent-Child Relationships
 
 ```typescript
-import { getChildren } from 'blecsd/components';
-import { createBoxEntity } from 'blecsd/core';
-import { setParent } from 'blecsd/components';
+import { getChildren, setParent } from 'blecsd/components';
+import { createBoxEntity, createWorld } from 'blecsd/core';
 
-const parent = createBoxEntity(world, { x: 10, y: 5, width: 50, height: 20 });
-const child = createBoxEntity(world, { x: 5, y: 2, width: 20, height: 5 });
+const pat5World = createWorld();
+const pat5Parent = createBoxEntity(pat5World, { x: 10, y: 5, width: 50, height: 20 });
+const pat5Child = createBoxEntity(pat5World, { x: 5, y: 2, width: 20, height: 5 });
 
 // Attach child to parent
-setParent(world, child, parent);
+setParent(pat5World, pat5Child, pat5Parent);
 
 // Get all children of an entity
-const children = getChildren(world, parent);
-for (const childEid of children) {
-  console.log(`Child entity: ${childEid}`);
+const pat5Children = getChildren(pat5World, pat5Parent);
+for (const childEid of pat5Children) {
+    console.log(`Child entity: ${childEid}`);
 }
 ```
 
@@ -389,13 +424,21 @@ for (const childEid of children) {
 
 ### Pitfall 1: Storing Entity References Instead of IDs
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-// ❌ WRONG: Storing entity objects
+// ❌ WRONG: Storing entity objects (anti-pattern)
 const button = { id: addEntity(world), label: 'Click me' };
 // Entity is just a number, not an object
+```
+
+```typescript
+import { createButtonEntity, createWorld } from 'blecsd/core';
+import type { Entity } from 'blecsd/core';
+
+const pit1World = createWorld();
 
 // ✅ CORRECT: Store entity IDs directly
-const button: Entity = createButtonEntity(world, { label: 'Click me' });
+const pit1Button: Entity = createButtonEntity(pit1World, { label: 'Click me' });
 ```
 
 Entities are just numbers. Don't wrap them in objects.
@@ -403,11 +446,14 @@ Entities are just numbers. Don't wrap them in objects.
 ### Pitfall 2: Trying to Access Component Data Directly on Entities
 
 ```typescript
-// ❌ WRONG: Entities don't have properties
-const x = button.x;  // Error: entities are numbers, not objects
+import { createButtonEntity, createWorld } from 'blecsd/core';
+import { Position } from 'blecsd/components';
+
+const pit2World = createWorld();
+const pit2Button = createButtonEntity(pit2World, { label: 'Click me' });
 
 // ✅ CORRECT: Access component arrays
-const x = Position.x[button];
+const pit2X = Position.x[pit2Button];
 ```
 
 Component data is stored in typed arrays, not on entity objects.
@@ -415,20 +461,27 @@ Component data is stored in typed arrays, not on entity objects.
 ### Pitfall 3: Mutating Component Data Outside Systems
 
 ```typescript
-// ❌ AVOID: Direct mutation outside systems
-Position.x[eid] = 100;
+import { createWorld, addEntity, addComponent, query } from 'blecsd/core';
+import { Position, setPosition } from 'blecsd/components';
+import type { World } from 'blecsd/core';
+
+const pit3World = createWorld();
+const pit3Eid = addEntity(pit3World);
+addComponent(pit3World, pit3Eid, Position);
 
 // ✅ BETTER: Use helper functions
-setPosition(world, eid, 100, Position.y[eid]);
+setPosition(pit3World, pit3Eid, 100, Position.y[pit3Eid] ?? 0);
 
 // ✅ BEST: Put logic in systems
+const pit3Query = query(pit3World, [Position]);
 function repositionSystem(world: World): World {
-  const entities = repositionQuery(world);
-  for (const eid of entities) {
-    Position.x[eid] = calculateNewX(eid);
-  }
-  return world;
+    const entities = query(world, [Position]);
+    for (const eid of entities) {
+        Position.x[eid] = 0;
+    }
+    return world;
 }
+repositionSystem(pit3World);
 ```
 
 While direct mutation works, helper functions and systems are more maintainable.
@@ -436,22 +489,21 @@ While direct mutation works, helper functions and systems are more maintainable.
 ### Pitfall 4: Storing World References in Closures
 
 ```typescript
-// ❌ RISKY: Storing world reference
-let cachedWorld: World;
-
-function setup() {
-  cachedWorld = createWorld();
-}
+import { createWorld } from 'blecsd/core';
+import type { World } from 'blecsd/core';
 
 // ✅ BETTER: Pass world explicitly
-function setup(): World {
-  return createWorld();
+function pit4Setup(): World {
+    return createWorld();
 }
 
-function update(world: World): World {
-  // World is explicit parameter
-  return world;
+function pit4Update(world: World): World {
+    // World is explicit parameter
+    return world;
 }
+
+const pit4World = pit4Setup();
+pit4Update(pit4World);
 ```
 
 Always pass `world` as a parameter, never cache it globally.
@@ -459,16 +511,15 @@ Always pass `world` as a parameter, never cache it globally.
 ### Pitfall 5: Over-Using Systems
 
 ```typescript
-// ❌ OVERKILL: Creating a system for one-off operations
-function setTitleSystem(world: World): World {
-  const eid = screenQuery(world)[0];
-  if (eid) setContent(world, eid, 'New Title');
-  return world;
-}
+import { createWorld, addEntity } from 'blecsd/core';
+import { setContent } from 'blecsd/components';
+import type { World } from 'blecsd/core';
 
-// ✅ BETTER: Just call a function directly
-const screen = getScreenEntity(world);
-if (screen) setContent(world, screen, 'New Title');
+const pit5World = createWorld();
+const pit5TitleEid = addEntity(pit5World);
+
+// ✅ BETTER: Just call a function directly for a one-off operation
+setContent(pit5World, pit5TitleEid, 'New Title');
 ```
 
 Systems are for recurring logic. One-off operations can just be functions.

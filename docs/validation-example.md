@@ -62,14 +62,13 @@ For better error messages, register component names during initialization:
 
 ```typescript
 import { registerComponentName } from 'blecsd/core';
-import { registerBuiltinComponentNames } from 'blecsd/components';
+import { registerBuiltinComponentNames, Position } from 'blecsd/components';
 
 // Register all built-in components
 registerBuiltinComponentNames();
 
-// Or register custom components individually
-import { MyCustomComponent } from './components/myCustom';
-registerComponentName(MyCustomComponent, 'MyCustomComponent');
+// Or register individual components with custom names
+registerComponentName(Position, 'Position');
 ```
 
 ## Non-Throwing Validation

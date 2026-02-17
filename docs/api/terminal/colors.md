@@ -138,12 +138,14 @@ getHex(color);  // '#ff0000'
 ```typescript
 import { isColor256, asColor256, isRGB } from 'blecsd/terminal';
 
+const value = 196;
 if (isColor256(value)) {
   // value is Color256
 }
 
 const color = asColor256(196);  // Throws if invalid
 
+const obj = { r: 255, g: 0, b: 0 };
 if (isRGB(obj)) {
   // obj is RGB
 }
@@ -423,6 +425,8 @@ contrastRatio(
 );  // 21 (maximum)
 
 // WCAG accessibility check
+const textColor = { r: 0, g: 0, b: 0 };
+const bgColor = { r: 255, g: 255, b: 255 };
 isReadable(textColor, bgColor);        // Default: 4.5:1 (AA normal)
 isReadable(textColor, bgColor, 3);     // Large text: 3:1
 isReadable(textColor, bgColor, 7);     // AAA normal: 7:1
@@ -460,12 +464,12 @@ console.log(color256, nearest);
 For detecting color depth capabilities, use the detection functions:
 
 ```typescript
-import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-const features = detectFeatures();
-// features.truecolor: boolean
+const features = detectFeatures(getDefaultXtermData());
+// features.trueColor: boolean
 // features.color256: boolean
-// features.color16: boolean
+// features.colors: number
 console.log(features);
 ```
 

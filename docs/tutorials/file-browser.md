@@ -109,9 +109,9 @@ async function loadDirectory(dirPath: string): Promise<FileEntry[]> {
   }
 
   try {
-    const items = await fs.promises.readdir(dirPath, { withFileTypes: true });
+    const dirItems = await fs.promises.readdir(dirPath, { withFileTypes: true });
 
-    for (const item of items) {
+    for (const item of dirItems) {
       // Skip hidden files (optional)
       if (item.name.startsWith('.')) continue;
 
@@ -153,8 +153,8 @@ async function loadDirectory(dirPath: string): Promise<FileEntry[]> {
 async function loadPreview(entry: FileEntry): Promise<string> {
   if (entry.isDirectory) {
     try {
-      const items = await fs.promises.readdir(entry.path);
-      return `Directory: ${entry.name}\n\n${items.length} items`;
+      const dirContents = await fs.promises.readdir(entry.path);
+      return `Directory: ${entry.name}\n\n${dirContents.length} items`;
     } catch {
       return 'Cannot read directory';
     }
@@ -183,7 +183,8 @@ function formatSize(bytes: number): string {
 ## Step 4: Create UI Layout
 
 ```typescript
-const { columns, rows } = process.stdout;
+const columns = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
 
 // Calculate layout
 const leftWidth = Math.floor(columns * 0.4);
@@ -191,14 +192,14 @@ const rightWidth = columns - leftWidth;
 const contentHeight = rows - 3; // Leave room for status bar
 
 // Left panel - file list
-const fileListPanel = createPanel(world, {
+const fileListPanel = createPanel(world, addEntity(world), {
   title: state.currentPath,
   x: 0,
   y: 0,
   width: leftWidth,
   height: contentHeight,
-  border: 'single',
-});
+  border: { type: 'line', ch: 'single' },
+}).eid;
 
 // Virtualized file list (handles 1000s of files efficiently)
 const fileList = createVirtualizedList(world, {
@@ -209,36 +210,36 @@ const fileList = createVirtualizedList(world, {
   items: [],
   selectedIndex: 0,
 });
-setParent(world, fileList, fileListPanel);
+setParent(world, fileList.eid, fileListPanel);
 
 // Right panel - preview
-const previewPanel = createPanel(world, {
+const previewPanel = createPanel(world, addEntity(world), {
   title: 'Preview',
   x: leftWidth,
   y: 0,
   width: rightWidth,
   height: contentHeight,
-  border: 'single',
-});
+  border: { type: 'line', ch: 'single' },
+}).eid;
 
 // Preview text (scrollable)
-const previewText = createScrollableText(world, {
+const previewText = createScrollableText(world, addEntity(world), {
   x: 1,
   y: 1,
   width: rightWidth - 2,
   height: contentHeight - 2,
   content: '',
 });
-setParent(world, previewText, previewPanel);
+setParent(world, previewText.eid, previewPanel);
 
 // Status bar
-const statusBar = createText(world, {
+const statusBar = createText(world, addEntity(world), {
   x: 0,
   y: rows - 1,
   content: '',
   fg: 0x000000ff,
   bg: 0xccccccff,
-});
+}).eid;
 setDimensions(world, statusBar, columns, 1);
 ```
 
@@ -270,13 +271,13 @@ function updateFileList(): void {
   }));
 
   // Update the virtualized list via the widget's API
-  setContent(world, fileList, JSON.stringify(items));
+  setContent(world, fileList.eid, JSON.stringify(items));
 }
 
 function updateStatusBar(): void {
-  const entry = state.entries[state.selectedIndex];
+  const selectedEntry = state.entries[state.selectedIndex];
   const itemCount = state.entries.length;
-  const selectedSize = entry ? formatSize(entry.size) : '';
+  const selectedSize = selectedEntry ? formatSize(selectedEntry.size) : '';
 
   const status = `${itemCount} items | ${selectedSize} | [Enter] Open [Tab] Preview [q] Quit`;
   setContent(world, statusBar, status.padEnd(columns));
@@ -335,23 +336,25 @@ async function handleKey(key: KeyEvent): Promise<void> {
 
     case 'enter':
     case 'l':
-    case 'right':
+    case 'right': {
       // Open directory or file
-      const entry = state.entries[state.selectedIndex];
-      if (entry?.isDirectory) {
-        await navigateTo(entry.path);
+      const openEntry = state.entries[state.selectedIndex];
+      if (openEntry?.isDirectory) {
+        await navigateTo(openEntry.path);
       }
       break;
+    }
 
     case 'h':
     case 'left':
-    case 'backspace':
+    case 'backspace': {
       // Go to parent directory
-      const parentPath = path.dirname(state.currentPath);
-      if (parentPath !== state.currentPath) {
-        await navigateTo(parentPath);
+      const parentDir = path.dirname(state.currentPath);
+      if (parentDir !== state.currentPath) {
+        await navigateTo(parentDir);
       }
       break;
+    }
 
     case 'g':
       // Go to top
@@ -378,7 +381,7 @@ async function handleKey(key: KeyEvent): Promise<void> {
 
 async function navigateTo(newPath: string): Promise<void> {
   state.currentPath = newPath;
-  state.entries = await loadDirectory(newPath);
+  state.entries = await loadDirectory(newPath) ?? [];
   state.selectedIndex = 0;
 
   updateTitle();
@@ -388,10 +391,10 @@ async function navigateTo(newPath: string): Promise<void> {
 }
 
 async function updatePreview(): Promise<void> {
-  const entry = state.entries[state.selectedIndex];
-  if (entry) {
-    state.previewContent = await loadPreview(entry);
-    setContent(world, previewText, state.previewContent);
+  const previewEntry = state.entries[state.selectedIndex];
+  if (previewEntry) {
+    state.previewContent = await loadPreview(previewEntry) ?? '';
+    setContent(world, previewText.eid, state.previewContent);
   }
 }
 ```
@@ -417,7 +420,7 @@ process.on('SIGINT', () => {
 
 // Initial load
 (async () => {
-  state.entries = await loadDirectory(state.currentPath);
+  state.entries = await loadDirectory(state.currentPath) ?? [];
   updateFileList();
   updateStatusBar();
   await updatePreview();

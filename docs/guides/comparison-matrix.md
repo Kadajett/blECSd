@@ -185,17 +185,16 @@ A comprehensive, honest comparison of terminal UI libraries across different lan
 **blECSd Example - Terminal Game:**
 ```typescript
 import { createWorld, addEntity } from 'blecsd/core';
-import { setPosition } from 'blecsd/components';
-import { setVelocity } from 'blecsd/components';
-import { collisionSystem, movementSystem } from 'blecsd/systems';
+import { setPosition, setVelocity, setCollider } from 'blecsd/components';
+import { collisionSystem, movementSystem, spatialHashSystem } from 'blecsd/systems';
 
 const world = createWorld();
 const player = addEntity(world);
 setPosition(world, player, 10, 10);
-setVelocity(world, player, { x: 2, y: 0, friction: 0.9 });
+setVelocity(world, player, 2, 0);
 setCollider(world, player, { type: 'aabb', width: 2, height: 2 });
 
-// Systems run automatically
+// Run game systems
 spatialHashSystem(world);
 movementSystem(world);
 collisionSystem(world);
@@ -267,10 +266,7 @@ const world = createWorld();
 const entity = addEntity(world);
 
 const list = createList(world, entity, {
-  items: Array.from({ length: 10000 }, (_, i) => ({
-    label: `Item ${i}`,
-    value: i
-  })),
+  items: Array.from({ length: 10000 }, (_, i) => `Item ${i}`),
   virtualized: true
 });
 // Scrolling through 10k items is smooth
@@ -282,10 +278,18 @@ const list = createList(world, entity, {
 
 #### blECSd: Query-Based
 ```typescript
-// Query entities with specific components
-const entities = query(world, [Position, Velocity]);
-for (const eid of entities) {
-  Position.x[eid] += Velocity.x[eid];
+import { createWorld, addEntity, query } from 'blecsd/core';
+import { Position, getPosition, setPosition } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+setPosition(world, eid, 0, 0);
+
+// Query entities with a specific component
+const entities = query(world, [Position]);
+for (const id of entities) {
+  const pos = getPosition(world, id);
+  setPosition(world, id, pos.x + 1, pos.y);
 }
 ```
 
@@ -396,6 +400,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 ## Migration Paths
 
 ### From blessed to blECSd
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // blessed (OOP)
 const blessed = require('blessed');
@@ -425,6 +431,8 @@ See [Migration Guide](./migrating-from-blessed.md) for complete details.
 ---
 
 ### From React/Ink to blECSd
+
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Ink (React)
 import { render } from 'blecsd/systems';

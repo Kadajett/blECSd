@@ -611,8 +611,7 @@ describe('focus management integration', () => {
 
 ```typescript
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createWorld } from 'blecsd/core';
-import { createGameLoop } from 'blecsd/core';
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
 import type { World } from 'blecsd/core';
 
 describe('game loop', () => {
@@ -635,31 +634,29 @@ describe('game loop', () => {
       return w;
     });
 
-    const loop = createGameLoop(world, {
-      systems: [system1, system2],
-      targetFPS: 60,
-    });
+    const loop = createGameLoop(world, { targetFPS: 60 });
+    loop.registerSystem(LoopPhase.UPDATE, system1);
+    loop.registerSystem(LoopPhase.LATE_UPDATE, system2);
 
-    // Run one frame
-    loop.tick();
+    // Run one frame using step()
+    loop.step(1 / 60);
 
     expect(executionOrder).toEqual(['system1', 'system2']);
   });
 
-  it('respects target FPS', async () => {
-    const loop = createGameLoop(world, {
-      systems: [],
-      targetFPS: 10, // 100ms per frame
+  it('steps the world forward', () => {
+    const loop = createGameLoop(world, { targetFPS: 60 });
+    const frameCount = { value: 0 };
+
+    loop.registerSystem(LoopPhase.UPDATE, (w: World) => {
+      frameCount.value += 1;
+      return w;
     });
 
-    const start = Date.now();
-    loop.tick();
-    loop.tick();
-    loop.tick();
-    const elapsed = Date.now() - start;
+    loop.step(1 / 60);
+    loop.step(1 / 60);
 
-    // Should take at least 200ms for 3 frames at 10 FPS
-    expect(elapsed).toBeGreaterThanOrEqual(200);
+    expect(frameCount.value).toBeGreaterThanOrEqual(2);
   });
 });
 ```
@@ -670,20 +667,26 @@ Test asynchronous operations with async/await:
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createWorld } from 'blecsd/core';
+import { createTestWorld } from 'blecsd/testing';
 
 // Example of async test pattern in blECSd
 describe('async operations', () => {
   it('resolves successfully', async () => {
-    const world = createWorld();
+    const world = createTestWorld();
     const result = await Promise.resolve({ width: 100, height: 100 });
 
-    expect(result.width).toBeGreaterThan(0);
-    expect(result.height).toBeGreaterThan(0);
+    expect(result.width).toBe(100);
+    expect(result.height).toBe(100);
   });
 
-  it('rejects on error', async () => {
-    await expect(Promise.reject(new Error('test error'))).rejects.toThrow();
+  it('handles async errors', async () => {
+    let caught: Error | null = null;
+    try {
+      await Promise.reject(new Error('test error'));
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught?.message).toBe('test error');
   });
 });
 ```
@@ -918,6 +921,7 @@ const text = createTestEntity(world, {
 
 ```typescript
 import { KEYS } from 'blecsd/testing';
+import { queueKeyEvent } from 'blecsd/systems';
 
 // Use in input tests
 queueKeyEvent({ sequence: KEYS.ENTER, name: 'return' });
@@ -932,6 +936,7 @@ queueKeyEvent({ sequence: KEYS.ARROW_UP, name: 'up' });
 
 ```typescript
 import { MOUSE_POSITIONS } from 'blecsd/testing';
+import { queueMouseEvent } from 'blecsd/systems';
 
 // Use in mouse event tests
 queueMouseEvent({
@@ -951,6 +956,7 @@ queueMouseEvent({
 ```typescript
 import { ANSI } from 'blecsd/terminal';
 import { ANSI_TEXT } from 'blecsd/testing';
+import { stripAnsi } from 'blecsd';
 
 // Use in ANSI parsing tests
 const stripped = stripAnsi(ANSI_TEXT.RED_TEXT);

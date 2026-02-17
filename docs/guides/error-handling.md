@@ -162,7 +162,7 @@ const position = unwrapOr(result, { x: 0, y: 0 });
 ### Result Type Utilities
 
 ```typescript
-import { map, flatMap, mapError, unwrapOrElse, ok, err } from 'blecsd/errors';
+import { map, flatMap, mapError, unwrapOrElse, ok, err, createInternalError, InternalErrorCode } from 'blecsd/errors';
 
 // Transform success value
 const doubled = map(ok(42), (x) => x * 2); // ok(84)
@@ -181,8 +181,9 @@ const withError = mapError(
 );
 
 // Compute fallback value from error
+const errResult = err(createInternalError(InternalErrorCode.INTERNAL_ERROR, 'no position'));
 const value = unwrapOrElse(
-  result,
+  errResult,
   (error) => {
     console.warn(`Using default: ${error.message}`);
     return { x: 0, y: 0 };
@@ -510,8 +511,11 @@ function parseColor(input: string): Result<Color, BlECSdError> {
   }
   return ok(hexToColor(input));
 }
+```
 
-// BAD - exception for recoverable error
+<!-- blecsd-doccheck:ignore -->
+```typescript
+// BAD - exception for recoverable error (anti-pattern: avoid this)
 function parseColor(input: string): Color {
   if (!isValidHex(input)) {
     throw new Error('Invalid hex color');
@@ -523,46 +527,79 @@ function parseColor(input: string): Color {
 ### 2. Always Include Error Context
 
 ```typescript
-// GOOD - rich context for debugging
-return err(createRenderError(
-  RenderErrorCode.INVALID_COORDINATES,
-  'Cell coordinates out of bounds',
-  {
-    context: {
-      entityId: eid,
-      data: { x, y, screenWidth, screenHeight }
-    }
-  }
-));
+import { createRenderError, RenderErrorCode, err } from 'blecsd/errors';
+import type { Entity } from 'blecsd/core';
 
-// BAD - no context
-return err(createRenderError(
-  RenderErrorCode.INVALID_COORDINATES,
-  'Cell coordinates out of bounds'
-));
+// GOOD - include rich context so errors are debuggable
+function writeCell(eid: Entity, x: number, y: number, screenWidth: number, screenHeight: number) {
+  return err(createRenderError(
+    RenderErrorCode.INVALID_COORDINATES,
+    'Cell coordinates out of bounds',
+    {
+      context: {
+        entityId: eid,
+        data: { x, y, screenWidth, screenHeight }
+      }
+    }
+  ));
+}
+
+// BAD - no context makes debugging hard
+function writeCellNoContext(eid: Entity, x: number, y: number) {
+  return err(createRenderError(
+    RenderErrorCode.INVALID_COORDINATES,
+    'Cell coordinates out of bounds'
+  ));
+}
 ```
 
 ### 3. Use Specific Error Codes
 
 ```typescript
-// GOOD - specific code for programmatic handling
-if (hasErrorCode(error, ValidationErrorCode.INVALID_HEX_COLOR)) {
-  // Handle this specific case
-  useDefaultColor();
+import { hasErrorCode, ValidationErrorCode } from 'blecsd/errors';
+import type { BlECSdError } from 'blecsd/errors';
+
+function applyColor(color: string): string {
+  return color;
 }
 
-// BAD - checking message strings
-if (error.message.includes('hex color')) {
-  // Fragile and prone to breaking
+function getDefaultColor(): string {
+  return '#000000';
+}
+
+// GOOD - specific code for programmatic handling
+function handleColorError(error: BlECSdError): string {
+  if (hasErrorCode(error, ValidationErrorCode.INVALID_HEX_COLOR)) {
+    // Handle this specific case
+    return applyColor(getDefaultColor());
+  }
+  return getDefaultColor();
+}
+
+// BAD - checking message strings (anti-pattern, avoid this)
+function handleColorErrorBad(error: BlECSdError): string {
+  if (error.message.includes('hex color')) {
+    // Fragile and prone to breaking
+    return getDefaultColor();
+  }
+  return getDefaultColor();
 }
 ```
 
 ### 4. Validate at Boundaries
 
 ```typescript
+import { z } from 'zod';
+import { createValidationError, ValidationErrorCode, ok, err } from 'blecsd/errors';
+import type { Result } from 'blecsd/errors';
+import { readFileSync } from 'node:fs';
+
+const ConfigSchema = z.object({ width: z.number(), height: z.number() });
+type Config = z.infer<typeof ConfigSchema>;
+
 // Validate at system boundaries (user input, config files, etc.)
 function loadConfig(filePath: string): Result<Config> {
-  const rawData = readFile(filePath);
+  const rawData = JSON.parse(readFileSync(filePath, 'utf-8'));
 
   // Validate with Zod at the boundary
   const parseResult = ConfigSchema.safeParse(rawData);
@@ -607,13 +644,16 @@ function logError(error: BlECSdError): void {
 
 ### 6. Don't Swallow Errors Silently
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-// BAD - silent failure
+// BAD - silent failure (anti-pattern: avoid this)
 function updateEntity(world: World, eid: Entity): void {
   const result = doSomething(world, eid);
   // Error is ignored!
 }
+```
 
+```typescript
 // GOOD - handle or propagate
 function updateEntity(world: World, eid: Entity): Result<void> {
   const result = doSomething(world, eid);

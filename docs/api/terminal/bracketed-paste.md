@@ -255,7 +255,14 @@ function disableBracketedPaste(): string
 ```typescript
 import { PasteEventSchema, PasteConfigSchema } from 'blecsd/terminal';
 
-const result = PasteEventSchema.safeParse(event);
+const pasteEvent = {
+  type: 'paste' as const,
+  text: 'Hello World',
+  timestamp: Date.now(),
+  sanitized: false,
+  originalLength: 11,
+};
+const result = PasteEventSchema.safeParse(pasteEvent);
 if (result.success) {
   console.log('Valid paste event');
 }

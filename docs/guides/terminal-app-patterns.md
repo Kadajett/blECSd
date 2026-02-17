@@ -78,8 +78,7 @@ import { createEventBus } from 'blecsd/core';
 import { parseKeyBuffer } from 'blecsd/terminal';
 import { createTextboxEntity } from 'blecsd/core';
 import { setVisible } from 'blecsd/components';
-import { focusPush, focusPop } from 'blecsd/systems';
-import { focusEntity } from 'blecsd/components';
+import { focusPush, focusPop, focusEntity } from 'blecsd/systems';
 import { fuzzySearch } from 'blecsd/utils';
 
 interface SearchEvents {
@@ -98,8 +97,7 @@ setDimensions(world, overlayEntity, 40, 3);
 setVisible(world, overlayEntity, false);
 
 // Search input
-const inputEntity = addEntity(world);
-const searchBox = createTextboxEntity(world, inputEntity, {
+const inputEntity = createTextboxEntity(world, {
   placeholder: 'Search...',
 });
 
@@ -250,14 +248,13 @@ import { parseKeyBuffer } from 'blecsd/terminal';
 import { createList } from 'blecsd/widgets';
 import { createTextboxEntity } from 'blecsd/core';
 import { setVisible } from 'blecsd/components';
-import { focusEntity } from 'blecsd/components';
+import { focusEntity } from 'blecsd/systems';
 import { fuzzySearchBy } from 'blecsd/utils';
 
 const world = createWorld();
 
-// Input field
-const inputEntity = addEntity(world);
-const textbox = createTextboxEntity(world, inputEntity, {
+// Input field - createTextboxEntity creates its own entity
+const inputEntity = createTextboxEntity(world, {
   placeholder: 'Enter command...',
 });
 

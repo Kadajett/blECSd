@@ -9,6 +9,7 @@ export default defineConfig({
 		'src/errors/index.ts',
 		'src/input/index.ts',
 		'src/systems/index.ts',
+		'src/testing/index.ts',
 		'src/widgets/index.ts',
 		'src/widgets/bigText.ts',
 		'src/widgets/fonts/index.ts',

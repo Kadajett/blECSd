@@ -68,44 +68,29 @@ Each module exports **namespace objects**: frozen plain objects that group relat
 Namespace objects are **not classes**. They are plain frozen objects of pure function references, following the same pattern as Node.js `fs`, Lodash `_`, or D3 modules. No `this`, no state, no inheritance.
 
 ```typescript
-// Component namespaces
+// Component namespaces - grouped functions for each domain
+import { createWorld, addEntity } from 'blecsd/core';
 import { position, content, scroll, focus } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
 
 position.set(world, eid, 10, 5);
 position.moveBy(world, eid, 1, 0);
-position.zIndex.bringToFront(world, eid, siblings);
 content.setText(world, eid, 'Hello');
 scroll.toTop(world, eid);
-focus.next(world);
+focus.focus(world, eid);
 
 // Widget namespaces
-import { box, modal } from 'blecsd/widgets';
+import { box } from 'blecsd/widgets';
 import { list } from 'blecsd/components';
 
-const { eid } = box.create(world, config);
-box.setContent(world, eid, 'Hello');
-list.select(world, listEid, 0);
-modal.open(world, modalEid);
+const boxEid = addEntity(world);
+const boxWidget = box.create(world, boxEid, { width: 40, height: 10 });
+box.setContent(world, boxEid, 'Hello');
 
-// System namespaces
-import { layout, render, spring } from 'blecsd/systems';
-
-layout.create(world);
-render.system(world);
-spring.create(world, eid, { stiffness: 300, damping: 20 });
-
-// Terminal namespaces
-import { cursor, screen, ansiCodes } from 'blecsd/terminal';
-
-const manager = cursor.createCursorManager();
-cursor.moveCursorTo(manager, cursorId, 10, 5);
-
-// Utility namespaces
-import { rope, textWrap, unicode } from 'blecsd/utils';
-
-const r = rope.createRope('Hello, world!');
-const wrapped = textWrap.wordWrap(text, 80);
-const width = unicode.width.stringWidth('Hello');
+const listEid = addEntity(world);
+list.selection.first(world, listEid);
 ```
 
 **Why namespaces?** They solve the discoverability problem. Instead of autocompleting through thousands of flat function names, you import a namespace and explore its API via `.` notation. Namespace names are unambiguous: `textInput.cursor.set` is clearly different from `cursor.moveCursorTo`.
@@ -247,20 +232,24 @@ setText(world, box, 'Hello, blECSd!');
 ### Pattern 2: Namespace-Based Development
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { position, content, scroll, focus } from 'blecsd/components';
-import { box } from 'blecsd/widgets';
-import { list } from 'blecsd/components';
-import { layout, render } from 'blecsd/systems';
+import { box, listWidget } from 'blecsd/widgets';
 
-// Create UI
-const { eid: boxEid } = box.create(world, { x: 0, y: 0, width: 80, height: 24 });
-const { eid: listEid } = list.create(world, { items: ['A', 'B', 'C'] });
+const world2 = createWorld();
+
+// Create UI using widget namespaces
+const boxEid2 = addEntity(world2);
+box.create(world2, boxEid2, { x: 0, y: 0, width: 80, height: 24 });
+
+const listEid2 = addEntity(world2);
+listWidget.create(world2, listEid2, { items: ['A', 'B', 'C'] });
 
 // Manipulate via namespaces
-position.set(world, listEid, 5, 2);
-content.setText(world, boxEid, 'Title');
-scroll.toTop(world, listEid);
-focus.focus(world, listEid);
+position.set(world2, listEid2, 5, 2);
+content.setText(world2, boxEid2, 'Title');
+scroll.toTop(world2, listEid2);
+focus.focus(world2, listEid2);
 ```
 
 ### Pattern 3: Custom ECS System
@@ -318,7 +307,7 @@ Check the subpath import that matches the module:
 // Good: namespace for multiple related operations
 import { scroll } from 'blecsd/components';
 scroll.toTop(world, eid);
-scroll.byLines(world, eid, 5);
+scroll.viewport.byLines(world, eid, 5);
 scroll.bar.enable(world, eid);
 
 // Also fine: flat import for a single function
