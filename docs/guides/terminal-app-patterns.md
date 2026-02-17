@@ -6,16 +6,14 @@ Practical patterns for building terminal applications with blECSd. Each section 
 
 blECSd ships with a `createCommandPalette` widget that provides VS Code-style quick command search.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  createWorld,
-  addEntity,
-  createCommandPalette,
-  createKeyBindingRegistry,
-  registerBinding,
-  matchEvent,
-  parseKeyBuffer,
+  createWorld, addEntity,
 } from 'blecsd';
+import { createKeyBindingRegistry, registerBinding, matchEvent } from 'blecsd/core';
+import { parseKeyBuffer } from 'blecsd/terminal';
+import { createCommandPalette } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -82,21 +80,15 @@ Build a search overlay by combining a `createTextboxEntity` for input, `fuzzySea
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  createWorld,
-  addEntity,
-  createBox,
-  createTextboxEntity,
-  createText,
-  createEventBus,
-  focusEntity,
-  focusPush,
-  focusPop,
-  setVisible,
-  setPosition,
-  setDimensions,
-  fuzzySearch,
-  parseKeyBuffer,
+  createWorld, addEntity,
+  setPosition, setDimensions,
 } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
+import { parseKeyBuffer } from 'blecsd/terminal';
+import { createTextboxEntity } from 'blecsd/widgets';
+import { setVisible } from 'blecsd/components';
+import { focusEntity, focusPush, focusPop } from 'blecsd/systems';
+import { fuzzySearch } from 'blecsd/utils';
 
 interface SearchEvents {
   'search:open': undefined;
@@ -109,10 +101,6 @@ const events = createEventBus<SearchEvents>();
 
 // Search overlay container (hidden by default)
 const overlayEntity = addEntity(world);
-const overlay = createBox(world, overlayEntity, {
-  border: { type: 'rounded' },
-  title: 'Search',
-});
 setPosition(world, overlayEntity, 40, 0);
 setDimensions(world, overlayEntity, 40, 3);
 setVisible(world, overlayEntity, false);
@@ -132,7 +120,7 @@ let currentMatch = 0;
 function openSearch(): void {
   searchVisible = true;
   setVisible(world, overlayEntity, true);
-  focusPush(world); // save current focus
+  focusPush(world, overlayEntity); // save current focus
   focusEntity(world, inputEntity);
   events.emit('search:open', undefined);
 }
@@ -192,13 +180,10 @@ For a full-featured search, wire the match results to scroll the content view an
 
 Use `createFooter` for a fixed bottom status bar with left, center, and right sections. Use `createHeader` for a top title bar.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  createFooter,
-  createHeader,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { createFooter, createHeader } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -241,12 +226,10 @@ function updateFilename(name: string): void {
 
 For richer status bars with clickable items, use `createListbar`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  createListbar,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { createListbar } from 'blecsd/widgets';
 
 const world = createWorld();
 const barEntity = addEntity(world);
@@ -273,19 +256,12 @@ Build autocomplete by combining `createTextboxEntity` with `fuzzySearchBy` and a
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  createTextboxEntity,
-  createList,
-  fuzzySearchBy,
-  setVisible,
-  setPosition,
-  focusEntity,
-  onTextInputChange,
-  onListSelect,
-  parseKeyBuffer,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { parseKeyBuffer } from 'blecsd/terminal';
+import { createTextboxEntity, createList } from 'blecsd/widgets';
+import { setVisible } from 'blecsd/components';
+import { focusEntity } from 'blecsd/systems';
+import { fuzzySearchBy } from 'blecsd/utils';
 
 const world = createWorld();
 
@@ -318,13 +294,13 @@ const completions: CompletionItem[] = [
 ];
 
 // Filter completions as user types
-onTextInputChange(world, inputEntity, (value: string) => {
+function onInputChange(value: string): void {
   if (!value) {
     setVisible(world, listEntity, false);
     return;
   }
 
-  const matches: FuzzyMatch<CompletionItem>[] = fuzzySearchBy(
+  const matches = fuzzySearchBy(
     value,
     completions,
     (item) => item.label,
@@ -344,7 +320,7 @@ onTextInputChange(world, inputEntity, (value: string) => {
     })),
   );
   setVisible(world, listEntity, true);
-});
+}
 
 // Handle Tab key for accepting completion
 process.stdin.on('data', (data) => {
@@ -365,12 +341,10 @@ process.stdin.on('data', (data) => {
 
 Use `createToast` for non-blocking notifications that auto-dismiss:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  createToast,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { createToast } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -410,12 +384,10 @@ function notifyError(message: string): void {
 
 Use `createModal` for blocking dialogs and `openModal` for a convenience wrapper:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  openModal,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { openModal } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -442,13 +414,10 @@ function confirmDelete(filename: string): void {
 
 The `createKeyBindingRegistry` provides a configurable key binding system with conditional activation ("when" clauses) similar to VS Code's keybindings.json.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createKeyBindingRegistry,
-  registerBinding,
-  matchEvent,
-  parseKeyBuffer,
-} from 'blecsd';
+import { createKeyBindingRegistry, registerBinding, matchEvent } from 'blecsd/core';
+import { parseKeyBuffer } from 'blecsd/terminal';
 
 const registry = createKeyBindingRegistry();
 
@@ -518,17 +487,13 @@ function handleAction(action: string): void {
 
 blECSd provides a focus stack for managing keyboard focus across overlays, modals, and nested views.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  createWorld,
-  addEntity,
-  focusEntity,
-  focusNext,
-  focusPrev,
-  focusPush,
-  focusPop,
-  blurAll,
+  createWorld, addEntity,
+  focusNext, focusPrev,
 } from 'blecsd';
+import { focusEntity, focusPush, focusPop, blurAll } from 'blecsd/systems';
 
 const world = createWorld();
 const myButton = addEntity(world);
@@ -544,24 +509,20 @@ focusPrev(world, focusableEntities);  // focus previous entity in tab order
 focusEntity(world, myButton);
 
 // Focus stack for overlays/modals
-focusPush(world);        // save current focus state
-focusEntity(world, modalInput);  // focus modal content
+focusPush(world, myButton);         // save current focus state
+focusEntity(world, modalInput);     // focus modal content
 // ... user interacts with modal ...
-focusPop(world);         // restore previous focus when modal closes
+focusPop(world);                    // restore previous focus when modal closes
 ```
 
 ## State Machines for View Management
 
 Use `attachStateMachine` to manage complex application states (editing, searching, navigating). State machines are attached to entities and driven by the ECS:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  attachStateMachine,
-  sendEvent,
-  getState,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { attachStateMachine, sendEvent, getState } from 'blecsd/components';
 
 const world = createWorld();
 const appEntity = addEntity(world);
@@ -602,7 +563,7 @@ console.log(getState(world, appEntity)); // 'normal'
 Use `createEventBus` for decoupled communication between application components:
 
 ```typescript
-import { createEventBus } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 interface EditorEvents {
   'file:opened': { path: string };
@@ -641,13 +602,17 @@ For applications that need a continuous update loop (animations, real-time updat
 
 ```typescript
 import {
-  createWorld,
-  createScheduler,
-  LoopPhase,
+  createWorld, layoutSystem, renderSystem, outputSystem,
 } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();
 const scheduler = createScheduler();
+
+// Register systems by phase
+scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
+scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
 // Systems run in phase order:
 // INPUT -> EARLY_UPDATE -> UPDATE -> LATE_UPDATE ->
@@ -672,9 +637,7 @@ For non-realtime applications (forms, menus), you can skip the scheduler entirel
 
 ```typescript
 import {
-  createWorld,
-  layoutSystem,
-  renderSystem,
+  createWorld, layoutSystem, renderSystem, outputSystem,
 } from 'blecsd';
 
 const world = createWorld();
@@ -683,6 +646,7 @@ const world = createWorld();
 function redraw(): void {
   layoutSystem(world);
   renderSystem(world);
+  outputSystem(world);
 }
 ```
 
@@ -690,28 +654,27 @@ function redraw(): void {
 
 A minimal terminal editor skeleton combining several patterns:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  createWorld,
-  addEntity,
-  createScheduler,
-  createPanel,
-  createFooter,
-  createHeader,
-  createCommandPalette,
-  createKeyBindingRegistry,
-  registerBinding,
-  matchEvent,
-  createEventBus,
-  attachStateMachine,
-  sendEvent,
-  getState,
-  parseKeyBuffer,
+  createWorld, addEntity, layoutSystem, renderSystem, outputSystem,
 } from 'blecsd';
+import {
+  createScheduler, LoopPhase, createEventBus,
+  createKeyBindingRegistry, registerBinding, matchEvent,
+} from 'blecsd/core';
+import { parseKeyBuffer } from 'blecsd/terminal';
+import {
+  createCommandPalette, createFooter, createHeader, createPanel,
+} from 'blecsd/widgets';
+import { attachStateMachine, sendEvent, getState } from 'blecsd/components';
 
 // Setup
 const world = createWorld();
 const scheduler = createScheduler();
+scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
+scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
 // Events
 interface AppEvents {

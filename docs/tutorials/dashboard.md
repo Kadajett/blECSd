@@ -41,39 +41,31 @@ Create `dashboard.ts`:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
 import {
-  createScheduler,
-  LoopPhase,
-  registerLayoutSystem,
-  registerRenderSystem,
-  createProgram,
-  createPanel,
-  createBox,
-  createText,
-  createProgressBar,
-  createLayout,
-  setPosition,
-  setDimensions,
-  setContent,
-  setProgress,
-  setParent,
+  createWorld, addEntity, setPosition, setDimensions,
+  layoutSystem, renderSystem, outputSystem,
 } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { createProgram, type KeyEvent } from 'blecsd/terminal';
+import {
+  createPanel, createText, createProgressBar, createLayout,
+} from 'blecsd/widgets';
+import { setContent, setParent, setStyle } from 'blecsd/components';
+import { setProgress } from 'blecsd/components';
 import * as os from 'os';
 
 const world = createWorld();
 const scheduler = createScheduler();
 
-registerLayoutSystem(scheduler);
-registerRenderSystem(scheduler);
+scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
+scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
 const program = createProgram({
-  input: process.stdin,
-  output: process.stdout,
+  useAlternateScreen: true,
+  hideCursor: true,
 });
-
-program.alternateBuffer();
-program.hideCursor();
+program.init();
 
 const { columns, rows } = process.stdout;
 ```
@@ -166,6 +158,7 @@ function formatTime(seconds: number): string {
 
 ## Step 3: Create Main Layout
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Main container panel
 const mainPanel = createPanel(world, {
@@ -191,6 +184,7 @@ setParent(world, topLayout, mainPanel);
 
 ## Step 4: CPU Panel
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 const cpuPanel = createPanel(world, {
   title: 'CPU',
@@ -230,6 +224,7 @@ for (let i = 0; i < cpuCount; i++) {
 
 ## Step 5: Memory Panel
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 const memPanel = createPanel(world, {
   title: 'Memory',
@@ -288,6 +283,7 @@ setParent(world, memInfoText, memPanel);
 
 ## Step 6: Process List Panel
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 const processPanel = createPanel(world, {
   title: 'Top Processes',
@@ -356,7 +352,7 @@ function updateCpuPanel(): void {
     const color = core.usage > 80 ? 0xff0000ff :
                   core.usage > 50 ? 0xffff00ff :
                   0x00ff00ff;
-    setProgressBarDisplay(cpuBars[index], { fillFg: color });
+    setStyle(world, cpuBars[index], { fg: color });
   });
 }
 
@@ -373,7 +369,7 @@ function updateMemoryPanel(): void {
   const memColor = mem.usedPercent > 90 ? 0xff0000ff :
                    mem.usedPercent > 70 ? 0xffff00ff :
                    0x00ff00ff;
-  setProgressBarDisplay(memUsedBar, { fillFg: memColor });
+  setStyle(world, memUsedBar, { fg: memColor });
 }
 
 function updateProcessList(): void {
@@ -426,8 +422,6 @@ function stopAutoRefresh(): void {
   }
 }
 
-import { parseKeyBuffer, type KeyEvent } from 'blecsd';
-
 function handleKey(key: KeyEvent): void {
   switch (key.name) {
     case 'r':
@@ -451,37 +445,28 @@ function handleKey(key: KeyEvent): void {
       break;
 
     case 'q':
-      cleanup();
+      stopAutoRefresh();
+      program.destroy();
       process.exit(0);
       break;
   }
 }
 
-process.stdin.setRawMode(true);
-process.stdin.on('data', (data) => {
-  const key = parseKeyBuffer(data);
-  handleKey(key);
-});
+// Use createProgram's built-in key event handling
+program.on('key', handleKey);
 ```
 
 ## Step 10: Main Loop
 
 ```typescript
-function cleanup(): void {
-  stopAutoRefresh();
-  program.showCursor();
-  program.normalBuffer();
-  process.stdin.setRawMode(false);
-}
-
 process.on('SIGINT', () => {
-  cleanup();
+  stopAutoRefresh();
+  program.destroy();
   process.exit(0);
 });
 
 // Handle resize
-process.stdout.on('resize', () => {
-  // Recalculate layout
+program.on('resize', () => {
   refreshDashboard();
 });
 

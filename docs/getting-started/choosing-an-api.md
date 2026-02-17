@@ -25,7 +25,8 @@ blECSd provides **two different APIs** for building terminal applications. This 
 **Best for**: Rapid application development, complex UI patterns, prototyping
 
 ```typescript
-import { createWorld, addEntity, createList, createModal } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { createList, createModal } from 'blecsd/widgets';
 
 const world = createWorld();
 const listEntity = addEntity(world);
@@ -43,19 +44,19 @@ list.selectPrev();
 
 const modal = createModal(world, {
   title: 'Confirm',
-  message: 'Are you sure?',
+  content: 'Are you sure?',
 });
 
 modal.show();
 ```
 
 **Characteristics**:
-- ✅ Simple, intuitive API
-- ✅ Pre-built complex behaviors
-- ✅ Methods for common operations
-- ✅ Good for beginners
-- ❌ Less flexibility
-- ❌ Trade control for convenience
+- Simple, intuitive API
+- Pre-built complex behaviors
+- Methods for common operations
+- Good for beginners
+- Less flexibility
+- Trade control for convenience
 
 ---
 
@@ -68,11 +69,10 @@ import {
   createWorld,
   addEntity,
   addComponent,
-  Position,
-  Dimensions,
   setPosition,
   setDimensions,
 } from 'blecsd';
+import { Position, Dimensions } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -90,12 +90,12 @@ const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 ```
 
 **Characteristics**:
-- ✅ Maximum flexibility
-- ✅ Direct ECS access
-- ✅ Custom component combinations
-- ✅ Performance control
-- ❌ Steeper learning curve
-- ❌ More boilerplate
+- Maximum flexibility
+- Direct ECS access
+- Custom component combinations
+- Performance control
+- Steeper learning curve
+- More boilerplate
 
 ---
 
@@ -103,11 +103,11 @@ const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 
 ### Use the **Widget API** if:
 
-- ✅ You're building a **complex UI** (modals, file managers, charts)
-- ✅ You want to **get started quickly**
-- ✅ You're **new to ECS**
-- ✅ You want **pre-built behaviors**
-- ✅ You're **prototyping** an idea
+- You're building a **complex UI** (modals, file managers, charts)
+- You want to **get started quickly**
+- You're **new to ECS**
+- You want **pre-built behaviors**
+- You're **prototyping** an idea
 
 **Example use cases**:
 - File managers with pre-built navigation
@@ -120,11 +120,11 @@ const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 
 ### Use the **Low-Level ECS API** if:
 
-- ✅ You need **full control** over the ECS world
-- ✅ You're building a **custom framework or tool**
-- ✅ You need **custom component combinations**
-- ✅ You're familiar with **ECS patterns**
-- ✅ You need **maximum performance**
+- You need **full control** over the ECS world
+- You're building a **custom framework or tool**
+- You need **custom component combinations**
+- You're familiar with **ECS patterns**
+- You need **maximum performance**
 
 **Example use cases**:
 - Custom TUI frameworks
@@ -156,7 +156,9 @@ const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 **Yes!** Widgets are built on components and entity factories, so you can mix freely:
 
 ```typescript
-import { createWorld, addEntity, createList, addComponent, Velocity, Position } from 'blecsd';
+import { createWorld, addEntity, addComponent } from 'blecsd';
+import { createList } from 'blecsd/widgets';
+import { Velocity, Position } from 'blecsd/components';
 
 const world = createWorld();
 const listEntity = addEntity(world);
@@ -185,7 +187,9 @@ This gives you the **convenience of widgets** with the **power of the ECS API** 
 Widgets can wrap entities created by factories:
 
 ```typescript
-import { createWorld, createListEntity, createList, Position } from 'blecsd';
+import { createWorld, createListEntity } from 'blecsd';
+import { createList } from 'blecsd/widgets';
+import { Position } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -197,7 +201,7 @@ const listWidget = createList(world, entity, {});
 
 // Now you have both: entity ID and widget methods
 Position.x[entity] = 10;  // Use as entity
-listWidget.selectNext();  // Use as widget
+listWidget.selectNext();   // Use as widget
 ```
 
 ### Entity Factories Without Widgets
@@ -206,6 +210,7 @@ You can use factories without ever touching widgets:
 
 ```typescript
 import { createWorld, createBoxEntity, createTextEntity } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -214,7 +219,6 @@ const box = createBoxEntity(world, { x: 10, y: 5, width: 20, height: 10 });
 const text = createTextEntity(world, { parent: box, text: 'Hello' });
 
 // Direct component access
-import { Position } from 'blecsd';
 Position.x[box] = 15;
 ```
 
@@ -225,7 +229,8 @@ Position.x[box] = 15;
 ### Widget API Example: File Browser
 
 ```typescript
-import { createWorld, createFileManager } from 'blecsd';
+import { createWorld } from 'blecsd';
+import { createFileManager } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -249,9 +254,8 @@ import {
   createBoxEntity,
   createListEntity,
   addComponent,
-  Position,
-  Dimensions,
 } from 'blecsd';
+import { Position, Dimensions } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -295,7 +299,7 @@ blECSd provides a three-tier export system:
 
 ### Tier 1: Curated Essentials from `'blecsd'`
 
-The main `'blecsd'` package exports approximately 80 curated functions covering the most common use cases:
+The main `'blecsd'` package exports approximately 120 curated functions covering the most common use cases:
 
 ```typescript
 import {
@@ -316,8 +320,8 @@ For more complex applications, use namespace imports from subpaths:
 ```typescript
 import { position, dimensions, content } from 'blecsd/components';
 import { animation, layout, render } from 'blecsd/systems';
-import { cursor, screen, graphics } from 'blecsd/terminal';
-import { colors, textWrap, unicode } from 'blecsd/utils';
+import { createProgram, ansiCodes } from 'blecsd/terminal';
+import { rope, textWrap, unicode } from 'blecsd/utils';
 
 // Organized by domain
 position.set(world, eid, 10, 5);

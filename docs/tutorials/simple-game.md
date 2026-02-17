@@ -38,46 +38,29 @@ Create `snake.ts`:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, removeEntity, hasComponent } from 'blecsd';
 import {
-  createScheduler,
-  LoopPhase,
-  registerLayoutSystem,
-  registerRenderSystem,
-  registerMovementSystem,
-  registerCollisionSystem,
-  registerStateMachineSystem,
-  createProgram,
-  createPanel,
-  createText,
-  setPosition,
-  setVelocity,
-  attachCollider,
-  attachStateMachine,
-  sendEvent,
-  getCurrentState,
-  getCollisionEventBus,
-  Position,
-  Velocity,
+  createWorld, addEntity, removeEntity, hasComponent, addComponent,
+  setPosition, getPosition, layoutSystem, renderSystem, outputSystem,
 } from 'blecsd';
+import { createScheduler, LoopPhase, withStore } from 'blecsd/core';
+import { createProgram, type KeyEvent } from 'blecsd/terminal';
+import { createPanel, createText } from 'blecsd/widgets';
+import { setContent, setParent, setVisible, setStyle } from 'blecsd/components';
 
 const world = createWorld();
 const scheduler = createScheduler();
 
-// Register systems in order
-registerStateMachineSystem(scheduler);
-registerMovementSystem(scheduler);
-registerCollisionSystem(scheduler);
-registerLayoutSystem(scheduler);
-registerRenderSystem(scheduler);
+// Register built-in systems
+scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
+scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
+// Create terminal program (handles alternate screen and cursor automatically)
 const program = createProgram({
-  input: process.stdin,
-  output: process.stdout,
+  useAlternateScreen: true,
+  hideCursor: true,
 });
-
-program.alternateBuffer();
-program.hideCursor();
+program.init();
 ```
 
 ## Step 2: Game Constants and State
@@ -129,6 +112,7 @@ const state: GameState = {
 
 ## Step 3: Create UI
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 const { columns, rows } = process.stdout;
 
@@ -179,14 +163,17 @@ function updateScore(): void {
 
 ## Step 4: Snake Entity
 
-```typescript
-// Snake head component marker
-const SnakeHead = defineComponent();
+Define custom marker components for the snake, then create factory functions for the head and body segments.
 
-// Snake body segment marker
-const SnakeBody = defineComponent({
-  index: Types.ui16, // Position in snake
-});
+<!-- blecsd-doccheck:ignore -->
+```typescript
+// Custom marker component (no data needed)
+const SnakeHead = {};
+
+// Custom component with data store
+const SnakeBody = withStore(() => ({
+  index: new Uint16Array(10000),
+}));
 
 function createSnakeHead(x: number, y: number): number {
   const eid = addEntity(world);
@@ -194,19 +181,11 @@ function createSnakeHead(x: number, y: number): number {
   // Position in game grid (offset by panel position)
   setPosition(world, eid, gameX + 1 + x, gameY + 2 + y);
 
-  // Collider for collision detection
-  attachCollider(world, eid, {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
-    layer: 1, // Snake layer
-    mask: 2 | 4, // Collide with food (2) and walls (4)
-  });
-
-  // Visual character
+  // Visual character and color
   setContent(world, eid, '█');
-  setRenderable(world, eid, { fg: 0x00ff00ff });
+  setStyle(world, eid, { fg: 0x00ff00ff });
 
-  addComponent(world, SnakeHead, eid);
+  addComponent(world, eid, SnakeHead);
 
   return eid;
 }
@@ -216,18 +195,10 @@ function createSnakeSegment(x: number, y: number, index: number): number {
 
   setPosition(world, eid, gameX + 1 + x, gameY + 2 + y);
   setContent(world, eid, '█');
-  setRenderable(world, eid, { fg: 0x00aa00ff });
+  setStyle(world, eid, { fg: 0x00aa00ff });
 
-  addComponent(world, SnakeBody, eid);
+  addComponent(world, eid, SnakeBody);
   SnakeBody.index[eid] = index;
-
-  // Body segments can collide with head (game over condition)
-  attachCollider(world, eid, {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
-    layer: 4, // Same as wall for collision
-    mask: 1, // Can be hit by snake head
-  });
 
   return eid;
 }
@@ -261,22 +232,14 @@ function createFood(): number {
 
   setPosition(world, eid, gameX + 1 + x, gameY + 2 + y);
   setContent(world, eid, '●');
-  setRenderable(world, eid, { fg: 0xff0000ff });
-
-  attachCollider(world, eid, {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
-    layer: 2, // Food layer
-    mask: 1, // Can be hit by snake
-    isTrigger: true, // Non-blocking
-  });
+  setStyle(world, eid, { fg: 0xff0000ff });
 
   return eid;
 }
 
 function spawnFood(): void {
   // Remove existing food
-  if (state.food && hasComponent(world, Position, state.food)) {
+  if (state.food) {
     removeEntity(world, state.food);
   }
 
@@ -298,9 +261,10 @@ function updateSnakeMovement(): void {
   state.direction = state.nextDirection;
   const vel = DIRECTION_VELOCITY[state.direction];
 
-  // Get current head position
-  const headX = Position.x[state.snakeHead] - (gameX + 1);
-  const headY = Position.y[state.snakeHead] - (gameY + 2);
+  // Get current head position (relative to game grid)
+  const headPos = getPosition(world, state.snakeHead);
+  const headX = headPos.x - (gameX + 1);
+  const headY = headPos.y - (gameY + 2);
 
   // Save current position for body to follow
   positionHistory.unshift({ x: headX, y: headY });
@@ -334,7 +298,6 @@ function updateSnakeMovement(): void {
 
 function growSnake(): void {
   // Get last segment position
-  const lastSegment = state.snakeBody[state.snakeBody.length - 1];
   const lastPos = positionHistory[positionHistory.length - 1];
 
   if (lastPos) {
@@ -348,56 +311,51 @@ function growSnake(): void {
 }
 
 function checkSelfCollision(): boolean {
-  const headX = Position.x[state.snakeHead];
-  const headY = Position.y[state.snakeHead];
+  const headPos = getPosition(world, state.snakeHead);
 
   // Check collision with any body segment
   for (const segment of state.snakeBody) {
-    const segX = Position.x[segment];
-    const segY = Position.y[segment];
+    const segPos = getPosition(world, segment);
 
-    if (Math.abs(headX - segX) < 0.5 && Math.abs(headY - segY) < 0.5) {
+    if (Math.abs(headPos.x - segPos.x) < 0.5 && Math.abs(headPos.y - segPos.y) < 0.5) {
       return true;
     }
   }
 
   return false;
 }
+
+function checkFoodCollision(): boolean {
+  const headPos = getPosition(world, state.snakeHead);
+  const foodPos = getPosition(world, state.food);
+
+  return Math.abs(headPos.x - foodPos.x) < 0.5 &&
+         Math.abs(headPos.y - foodPos.y) < 0.5;
+}
 ```
 
 ## Step 7: Collision Handling
 
+Each game tick, check for food collection and self-collision:
+
 ```typescript
-// Listen for collision events
-const collisionBus = getCollisionEventBus();
-
-collisionBus.on('triggerEnter', ({ entityA, entityB }) => {
+function handleCollisions(): void {
   // Check if snake head hit food
-  const isHeadA = hasComponent(world, SnakeHead, entityA);
-  const isHeadB = hasComponent(world, SnakeHead, entityB);
-  const foodEntity = state.food;
-
-  if ((isHeadA && entityB === foodEntity) || (isHeadB && entityA === foodEntity)) {
-    // Eat food
+  if (checkFoodCollision()) {
     state.score += 10;
     updateScore();
     growSnake();
     spawnFood();
   }
-});
 
-collisionBus.on('collisionStart', ({ entityA, entityB }) => {
-  // Check if snake head hit body (game over)
-  const isHeadA = hasComponent(world, SnakeHead, entityA);
-  const isHeadB = hasComponent(world, SnakeHead, entityB);
-  const isBodyA = hasComponent(world, SnakeBody, entityA);
-  const isBodyB = hasComponent(world, SnakeBody, entityB);
-
-  if ((isHeadA && isBodyB) || (isHeadB && isBodyA)) {
+  // Check if snake head hit its own body
+  if (checkSelfCollision()) {
     gameOver();
   }
-});
+}
 ```
+
+> **Note:** For larger projects, `@blecsd/game` provides an ECS-based collision system with layers, triggers, and event callbacks. This tutorial uses manual collision checks for simplicity.
 
 ## Step 8: Game State Management
 
@@ -446,18 +404,11 @@ function togglePause(): void {
 
 ## Step 9: Input Handling
 
-```typescript
-import { parseKeyBuffer, type KeyEvent } from 'blecsd';
+Use `createProgram`'s built-in key event handling instead of manual `process.stdin` parsing:
 
+```typescript
 function handleKey(key: KeyEvent): void {
   // Prevent 180-degree turns
-  const opposites: Record<Direction, Direction> = {
-    [Direction.Up]: Direction.Down,
-    [Direction.Down]: Direction.Up,
-    [Direction.Left]: Direction.Right,
-    [Direction.Right]: Direction.Left,
-  };
-
   switch (key.name) {
     case 'up':
     case 'w':
@@ -496,17 +447,14 @@ function handleKey(key: KeyEvent): void {
       break;
 
     case 'q':
-      cleanup();
+      program.destroy();
       process.exit(0);
       break;
   }
 }
 
-process.stdin.setRawMode(true);
-process.stdin.on('data', (data) => {
-  const key = parseKeyBuffer(data);
-  handleKey(key);
-});
+// program.on('key') provides parsed KeyEvent objects automatically
+program.on('key', handleKey);
 ```
 
 ## Step 10: Game Loop
@@ -522,28 +470,18 @@ function gameLoop(): void {
   if (now - lastTick >= GAME_SPEED) {
     if (!state.paused && !state.gameOver) {
       updateSnakeMovement();
-
-      // Check self-collision after movement
-      if (checkSelfCollision()) {
-        gameOver();
-      }
+      handleCollisions();
     }
 
     lastTick = now;
   }
 
-  // Run ECS systems
+  // Run ECS systems (layout, render, output)
   scheduler.run(world, deltaTime);
 }
 
-function cleanup(): void {
-  program.showCursor();
-  program.normalBuffer();
-  process.stdin.setRawMode(false);
-}
-
 process.on('SIGINT', () => {
-  cleanup();
+  program.destroy();
   process.exit(0);
 });
 
@@ -552,8 +490,8 @@ initializeSnake();
 spawnFood();
 updateScore();
 
-// Start game loop
-setInterval(gameLoop, 16); // ~60 FPS render
+// Start game loop at ~60 FPS render
+setInterval(gameLoop, 16);
 ```
 
 ## Step 11: Run the Game
@@ -586,9 +524,9 @@ npx tsx snake.ts
 
 - Game loop with fixed timestep
 - Entity creation and removal
-- Collision detection and events
-- State machine integration
+- Manual collision detection between entities
 - Complex game state management
+- Custom ECS components with `withStore`
 
 ## Complete Source
 
@@ -597,5 +535,5 @@ See the full example in the [blECSd-Examples repository](https://github.com/Kada
 ## Next Steps
 
 - [Animation System Reference](../api/systems/animationSystem.md)
-- [Collision System Reference](../api/systems/collisionSystem.md)
 - [State Machine Reference](../api/systems/stateMachineSystem.md)
+- [@blecsd/game](https://github.com/Kadajett/blECSd-Examples) - Full game framework with ECS-based collision, physics, and input actions

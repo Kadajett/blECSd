@@ -5,17 +5,14 @@ A minimal example using blECSd components.
 ## The Code
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity, setPosition, setDimensions } from 'blecsd';
 import {
-  setPosition,
-  setDimensions,
   setStyle,
   setBorder,
   setContent,
-  BorderType,
-  getPosition,
   getContent,
-} from 'blecsd';
+  BorderType,
+} from 'blecsd/components';
 
 // Create world and entity
 const world = createWorld();
@@ -60,7 +57,7 @@ For larger applications, you can use namespace imports from `blecsd/components` 
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { position, dimensions, content, border, renderable } from 'blecsd/components';
-import { BorderType } from 'blecsd';
+import { BorderType } from 'blecsd/components';
 
 // Create world and entity
 const world = createWorld();
@@ -115,7 +112,8 @@ Namespace imports help organize related functions and reduce naming conflicts as
 Entity factories create entities with multiple components pre-configured:
 
 ```typescript
-import { createWorld, createBoxEntity, createTextEntity, BorderType } from 'blecsd';
+import { createWorld, createBoxEntity, createTextEntity } from 'blecsd';
+import { BorderType } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -147,113 +145,113 @@ const text = createTextEntity(world, {
 
 ## Rendering
 
-blECSd does not include a renderer. You write your own or use the Program class for low-level terminal control:
+blECSd includes a built-in two-phase rendering pipeline. The `renderSystem` draws entities into an internal buffer, and the `outputSystem` flushes that buffer to the terminal:
+
+```typescript
+import { createWorld, addEntity, setPosition, setDimensions } from 'blecsd';
+import { layoutSystem, renderSystem, outputSystem, cleanup } from 'blecsd';
+import { setContent, setStyle } from 'blecsd/components';
+
+const world = createWorld();
+
+// ... create entities with position, dimensions, content, style ...
+
+// Run the rendering pipeline
+layoutSystem(world);   // Compute positions and sizes
+renderSystem(world);   // Render entities to internal buffer
+outputSystem(world);   // Flush buffer to terminal
+
+// When done, clean up terminal state
+cleanup(world);
+```
+
+For low-level terminal control, you can use the terminal module directly:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cursor, style, screen } from 'blecsd/terminal';
 
-// Enter alternate screen
-process.stdout.write(screen.alternateOn());
-process.stdout.write(cursor.hide());
-
-// Move cursor and write
-process.stdout.write(cursor.move(5, 3));
-process.stdout.write(style.fgRgb(255, 255, 255));
-process.stdout.write(style.bgRgb(0, 102, 204));
-process.stdout.write('Hello, Terminal!');
-
-// Reset
-process.stdout.write(style.reset());
-process.stdout.write(cursor.show());
-process.stdout.write(screen.alternateOff());
+// These namespaces provide ANSI escape sequence generators
+// cursor.move(), style.fgRgb(), screen.alternateOn(), etc.
 ```
 
 ## A Simple Render Loop
 
-Combining ECS data with terminal output:
+Combining ECS data with the built-in systems:
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
 import {
+  createWorld,
+  addEntity,
+  createScreenEntity,
   setPosition,
-  setStyle,
-  setContent,
-  getPosition,
-  getContent,
-  getStyle,
-  queryRenderable,
-  filterVisible,
+  setDimensions,
+  layoutSystem,
+  renderSystem,
+  outputSystem,
+  cleanup,
 } from 'blecsd';
-import { cursor, style, screen } from 'blecsd/terminal';
+import { setContent, setStyle } from 'blecsd/components';
+import { createProgram } from 'blecsd/terminal';
 
 const world = createWorld();
+
+// Create a screen entity (required for the rendering pipeline)
+createScreenEntity(world, {
+  width: process.stdout.columns ?? 80,
+  height: process.stdout.rows ?? 24,
+});
 
 // Create a status indicator entity
 const statusIndicator = addEntity(world);
 setPosition(world, statusIndicator, 10, 5);
+setDimensions(world, statusIndicator, 10, 1);
 setStyle(world, statusIndicator, { fg: '#00ff00' });
 setContent(world, statusIndicator, '● Online');
 
-// Simple render function
-function render() {
-  process.stdout.write(screen.clear());
-
-  const entities = filterVisible(world, queryRenderable(world));
-  for (const eid of entities) {
-    const pos = getPosition(world, eid);
-    const content = getContent(world, eid);
-    const entityStyle = getStyle(world, eid);
-
-    if (pos && content) {
-      process.stdout.write(cursor.move(pos.x, pos.y));
-      if (entityStyle) {
-        const { r, g, b } = unpackColor(entityStyle.fg);
-        process.stdout.write(style.fgRgb(r, g, b));
-      }
-      process.stdout.write(content);
-      process.stdout.write(style.reset());
-    }
-  }
+// Run the render pipeline
+function render(): void {
+  layoutSystem(world);
+  renderSystem(world);
+  outputSystem(world);
 }
 
-// Initialize terminal
-process.stdout.write(screen.alternateOn());
-process.stdout.write(cursor.hide());
+// Initialize the terminal
+const program = createProgram();
+await program.init();
 
 render();
 
-// Cleanup on exit
+// Clean up on exit
 process.on('exit', () => {
-  process.stdout.write(cursor.show());
-  process.stdout.write(screen.alternateOff());
+  cleanup(world);
+  program.destroy();
 });
 ```
 
 ## Input Handling
 
-Add keyboard input:
+Add keyboard input using `createProgram` from `blecsd/terminal`:
 
 ```typescript
-import { parseKeyBuffer } from 'blecsd';
-import { moveBy, getPosition } from 'blecsd';
+import { createProgram } from 'blecsd/terminal';
+import { moveBy, getPosition } from 'blecsd/components';
 
-process.stdin.setRawMode(true);
-process.stdin.resume();
+const program = createProgram();
+await program.init();
 
-process.stdin.on('data', (buffer) => {
-  const key = parseKeyBuffer(buffer);
-  if (!key) return;
-
-  if (key.name === 'q' || (key.ctrl && key.name === 'c')) {
+program.on('key', (event) => {
+  if (event.name === 'q' || (event.ctrl && event.name === 'c')) {
+    cleanup(world);
+    program.destroy();
     process.exit(0);
   }
 
   // Arrow keys move the selected element
-  if (key.name === 'up') moveBy(world, statusIndicator, 0, -1);
-  if (key.name === 'down') moveBy(world, statusIndicator, 0, 1);
-  if (key.name === 'left') moveBy(world, statusIndicator, -1, 0);
-  if (key.name === 'right') moveBy(world, statusIndicator, 1, 0);
+  if (event.name === 'up') moveBy(world, statusIndicator, 0, -1);
+  if (event.name === 'down') moveBy(world, statusIndicator, 0, 1);
+  if (event.name === 'left') moveBy(world, statusIndicator, -1, 0);
+  if (event.name === 'right') moveBy(world, statusIndicator, 1, 0);
 
   render();
 });

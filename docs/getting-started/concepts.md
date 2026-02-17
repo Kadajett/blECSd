@@ -42,70 +42,60 @@ const mainPanel = addEntity(world); // Returns 2
 
 ### Components
 
-Components are typed data stores. blECSd provides components for common UI needs:
+Components are typed data stores. blECSd provides components for common UI needs. You interact with them through helper functions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Position, Renderable, Dimensions } from 'blecsd';
-
-// Components use Structure of Arrays (SoA) for performance
-Position.x[sidebar] = 0;
-Position.y[sidebar] = 0;
-Renderable.fg[sidebar] = 0xffffffff;  // White foreground
-```
-
-blECSd wraps raw component access with helper functions:
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { setPosition, setStyle, getPosition } from 'blecsd';
+import { setPosition, getPosition, setDimensions } from 'blecsd';
+import { setStyle } from 'blecsd/components';
 
 setPosition(world, player, 10, 5);
+setDimensions(world, player, 30, 10);
 setStyle(world, player, { fg: '#ffffff', bold: true });
 
 const pos = getPosition(world, player);
 // { x: 10, y: 5, z: 0, absolute: false }
 ```
 
-### Systems
+Or use namespace imports for a more organized API:
 
-Systems are functions that process entities with specific components:
-
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defineQuery } from 'blecsd';
-import { Position, Renderable, queryRenderable } from 'blecsd';
+import { position, dimensions, renderable } from 'blecsd/components';
 
-// Query for entities with both Position and Renderable
-const renderQuery = defineQuery([Position, Renderable]);
-
-function renderSystem(world) {
-  const entities = renderQuery(world);
-  for (const eid of entities) {
-    const x = Position.x[eid];
-    const y = Position.y[eid];
-    // Draw entity at x, y
-  }
-  return world;
-}
+position.set(world, player, 10, 5);
+dimensions.set(world, player, { width: 30, height: 10 });
+renderable.setStyle(world, player, { fg: '#ffffff' });
 ```
 
-blECSd provides pre-built queries:
+### Systems
+
+Systems are functions that process entities with specific components. blECSd provides pre-built systems for common tasks:
 
 ```typescript
-import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd';
 
-const visibleEntities = filterVisible(world, queryRenderable(world));
-const sorted = sortByZIndex(world, visibleEntities);
+// Run the render pipeline manually
+layoutSystem(world);   // Compute layout
+renderSystem(world);   // Render to buffer
+outputSystem(world);   // Flush to terminal
+```
+
+blECSd also provides pre-built queries for filtering entities:
+
+```typescript
+import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd/core';
+
+const allRenderable = queryRenderable(world);
+const visibleOnly = filterVisible(world, allRenderable);
+const sorted = sortByZIndex(world, visibleOnly);
 ```
 
 ## Optional Scheduler
 
 The scheduler provides phase-ordered execution when you want it:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, LoopPhase } from 'blecsd';
+import { createScheduler } from 'blecsd/core';
+import { LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
 
@@ -144,7 +134,7 @@ The INPUT phase is reserved and cannot be reordered. All other phases are option
 Type-safe event handling:
 
 ```typescript
-import { createEventBus } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 interface AppEvents {
   'panel:resized': { width: number; height: number };
@@ -174,9 +164,8 @@ unsubscribe();
 
 Attach FSMs to entities for state management:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { attachStateMachine, sendEvent, getState, isInState } from 'blecsd';
+import { attachStateMachine, sendEvent, getState, isInState } from 'blecsd/components';
 
 // Example: Modal dialog states
 const modalBehavior = {
@@ -200,38 +189,50 @@ isInState(world, dialog, 'opening');  // true
 
 State machines are useful for UI workflows, form validation states, loading indicators, and any element with discrete states.
 
-## Input Parsing
+## Input Handling
 
-Parse terminal input sequences into structured events:
+Use `createProgram` from `blecsd/terminal` for structured input events:
 
 ```typescript
-import { parseKeyBuffer, parseMouseSequence } from 'blecsd';
+import { createProgram } from 'blecsd/terminal';
 
-// Keyboard
-process.stdin.on('data', (buffer) => {
-  const key = parseKeyBuffer(buffer);
-  if (key) {
-    console.log(key.name, key.ctrl, key.shift, key.meta);
-  }
+const program = createProgram();
+await program.init();
+
+// Keyboard events
+program.on('key', (event) => {
+  console.log(event.name, event.ctrl, event.shift, event.meta);
 });
 
-// Mouse (after enabling mouse tracking)
-const mouse = parseMouseSequence('\x1b[<0;10;5M');
-// { action: 'mousedown', button: 0, x: 10, y: 5, ... }
+// Mouse events (tracking enabled automatically by createProgram)
+program.on('mouse', (event) => {
+  console.log(event.action, event.x, event.y, event.button);
+});
+
+// Resize events
+program.on('resize', (event) => {
+  console.log(event.cols, event.rows);
+});
+```
+
+For lower-level parsing, the terminal module also provides individual parsers:
+
+```typescript
+import { parseKeyBuffer, parseMouseSequence } from 'blecsd/terminal';
 ```
 
 ## Component Summary
 
-| Component | Purpose | Key Functions |
-|-----------|---------|---------------|
-| Position | X, Y, Z coordinates | `setPosition`, `getPosition`, `moveBy` |
-| Renderable | Colors, visibility | `setStyle`, `show`, `hide`, `markDirty` |
-| Dimensions | Width, height | `setDimensions`, `setConstraints` |
-| Hierarchy | Parent-child trees | `setParent`, `appendChild`, `getChildren` |
-| Focusable | Keyboard focus | `focus`, `blur`, `focusNext`, `focusPrev` |
-| Interactive | Mouse interaction | `setClickable`, `setHoverable`, `isPressed` |
-| Scrollable | Scroll position | `scrollTo`, `scrollBy`, `getScrollPercentage` |
-| Border | Box borders | `setBorder`, `getBorderChar` |
-| Content | Text content | `setContent`, `getContent`, `appendContent` |
-| Padding | Inner spacing | `setPadding`, `getPadding` |
-| Label | Text labels | `setLabel`, `getLabelText` |
+| Component | Purpose | Key Functions | Module |
+|-----------|---------|---------------|--------|
+| Position | X, Y, Z coordinates | `setPosition`, `getPosition`, `moveBy` | `blecsd` + `blecsd/components` |
+| Renderable | Colors, visibility | `setStyle`, `show`, `hide`, `markDirty` | `blecsd/components` |
+| Dimensions | Width, height | `setDimensions`, `setConstraints` | `blecsd` + `blecsd/components` |
+| Hierarchy | Parent-child trees | `setParent`, `appendChild`, `getChildren` | `blecsd/components` |
+| Focusable | Keyboard focus | `focusEntity`, `blur`, `focusNext`, `focusPrev` | `blecsd/components` |
+| Interactive | Mouse interaction | `setClickable`, `setHoverable`, `isPressed` | `blecsd/components` |
+| Scrollable | Scroll position | `scrollTo`, `scrollBy`, `getScrollPercentage` | `blecsd/components` |
+| Border | Box borders | `setBorder`, `getBorderChar` | `blecsd/components` |
+| Content | Text content | `setContent`, `getContent`, `appendContent` | `blecsd/components` |
+| Padding | Inner spacing | `setPadding`, `getPadding` | `blecsd/components` |
+| Label | Text labels | `setLabel`, `getLabelText` | `blecsd/components` |

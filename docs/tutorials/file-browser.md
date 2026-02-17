@@ -37,22 +37,17 @@ Create `file-browser.ts`:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
 import {
-  createScheduler,
-  LoopPhase,
-  registerLayoutSystem,
-  registerRenderSystem,
-  registerInputSystem,
-  createProgram,
-  createVirtualizedList,
-  createPanel,
-  createText,
-  setPosition,
-  setDimensions,
-  setContent,
-  scrollViewport,
+  createWorld, addEntity, setPosition, setDimensions,
+  layoutSystem, renderSystem, outputSystem,
 } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { createProgram, type KeyEvent } from 'blecsd/terminal';
+import {
+  createVirtualizedList, createPanel, createText, createScrollableText,
+  setPanelTitle,
+} from 'blecsd/widgets';
+import { setContent, setParent } from 'blecsd/components';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -60,18 +55,15 @@ const world = createWorld();
 const scheduler = createScheduler();
 
 // Register systems
-registerInputSystem(scheduler);
-registerLayoutSystem(scheduler);
-registerRenderSystem(scheduler);
+scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
+scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
 const program = createProgram({
-  input: process.stdin,
-  output: process.stdout,
+  useAlternateScreen: true,
+  hideCursor: true,
 });
-
-program.alternateBuffer();
-program.enableMouse();
-program.hideCursor();
+program.init();
 ```
 
 ## Step 2: File Entry Interface
@@ -191,6 +183,7 @@ function formatSize(bytes: number): string {
 
 ## Step 4: Create UI Layout
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 const { columns, rows } = process.stdout;
 
@@ -253,6 +246,7 @@ setDimensions(world, statusBar, columns, 1);
 
 ## Step 5: Format File List Items
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 function formatFileEntry(entry: FileEntry, width: number): string {
   const icon = entry.isDirectory ? '📁' : '📄';
@@ -278,8 +272,8 @@ function updateFileList(): void {
     selected: index === state.selectedIndex,
   }));
 
-  setVirtualizedListItems(world, fileList, items);
-  setVirtualizedListSelectedIndex(world, fileList, state.selectedIndex);
+  // Update the virtualized list via the widget's API
+  setContent(world, fileList, JSON.stringify(items));
 }
 
 function updateStatusBar(): void {
@@ -299,8 +293,6 @@ function updateTitle(): void {
 ## Step 6: Handle Navigation
 
 ```typescript
-import { parseKeyBuffer, type KeyEvent } from 'blecsd';
-
 async function handleKey(key: KeyEvent): Promise<void> {
   switch (key.name) {
     case 'j':
@@ -351,9 +343,6 @@ async function handleKey(key: KeyEvent): Promise<void> {
       const entry = state.entries[state.selectedIndex];
       if (entry?.isDirectory) {
         await navigateTo(entry.path);
-      } else if (entry) {
-        // Open file with default editor (optional)
-        // spawn('code', [entry.path]);
       }
       break;
 
@@ -384,7 +373,7 @@ async function handleKey(key: KeyEvent): Promise<void> {
       break;
 
     case 'q':
-      cleanup();
+      program.destroy();
       process.exit(0);
       break;
   }
@@ -413,30 +402,19 @@ async function updatePreview(): Promise<void> {
 ## Step 7: Main Loop
 
 ```typescript
-process.stdin.setRawMode(true);
-process.stdin.on('data', async (data) => {
-  const key = parseKeyBuffer(data);
+// Input handling via createProgram
+program.on('key', async (key: KeyEvent) => {
   await handleKey(key);
   scheduler.run(world, 0);
 });
 
 // Handle window resize
-process.stdout.on('resize', () => {
-  // Recalculate layout
-  const { columns, rows } = process.stdout;
-  // Update component dimensions...
+program.on('resize', () => {
   scheduler.run(world, 0);
 });
 
-function cleanup(): void {
-  program.showCursor();
-  program.disableMouse();
-  program.normalBuffer();
-  process.stdin.setRawMode(false);
-}
-
 process.on('SIGINT', () => {
-  cleanup();
+  program.destroy();
   process.exit(0);
 });
 

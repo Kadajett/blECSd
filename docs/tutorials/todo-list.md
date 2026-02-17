@@ -37,38 +37,32 @@ Create a new file `todo.ts`:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
 import {
-  createScheduler,
-  LoopPhase,
-  registerLayoutSystem,
-  registerRenderSystem,
-  registerInputSystem,
-  registerFocusSystem,
-  createProgram,
-  createEventBus,
+  createWorld, addEntity, removeEntity,
+  setPosition, setDimensions,
+  layoutSystem, renderSystem, outputSystem,
 } from 'blecsd';
+import { createScheduler, LoopPhase, createEventBus } from 'blecsd/core';
+import { createProgram, type KeyEvent } from 'blecsd/terminal';
+import { createPanel, createText, createTextboxEntity } from 'blecsd/widgets';
+import { setContent, setParent } from 'blecsd/components';
+import { focusEntity, blurAll } from 'blecsd/systems';
 
 // Create the ECS world
 const world = createWorld();
 
-// Create the scheduler
+// Create the scheduler and register systems
 const scheduler = createScheduler();
-registerInputSystem(scheduler);
-registerFocusSystem(scheduler);
-registerLayoutSystem(scheduler);
-registerRenderSystem(scheduler);
+scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
+scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
 // Create terminal program
 const program = createProgram({
-  input: process.stdin,
-  output: process.stdout,
+  useAlternateScreen: true,
+  hideCursor: true,
 });
-
-// Start alternate screen and enable mouse
-program.alternateBuffer();
-program.enableMouse();
-program.hideCursor();
+program.init();
 ```
 
 ## Step 2: Define Todo State
@@ -108,17 +102,6 @@ let nextId = 4;
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createPanel,
-  createText,
-  createTextInput,
-  createBox,
-  setPosition,
-  setDimensions,
-  setContent,
-  setParent,
-} from 'blecsd';
-
 // Create main panel
 const mainPanel = createPanel(world, {
   title: 'Todo List',
@@ -130,12 +113,9 @@ const mainPanel = createPanel(world, {
 });
 
 // Create todo list container
-const listContainer = createBox(world, {
-  x: 1,
-  y: 1,
-  width: 50,
-  height: 8,
-});
+const listContainer = addEntity(world);
+setPosition(world, listContainer, 1, 1);
+setDimensions(world, listContainer, 50, 8);
 setParent(world, listContainer, mainPanel);
 
 // Create input section
@@ -146,7 +126,7 @@ const inputLabel = createText(world, {
 });
 setParent(world, inputLabel, mainPanel);
 
-const textInput = createTextInput(world, {
+const textInput = createTextboxEntity(world, {
   x: 11,
   y: 10,
   width: 38,
@@ -208,8 +188,6 @@ renderTodos();
 ## Step 5: Handle Input
 
 ```typescript
-import { parseKeyBuffer, type KeyEvent } from 'blecsd';
-
 function handleKey(key: KeyEvent): void {
   if (state.inputMode) {
     handleInputMode(key);
@@ -264,7 +242,7 @@ function handleKey(key: KeyEvent): void {
 
     case 'q':
       // Quit
-      cleanup();
+      program.destroy();
       process.exit(0);
       break;
   }
@@ -281,19 +259,19 @@ function handleInputMode(key: KeyEvent): void {
           completed: false,
         });
         state.inputText = '';
-        setInputValue(world, textInput, '');
+        setContent(world, textInput, '');
         renderTodos();
       }
       state.inputMode = false;
-      blurEntity(world, textInput);
+      blurAll(world);
       break;
 
     case 'escape':
       // Cancel input
       state.inputMode = false;
       state.inputText = '';
-      setInputValue(world, textInput, '');
-      blurEntity(world, textInput);
+      setContent(world, textInput, '');
+      blurAll(world);
       break;
 
     default:
@@ -303,7 +281,7 @@ function handleInputMode(key: KeyEvent): void {
       } else if (key.sequence && key.sequence.length === 1) {
         state.inputText += key.sequence;
       }
-      setInputValue(world, textInput, state.inputText);
+      setContent(world, textInput, state.inputText);
       break;
   }
 }
@@ -316,32 +294,22 @@ function handleInputMode(key: KeyEvent): void {
 const events = createEventBus();
 
 // Handle resize
-process.stdout.on('resize', () => {
-  const { columns, rows } = process.stdout;
+program.on('resize', () => {
   // Update layout if needed
+  scheduler.run(world, 0);
 });
 
-// Input handling
-process.stdin.setRawMode(true);
-process.stdin.on('data', (data) => {
-  const key = parseKeyBuffer(data);
+// Input handling via createProgram
+program.on('key', (key: KeyEvent) => {
   handleKey(key);
 
   // Run the scheduler to update the UI
   scheduler.run(world, 0);
 });
 
-// Cleanup function
-function cleanup(): void {
-  program.showCursor();
-  program.disableMouse();
-  program.normalBuffer();
-  process.stdin.setRawMode(false);
-}
-
 // Handle exit signals
 process.on('SIGINT', () => {
-  cleanup();
+  program.destroy();
   process.exit(0);
 });
 
@@ -370,9 +338,9 @@ See the full example in the [blECSd-Examples repository](https://github.com/Kada
 ## What You Learned
 
 - Creating a basic blECSd application
-- Using form controls (TextInput)
+- Using form controls (TextboxEntity)
 - Managing application state
-- Handling keyboard input
+- Handling keyboard input via `createProgram`
 - Creating dynamic UI updates
 
 ## Next Steps

@@ -108,14 +108,18 @@ Consider alternatives for these scenarios:
 
 ## Terminal Capability Detection
 
-blECSd does not handle terminal capability detection automatically. Use the detection utilities if you need to check capabilities:
+blECSd provides detection utilities to check what your terminal supports:
 
 ```typescript
 import { getTerminalInfo } from 'blecsd/terminal';
 
 const info = getTerminalInfo();
-console.log(info.colorDepth); // 24, 8, or 4
+console.log(info.name);         // "xterm", "iterm2", "kitty", etc.
+console.log(info.colorSupport); // 'truecolor', 256, 16, or 2
+console.log(info.mouseSupport); // true/false
 ```
+
+The `createProgram()` function from `blecsd/terminal` handles terminal setup (raw mode, alternate screen, mouse tracking) automatically when you call `program.init()`.
 
 ## Troubleshooting
 
