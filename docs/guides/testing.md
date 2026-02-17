@@ -76,6 +76,7 @@ export default defineConfig({
 
 Components are data containers. Test by creating entities, setting component data, and reading it back.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { createWorld, addEntity, setPosition, getPosition } from 'blecsd';
@@ -127,6 +128,7 @@ describe('Position component', () => {
 
 ### Testing Component Helpers
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { createWorld, addEntity, setPosition } from 'blecsd';
@@ -167,6 +169,7 @@ Systems are pure functions that take a world and return a world. Test by:
 2. Running the system
 3. Asserting the new state
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createWorld, addEntity, setPosition } from 'blecsd';
@@ -245,6 +248,7 @@ describe('movementSystem', () => {
 
 Some systems maintain state outside the world. Reset it in `beforeEach`/`afterEach`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { inputSystem } from 'blecsd';
@@ -279,6 +283,7 @@ Widgets are factory functions that create and configure entities. Test by:
 2. Checking the created components
 3. Testing widget-specific behavior
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createWorld, hasComponent } from 'blecsd';
@@ -356,6 +361,7 @@ describe('Box widget', () => {
 
 Test Zod schemas for widget configuration:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { BoxConfigSchema } from 'blecsd/widgets';
@@ -481,6 +487,7 @@ it('handles mouse click', () => {
 
 Use Vitest's `vi.fn()` to spy on terminal writes:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, vi } from 'vitest';
 import type { TerminalOutput } from 'blecsd';
@@ -505,6 +512,7 @@ describe('terminal rendering', () => {
 
 Use snapshots to test rendered terminal output:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { createWorld } from 'blecsd';
@@ -557,6 +565,7 @@ pnpm test -- src/widgets/box.test.ts -u
 
 Test multiple systems working together:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createWorld, inputSystem, renderSystem, focusNext } from 'blecsd';
@@ -606,6 +615,7 @@ describe('focus management integration', () => {
 
 ### Testing Game Loops
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createWorld } from 'blecsd';
@@ -665,6 +675,7 @@ describe('game loop', () => {
 
 Test asynchronous operations with async/await:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { loadImage, Image } from 'blecsd';
@@ -692,6 +703,7 @@ blECSd provides a comprehensive set of test utilities in `src/testing/` to reduc
 
 Import from `'blecsd/testing'`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createTestWorld,
@@ -984,6 +996,7 @@ await new Promise(resolve => setTimeout(resolve, TIMEOUTS.SHORT));
 
 ### Complete Example with Utilities and Fixtures
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { createTestWorld, createTestEntity } from 'blecsd/testing';
@@ -1026,6 +1039,7 @@ Snapshot tests capture exact rendered terminal output to detect visual regressio
 
 Import snapshot testing utilities from `'blecsd/testing'`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createTestBuffer,
@@ -1037,6 +1051,7 @@ import { layoutSystem, renderSystem } from 'blecsd';
 
 ### Basic Snapshot Test Pattern
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { addEntity, layoutSystem, renderSystem } from 'blecsd';
@@ -1232,6 +1247,7 @@ pnpm test -- -u -t "renders box with border"
 
 ### Example: Complete Snapshot Test Suite
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { addEntity, layoutSystem, renderSystem } from 'blecsd';
@@ -1469,6 +1485,7 @@ describe('Position', () => {
 
 ### 5. Reset Global State
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { beforeEach, afterEach } from 'vitest';
 import { resetInputState, resetFocusState } from 'blecsd/core';

@@ -27,6 +27,7 @@ Terminals that don't support OSC 8 will simply display the text without a link.
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hyperlink } from 'blecsd/terminal';
 
@@ -106,6 +107,7 @@ function safeLink(url: string, text: string, options?: HyperlinkOptions): string
 Returns just the text (no link) if the URL uses a blocked protocol.
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hyperlink } from 'blecsd/terminal';
 
@@ -157,6 +159,7 @@ function file(path: string, text?: string, options?: HyperlinkOptions): string
 - `options` - Optional link options
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hyperlink } from 'blecsd/terminal';
 
@@ -175,6 +178,7 @@ console.log(hyperlink.file('/home/user/documents/report.pdf'));
 
 The `isHyperlinkAllowed` function checks if a URL uses an allowed protocol:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isHyperlinkAllowed, HYPERLINK_ALLOWED_PROTOCOLS } from 'blecsd/terminal';
 

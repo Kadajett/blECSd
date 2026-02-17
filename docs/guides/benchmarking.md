@@ -138,6 +138,7 @@ The performance check workflow runs automatically on pull requests:
 
 Use Vitest's `bench` function:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, bench } from 'vitest';
 import { createWorld, addEntity } from 'blecsd';

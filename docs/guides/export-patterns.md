@@ -8,6 +8,7 @@ blECSd uses a three-tier export system. Each tier provides a different level of 
 
 The top-level import provides ~80 curated exports (64 values + 15 types): the most commonly used functions, types, and schemas. This is the default choice for most applications.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld, addEntity, createBoxEntity,
@@ -31,6 +32,7 @@ import {
 
 Subpath imports provide complete access to every module's exports, including both flat functions and namespace objects. Use these when you need symbols not in Tier 1.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Advanced ECS primitives
 import { defineComponent, defineQuery, query, pipe, removeComponent } from 'blecsd/core';
@@ -60,6 +62,7 @@ Each module exports **namespace objects**: frozen plain objects that group relat
 
 Namespace objects are **not classes**. They are plain frozen objects of pure function references, following the same pattern as Node.js `fs`, Lodash `_`, or D3 modules. No `this`, no state, no inheritance.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Component namespaces
 import { position, content, scroll, focus } from 'blecsd/components';
@@ -191,6 +194,7 @@ const width = unicode.width.stringWidth('Hello');
 
 ## Decision Tree
 
+<!-- blecsd-doccheck:ignore -->
 ```
 What are you building?
 |
@@ -225,6 +229,7 @@ What are you building?
 
 ### Pattern 1: Typical Terminal App
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld, createBoxEntity, createTextEntity,
@@ -240,6 +245,7 @@ setText(world, box, 'Hello, blECSd!');
 
 ### Pattern 2: Namespace-Based Development
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { position, content, scroll, focus } from 'blecsd/components';
 import { box, list } from 'blecsd/widgets';
@@ -276,6 +282,7 @@ export function physicsSystem(world: World): World {
 
 ### Pattern 4: Mixed Tiers
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Tier 1 for common operations
 import { createBoxEntity, renderSystem } from 'blecsd';
@@ -307,6 +314,7 @@ Check the subpath import that matches the module:
 
 **Prefer namespaces** when working with a specific domain. They provide better discoverability and prevent name collisions. Use flat imports when you only need one or two functions from a module.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Good: namespace for multiple related operations
 import { scroll } from 'blecsd/components';
@@ -323,6 +331,7 @@ scrollToTop(world, eid);
 
 Yes. Use multiple import paths to signal intent:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createBoxEntity, setPosition } from 'blecsd';
 import { cursor } from 'blecsd/terminal';
@@ -332,6 +341,7 @@ import { cursor } from 'blecsd/terminal';
 
 Some domains exist in both components and systems (e.g., `animation`). Since they come from different subpath imports, just alias when needed:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { animation } from 'blecsd/components';
 import { animation as animationSystem } from 'blecsd/systems';

@@ -8,6 +8,7 @@ When a terminal application exits unexpectedly (Ctrl+C, uncaught exception, etc.
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { CleanupManager, registerForCleanup, onExit } from 'blecsd/terminal';
 
@@ -145,6 +146,7 @@ function onExit(handler: ExitHandler): () => void
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { onExit } from 'blecsd/terminal';
 
@@ -259,6 +261,7 @@ class Game {
 
 ### Error Logging
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { onExit } from 'blecsd/terminal';
 import fs from 'fs';

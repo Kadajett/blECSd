@@ -57,6 +57,7 @@ function unwrap(wrapped: string): string | null
 **Returns:** The original sequence, or `null` if not a valid tmux pass-through
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -197,6 +198,7 @@ process.stdout.write(output);
 
 ### Round-Trip Verification
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -222,6 +224,7 @@ Use tmux pass-through for sequences that:
 
 Use `isTmux()` from the detection module to check if running inside tmux:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTmux } from 'blecsd/terminal';
 

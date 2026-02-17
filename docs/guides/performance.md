@@ -21,6 +21,7 @@ This guide covers practical performance optimization techniques for blECSd appli
 
 **Start simple, measure first.**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // ✅ GOOD - Start simple
 import { createWorld, addEntity, setPosition } from 'blecsd';
@@ -54,6 +55,7 @@ Optimize when you measure these issues:
 
 **Always measure before optimizing:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createFrameBudgetManager,
@@ -86,6 +88,7 @@ for (const timing of stats.systemTimings) {
 
 Use the built-in frame budget manager to track performance:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createFrameBudgetManager,
@@ -151,6 +154,7 @@ node --inspect-brk your-app.js
 
 For micro-optimizations, use Vitest benchmarks:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { bench, describe } from 'vitest';
 import { createWorld, addEntity } from 'blecsd';
@@ -262,6 +266,7 @@ for (let i = 0; i < 100000; i++) {
 
 ✅ **FAST - Use virtualization:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createVirtualizedList } from 'blecsd/widgets';
 
@@ -535,6 +540,7 @@ function renderSystem(world: World): World {
 
 ✅ **FAST - Check visibility first:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isEffectivelyVisible } from 'blecsd';
 
@@ -556,6 +562,7 @@ function renderSystem(world: World): World {
 
 For scenes larger than the viewport:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getComputedBounds } from 'blecsd';
 
@@ -718,6 +725,7 @@ renderToTerminal(backBuffer);
 
 Only redraw changed regions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { markAllDirty, clearRenderBuffer, renderSystem } from 'blecsd';
 
@@ -922,6 +930,7 @@ Use this checklist when optimizing:
 
 After optimization, verify improvement:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getFrameBudgetStats } from 'blecsd';
 

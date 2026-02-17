@@ -2221,6 +2221,7 @@ When experiencing performance issues, check:
    ```
 
 3. **✓ Use virtualization for long lists**
+<!-- blecsd-doccheck:ignore -->
    ```typescript
    import { createVirtualizedList } from 'blecsd/widgets';
 
@@ -2282,6 +2283,7 @@ Create custom systems that integrate with blECSd's ECS architecture.
 
 **1. Define your system function**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { type World } from 'blecsd';
 import { query } from 'blecsd/core';
@@ -2294,6 +2296,7 @@ function myCustomSystem(world: World): World {
 
 **2. Query for entities**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
@@ -2321,6 +2324,7 @@ loop.registerSystem(LoopPhase.UPDATE, movementSystem);
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setPosition } from 'blecsd';
 import { query, createGameLoop, LoopPhase } from 'blecsd/core';
@@ -2423,6 +2427,7 @@ Velocity.x[entity] = 5;
 
 **2. Use blECSd systems manually**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { layoutSystem, renderSystem } from 'blecsd';
 

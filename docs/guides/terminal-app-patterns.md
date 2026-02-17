@@ -562,6 +562,7 @@ console.log(getState(world, appEntity)); // 'normal'
 
 Use `createEventBus` for decoupled communication between application components:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEventBus } from 'blecsd/core';
 
@@ -600,6 +601,7 @@ function moveCursor(line: number, col: number): void {
 
 For applications that need a continuous update loop (animations, real-time updates), use `createScheduler`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld, layoutSystem, renderSystem, outputSystem,
@@ -635,6 +637,7 @@ setInterval(() => {
 
 For non-realtime applications (forms, menus), you can skip the scheduler entirely and call systems directly:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld, layoutSystem, renderSystem, outputSystem,

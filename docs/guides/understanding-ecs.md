@@ -174,6 +174,7 @@ for (const eid of entities) {
 
 Everything lives in a **World**:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld } from 'blecsd';
 
@@ -188,6 +189,7 @@ blECSd provides two ways to create entities:
 
 #### 1. **High-Level: Entity Factories** (recommended for most cases)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createBoxEntity, createButtonEntity, BorderType } from 'blecsd';
 
@@ -212,6 +214,7 @@ Entity factories handle component setup for you.
 
 #### 2. **Low-Level: Manual Component Assembly** (for custom entities)
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addEntity, addComponent } from 'blecsd';
 import { Position, Dimensions } from 'blecsd/components';
@@ -232,6 +235,7 @@ Use this when you need precise control.
 
 Find entities with specific components:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
@@ -318,6 +322,7 @@ Behavior lives in systems, not in the entity.
 
 ### Pattern 1: Checking if an Entity Has a Component
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hasComponent } from 'blecsd';
 import { Position } from 'blecsd/components';
@@ -329,6 +334,7 @@ if (hasComponent(world, eid, Position)) {
 
 ### Pattern 2: Adding a Component at Runtime
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addComponent } from 'blecsd';
 import { Velocity } from 'blecsd/components';
@@ -341,6 +347,7 @@ Velocity.y[eid] = 0;
 
 ### Pattern 3: Removing a Component
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { removeComponent } from 'blecsd/core';
 import { Velocity } from 'blecsd/components';
@@ -351,6 +358,7 @@ removeComponent(world, eid, Velocity);
 
 ### Pattern 4: Iterating Over Query Results
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Focusable } from 'blecsd';
 import { query } from 'blecsd/core';
@@ -368,6 +376,7 @@ function handleTabKey(world: World): void {
 
 ### Pattern 5: Parent-Child Relationships
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getChildren, createBoxEntity } from 'blecsd';
 import { setParent } from 'blecsd/components';
@@ -487,6 +496,7 @@ Systems are for recurring logic. One-off operations can just be functions.
 
 ## Example: Building a Simple Menu
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

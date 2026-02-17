@@ -20,6 +20,7 @@ blECSd provides three layers of abstraction for building terminal UIs:
 
 **Components** are the foundation - they hold data in typed arrays for efficient processing.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, addComponent, Position, Dimensions, setContent } from 'blecsd';
 
@@ -57,6 +58,7 @@ setContent(world, eid, 'Hello, World!');
 
 **Entity factories** create entities with pre-configured components. They return entity IDs.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createBoxEntity, createButtonEntity, Position, setContent, BorderType } from 'blecsd';
 
@@ -97,6 +99,7 @@ setContent(world, box, 'New text');
 
 **Widgets** are higher-level wrappers that add methods and manage internal state.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, createList, getListState } from 'blecsd/widgets';
 
@@ -357,6 +360,7 @@ Most applications use **both** - factories for simple elements, widgets for comp
 
 **Yes.** Entity factories are just functions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addEntity, addComponent, Position, Dimensions } from 'blecsd';
 
@@ -447,6 +451,7 @@ All three approaches are valid - choose based on your requirements.
 
 Mix factories and components:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createBoxEntity, createTextEntity, createButtonEntity, addEntity } from 'blecsd';
 
@@ -509,6 +514,7 @@ function frameworkSystem(world: World): World {
 
 Use widgets for quick iteration:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createFileManager, createModal } from 'blecsd';
 

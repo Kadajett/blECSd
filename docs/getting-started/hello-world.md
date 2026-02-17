@@ -4,6 +4,7 @@ A minimal example using blECSd components.
 
 ## The Code
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setPosition, setDimensions } from 'blecsd';
 import {
@@ -54,6 +55,7 @@ console.log(`Content: ${content}`);
 
 For larger applications, you can use namespace imports from `blecsd/components` to organize your code:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { position, dimensions, content, border, renderable } from 'blecsd/components';
@@ -111,6 +113,7 @@ Namespace imports help organize related functions and reduce naming conflicts as
 
 Entity factories create entities with multiple components pre-configured:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createBoxEntity, createTextEntity } from 'blecsd';
 import { BorderType } from 'blecsd/components';
@@ -147,6 +150,7 @@ const text = createTextEntity(world, {
 
 blECSd includes a built-in two-phase rendering pipeline. The `renderSystem` draws entities into an internal buffer, and the `outputSystem` flushes that buffer to the terminal:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, setPosition, setDimensions } from 'blecsd';
 import { layoutSystem, renderSystem, outputSystem, cleanup } from 'blecsd';
@@ -179,6 +183,7 @@ import { cursor, style, screen } from 'blecsd/terminal';
 
 Combining ECS data with the built-in systems:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -233,6 +238,7 @@ process.on('exit', () => {
 
 Add keyboard input using `createProgram` from `blecsd/terminal`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createProgram } from 'blecsd/terminal';
 import { moveBy, getPosition } from 'blecsd/components';

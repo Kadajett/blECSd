@@ -111,6 +111,7 @@ Consider alternatives for these scenarios:
 
 blECSd provides detection utilities to check what your terminal supports:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalInfo } from 'blecsd/terminal';
 

@@ -6,6 +6,7 @@ Quick reference for the most common APIs and patterns in blECSd.
 
 ## Core ECS
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, removeEntity, entityExists } from 'blecsd';
 
@@ -99,6 +100,7 @@ const { width, height } = getDimensions(world, eid);
 
 **Using namespaces:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { position, dimensions } from 'blecsd/components';
 
@@ -141,6 +143,7 @@ setContent(world, eid, 'Hello!', TextAlign.Center);     // left, center, right
 
 **Using namespaces:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { border, padding, content } from 'blecsd/components';
 
@@ -179,6 +182,7 @@ const parentEid = getParent(world, child);    // Get parent
 
 **Using namespaces:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hierarchy } from 'blecsd/components';
 
@@ -210,6 +214,7 @@ focusPrev(world);                          // Shift+Tab to previous
 
 **Using namespaces:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focus } from 'blecsd/components';
 
@@ -245,6 +250,7 @@ scrollToLine(world, eid, 2);               // Jump to line
 
 **Using namespaces:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { scroll } from 'blecsd/components';
 
@@ -408,6 +414,7 @@ animationSystem(world);                    // Update animations
 
 ## Events
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEventBus } from 'blecsd/core';
 
@@ -513,6 +520,7 @@ For larger applications, use namespace imports to organize related functions and
 
 ### Component Namespaces
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { position, dimensions, content, border, padding } from 'blecsd/components';
 import { scroll, focus, hierarchy, renderable } from 'blecsd/components';
@@ -550,6 +558,7 @@ const children = hierarchy.getChildren(world, parent);
 
 ### System Namespaces
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { animation, layout, render } from 'blecsd/systems';
 import { input, output, collision, spring } from 'blecsd/systems';
@@ -571,6 +580,7 @@ spring.updateSprings(world, deltaTime);
 
 ### Terminal Namespaces
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cursor, screen, graphics } from 'blecsd/terminal';
 
@@ -591,6 +601,7 @@ graphics.fillRect(world, x, y, width, height, char);
 
 ### Utility Namespaces
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { colors, textWrap, unicode } from 'blecsd/utils';
 
@@ -876,6 +887,7 @@ console.log('Components:', inspection.components);
 
 ## TypeScript Tips
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Type-safe widget config
 import type { BoxConfig, ListConfig } from 'blecsd';

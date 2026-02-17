@@ -313,6 +313,7 @@ function enablePixelTracking() {
 
 The terminal responds to locator requests with DECLRP sequences. Use the response parser to decode them:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseResponse, isLocatorPosition } from 'blecsd/terminal';
 

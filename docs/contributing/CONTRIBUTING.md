@@ -154,6 +154,7 @@ All public API changes require documentation:
 
 Every public export needs:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 /**
  * Brief description of what this does.

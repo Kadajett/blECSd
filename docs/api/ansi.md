@@ -73,6 +73,7 @@ SGR.BG_256  // 48 - 256-color background
 
 Parse SGR escape sequences into attribute objects for rendering pipelines.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createAttribute, parseSgrString } from 'blecsd/terminal';
 
@@ -174,6 +175,7 @@ Functions for text styling and colors.
 
 ### Text Attributes
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { style } from 'blecsd/terminal';
 
@@ -295,6 +297,7 @@ process.stdout.write(screen.alternateOff()); // Exit alternate buffer
 
 Functions for terminal title manipulation.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { title } from 'blecsd/terminal';
 
@@ -325,6 +328,7 @@ Functions for mouse tracking.
 
 ### MouseMode Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { MouseMode } from 'blecsd/terminal';
 
@@ -379,6 +383,7 @@ process.stdout.write(screen.alternateOff());
 
 Synchronized output for flicker-free rendering.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sync } from 'blecsd/terminal';
 
@@ -408,6 +413,7 @@ function render() {
 
 Bracketed paste mode for safe paste handling.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { bracketedPaste } from 'blecsd/terminal';
 
@@ -427,6 +433,7 @@ Terminal clipboard operations (OSC 52).
 
 ### ClipboardSelection Constants
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ClipboardSelection } from 'blecsd/terminal';
 

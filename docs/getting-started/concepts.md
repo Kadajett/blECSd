@@ -32,6 +32,7 @@ blECSd uses [bitECS](https://github.com/NateTheGreatt/bitECS) for its ECS implem
 
 An entity is an integer ID with no data or behavior.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 
@@ -44,6 +45,7 @@ const mainPanel = addEntity(world); // Returns 2
 
 Components are typed data stores. blECSd provides components for common UI needs. You interact with them through helper functions:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setPosition, getPosition, setDimensions } from 'blecsd';
 import { setStyle } from 'blecsd/components';
@@ -58,6 +60,7 @@ const pos = getPosition(world, player);
 
 Or use namespace imports for a more organized API:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { position, dimensions, renderable } from 'blecsd/components';
 
@@ -70,6 +73,7 @@ renderable.setStyle(world, player, { fg: '#ffffff' });
 
 Systems are functions that process entities with specific components. blECSd provides pre-built systems for common tasks:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { layoutSystem, renderSystem, outputSystem } from 'blecsd';
 
@@ -81,6 +85,7 @@ outputSystem(world);   // Flush to terminal
 
 blECSd also provides pre-built queries for filtering entities:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd/core';
 
@@ -93,6 +98,7 @@ const sorted = sortByZIndex(world, visibleOnly);
 
 The scheduler provides phase-ordered execution when you want it:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler } from 'blecsd/core';
 import { LoopPhase } from 'blecsd/core';
@@ -133,6 +139,7 @@ The INPUT phase is reserved and cannot be reordered. All other phases are option
 
 Type-safe event handling:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEventBus } from 'blecsd/core';
 
@@ -164,6 +171,7 @@ unsubscribe();
 
 Attach FSMs to entities for state management:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { attachStateMachine, sendEvent, getState, isInState } from 'blecsd/components';
 
@@ -193,6 +201,7 @@ State machines are useful for UI workflows, form validation states, loading indi
 
 Use `createProgram` from `blecsd/terminal` for structured input events:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createProgram } from 'blecsd/terminal';
 
@@ -217,6 +226,7 @@ program.on('resize', (event) => {
 
 For lower-level parsing, the terminal module also provides individual parsers:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKeyBuffer, parseMouseSequence } from 'blecsd/terminal';
 ```

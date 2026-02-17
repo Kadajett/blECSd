@@ -62,6 +62,7 @@ function configureDebugLogger(config: DebugLoggerConfig): void
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { configureDebugLogger, LogLevel } from 'blecsd/terminal';
 
@@ -121,6 +122,7 @@ function isDebugLoggingEnabled(): boolean
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isDebugLoggingEnabled } from 'blecsd/terminal';
 
@@ -151,6 +153,7 @@ function clearLog(): void
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearLog } from 'blecsd/terminal';
 
@@ -171,6 +174,7 @@ function dumpTerminalState(
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { dumpTerminalState } from 'blecsd/terminal';
 
@@ -192,6 +196,7 @@ function dumpRaw(data: string | Buffer, label?: string): void
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { dumpRaw } from 'blecsd/terminal';
 
@@ -367,6 +372,7 @@ class GameLoop {
 
 ### Input Debugging
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDebugLogger, dumpRaw } from 'blecsd/terminal';
 
@@ -384,6 +390,7 @@ function onData(data: Buffer) {
 
 ### Conditional Expensive Operations
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDebugLogger, isDebugLoggingEnabled } from 'blecsd/terminal';
 

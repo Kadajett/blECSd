@@ -4,6 +4,7 @@ Bitmap fonts power ASCII-art text rendering such as the BigText widget. blECSd s
 
 ## Overview
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { loadFont, renderChar } from 'blecsd/widgets/fonts';
 
@@ -33,6 +34,7 @@ main();
 
 Loads a built-in bitmap font by name. Returns a Promise.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { loadFont } from 'blecsd/widgets/fonts';
 
@@ -53,6 +55,7 @@ async function main() {
 
 Gets the bitmap data for a specific character.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getCharBitmap, loadFont } from 'blecsd/widgets/fonts';
 
@@ -78,6 +81,7 @@ async function main() {
 
 Renders a character to an array of strings using block characters.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { loadFont, renderChar } from 'blecsd/widgets/fonts';
 

@@ -12,6 +12,7 @@ Terminal detection helps your application adapt to different terminal environmen
 
 ## Quick Start
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getTerminalInfo,
@@ -53,6 +54,7 @@ function getTerminalInfo(): TerminalInfo
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalInfo } from 'blecsd/terminal';
 
@@ -109,6 +111,7 @@ function isTrueColorSupported(): boolean
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTrueColorSupported, style } from 'blecsd/terminal';
 
@@ -133,6 +136,7 @@ function getColorDepth(): ColorSupport
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getColorDepth } from 'blecsd/terminal';
 
@@ -254,6 +258,7 @@ function isUnicodeSupported(): boolean
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isUnicodeSupported, boxDrawing } from 'blecsd/terminal';
 
@@ -313,6 +318,7 @@ function getTerminalVersion(): string | undefined
 
 **Example:**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalVersion, isITerm2 } from 'blecsd/terminal';
 

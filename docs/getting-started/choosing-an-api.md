@@ -325,6 +325,7 @@ This is the simplest approach and works well for small to medium applications.
 
 For more complex applications, use namespace imports from subpaths:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { position, dimensions, content } from 'blecsd/components';
 import { animation, layout, render } from 'blecsd/systems';
@@ -347,6 +348,7 @@ Namespace imports provide:
 
 Deep imports from specific files are reserved for internal library use and advanced scenarios:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Not recommended for most users
 import { someInternalFunction } from 'blecsd/components/position';

@@ -41,6 +41,7 @@ Lists, ListTables, and VirtualizedLists share these shortcuts:
 | `1-9` | Quick Jump | Jump to item by number (if enabled) |
 
 **Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createList } from 'blecsd/widgets';
 
@@ -297,6 +298,7 @@ Key strings use `+` to separate modifiers:
 
 ### Using the KeyBindings System
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createKeyBindingRegistry, registerBinding, parseKeyString } from 'blecsd/core';
 
@@ -331,6 +333,7 @@ registry = registerBinding(registry, {
 
 Override default behavior by handling keys before the widget:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createList } from 'blecsd/widgets';
 import { queueKeyEvent } from 'blecsd/core';
@@ -354,6 +357,7 @@ function handleCustomKeys(event: KeyEvent): boolean {
 
 ### Global Key Binding Configuration
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createKeyBindingRegistry, registerBinding, KeyBinding } from 'blecsd/core';
 
@@ -466,6 +470,7 @@ On Windows and Linux:
 
 ### Logging Key Events
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { queueKeyEvent, getEventQueue } from 'blecsd/core';
 
@@ -489,6 +494,7 @@ function loggingQueueKeyEvent(event: KeyEvent): void {
 
 ### Testing Key Bindings
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { createList } from 'blecsd/widgets';

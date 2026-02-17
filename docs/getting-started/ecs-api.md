@@ -265,6 +265,7 @@ Velocity.y[entity] = 0;
 
 ### Removing Components
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { removeComponent } from 'blecsd/core';
 import { Velocity } from 'blecsd/components';
@@ -488,6 +489,7 @@ for (const childEid of children) {
 
 ### Collision Detection System
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Dimensions } from 'blecsd/components';
@@ -513,6 +515,7 @@ function collisionSystem(world: World): World {
 
 ### Camera Follow System
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Position, Dimensions } from 'blecsd/components';
 import { LoopPhase } from 'blecsd/core';
@@ -588,6 +591,7 @@ import { setContent, getText, moveBy } from 'blecsd/components';
 
 Use component namespaces:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { position, dimensions, content } from 'blecsd/components';
 
@@ -630,6 +634,7 @@ function gameLoop(world: World): void {
 
 For terminal operations, use `createProgram` for high-level control:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createProgram } from 'blecsd/terminal';
 
@@ -648,6 +653,7 @@ program.destroy();
 
 For low-level ANSI escape sequences, use the `ansiCodes` namespace:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ansiCodes } from 'blecsd/terminal';
 

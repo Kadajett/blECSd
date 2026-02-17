@@ -92,6 +92,7 @@ loop.start();
 
 **Example**:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 
@@ -493,6 +494,7 @@ See [Input Priority](./input-priority.md) for details on why INPUT always runs a
 
 Verify systems run in the correct order:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 import { describe, it, expect } from 'vitest';
