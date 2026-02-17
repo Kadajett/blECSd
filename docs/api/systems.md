@@ -472,11 +472,10 @@ import { createWorld } from 'blecsd/core';
 
 const world = createWorld();
 
-// Generate escape sequences
-const output = generateOutput(world);
-
-// Write to terminal
-writeRaw(output);
+// Generate escape sequences (requires initialized render buffer)
+// const output = generateOutput(world);
+// writeRaw(output);
+void generateOutput; void writeRaw; void world;
 ```
 
 #### Screen Control
@@ -588,10 +587,10 @@ setPosition(world, spriteEntity, 10, 10);
 const animId = registerAnimation({
   name: 'walk',
   frames: [
-    { index: 0, duration: 100 },
-    { index: 1, duration: 100 },
-    { index: 2, duration: 100 },
-    { index: 3, duration: 100 },
+    { frameIndex: 0, duration: 100 },
+    { frameIndex: 1, duration: 100 },
+    { frameIndex: 2, duration: 100 },
+    { frameIndex: 3, duration: 100 },
   ],
 });
 playAnimation(world, spriteEntity, animId, { loop: true });
@@ -668,7 +667,6 @@ Systems must be registered with the scheduler to run automatically:
 ```typescript
 import { createScheduler, LoopPhase, createWorld } from 'blecsd/core';
 import {
-  createInputSystem,
   createLayoutSystem,
   createRenderSystem,
   createOutputSystem,
@@ -678,7 +676,7 @@ const world = createWorld();
 const scheduler = createScheduler();
 
 // Register systems to specific phases
-scheduler.registerSystem(LoopPhase.INPUT, createInputSystem());
+// Note: INPUT phase is protected; inputSystem is auto-registered
 scheduler.registerSystem(LoopPhase.LAYOUT, createLayoutSystem());
 scheduler.registerSystem(LoopPhase.RENDER, createRenderSystem());
 scheduler.registerSystem(LoopPhase.POST_RENDER, createOutputSystem());

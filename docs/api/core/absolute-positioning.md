@@ -9,7 +9,10 @@ Position elements relative to screen edges instead of parent containers. Provide
 Position an element by distance from the left edge of the screen.
 
 ```typescript
-import { setAbsoluteLeft } from 'blecsd/core';
+import { setAbsoluteLeft, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 // Position 10 cells from left edge of screen
 setAbsoluteLeft(world, entity, 10);
@@ -30,7 +33,10 @@ setAbsoluteLeft(world, entity, 10);
 Position an element by distance from the right edge of the screen.
 
 ```typescript
-import { setAbsoluteRight } from 'blecsd/core';
+import { setAbsoluteRight, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 // Position 10 cells from right edge (screen width - 10 - element width)
 setAbsoluteRight(world, entity, 10);
@@ -51,7 +57,10 @@ setAbsoluteRight(world, entity, 10);
 Position an element by distance from the top edge of the screen.
 
 ```typescript
-import { setAbsoluteTop } from 'blecsd/core';
+import { setAbsoluteTop, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 // Position 5 cells from top edge of screen
 setAbsoluteTop(world, entity, 5);
@@ -72,7 +81,10 @@ setAbsoluteTop(world, entity, 5);
 Position an element by distance from the bottom edge of the screen.
 
 ```typescript
-import { setAbsoluteBottom } from 'blecsd/core';
+import { setAbsoluteBottom, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 // Position 5 cells from bottom edge (screen height - 5 - element height)
 setAbsoluteBottom(world, entity, 5);
@@ -93,7 +105,10 @@ setAbsoluteBottom(world, entity, 5);
 Set position based on multiple edge distances in a single call.
 
 ```typescript
-import { setAbsoluteEdges } from 'blecsd/core';
+import { setAbsoluteEdges, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 // Position 10 from left, 5 from top
 setAbsoluteEdges(world, entity, { left: 10, top: 5 });
@@ -120,7 +135,10 @@ setAbsoluteEdges(world, entity, { left: 10, bottom: 5 });
 Get the current edge distances for an absolutely-positioned element.
 
 ```typescript
-import { getAbsoluteEdges } from 'blecsd/core';
+import { getAbsoluteEdges, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 const edges = getAbsoluteEdges(world, entity);
 if (edges) {
@@ -142,37 +160,54 @@ if (edges) {
 ### Status Bar at Top
 
 ```typescript
+import { createWorld, addEntity, setAbsoluteTop } from 'blecsd/core';
+import { setDimensions } from 'blecsd/components';
+
+const world = createWorld();
 const statusBar = addEntity(world);
-setDimensions(world, statusBar, '100%', 1);
+setDimensions(world, statusBar, 80, 1);
 setAbsoluteTop(world, statusBar, 0);
 ```
 
 ### Footer at Bottom
 
 ```typescript
+import { createWorld, addEntity, setAbsoluteBottom } from 'blecsd/core';
+import { setDimensions } from 'blecsd/components';
+
+const world = createWorld();
 const footer = addEntity(world);
-setDimensions(world, footer, '100%', 3);
+setDimensions(world, footer, 80, 3);
 setAbsoluteBottom(world, footer, 0);
 ```
 
 ### Sidebar on Right
 
 ```typescript
+import { createWorld, addEntity, setAbsoluteRight } from 'blecsd/core';
+import { setDimensions } from 'blecsd/components';
+
+const world = createWorld();
 const sidebar = addEntity(world);
-setDimensions(world, sidebar, 30, '100%');
+setDimensions(world, sidebar, 30, 24);
 setAbsoluteRight(world, sidebar, 0);
 ```
 
 ### Centered Dialog
 
 ```typescript
+import { createWorld, addEntity, setAbsoluteEdges } from 'blecsd/core';
+import { setDimensions } from 'blecsd/components';
+
+const world = createWorld();
 const dialog = addEntity(world);
 setDimensions(world, dialog, 60, 20);
 
 // Position from screen center
-const screen = getScreenDimensions(world);
-const left = (screen.width - 60) / 2;
-const top = (screen.height - 20) / 2;
+const screenWidth = 80;
+const screenHeight = 24;
+const left = (screenWidth - 60) / 2;
+const top = (screenHeight - 20) / 2;
 
 setAbsoluteEdges(world, dialog, { left, top });
 ```
@@ -180,6 +215,11 @@ setAbsoluteEdges(world, dialog, { left, top });
 ### Corner Positions
 
 ```typescript
+import { createWorld, addEntity, setAbsoluteEdges } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
+
 // Top-left corner
 setAbsoluteEdges(world, entity, { left: 0, top: 0 });
 
@@ -196,8 +236,12 @@ setAbsoluteEdges(world, entity, { right: 0, bottom: 0 });
 ### Margins Around Screen
 
 ```typescript
+import { createWorld, addEntity, setAbsoluteEdges } from 'blecsd/core';
+import { setDimensions } from 'blecsd/components';
+
+const world = createWorld();
 const panel = addEntity(world);
-setDimensions(world, panel, '100%-4', '100%-4');
+setDimensions(world, panel, 76, 20);
 setAbsoluteEdges(world, panel, { left: 2, top: 2 });
 ```
 
@@ -206,6 +250,11 @@ setAbsoluteEdges(world, panel, { left: 2, top: 2 });
 All functions return the entity ID for chaining:
 
 ```typescript
+import { createWorld, addEntity, setAbsoluteRight } from 'blecsd/core';
+import { setDimensions, setStyle } from 'blecsd/components';
+
+const world = createWorld();
+const entity = addEntity(world);
 setDimensions(world, entity, 40, 10);
 setAbsoluteRight(world, entity, 5);
 setStyle(world, entity, { bg: 0x0000ffff });
@@ -228,6 +277,11 @@ element.abottom = 5;   // Absolute bottom
 In blECSd, use functions instead:
 
 ```typescript
+import { createWorld, addEntity, setAbsoluteLeft, setAbsoluteRight, setAbsoluteTop, setAbsoluteBottom, setAbsoluteEdges } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
+
 // blECSd
 setAbsoluteLeft(world, entity, 10);
 setAbsoluteRight(world, entity, 10);
@@ -262,6 +316,11 @@ Absolute positioning requires screen dimensions. The system:
 To ensure correct positioning:
 
 ```typescript
+import { createWorld, addEntity, setAbsoluteRight } from 'blecsd/core';
+import { setDimensions, initScreenComponent, registerScreenSingleton } from 'blecsd/components';
+
+const world = createWorld();
+
 // Create and size screen first
 const screen = addEntity(world);
 initScreenComponent(world, screen);
@@ -269,6 +328,7 @@ registerScreenSingleton(world, screen);
 setDimensions(world, screen, 100, 50);
 
 // Then position elements absolutely
+const sidebar = addEntity(world);
 setAbsoluteRight(world, sidebar, 0);
 ```
 
@@ -291,7 +351,11 @@ setAbsoluteRight(world, sidebar, 0);
 Set position mode explicitly:
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { setAbsolute } from 'blecsd/components';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 setAbsolute(world, entity, true);   // Absolute
 setAbsolute(world, entity, false);  // Relative

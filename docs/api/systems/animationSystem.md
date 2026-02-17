@@ -32,7 +32,11 @@ registerAnimationSystem(scheduler);
 // Register an animation definition
 const walkAnimation = registerAnimation({
   name: 'walk',
-  frames: [{ duration: 0.1 }, { duration: 0.1 }, { duration: 0.1 }],
+  frames: [
+    { frameIndex: 0, duration: 0.1 },
+    { frameIndex: 1, duration: 0.1 },
+    { frameIndex: 2, duration: 0.1 },
+  ],
 });
 
 // Create an animated entity
@@ -50,6 +54,10 @@ function gameLoop(deltaTime: number) {
 Register in the **UPDATE** phase:
 
 ```typescript
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { animationSystem } from 'blecsd/systems';
+
+const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.UPDATE, animationSystem);
 ```
 
@@ -71,8 +79,15 @@ Each frame, the animation system:
 ### System Registration
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { animationSystem, createAnimationSystem, registerAnimationSystem } from 'blecsd/systems';
+
+const world = createWorld();
+const scheduler = createScheduler();
+
 // Register with scheduler (convenience function)
-registerAnimationSystem(scheduler, priority?);
+registerAnimationSystem(scheduler);
 
 // Or create and register manually
 const system = createAnimationSystem();
@@ -130,9 +145,9 @@ const scheduler = createScheduler();
 registerAnimationSystem(scheduler);
 
 // Register animation definitions
-const ANIM_IDLE = registerAnimation({ name: 'idle', frames: [{ duration: 0.2 }, { duration: 0.2 }] });
-const ANIM_WALK = registerAnimation({ name: 'walk', frames: [{ duration: 0.1 }, { duration: 0.1 }] });
-const ANIM_ATTACK = registerAnimation({ name: 'attack', frames: [{ duration: 0.08 }, { duration: 0.08 }] });
+const ANIM_IDLE = registerAnimation({ name: 'idle', frames: [{ frameIndex: 0, duration: 0.2 }, { frameIndex: 1, duration: 0.2 }] });
+const ANIM_WALK = registerAnimation({ name: 'walk', frames: [{ frameIndex: 0, duration: 0.1 }, { frameIndex: 1, duration: 0.1 }] });
+const ANIM_ATTACK = registerAnimation({ name: 'attack', frames: [{ frameIndex: 0, duration: 0.08 }, { frameIndex: 1, duration: 0.08 }] });
 
 // Create player
 const player = addEntity(world);
@@ -169,8 +184,8 @@ const world = createWorld();
 const scheduler = createScheduler();
 registerAnimationSystem(scheduler);
 
-const spinnerAnim = registerAnimation({ name: 'spinner', frames: [{ duration: 0.1 }, { duration: 0.1 }] });
-const blinkAnim = registerAnimation({ name: 'blink', frames: [{ duration: 0.5 }, { duration: 0.5 }] });
+const spinnerAnim = registerAnimation({ name: 'spinner', frames: [{ frameIndex: 0, duration: 0.1 }, { frameIndex: 1, duration: 0.1 }] });
+const blinkAnim = registerAnimation({ name: 'blink', frames: [{ frameIndex: 0, duration: 0.5 }, { frameIndex: 1, duration: 0.5 }] });
 
 // Loading spinner
 const spinner = addEntity(world);

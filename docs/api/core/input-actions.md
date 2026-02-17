@@ -5,10 +5,11 @@ Input action mapping system for game controls. Maps physical inputs (keys, mouse
 ## Quick Start
 
 ```typescript
-import { createInputActionManager, ActionPresets } from 'blecsd/core';
+import { createInputActionManager, ActionPresets, createInputState } from 'blecsd/core';
 
 // Create with preset bindings
-const actions = createInputActionManager(ActionPresets.platformer);
+const presetActions = createInputActionManager(ActionPresets.platformer);
+void presetActions;
 
 // Or define custom bindings
 const actions = createInputActionManager([
@@ -18,9 +19,11 @@ const actions = createInputActionManager([
 ]);
 
 // Query state each frame
+const inputState = createInputState();
+const deltaTime = 16;
 actions.update(inputState, deltaTime);
 if (actions.isJustActivated('jump')) {
-  performJump();
+  console.log('jump!');
 }
 ```
 
@@ -177,7 +180,9 @@ Zod schema for validating serialized binding data.
 ```typescript
 import { SerializedBindingsSchema } from 'blecsd/core';
 
+const loadedData = { version: 1, bindings: [] };
 const result = SerializedBindingsSchema.parse(loadedData);
+void result;
 ```
 
 ## Presets
@@ -213,14 +218,18 @@ const actions = createInputActionManager([
 ]);
 
 // Listen for specific actions
-const unsub = actions.onAction('attack', (action, state) => {
+const unsub = actions.onAction('attack', (_action, state) => {
   if (state.justActivated) {
     console.log('Attack!');
   }
 });
 
 // In game loop
-function update(deltaTime: number) {
+const player = { x: 0, vy: 0 };
+const speed = 5;
+const jumpForce = 10;
+
+const update = (deltaTime: number) => {
   actions.update(inputState, deltaTime);
 
   if (actions.isActive('move_left')) {
@@ -229,7 +238,7 @@ function update(deltaTime: number) {
   if (actions.isJustActivated('jump')) {
     player.vy = -jumpForce;
   }
-}
+};
 
 // Runtime rebinding
 actions.rebindKeys('jump', ['space', 'z']);
@@ -240,4 +249,5 @@ actions.fromJSON(json);
 
 // Cleanup
 unsub();
+void update; void player;
 ```

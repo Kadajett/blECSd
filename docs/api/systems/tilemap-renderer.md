@@ -16,7 +16,9 @@ The tilemap renderer handles:
 
 ```typescript
 import { setTileMapRendererConfig, tilemapRenderSystem, getTileMapRenderBuffer } from 'blecsd/systems';
-import { LoopPhase } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+
+const scheduler = createScheduler();
 
 setTileMapRendererConfig({
   viewportWidth: 80,
@@ -28,6 +30,7 @@ scheduler.registerSystem(LoopPhase.RENDER, tilemapRenderSystem);
 
 // After system runs, read the buffer
 const buffer = getTileMapRenderBuffer();
+void buffer;
 ```
 
 ## Types
@@ -151,9 +154,24 @@ function renderTileMapToBuffer(
 ```
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setTileMap } from 'blecsd/components';
 import { createEmptyBuffer, renderTileMapToBuffer } from 'blecsd/systems';
 
+const world = createWorld();
+const mapEntity = addEntity(world);
+setPosition(world, mapEntity, 0, 0);
+setTileMap(world, mapEntity, {
+  width: 20,
+  height: 10,
+  tileWidth: 1,
+  tileHeight: 1,
+  layers: [{ name: 'base', tiles: [], visible: true }],
+});
+
 const buffer = createEmptyBuffer(80, 24);
+const cameraX = 0;
+const cameraY = 0;
 renderTileMapToBuffer(buffer, mapEntity, cameraX, cameraY);
 ```
 

@@ -25,9 +25,10 @@ const menu = createContextMenu(world, {
 });
 
 // Handle keyboard input
-function onKeyPress(key: string) {
+const onKeyPress = (key: string) => {
   handleContextMenuKey(world, menu, key);
-}
+};
+void onKeyPress;
 ```
 
 ## API Reference
@@ -46,12 +47,15 @@ Context menu item definition.
 
 **Example:**
 ```typescript
+import type { ContextMenuItem } from 'blecsd/widgets';
+
 const items: ContextMenuItem[] = [
-  { label: 'New File', action: () => createFile() },
-  { label: 'Open', action: () => openFile() },
+  { label: 'New File', action: () => console.log('createFile') },
+  { label: 'Open', action: () => console.log('openFile') },
   { separator: true },
-  { label: 'Save', action: () => saveFile(), disabled: !hasChanges },
+  { label: 'Save', action: () => console.log('saveFile') },
 ];
+void items;
 ```
 
 #### ContextMenuConfig
@@ -79,8 +83,10 @@ Creates a context menu widget and returns the container entity.
 
 **Example:**
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createContextMenu } from 'blecsd/widgets';
 
+const world = createWorld();
 const menu = createContextMenu(world, {
   x: 10,
   y: 5,
@@ -91,6 +97,7 @@ const menu = createContextMenu(world, {
     { label: 'Delete', action: () => console.log('Delete'), disabled: true },
   ],
 });
+void menu;
 ```
 
 #### handleContextMenuKey
@@ -112,14 +119,19 @@ Handles keyboard input for context menu navigation and selection.
 
 **Example:**
 ```typescript
-import { handleContextMenuKey } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createContextMenu, handleContextMenuKey } from 'blecsd/widgets';
 
-function onKeyPress(key: string) {
+const world = createWorld();
+const menu = createContextMenu(world, { x: 0, y: 0, items: [{ label: 'A' }] });
+
+const onKeyPress = (key: string) => {
   const handled = handleContextMenuKey(world, menu, key);
   if (!handled) {
     // Handle other keys
   }
-}
+};
+void onKeyPress;
 ```
 
 #### getContextMenuSelectedIndex
@@ -164,33 +176,38 @@ const menu = createContextMenu(world, {
   termWidth: 80,
   termHeight: 24,
   items: [
-    { label: 'New', action: () => handleNew() },
-    { label: 'Open', action: () => handleOpen() },
-    { label: 'Save', action: () => handleSave() },
+    { label: 'New', action: () => console.log('New') },
+    { label: 'Open', action: () => console.log('Open') },
+    { label: 'Save', action: () => console.log('Save') },
     { separator: true },
-    { label: 'Exit', action: () => handleExit() },
+    { label: 'Exit', action: () => console.log('Exit') },
   ],
 });
+void menu;
 ```
 
 ### File Operations Menu
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createContextMenu } from 'blecsd/widgets';
+
+const world = createWorld();
 
 const fileMenu = createContextMenu(world, {
   x: 15,
   y: 10,
   items: [
-    { label: 'New File', action: () => createNewFile() },
-    { label: 'New Folder', action: () => createNewFolder() },
+    { label: 'New File', action: () => console.log('new') },
+    { label: 'New Folder', action: () => console.log('folder') },
     { separator: true },
-    { label: 'Open', action: () => openFileDialog() },
+    { label: 'Open', action: () => console.log('open') },
     { separator: true },
-    { label: 'Rename', action: () => renameFile() },
-    { label: 'Delete', action: () => deleteFile() },
+    { label: 'Rename', action: () => console.log('rename') },
+    { label: 'Delete', action: () => console.log('delete') },
   ],
 });
+void fileMenu;
 ```
 
 ### Conditional Items
@@ -201,84 +218,103 @@ import { createContextMenu } from 'blecsd/widgets';
 
 const world = createWorld();
 const selectedItems = ['file1.txt', 'file2.txt'];
-const clipboard = { hasContent: () => true };
+const clipboardHasContent = true;
 const hasSelection = selectedItems.length > 0;
-const hasClipboard = clipboard.hasContent();
 
 const editMenu = createContextMenu(world, {
   x: 20,
   y: 8,
   items: [
-    { label: 'Copy', action: () => copy(), disabled: !hasSelection },
-    { label: 'Cut', action: () => cut(), disabled: !hasSelection },
-    { label: 'Paste', action: () => paste(), disabled: !hasClipboard },
+    { label: 'Copy', action: () => console.log('copy'), disabled: !hasSelection },
+    { label: 'Cut', action: () => console.log('cut'), disabled: !hasSelection },
+    { label: 'Paste', action: () => console.log('paste'), disabled: !clipboardHasContent },
     { separator: true },
-    { label: 'Delete', action: () => deleteItems(), disabled: !hasSelection },
+    { label: 'Delete', action: () => console.log('delete'), disabled: !hasSelection },
   ],
 });
+void editMenu;
 ```
 
 ### Nested Actions
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createContextMenu } from 'blecsd/widgets';
 
-function showFormatMenu() {
+const world = createWorld();
+
+const showFormatMenu = () => {
   const formatMenu = createContextMenu(world, {
     x: 30,
     y: 10,
     items: [
-      { label: 'Bold', action: () => applyBold() },
-      { label: 'Italic', action: () => applyItalic() },
-      { label: 'Underline', action: () => applyUnderline() },
+      { label: 'Bold', action: () => console.log('bold') },
+      { label: 'Italic', action: () => console.log('italic') },
+      { label: 'Underline', action: () => console.log('underline') },
     ],
   });
-}
+  void formatMenu;
+};
 
 const mainMenu = createContextMenu(world, {
   x: 20,
   y: 8,
   items: [
     { label: 'Format...', action: () => showFormatMenu() },
-    { label: 'Insert...', action: () => showInsertMenu() },
-    { separator: true },
-    { label: 'Close', action: () => closeMenu() },
+    { label: 'Close', action: () => console.log('close') },
   ],
 });
+void mainMenu;
 ```
 
 ### Right-Click Menu
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createContextMenu } from 'blecsd/widgets';
 
-function onRightClick(x: number, y: number, item: FileItem) {
+interface FileItem { name: string }
+
+const world = createWorld();
+const terminalWidth = 80;
+const terminalHeight = 24;
+
+const onRightClick = (x: number, y: number, item: FileItem) => {
   const menu = createContextMenu(world, {
     x,
     y,
     termWidth: terminalWidth,
     termHeight: terminalHeight,
     items: [
-      { label: `Open ${item.name}`, action: () => openFile(item) },
+      { label: `Open ${item.name}`, action: () => console.log('open', item.name) },
       { separator: true },
-      { label: 'Copy', action: () => copyItem(item) },
-      { label: 'Rename', action: () => renameItem(item) },
-      { label: 'Delete', action: () => deleteItem(item) },
-      { separator: true },
-      { label: 'Properties', action: () => showProperties(item) },
+      { label: 'Copy', action: () => console.log('copy') },
+      { label: 'Delete', action: () => console.log('delete') },
     ],
   });
-}
+  void menu;
+};
+void onRightClick;
 ```
 
 ### Keyboard Navigation
 
 ```typescript
-import { handleContextMenuKey, getContextMenuSelectedIndex } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createContextMenu, handleContextMenuKey, getContextMenuSelectedIndex } from 'blecsd/widgets';
+import type { Entity } from 'blecsd/core';
 
-let currentMenu: Entity | null = null;
+const world = createWorld();
 
-function onKeyPress(key: string) {
+let currentMenu: Entity | null = createContextMenu(world, {
+  x: 0,
+  y: 0,
+  items: [{ label: 'Item 1' }, { label: 'Item 2' }],
+});
+
+const updateMenuHighlight = (_idx: number) => {};
+
+const onKeyPress = (key: string) => {
   if (!currentMenu) return;
 
   const handled = handleContextMenuKey(world, currentMenu, key);
@@ -288,28 +324,33 @@ function onKeyPress(key: string) {
     const selectedIndex = getContextMenuSelectedIndex(currentMenu);
     updateMenuHighlight(selectedIndex);
   }
-}
+};
+void onKeyPress;
 ```
 
 ### Dynamic Menu Items
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createContextMenu } from 'blecsd/widgets';
+import type { ContextMenuItem } from 'blecsd/widgets';
 
-function createDynamicMenu(selectedFiles: File[]) {
+const world = createWorld();
+
+const createDynamicMenu = (selectedFiles: string[]) => {
   const items: ContextMenuItem[] = [];
 
   // Always available actions
-  items.push({ label: 'New File', action: () => createFile() });
+  items.push({ label: 'New File', action: () => console.log('new') });
   items.push({ separator: true });
 
   // Conditional actions based on selection
   if (selectedFiles.length === 1) {
-    items.push({ label: 'Rename', action: () => rename(selectedFiles[0]) });
+    items.push({ label: 'Rename', action: () => console.log('rename', selectedFiles[0]) });
   }
 
   if (selectedFiles.length > 0) {
-    items.push({ label: `Delete (${selectedFiles.length})`, action: () => deleteAll(selectedFiles) });
+    items.push({ label: `Delete (${selectedFiles.length})`, action: () => console.log('delete') });
   }
 
   return createContextMenu(world, {
@@ -317,18 +358,22 @@ function createDynamicMenu(selectedFiles: File[]) {
     y: 5,
     items,
   });
-}
+};
+
+void createDynamicMenu;
 ```
 
 ### Auto-Closing Menu
 
 ```typescript
+import { createWorld, removeEntity } from 'blecsd/core';
 import { createContextMenu, handleContextMenuKey } from 'blecsd/widgets';
-import { removeEntity } from 'blecsd/core';
+import type { Entity } from 'blecsd/core';
 
+const world = createWorld();
 let activeMenu: Entity | null = null;
 
-function showMenu(x: number, y: number) {
+const showMenu = (x: number, y: number) => {
   // Close existing menu
   if (activeMenu) {
     removeEntity(world, activeMenu);
@@ -338,38 +383,47 @@ function showMenu(x: number, y: number) {
   activeMenu = createContextMenu(world, {
     x,
     y,
-    items: [...],
+    items: [
+      { label: 'Option 1', action: () => console.log('1') },
+      { label: 'Option 2', action: () => console.log('2') },
+    ],
   });
-}
+};
 
-function onKeyPress(key: string) {
+const onKeyPress = (key: string) => {
   if (activeMenu) {
-    const handled = handleContextMenuKey(world, activeMenu, key);
+    handleContextMenuKey(world, activeMenu, key);
 
     // Menu closes itself on escape or selection
     if (key === 'escape' || key === 'enter') {
       activeMenu = null;
     }
   }
-}
+};
+
+void showMenu; void onKeyPress;
 ```
 
 ### Menu with Keyboard Shortcuts
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createContextMenu } from 'blecsd/widgets';
+
+const world = createWorld();
 
 const menu = createContextMenu(world, {
   x: 10,
   y: 5,
   items: [
-    { label: 'Save (Ctrl+S)', action: () => save() },
-    { label: 'Open (Ctrl+O)', action: () => open() },
-    { label: 'Find (Ctrl+F)', action: () => find() },
+    { label: 'Save (Ctrl+S)', action: () => console.log('save') },
+    { label: 'Open (Ctrl+O)', action: () => console.log('open') },
+    { label: 'Find (Ctrl+F)', action: () => console.log('find') },
     { separator: true },
-    { label: 'Quit (Ctrl+Q)', action: () => quit() },
+    { label: 'Quit (Ctrl+Q)', action: () => console.log('quit') },
   ],
 });
+void menu;
 ```
 
 ## Edge Detection
@@ -377,15 +431,19 @@ const menu = createContextMenu(world, {
 Context menus automatically adjust their position to avoid rendering outside the terminal bounds:
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createContextMenu } from 'blecsd/widgets';
+
+const world = createWorld();
+
 // Menu near right edge - will shift left
 const menu = createContextMenu(world, {
   x: 75,          // Near right edge
   y: 10,
   termWidth: 80,
   termHeight: 24,
-  items: [...],
+  items: [{ label: 'Option 1' }, { label: 'Option 2' }],
 });
-// Menu will be repositioned to fit within terminal width
 
 // Menu near bottom edge - will shift up
 const menu2 = createContextMenu(world, {
@@ -393,9 +451,10 @@ const menu2 = createContextMenu(world, {
   y: 22,          // Near bottom edge
   termWidth: 80,
   termHeight: 24,
-  items: [...],
+  items: [{ label: 'Option 1' }, { label: 'Option 2' }],
 });
-// Menu will be repositioned to fit within terminal height
+
+void menu; void menu2;
 ```
 
 ## Accessibility
@@ -417,44 +476,48 @@ const menu = createContextMenu(world, {
   x: 10,
   y: 5,
   items: [
-    { label: 'Copy', action: () => copy() },
+    { label: 'Copy', action: () => console.log('copy') },
   ],
 });
 
 // Menu container is accessible
 console.log(getAccessibleRole(world, menu)); // "menu"
+void getAccessibleLabel;
 ```
 
 ## Integration with Input System
 
 ```typescript
+import { createWorld, removeEntity } from 'blecsd/core';
 import { createContextMenu, handleContextMenuKey } from 'blecsd/widgets';
+import type { Entity } from 'blecsd/core';
+import type { ContextMenuItem } from 'blecsd/widgets';
 
-class ContextMenuManager {
-  private activeMenu: Entity | null = null;
+const world = createWorld();
+let _activeMenu: Entity | null = null;
 
-  show(world: World, x: number, y: number, items: ContextMenuItem[]) {
-    this.hide(world);
-    this.activeMenu = createContextMenu(world, { x, y, items });
+const showContextMenu = (w: typeof world, x: number, y: number, items: ContextMenuItem[]) => {
+  if (_activeMenu) {
+    removeEntity(w, _activeMenu);
   }
+  _activeMenu = createContextMenu(w, { x, y, items });
+};
 
-  hide(world: World) {
-    if (this.activeMenu) {
-      removeEntity(world, this.activeMenu);
-      this.activeMenu = null;
-    }
+const hideContextMenu = (w: typeof world) => {
+  if (_activeMenu) {
+    removeEntity(w, _activeMenu);
+    _activeMenu = null;
   }
+};
 
-  handleKey(world: World, key: string): boolean {
-    if (!this.activeMenu) return false;
-
-    const handled = handleContextMenuKey(world, this.activeMenu, key);
-
-    if (key === 'escape' || key === 'enter') {
-      this.hide(world);
-    }
-
-    return handled;
+const handleKey = (w: typeof world, key: string): boolean => {
+  if (!_activeMenu) return false;
+  const handled = handleContextMenuKey(w, _activeMenu, key);
+  if (key === 'escape' || key === 'enter') {
+    hideContextMenu(w);
   }
-}
+  return handled;
+};
+
+void showContextMenu; void hideContextMenu; void handleKey;
 ```

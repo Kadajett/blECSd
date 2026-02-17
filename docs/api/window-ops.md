@@ -311,8 +311,7 @@ process.stdout.write(windowOps.popTitle('both'));
 For querying window state (position, size, etc.), use the `query` namespace from the response parser:
 
 ```typescript
-import { parseResponse, isWindowPosition } from 'blecsd/terminal';
-import { query } from 'blecsd/core';
+import { parseResponse, isWindowPosition, query } from 'blecsd/terminal';
 
 // Send position query
 process.stdout.write(query.windowPosition());

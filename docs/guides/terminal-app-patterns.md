@@ -9,7 +9,6 @@ blECSd ships with a `createCommandPalette` widget that provides VS Code-style qu
 ```typescript
 import { createWorld, addEntity } from 'blecsd/core';
 import { createKeyBindingRegistry, registerBinding, matchEvent } from 'blecsd/core';
-import { parseKeyBuffer } from 'blecsd/terminal';
 import { createCommandPalette } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -50,22 +49,20 @@ const palette = createCommandPalette(world, eid, {
 });
 
 // Wire Ctrl+Shift+P to show the palette
-const registry = createKeyBindingRegistry();
-registerBinding(registry, {
+let registry = createKeyBindingRegistry();
+registry = registerBinding(registry, {
   keys: 'ctrl+shift+p',
   action: 'commandPalette.toggle',
 });
 
-process.stdin.on('data', (data) => {
-  const events = parseKeyBuffer(data);
-  for (const key of events) {
-    const matches = matchEvent(registry, key);
-    const toggle = matches.find((m) => m.action === 'commandPalette.toggle');
-    if (toggle) {
-      palette.show();
-    }
-  }
-});
+// In a real app: read from process.stdin and dispatch key events
+// Here we demonstrate matching a simulated key event:
+const simulatedKey = { name: 'p', ctrl: true, shift: true, meta: false, sequence: '\x1b[P', full: 'ctrl+shift+p' };
+const matches = matchEvent(registry, simulatedKey);
+const toggle = matches.find((m) => m.action === 'commandPalette.toggle');
+if (toggle) {
+  palette.show();
+}
 ```
 
 The command palette uses blECSd's `fuzzySearchBy` internally, so results rank by match quality as the user types.

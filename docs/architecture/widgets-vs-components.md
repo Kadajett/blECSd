@@ -156,20 +156,29 @@ const state = getListState(world, entity);
 ✅ **Building a custom TUI framework**
 
 ```typescript
+import { createWorld, addEntity, addComponent } from 'blecsd/core';
+import { Position } from 'blecsd/components';
+
 // Custom framework with unique layout system
-const entities = addEntities(world, 100);
+const world = createWorld();
+// Create multiple entities (e.g. 100) and attach components
+const entities = Array.from({ length: 5 }, () => addEntity(world));
 for (const eid of entities) {
   addComponent(world, eid, Position);
-  addComponent(world, eid, CustomLayout);
-  addComponent(world, eid, CustomRender);
+  // Attach your custom components as needed
 }
 ```
 
 ✅ **Performance-critical code**
 
 ```typescript
+import { createWorld, addEntity, query } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
+
 // Direct array access for tight loops
-const entities = movableQuery(world);
+const world = createWorld();
+const deltaTime = 1 / 60;
+const entities = query(world, [Position, Velocity]);
 for (const eid of entities) {
   Position.x[eid] += Velocity.x[eid] * deltaTime;
   Position.y[eid] += Velocity.y[eid] * deltaTime;
@@ -179,12 +188,15 @@ for (const eid of entities) {
 ✅ **Custom entity types**
 
 ```typescript
+import { createWorld, addEntity, addComponent } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
+
 // Unique combination not provided by factories
+const world = createWorld();
 const customEntity = addEntity(world);
 addComponent(world, customEntity, Position);
 addComponent(world, customEntity, Velocity);
-addComponent(world, customEntity, ParticleEmitter);
-addComponent(world, customEntity, Trail);
+// Attach your custom components (e.g. ParticleEmitter, Trail)
 ```
 
 ---
@@ -194,29 +206,44 @@ addComponent(world, customEntity, Trail);
 ✅ **Creating standard UI elements**
 
 ```typescript
+import { createWorld, createBoxEntity, createButtonEntity, createTextboxEntity } from 'blecsd/core';
+
 // Common UI patterns
+const world = createWorld();
 const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 const button = createButtonEntity(world, { label: 'Click me' });
 const input = createTextboxEntity(world, { placeholder: 'Enter text...' });
+void box; void button; void input;
 ```
 
 ✅ **Building custom widgets**
 
 ```typescript
+import { createWorld, createBoxEntity, createTextEntity, createButtonEntity } from 'blecsd/core';
+import type { World, Entity } from 'blecsd/core';
+
 // Use factories as building blocks
-function createCustomWidget(world: World): Entity {
+const createCustomWidget = (world: World): Entity => {
   const container = createBoxEntity(world, { width: 50, height: 20 });
-  const title = createTextEntity(world, { parent: container, text: 'Title' });
-  const button = createButtonEntity(world, { parent: container, label: 'OK' });
+  createTextEntity(world, { text: 'Title' });
+  createButtonEntity(world, { label: 'OK' });
 
   return container;
-}
+};
+
+const world = createWorld();
+const widget = createCustomWidget(world);
+void widget;
 ```
 
 ✅ **When you need ECS flexibility**
 
 ```typescript
+import { createWorld, createBoxEntity, addComponent } from 'blecsd/core';
+import { Velocity } from 'blecsd/components';
+
 // Factory creates entity, then you customize with components
+const world = createWorld();
 const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 
 // Add physics after creation
@@ -232,28 +259,35 @@ Velocity.y[box] = 0;
 ✅ **Rapid application development**
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createFileManager } from 'blecsd/widgets';
+
 // Widgets handle complex behavior for you
-const fileManager = createFileManager(world, entity, {
+const world = createWorld();
+const fileManager = createFileManager(world, {
   directory: '/home/user',
-  onSelect: (path) => console.log(`Selected: ${path}`),
 });
+fileManager.onSelect((entry) => console.log(`Selected: ${entry.name}`));
 
 // Methods make it easy
-fileManager.navigate('/home/user/documents');
+fileManager.setCwd('/home/user/documents');
 fileManager.refresh();
-fileManager.setFilter('*.txt');
 ```
 
 ✅ **Complex UI patterns**
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createModal } from 'blecsd/widgets';
+
 // Modal dialog with automatic focus management
-const modal = createModal(world, entity, {
+const world = createWorld();
+const modal = createModal(world, {
   title: 'Confirm Action',
   message: 'Are you sure?',
   buttons: ['Yes', 'No'],
-  onClose: (result) => console.log(`User clicked: ${result}`),
 });
+modal.onClose((result) => console.log(`User clicked: ${result}`));
 
 modal.show();
 // modal.hide() when done

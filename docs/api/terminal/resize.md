@@ -15,17 +15,16 @@ The resize module handles:
 ## Quick Start
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import {
   createResizeHandler,
   enableResizeHandling,
   disableResizeHandling,
   getResizeEventBus,
-  setupSigwinchHandler,
   createProgram,
 } from 'blecsd/terminal';
 
 const world = createWorld();
-const screen = createScreenEntity(world, { width: 80, height: 24 });
 const program = createProgram({ useBuffer: true });
 
 // Create resize handler
@@ -50,8 +49,10 @@ disableResizeHandling(program, handler);
 Creates a resize handler for the given world.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createResizeHandler } from 'blecsd/terminal';
 
+const world = createWorld();
 const handler = createResizeHandler(world);
 ```
 
@@ -69,8 +70,11 @@ The handler will automatically:
 Enables resize handling on a Program instance.
 
 ```typescript
-import { enableResizeHandling } from 'blecsd/terminal';
+import { createWorld } from 'blecsd/core';
+import { enableResizeHandling, createResizeHandler, createProgram } from 'blecsd/terminal';
 
+const world = createWorld();
+const program = createProgram({ useBuffer: true });
 const handler = createResizeHandler(world);
 enableResizeHandling(program, handler);
 ```
@@ -80,8 +84,12 @@ enableResizeHandling(program, handler);
 Disables resize handling on a Program instance.
 
 ```typescript
-import { disableResizeHandling } from 'blecsd/terminal';
+import { createWorld } from 'blecsd/core';
+import { disableResizeHandling, createResizeHandler, createProgram } from 'blecsd/terminal';
 
+const world = createWorld();
+const program = createProgram({ useBuffer: true });
+const handler = createResizeHandler(world);
 disableResizeHandling(program, handler);
 ```
 
@@ -90,8 +98,10 @@ disableResizeHandling(program, handler);
 Gets the active resize handler for a world.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { getResizeHandler } from 'blecsd/terminal';
 
+const world = createWorld();
 const handler = getResizeHandler(world);
 if (handler) {
   console.log(`Current size: ${handler.lastWidth}x${handler.lastHeight}`);
@@ -105,8 +115,10 @@ if (handler) {
 Manually triggers a resize. Useful for testing or external size sources.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { triggerResize } from 'blecsd/terminal';
 
+const world = createWorld();
 // Handle resize from external source
 triggerResize(world, process.stdout.columns, process.stdout.rows);
 ```
@@ -120,8 +132,10 @@ This performs all resize handling steps without requiring a Program instance.
 Sets up a SIGWINCH signal handler as an alternative to Program-based handling.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { setupSigwinchHandler } from 'blecsd/terminal';
 
+const world = createWorld();
 const cleanup = setupSigwinchHandler(world);
 
 // When done
@@ -143,10 +157,11 @@ const bus = getResizeEventBus();
 
 bus.on('resize', ({ width, height, previousWidth, previousHeight }) => {
   console.log(`Terminal resized to ${width}x${height}`);
-
+  void previousWidth;
+  void previousHeight;
   // Re-layout UI if needed
   if (width < 60) {
-    enableCompactMode();
+    console.log('compact mode');
   }
 });
 ```
@@ -201,8 +216,6 @@ Complete example with Program and game loop:
 import {
   createWorld,
   createScheduler,
-  LoopPhase,
-  createScreenEntity,
 } from 'blecsd/core';
 import {
   createProgram,
@@ -216,7 +229,7 @@ import { setOutputBuffer } from 'blecsd/systems';
 
 // Create world and screen
 const world = createWorld();
-const screen = createScreenEntity(world, { width: 80, height: 24 });
+const scheduler = createScheduler();
 
 // Set up double buffer
 const db = createDoubleBuffer(80, 24);
@@ -224,7 +237,6 @@ setOutputBuffer(db);
 
 // Create program
 const program = createProgram({ useBuffer: true });
-await program.init();
 
 // Set up resize handling
 const resizeHandler = createResizeHandler(world);
@@ -235,20 +247,12 @@ const unsubscribe = getResizeEventBus().on('resize', ({ width, height }) => {
   console.log(`Resized to ${width}x${height}`);
 });
 
-// Game loop
-let running = true;
-while (running) {
-  // Process systems
-  scheduler.run(world, 1/60);
-
-  // Brief pause
-  await new Promise(r => setTimeout(r, 16));
-}
+// Run one frame
+scheduler.run(world, 1/60);
 
 // Cleanup
 unsubscribe();
 disableResizeHandling(program, resizeHandler);
-program.cleanup();
 ```
 
 ## Best Practices
@@ -262,13 +266,16 @@ program.cleanup();
 4. **Set minimum dimensions** - Guard against extremely small terminal sizes:
 
 ```typescript
+import { getResizeEventBus } from 'blecsd/terminal';
+
 getResizeEventBus().on('resize', ({ width, height }) => {
   if (width < 40 || height < 10) {
-    showTooSmallMessage();
+    console.log('Terminal too small');
     return;
   }
 
   // Normal resize handling
+  console.log(`Resized to ${width}x${height}`);
 });
 ```
 

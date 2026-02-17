@@ -307,11 +307,12 @@ For terminal output during development:
 
 ```typescript
 // Write to stderr to avoid interfering with terminal output
-console.error('Debug:', value);
+const debugValue = 'some value';
+console.error('Debug:', debugValue);
 
 // Or use a debug flag
 if (process.env.DEBUG) {
-  console.error('Debug:', value);
+  console.error('Debug:', debugValue);
 }
 ```
 

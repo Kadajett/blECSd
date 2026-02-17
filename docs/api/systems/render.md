@@ -15,9 +15,11 @@ The render system:
 ## Basic Usage
 
 ```typescript
-import { createScheduler, LoopPhase } from 'blecsd/core';
+import { createScheduler, createWorld, LoopPhase } from 'blecsd/core';
 import { renderSystem, setRenderBuffer } from 'blecsd/systems';
 import { createDoubleBuffer } from 'blecsd/terminal';
+
+const world = createWorld();
 
 // Create double buffer for rendering
 const db = createDoubleBuffer(80, 24);
@@ -30,7 +32,9 @@ const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
 
 // In game loop
+const deltaTime = 1 / 60;
 scheduler.run(world, deltaTime);
+void deltaTime;
 ```
 
 ## Setting Up Rendering
@@ -39,14 +43,15 @@ Before the render system can work, you must set a double buffer:
 
 ```typescript
 import { createDoubleBuffer } from 'blecsd/terminal';
-import { setRenderBuffer, clearRenderBuffer } from 'blecsd/systems';
+import { setRenderBuffer, getRenderBuffer, clearRenderBuffer } from 'blecsd/systems';
 
 // Create and set buffer
 const db = createDoubleBuffer(80, 24);
 setRenderBuffer(db);
 
-// Get current buffer
+// Get current double buffer
 const current = getRenderBuffer(); // Returns DoubleBufferData or null
+void current;
 
 // Clear when done
 clearRenderBuffer();
@@ -59,23 +64,26 @@ Entities are rendered in z-index order:
 ```typescript
 import { setPosition, setZIndex } from 'blecsd/components';
 import { setStyle } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
 
 // Background panel (z=0)
 const background = addEntity(world);
 setPosition(world, background, 0, 0, 0);
-setStyle(world, background, { bg: '#333333' });
+setStyle(world, background, { bg: 0x333333ff });
 
 // Content panel (z=10)
 const content = addEntity(world);
 setPosition(world, content, 10, 5);
 setZIndex(world, content, 10);
-setStyle(world, content, { bg: '#0000ff' });
+setStyle(world, content, { bg: 0x0000ffff });
 
 // Overlay (z=100)
 const overlay = addEntity(world);
 setPosition(world, overlay, 5, 3);
 setZIndex(world, overlay, 100);
-setStyle(world, overlay, { bg: '#ff0000' });
+setStyle(world, overlay, { bg: 0xff0000ff });
 
 // Render order: background -> content -> overlay
 // Higher z-index renders on top
@@ -87,12 +95,8 @@ The render context provides access to rendering resources:
 
 ```typescript
 import type { RenderContext } from 'blecsd/systems';
-
-interface RenderContext {
-  readonly world: World;
-  readonly buffer: ScreenBufferData;
-  readonly doubleBuffer: DoubleBufferData;
-}
+// RenderContext provides: world, buffer (ScreenBufferData), dirtyTracker (DirtyTracker)
+void ({} as unknown as RenderContext);
 ```
 
 ## Render Functions
@@ -102,16 +106,30 @@ interface RenderContext {
 Fills the entity's bounds with its background color:
 
 ```typescript
-import { renderBackground } from 'blecsd/systems';
+import { renderBackground, setRenderBuffer } from 'blecsd/systems';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createDirtyTracker } from 'blecsd/core';
+import { createScreenBuffer } from 'blecsd/terminal';
 
-// Render background for entity
+const world = createWorld();
+const entity = addEntity(world);
+const tracker = createDirtyTracker(80, 24);
+const buffer = createScreenBuffer(80, 24);
+setRenderBuffer(tracker, buffer);
+
+const ctx = { world, buffer, dirtyTracker: tracker };
 renderBackground(ctx, entity, { x: 10, y: 5, width: 20, height: 10 });
 ```
 
 Respects the `transparent` style property:
 
 ```typescript
-setStyle(world, entity, { bg: '#ff0000', transparent: true });
+import { setStyle } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
+setStyle(world, entity, { bg: 0xff0000ff, transparent: true });
 // Background will NOT be rendered
 ```
 
@@ -120,13 +138,22 @@ setStyle(world, entity, { bg: '#ff0000', transparent: true });
 Renders the entity's border if configured:
 
 ```typescript
-import { renderBorder } from 'blecsd/systems';
-import { BorderType } from 'blecsd/components';
-import { setBorder } from 'blecsd/components';
+import { renderBorder, setRenderBuffer } from 'blecsd/systems';
+import { BorderType, setBorder } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createDirtyTracker } from 'blecsd/core';
+import { createScreenBuffer } from 'blecsd/terminal';
+
+const world = createWorld();
+const entity = addEntity(world);
+const tracker = createDirtyTracker(80, 24);
+const buffer = createScreenBuffer(80, 24);
+setRenderBuffer(tracker, buffer);
 
 // Set up border
 setBorder(world, entity, { type: BorderType.Line });
 
+const ctx = { world, buffer, dirtyTracker: tracker };
 // Render border
 renderBorder(ctx, entity, { x: 10, y: 5, width: 20, height: 10 });
 ```
@@ -136,8 +163,19 @@ renderBorder(ctx, entity, { x: 10, y: 5, width: 20, height: 10 });
 Base implementation is a placeholder for widget extensions:
 
 ```typescript
-import { renderContent } from 'blecsd/systems';
+import { renderContent, setRenderBuffer } from 'blecsd/systems';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createDirtyTracker } from 'blecsd/core';
+import { createScreenBuffer } from 'blecsd/terminal';
 
+const world = createWorld();
+const entity = addEntity(world);
+const tracker = createDirtyTracker(80, 24);
+const buffer = createScreenBuffer(80, 24);
+setRenderBuffer(tracker, buffer);
+
+const ctx = { world, buffer, dirtyTracker: tracker };
+const contentBounds = { x: 11, y: 6, width: 18, height: 8 };
 // Called by render system, can be overridden by widgets
 renderContent(ctx, entity, contentBounds);
 ```
@@ -147,8 +185,19 @@ renderContent(ctx, entity, contentBounds);
 Placeholder for scrollable content support:
 
 ```typescript
-import { renderScrollbar } from 'blecsd/systems';
+import { renderScrollbar, setRenderBuffer } from 'blecsd/systems';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createDirtyTracker } from 'blecsd/core';
+import { createScreenBuffer } from 'blecsd/terminal';
 
+const world = createWorld();
+const entity = addEntity(world);
+const tracker = createDirtyTracker(80, 24);
+const buffer = createScreenBuffer(80, 24);
+setRenderBuffer(tracker, buffer);
+
+const ctx = { world, buffer, dirtyTracker: tracker };
+const bounds = { x: 10, y: 5, width: 20, height: 10 };
 // Called by render system when scrollable
 renderScrollbar(ctx, entity, bounds);
 ```
@@ -161,7 +210,9 @@ Writes text to the buffer:
 
 ```typescript
 import { renderText } from 'blecsd/systems';
-import { Attr } from 'blecsd/terminal';
+import { Attr, createScreenBuffer } from 'blecsd/terminal';
+
+const buffer = createScreenBuffer(80, 24);
 
 // Simple text
 renderText(buffer, 10, 5, 'Hello, World!', 0xffffffff, 0x000000ff);
@@ -179,7 +230,9 @@ Fills a rectangular region:
 
 ```typescript
 import { renderRect } from 'blecsd/systems';
-import { createCell } from 'blecsd/terminal';
+import { createCell, createScreenBuffer } from 'blecsd/terminal';
+
+const buffer = createScreenBuffer(80, 24);
 
 // Fill region with blue background
 renderRect(buffer, 10, 5, 20, 10, createCell(' ', 0xffffffff, 0x0000ffff));
@@ -194,6 +247,9 @@ Forces all entities to re-render:
 
 ```typescript
 import { markAllDirty } from 'blecsd/systems';
+import { createWorld } from 'blecsd/core';
+
+const world = createWorld();
 
 // After major state change
 markAllDirty(world);
@@ -205,18 +261,22 @@ The render system uses computed layout for positions:
 
 ```typescript
 import { layoutSystem, renderSystem } from 'blecsd/systems';
+import { createScheduler, createWorld, LoopPhase } from 'blecsd/core';
+
+const world = createWorld();
+const scheduler = createScheduler();
 
 // Layout must run before render
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
+void world;
 ```
 
 ## Complete Render Loop Example
 
 ```typescript
-import { createDoubleBuffer, clearDirtyRegions } from 'blecsd/terminal';
-import { clearDirtyRegions } from 'blecsd/terminal';
 import { createWorld, addEntity } from 'blecsd/core';
+import { createDirtyTracker } from 'blecsd/core';
 import {
   setPosition,
   setDimensions,
@@ -225,40 +285,27 @@ import {
   BorderType,
 } from 'blecsd/components';
 import { layoutSystem, renderSystem, setRenderBuffer } from 'blecsd/systems';
-import { createDoubleBuffer } from 'blecsd/terminal';
+import { createScreenBuffer } from 'blecsd/terminal';
 
 // Setup
 const world = createWorld();
-const db = createDoubleBuffer(80, 24);
-setRenderBuffer(db);
+const tracker = createDirtyTracker(80, 24);
+const buffer = createScreenBuffer(80, 24);
+setRenderBuffer(tracker, buffer);
 
 // Create entity
 const panel = addEntity(world);
 setPosition(world, panel, 10, 5);
 setDimensions(world, panel, 30, 10);
-setStyle(world, panel, { fg: '#ffffff', bg: '#0000ff' });
+setStyle(world, panel, { fg: 0xffffffff, bg: 0x0000ffff });
 setBorder(world, panel, { type: BorderType.Line });
 
-// Render loop
-function render(): void {
-  // Run layout to compute positions
-  layoutSystem(world);
+// Render one frame
+// Run layout to compute positions
+layoutSystem(world);
 
-  // Run render to draw entities
-  renderSystem(world);
-
-  // Get changed cells
-  const updates = getMinimalUpdates(db);
-
-  // Output to terminal (your implementation)
-  for (const { x, y, cell } of updates) {
-    outputCell(x, y, cell);
-  }
-
-  // Swap and clear
-  swapBuffers(db);
-  clearDirtyRegions(db);
-}
+// Run render to draw entities
+renderSystem(world);
 ```
 
 ## API Reference
@@ -283,11 +330,14 @@ function render(): void {
 ### Types
 
 ```typescript
-interface RenderContext {
-  readonly world: World;
-  readonly buffer: ScreenBufferData;
-  readonly doubleBuffer: DoubleBufferData;
-}
+import type { RenderContext } from 'blecsd/systems';
+// RenderContext interface:
+// interface RenderContext {
+//   readonly world: World;
+//   readonly buffer: ScreenBufferData;
+//   readonly dirtyTracker: DirtyTracker;
+// }
+void ({} as unknown as RenderContext);
 ```
 
 ## Performance Tips

@@ -243,9 +243,9 @@ Gets a Unicode ACS character by its terminfo code using the `ACSC_CODES` map.
 ```typescript
 import { ACSC_CODES } from 'blecsd/terminal';
 
-ACSC_CODES.get('l');  // '┌' (upper-left corner, may be undefined)
-ACSC_CODES.get('q');  // '─' (horizontal line)
-ACSC_CODES.get('x');  // '│' (vertical line)
+ACSC_CODES['l'];  // '┌' (upper-left corner, may be undefined)
+ACSC_CODES['q'];  // '─' (horizontal line)
+ACSC_CODES['x'];  // '│' (vertical line)
 ```
 
 **Returns:** `string | undefined` - The Unicode character for that code

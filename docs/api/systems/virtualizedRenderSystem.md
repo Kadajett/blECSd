@@ -33,7 +33,7 @@ import { createWorld, addEntity } from 'blecsd/core';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 import { virtualizedRenderSystem, setVirtualizedRenderBuffer, registerLineStore } from 'blecsd/systems';
 import { setVirtualViewport, setPosition, setDimensions } from 'blecsd/components';
-import { createLineStore } from 'blecsd/utils';
+import { createLineStoreFromLines } from 'blecsd/utils';
 import { createDoubleBuffer } from 'blecsd/terminal';
 
 const world = createWorld();
@@ -53,8 +53,9 @@ setVirtualViewport(world, viewer, {
 });
 
 // Associate content with entity
-const lineStore = createLineStore(largeLogContent);
-registerLineStore(viewer, lineStore);
+const largeLogContent = Array.from({ length: 1000000 }, (_, i) => `Log line ${i}`);
+const lineStore = createLineStoreFromLines(largeLogContent);
+registerLineStore(world, viewer, lineStore);
 
 // Register system
 scheduler.registerSystem(LoopPhase.RENDER, virtualizedRenderSystem);
@@ -65,6 +66,10 @@ scheduler.registerSystem(LoopPhase.RENDER, virtualizedRenderSystem);
 Register in the **RENDER** phase:
 
 ```typescript
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { virtualizedRenderSystem } from 'blecsd/systems';
+
+const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.RENDER, virtualizedRenderSystem);
 ```
 
@@ -83,12 +88,16 @@ Each frame, the virtualized render system:
 ## Buffer Management
 
 ```typescript
+import { createDoubleBuffer } from 'blecsd/terminal';
+import { setVirtualizedRenderBuffer, getVirtualizedRenderBuffer, clearVirtualizedRenderBuffer } from 'blecsd/systems';
+
 // Set the double buffer (required before rendering)
 const db = createDoubleBuffer(80, 24);
 setVirtualizedRenderBuffer(db);
 
 // Get current buffer
 const buffer = getVirtualizedRenderBuffer();
+void buffer;
 
 // Clear buffer reference
 clearVirtualizedRenderBuffer();
@@ -99,19 +108,29 @@ clearVirtualizedRenderBuffer();
 Line stores hold the actual content for virtualized rendering:
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLineStoreFromLines } from 'blecsd/utils';
+import { registerLineStore, getLineStore, updateLineStore, unregisterLineStore } from 'blecsd/systems';
+
+const world = createWorld();
+const entity = addEntity(world);
+const content = ['Line 1', 'Line 2', 'Line 3'];
+const newContent = ['Updated line 1', 'Updated line 2'];
+
 // Register a line store for an entity
-const store = createLineStore(content);
-registerLineStore(entity, store);
+const store = createLineStoreFromLines(content);
+registerLineStore(world, entity, store);
 
 // Get the line store for an entity
-const store = getLineStore(entity);
+const currentStore = getLineStore(world, entity);
+void currentStore;
 
 // Update content (e.g., for streaming)
-const newStore = createLineStore(newContent);
-updateLineStore(entity, newStore);
+const newStore = createLineStoreFromLines(newContent);
+updateLineStore(world, entity, newStore);
 
 // Remove line store
-unregisterLineStore(entity);
+unregisterLineStore(world, entity);
 ```
 
 ## Line Render Configuration
@@ -144,20 +163,26 @@ interface LineRenderConfig {
 ### Setting Configuration
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setLineRenderConfig, getLineRenderConfig, clearLineRenderConfig } from 'blecsd/systems';
+
+const world = createWorld();
+const viewer = addEntity(world);
+
 // Basic styling
-setLineRenderConfig(viewer, {
+setLineRenderConfig(world, viewer, {
   fg: 0xffffffff,
   bg: 0x000000ff,
 });
 
 // With line numbers
-setLineRenderConfig(viewer, {
+setLineRenderConfig(world, viewer, {
   showLineNumbers: true,
   lineNumberWidth: 5,
 });
 
 // Selection highlighting
-setLineRenderConfig(viewer, {
+setLineRenderConfig(world, viewer, {
   selectedFg: 0x000000ff,
   selectedBg: 0x0088ffff,
   cursorFg: 0x000000ff,
@@ -165,10 +190,11 @@ setLineRenderConfig(viewer, {
 });
 
 // Get current config
-const config = getLineRenderConfig(viewer);
+const config = getLineRenderConfig(world, viewer);
+void config;
 
 // Clear config (use defaults)
-clearLineRenderConfig(viewer);
+clearLineRenderConfig(world, viewer);
 ```
 
 ### Default Configuration
@@ -204,16 +230,20 @@ const config = LineRenderConfigSchema.parse({
 ## Example: Log Viewer
 
 ```typescript
-import { setVirtualViewport, scrollByLines, scrollToTop, scrollToBottom } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions, setVirtualViewport, scrollByLines, scrollToTop, scrollToBottom } from 'blecsd/components';
 import {
-  virtualizedRenderSystem,
   setVirtualizedRenderBuffer,
   registerLineStore,
   setLineRenderConfig,
+  updateLineStore,
 } from 'blecsd/systems';
-import { createLineStore } from 'blecsd/utils';
+import { createLineStoreFromLines } from 'blecsd/utils';
+import { createDoubleBuffer } from 'blecsd/terminal';
 
 const world = createWorld();
+
+setVirtualizedRenderBuffer(createDoubleBuffer(80, 24));
 
 // Create log viewer
 const logViewer = addEntity(world);
@@ -225,7 +255,7 @@ setVirtualViewport(world, logViewer, {
 });
 
 // Configure appearance
-setLineRenderConfig(logViewer, {
+setLineRenderConfig(world, logViewer, {
   fg: 0xccccccff,
   bg: 0x1a1a1aff,
   showLineNumbers: true,
@@ -233,61 +263,62 @@ setLineRenderConfig(logViewer, {
   cursorBg: 0x333333ff,
 });
 
+// Initialize with empty store first
+registerLineStore(world, logViewer, createLineStoreFromLines([]));
+
 // Stream logs
 let logLines: string[] = [];
+const followMode = true;
 
-function appendLog(line: string) {
+const appendLog = (line: string): void => {
   logLines.push(line);
-  updateLineStore(logViewer, createLineStore(logLines));
-
-  // Update total line count
-  setViewportTotalLines(world, logViewer, logLines.length);
+  updateLineStore(world, logViewer, createLineStoreFromLines(logLines));
 
   // Auto-scroll to bottom if following
-  if (isFollowMode(logViewer)) {
+  if (followMode) {
     scrollToBottom(world, logViewer);
   }
-}
+};
 
 // Handle keyboard
-function onKeyPress(key: string) {
+const onKeyPress = (key: string): void => {
   switch (key) {
-    case 'up':
-      scrollByLines(world, logViewer, -1);
-      break;
-    case 'down':
-      scrollByLines(world, logViewer, 1);
-      break;
-    case 'pageup':
-      scrollByLines(world, logViewer, -20);
-      break;
-    case 'pagedown':
-      scrollByLines(world, logViewer, 20);
-      break;
-    case 'g':
-      scrollToTop(world, logViewer);
-      break;
-    case 'G':
-      scrollToBottom(world, logViewer);
-      break;
+    case 'up': scrollByLines(world, logViewer, -1); break;
+    case 'down': scrollByLines(world, logViewer, 1); break;
+    case 'pageup': scrollByLines(world, logViewer, -20); break;
+    case 'pagedown': scrollByLines(world, logViewer, 20); break;
+    case 'g': scrollToTop(world, logViewer); break;
+    case 'G': scrollToBottom(world, logViewer); break;
   }
-}
+};
+
+appendLog('Application started');
+onKeyPress('down');
 ```
 
 ## Example: Code Editor
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions, setVirtualViewport } from 'blecsd/components';
+import { registerLineStore, setLineRenderConfig } from 'blecsd/systems';
+import { createLineStoreFromLines } from 'blecsd/utils';
+
+const world = createWorld();
+
+const sourceCode = ['const x = 1;', 'const y = 2;', 'console.log(x + y);'];
+
 // Create editor with syntax highlighting
 const editor = addEntity(world);
 setPosition(world, editor, 0, 1);
 setDimensions(world, editor, 80, 22);
-attachVirtualViewport(world, editor, {
+setVirtualViewport(world, editor, {
   totalLineCount: sourceCode.length,
   visibleLineCount: 22,
 });
 
 // Line numbers and cursor
-setLineRenderConfig(editor, {
+setLineRenderConfig(world, editor, {
   fg: 0xd4d4d4ff,
   bg: 0x1e1e1eff,
   showLineNumbers: true,
@@ -298,26 +329,33 @@ setLineRenderConfig(editor, {
   selectedBg: 0x264f78ff,
 });
 
-// Syntax highlighted content
-const highlightedLines = sourceCode.map(line =>
-  applySyntaxHighlighting(line, 'typescript')
-);
-registerLineStore(editor, createLineStore(highlightedLines));
+// Register source code content (apply your own highlighting)
+registerLineStore(world, editor, createLineStoreFromLines(sourceCode));
 ```
 
 ## Example: Dual Pane File Manager
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions, setVirtualViewport } from 'blecsd/components';
+import { registerLineStore, setLineRenderConfig } from 'blecsd/systems';
+import { createLineStoreFromLines } from 'blecsd/utils';
+
+const world = createWorld();
+
+const leftFiles = ['file1.ts', 'file2.ts', 'README.md'];
+const rightFiles = ['dist/', 'node_modules/', 'package.json'];
+
 // Left pane
 const leftPane = addEntity(world);
 setPosition(world, leftPane, 0, 1);
 setDimensions(world, leftPane, 39, 22);
-attachVirtualViewport(world, leftPane, {
+setVirtualViewport(world, leftPane, {
   totalLineCount: leftFiles.length,
   visibleLineCount: 22,
 });
-registerLineStore(leftPane, createLineStore(formatFiles(leftFiles)));
-setLineRenderConfig(leftPane, {
+registerLineStore(world, leftPane, createLineStoreFromLines(leftFiles));
+setLineRenderConfig(world, leftPane, {
   cursorBg: 0x0066ccff,
 });
 
@@ -325,31 +363,39 @@ setLineRenderConfig(leftPane, {
 const rightPane = addEntity(world);
 setPosition(world, rightPane, 41, 1);
 setDimensions(world, rightPane, 39, 22);
-attachVirtualViewport(world, rightPane, {
+setVirtualViewport(world, rightPane, {
   totalLineCount: rightFiles.length,
   visibleLineCount: 22,
 });
-registerLineStore(rightPane, createLineStore(formatFiles(rightFiles)));
-setLineRenderConfig(rightPane, {
+registerLineStore(world, rightPane, createLineStoreFromLines(rightFiles));
+setLineRenderConfig(world, rightPane, {
   cursorBg: 0x0066ccff,
 });
 
 // Track active pane
 let activePane = leftPane;
 
-function switchPane() {
+const switchPane = (): void => {
   activePane = activePane === leftPane ? rightPane : leftPane;
-}
+};
+
+switchPane();
 ```
 
 ## Cleanup
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { cleanupVirtualizedRenderSystem, cleanupEntityResources } from 'blecsd/systems';
+
+const world = createWorld();
+const entity = addEntity(world);
+
 // Clean up all resources
-cleanupVirtualizedRenderSystem();
+cleanupVirtualizedRenderSystem(world);
 
 // Clean up specific entity
-cleanupEntityResources(entity);
+cleanupEntityResources(world, entity);
 ```
 
 ## Performance Considerations

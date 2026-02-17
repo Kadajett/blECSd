@@ -13,6 +13,7 @@ import {
   // Error codes
   ValidationErrorCode,
   EntityErrorCode,
+  TerminalErrorCode,
   // Type guards
   isValidationError,
   isEntityError,
@@ -25,6 +26,22 @@ import {
   toNativeError,
   fromNativeError,
 } from 'blecsd/errors';
+
+const validationErr = createValidationError(
+  ValidationErrorCode.INVALID_INPUT,
+  'Test error'
+);
+const entityErr = createEntityError(EntityErrorCode.NOT_FOUND, 'Not found');
+const termErr = createTerminalError(TerminalErrorCode.NOT_INITIALIZED, 'Terminal not ready');
+void validationErr; void entityErr; void termErr;
+void isValidationError; void isEntityError; void isOk; void err;
+const r = ok(1);
+const safeVal = unwrapOr(r, 0);
+void safeVal;
+const nativeErr = toNativeError(validationErr);
+void nativeErr;
+const extracted = fromNativeError(nativeErr);
+void extracted;
 ```
 
 ---
@@ -84,12 +101,12 @@ Each error kind has specific error codes for programmatic handling.
 ```typescript
 import { ValidationErrorCode } from 'blecsd/errors';
 
-ValidationErrorCode.INVALID_INPUT          // Generic validation failure
-ValidationErrorCode.INVALID_HEX_COLOR      // Invalid hex color format
-ValidationErrorCode.INVALID_DIMENSION      // Invalid dimension value
-ValidationErrorCode.SCHEMA_VALIDATION_FAILED // Zod schema failed
-ValidationErrorCode.REQUIRED_FIELD_MISSING // Required field missing
-ValidationErrorCode.VALUE_OUT_OF_RANGE     // Value out of range
+void ValidationErrorCode.INVALID_INPUT;          // Generic validation failure
+void ValidationErrorCode.INVALID_HEX_COLOR;      // Invalid hex color format
+void ValidationErrorCode.INVALID_DIMENSION;      // Invalid dimension value
+void ValidationErrorCode.SCHEMA_VALIDATION_FAILED; // Zod schema failed
+void ValidationErrorCode.REQUIRED_FIELD_MISSING; // Required field missing
+void ValidationErrorCode.VALUE_OUT_OF_RANGE;     // Value out of range
 ```
 
 ### EntityErrorCode
@@ -97,11 +114,11 @@ ValidationErrorCode.VALUE_OUT_OF_RANGE     // Value out of range
 ```typescript
 import { EntityErrorCode } from 'blecsd/errors';
 
-EntityErrorCode.NOT_FOUND           // Entity not found
-EntityErrorCode.ALREADY_EXISTS      // Entity already exists
-EntityErrorCode.INVALID_ID          // Invalid entity ID
-EntityErrorCode.MISSING_COMPONENT   // Missing required component
-EntityErrorCode.HIERARCHY_ERROR     // Parent/child error
+void EntityErrorCode.NOT_FOUND;           // Entity not found
+void EntityErrorCode.ALREADY_EXISTS;      // Entity already exists
+void EntityErrorCode.INVALID_ID;          // Invalid entity ID
+void EntityErrorCode.MISSING_COMPONENT;   // Missing required component
+void EntityErrorCode.HIERARCHY_ERROR;     // Parent/child error
 ```
 
 ### ComponentErrorCode
@@ -109,10 +126,10 @@ EntityErrorCode.HIERARCHY_ERROR     // Parent/child error
 ```typescript
 import { ComponentErrorCode } from 'blecsd/errors';
 
-ComponentErrorCode.NOT_FOUND             // Component not on entity
-ComponentErrorCode.ALREADY_EXISTS        // Component already exists
-ComponentErrorCode.INVALID_DATA          // Invalid component data
-ComponentErrorCode.STORE_NOT_INITIALIZED // Store not ready
+void ComponentErrorCode.NOT_FOUND;             // Component not on entity
+void ComponentErrorCode.ALREADY_EXISTS;        // Component already exists
+void ComponentErrorCode.INVALID_DATA;          // Invalid component data
+void ComponentErrorCode.STORE_NOT_INITIALIZED; // Store not ready
 ```
 
 ### SystemErrorCode
@@ -120,10 +137,10 @@ ComponentErrorCode.STORE_NOT_INITIALIZED // Store not ready
 ```typescript
 import { SystemErrorCode } from 'blecsd/errors';
 
-SystemErrorCode.LOOP_ALREADY_RUNNING    // Game loop running
-SystemErrorCode.LOOP_NOT_RUNNING        // Game loop not running
-SystemErrorCode.SYSTEM_EXECUTION_FAILED // System threw error
-SystemErrorCode.PHASE_NOT_FOUND         // Unknown phase
+void SystemErrorCode.LOOP_ALREADY_RUNNING;    // Game loop running
+void SystemErrorCode.LOOP_NOT_RUNNING;        // Game loop not running
+void SystemErrorCode.SYSTEM_EXECUTION_FAILED; // System threw error
+void SystemErrorCode.PHASE_NOT_FOUND;         // Unknown phase
 ```
 
 ### TerminalErrorCode
@@ -131,10 +148,10 @@ SystemErrorCode.PHASE_NOT_FOUND         // Unknown phase
 ```typescript
 import { TerminalErrorCode } from 'blecsd/errors';
 
-TerminalErrorCode.NOT_INITIALIZED        // Terminal not ready
-TerminalErrorCode.TERMINFO_NOT_FOUND     // Missing terminfo
-TerminalErrorCode.CAPABILITY_NOT_SUPPORTED // Feature unavailable
-TerminalErrorCode.WRITE_FAILED           // Output failed
+void TerminalErrorCode.NOT_INITIALIZED;        // Terminal not ready
+void TerminalErrorCode.TERMINFO_NOT_FOUND;     // Missing terminfo
+void TerminalErrorCode.CAPABILITY_NOT_SUPPORTED; // Feature unavailable
+void TerminalErrorCode.WRITE_FAILED;           // Output failed
 ```
 
 ### InputErrorCode
@@ -142,9 +159,9 @@ TerminalErrorCode.WRITE_FAILED           // Output failed
 ```typescript
 import { InputErrorCode } from 'blecsd/errors';
 
-InputErrorCode.INVALID_KEY_SEQUENCE   // Bad key input
-InputErrorCode.INVALID_MOUSE_EVENT    // Bad mouse input
-InputErrorCode.BUFFER_OVERFLOW        // Too many events queued
+void InputErrorCode.INVALID_KEY_SEQUENCE;   // Bad key input
+void InputErrorCode.INVALID_MOUSE_EVENT;    // Bad mouse input
+void InputErrorCode.BUFFER_OVERFLOW;        // Too many events queued
 ```
 
 ### RenderErrorCode
@@ -152,9 +169,9 @@ InputErrorCode.BUFFER_OVERFLOW        // Too many events queued
 ```typescript
 import { RenderErrorCode } from 'blecsd/errors';
 
-RenderErrorCode.BUFFER_NOT_INITIALIZED // Screen buffer not ready
-RenderErrorCode.INVALID_COORDINATES    // Out of bounds
-RenderErrorCode.CYCLE_TIMEOUT          // Render took too long
+void RenderErrorCode.BUFFER_NOT_INITIALIZED; // Screen buffer not ready
+void RenderErrorCode.INVALID_COORDINATES;    // Out of bounds
+void RenderErrorCode.CYCLE_TIMEOUT;          // Render took too long
 ```
 
 ### ConfigErrorCode
@@ -162,9 +179,9 @@ RenderErrorCode.CYCLE_TIMEOUT          // Render took too long
 ```typescript
 import { ConfigErrorCode } from 'blecsd/errors';
 
-ConfigErrorCode.INVALID_GAME_CONFIG   // Bad game config
-ConfigErrorCode.INVALID_WIDGET_CONFIG // Bad widget config
-ConfigErrorCode.MISSING_REQUIRED      // Missing required option
+void ConfigErrorCode.INVALID_GAME_CONFIG;   // Bad game config
+void ConfigErrorCode.INVALID_WIDGET_CONFIG; // Bad widget config
+void ConfigErrorCode.MISSING_REQUIRED;      // Missing required option
 ```
 
 ---
@@ -188,6 +205,7 @@ const error = createValidationError(
     },
   }
 );
+void error;
 ```
 
 ### createEntityError
@@ -205,6 +223,7 @@ const error = createEntityError(
     },
   }
 );
+void error;
 ```
 
 ### createComponentError
@@ -222,20 +241,42 @@ const error = createComponentError(
     },
   }
 );
+void error;
 ```
 
 ### All Factory Functions
 
 ```typescript
-createValidationError(code, message, options?)
-createTerminalError(code, message, options?)
-createSystemError(code, message, options?)
-createEntityError(code, message, options?)
-createComponentError(code, message, options?)
-createInputError(code, message, options?)
-createRenderError(code, message, options?)
-createConfigError(code, message, options?)
-createInternalError(code, message, options?)
+import {
+  createValidationError,
+  createTerminalError,
+  createSystemError,
+  createEntityError,
+  createComponentError,
+  createInputError,
+  createRenderError,
+  createConfigError,
+  createInternalError,
+  ValidationErrorCode,
+  TerminalErrorCode,
+  SystemErrorCode,
+  EntityErrorCode,
+  ComponentErrorCode,
+  InputErrorCode,
+  RenderErrorCode,
+  ConfigErrorCode,
+  InternalErrorCode,
+} from 'blecsd/errors';
+
+void createValidationError(ValidationErrorCode.INVALID_INPUT, 'msg');
+void createTerminalError(TerminalErrorCode.NOT_INITIALIZED, 'msg');
+void createSystemError(SystemErrorCode.LOOP_NOT_RUNNING, 'msg');
+void createEntityError(EntityErrorCode.NOT_FOUND, 'msg');
+void createComponentError(ComponentErrorCode.NOT_FOUND, 'msg');
+void createInputError(InputErrorCode.INVALID_KEY_SEQUENCE, 'msg');
+void createRenderError(RenderErrorCode.BUFFER_NOT_INITIALIZED, 'msg');
+void createConfigError(ConfigErrorCode.MISSING_REQUIRED, 'msg');
+void createInternalError(InternalErrorCode.UNEXPECTED_STATE, 'msg');
 ```
 
 ---
@@ -246,6 +287,10 @@ Use type guards to narrow error types:
 
 ```typescript
 import {
+  createValidationError,
+  createEntityError,
+  ValidationErrorCode,
+  EntityErrorCode,
   isValidationError,
   isEntityError,
   isComponentError,
@@ -259,26 +304,32 @@ import {
   isErrorKind,
 } from 'blecsd/errors';
 
-function handleError(error: BlECSdError) {
-  if (isValidationError(error)) {
-    // error is ValidationError
-    console.log('Validation failed:', error.context?.zodIssues);
-  } else if (isEntityError(error)) {
-    // error is EntityError
-    console.log('Entity error:', error.context?.entityId);
-  }
+const sampleError = createValidationError(ValidationErrorCode.INVALID_INPUT, 'test');
+
+if (isValidationError(sampleError)) {
+  // sampleError is ValidationError
+  console.log('Validation failed:', sampleError.context?.zodIssues);
+} else if (isEntityError(sampleError)) {
+  // sampleError is EntityError
+  console.log('Entity error:', sampleError.context?.entityId);
 }
 
 // Check by kind string
-if (isErrorKind(error, 'validation')) {
-  // error.kind === 'validation'
+if (isErrorKind(sampleError, 'validation')) {
+  // sampleError.kind === 'validation'
 }
+
+void isComponentError; void isSystemError; void isTerminalError;
+void isInputError; void isRenderError; void isConfigError; void isInternalError;
+void isBlECSdError;
 ```
 
 ### Additional Guards
 
 ```typescript
 import {
+  createValidationError,
+  ValidationErrorCode,
   hasContext,
   hasCause,
   hasZodIssues,
@@ -286,15 +337,21 @@ import {
   hasBlECSdErrorShape,
 } from 'blecsd/errors';
 
-if (hasContext(error)) {
-  console.log(error.context.entityId);
+const guardError = createValidationError(ValidationErrorCode.INVALID_INPUT, 'test', {
+  context: { entityId: 1 }
+});
+
+if (hasContext(guardError)) {
+  console.log(guardError.context.entityId);
 }
 
-if (hasZodIssues(error)) {
-  error.context.zodIssues.forEach(issue => {
+if (hasZodIssues(guardError)) {
+  guardError.context.zodIssues.forEach(issue => {
     console.log(issue.path, issue.message);
   });
 }
+
+void hasCause; void hasErrorCode; void hasBlECSdErrorShape;
 ```
 
 ---
@@ -316,7 +373,9 @@ const blError = createValidationError(
 );
 
 // Convert to native Error for throw/catch
-throw toNativeError(blError);
+const nativeError = toNativeError(blError);
+void nativeError;
+// throw nativeError; -- would throw in real use
 ```
 
 ### fromNativeError
@@ -324,10 +383,12 @@ throw toNativeError(blError);
 Extract BlECSd error data from a caught native Error:
 
 ```typescript
-import { toNativeError, fromNativeError, isValidationError } from 'blecsd/errors';
+import { createValidationError, ValidationErrorCode, toNativeError, fromNativeError, isValidationError } from 'blecsd/errors';
+
+const blError2 = createValidationError(ValidationErrorCode.INVALID_INPUT, 'Test');
 
 try {
-  throw toNativeError(blError);
+  throw toNativeError(blError2);
 } catch (e) {
   const extracted = fromNativeError(e);
   if (extracted && isValidationError(extracted)) {
@@ -348,6 +409,7 @@ try {
 } catch (e) {
   const wrapped = wrapError(e, 'config', 'CONFIG_ERROR');
   // wrapped is a ConfigError with the original error as cause
+  void wrapped;
 }
 ```
 
@@ -375,12 +437,15 @@ const result = divide(10, 2);
 
 const failed = divide(10, 0);
 // failed: { ok: false, error: 'Division by zero' }
+void result; void failed;
 ```
 
 ### Checking Results
 
 ```typescript
-import { isOk, isErr } from 'blecsd/errors';
+import { ok, isOk, isErr } from 'blecsd/errors';
+
+const result = ok(5);
 
 if (isOk(result)) {
   console.log('Value:', result.value);
@@ -394,9 +459,11 @@ if (isErr(result)) {
 ### Unwrapping Values
 
 ```typescript
-import { unwrap, unwrapOr, unwrapOrElse } from 'blecsd/errors';
+import { ok, unwrap, unwrapOr, unwrapOrElse } from 'blecsd/errors';
 
-// Throws if Err
+const result = ok(42);
+
+// Returns value (throws if Err)
 const value = unwrap(result);
 
 // Returns default if Err
@@ -407,6 +474,8 @@ const computed = unwrapOrElse(result, (error) => {
   console.error(error);
   return -1;
 });
+
+void value; void safeValue; void computed;
 ```
 
 ### Transforming Results
@@ -430,6 +499,8 @@ function sqrt(x: number): Result<number, string> {
 
 const chained = flatMap(ok(16), sqrt);
 // chained: { ok: true, value: 4 }
+
+void doubled; void mapped; void chained;
 ```
 
 ---
@@ -452,7 +523,7 @@ interface BoxConfig {
   height: number;
 }
 
-function validateBoxConfig(config: unknown): Result<BoxConfig> {
+function validateBoxConfig(config: unknown): Result<BoxConfig, ReturnType<typeof createValidationError>> {
   if (typeof config !== 'object' || config === null) {
     return err(createValidationError(
       ValidationErrorCode.INVALID_INPUT,
@@ -480,6 +551,9 @@ function validateBoxConfig(config: unknown): Result<BoxConfig> {
 
   return ok({ width, height });
 }
+
+const boxResult = validateBoxConfig({ width: 100, height: 50 });
+void boxResult;
 ```
 
 ### Handling Entity Operations
@@ -490,31 +564,18 @@ import {
   EntityErrorCode,
   toNativeError,
   isEntityError,
+  fromNativeError,
 } from 'blecsd/errors';
 
-function getEntityPosition(world: World, eid: number) {
-  if (!entityExists(world, eid)) {
-    throw toNativeError(createEntityError(
-      EntityErrorCode.NOT_FOUND,
-      `Entity ${eid} does not exist`,
-      { context: { entityId: eid } }
-    ));
-  }
+// Create an entity error and wrap it as native
+const entityErr = createEntityError(
+  EntityErrorCode.NOT_FOUND,
+  'Entity 999 does not exist',
+  { context: { entityId: 999 } }
+);
 
-  if (!hasPosition(world, eid)) {
-    throw toNativeError(createEntityError(
-      EntityErrorCode.MISSING_COMPONENT,
-      `Entity ${eid} has no Position component`,
-      { context: { entityId: eid, componentName: 'Position' } }
-    ));
-  }
-
-  return getPosition(world, eid);
-}
-
-// Usage
 try {
-  const pos = getEntityPosition(world, 999);
+  throw toNativeError(entityErr);
 } catch (e) {
   const error = fromNativeError(e);
   if (error && isEntityError(error)) {
@@ -530,56 +591,35 @@ try {
 }
 ```
 
-### Game Loop Error Handling
+### Best Practices
 
 ```typescript
-import { createGameLoop } from 'blecsd/core';
-import { createSystemError, SystemErrorCode, isSystemError } from 'blecsd/errors';
+import {
+  createValidationError,
+  createEntityError,
+  createInternalError,
+  ValidationErrorCode,
+  EntityErrorCode,
+  InternalErrorCode,
+  toNativeError,
+  ok,
+  err,
+  flatMap,
+  map,
+  unwrapOr,
+} from 'blecsd/errors';
+import type { Result } from 'blecsd/errors';
 
-const game = createGameLoop({ width: 80, height: 24 });
-
-game.onUpdate((world, delta) => {
-  try {
-    // Game logic that might fail
-    updateEntities(world, delta);
-  } catch (e) {
-    const error = fromNativeError(e);
-    if (error && isSystemError(error)) {
-      // Handle gracefully, maybe pause the game
-      game.stop();
-      showErrorDialog(error.message);
-    } else {
-      // Re-throw unknown errors
-      throw e;
-    }
-  }
-});
-```
-
----
-
-## Best Practices
-
-### 1. Use Specific Error Codes
-
-```typescript
-// Good: Specific error code
+// 1. Use Specific Error Codes
 createValidationError(
   ValidationErrorCode.INVALID_HEX_COLOR,
   'Invalid color format'
 );
 
-// Avoid: Generic error code
-createValidationError(
-  ValidationErrorCode.INVALID_INPUT,
-  'Invalid color format'
-);
-```
-
-### 2. Include Context
-
-```typescript
-// Good: Rich context for debugging
+// 2. Include Context
+const eid = 42;
+const dx = 1;
+const dy = 0;
 createEntityError(
   EntityErrorCode.MISSING_COMPONENT,
   'Position component required for movement',
@@ -592,50 +632,27 @@ createEntityError(
     },
   }
 );
-```
 
-### 3. Use Result for Recoverable Operations
+// 3. Use Result for Recoverable Operations
+const findItem = (items: string[], name: string): Result<string, ReturnType<typeof createEntityError>> =>
+  items.find(e => e === name)
+    ? ok(items.find(e => e === name) as string)
+    : err(createEntityError(EntityErrorCode.NOT_FOUND, `Item ${name} not found`));
 
-```typescript
-// Use Result when caller should handle failure
-function findEntity(name: string): Result<Entity> {
-  const entity = entities.find(e => e.name === name);
-  return entity ? ok(entity) : err(createEntityError(...));
-}
-
-// Use throw for programmer errors
-function requireEntity(name: string): Entity {
-  const entity = entities.find(e => e.name === name);
-  if (!entity) {
-    throw toNativeError(createInternalError(...));
-  }
-  return entity;
-}
-```
-
-### 4. Chain Result Operations
-
-```typescript
-import { flatMap, map, unwrapOr } from 'blecsd/errors';
-
-const result = flatMap(
-  validateConfig(input),
-  config => flatMap(
-    createEntity(world, config),
-    entity => map(
-      addComponents(world, entity),
-      () => entity
-    )
-  )
+// 4. Chain Result Operations
+const items = ['foo', 'bar'];
+const chainResult = flatMap(
+  findItem(items, 'foo'),
+  item => ok(item.toUpperCase())
 );
 
-const entity = unwrapOr(result, null);
+const finalValue = unwrapOr(chainResult, 'default');
+void finalValue;
 ```
 
 ---
 
 ## See Also
 
-- Game API - High-level game creation
 - Components - ECS components
 - Systems - ECS systems

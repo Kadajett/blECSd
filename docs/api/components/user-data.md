@@ -2,13 +2,29 @@
 
 Store arbitrary application-specific data on entities. Provides blessed-compatible `_data` storage for attaching custom metadata, state, or references to any entity.
 
+## Import
+
+```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import {
+  setUserData,
+  getUserData,
+  getOrCreateUserData,
+  hasUserData,
+  removeUserData,
+  clearAllUserData,
+  getUserDataCount,
+} from 'blecsd/components';
+
+const world = createWorld();
+const entity = addEntity(world);
+```
+
 ## How do I store user data on an entity?
 
 ### setUserData
 
 ```typescript
-import { setUserData } from 'blecsd/components';
-
 setUserData(world, entity, {
   customId: 'player1',
   inventory: ['sword', 'shield'],
@@ -29,8 +45,6 @@ setUserData(world, entity, {
 Get user data for an entity. Returns `undefined` if the entity has no user data.
 
 ```typescript
-import { getUserData } from 'blecsd/components';
-
 const data = getUserData(world, entity);
 if (data) {
   console.log('Custom ID:', data.customId);
@@ -46,10 +60,8 @@ if (data) {
 Get existing user data or create an empty object if none exists. Useful for lazy initialization.
 
 ```typescript
-import { getOrCreateUserData } from 'blecsd/components';
-
-const data = getOrCreateUserData(world, entity);
-data.newProperty = 'value'; // Safe to assign
+const userData = getOrCreateUserData(world, entity);
+userData.newProperty = 'value'; // Safe to assign
 ```
 
 **Parameters:** `world` (ECS world), `eid` (entity ID)
@@ -63,8 +75,6 @@ data.newProperty = 'value'; // Safe to assign
 ### hasUserData
 
 ```typescript
-import { hasUserData } from 'blecsd/components';
-
 if (hasUserData(world, entity)) {
   console.log('Entity has custom data');
 }
@@ -81,8 +91,6 @@ if (hasUserData(world, entity)) {
 ### removeUserData
 
 ```typescript
-import { removeUserData } from 'blecsd/components';
-
 removeUserData(world, entity);
 ```
 
@@ -99,8 +107,6 @@ removeUserData(world, entity);
 Remove user data from all entities. Useful for testing or cleanup.
 
 ```typescript
-import { clearAllUserData } from 'blecsd/components';
-
 clearAllUserData();
 ```
 
@@ -109,8 +115,6 @@ clearAllUserData();
 Get the total number of entities with user data. Useful for debugging and metrics.
 
 ```typescript
-import { getUserDataCount } from 'blecsd/components';
-
 console.log(`${getUserDataCount()} entities have user data`);
 ```
 
@@ -155,7 +159,9 @@ setUserData(world, player, {
 Share data between systems without tight coupling:
 
 ```typescript
-// System A stores a reference
+function saveGame() { /* ... */ }
+function closeDialog() { /* ... */ }
+
 const dialogEntity = addEntity(world);
 setUserData(world, dialogEntity, {
   callbacks: {
@@ -164,10 +170,10 @@ setUserData(world, dialogEntity, {
   }
 });
 
-// System B retrieves and uses it
-const data = getUserData(world, dialogEntity);
-if (data?.callbacks?.onConfirm) {
-  data.callbacks.onConfirm();
+// Retrieve and use it
+const dialogData = getUserData(world, dialogEntity);
+if (dialogData?.callbacks?.onConfirm) {
+  (dialogData.callbacks.onConfirm as () => void)();
 }
 ```
 
@@ -176,6 +182,10 @@ if (data?.callbacks?.onConfirm) {
 Store state that doesn't need a dedicated component:
 
 ```typescript
+const draggedEntity = addEntity(world);
+const mouseX = 10;
+const mouseY = 20;
+
 // During drag operation
 setUserData(world, draggedEntity, {
   dragStartX: mouseX,
@@ -187,22 +197,6 @@ setUserData(world, draggedEntity, {
 removeUserData(world, draggedEntity);
 ```
 
-### Lazy Initialization
-
-Initialize data only when needed:
-
-```typescript
-function getEntityCache(world: World, eid: Entity): Cache {
-  const data = getOrCreateUserData(world, eid);
-
-  if (!data.cache) {
-    data.cache = new Map();
-  }
-
-  return data.cache as Cache;
-}
-```
-
 ---
 
 ## blessed.js Compatibility
@@ -210,14 +204,10 @@ function getEntityCache(world: World, eid: Entity): Cache {
 In blessed.js, elements had `_data`, `__`, and `$` properties for user data. In blECSd:
 
 ```javascript
-// blessed.js
-element._data = { id: 'foo' };
-element.__ = element._data;  // Alias
-element.$ = element._data;   // Alias
-
-// blECSd equivalent
+// blECSd equivalent to blessed.js element._data = { id: 'foo' }
 setUserData(world, entity, { id: 'foo' });
-const data = getUserData(world, entity);
+const blessedData = getUserData(world, entity);
+void blessedData;
 ```
 
 The ECS approach provides:

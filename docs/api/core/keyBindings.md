@@ -28,9 +28,12 @@ registry = registerBinding(registry, {
 });
 
 // Match key events
-const matches = matchEvent(registry, keyEvent);
-for (const match of matches) {
-  console.log('Execute action:', match.action);
+const keyEvent = parseKeyString('ctrl+s');
+if (keyEvent) {
+  const matches = matchEvent(registry, keyEvent);
+  for (const match of matches) {
+    console.log('Execute action:', match.action);
+  }
 }
 ```
 
@@ -98,7 +101,7 @@ const registry = createKeyBindingRegistry();
 Registers a single key binding.
 
 ```typescript
-import { registerBinding } from 'blecsd/core';
+import { createKeyBindingRegistry, registerBinding } from 'blecsd/core';
 
 let registry = createKeyBindingRegistry();
 registry = registerBinding(registry, {
@@ -129,8 +132,10 @@ const registry = registerBindings(createKeyBindingRegistry(), [
 Removes a binding by action name.
 
 ```typescript
-import { unregisterBinding } from 'blecsd/core';
+import { createKeyBindingRegistry, registerBinding, unregisterBinding } from 'blecsd/core';
 
+let registry = createKeyBindingRegistry();
+registry = registerBinding(registry, { keys: 'ctrl+s', action: 'save' });
 registry = unregisterBinding(registry, 'save');
 ```
 
@@ -162,22 +167,27 @@ interface KeyBinding {
 Matches a key event against the registry and returns all matching bindings.
 
 ```typescript
-import { matchEvent } from 'blecsd/core';
+import { createKeyBindingRegistry, registerBinding, matchEvent, parseKeyString } from 'blecsd/core';
 
-// Simple match
-const matches = matchEvent(registry, keyEvent);
+const registry = registerBinding(createKeyBindingRegistry(), { keys: 'ctrl+s', action: 'save' });
+const keyEvent = parseKeyString('ctrl+s');
 
-// With condition context
-const matches = matchEvent(registry, keyEvent, {
-  focus: 'editor',
-  modalOpen: false,
-  textInputFocused: true,
-});
+if (keyEvent) {
+  // Simple match
+  const matches = matchEvent(registry, keyEvent);
 
-for (const match of matches) {
-  console.log(match.action);        // Action identifier
-  console.log(match.preventDefault); // Whether to prevent default
-  console.log(match.binding);       // Full binding object
+  // With condition context
+  const ctxMatches = matchEvent(registry, keyEvent, {
+    focus: 'editor',
+    modalOpen: false,
+    textInputFocused: true,
+  });
+
+  for (const match of ctxMatches) {
+    console.log(match.action);        // Action identifier
+    console.log(match.preventDefault); // Whether to prevent default
+  }
+  void matches;
 }
 ```
 
@@ -186,10 +196,14 @@ for (const match of matches) {
 Checks if a specific binding matches a key event.
 
 ```typescript
-import { matchesKey } from 'blecsd/core';
+import { matchesKey, parseKeyString } from 'blecsd/core';
 
 const binding = { keys: 'ctrl+c', action: 'copy' };
-const matches = matchesKey(binding, keyEvent);
+const keyEvent = parseKeyString('ctrl+c');
+if (keyEvent) {
+  const matches = matchesKey(binding, keyEvent);
+  void matches;
+}
 ```
 
 ### getBindingsForKey
@@ -197,10 +211,12 @@ const matches = matchesKey(binding, keyEvent);
 Gets all bindings for a parsed key combination (without condition evaluation).
 
 ```typescript
-import { getBindingsForKey, parseKeyString } from 'blecsd/core';
+import { createKeyBindingRegistry, registerBinding, getBindingsForKey, parseKeyString } from 'blecsd/core';
 
+const registry = registerBinding(createKeyBindingRegistry(), { keys: 'ctrl+s', action: 'save' });
 const key = parseKeyString('ctrl+s')!;
 const bindings = getBindingsForKey(registry, key);
+void bindings;
 ```
 
 ### getBindingForAction
@@ -208,9 +224,11 @@ const bindings = getBindingsForKey(registry, key);
 Gets a binding by its action name.
 
 ```typescript
-import { getBindingForAction } from 'blecsd/core';
+import { createKeyBindingRegistry, registerBinding, getBindingForAction } from 'blecsd/core';
 
+const registry = registerBinding(createKeyBindingRegistry(), { keys: 'ctrl+s', action: 'save' });
 const binding = getBindingForAction(registry, 'save');
+void binding;
 ```
 
 ---
@@ -222,20 +240,17 @@ The `when` property allows bindings to only activate in certain contexts.
 ### Supported Syntax
 
 ```typescript
+import { createKeyBindingRegistry, registerBindings } from 'blecsd/core';
+
 // Boolean check
-{ keys: 'ctrl+s', action: 'save', when: 'editorFocused' }
-
-// Negation
-{ keys: 'escape', action: 'close', when: '!modalOpen' }
-
-// Equality
-{ keys: 'enter', action: 'submit', when: 'focus == form' }
-
-// Inequality
-{ keys: 'tab', action: 'indent', when: 'focus != search' }
-
-// AND conditions
-{ keys: 'ctrl+s', action: 'save', when: 'editorFocused && !modalOpen' }
+const registry = registerBindings(createKeyBindingRegistry(), [
+  { keys: 'ctrl+s', action: 'save', when: 'editorFocused' },
+  { keys: 'escape', action: 'close', when: '!modalOpen' },
+  { keys: 'enter', action: 'submit', when: 'focus == form' },
+  { keys: 'tab', action: 'indent', when: 'focus != search' },
+  { keys: 'ctrl+s', action: 'saveAll', when: 'editorFocused && !modalOpen' },
+]);
+void registry;
 ```
 
 ### evaluateCondition
@@ -276,8 +291,9 @@ formatKey(key); // 'ctrl+shift+a' (normalized order)
 Formats a KeyEvent as a key binding string.
 
 ```typescript
-import { formatKeyEvent } from 'blecsd/core';
+import { formatKeyEvent, parseKeyString } from 'blecsd/core';
 
+const keyEvent = parseKeyString('ctrl+shift+a')!;
 formatKeyEvent(keyEvent);
 // 'ctrl+shift+a' or 'escape' etc.
 ```
@@ -293,9 +309,10 @@ Pre-defined binding sets for common use cases.
 Standard text editing shortcuts.
 
 ```typescript
-import { DEFAULT_TEXT_BINDINGS, registerBindings } from 'blecsd/core';
+import { DEFAULT_TEXT_BINDINGS, registerBindings, createKeyBindingRegistry } from 'blecsd/core';
 
 const registry = registerBindings(createKeyBindingRegistry(), DEFAULT_TEXT_BINDINGS);
+void registry;
 // Includes: copy, paste, cut, undo, redo, selectAll, deleteBack, deleteForward,
 // moveToLineStart, moveToLineEnd, moveToStart, moveToEnd
 ```
@@ -305,9 +322,10 @@ const registry = registerBindings(createKeyBindingRegistry(), DEFAULT_TEXT_BINDI
 Standard navigation shortcuts.
 
 ```typescript
-import { DEFAULT_NAV_BINDINGS, registerBindings } from 'blecsd/core';
+import { DEFAULT_NAV_BINDINGS, registerBindings, createKeyBindingRegistry } from 'blecsd/core';
 
 const registry = registerBindings(createKeyBindingRegistry(), DEFAULT_NAV_BINDINGS);
+void registry;
 // Includes: focusNext (tab), focusPrev (shift+tab), cancel (escape),
 // confirm (enter), moveUp/Down/Left/Right, pageUp/Down
 ```
@@ -322,10 +340,13 @@ Zod schemas for runtime validation.
 import { KeyBindingSchema, KeyBindingsArraySchema } from 'blecsd/core';
 
 // Validate single binding
+const binding = { keys: 'ctrl+s', action: 'save' };
+const bindings = [binding];
 const result = KeyBindingSchema.safeParse(binding);
 
 // Validate array of bindings
 const results = KeyBindingsArraySchema.safeParse(bindings);
+void result; void results;
 ```
 
 ---
@@ -335,8 +356,8 @@ const results = KeyBindingsArraySchema.safeParse(bindings);
 ### Game Controls
 
 ```typescript
-import { registerBindings } from 'blecsd/core';
-import { createKeyBindingRegistry, matchEvent } from 'blecsd/core';
+import { createKeyBindingRegistry, registerBindings, matchEvent, parseKeyString } from 'blecsd/core';
+import type { ParsedKey } from 'blecsd/core';
 
 let registry = createKeyBindingRegistry();
 registry = registerBindings(registry, [
@@ -345,27 +366,32 @@ registry = registerBindings(registry, [
   { keys: 'a', action: 'moveLeft' },
   { keys: 'd', action: 'moveRight' },
   { keys: 'space', action: 'jump' },
-  { keys: 'shift', action: 'sprint' },
-  { keys: 'e', action: 'interact' },
   { keys: 'escape', action: 'pause' },
 ]);
 
+const player = { x: 0, y: 0 };
+
 // In game loop
-function handleInput(keyEvent: KeyEvent) {
+const handleInput = (keyEvent: ParsedKey) => {
   const matches = matchEvent(registry, keyEvent);
   for (const { action } of matches) {
     switch (action) {
       case 'moveUp': player.y -= 1; break;
       case 'moveDown': player.y += 1; break;
-      // ...
     }
   }
-}
+};
+
+const ev = parseKeyString('w');
+if (ev) handleInput(ev);
+void player;
 ```
 
 ### Context-Aware Bindings
 
 ```typescript
+import { createKeyBindingRegistry, registerBindings, matchEvent, parseKeyString } from 'blecsd/core';
+
 let registry = createKeyBindingRegistry();
 registry = registerBindings(registry, [
   // Only in editor
@@ -386,18 +412,23 @@ const context = {
   loading: false,
 };
 
-const matches = matchEvent(registry, keyEvent, context);
+const keyEvent = parseKeyString('ctrl+s');
+if (keyEvent) {
+  const matches = matchEvent(registry, keyEvent, context);
+  void matches;
+}
 ```
 
 ### Rebindable Keys
 
 ```typescript
-// Load bindings from config
-const userBindings = loadConfig().keybindings;
-let registry = registerBindings(createKeyBindingRegistry(), userBindings);
+import { createKeyBindingRegistry, registerBindings, registerBinding, unregisterBinding, getBindingForAction } from 'blecsd/core';
+
+const defaultBindings = [{ keys: 'ctrl+s', action: 'save' }, { keys: 'ctrl+z', action: 'undo' }];
+let registry = registerBindings(createKeyBindingRegistry(), defaultBindings);
 
 // User rebinds a key
-function rebindKey(action: string, newKey: string) {
+const rebindKey = (action: string, newKey: string) => {
   const existing = getBindingForAction(registry, action);
   if (existing) {
     registry = unregisterBinding(registry, action);
@@ -406,7 +437,9 @@ function rebindKey(action: string, newKey: string) {
       keys: newKey,
     });
   }
-}
+};
+
+rebindKey('save', 'ctrl+shift+s');
 ```
 
 ---

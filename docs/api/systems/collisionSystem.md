@@ -59,6 +59,10 @@ setCollider(world, wall, { width: 1, height: 5 });
 Register in the **UPDATE** phase, after movement:
 
 ```typescript
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { collisionSystem } from 'blecsd/systems';
+
+const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.UPDATE, collisionSystem, 10);
 // Priority 10 ensures it runs after movement (priority 0)
 ```
@@ -94,24 +98,26 @@ interface CollisionEventMap {
 ### Subscribing to Events
 
 ```typescript
+import { getCollisionEventBus } from 'blecsd/systems';
+
 const bus = getCollisionEventBus();
 
 // Collision events
 const unsub1 = bus.on('collisionStart', ({ entityA, entityB }) => {
-  handleCollision(entityA, entityB);
+  console.log(`Collision start: ${entityA} and ${entityB}`);
 });
 
 const unsub2 = bus.on('collisionEnd', ({ entityA, entityB }) => {
-  clearCollision(entityA, entityB);
+  console.log(`Collision end: ${entityA} and ${entityB}`);
 });
 
 // Trigger events
 const unsub3 = bus.on('triggerEnter', ({ entityA, entityB }) => {
-  enterZone(entityA, entityB);
+  console.log(`Trigger enter: ${entityA} entered ${entityB}`);
 });
 
 const unsub4 = bus.on('triggerExit', ({ entityA, entityB }) => {
-  exitZone(entityA, entityB);
+  console.log(`Trigger exit: ${entityA} exited ${entityB}`);
 });
 
 // Cleanup
@@ -123,8 +129,15 @@ unsub1(); unsub2(); unsub3(); unsub4();
 ### System Registration
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { collisionSystem, createCollisionSystem, registerCollisionSystem } from 'blecsd/systems';
+
+const world = createWorld();
+const scheduler = createScheduler();
+
 // Register with scheduler (convenience function)
-registerCollisionSystem(scheduler, priority?);
+registerCollisionSystem(scheduler);
 // Default priority: 10 (after movement)
 
 // Or create and register manually
@@ -138,25 +151,43 @@ collisionSystem(world);
 ### Query Functions
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import {
+  queryColliders, detectCollisions, getActiveCollisions, getActiveTriggers,
+  isColliding, isInTrigger, getCollidingEntities, getTriggerZones, areColliding,
+} from 'blecsd/systems';
+
+const world = createWorld();
+const player = addEntity(world);
+const enemy = addEntity(world);
+
 // Query all entities with Collider
 const colliders = queryColliders(world);
+void colliders;
 
 // Detect collisions manually
 const pairs = detectCollisions(world);
-// Returns: CollisionPair[]
+void pairs;
 
 // Get active collision pairs
 const active = getActiveCollisions();
-// Returns: ReadonlyMap<string, CollisionPair>
+void active;
 
 // Get active trigger pairs
 const triggers = getActiveTriggers();
-// Returns: ReadonlyMap<string, CollisionPair>
+void triggers;
 ```
 
 ### Entity Queries
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { isColliding, isInTrigger, getCollidingEntities, getTriggerZones, areColliding } from 'blecsd/systems';
+
+const world = createWorld();
+const player = addEntity(world);
+const enemy = addEntity(world);
+
 // Is entity colliding with anything?
 if (isColliding(player)) {
   // Player is touching something
@@ -169,11 +200,11 @@ if (isInTrigger(player)) {
 
 // Get all entities colliding with this one
 const touching = getCollidingEntities(player);
-// Returns: number[]
+void touching;
 
 // Get all trigger zones containing entity
 const zones = getTriggerZones(player);
-// Returns: number[]
+void zones;
 
 // Are two specific entities colliding?
 if (areColliding(player, enemy)) {
@@ -193,6 +224,14 @@ resetCollisionState();
 Use layers and masks to control which entities can collide:
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setCollider } from 'blecsd/components';
+
+const world = createWorld();
+const player = addEntity(world);
+const enemy = addEntity(world);
+const bullet = addEntity(world);
+
 // Define layers
 const LAYER_PLAYER = 1 << 0;  // 0b0001
 const LAYER_ENEMY = 1 << 1;   // 0b0010
@@ -229,6 +268,13 @@ setCollider(world, bullet, {
 Trigger zones detect overlaps without blocking movement:
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setCollider, setPosition } from 'blecsd/components';
+import { getCollisionEventBus } from 'blecsd/systems';
+
+const world = createWorld();
+const bus = getCollisionEventBus();
+
 // Create a trigger zone (door activation)
 const doorTrigger = addEntity(world);
 setPosition(world, doorTrigger, 20, 10);
@@ -238,29 +284,41 @@ setCollider(world, doorTrigger, {
   isTrigger: true,
 });
 
+let doorOpen = false;
+
 // Listen for trigger events
 bus.on('triggerEnter', ({ entityA, entityB }) => {
   if (entityB === doorTrigger) {
-    openDoor();
+    doorOpen = true;
   }
+  void entityA;
 });
 
 bus.on('triggerExit', ({ entityA, entityB }) => {
   if (entityB === doorTrigger) {
-    closeDoor();
+    doorOpen = false;
   }
+  void entityA;
 });
+
+void doorOpen;
 ```
 
 ## Example: Platformer Collisions
 
 ```typescript
+import { createWorld, addEntity, removeEntity } from 'blecsd/core';
+import { setCollider } from 'blecsd/components';
 import {
   registerCollisionSystem,
   getCollisionEventBus,
   isColliding,
-  getCollidingEntities,
 } from 'blecsd/systems';
+import { createScheduler } from 'blecsd/core';
+
+const world = createWorld();
+const scheduler = createScheduler();
+registerCollisionSystem(scheduler);
 
 const LAYER_PLAYER = 1;
 const LAYER_GROUND = 2;
@@ -295,28 +353,42 @@ setCollider(world, coin, {
   isTrigger: true,
 });
 
+void isColliding(player);
+
 // Handle collisions
 const bus = getCollisionEventBus();
+const enemyEntities = new Set<number>();
+const coinEntities = new Set<number>([coin]);
 
 bus.on('collisionStart', ({ entityA, entityB }) => {
   // Check for enemy collision
-  if (isEnemy(entityB)) {
-    playerTakeDamage();
+  if (enemyEntities.has(entityB)) {
+    console.log('Player took damage');
   }
+  void entityA;
 });
 
 bus.on('triggerEnter', ({ entityA, entityB }) => {
   // Check for coin collection
-  if (isCoin(entityB)) {
-    collectCoin(entityB);
+  if (coinEntities.has(entityB)) {
+    coinEntities.delete(entityB);
     removeEntity(world, entityB);
   }
+  void entityA;
 });
+
+void ground;
 ```
 
 ## Example: UI Hit Testing
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setCollider } from 'blecsd/components';
+import { getTriggerZones } from 'blecsd/systems';
+
+const world = createWorld();
+
 // Button with collision for clicks
 const button = addEntity(world);
 setPosition(world, button, 10, 5);
@@ -334,16 +406,21 @@ setCollider(world, cursor, {
   isTrigger: true,
 });
 
+const buttonEntities = new Set<number>([button]);
+
 // Update cursor position on mouse move
-function onMouseMove(x: number, y: number) {
+const onMouseMove = (x: number, y: number): void => {
   setPosition(world, cursor, x, y);
-}
+};
 
 // Check what cursor is over
-function getHoveredButton(): number | null {
+const getHoveredButton = (): number | null => {
   const zones = getTriggerZones(cursor);
-  return zones.find(isButton) ?? null;
-}
+  return zones.find(id => buttonEntities.has(id)) ?? null;
+};
+
+onMouseMove(10, 5);
+void getHoveredButton();
 ```
 
 ## Performance Considerations

@@ -5,21 +5,19 @@ ECS world state serialization and deserialization. Serialize world state to JSON
 ## Quick Start
 
 ```typescript
-import { serializeWorld, deserializeWorld, createWorld, registerComponents } from 'blecsd/core';
-import { position } from 'blecsd/components';
+import { createWorld, serializeWorld, deserializeWorld, registerComponents } from 'blecsd/core';
 
-// Register components for serialization
-registerComponents([{ name: 'Position', store: position.store }]);
-
-// Serialize
 const world = createWorld();
-const snapshot = serializeWorld(world);
-const json = JSON.stringify(snapshot);
 
-// Deserialize
-const newWorld = createWorld();
-deserializeWorld(snapshot);
+// Serialize world to snapshot (with no extra components)
+const snapshot = serializeWorld(world, []);
+const json = JSON.stringify(snapshot);
 console.log(`Snapshot has ${snapshot.entityCount} entities`);
+
+// Deserialize into a new world
+const parsed = JSON.parse(json);
+const newWorld = deserializeWorld(parsed);
+void newWorld;
 ```
 
 ## Types
@@ -100,69 +98,35 @@ interface DeserializeResult {
 
 ## Component Registry Functions
 
-### registerSerializable
+### registerComponents
 
-Registers a component for serialization.
-
-```typescript
-function registerSerializable(descriptor: ComponentDescriptor): void;
-```
+Registers components for serialization. Each descriptor needs `name`, `component` (bitecs component), and `fields`.
 
 ```typescript
-import { registerComponents } from 'blecsd/core';
-import { position } from 'blecsd/components';
+import { registerComponents, getRegisteredComponents } from 'blecsd/core';
 
-registerComponents([{ name: 'Position', store: position.store }]);
-```
+// Register custom components for serialization
+// (component and fields are specific to each component's bitecs definition)
+// Example: registerComponents([{ name: 'Position', component: PositionComponent, fields: ['x', 'y'] }])
 
-### unregisterSerializable
-
-Unregisters a component from serialization.
-
-```typescript
-function unregisterSerializable(name: string): boolean;
-```
-
-### getSerializable
-
-Gets a registered component descriptor by name.
-
-```typescript
-function getSerializable(name: string): ComponentDescriptor | undefined;
-```
-
-### getRegisteredComponents
-
-Gets all registered component names.
-
-```typescript
-function getRegisteredComponents(): readonly string[];
-```
-
-### clearSerializableRegistry
-
-Clears all registered serializable components.
-
-```typescript
-function clearSerializableRegistry(): void;
+const registered = getRegisteredComponents();
+void registered;
 ```
 
 ## Serialization Functions
 
 ### serializeWorld
 
-Serializes ECS world state to a snapshot object.
+Serializes ECS world state to a snapshot object. Pass an array of registered component descriptors as the second argument.
 
 ```typescript
-function serializeWorld(world: World, options?: SerializeOptions): SerializedWorld;
-```
+import { createWorld, serializeWorld } from 'blecsd/core';
 
-### serializeWorldToJSON
+const world = createWorld();
 
-Serializes ECS world state to a JSON string.
-
-```typescript
-function serializeWorldToJSON(world: World, options?: SerializeOptions): string;
+// Serialize with no components (basic entity snapshot)
+const snapshot = serializeWorld(world, []);
+void snapshot;
 ```
 
 ### deserializeWorld
@@ -170,31 +134,32 @@ function serializeWorldToJSON(world: World, options?: SerializeOptions): string;
 Deserializes a world snapshot back into an ECS world.
 
 ```typescript
-function deserializeWorld(
-  snapshot: SerializedWorld,
-  world: World,
-  options?: DeserializeOptions
-): DeserializeResult;
+import { createWorld, serializeWorld, deserializeWorld } from 'blecsd/core';
+
+const world = createWorld();
+const snapshot = serializeWorld(world, []);
+
+// Deserialize creates a new world from the snapshot
+const restored = deserializeWorld(snapshot);
+void restored;
 ```
 
-### deserializeWorldFromJSON
-
-Deserializes a JSON string back into an ECS world.
+### Snapshot Round-Trip
 
 ```typescript
-function deserializeWorldFromJSON(
-  json: string,
-  world: World,
-  options?: DeserializeOptions
-): DeserializeResult;
-```
+import { createWorld, serializeWorld, deserializeWorld } from 'blecsd/core';
 
-### cloneSnapshot
+const world = createWorld();
 
-Creates a deep clone of a serialized world snapshot.
+// Save to JSON
+const snapshot = serializeWorld(world, []);
+const json = JSON.stringify(snapshot);
 
-```typescript
-function cloneSnapshot(snapshot: SerializedWorld): SerializedWorld;
+// Restore from JSON
+const parsed = JSON.parse(json);
+const restored = deserializeWorld(parsed);
+console.log(`Restored world`);
+void restored;
 ```
 
 ## Constants
@@ -203,29 +168,7 @@ function cloneSnapshot(snapshot: SerializedWorld): SerializedWorld;
 
 Current serialization format version (currently `1`).
 
-## Usage Example
+## Related
 
-### Save/Load with Custom Serializers
-
-```typescript
-import { createWorld, addEntity, registerComponents, serializeWorld, deserializeWorld } from 'blecsd/core';
-import { position } from 'blecsd/components';
-import { setPosition } from 'blecsd/components';
-
-// Register components for serialization
-registerComponents([{ name: 'Position', store: position.store }]);
-
-// Create and populate world
-const world = createWorld();
-const player = addEntity(world);
-setPosition(world, player, 100, 200);
-
-// Save to JSON
-const snapshot = serializeWorld(world);
-const json = JSON.stringify(snapshot);
-
-// Load into new world
-const parsed = JSON.parse(json);
-const newWorld = deserializeWorld(parsed);
-console.log(`Restored ${newWorld ? 'world' : 'failed'}`);
-```
+- [World](./world.md) - World creation and management
+- [ECS](./ecs.md) - Core ECS primitives

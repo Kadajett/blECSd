@@ -274,7 +274,7 @@ function isMouseSupported(): boolean
 import { isMouseSupported, mouse } from 'blecsd/terminal';
 
 if (isMouseSupported()) {
-  process.stdout.write(mouse.enableSgr());
+  process.stdout.write(mouse.enableSGR());
   // Handle mouse events...
 }
 ```
@@ -293,7 +293,7 @@ function isBracketedPasteSupported(): boolean
 import { isBracketedPasteSupported, bracketedPaste } from 'blecsd/terminal';
 
 if (isBracketedPasteSupported()) {
-  process.stdout.write(bracketedPaste.enable());
+  process.stdout.write(bracketedPaste.enableBracketedPaste());
 }
 ```
 
