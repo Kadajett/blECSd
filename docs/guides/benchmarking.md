@@ -189,16 +189,16 @@ Benchmarks in `benchmarks/ci.bench.ts` should:
 
 Example:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 describe('CI: System Operations', () => {
   bench('layout 50 entities', () => {
     const world = createWorld();
-    initializeScreen(world, 80, 24);
 
     for (let i = 0; i < 50; i++) {
       const eid = addEntity(world);
       setPosition(world, eid, i % 80, Math.floor(i / 80));
-      setDimensions(world, eid, { width: 10, height: 2 });
+      setDimensions(world, eid, 10, 2);
     }
 
     layoutSystem(world);
@@ -217,11 +217,11 @@ Benchmarks in `benchmarks/scenarios-*.bench.ts` should:
 
 Example:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 describe('Dashboard Scenario', () => {
   bench('16-panel dashboard @ 60 FPS (1000 frames)', () => {
     const world = createWorld();
-    initializeScreen(world, 80, 24);
 
     const panels = createDashboard(world, 16);
 

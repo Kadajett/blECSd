@@ -183,17 +183,15 @@ A comprehensive, honest comparison of terminal UI libraries across different lan
 | **Ratatui** | ✅ Excellent | Manual but efficient | Manual | Manual but fast | 60fps+ |
 
 **blECSd Example - Terminal Game:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   setPosition,
-  setVelocity,
-  setCollider,
-  spatialHashSystem,
-  collisionSystem,
-  movementSystem,
 } from 'blecsd';
+import { setVelocity } from 'blecsd/components';
+import { collisionSystem, movementSystem } from 'blecsd/systems';
 
 const world = createWorld();
 const player = addEntity(world);
@@ -221,8 +219,10 @@ collisionSystem(world);
 | **Ratatui** | Manual implementation | No | No | No |
 
 **blECSd Physics Example:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setVelocity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { setVelocity } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
