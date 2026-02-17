@@ -116,7 +116,8 @@ For recoverable operations, use the `Result<T, E>` type instead of throwing exce
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Result, ok, err, isOk, isErr, unwrapOr } from 'blecsd/errors';
-import { createWorld, addEntity, Position } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 // Function that might fail
 function getEntityPosition(
@@ -283,7 +284,9 @@ function handleError(error: BlECSdError): void {
 Systems should handle errors gracefully and avoid crashing the game loop:
 
 ```typescript
-import { query, hasComponent, World } from 'blecsd';
+import { hasComponent } from 'blecsd';
+import { query } from 'blecsd/core';
+import type { World } from 'blecsd';
 import { Result, ok, err } from 'blecsd/errors';
 
 // System that processes entities and collects errors
@@ -333,7 +336,7 @@ function updateEntityPosition(
 Input errors are often recoverable - log them and continue processing:
 
 ```typescript
-import { parseKeySequence } from 'blecsd';
+import { parseKeyBuffer } from 'blecsd/terminal';
 import { isInputError, InputErrorCode } from 'blecsd/errors';
 
 function handleKeyPress(data: Buffer): void {
@@ -447,7 +450,7 @@ function handleError(error: BlECSdError): void {
 Create error boundaries to prevent one component's errors from crashing the entire UI:
 
 ```typescript
-import { World, Entity } from 'blecsd';
+import type { World, Entity } from 'blecsd';
 import { BlECSdError } from 'blecsd/errors';
 
 interface ErrorBoundaryState {

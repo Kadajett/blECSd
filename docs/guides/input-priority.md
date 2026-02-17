@@ -71,7 +71,7 @@ const loop = createGameLoop(world, {
 For simple applications, handle input directly:
 
 ```typescript
-import { createInputHandler } from 'blecsd';
+import { createInputHandler } from 'blecsd/core';
 
 const handler = createInputHandler(process.stdin);
 
@@ -93,7 +93,7 @@ For games and complex UIs, register input as a system:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop, LoopPhase } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const loop = createGameLoop(world, { targetFPS: 60 });
 
@@ -121,7 +121,7 @@ For complex input handling with key combinations:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputHandler } from 'blecsd';
+import { createInputHandler } from 'blecsd/core';
 
 const handler = createInputHandler(process.stdin, {
   escapeTimeout: 50,      // Short timeout for responsive escape detection
@@ -209,7 +209,7 @@ Use the `step()` method to verify input processing:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop } from 'blecsd';
+import { createGameLoop } from 'blecsd/core';
 
 // Test that input is processed first
 const events: string[] = [];

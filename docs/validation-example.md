@@ -4,8 +4,11 @@ This document shows how to use the `validateEntity` utility to provide clear err
 
 ## Basic Usage
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, validateEntity, Position, Velocity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { validateEntity } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -22,8 +25,10 @@ try {
 
 ## In Widget Factories
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { validateEntity, Position, Dimensions, Renderable } from 'blecsd';
+import { validateEntity } from 'blecsd/core';
+import { Position, Dimensions, Renderable } from 'blecsd/components';
 
 export function createBox(world: World, entity: Entity, config: BoxConfig) {
   // Validate that required components exist before proceeding
@@ -35,8 +40,10 @@ export function createBox(world: World, entity: Entity, config: BoxConfig) {
 
 ## In Systems
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { validateEntity, Position, Velocity } from 'blecsd';
+import { validateEntity, query } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
 
 export function movementSystem(world: World) {
   const entities = query(world, [Position, Velocity]);
@@ -56,8 +63,10 @@ export function movementSystem(world: World) {
 
 For better error messages, register component names during initialization:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerComponentName, registerBuiltinComponentNames } from 'blecsd';
+import { registerComponentName } from 'blecsd/core';
+import { registerBuiltinComponentNames } from 'blecsd/components';
 
 // Register all built-in components
 registerBuiltinComponentNames();
@@ -71,8 +80,11 @@ registerComponentName(MyCustomComponent, 'MyCustomComponent');
 
 Use `isEntityValid` for cases where you want to check without throwing:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isEntityValid, Position, Velocity, query, createWorld } from 'blecsd';
+import { createWorld } from 'blecsd';
+import { isEntityValid, query } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
 
 const world = createWorld();
 const entities = query(world, [Position]);

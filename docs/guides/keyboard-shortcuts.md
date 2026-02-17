@@ -42,7 +42,7 @@ Lists, ListTables, and VirtualizedLists share these shortcuts:
 
 **Example:**
 ```typescript
-import { createList } from 'blecsd';
+import { createList } from 'blecsd/widgets';
 
 const list = createList(world, eid, {
   items: ['Item 1', 'Item 2', 'Item 3'],
@@ -88,7 +88,7 @@ TextBox, TextArea, and other text input widgets:
 **Example:**
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTextboxEntity } from 'blecsd';
+import { createTextboxEntity } from 'blecsd/widgets';
 
 const textBox = createTextboxEntity(world, {
   value: 'Hello',
@@ -120,7 +120,7 @@ textBox.handleKey('w', true);  // Deletes 'Hello'
 **Example:**
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createButtonEntity } from 'blecsd';
+import { createButtonEntity } from 'blecsd/widgets';
 
 const button = createButtonEntity(world, {
   label: 'Submit',
@@ -141,7 +141,7 @@ button.handleKey('enter');  // Triggers onClick
 **Example:**
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCheckboxEntity } from 'blecsd';
+import { createCheckboxEntity } from 'blecsd/widgets';
 
 const checkbox = createCheckboxEntity(world, {
   label: 'Accept terms',
@@ -173,7 +173,7 @@ checkbox.handleKey('space');  // checked becomes true
 **Example:**
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFormEntity } from 'blecsd';
+import { createFormEntity } from 'blecsd/widgets';
 
 const form = createFormEntity(world, {
   fields: [
@@ -298,7 +298,7 @@ Key strings use `+` to separate modifiers:
 ### Using the KeyBindings System
 
 ```typescript
-import { createKeyBindingRegistry, registerBinding, parseKeyString } from 'blecsd';
+import { createKeyBindingRegistry, registerBinding, parseKeyString } from 'blecsd/core';
 
 // Create a binding registry
 let registry = createKeyBindingRegistry();
@@ -332,7 +332,8 @@ registry = registerBinding(registry, {
 Override default behavior by handling keys before the widget:
 
 ```typescript
-import { createList, queueKeyEvent } from 'blecsd';
+import { createList } from 'blecsd/widgets';
+import { queueKeyEvent } from 'blecsd/core';
 
 const list = createList(world, eid, {
   items: ['Item 1', 'Item 2', 'Item 3'],
@@ -354,7 +355,7 @@ function handleCustomKeys(event: KeyEvent): boolean {
 ### Global Key Binding Configuration
 
 ```typescript
-import { createKeyBindingRegistry, registerBinding, KeyBinding } from 'blecsd';
+import { createKeyBindingRegistry, registerBinding, KeyBinding } from 'blecsd/core';
 
 const bindings: KeyBinding[] = [
   // Application-wide shortcuts
@@ -466,7 +467,7 @@ On Windows and Linux:
 ### Logging Key Events
 
 ```typescript
-import { queueKeyEvent, getEventQueue } from 'blecsd';
+import { queueKeyEvent, getEventQueue } from 'blecsd/core';
 
 // Log all key events
 function logKeyEvent(event: KeyEvent): void {
@@ -490,7 +491,7 @@ function loggingQueueKeyEvent(event: KeyEvent): void {
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createList } from 'blecsd';
+import { createList } from 'blecsd/widgets';
 
 describe('List keyboard shortcuts', () => {
   it('moves down with j key', () => {

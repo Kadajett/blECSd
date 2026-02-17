@@ -93,7 +93,7 @@ loop.start();
 **Example**:
 
 ```typescript
-import { createGameLoop, LoopPhase } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const loop = createGameLoop(world, { targetFPS: 60 });
 
@@ -138,7 +138,8 @@ loop.registerSystem(LoopPhase.EARLY_UPDATE, prepareInputSystem);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query, Position, Velocity } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
 
 function movementSystem(world: World): World {
   const entities = query(world, [Position, Velocity]);
@@ -215,7 +216,8 @@ loop.registerSystem(LoopPhase.LATE_UPDATE, cameraFollowSystem);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query, Position, Velocity, Spring } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Velocity, Spring } from 'blecsd/components';
 
 function springAnimationSystem(world: World, dt: number): World {
   const entities = query(world, [Position, Velocity, Spring]);
@@ -268,7 +270,8 @@ loop.registerSystem(LoopPhase.ANIMATION, springAnimationSystem);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query, Position, Dimensions, Hierarchy } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Dimensions, Hierarchy } from 'blecsd/components';
 
 function layoutSystem(world: World): World {
   const entities = query(world, [Position, Dimensions, Hierarchy]);
@@ -313,7 +316,8 @@ loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query, Position, Renderable } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Renderable } from 'blecsd/components';
 
 function myRenderSystem(world: World): World {
   const screen = getScreenBuffer(world);
@@ -490,7 +494,7 @@ See [Input Priority](./input-priority.md) for details on why INPUT always runs a
 Verify systems run in the correct order:
 
 ```typescript
-import { createGameLoop, LoopPhase } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
 import { describe, it, expect } from 'vitest';
 
 describe('system execution order', () => {

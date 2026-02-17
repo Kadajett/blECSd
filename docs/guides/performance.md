@@ -262,7 +262,7 @@ for (let i = 0; i < 100000; i++) {
 ✅ **FAST - Use virtualization:**
 
 ```typescript
-import { createVirtualizedList } from 'blecsd';
+import { createVirtualizedList } from 'blecsd/widgets';
 
 const list = createVirtualizedList(world, {
   width: 80,

@@ -338,7 +338,7 @@ Register animation systems in the ANIMATION phase:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, LoopPhase } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
 

@@ -16,12 +16,10 @@ A high-performance terminal UI library built on TypeScript and bitECS.
 
 blECSd is a library, not a framework. It does not:
 
-- Own or manage your update loop
+- Own or manage your update loop (you call the scheduler)
 - Force a specific architecture
-- Provide a high-level widget API (yet)
-- Handle rendering to the terminal (bring your own renderer)
 
-You control the world. blECSd provides components and utilities.
+You control the world. blECSd provides components, widgets, systems, and utilities.
 
 ## Use Cases
 
@@ -90,39 +88,22 @@ Working applications demonstrating blECSd patterns:
 
 ## Import Patterns
 
-### Components and Core
+blECSd uses a tiered export system. The main `blecsd` package exports ~120 commonly used functions. Subpath exports provide access to specialized modules.
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
+// Tier 1: Main package (most common)
 import {
-  // Components
-  setPosition,
-  setStyle,
-  setDimensions,
-
-  // Entity factories
-  createBoxEntity,
-  createTextEntity,
-
-  // Events
-  createEventBus,
-
-  // Scheduler
-  createScheduler,
-  LoopPhase,
-
-  // Input parsing
-  parseKeyBuffer,
-  parseMouseSequence,
+  createWorld, addEntity, setPosition, setDimensions,
+  layoutSystem, renderSystem, outputSystem,
 } from 'blecsd';
+
+// Tier 2: Subpath exports (specialized)
+import { createScheduler, LoopPhase, createEventBus } from 'blecsd/core';
+import { createProgram } from 'blecsd/terminal';
+import { createPanel, createText, createList } from 'blecsd/widgets';
+import { setContent, setParent, setStyle } from 'blecsd/components';
+import { focusEntity, blurAll } from 'blecsd/systems';
 ```
 
-### Terminal I/O (Advanced)
-
-```typescript
-import {
-  cursor,
-  style,
-  screen,
-  mouse,
-} from 'blecsd/terminal';
-```
+See the [Export Patterns Guide](./guides/export-patterns.md) for the full list.

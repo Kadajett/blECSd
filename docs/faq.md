@@ -38,9 +38,11 @@ Node.js 18+ is required. LTS versions are recommended.
 
 For basic usage, no. The widget API hides ECS details:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-const panel = createPanel(world, entity, { title: 'Hello' });
-panel.setTitle('New Title');
+import { createPanel } from 'blecsd/widgets';
+
+const panel = createPanel(world, { title: 'Hello', x: 0, y: 0, width: 40, height: 10 });
 ```
 
 For advanced usage and custom systems, understanding ECS helps. See the [Architecture Guide](./contributing/ARCHITECTURE.md).
@@ -112,14 +114,14 @@ See the [VirtualizedList widget](./api/widgets/virtualizedList.md) for built-in 
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectTerminal, getCapabilities } from 'blecsd';
+import { capabilities, detection } from 'blecsd/terminal';
 
-const term = detectTerminal();
+const term = detection.detectTerminal();
 console.log(term.name);           // 'xterm-256color'
 console.log(term.trueColor);      // true/false
 console.log(term.unicode);        // true/false
 
-const caps = getCapabilities();
+const caps = capabilities.getCapabilities();
 console.log(caps.colors);         // 256 or 16777216
 console.log(caps.mouse);          // true/false
 ```
@@ -233,15 +235,18 @@ function log(msg: string) {
 
 ### How do I inspect ECS state?
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getAllEntities } from 'blecsd';
+import { getPosition } from 'blecsd';
+import { getAllEntities } from 'blecsd/core';
 
 function debugWorld(world: World): void {
   const entities = getAllEntities(world);
   console.error(`Entities: ${entities.length}`);
 
   for (const eid of entities) {
-    console.error(`${eid}: pos=(${Position.x[eid]}, ${Position.y[eid]})`);
+    const pos = getPosition(world, eid);
+    console.error(`${eid}: pos=(${pos.x}, ${pos.y})`);
   }
 }
 ```
@@ -259,19 +264,22 @@ echo -e '\e[?1049l\e[?25h\e[0m'
 ```
 
 Add cleanup to your app:
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-process.on('SIGINT', cleanup);
+import { createProgram } from 'blecsd/terminal';
+
+const program = createProgram({ useAlternateScreen: true, hideCursor: true });
+program.init();
+
+process.on('SIGINT', () => {
+  program.destroy();  // Restores cursor, normal buffer, raw mode
+  process.exit(0);
+});
 process.on('uncaughtException', (err) => {
-  cleanup();
+  program.destroy();
   console.error(err);
   process.exit(1);
 });
-
-function cleanup() {
-  program.showCursor();
-  program.normalBuffer();
-  process.stdin.setRawMode(false);
-}
 ```
 
 ## Performance
