@@ -90,16 +90,11 @@ renderFrame(renderFn: () => void): void
 ```typescript
 import { createSynchronizedOutput, screenSeq } from 'blecsd/terminal';
 const syncOut = createSynchronizedOutput(process.stdout);
-const drawPlayer = (_x: number, _y: number) => {};
-const drawEnemies = (_e: unknown[]) => {};
-const drawUI = (_s: number, _h: number) => {};
-const playerX = 0, playerY = 0, enemies: unknown[] = [], score = 0, health = 100;
 
 syncOut.renderFrame(() => {
   process.stdout.write(screenSeq.clear());
-  drawPlayer(playerX, playerY);
-  drawEnemies(enemies);
-  drawUI(score, health);
+  // Draw your scene here
+  process.stdout.write('Hello, synchronized world!');
 });
 ```
 

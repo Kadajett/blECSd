@@ -9,8 +9,7 @@ The z-order system determines which entities appear on top of others during rend
 ## Quick Start
 
 ```typescript
-import { setZIndex, getZIndex } from 'blecsd/components';
-import { setFront, setBack, sortByZIndex, createWorld, addEntity } from 'blecsd/core';
+import { setZIndex, getZIndex, setFront, setBack, sortByZIndex, createWorld, addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const background = addEntity(world);

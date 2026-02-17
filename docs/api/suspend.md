@@ -188,9 +188,11 @@ function suspend(options: {
 ```typescript
 import { suspend } from 'blecsd/terminal';
 
-// Simple suspend and wait for resume
-// Usage: await suspend({ isAlternateBuffer: true, isMouseEnabled: false })
-void suspend;
+// Suspend requires a real TTY; guard for non-interactive environments
+if (process.stdin.isTTY && process.stdout.isTTY) {
+  await suspend({ isAlternateBuffer: true, isMouseEnabled: false });
+  console.log('Resumed!');
+}
 ```
 
 ### suspendSequences

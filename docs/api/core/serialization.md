@@ -5,7 +5,7 @@ ECS world state serialization and deserialization. Serialize world state to JSON
 ## Quick Start
 
 ```typescript
-import { createWorld, serializeWorld, deserializeWorld, registerComponents } from 'blecsd/core';
+import { createWorld, serializeWorld, deserializeWorld } from 'blecsd/core';
 
 const world = createWorld();
 

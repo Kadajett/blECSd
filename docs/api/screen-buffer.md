@@ -11,17 +11,18 @@ ScreenBuffer handles the alternate screen buffer mode used by full-screen termin
 ```typescript
 import { createScreenBuffer } from 'blecsd/terminal';
 
-// createScreenBuffer requires a real TTY (process.stdout in a terminal)
-// const buffer = createScreenBuffer(process.stdout);
+// createScreenBuffer requires a writable TTY stream
+if (process.stdout.isTTY) {
+  const buffer = createScreenBuffer(process.stdout);
 
-// Enter alternate screen (saves current screen content)
-// buffer.enterAlternateScreen();
+  // Enter alternate screen (saves current screen content)
+  buffer.enterAlternateScreen();
 
-// ... do work in alternate screen ...
+  // ... do work in alternate screen ...
 
-// Exit alternate screen (restores original content)
-// buffer.exitAlternateScreen();
-void createScreenBuffer;
+  // Exit alternate screen (restores original content)
+  buffer.exitAlternateScreen();
+}
 ```
 
 ## Factory Function
