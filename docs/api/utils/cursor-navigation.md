@@ -23,8 +23,8 @@ import {
   pageDown,
   goToStart,
   goToEnd,
+  ensureCursorVisible,
 } from 'blecsd/utils';
-import { ensureCursorVisible } from 'blecsd/components';
 ```
 
 ## Types
@@ -254,8 +254,8 @@ import {
   createCursor,
   createViewport,
   goToLine,
+  ensureCursorVisible,
 } from 'blecsd/utils';
-import { ensureCursorVisible } from 'blecsd/components';
 
 // Build a line index for fast offset-to-line lookups
 const index = buildLineIndex('hello\nworld\nfoo');

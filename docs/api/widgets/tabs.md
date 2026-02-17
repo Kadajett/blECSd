@@ -96,7 +96,10 @@ The tabs widget provides a chainable API for all operations.
 The underlying entity ID.
 
 ```typescript
-const tabs = createTabs(world, eid);
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 console.log(tabs.eid); // Entity ID number
 ```
 
@@ -107,6 +110,10 @@ console.log(tabs.eid); // Entity ID number
 Shows the tabs widget.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 tabs.show();
 ```
 
@@ -117,6 +124,10 @@ tabs.show();
 Hides the tabs widget.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 tabs.hide();
 ```
 
@@ -131,6 +142,10 @@ tabs.hide();
 Sets the absolute position.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 tabs.setPosition(20, 15);
 ```
 
@@ -141,6 +156,10 @@ tabs.setPosition(20, 15);
 Moves the tabs by a relative amount.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 tabs.move(5, -3);
 ```
 
@@ -155,6 +174,10 @@ tabs.move(5, -3);
 Adds a new tab.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 tabs.addTab({ label: 'New Tab', closable: true });
 ```
 
@@ -165,6 +188,10 @@ tabs.addTab({ label: 'New Tab', closable: true });
 Removes a tab by index.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }, { label: 'Tab 2' }] });
 tabs.removeTab(1); // Remove second tab
 ```
 
@@ -175,6 +202,10 @@ tabs.removeTab(1); // Remove second tab
 Gets the active tab index.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 const index = tabs.getActiveTab(); // 0
 ```
 
@@ -185,6 +216,10 @@ const index = tabs.getActiveTab(); // 0
 Sets the active tab by index.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }, { label: 'Tab 2' }, { label: 'Tab 3' }] });
 tabs.setActiveTab(2);
 ```
 
@@ -195,6 +230,10 @@ tabs.setActiveTab(2);
 Gets the number of tabs.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }, { label: 'Tab 2' }, { label: 'Tab 3' }] });
 const count = tabs.getTabCount(); // 3
 ```
 
@@ -205,6 +244,10 @@ const count = tabs.getTabCount(); // 3
 Gets tab data by index.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 const tabData = tabs.getTab(0);
 // { label: 'Tab 1', closable: false, ... }
 ```
@@ -216,6 +259,10 @@ const tabData = tabs.getTab(0);
 Sets the label of a tab.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 tabs.setTabLabel(0, 'New Label');
 ```
 
@@ -230,6 +277,10 @@ tabs.setTabLabel(0, 'New Label');
 Moves to the next tab (wraps around).
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }, { label: 'Tab 2' }] });
 tabs.nextTab();
 ```
 
@@ -240,6 +291,10 @@ tabs.nextTab();
 Moves to the previous tab (wraps around).
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }, { label: 'Tab 2' }] });
 tabs.prevTab();
 ```
 
@@ -254,6 +309,10 @@ tabs.prevTab();
 Focuses the tabs widget.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 tabs.focus();
 ```
 
@@ -264,6 +323,10 @@ tabs.focus();
 Removes focus from the tabs widget.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 tabs.blur();
 ```
 
@@ -274,6 +337,10 @@ tabs.blur();
 Checks if the tabs widget is currently focused.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 const focused = tabs.isFocused(); // boolean
 ```
 
@@ -288,6 +355,10 @@ const focused = tabs.isFocused(); // boolean
 Handles key input, returns action taken or null.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }, { label: 'Tab 2' }] });
 tabs.focus();
 const action = tabs.handleKey('Tab');
 // { type: 'next' }
@@ -309,6 +380,10 @@ const action = tabs.handleKey('Tab');
 Gets all direct children of the content area.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 const children = tabs.getChildren();
 ```
 
@@ -323,6 +398,10 @@ const children = tabs.getChildren();
 Destroys the widget.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
+const world = createWorld();
+const tabs = createTabs(world, addEntity(world), { tabs: [{ label: 'Tab 1' }] });
 tabs.destroy();
 ```
 
@@ -335,11 +414,13 @@ tabs.destroy();
 Checks if an entity is a tabs widget.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { isTabs } from 'blecsd/widgets';
 
-if (isTabs(world, entity)) {
-  // Handle tabs-specific logic
-}
+const world = createWorld();
+const entity = addEntity(world);
+// entity is a plain entity (not a tabs widget)
+const result = isTabs(world, entity); // false
 ```
 
 **Returns:** `boolean`
@@ -351,8 +432,12 @@ if (isTabs(world, entity)) {
 Gets the active tab index of a tabs entity.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { getActiveTabIndex } from 'blecsd/widgets';
 
+const world = createWorld();
+const tabsEntity = addEntity(world);
+createTabs(world, tabsEntity, { tabs: [{ label: 'Tab 1' }] });
 const index = getActiveTabIndex(world, tabsEntity);
 ```
 
@@ -365,8 +450,12 @@ const index = getActiveTabIndex(world, tabsEntity);
 Gets the tab count of a tabs entity.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { getTabCount } from 'blecsd/widgets';
 
+const world = createWorld();
+const tabsEntity = addEntity(world);
+createTabs(world, tabsEntity, { tabs: [{ label: 'Tab 1' }, { label: 'Tab 2' }] });
 const count = getTabCount(world, tabsEntity);
 ```
 
@@ -379,8 +468,12 @@ const count = getTabCount(world, tabsEntity);
 Gets the tab bar position of a tabs entity.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { getTabPosition } from 'blecsd/widgets';
 
+const world = createWorld();
+const tabsEntity = addEntity(world);
+createTabs(world, tabsEntity, { tabs: [{ label: 'Tab 1' }], position: 'top' });
 const position = getTabPosition(world, tabsEntity);
 // 'top' or 'bottom'
 ```
@@ -394,8 +487,12 @@ const position = getTabPosition(world, tabsEntity);
 Renders the tab bar as a string.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { renderTabBar } from 'blecsd/widgets';
 
+const world = createWorld();
+const tabsEntity = addEntity(world);
+createTabs(world, tabsEntity, { tabs: [{ label: 'Tab 1' }, { label: 'Tab 2' }, { label: 'Tab 3', closable: true }] });
 const tabBar = renderTabBar(world, tabsEntity, 60);
 // "[Tab 1] │  Tab 2  │  Tab 3 ✕"
 ```
@@ -637,14 +734,11 @@ const tabs = createTabs(world, addEntity(world), {
     {
       label: 'Heavy Tab',
       // Content is only created when tab is first activated
-      content: () => {
-        const content = createBox(world, addEntity(world), {
-          width: 58,
-          height: 18,
-          content: 'Lazily loaded content!',
-        });
-        return content.eid;
-      },
+      content: () => createBox(world, addEntity(world), {
+        width: 58,
+        height: 18,
+        content: 'Lazily loaded content!',
+      }).eid,
     },
   ],
 });

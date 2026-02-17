@@ -5,15 +5,12 @@ The Listbar widget provides a horizontal menu bar with keyboard shortcuts and mo
 ## Import
 
 ```typescript
-import { isListbarWidget } from 'blecsd/widgets';
-import { createListbar } from 'blecsd/widgets';
-```
-
-## Basic Usage
-
-```typescript
 import { createWorld, addEntity } from 'blecsd/core';
-import { createListbar } from 'blecsd/widgets';
+import {
+  createListbar,
+  isListbarWidget,
+  createPanel,
+} from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -98,6 +95,7 @@ menubar.hide();   // Hide the listbar
 ### Position
 
 ```typescript
+const dx = 5; const dy = 0; const x = 10; const y = 0;
 menubar.move(dx, dy);        // Move by offset
 menubar.setPosition(x, y);   // Set absolute position
 ```
@@ -112,9 +110,10 @@ menubar.blur();   // Remove focus
 ### Items
 
 ```typescript
+const items = [{ text: 'Item 1' }, { text: 'Item 2' }];
 menubar.setItems(items);      // Replace all items
 menubar.getItems();           // Get all items
-menubar.addItem(item);        // Add item to end
+menubar.addItem({ text: 'New Item' });  // Add item to end
 menubar.removeItem(2);        // Remove item at index
 menubar.getItemCount();       // Get total item count
 ```
@@ -142,6 +141,7 @@ menubar.getState();           // Returns 'idle' or 'focused'
 ### Display
 
 ```typescript
+const style = {};
 menubar.setStyle(style);      // Update style configuration
 menubar.getSeparator();       // Get separator string
 menubar.setSeparator(' | ');  // Set separator string
@@ -152,6 +152,7 @@ menubar.setSeparator(' | ');  // Set separator string
 ```typescript
 const line = menubar.renderLine();    // Get rendered text
 const width = menubar.calculateWidth(); // Calculate total width
+void line; void width;
 ```
 
 ### Events
@@ -165,7 +166,7 @@ const unsubSelect = menubar.onSelect((index, item) => {
 // Item activated (Enter pressed or callback triggered)
 const unsubActivate = menubar.onActivate((index, item) => {
   console.log(`Activated: ${item.text}`);
-  handleMenuAction(item.value);
+  console.log(`Action value: ${item.value}`);
 });
 
 // Cleanup
@@ -192,11 +193,6 @@ menubar.destroy();  // Remove entity and cleanup
 ## Example: Application Menu
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createListbar, createPanel } from 'blecsd/widgets';
-
-const world = createWorld();
-
 // Menu bar at top of screen
 const menuEntity = addEntity(world);
 const menu = createListbar(world, menuEntity, {
@@ -206,22 +202,22 @@ const menu = createListbar(world, menuEntity, {
     {
       text: 'File',
       key: 'f',
-      callback: () => showFileMenu(),
+      callback: () => { console.log('File menu'); },
     },
     {
       text: 'Edit',
       key: 'e',
-      callback: () => showEditMenu(),
+      callback: () => { console.log('Edit menu'); },
     },
     {
       text: 'View',
       key: 'v',
-      callback: () => showViewMenu(),
+      callback: () => { console.log('View menu'); },
     },
     {
       text: 'Help',
       key: '?',
-      callback: () => showHelp(),
+      callback: () => { console.log('Help'); },
     },
   ],
   style: {
@@ -253,7 +249,7 @@ const tabs = createListbar(world, addEntity(world), {
 });
 
 tabs.onSelect((index, item) => {
-  showTabContent(item.value);
+  console.log(`Showing tab: ${item.value}`);
 });
 ```
 
@@ -264,14 +260,15 @@ const buttons = createListbar(world, addEntity(world), {
   x: 5,
   y: 20,
   items: [
-    { text: 'Save', key: 's', callback: save },
-    { text: 'Cancel', key: 'c', callback: cancel },
-    { text: 'Help', key: 'h', callback: showHelp },
+    { text: 'Save', key: 's', callback: () => { console.log('save'); } },
+    { text: 'Cancel', key: 'c', callback: () => { console.log('cancel'); } },
+    { text: 'Help', key: 'h', callback: () => { console.log('help'); } },
   ],
   style: {
     selected: { fg: 0xffffffff, bg: 0x0066ccff },
   },
 });
+void buttons;
 ```
 
 ## Related

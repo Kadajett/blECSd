@@ -18,15 +18,16 @@ import {
   getLineStart,
   getLineEnd,
   getLine,
+  getText,
+  getLines,
+  getStats,
   insert,
   append,
+  prepend,
   deleteRange,
   replaceRange,
   verify,
 } from 'blecsd/utils';
-import { getText, prepend } from 'blecsd/components';
-import { getLines } from 'blecsd/widgets';
-import { getStats } from 'blecsd/core';
 ```
 
 ## Types
@@ -299,7 +300,7 @@ function insert(rope: Rope, index: number, text: string): Rope
 
 ```typescript
 import { createRope, insert } from 'blecsd/utils';
-import { getText } from 'blecsd/components';
+import { getText } from 'blecsd/utils';
 
 let rope = createRope('Hello World');
 rope = insert(rope, 6, 'Beautiful ');
@@ -339,7 +340,7 @@ function deleteRange(rope: Rope, start: number, end: number): Rope
 
 ```typescript
 import { createRope, deleteRange } from 'blecsd/utils';
-import { getText } from 'blecsd/components';
+import { getText } from 'blecsd/utils';
 
 let rope = createRope('Hello Beautiful World');
 rope = deleteRange(rope, 6, 16);
@@ -358,7 +359,7 @@ function replaceRange(rope: Rope, start: number, end: number, text: string): Rop
 
 ```typescript
 import { createRope, replaceRange } from 'blecsd/utils';
-import { getText } from 'blecsd/components';
+import { getText } from 'blecsd/utils';
 
 let rope = createRope('Hello World');
 rope = replaceRange(rope, 6, 11, 'Universe');
@@ -386,9 +387,7 @@ function verify(rope: Rope): boolean
 ## Usage Example
 
 ```typescript
-import { createRope, insert, deleteRange, getLine } from 'blecsd/utils';
-import { getText } from 'blecsd/components';
-import { getStats } from 'blecsd/core';
+import { createRope, insert, deleteRange, getLine, getText, getStats } from 'blecsd/utils';
 
 // Build a document
 let doc = createRope('');

@@ -7,13 +7,16 @@ Fuzzy string matching with scoring, highlighting, and filtering support for buil
 ```typescript
 import {
   fuzzyMatch,
-  fuzzySearch,
+  fuzzySearchFn,
   fuzzySearchBy,
   fuzzyFilter,
   fuzzyTest,
   highlightMatch,
   FuzzyOptionsSchema,
 } from 'blecsd/utils';
+
+// fuzzySearchFn is the search function (fuzzySearch is the namespace object)
+void fuzzyMatch; void fuzzySearchFn; void fuzzySearchBy; void fuzzyFilter; void fuzzyTest; void highlightMatch; void FuzzyOptionsSchema;
 ```
 
 ## Types
@@ -121,10 +124,10 @@ function fuzzySearch(
 
 **Example:**
 ```typescript
-import { fuzzySearch } from 'blecsd/utils';
+import { fuzzySearchFn } from 'blecsd/utils';
 
 const items = ['apple', 'application', 'banana', 'apply'];
-const results = fuzzySearch('app', items);
+const results = fuzzySearchFn('app', items);
 // [
 //   { item: 'apple', score: 0.9, indices: [0, 1, 2], ... },
 //   { item: 'apply', score: 0.9, indices: [0, 1, 2], ... },
@@ -256,11 +259,11 @@ if (match) {
 ## Usage Example
 
 ```typescript
-import { fuzzySearch, highlightMatch } from 'blecsd/utils';
+import { fuzzySearchFn, highlightMatch } from 'blecsd/utils';
 
 const files = ['README.md', 'package.json', 'src/index.ts', 'src/utils/rope.ts'];
 
-const results = fuzzySearch('rop', files, { threshold: 0.3 });
+const results = fuzzySearchFn('rop', files, { threshold: 0.3 });
 for (const result of results) {
   const display = highlightMatch(result.text, result.indices, (c) => `[${c}]`);
   console.log(`${display} (score: ${result.score.toFixed(2)})`);

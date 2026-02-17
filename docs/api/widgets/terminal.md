@@ -177,11 +177,7 @@ const termInput = createTerminal(world, { width: 80, height: 24 });
 
 // Route keyboard events to the terminal
 // program.on('key', (event) => {
-//   handleTerminalKey(termInput, event.key, {
-//     ctrl: event.ctrl,
-//     alt: event.alt,
-//     shift: event.shift,
-//   });
+//   handleTerminalKey(termInput, event.key, event.key, event.ctrl, event.alt, event.shift);
 // });
 
 // Direct call example: handleTerminalKey(widget, key, char, ctrl, alt, shift)

@@ -5,16 +5,13 @@ The List widget provides a selectable, scrollable list with keyboard and mouse s
 ## Import
 
 ```typescript
-import { isListWidget } from 'blecsd/widgets';
-import { createList } from 'blecsd/widgets';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createList, isListWidget } from 'blecsd/widgets';
 ```
 
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createList } from 'blecsd/widgets';
-
 const world = createWorld();
 const eid = addEntity(world);
 
@@ -91,6 +88,7 @@ All methods return the widget for chaining (except getters).
 ### Visibility
 
 ```typescript
+const list = createList(world, eid, { items: [] });
 list.show();    // Show the list
 list.hide();    // Hide the list
 ```
@@ -98,6 +96,7 @@ list.hide();    // Hide the list
 ### Position
 
 ```typescript
+const list = createList(world, eid, { items: [] });
 list.setPosition(10, 20);  // Set absolute position
 list.move(5, 0);           // Move relative
 ```
@@ -105,6 +104,7 @@ list.move(5, 0);           // Move relative
 ### Focus
 
 ```typescript
+const list = createList(world, eid, { items: [] });
 list.focus();   // Focus the list (enables key handling)
 list.blur();    // Remove focus
 ```
@@ -112,6 +112,7 @@ list.blur();    // Remove focus
 ### Items
 
 ```typescript
+const list = createList(world, eid, { items: [] });
 // Set all items
 list.setItems(['Apple', 'Banana', 'Cherry']);
 
@@ -129,6 +130,7 @@ list.clearItems();                     // Remove all
 ### Selection
 
 ```typescript
+const list = createList(world, eid, { items: ['a', 'b', 'c'] });
 list.select(2);             // Select by index
 list.selectNext();           // Select next item
 list.selectPrev();           // Select previous item
@@ -144,6 +146,7 @@ const item = list.getSelectedItem();
 ### Scrolling
 
 ```typescript
+const list = createList(world, eid, { items: ['a', 'b', 'c', 'd', 'e'] });
 list.pageUp();    // Scroll up one page
 list.pageDown();  // Scroll down one page
 ```
@@ -151,6 +154,7 @@ list.pageDown();  // Scroll down one page
 ### Search
 
 ```typescript
+const list = createList(world, eid, { items: ['apple', 'banana'], search: true });
 list.startSearch();                   // Enter search mode
 const query = list.getSearchQuery();  // Get current query
 const searching = list.isSearching(); // Check if searching
@@ -160,6 +164,7 @@ list.endSearch();                     // Exit search mode
 ### State
 
 ```typescript
+const list = createList(world, eid, { items: [] });
 const state = list.getState();
 // { items, selectedIndex, scrollOffset, focused, ... }
 ```
@@ -167,6 +172,7 @@ const state = list.getState();
 ### Key Handling
 
 ```typescript
+const list = createList(world, eid, { items: ['a', 'b'] });
 // Process a key press (returns the action taken, or null)
 const action = list.handleKey('down');
 // { type: 'selectNext' }
@@ -179,6 +185,7 @@ const action = list.handleKey('down');
 Fires when the selected item changes (via keyboard/mouse navigation).
 
 ```typescript
+const list = createList(world, eid, { items: ['a', 'b'] });
 const unsubscribe = list.onSelect((index, item) => {
   console.log(`Now on: ${item.text} (index ${index})`);
 });
@@ -192,6 +199,7 @@ unsubscribe();
 Fires when an item is activated (Enter/Space or double-click).
 
 ```typescript
+const list = createList(world, eid, { items: ['a', 'b'] });
 list.onActivate((index, item) => {
   console.log(`Activated: ${item.text}`);
 });
@@ -202,6 +210,7 @@ list.onActivate((index, item) => {
 Fires when the search query changes (search mode only).
 
 ```typescript
+const list = createList(world, eid, { items: ['a', 'b'], search: true });
 list.onSearchChange((query) => {
   console.log(`Search: ${query}`);
 });
@@ -224,9 +233,9 @@ const fileBrowser = createList(world, eid, {
 
 fileBrowser.onActivate((index, item) => {
   if (item.text.endsWith('/')) {
-    navigateToDirectory(item.text);
+    console.log(`Navigate to: ${item.text}`);
   } else {
-    openFile(item.text);
+    console.log(`Open file: ${item.text}`);
   }
 });
 ```
@@ -234,6 +243,7 @@ fileBrowser.onActivate((index, item) => {
 ### Searchable Command Palette
 
 ```typescript
+const commands = [{ label: 'New File' }, { label: 'Open File' }, { label: 'Save' }];
 const palette = createList(world, eid, {
   x: 10, y: 2,
   width: 60, height: 15,
@@ -250,8 +260,6 @@ palette.focus().startSearch();
 ## Type Guard
 
 ```typescript
-import { isListWidget } from 'blecsd/widgets';
-
 if (isListWidget(world, eid)) {
   // Entity has list behavior attached
 }
@@ -260,6 +268,7 @@ if (isListWidget(world, eid)) {
 ## Lifecycle
 
 ```typescript
+const list = createList(world, eid, { items: [] });
 // Clean up when done
 list.destroy();
 ```
@@ -273,6 +282,7 @@ Configuration is validated using Zod:
 ```typescript
 import { ListWidgetConfigSchema } from 'blecsd/widgets';
 
+const config = { items: ['Option 1', 'Option 2'], width: 30, height: 10 };
 const result = ListWidgetConfigSchema.safeParse(config);
 if (!result.success) {
   console.error(result.error);

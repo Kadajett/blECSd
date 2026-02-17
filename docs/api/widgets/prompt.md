@@ -5,18 +5,21 @@ A text input dialog with submit/cancel key bindings, optional validation, and a 
 ## Overview
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createPrompt, prompt } from 'blecsd/widgets';
 
 const world = createWorld();
 
-// Promise-based usage
-const name = await prompt(world, 'Enter your name:', {
-  defaultValue: 'World',
-});
+// Promise-based usage (inside async context)
+void (async () => {
+  const name = await prompt(world, 'Enter your name:', {
+    defaultValue: 'World',
+  });
 
-if (name !== null) {
-  console.log('Hello,', name);
-}
+  if (name !== null) {
+    console.log('Hello,', name);
+  }
+})();
 
 // Widget-based usage
 const p = createPrompt(world, {
@@ -77,8 +80,10 @@ const config = PromptConfigSchema.parse({
 Creates a Prompt widget.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createPrompt } from 'blecsd/widgets';
 
+const world = createWorld();
 const p = createPrompt(world, {
   message: 'Enter your name:',
   defaultValue: 'World',
@@ -160,6 +165,11 @@ getValue(): string
 Gets or sets the current input value.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createPrompt } from 'blecsd/widgets';
+
+const world = createWorld();
+const p = createPrompt(world, { message: 'Enter name:' });
 p.setValue('Alice');
 console.log(p.getValue()); // 'Alice'
 ```
@@ -213,20 +223,25 @@ Destroys the prompt widget and cleans up all state.
 A Promise-based API that creates a prompt and resolves with the result.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { prompt } from 'blecsd/widgets';
 
-const value = await prompt(world, 'Enter filename:', {
-  defaultValue: 'untitled.txt',
-  validator: (v) => v.length > 0 || 'Filename cannot be empty',
-});
+const world = createWorld();
 
-if (value !== null) {
-  // User submitted
-  console.log('Filename:', value);
-} else {
-  // User cancelled (Escape)
-  console.log('Cancelled');
-}
+void (async () => {
+  const value = await prompt(world, 'Enter filename:', {
+    defaultValue: 'untitled.txt',
+    validator: (v) => v.length > 0 || 'Filename cannot be empty',
+  });
+
+  if (value !== null) {
+    // User submitted
+    console.log('Filename:', value);
+  } else {
+    // User cancelled (Escape)
+    console.log('Cancelled');
+  }
+})();
 ```
 
 **Parameters:**
@@ -243,8 +258,11 @@ if (value !== null) {
 ### isPrompt
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { isPrompt } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
 if (isPrompt(entity)) {
   // Entity is a prompt widget
 }
@@ -258,8 +276,11 @@ if (isPrompt(entity)) {
 ### handlePromptKey
 
 ```typescript
-import { handlePromptKey } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createPrompt, handlePromptKey } from 'blecsd/widgets';
 
+const world = createWorld();
+const promptWidget = createPrompt(world, { message: 'Enter:' });
 handlePromptKey(promptWidget, 'return');  // triggers submit
 handlePromptKey(promptWidget, 'escape');  // triggers cancel
 ```
@@ -277,8 +298,10 @@ handlePromptKey(promptWidget, 'escape');  // triggers cancel
 ### With Validation
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createPrompt } from 'blecsd/widgets';
 
+const world = createWorld();
 const p = createPrompt(world, {
   message: 'Enter port number:',
   defaultValue: '3000',
@@ -292,15 +315,17 @@ const p = createPrompt(world, {
 
 p.onSubmit((value) => {
   const port = parseInt(value, 10);
-  startServer(port);
+  console.log(`Starting server on port ${port}`);
 });
 ```
 
 ### Centered Dialog
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createPrompt } from 'blecsd/widgets';
 
+const world = createWorld();
 const p = createPrompt(world, {
   message: 'Search:',
   width: 50,

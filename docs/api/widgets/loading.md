@@ -19,7 +19,6 @@ const loading = createLoading(world, {
 
 // Use convenience functions
 const loader = showLoading(world, 'Please wait...');
-// ... do work ...
 hideLoading(loader);
 ```
 
@@ -112,6 +111,10 @@ The loading widget provides a chainable API for all operations.
 The underlying entity ID.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
 const loading = createLoading(world);
 console.log(loading.eid); // Entity ID number
 ```
@@ -123,6 +126,11 @@ console.log(loading.eid); // Entity ID number
 Shows the loading widget.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 loading.show();
 ```
 
@@ -133,6 +141,11 @@ loading.show();
 Hides the loading widget.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 loading.hide();
 ```
 
@@ -143,6 +156,11 @@ loading.hide();
 Checks if the loading widget is visible.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 const visible = loading.isVisible(); // boolean
 ```
 
@@ -155,6 +173,11 @@ const visible = loading.isVisible(); // boolean
 Sets the absolute position.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 loading.setPosition(20, 15);
 ```
 
@@ -165,6 +188,11 @@ loading.setPosition(20, 15);
 Moves the loading widget by a relative amount.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 loading.move(5, -3); // Move right 5, up 3
 ```
 
@@ -175,8 +203,13 @@ loading.move(5, -3); // Move right 5, up 3
 Gets the current position.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 const pos = loading.getPosition();
-// pos = { x: 20, y: 15 }
+// pos = { x: 0, y: 0 }
 ```
 
 ---
@@ -188,6 +221,11 @@ const pos = loading.getPosition();
 Sets the loading message.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 loading.setMessage('Processing step 2...');
 ```
 
@@ -198,6 +236,11 @@ loading.setMessage('Processing step 2...');
 Gets the current message.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world, { message: 'Processing step 2...' });
 const msg = loading.getMessage(); // 'Processing step 2...'
 ```
 
@@ -210,8 +253,12 @@ const msg = loading.getMessage(); // 'Processing step 2...'
 Sets the spinner animation characters.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
 import { BRAILLE_SPINNER_CHARS } from 'blecsd/components';
 
+const world = createWorld();
+const loading = createLoading(world);
 loading.setSpinnerChars(BRAILLE_SPINNER_CHARS);
 
 // Or use custom characters
@@ -225,6 +272,11 @@ loading.setSpinnerChars(['[   ]', '[=  ]', '[== ]', '[===]', '[ ==]', '[  =]']);
 Sets the animation interval in milliseconds.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 loading.setInterval(50); // Faster animation
 loading.setInterval(200); // Slower animation
 ```
@@ -236,6 +288,11 @@ loading.setInterval(200); // Slower animation
 Gets the current spinner character.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 const char = loading.getSpinnerChar(); // Current frame character
 ```
 
@@ -244,6 +301,11 @@ const char = loading.getSpinnerChar(); // Current frame character
 Resets the spinner animation to the first frame.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 loading.reset();
 ```
 
@@ -258,6 +320,11 @@ loading.reset();
 Destroys the loading widget and removes all associated components.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+
+const world = createWorld();
+const loading = createLoading(world);
 loading.destroy();
 ```
 
@@ -270,8 +337,10 @@ loading.destroy();
 Creates and shows a loading indicator. Convenience function for quick loading display.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { showLoading } from 'blecsd/widgets';
 
+const world = createWorld();
 const loading = showLoading(world, 'Saving changes...');
 // ... do work ...
 loading.destroy();
@@ -291,8 +360,10 @@ loading.destroy();
 Hides and destroys a loading widget.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { showLoading, hideLoading } from 'blecsd/widgets';
 
+const world = createWorld();
 const loading = showLoading(world, 'Working...');
 // ... do work ...
 hideLoading(loading);
@@ -305,11 +376,14 @@ hideLoading(loading);
 Updates the message on a loading widget.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { showLoading, setLoadingMessage } from 'blecsd/widgets';
 
+const world = createWorld();
 const loading = showLoading(world, 'Step 1...');
 // ... step 1 complete ...
 setLoadingMessage(loading, 'Step 2...');
+loading.destroy();
 ```
 
 ---
@@ -319,8 +393,11 @@ setLoadingMessage(loading, 'Step 2...');
 Checks if an entity is a loading widget.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { isLoadingWidget } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
 const isLoading = isLoadingWidget(world, entity); // boolean
 ```
 
@@ -331,15 +408,30 @@ const isLoading = isLoadingWidget(world, entity); // boolean
 Updates a loading widget's animation. Should be called each frame with delta time.
 
 ```typescript
-import { updateLoadingAnimation } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createLoading, updateLoadingAnimation } from 'blecsd/widgets';
 
-// In game loop
-function update(deltaMs: number) {
-  const frameChanged = updateLoadingAnimation(world, loading.eid, deltaMs);
-  if (frameChanged) {
-    // Spinner advanced to next frame
+const world = createWorld();
+const loading = createLoading(world, { message: 'Loading assets...' });
+
+let lastTime = Date.now();
+let running = true;
+
+function gameLoop() {
+  const now = Date.now();
+  const deltaMs = now - lastTime;
+  lastTime = now;
+
+  // Update loading animation
+  updateLoadingAnimation(world, loading.eid, deltaMs);
+
+  if (running) {
+    setTimeout(gameLoop, 16);
   }
 }
+
+gameLoop();
+running = false; // stop after first iteration for this example
 ```
 
 **Parameters:**
@@ -433,15 +525,9 @@ import { showLoading, hideLoading } from 'blecsd/widgets';
 
 const world = createWorld();
 
-async function saveDocument() {
-  const loading = showLoading(world, 'Saving document...');
-
-  try {
-    await performSave();
-  } finally {
-    hideLoading(loading);
-  }
-}
+const loading = showLoading(world, 'Saving document...');
+// ... perform save work here ...
+hideLoading(loading);
 ```
 
 ### Multi-Step Progress
@@ -457,18 +543,16 @@ const loading = createLoading(world, {
   y: 5,
 });
 
-async function runSteps() {
-  loading.setMessage('Step 1: Loading data...');
-  await step1();
+loading.setMessage('Step 1: Loading data...');
+// ... step 1 work ...
 
-  loading.setMessage('Step 2: Processing...');
-  await step2();
+loading.setMessage('Step 2: Processing...');
+// ... step 2 work ...
 
-  loading.setMessage('Step 3: Saving results...');
-  await step3();
+loading.setMessage('Step 3: Saving results...');
+// ... step 3 work ...
 
-  loading.destroy();
-}
+loading.destroy();
 ```
 
 ### Custom Spinner Animation
@@ -502,33 +586,6 @@ const progressLoading = createLoading(world, {
   ],
   interval: 150,
 });
-```
-
-### Animated Loading in Game Loop
-
-```typescript
-import { createWorld } from 'blecsd/core';
-import { createLoading, updateLoadingAnimation } from 'blecsd/widgets';
-
-const world = createWorld();
-const loading = createLoading(world, { message: 'Loading assets...' });
-
-let lastTime = Date.now();
-
-function gameLoop() {
-  const now = Date.now();
-  const deltaMs = now - lastTime;
-  lastTime = now;
-
-  // Update loading animation
-  updateLoadingAnimation(world, loading.eid, deltaMs);
-
-  // Render frame...
-
-  requestAnimationFrame(gameLoop);
-}
-
-gameLoop();
 ```
 
 ### Method Chaining

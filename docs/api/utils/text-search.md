@@ -282,6 +282,8 @@ import {
   getVisibleMatches,
 } from 'blecsd/utils';
 
+const document = 'function hello() {\n  // TODO: implement\n  return "world";\n}\n';
+
 // Simple literal search
 const result = searchLiteral(document, 'TODO', { caseSensitive: false });
 console.log(`Found ${result.totalCount} matches in ${result.timeMs.toFixed(1)}ms`);

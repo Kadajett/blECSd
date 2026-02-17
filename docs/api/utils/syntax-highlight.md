@@ -302,12 +302,14 @@ import {
 const grammar = detectLanguage('app.ts');
 const cache = createHighlightCache(grammar);
 
+const sourceCode = 'const x = 1;\nconst y = 2;\n';
+
 // Highlight visible lines first (responsive)
 const result = highlightVisibleFirst(cache, sourceCode, 0, 40);
 for (const line of result.lines) {
   for (const token of line.tokens) {
     // Apply color based on token.type
-    renderToken(token.text, token.type);
+    void token.text; void token.type;
   }
 }
 

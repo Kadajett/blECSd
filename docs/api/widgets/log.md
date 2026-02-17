@@ -83,9 +83,10 @@ const validated = LogConfigSchema.parse({
 Creates a Log widget attached to an existing entity.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { createLog } from 'blecsd/widgets';
-import { addEntity } from 'blecsd/core';
 
+const world = createWorld();
 const eid = addEntity(world);
 const log = createLog(world, eid, {
   width: 80,
@@ -124,6 +125,12 @@ log(...args: unknown[]): LogWidget
 Logs a message with optional printf-style interpolation. Supports `%s` (string), `%d`/`%i` (integer), `%f` (float), and `%j`/`%o`/`%O` (JSON).
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLog } from 'blecsd/widgets';
+
+const world = createWorld();
+const eid = addEntity(world);
+const log = createLog(world, eid, {});
 log.log('Hello %s, you have %d messages', 'Alice', 5);
 log.log({ user: 'bob', action: 'login' });
 ```
@@ -236,8 +243,11 @@ Destroys the widget and removes the entity from the world.
 ### isLog
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { isLog } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
 if (isLog(world, entity)) {
   // Entity is a log widget
 }
@@ -246,8 +256,11 @@ if (isLog(world, entity)) {
 ### isMouseScrollEnabled
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { isMouseScrollEnabled } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
 if (isMouseScrollEnabled(world, entity)) {
   // Mouse scrolling is active
 }
@@ -256,8 +269,11 @@ if (isMouseScrollEnabled(world, entity)) {
 ### isKeysScrollEnabled
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { isKeysScrollEnabled } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
 if (isKeysScrollEnabled(world, entity)) {
   // Keyboard scrolling is active
 }
@@ -266,10 +282,14 @@ if (isKeysScrollEnabled(world, entity)) {
 ### getScrollback
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { getScrollback } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
 const limit = getScrollback(world, entity);
 // Returns 0 if no limit
+void limit;
 ```
 
 ---
@@ -303,6 +323,12 @@ appLog.log('Listening on port %d', 8080);
 ### Printf-Style Logging
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLog } from 'blecsd/widgets';
+
+const world = createWorld();
+const eid = addEntity(world);
+const log = createLog(world, eid, {});
 log.log('String: %s', 'hello');
 log.log('Integer: %d', 42);
 log.log('Float: %f', 3.14);
@@ -313,6 +339,11 @@ log.log('Progress: %d%%', 75);     // "Progress: 75%"
 ### Controlling Scroll
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLog } from 'blecsd/widgets';
+
+const world = createWorld();
+const eid = addEntity(world);
 const log = createLog(world, eid, {
   width: 80,
   height: 10,

@@ -5,20 +5,24 @@ A yes/no confirmation dialog with customizable button text, keyboard bindings, a
 ## Overview
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createQuestion, ask, confirm } from 'blecsd/widgets';
 
 const world = createWorld();
 
-// Promise-based usage
-if (await confirm(world, 'Delete this file?')) {
-  deleteFile();
-}
+// Promise-based usage (inside async context)
+void (async () => {
+  if (await confirm(world, 'Delete this file?')) {
+    console.log('Confirmed deletion');
+  }
 
-// Or with custom options
-const answer = await ask(world, 'Save changes?', {
-  yesText: 'Save',
-  noText: 'Discard',
-});
+  // Or with custom options
+  const answer = await ask(world, 'Save changes?', {
+    yesText: 'Save',
+    noText: 'Discard',
+  });
+  console.log('Answer:', answer);
+})();
 
 // Widget-based usage
 const q = createQuestion(world, {
@@ -27,7 +31,7 @@ const q = createQuestion(world, {
 });
 
 q.onConfirm((answer) => {
-  if (answer) doSomething();
+  console.log('Confirmed:', answer);
 });
 ```
 
@@ -73,8 +77,10 @@ const config = QuestionConfigSchema.parse({
 Creates a Question widget for yes/no confirmation dialogs.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createQuestion } from 'blecsd/widgets';
 
+const world = createWorld();
 const question = createQuestion(world, {
   message: 'Save changes?',
   yesText: 'Save',
@@ -84,7 +90,7 @@ const question = createQuestion(world, {
 });
 
 question.onConfirm((answer) => {
-  if (answer) saveFile();
+  console.log('Answer was:', answer ? 'yes' : 'no');
 });
 
 question.onCancel(() => {
@@ -218,16 +224,21 @@ Destroys the question widget and cleans up all state.
 Displays a question dialog and returns a Promise resolving to the user's answer.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { ask } from 'blecsd/widgets';
 
-const answer = await ask(world, 'Save changes before closing?', {
-  yesText: 'Save',
-  noText: 'Discard',
-});
+const world = createWorld();
 
-if (answer) {
-  saveFile();
-}
+void (async () => {
+  const answer = await ask(world, 'Save changes before closing?', {
+    yesText: 'Save',
+    noText: 'Discard',
+  });
+
+  if (answer) {
+    console.log('Saving file...');
+  }
+})();
 ```
 
 **Parameters:**
@@ -242,11 +253,16 @@ if (answer) {
 Shorthand for a simple yes/no dialog with default button text.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { confirm } from 'blecsd/widgets';
 
-if (await confirm(world, 'Delete this file?')) {
-  deleteFile();
-}
+const world = createWorld();
+
+void (async () => {
+  if (await confirm(world, 'Delete this file?')) {
+    console.log('Deleting file...');
+  }
+})();
 ```
 
 **Parameters:**
@@ -262,8 +278,11 @@ if (await confirm(world, 'Delete this file?')) {
 ### isQuestion
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { isQuestion } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
 if (isQuestion(world, entity)) {
   // Entity is a question widget
 }
@@ -274,8 +293,11 @@ if (isQuestion(world, entity)) {
 Handles keyboard input for a question widget.
 
 ```typescript
-import { handleQuestionKey } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createQuestion, handleQuestionKey } from 'blecsd/widgets';
 
+const world = createWorld();
+const questionWidget = createQuestion(world, { message: 'Are you sure?' });
 handleQuestionKey(questionWidget, 'y');       // Selects yes and confirms
 handleQuestionKey(questionWidget, 'n');       // Selects no and confirms
 handleQuestionKey(questionWidget, 'enter');   // Confirms current selection
@@ -297,9 +319,12 @@ handleQuestionKey(questionWidget, 'escape');  // Cancels
 ### Confirmation Before Destructive Action
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { ask } from 'blecsd/widgets';
 
-async function handleDelete(world, filename) {
+const world = createWorld();
+
+async function handleDelete(filename: string) {
   const confirmed = await ask(world, `Delete "${filename}"?`, {
     yesText: 'Delete',
     noText: 'Keep',
@@ -307,16 +332,20 @@ async function handleDelete(world, filename) {
   });
 
   if (confirmed) {
-    fs.unlinkSync(filename);
+    console.log(`Deleting ${filename}`);
   }
 }
+
+void handleDelete('example.txt');
 ```
 
 ### Centered Question Dialog
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createQuestion } from 'blecsd/widgets';
 
+const world = createWorld();
 const q = createQuestion(world, {
   message: 'Exit without saving?',
   width: 40,

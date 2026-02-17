@@ -10,7 +10,14 @@ The z-order system determines which entities appear on top of others during rend
 
 ```typescript
 import { setZIndex, getZIndex } from 'blecsd/components';
-import { setFront, setBack, sortByZIndex } from 'blecsd/core';
+import { setFront, setBack, sortByZIndex, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const background = addEntity(world);
+const content = addEntity(world);
+const dialog = addEntity(world);
+const dialogEntity = dialog;
+const entities = [background, content, dialog];
 
 // Set specific z-index
 setZIndex(world, background, -10);
@@ -31,8 +38,11 @@ const renderOrder = sortByZIndex(world, entities);
 Sets the z-index of an entity.
 
 ```typescript
-import { setZIndex } from 'blecsd/components';
+import { setZIndex, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
+const background = addEntity(world);
 setZIndex(world, entity, 10);
 setZIndex(world, background, -5);
 ```
@@ -42,8 +52,10 @@ setZIndex(world, background, -5);
 Gets the current z-index.
 
 ```typescript
-import { getZIndex } from 'blecsd/components';
+import { getZIndex, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const z = getZIndex(world, entity);
 ```
 
@@ -52,8 +64,10 @@ const z = getZIndex(world, entity);
 Brings entity to front (highest z among siblings).
 
 ```typescript
-import { setFront } from 'blecsd/core';
+import { setFront, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const dialog = addEntity(world);
 setFront(world, dialog);
 ```
 
@@ -62,8 +76,10 @@ setFront(world, dialog);
 Sends entity to back (lowest z among siblings).
 
 ```typescript
-import { setBack } from 'blecsd/core';
+import { setBack, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const background = addEntity(world);
 setBack(world, background);
 ```
 
@@ -72,7 +88,10 @@ setBack(world, background);
 Swaps z-index with adjacent sibling.
 
 ```typescript
-import { moveUp, moveDown } from 'blecsd/core';
+import { moveUp, moveDown, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 if (moveUp(world, entity)) {
   console.log('Moved up one layer');
@@ -90,11 +109,14 @@ if (moveDown(world, entity)) {
 Sorts entities by z-index (lowest first).
 
 ```typescript
-import { sortByZIndex } from 'blecsd/core';
+import { sortByZIndex, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entities = [addEntity(world), addEntity(world), addEntity(world)];
 
 const sorted = sortByZIndex(world, entities);
 for (const entity of sorted) {
-  render(entity);
+  console.log('rendering', entity);
 }
 ```
 
@@ -103,8 +125,10 @@ for (const entity of sorted) {
 Gets children sorted for rendering.
 
 ```typescript
-import { getChildrenByZIndex } from 'blecsd/core';
+import { getChildrenByZIndex, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const container = addEntity(world);
 const children = getChildrenByZIndex(world, container);
 ```
 
@@ -113,8 +137,10 @@ const children = getChildrenByZIndex(world, container);
 Normalizes z-indices to sequential values (0, 1, 2...).
 
 ```typescript
-import { normalizeZIndices } from 'blecsd/components';
+import { normalizeZIndices, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const container = addEntity(world);
 // After many operations, normalize to prevent drift
 normalizeZIndices(world, container);
 ```
@@ -126,7 +152,10 @@ normalizeZIndices(world, container);
 Direct component access (low-level).
 
 ```typescript
-import { ZOrder } from 'blecsd/core';
+import { ZOrder, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 // Direct access
 const z = ZOrder.zIndex[entity];
@@ -148,8 +177,10 @@ MIN_Z_INDEX      // -2147483648
 For sibling-relative ordering:
 
 ```typescript
-import { setLocalZ, getLocalZ } from 'blecsd/core';
+import { setLocalZ, getLocalZ, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 setLocalZ(world, entity, 5);
 const local = getLocalZ(world, entity);
 ```

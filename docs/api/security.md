@@ -34,6 +34,8 @@ function sanitizeForTerminal(input: string, options?: SanitizeOptions): string
 ```typescript
 import { sanitizeForTerminal } from 'blecsd/terminal';
 
+const userInput = 'Hello \x1b[31mworld\x1b[0m';
+
 // Strip all escape sequences (safest, default)
 const safe = sanitizeForTerminal(userInput);
 
@@ -69,6 +71,7 @@ function containsEscapeSequences(input: string): boolean
 ```typescript
 import { containsEscapeSequences } from 'blecsd/terminal';
 
+const userInput = 'Hello \x1b[31mworld\x1b[0m';
 if (containsEscapeSequences(userInput)) {
   console.warn('Input contains potentially dangerous escape sequences');
 }
@@ -85,8 +88,9 @@ function isSafeForTerminal(input: string): boolean
 **Example:**
 
 ```typescript
-import { isSafeForTerminal } from 'blecsd/terminal';
+import { isSafeForTerminal, sanitizeForTerminal } from 'blecsd/terminal';
 
+const userInput = 'Hello \x1b[31mworld\x1b[0m';
 if (isSafeForTerminal(userInput)) {
   process.stdout.write(userInput);
 } else {
@@ -107,6 +111,7 @@ function extractEscapeSequences(input: string): string[]
 ```typescript
 import { extractEscapeSequences } from 'blecsd/terminal';
 
+const suspiciousInput = 'Hello \x1b[31mworld\x1b[0m';
 const sequences = extractEscapeSequences(suspiciousInput);
 console.log('Found sequences:', sequences.length);
 // Log for security audit
@@ -134,6 +139,7 @@ function categorizeEscapeSequences(input: string): {
 ```typescript
 import { categorizeEscapeSequences } from 'blecsd/terminal';
 
+const input = 'Hello \x1b[31mworld\x1b[0m';
 const categories = categorizeEscapeSequences(input);
 
 if (categories.osc.length > 0) {

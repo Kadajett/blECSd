@@ -26,6 +26,9 @@ const events = createEventBus<AppEvents>();
 Subscribe to an event. Returns an unsubscribe function.
 
 ```typescript
+import { createEventBus } from 'blecsd/core';
+interface PlayerEvents { 'player:moved': { x: number; y: number }; }
+const events = createEventBus<PlayerEvents>();
 const unsubscribe = events.on('player:moved', (e) => {
   console.log(`Player at ${e.x}, ${e.y}`);
 });
@@ -43,6 +46,9 @@ unsubscribe();
 Subscribe to an event once. Handler is removed after first call.
 
 ```typescript
+import { createEventBus } from 'blecsd/core';
+interface GameEvents { 'game:over': { score: number }; }
+const events = createEventBus<GameEvents>();
 events.once('game:over', (e) => {
   console.log(`Final score: ${e.score}`);
 });
@@ -57,6 +63,9 @@ events.once('game:over', (e) => {
 Emit an event to all listeners.
 
 ```typescript
+import { createEventBus } from 'blecsd/core';
+interface PlayerEvents { 'player:moved': { x: number; y: number }; }
+const events = createEventBus<PlayerEvents>();
 const hadListeners = events.emit('player:moved', { x: 10, y: 5 });
 // Returns true if any handlers were called
 ```
@@ -74,7 +83,10 @@ const hadListeners = events.emit('player:moved', { x: 10, y: 5 });
 Remove a specific listener.
 
 ```typescript
-const handler = (e) => console.log(e);
+import { createEventBus } from 'blecsd/core';
+interface ClickEvents { 'click': { x: number; y: number }; }
+const events = createEventBus<ClickEvents>();
+const handler = (e: { x: number; y: number }) => console.log(e);
 events.on('click', handler);
 events.off('click', handler);
 ```
@@ -84,6 +96,9 @@ events.off('click', handler);
 Remove all listeners for an event, or all listeners for all events.
 
 ```typescript
+import { createEventBus } from 'blecsd/core';
+interface ClickEvents { 'click': { x: number; y: number }; }
+const events = createEventBus<ClickEvents>();
 events.removeAllListeners('click');  // Remove click listeners
 events.removeAllListeners();          // Remove all listeners
 ```
@@ -95,6 +110,9 @@ events.removeAllListeners();          // Remove all listeners
 ### listenerCount
 
 ```typescript
+import { createEventBus } from 'blecsd/core';
+interface AppEvents { 'error': { message: string }; }
+const events = createEventBus<AppEvents>();
 const count = events.listenerCount('error');
 ```
 
@@ -103,6 +121,9 @@ const count = events.listenerCount('error');
 Get all event names that have listeners.
 
 ```typescript
+import { createEventBus } from 'blecsd/core';
+interface GameEvents { 'player:moved': { x: number; y: number }; 'enemy:killed': { id: number }; }
+const events = createEventBus<GameEvents>();
 const names = events.eventNames();
 // ['player:moved', 'enemy:killed']
 ```
@@ -110,6 +131,9 @@ const names = events.eventNames();
 ### hasListeners
 
 ```typescript
+import { createEventBus } from 'blecsd/core';
+interface DebugEvents { 'debug': { message: string }; }
+const events = createEventBus<DebugEvents>();
 if (events.hasListeners('debug')) {
   events.emit('debug', { message: 'info' });
 }
@@ -198,25 +222,24 @@ interface AppEvents {
 Always clean up listeners to prevent memory leaks:
 
 ```typescript
-function createGameSystem(events) {
-  const unsubscribers = [];
+import { createEventBus } from 'blecsd/core';
+interface GameEvents { 'player:moved': { x: number; y: number }; 'game:over': { score: number }; }
 
-  function init() {
-    unsubscribers.push(
-      events.on('player:moved', handleMove),
-      events.on('game:over', handleGameOver)
-    );
-  }
+const bus = createEventBus<GameEvents>();
+const unsubscribers: Array<() => void> = [];
 
-  function destroy() {
-    for (const unsub of unsubscribers) {
-      unsub();
-    }
-    unsubscribers.length = 0;
-  }
+// Subscribe and collect unsubscribers
+unsubscribers.push(
+  bus.on('player:moved', (e) => console.log('Player moved:', e.x, e.y)),
+  bus.on('game:over', (e) => console.log('Game over, score:', e.score))
+);
 
-  return { init, destroy };
+// Cleanup: call each unsubscriber
+for (const unsub of unsubscribers) {
+  unsub();
 }
+unsubscribers.length = 0;
+```
 ```
 
 ### Conditional Emit
@@ -224,6 +247,10 @@ function createGameSystem(events) {
 Skip expensive work when no listeners exist:
 
 ```typescript
+import { createEventBus } from 'blecsd/core';
+interface DebugEvents { 'debug': { message: string }; }
+const events = createEventBus<DebugEvents>();
+function expensiveDebugInfo() { return 'computed debug info'; }
 if (events.hasListeners('debug')) {
   events.emit('debug', { message: expensiveDebugInfo() });
 }
@@ -264,9 +291,11 @@ warnings.on('warning', (event) => {
 Emitted when terminal is resized to very small dimensions.
 
 ```typescript
+import { createWarningEmitter, WarningType } from 'blecsd/core';
+const warnings = createWarningEmitter();
 warnings.on('warning', (event) => {
   if (event.type === WarningType.TERMINAL_TOO_SMALL) {
-    const { width, height, minWidth, minHeight } = event.metadata;
+    const { width, height, minWidth, minHeight } = event.metadata as { width: number; height: number; minWidth: number; minHeight: number };
     console.warn(`Terminal ${width}x${height} is smaller than ${minWidth}x${minHeight}`);
   }
 });
@@ -283,9 +312,11 @@ warnings.on('warning', (event) => {
 Emitted when a requested terminal capability is not supported.
 
 ```typescript
+import { createWarningEmitter, WarningType } from 'blecsd/core';
+const warnings = createWarningEmitter();
 warnings.on('warning', (event) => {
   if (event.type === WarningType.UNSUPPORTED_CAPABILITY) {
-    const { capability, fallback } = event.metadata;
+    const { capability, fallback } = event.metadata as { capability: string; fallback?: string };
     console.warn(`${capability} not supported. ${fallback || ''}`);
   }
 });
@@ -300,9 +331,11 @@ warnings.on('warning', (event) => {
 Emitted when deprecated API is used.
 
 ```typescript
+import { createWarningEmitter, WarningType } from 'blecsd/core';
+const warnings = createWarningEmitter();
 warnings.on('warning', (event) => {
   if (event.type === WarningType.DEPRECATED_API) {
-    const { api, replacement, since } = event.metadata;
+    const { api, replacement, since } = event.metadata as { api: string; replacement: string; since: string };
     console.warn(`${api} deprecated since ${since}. Use ${replacement}`);
   }
 });
@@ -318,10 +351,13 @@ warnings.on('warning', (event) => {
 Emitted when performance issues are detected (frame drops, slow operations).
 
 ```typescript
+import { createWarningEmitter, WarningType } from 'blecsd/core';
+const warnings = createWarningEmitter();
 warnings.on('warning', (event) => {
   if (event.type === WarningType.PERFORMANCE_ISSUE) {
-    const { metric, value, threshold, frameTime } = event.metadata;
+    const { metric, value, threshold, frameTime } = event.metadata as { metric: string; value: number; threshold: number; frameTime?: number };
     console.warn(`${metric}: ${value} exceeds ${threshold}`);
+    void frameTime;
   }
 });
 ```
@@ -436,6 +472,10 @@ import { createWarningEmitter, WarningType, emitTerminalTooSmallWarning } from '
 // Create warning emitter
 const warnings = createWarningEmitter();
 
+function showResizePrompt(metadata: unknown) { console.warn('Please resize terminal:', metadata); }
+function disableFeature(capability: unknown) { console.warn('Disabling feature:', capability); }
+function reduceQuality() { console.warn('Reducing quality to maintain performance'); }
+
 // Listen for warnings
 warnings.on('warning', (event) => {
   // Log to console
@@ -450,7 +490,7 @@ warnings.on('warning', (event) => {
 
     case WarningType.UNSUPPORTED_CAPABILITY:
       // Disable feature or show fallback
-      disableFeature(event.metadata.capability);
+      disableFeature((event.metadata as { capability: string }).capability);
       break;
 
     case WarningType.DEPRECATED_API:
@@ -462,7 +502,7 @@ warnings.on('warning', (event) => {
 
     case WarningType.PERFORMANCE_ISSUE:
       // Reduce quality or frame rate
-      if (event.metadata.value > event.metadata.threshold * 2) {
+      if ((event.metadata as { value: number; threshold: number }).value > (event.metadata as { value: number; threshold: number }).threshold * 2) {
         reduceQuality();
       }
       break;
@@ -475,6 +515,8 @@ function checkTerminalSize(width: number, height: number) {
     emitTerminalTooSmallWarning(warnings, width, height, 80, 24);
   }
 }
+
+checkTerminalSize(40, 15);
 ```
 
 ---
@@ -484,12 +526,13 @@ function checkTerminalSize(width: number, height: number) {
 Filter warnings by type:
 
 ```typescript
+import { createWarningEmitter, WarningType } from 'blecsd/core';
 const warnings = createWarningEmitter();
 
 warnings.on('warning', (event) => {
   // Only handle performance warnings
   if (event.type === WarningType.PERFORMANCE_ISSUE) {
-    handlePerformanceWarning(event);
+    console.warn('Performance issue:', event.message);
   }
 });
 ```

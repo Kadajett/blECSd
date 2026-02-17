@@ -5,18 +5,24 @@ Frame-aware input state tracking for keyboard and mouse. Provides queries like `
 ## Quick Start
 
 ```typescript
-import { createInputState, getMovementDirection } from 'blecsd/core';
+import { createInputState, createInputEventBuffer, drainKeys, drainMouse, getMovementDirection } from 'blecsd/core';
 
 const inputState = createInputState({ trackRepeats: true });
+const buffer = createInputEventBuffer();
+const keyEvents = drainKeys(buffer);
+const mouseEvents = drainMouse(buffer);
+const deltaTime = 16;
 
 // Each frame: update with buffered events
 inputState.update(keyEvents, mouseEvents, deltaTime);
 
 // Query state
 if (inputState.isKeyPressed('space')) {
-  jump();
+  console.log('jump!');
 }
 
+const player = { x: 0, y: 0 };
+const speed = 5;
 const dir = getMovementDirection(inputState);
 player.x += dir.x * speed;
 player.y += dir.y * speed;
@@ -168,10 +174,11 @@ function isAnyKeyDown(inputState: InputState, keys: readonly (KeyName | string)[
 ```
 
 ```typescript
-import { isAnyKeyDown } from 'blecsd/core';
+import { createInputState, isAnyKeyDown } from 'blecsd/core';
 
+const inputState = createInputState();
 if (isAnyKeyDown(inputState, ['w', 'up'])) {
-  moveForward();
+  console.log('move forward');
 }
 ```
 
@@ -184,10 +191,11 @@ function isAllKeysDown(inputState: InputState, keys: readonly (KeyName | string)
 ```
 
 ```typescript
-import { isAllKeysDown } from 'blecsd/core';
+import { createInputState, isAllKeysDown } from 'blecsd/core';
 
+const inputState = createInputState();
 if (isAllKeysDown(inputState, ['ctrl', 's'])) {
-  save();
+  console.log('save');
 }
 ```
 
@@ -210,8 +218,11 @@ function getMovementDirection(inputState: InputState): { x: number; y: number };
 **Returns:** Object with `x` (-1, 0, or 1) and `y` (-1, 0, or 1).
 
 ```typescript
-import { getMovementDirection } from 'blecsd/core';
+import { createInputState, getMovementDirection } from 'blecsd/core';
 
+const inputState = createInputState();
+const player = { x: 0, y: 0 };
+const speed = 5;
 const dir = getMovementDirection(inputState);
 player.x += dir.x * speed;
 player.y += dir.y * speed;
@@ -233,18 +244,18 @@ function gameLoop(deltaTime: number) {
 
   // Check for single-frame events
   if (inputState.isKeyPressed('escape')) {
-    openPauseMenu();
+    console.log('open pause menu');
   }
 
   // Check for held keys
   if (inputState.isKeyDown('shift')) {
-    sprint();
+    console.log('sprint');
   }
 
   // Check hold duration
   const holdTime = inputState.getKeyHeldTime('space');
   if (holdTime > 1000) {
-    chargeAttack();
+    console.log('charge attack');
   }
 
   // Mouse state
@@ -253,11 +264,13 @@ function gameLoop(deltaTime: number) {
 
   // Modifier queries
   if (inputState.isCtrlDown() && inputState.isKeyPressed('z')) {
-    undo();
+    console.log('undo');
   }
 
   // Stats for debugging
   const stats = inputState.getStats();
   console.log(`Keys down: ${stats.keysDown}, Frame: ${stats.frameCount}`);
 }
+
+gameLoop(16);
 ```

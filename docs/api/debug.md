@@ -25,7 +25,7 @@ const debug = createDebugLogger('myapp:input');
 debug('Processing key event');
 debug.trace('Low-level trace info');
 debug.warn('Potential issue detected');
-debug.error('Error occurred:', error);
+debug.error('Error occurred:', new Error('something went wrong'));
 ```
 
 ## Environment Variables
@@ -106,7 +106,7 @@ debug.trace('Entering render loop');
 debug.debug('Frame buffer updated');
 debug.info('Screen resized to', { width: 80, height: 24 });
 debug.warn('Frame took longer than expected');
-debug.error('Render failed:', error);
+debug.error('Render failed:', new Error('render error'));
 ```
 
 ### isDebugLoggingEnabled()
@@ -120,11 +120,13 @@ function isDebugLoggingEnabled(): boolean
 **Example:**
 
 ```typescript
-import { isDebugLoggingEnabled } from 'blecsd/terminal';
+import { isDebugLoggingEnabled, createDebugLogger } from 'blecsd/terminal';
+
+const debug = createDebugLogger('myapp:debug');
 
 if (isDebugLoggingEnabled()) {
   // Perform expensive debug-only computation
-  const debugInfo = computeExpensiveDebugInfo();
+  const debugInfo = { entityCount: 42, frameTime: 16 };
   debug('Debug info:', debugInfo);
 }
 ```
@@ -286,12 +288,12 @@ The module provides pre-configured loggers for common namespaces:
 ```typescript
 import { debugLoggers } from 'blecsd/terminal';
 
-debugLoggers.input('Key pressed:', key);   // blecsd:input
-debugLoggers.render('Frame rendered');      // blecsd:render
-debugLoggers.mouse('Mouse event:', event); // blecsd:mouse
-debugLoggers.program('Program started');   // blecsd:program
-debugLoggers.detect('Terminal detected');  // blecsd:detect
-debugLoggers.ecs('Entity created:', eid);  // blecsd:ecs
+debugLoggers.input('Key pressed:', { key: 'q' });   // blecsd:input
+debugLoggers.render('Frame rendered');               // blecsd:render
+debugLoggers.mouse('Mouse event:', { x: 0, y: 0 }); // blecsd:mouse
+debugLoggers.program('Program started');             // blecsd:program
+debugLoggers.detect('Terminal detected');            // blecsd:detect
+debugLoggers.ecs('Entity created:', 1);              // blecsd:ecs
 ```
 
 ## Namespace Filtering
@@ -342,23 +344,25 @@ import { createDebugLogger, dumpTerminalState } from 'blecsd/terminal';
 
 const debug = createDebugLogger('mygame:loop');
 
-class GameLoop {
-  tick(deltaTime: number) {
-    debug.trace('Tick start', { deltaTime });
+function tick(deltaTime: number) {
+  const start = performance.now();
+  debug.trace('Tick start', { deltaTime });
 
-    // Game logic...
+  // Game logic...
 
-    debug.trace('Tick end', { duration: performance.now() - start });
-  }
-
-  onError(error: Error) {
-    debug.error('Game error:', error);
-    dumpTerminalState({
-      isAlternateBuffer: this.isAltBuffer,
-      custom: { gameState: this.state },
-    }, 'Error state');
-  }
+  debug.trace('Tick end', { duration: performance.now() - start });
 }
+
+function onError(error: Error) {
+  debug.error('Game error:', error);
+  dumpTerminalState({
+    isAlternateBuffer: true,
+    custom: { gameState: 'running' },
+  }, 'Error state');
+}
+
+tick(16);
+onError(new Error('test error'));
 ```
 
 ### Input Debugging
@@ -373,9 +377,11 @@ function onData(data: Buffer) {
   dumpRaw(data, 'Raw input');
 
   // Parse and log
-  const parsed = parseInput(data);
+  const parsed = { key: String.fromCharCode(data[0] ?? 0) };
   debug('Parsed input:', parsed);
 }
+
+onData(Buffer.from([65])); // 'A'
 ```
 
 ### Conditional Expensive Operations
@@ -384,6 +390,8 @@ function onData(data: Buffer) {
 import { createDebugLogger, isDebugLoggingEnabled } from 'blecsd/terminal';
 
 const debug = createDebugLogger('myapp:perf');
+
+function doRender() { /* actual render logic */ }
 
 function render() {
   // Only compute performance stats if debugging
@@ -395,6 +403,8 @@ function render() {
     doRender();
   }
 }
+
+render();
 ```
 
 ## Log Rotation

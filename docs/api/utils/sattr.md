@@ -66,7 +66,7 @@ enum AttrFlags {
 Creates a style attribute from a style input.
 
 ```typescript
-import { sattr, AttrFlags } from 'blecsd/utils';
+import { sattrFn as sattr, AttrFlags } from 'blecsd/utils';
 
 // Simple style
 const red = sattr({ fg: 0xffff0000 });
@@ -109,7 +109,7 @@ if (style) {
 Compares two style attributes for equality.
 
 ```typescript
-import { sattr, sattrEqual } from 'blecsd/utils';
+import { sattrFn as sattr, sattrEqual } from 'blecsd/utils';
 
 const a = sattr({ fg: 0xffff0000, bold: true });
 const b = sattr({ fg: 0xffff0000, bold: true });
@@ -126,7 +126,7 @@ console.log(sattrEqual(a, c)); // false
 Merges two style attributes, with overlay overriding base.
 
 ```typescript
-import { sattr, sattrMerge, AttrFlags } from 'blecsd/utils';
+import { sattrFn as sattr, sattrMerge, AttrFlags } from 'blecsd/utils';
 
 const base = sattr({ fg: 0xffff0000, bold: true });
 const overlay = { attrs: AttrFlags.UNDERLINE };
@@ -141,7 +141,7 @@ const merged = sattrMerge(base, overlay);
 Manipulate attribute flags.
 
 ```typescript
-import { sattr, sattrHasFlag, sattrAddFlag, sattrRemoveFlag, AttrFlags } from 'blecsd/utils';
+import { sattrFn as sattr, sattrHasFlag, sattrAddFlag, sattrRemoveFlag, AttrFlags } from 'blecsd/utils';
 
 const attr = sattr({ bold: true });
 
@@ -158,7 +158,7 @@ const withoutBold = sattrRemoveFlag(attr, AttrFlags.BOLD);
 Creates a copy with fg and bg swapped.
 
 ```typescript
-import { sattr, sattrInvert } from 'blecsd/utils';
+import { sattrFn as sattr, sattrInvert } from 'blecsd/utils';
 
 const attr = sattr({ fg: 0xffff0000, bg: 0xff0000ff });
 const inverted = sattrInvert(attr);
@@ -185,7 +185,7 @@ const empty = sattrEmpty();
 Creates a shallow copy of a style attribute.
 
 ```typescript
-import { sattr, sattrCopy } from 'blecsd/utils';
+import { sattrFn as sattr, sattrCopy } from 'blecsd/utils';
 
 const original = sattr({ fg: 0xffff0000, bold: true });
 const copy = sattrCopy(original);
@@ -214,7 +214,7 @@ const style = attrsToStyle(flags);
 Encode/decode style attributes to/from BigInt for compact storage.
 
 ```typescript
-import { sattr, encodeStyleAttr, decodeStyleAttr } from 'blecsd/utils';
+import { sattrFn as sattr, encodeStyleAttr, decodeStyleAttr } from 'blecsd/utils';
 
 const attr = sattr({ fg: 0xffff0000, bold: true });
 const encoded = encodeStyleAttr(attr); // BigInt
@@ -229,7 +229,7 @@ const decoded = decodeStyleAttr(encoded);
 ### Style Comparison for Rendering
 
 ```typescript
-import { sattr, sattrEqual, sattrFromStyleData } from 'blecsd/utils';
+import { sattrFn as sattr, sattrEqual, sattrFromStyleData } from 'blecsd/utils';
 import { getStyle } from 'blecsd/components';
 
 let currentStyle = sattrEmpty();
@@ -253,7 +253,7 @@ function renderCell(world, entity) {
 ### Building Composite Styles
 
 ```typescript
-import { sattr, sattrMerge, AttrFlags } from 'blecsd/utils';
+import { sattrFn as sattr, sattrMerge, AttrFlags } from 'blecsd/utils';
 
 // Base style from theme
 const baseStyle = sattr({ fg: 0xffcccccc, bg: 0xff222222 });

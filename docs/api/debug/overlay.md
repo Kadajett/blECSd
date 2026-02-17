@@ -6,6 +6,9 @@ Debug overlay widget for visual debugging. Displays real-time FPS, entity count,
 
 ```typescript
 import { createDebugOverlay } from 'blecsd/debug';
+import { createWorld } from 'blecsd/core';
+
+const world = createWorld();
 
 const overlay = createDebugOverlay(world, {
   toggleKey: 'F12',
@@ -13,7 +16,7 @@ const overlay = createDebugOverlay(world, {
 });
 
 // In game loop
-overlay.update(world, loop);
+overlay.update(world);
 
 // Toggle visibility
 overlay.toggle();
@@ -98,6 +101,9 @@ function createDebugOverlay(world: World, config?: DebugOverlayConfig): DebugOve
 
 ```typescript
 import { createDebugOverlay } from 'blecsd/debug';
+import { createWorld } from 'blecsd/core';
+
+const world = createWorld();
 
 const overlay = createDebugOverlay(world, {
   toggleKey: 'F12',
@@ -125,8 +131,8 @@ import { createInputLogger } from 'blecsd/debug';
 const logger = createInputLogger(10);
 
 // In input handler
-logger.log('key', `${event.name} ${event.ctrl ? '+Ctrl' : ''}`);
-logger.log('mouse', `${event.action} @ ${event.x},${event.y}`);
+logger.log('key', 'q');
+logger.log('mouse', 'click @ 10,20');
 
 // Get recent entries
 const recent = logger.getRecentEntries(5);
@@ -173,6 +179,7 @@ function createFrameRateGraph(sampleCount?: number): FrameRateGraph;
 import { createFrameRateGraph } from 'blecsd/debug';
 
 const graph = createFrameRateGraph(120); // 2 seconds at 60fps
+const deltaTime = 0.016; // 16ms frame time
 
 // In game loop
 graph.addSample(deltaTime * 1000);
@@ -193,10 +200,9 @@ import {
   createMiniProfiler,
   createFrameRateGraph,
 } from 'blecsd/debug';
-import { createGameLoop, createWorld } from 'blecsd/core';
+import { createWorld } from 'blecsd/core';
 
 const world = createWorld();
-const loop = createGameLoop(world, { targetFPS: 60 });
 
 // Debug overlay
 const overlay = createDebugOverlay(world, {
@@ -225,17 +231,20 @@ function onUpdate(deltaTime: number) {
   profiler.end('update');
 
   profiler.start('render');
-  overlay.update(world, loop);
+  overlay.update(world);
   profiler.end('render');
 }
 
 // Toggle with key
-function onKey(event: KeyEvent) {
-  inputLog.log('key', event.name);
-  if (event.name === 'F12') {
+function onKey(keyName: string) {
+  inputLog.log('key', keyName);
+  if (keyName === 'F12') {
     overlay.toggle();
   }
 }
+
+onUpdate(0.016);
+onKey('a');
 
 // Cleanup
 overlay.destroy();

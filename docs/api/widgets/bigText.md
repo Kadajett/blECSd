@@ -7,16 +7,13 @@ The BigText widget renders large ASCII art text using bitmap fonts.
 ```typescript
 import { createWorld, addEntity } from 'blecsd/core';
 import { createBigText } from 'blecsd/widgets';
-import { loadFont } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
 
-const font = loadFont('./fonts/terminus-14-bold.json');
-
 const bigText = createBigText(world, eid, {
   text: 'HELLO',
-  font,
+  font: 'terminus-14-bold',
   fg: '#ffffff',
 });
 ```
@@ -80,9 +77,22 @@ interface BigTextConfig {
 Loads a bitmap font definition from a JSON file path.
 
 ```typescript
-import { loadFont } from 'blecsd/widgets';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBigText, loadFont } from 'blecsd/widgets';
 
-const font = loadFont('./fonts/terminus-14-bold.json');
+const world = createWorld();
+const eid = addEntity(world);
+
+// Use a built-in font name (string)
+const bigText = createBigText(world, eid, {
+  text: 'HELLO',
+  font: 'terminus-14-bold',
+});
+
+// Or load a custom font from a JSON file:
+// const font = loadFont('./fonts/my-custom-font.json');
+// createBigText(world, addEntity(world), { text: 'HELLO', font });
+void loadFont; // imported for documentation completeness
 ```
 
 ---

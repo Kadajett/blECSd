@@ -29,8 +29,13 @@ NULL_ENTITY;  // 0 (represents no entity)
 ### hasHierarchy
 
 ```typescript
-import { hasHierarchy } from 'blecsd/components';
-import { setParent } from 'blecsd/components';
+import { hasHierarchy, setParent } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child = addEntity(world);
+const entity = addEntity(world);
 
 hasHierarchy(world, entity);  // false
 
@@ -47,8 +52,12 @@ hasHierarchy(world, child);   // true
 Sets an entity's parent. Adds Hierarchy component if needed. Removes from previous parent automatically.
 
 ```typescript
-import { getParent } from 'blecsd/components';
-import { setParent } from 'blecsd/components';
+import { getParent, setParent } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child = addEntity(world);
 
 setParent(world, child, parent);
 getParent(world, child);  // parent entity ID
@@ -60,6 +69,12 @@ Adds an entity as the last child of a parent.
 
 ```typescript
 import { appendChild, getChildren } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child1 = addEntity(world);
+const child2 = addEntity(world);
 
 appendChild(world, parent, child1);
 appendChild(world, parent, child2);
@@ -72,6 +87,12 @@ Adds an entity as the first child of a parent.
 
 ```typescript
 import { prepend, appendChild, getChildren } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child1 = addEntity(world);
+const child2 = addEntity(world);
 
 appendChild(world, parent, child2);
 prepend(world, parent, child1);
@@ -88,6 +109,14 @@ Inserts at a specific index. Negative indices count from the end.
 
 ```typescript
 import { insertAt, appendChild, getChildren } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child1 = addEntity(world);
+const child2 = addEntity(world);
+const child3 = addEntity(world);
+const newChild = addEntity(world);
 
 appendChild(world, parent, child1);
 appendChild(world, parent, child3);
@@ -104,6 +133,13 @@ Inserts before a sibling.
 
 ```typescript
 import { insertBefore, appendChild, getChildren } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child1 = addEntity(world);
+const child2 = addEntity(world);
+const child3 = addEntity(world);
 
 appendChild(world, parent, child1);
 appendChild(world, parent, child3);
@@ -117,6 +153,13 @@ Inserts after a sibling.
 
 ```typescript
 import { insertAfter, appendChild, getChildren } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child1 = addEntity(world);
+const child2 = addEntity(world);
+const child3 = addEntity(world);
 
 appendChild(world, parent, child1);
 appendChild(world, parent, child3);
@@ -133,8 +176,14 @@ getChildren(world, parent);  // [child1, child2, child3]
 Removes a child from its parent.
 
 ```typescript
-import { removeChild, getChildren } from 'blecsd/components';
+import { removeChild, appendChild } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const parent = addEntity(world);
+const child = addEntity(world);
+
+appendChild(world, parent, child);
 removeChild(world, parent, child);
 ```
 
@@ -144,6 +193,11 @@ Convenience function to remove an entity from its parent.
 
 ```typescript
 import { detach, appendChild, getParent, NULL_ENTITY } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child = addEntity(world);
 
 appendChild(world, parent, child);
 detach(world, child);
@@ -158,9 +212,13 @@ getParent(world, child);  // NULL_ENTITY
 
 ```typescript
 import { getParent } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const parent = getParent(world, entity);
 // Entity ID or undefined if no parent
+void parent;
 ```
 
 ### getChildren
@@ -169,9 +227,13 @@ Returns direct children only.
 
 ```typescript
 import { getChildren } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const parent = addEntity(world);
 const children = getChildren(world, parent);
 // [childId1, childId2, ...]
+void children;
 ```
 
 ### getDescendants
@@ -180,8 +242,12 @@ Returns all descendants (children, grandchildren, etc.) in depth-first order.
 
 ```typescript
 import { getDescendants } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const root = addEntity(world);
 const all = getDescendants(world, root);
+void all;
 ```
 
 ### getAncestors
@@ -190,24 +256,38 @@ Returns all ancestors, nearest first.
 
 ```typescript
 import { getAncestors } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const ancestors = getAncestors(world, entity);
 // [parent, grandparent, ...]
+void ancestors;
 ```
 
 ### getFirstChild / getLastChild
 
 ```typescript
 import { getFirstChild, getLastChild, NULL_ENTITY } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const parent = addEntity(world);
 const first = getFirstChild(world, parent);  // Entity ID or NULL_ENTITY
 const last = getLastChild(world, parent);    // Entity ID or NULL_ENTITY
+void first; void last; void NULL_ENTITY;
 ```
 
 ### getChildAt
 
 ```typescript
 import { getChildAt, appendChild, NULL_ENTITY } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child1 = addEntity(world);
+const child2 = addEntity(world);
 
 appendChild(world, parent, child1);
 appendChild(world, parent, child2);
@@ -220,6 +300,13 @@ getChildAt(world, parent, 5);  // NULL_ENTITY (out of bounds)
 
 ```typescript
 import { getChildIndex, appendChild } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child1 = addEntity(world);
+const child2 = addEntity(world);
+const orphan = addEntity(world);
 
 appendChild(world, parent, child1);
 appendChild(world, parent, child2);
@@ -232,15 +319,28 @@ getChildIndex(world, orphan);  // -1 (not a child)
 
 ```typescript
 import { getNextSibling, getPrevSibling, NULL_ENTITY } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const next = getNextSibling(world, entity);  // Entity ID or NULL_ENTITY
 const prev = getPrevSibling(world, entity);  // Entity ID or NULL_ENTITY
+void next; void prev; void NULL_ENTITY;
 ```
 
 ### getDepth
 
 ```typescript
-import { getDepth } from 'blecsd/components';
+import { getDepth, appendChild } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const root = addEntity(world);
+const child = addEntity(world);
+const grandchild = addEntity(world);
+
+appendChild(world, root, child);
+appendChild(world, child, grandchild);
 
 getDepth(world, root);        // 0
 getDepth(world, child);       // 1
@@ -251,7 +351,10 @@ getDepth(world, grandchild);  // 2
 
 ```typescript
 import { isRoot, isLeaf } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 isRoot(world, entity);  // true if no parent
 isLeaf(world, entity);  // true if no children
 ```
@@ -262,7 +365,10 @@ Returns all hierarchy data for an entity.
 
 ```typescript
 import { getHierarchy } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const data = getHierarchy(world, entity);
 // {
 //   parent: number | null,
@@ -271,6 +377,7 @@ const data = getHierarchy(world, entity);
 //   prevSibling: number | null,
 //   depth: number
 // }
+void data;
 ```
 
 ---
@@ -281,10 +388,10 @@ const data = getHierarchy(world, entity);
 
 ```typescript
 interface HierarchyData {
-  readonly parent: Entity;        // NULL_ENTITY if no parent
-  readonly firstChild: Entity;    // NULL_ENTITY if no children
-  readonly nextSibling: Entity;   // NULL_ENTITY if last sibling
-  readonly prevSibling: Entity;   // NULL_ENTITY if first sibling
+  readonly parent: number;        // NULL_ENTITY if no parent
+  readonly firstChild: number;    // NULL_ENTITY if no children
+  readonly nextSibling: number;   // NULL_ENTITY if last sibling
+  readonly prevSibling: number;   // NULL_ENTITY if first sibling
   readonly childCount: number;
   readonly depth: number;         // 0 = root
 }
@@ -320,37 +427,57 @@ getDepth(world, grandchild);    // 2
 ### Traversing Descendants
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { getDescendants, getPosition, setPosition } from 'blecsd/components';
 
-function moveEntityAndDescendants(world, entity, dx, dy) {
-  const entities = [entity, ...getDescendants(world, entity)];
+const world = createWorld();
+
+const moveEntityAndDescendants = (w: typeof world, entity: number, dx: number, dy: number) => {
+  const entities = [entity, ...getDescendants(w, entity)];
 
   for (const eid of entities) {
-    const pos = getPosition(world, eid);
+    const pos = getPosition(w, eid);
     if (pos) {
-      setPosition(world, eid, pos.x + dx, pos.y + dy);
+      setPosition(w, eid, pos.x + dx, pos.y + dy);
     }
   }
-}
+};
+
+const root = addEntity(world);
+moveEntityAndDescendants(world, root, 10, 5);
 ```
 
 ### Finding Root
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { getAncestors, isRoot } from 'blecsd/components';
 
-function getRoot(world, entity) {
-  if (isRoot(world, entity)) return entity;
+const world = createWorld();
 
-  const ancestors = getAncestors(world, entity);
+const getRoot = (w: typeof world, entity: number) => {
+  if (isRoot(w, entity)) return entity;
+
+  const ancestors = getAncestors(w, entity);
   return ancestors[ancestors.length - 1];
-}
+};
+
+const entity = addEntity(world);
+getRoot(world, entity);
 ```
 
 ### Moving Between Parents
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { detach, appendChild } from 'blecsd/components';
+
+const world = createWorld();
+const parent1 = addEntity(world);
+const parent2 = addEntity(world);
+const child = addEntity(world);
+
+appendChild(world, parent1, child);
 
 // Move child from parent1 to parent2
 detach(world, child);

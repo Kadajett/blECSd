@@ -112,6 +112,8 @@ Cleans up:
 **Example:**
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
 program.on('key', (event) => {
   if (event.name === 'q' || (event.ctrl && event.name === 'c')) {
     program.destroy();
@@ -135,6 +137,8 @@ Text is buffered and written on the next flush or tick.
 **Example:**
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
 program.write('Hello, ');
 program.write('World!');
 program.flush();  // Writes "Hello, World!"
@@ -185,6 +189,8 @@ move(x: number, y: number): void
 **Example:**
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
 program.move(10, 5);
 program.write('Text at 10, 5');
 ```
@@ -238,6 +244,9 @@ resetStyle(): void
 Emitted when a key is pressed.
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+import type { KeyEvent } from 'blecsd/terminal';
+const program = createProgram();
 program.on('key', (event: KeyEvent) => {
   console.log('Key:', event.name);
   console.log('Ctrl:', event.ctrl);
@@ -268,6 +277,9 @@ interface KeyEvent {
 Emitted when a mouse event occurs (if mouse tracking enabled).
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+import type { ParsedMouseEvent as MouseEvent } from 'blecsd/terminal';
+const program = createProgram();
 program.on('mouse', (event: MouseEvent) => {
   console.log(`Mouse ${event.action} at ${event.x}, ${event.y}`);
 });
@@ -299,7 +311,9 @@ interface MouseEvent {
 Emitted when the terminal is resized.
 
 ```typescript
-program.on('resize', (event: ResizeEvent) => {
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
+program.on('resize', (event: { cols: number; rows: number }) => {
   console.log(`New size: ${event.cols}x${event.rows}`);
   // Re-render application
 });
@@ -321,6 +335,8 @@ interface ResizeEvent {
 Emitted when the terminal gains or loses focus.
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
 program.on('focus', () => {
   // Terminal gained focus
 });
@@ -369,28 +385,25 @@ import type { KeyEvent } from 'blecsd/terminal';
 const program = createProgram();
 let running = true;
 
-function render(): void {
+const render = (): void => {
   program.clear();
   // Draw game state...
   program.flush();
-}
+};
 
-function handleKey(event: KeyEvent): void {
+const handleKey = (event: KeyEvent): void => {
   if (event.name === 'q') {
     running = false;
     program.destroy();
   }
-}
+};
 
-function gameLoop(): void {
-  if (!running) return;
-  render();
-  setTimeout(gameLoop, 16);
-}
+// In production, call render in your game loop at ~60fps
+// Example: setInterval(render, 16)
+void running;
 
 program.on('key', handleKey);
 program.on('resize', render);
-gameLoop();
 ```
 
 ## Schema Validation

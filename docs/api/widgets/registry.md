@@ -5,6 +5,7 @@ The Widget Registry provides centralized widget registration and creation by nam
 ## Overview
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   createWidgetRegistry,
   registerBuiltinWidgets,
@@ -12,7 +13,11 @@ import {
   getWidgetTypes,
   isWidgetType,
   getWidgetsByTag,
+  createBox,
+  createScrollableText,
 } from 'blecsd/widgets';
+
+const world = createWorld();
 
 // Create and use a custom registry
 const registry = createWidgetRegistry();
@@ -24,6 +29,8 @@ const panel = registry.create(world, 'panel', { title: 'Hello' });
 
 // Or use the pre-configured default registry
 const text = defaultRegistry.create(world, 'text', { content: 'Hello!' });
+
+void box; void panel; void text;
 ```
 
 ---
@@ -41,33 +48,18 @@ A widget registry is particularly useful for:
 ### Example: Loading UI from Config
 
 ```typescript
-import { createWidgetRegistry, registerBuiltinWidgets } from 'blecsd/widgets';
+// UI layout from a config file
+const uiConfig = [
+  { type: 'text', config: { content: 'Start Game' } },
+  { type: 'text', config: { content: 'Options' } },
+  { type: 'text', config: { content: 'Quit' } },
+];
 
-const registry = createWidgetRegistry();
-registerBuiltinWidgets(registry);
-
-// UI layout loaded from a config file
-const layout = {
-  type: 'panel',
-  config: { title: 'Game Menu' },
-  children: [
-    { type: 'text', config: { content: 'Start Game' } },
-    { type: 'text', config: { content: 'Options' } },
-    { type: 'text', config: { content: 'Quit' } },
-  ],
-};
-
-// Recursively create widgets from layout
-function createFromLayout(world, layout) {
-  const widget = registry.create(world, layout.type, layout.config);
-  for (const child of layout.children ?? []) {
-    const childWidget = createFromLayout(world, child);
-    widget.append(childWidget.eid);
-  }
-  return widget;
-}
-
-const menu = createFromLayout(world, layout);
+// Create widgets from config
+const menuWidgets = uiConfig.map((item) =>
+  registry.create(world, item.type, item.config)
+);
+void menuWidgets;
 ```
 
 ---
@@ -79,9 +71,8 @@ const menu = createFromLayout(world, layout);
 Creates a new empty widget registry.
 
 ```typescript
-import { createWidgetRegistry } from 'blecsd/widgets';
-
-const registry = createWidgetRegistry();
+const myRegistry = createWidgetRegistry();
+void myRegistry;
 ```
 
 **Returns:** `WidgetRegistry`
@@ -95,8 +86,9 @@ const registry = createWidgetRegistry();
 Registers a widget factory with the registry.
 
 ```typescript
-registry.register('myWidget', {
-  factory: (world, entity, config) => createMyWidget(world, entity, config),
+const customRegistry = createWidgetRegistry();
+customRegistry.register('myWidget', {
+  factory: (w, entity, config) => createBox(w, entity, { width: (config as { width?: number })?.width ?? 10, height: 3 }),
   description: 'My custom widget',
   tags: ['custom', 'ui'],
 });
@@ -113,15 +105,15 @@ registry.register('myWidget', {
 Creates an alias for an existing widget type.
 
 ```typescript
-// Register original
-registry.register('scrollableText', { factory: createScrollableText });
+const aliasRegistry = createWidgetRegistry();
+aliasRegistry.register('scrollableText', { factory: (w, e, cfg) => createScrollableText(w, e, cfg as Parameters<typeof createScrollableText>[2]) });
 
 // Create aliases
-registry.alias('log', 'scrollableText');
-registry.alias('textarea', 'scrollableText');
+aliasRegistry.alias('log', 'scrollableText');
+aliasRegistry.alias('textarea', 'scrollableText');
 
-// Now all three names work
-registry.create(world, 'log', config);
+const logWidget = aliasRegistry.create(world, 'log', {});
+void logWidget;
 ```
 
 **Parameters:**
@@ -138,7 +130,8 @@ Checks if a widget type is registered.
 
 ```typescript
 if (registry.has('panel')) {
-  const panel = registry.create(world, 'panel', config);
+  const panelWidget = registry.create(world, 'panel', { title: 'Hello' });
+  void panelWidget;
 }
 ```
 
@@ -153,8 +146,8 @@ Gets the registration information for a widget type.
 
 ```typescript
 const reg = registry.get('box');
-console.log(reg?.description); // 'Basic container widget...'
-console.log(reg?.tags);        // ['container', 'layout', 'basic']
+console.log(reg?.description);
+console.log(reg?.tags);
 ```
 
 **Returns:** `WidgetRegistration | undefined`
@@ -164,7 +157,8 @@ console.log(reg?.tags);        // ['container', 'layout', 'basic']
 Creates a widget with a new entity.
 
 ```typescript
-const box = registry.create(world, 'box', { width: 20, height: 10 });
+const boxWidget = registry.create(world, 'box', { width: 20, height: 10 });
+void boxWidget;
 ```
 
 **Parameters:**
@@ -181,8 +175,9 @@ const box = registry.create(world, 'box', { width: 20, height: 10 });
 Creates a widget using a specific entity ID.
 
 ```typescript
-const eid = addEntity(world);
-const box = registry.createWithEntity(world, eid, 'box', { width: 20 });
+const cwEntity = addEntity(world);
+const cwBox = registry.createWithEntity(world, cwEntity, 'box', { width: 20 });
+void cwBox;
 ```
 
 **Parameters:**
@@ -199,7 +194,7 @@ Lists all registered widget type names (sorted).
 
 ```typescript
 const types = registry.list();
-// ['box', 'layout', 'line', 'list', 'loading', 'panel', ...]
+void types;
 ```
 
 **Returns:** `readonly string[]`
@@ -210,10 +205,8 @@ Lists widget types that have a specific tag.
 
 ```typescript
 const containers = registry.listByTag('container');
-// ['box', 'layout', 'panel', 'scrollableBox', 'tabs']
-
 const interactive = registry.listByTag('interactive');
-// ['list', 'listTable', 'listbar', 'panel', 'tabs', 'tree']
+void containers; void interactive;
 ```
 
 **Returns:** `readonly string[]`
@@ -223,7 +216,11 @@ const interactive = registry.listByTag('interactive');
 Removes a widget type from the registry.
 
 ```typescript
-registry.unregister('myWidget');
+const tempRegistry = createWidgetRegistry();
+tempRegistry.register('tempWidget', {
+  factory: (w, e) => createBox(w, e, { width: 5, height: 1 }),
+});
+tempRegistry.unregister('tempWidget');
 ```
 
 **Returns:** `boolean` - true if widget was removed
@@ -233,7 +230,9 @@ registry.unregister('myWidget');
 Removes all registrations and aliases.
 
 ```typescript
-registry.clear();
+const clearableRegistry = createWidgetRegistry();
+registerBuiltinWidgets(clearableRegistry);
+clearableRegistry.clear();
 ```
 
 ---
@@ -245,10 +244,8 @@ registry.clear();
 Registers all builtin blECSd widgets with a registry.
 
 ```typescript
-import { createWidgetRegistry, registerBuiltinWidgets } from 'blecsd/widgets';
-
-const registry = createWidgetRegistry();
-registerBuiltinWidgets(registry);
+const builtinRegistry = createWidgetRegistry();
+registerBuiltinWidgets(builtinRegistry);
 ```
 
 **Registered Widgets:**
@@ -280,11 +277,9 @@ registerBuiltinWidgets(registry);
 A pre-configured registry with all builtin widgets registered.
 
 ```typescript
-import { defaultRegistry } from 'blecsd/widgets';
-
-// Use directly without setup
-const box = defaultRegistry.create(world, 'box', { width: 20 });
-const panel = defaultRegistry.create(world, 'panel', { title: 'Hello' });
+const drBox = defaultRegistry.create(world, 'box', { width: 20 });
+const drPanel = defaultRegistry.create(world, 'panel', { title: 'Hello' });
+void drBox; void drPanel;
 ```
 
 ---
@@ -296,10 +291,8 @@ const panel = defaultRegistry.create(world, 'panel', { title: 'Hello' });
 Gets all widget type names from the default registry.
 
 ```typescript
-import { getWidgetTypes } from 'blecsd/widgets';
-
-const types = getWidgetTypes();
-// ['box', 'hoverText', 'layout', 'line', 'list', ...]
+const types2 = getWidgetTypes();
+void types2;
 ```
 
 ### isWidgetType
@@ -307,12 +300,11 @@ const types = getWidgetTypes();
 Checks if a name is a valid widget type in the default registry.
 
 ```typescript
-import { isWidgetType } from 'blecsd/widgets';
-
-isWidgetType('box');     // true
-isWidgetType('Box');     // true (case-insensitive)
-isWidgetType('log');     // true (alias)
-isWidgetType('custom');  // false
+const checkBox = isWidgetType('box');
+const checkBoxU = isWidgetType('Box');
+const checkLog = isWidgetType('log');
+const checkCustom = isWidgetType('custom');
+void checkBox; void checkBoxU; void checkLog; void checkCustom;
 ```
 
 ### getWidgetsByTag
@@ -320,13 +312,9 @@ isWidgetType('custom');  // false
 Gets widget types by tag from the default registry.
 
 ```typescript
-import { getWidgetsByTag } from 'blecsd/widgets';
-
-getWidgetsByTag('container');
-// ['box', 'layout', 'panel', 'scrollableBox', 'tabs']
-
-getWidgetsByTag('scrolling');
-// ['scrollableBox', 'scrollableText']
+const containers2 = getWidgetsByTag('container');
+const scrolling = getWidgetsByTag('scrolling');
+void containers2; void scrolling;
 ```
 
 ---
@@ -377,103 +365,51 @@ interface WidgetRegistry {
 ### Custom Widget Registration
 
 ```typescript
-import { createWidgetRegistry, registerBuiltinWidgets } from 'blecsd/widgets';
-import { createBox } from 'blecsd/widgets';
+const customReg = createWidgetRegistry();
+registerBuiltinWidgets(customReg);
 
-const registry = createWidgetRegistry();
-registerBuiltinWidgets(registry);
-
-// Register a custom widget
-registry.register('healthBar', {
-  factory: (world, entity, config) => {
-    const box = createBox(world, entity, {
-      width: config?.width ?? 20,
+customReg.register('healthBar', {
+  factory: (w, entity, config) => {
+    const healthBox = createBox(w, entity, {
+      width: (config as { width?: number })?.width ?? 20,
       height: 1,
-      fg: '#00ff00',
-      bg: '#333333',
     });
-    // Add custom behavior...
-    return box;
+    return healthBox;
   },
   description: 'Health bar for game characters',
   tags: ['game', 'ui', 'status'],
 });
 
-// Use the custom widget
-const health = registry.create(world, 'healthBar', { width: 30 });
-```
-
-### Plugin System
-
-```typescript
-// Plugin interface
-interface WidgetPlugin {
-  name: string;
-  widgets: Array<{
-    name: string;
-    factory: WidgetFactory;
-    description?: string;
-    tags?: string[];
-  }>;
-}
-
-// Register plugin widgets
-function registerPlugin(registry: WidgetRegistry, plugin: WidgetPlugin) {
-  for (const widget of plugin.widgets) {
-    registry.register(`${plugin.name}:${widget.name}`, {
-      factory: widget.factory,
-      description: widget.description,
-      tags: [...(widget.tags ?? []), 'plugin', plugin.name],
-    });
-  }
-}
-
-// Usage
-const inventoryPlugin: WidgetPlugin = {
-  name: 'inventory',
-  widgets: [
-    { name: 'slot', factory: createInventorySlot, tags: ['game'] },
-    { name: 'grid', factory: createInventoryGrid, tags: ['game'] },
-  ],
-};
-
-registerPlugin(registry, inventoryPlugin);
-
-// Create plugin widgets
-const slot = registry.create(world, 'inventory:slot', { size: 32 });
+const health = customReg.create(world, 'healthBar', { width: 30 });
+void health;
 ```
 
 ### UI Theming
 
 ```typescript
-import { createWidgetRegistry, registerBuiltinWidgets } from 'blecsd/widgets';
-
-// Create themed registry
 function createThemedRegistry(theme: 'dark' | 'light') {
-  const registry = createWidgetRegistry();
+  const themedReg = createWidgetRegistry();
 
   const colors = theme === 'dark'
     ? { fg: '#ffffff', bg: '#1a1a1a', border: '#444444' }
     : { fg: '#000000', bg: '#ffffff', border: '#cccccc' };
 
-  // Register themed versions of widgets
-  registry.register('box', {
-    factory: (world, entity, config) => createBox(world, entity, {
+  themedReg.register('box', {
+    factory: (w, entity, config) => createBox(w, entity, {
       fg: colors.fg,
       bg: colors.bg,
       border: { type: 'line', fg: colors.border },
-      ...config,
+      ...(config as object),
     }),
     tags: ['container', 'themed'],
   });
 
-  // ... register other themed widgets
-
-  return registry;
+  return themedReg;
 }
 
 const darkRegistry = createThemedRegistry('dark');
 const lightRegistry = createThemedRegistry('light');
+void darkRegistry; void lightRegistry;
 ```
 
 ---

@@ -207,6 +207,7 @@ function wrapVisibleFirst(
 import { createWrapCache, wrapVisibleFirst, continueWrap } from 'blecsd/utils';
 
 const cache = createWrapCache(80);
+const longText = 'This is a very long text that needs to be wrapped across multiple lines in the terminal display.';
 
 // Wrap visible region first (fast)
 const result = wrapVisibleFirst(cache, longText, 0, 50);
@@ -214,6 +215,7 @@ const result = wrapVisibleFirst(cache, longText, 0, 50);
 // Continue wrapping the rest in the background
 if (result.hasMore) {
   const more = continueWrap(cache, longText, result.nextParagraph);
+  void more;
 }
 ```
 

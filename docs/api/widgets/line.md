@@ -6,7 +6,17 @@ The Line widget is a simple separator for creating horizontal or vertical lines.
 
 ```typescript
 import { createWorld, addEntity } from 'blecsd/core';
-import { createLine } from 'blecsd/widgets';
+import {
+  createLine,
+  isLine,
+  getLineChar,
+  setLineChar,
+  getLineOrientation,
+  LineConfigSchema,
+  DEFAULT_HORIZONTAL_CHAR,
+  DEFAULT_VERTICAL_CHAR,
+  DEFAULT_LINE_LENGTH,
+} from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -28,6 +38,8 @@ const vLine = createLine(world, addEntity(world), {
   char: '║',
   fg: '#00ff00',
 });
+
+void hLine; void vLine;
 ```
 
 ---
@@ -39,17 +51,11 @@ const vLine = createLine(world, addEntity(world), {
 Creates a new Line widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createLine } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
 // Basic horizontal line (default)
 const line = createLine(world, eid);
 
 // Vertical line with custom styling
-const verticalLine = createLine(world, eid, {
+const verticalLine = createLine(world, addEntity(world), {
   left: 20,
   top: 0,
   orientation: 'vertical',
@@ -57,6 +63,7 @@ const verticalLine = createLine(world, eid, {
   char: '│',
   fg: '#888888',
 });
+void line; void verticalLine;
 ```
 
 **Parameters:**
@@ -73,11 +80,9 @@ const verticalLine = createLine(world, eid, {
 ### Default Characters
 
 ```typescript
-import {
-  DEFAULT_HORIZONTAL_CHAR, // '─'
-  DEFAULT_VERTICAL_CHAR, // '│'
-  DEFAULT_LINE_LENGTH,
-} from 'blecsd/widgets';
+void DEFAULT_HORIZONTAL_CHAR; // '─'
+void DEFAULT_VERTICAL_CHAR;   // '│'
+void DEFAULT_LINE_LENGTH;
 ```
 
 ---
@@ -93,8 +98,9 @@ The line widget provides a chainable API for all operations.
 The underlying entity ID.
 
 ```typescript
-const line = createLine(world, eid);
-console.log(line.eid); // Entity ID number
+const lineA = createLine(world, addEntity(world));
+console.log(lineA.eid); // Entity ID number
+lineA.destroy();
 ```
 
 ### Visibility Methods
@@ -104,7 +110,9 @@ console.log(line.eid); // Entity ID number
 Shows the line.
 
 ```typescript
-line.show();
+const lineB = createLine(world, addEntity(world));
+lineB.show();
+lineB.destroy();
 ```
 
 **Returns:** `LineWidget` for chaining
@@ -114,7 +122,9 @@ line.show();
 Hides the line.
 
 ```typescript
-line.hide();
+const lineC = createLine(world, addEntity(world));
+lineC.hide();
+lineC.destroy();
 ```
 
 **Returns:** `LineWidget` for chaining
@@ -128,7 +138,9 @@ line.hide();
 Sets the absolute position.
 
 ```typescript
-line.setPosition(20, 15);
+const lineD = createLine(world, addEntity(world));
+lineD.setPosition(20, 15);
+lineD.destroy();
 ```
 
 **Returns:** `LineWidget` for chaining
@@ -138,7 +150,9 @@ line.setPosition(20, 15);
 Moves the line by a relative amount.
 
 ```typescript
-line.move(5, -3);
+const lineE = createLine(world, addEntity(world));
+lineE.move(5, -3);
+lineE.destroy();
 ```
 
 **Returns:** `LineWidget` for chaining
@@ -152,7 +166,9 @@ line.move(5, -3);
 Sets the line character.
 
 ```typescript
-line.setChar('═'); // Use double horizontal line
+const lineF = createLine(world, addEntity(world));
+lineF.setChar('═'); // Use double horizontal line
+lineF.destroy();
 ```
 
 **Returns:** `LineWidget` for chaining
@@ -162,7 +178,10 @@ line.setChar('═'); // Use double horizontal line
 Gets the current line character.
 
 ```typescript
-const char = line.getChar(); // '─'
+const lineG = createLine(world, addEntity(world));
+const char = lineG.getChar(); // '─'
+void char;
+lineG.destroy();
 ```
 
 **Returns:** `string`
@@ -172,7 +191,10 @@ const char = line.getChar(); // '─'
 Gets the line orientation.
 
 ```typescript
-const orientation = line.getOrientation(); // 'horizontal' | 'vertical'
+const lineH = createLine(world, addEntity(world));
+const orientation = lineH.getOrientation(); // 'horizontal' | 'vertical'
+void orientation;
+lineH.destroy();
 ```
 
 **Returns:** `LineOrientation`
@@ -182,7 +204,9 @@ const orientation = line.getOrientation(); // 'horizontal' | 'vertical'
 Sets the line length.
 
 ```typescript
-line.setLength(100); // Make line 100 characters long
+const lineI = createLine(world, addEntity(world));
+lineI.setLength(100); // Make line 100 characters long
+lineI.destroy();
 ```
 
 **Returns:** `LineWidget` for chaining
@@ -192,7 +216,10 @@ line.setLength(100); // Make line 100 characters long
 Gets the current line length.
 
 ```typescript
-const length = line.getLength(); // 80
+const lineJ = createLine(world, addEntity(world));
+const length = lineJ.getLength(); // 10
+void length;
+lineJ.destroy();
 ```
 
 **Returns:** `number`
@@ -206,8 +233,10 @@ const length = line.getLength(); // 80
 Appends a child entity.
 
 ```typescript
+const lineK = createLine(world, addEntity(world));
 const childEid = addEntity(world);
-line.append(childEid);
+lineK.append(childEid);
+lineK.destroy();
 ```
 
 **Returns:** `LineWidget` for chaining
@@ -217,7 +246,10 @@ line.append(childEid);
 Gets all direct children.
 
 ```typescript
-const children = line.getChildren();
+const lineL = createLine(world, addEntity(world));
+const children = lineL.getChildren();
+void children;
+lineL.destroy();
 ```
 
 **Returns:** `Entity[]`
@@ -231,7 +263,8 @@ const children = line.getChildren();
 Destroys the widget.
 
 ```typescript
-line.destroy();
+const lineM = createLine(world, addEntity(world));
+lineM.destroy();
 ```
 
 ---
@@ -243,11 +276,11 @@ line.destroy();
 Checks if an entity is a line widget.
 
 ```typescript
-import { isLine } from 'blecsd/widgets';
-
-if (isLine(world, entity)) {
+const lineN = createLine(world, addEntity(world));
+if (isLine(world, lineN.eid)) {
   // Handle line-specific logic
 }
+lineN.destroy();
 ```
 
 **Returns:** `boolean`
@@ -259,9 +292,10 @@ if (isLine(world, entity)) {
 Gets the line character of a line entity.
 
 ```typescript
-import { getLineChar } from 'blecsd/widgets';
-
-const char = getLineChar(world, lineEntity);
+const lineO = createLine(world, addEntity(world));
+const lineChar = getLineChar(world, lineO.eid);
+void lineChar;
+lineO.destroy();
 ```
 
 **Returns:** `string`
@@ -273,9 +307,9 @@ const char = getLineChar(world, lineEntity);
 Sets the line character of a line entity.
 
 ```typescript
-import { setLineChar } from 'blecsd/widgets';
-
-setLineChar(world, lineEntity, '═');
+const lineP = createLine(world, addEntity(world));
+setLineChar(world, lineP.eid, '═');
+lineP.destroy();
 ```
 
 **Returns:** `Entity` - For chaining
@@ -287,10 +321,11 @@ setLineChar(world, lineEntity, '═');
 Gets the orientation of a line entity.
 
 ```typescript
-import { getLineOrientation } from 'blecsd/widgets';
-
-const orientation = getLineOrientation(world, lineEntity);
+const lineQ = createLine(world, addEntity(world));
+const lineOri = getLineOrientation(world, lineQ.eid);
+void lineOri;
 // 'horizontal' or 'vertical'
+lineQ.destroy();
 ```
 
 **Returns:** `LineOrientation`
@@ -306,15 +341,15 @@ Configuration for creating a line widget.
 ```typescript
 interface LineConfig {
   // Position
-  readonly left?: PositionValue;
-  readonly top?: PositionValue;
+  readonly left?: number;
+  readonly top?: number;
 
   // Orientation and size
-  readonly orientation?: LineOrientation;  // Default: 'horizontal'
-  readonly length?: number;                 // Default: 10
+  readonly orientation?: 'horizontal' | 'vertical';  // Default: 'horizontal'
+  readonly length?: number;                            // Default: 10
 
   // Style
-  readonly char?: string;                   // Default: '─' or '│'
+  readonly char?: string;                              // Default: '─' or '│'
   readonly fg?: string | number;
   readonly bg?: string | number;
 }
@@ -334,7 +369,7 @@ The line widget interface.
 
 ```typescript
 interface LineWidget {
-  readonly eid: Entity;
+  readonly eid: number;
 
   // Visibility
   show(): LineWidget;
@@ -347,7 +382,7 @@ interface LineWidget {
   // Line-specific
   setChar(char: string): LineWidget;
   getChar(): string;
-  getOrientation(): LineOrientation;
+  getOrientation(): 'horizontal' | 'vertical';
   setLength(length: number): LineWidget;
   getLength(): number;
 
@@ -357,8 +392,8 @@ interface LineWidget {
   isFocused(): boolean;
 
   // Children
-  append(child: Entity): LineWidget;
-  getChildren(): Entity[];
+  append(child: number): LineWidget;
+  getChildren(): number[];
 
   // Lifecycle
   destroy(): void;
@@ -370,8 +405,6 @@ interface LineWidget {
 ## Zod Schemas
 
 ```typescript
-import { LineConfigSchema } from 'blecsd/widgets';
-
 // Validate configuration
 const result = LineConfigSchema.safeParse({
   orientation: 'horizontal',
@@ -391,47 +424,32 @@ if (result.success) {
 ### Horizontal Separator
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createLine } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const separator = createLine(world, eid, {
+const separator = createLine(world, addEntity(world), {
   left: 0,
   top: 10,
   orientation: 'horizontal',
   length: 80,
   fg: '#666666',
 });
+void separator;
 ```
 
 ### Vertical Divider
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createLine } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const divider = createLine(world, eid, {
+const divider = createLine(world, addEntity(world), {
   left: 40,
   top: 0,
   orientation: 'vertical',
   length: 24,
   char: '│',
 });
+void divider;
 ```
 
 ### Double Line Border
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createLine } from 'blecsd/widgets';
-
-const world = createWorld();
-
 // Top border
 const topLine = createLine(world, addEntity(world), {
   left: 0,
@@ -467,43 +485,35 @@ const rightLine = createLine(world, addEntity(world), {
   length: 19,
   char: '║',
 });
+
+void topLine; void bottomLine; void leftLine; void rightLine;
 ```
 
 ### Dynamic Length
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createLine } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const line = createLine(world, eid, {
+const dynLine = createLine(world, addEntity(world), {
   orientation: 'horizontal',
   length: 40,
 });
 
 // Resize the line based on terminal width
 function onResize(terminalWidth: number) {
-  line.setLength(terminalWidth);
+  dynLine.setLength(terminalWidth);
 }
+void onResize;
 ```
 
 ### Method Chaining
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createLine } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const line = createLine(world, eid, { left: 0, top: 0 })
+const chainedLine = createLine(world, addEntity(world), { left: 0, top: 0 })
   .setPosition(10, 5)
   .setChar('═')
   .setLength(60)
   .move(0, 5)
   .show();
+void chainedLine;
 ```
 
 ---

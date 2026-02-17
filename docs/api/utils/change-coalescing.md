@@ -193,7 +193,7 @@ import { createCoalescer, queueChange, insertChange } from 'blecsd/utils';
 const coalescer = createCoalescer((result) => {
   console.log(`Flushing ${result.changeCount} changes`);
   console.log(`Dirty region: lines ${result.dirtyRegion.startLine}-${result.dirtyRegion.endLine}`);
-  rerender(result.dirtyRegion);
+  void result.dirtyRegion; // rerender(result.dirtyRegion);
 });
 
 // Fast typing: multiple changes coalesced into one flush

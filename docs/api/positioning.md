@@ -46,7 +46,7 @@ PositionValueSchema.parse(10);        // Valid
 PositionValueSchema.parse('50%');     // Valid
 PositionValueSchema.parse('50%-5');   // Valid
 PositionValueSchema.parse('center');  // Valid
-PositionValueSchema.parse('invalid'); // Throws error
+try { PositionValueSchema.parse('invalid'); } catch (_) {}  // Throws error
 ```
 
 ---

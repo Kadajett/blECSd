@@ -32,7 +32,10 @@ Check if an entity has the Focusable component.
 
 ```typescript
 import { hasFocusable } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 hasFocusable(world, entity); // true or false
 ```
 
@@ -42,8 +45,11 @@ Make an entity focusable. Adds Focusable component if needed.
 
 ```typescript
 import { makeFocusable } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
-makeFocusable(world, entity);
+const world = createWorld();
+const entity = addEntity(world);
+makeFocusable(world, entity, true);
 ```
 
 ### setFocusable
@@ -52,7 +58,10 @@ Set focusable state and options.
 
 ```typescript
 import { setFocusable } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 setFocusable(world, entity, {
   focusable: true,
   tabIndex: 0,
@@ -67,7 +76,10 @@ Check if an entity can receive focus.
 
 ```typescript
 import { isFocusable } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 isFocusable(world, entity); // true or false
 ```
 
@@ -76,9 +88,12 @@ isFocusable(world, entity); // true or false
 Focus an entity. Blurs the previously focused entity.
 
 ```typescript
-import { focus } from 'blecsd/components';
+import { focusEntity } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
-focus(world, entity);
+const world = createWorld();
+const entity = addEntity(world);
+focusEntity(world, entity);
 ```
 
 ### blur
@@ -87,7 +102,10 @@ Remove focus from an entity.
 
 ```typescript
 import { blur } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 blur(world, entity);
 ```
 
@@ -97,7 +115,10 @@ Check if an entity has focus.
 
 ```typescript
 import { isFocused } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 isFocused(world, entity); // true or false
 ```
 
@@ -108,8 +129,8 @@ Get the currently focused entity.
 ```typescript
 import { getFocusedEntity } from 'blecsd/components';
 
-const focused = getFocusedEntity(world);
-// Entity ID or undefined if nothing focused
+const focused = getFocusedEntity();
+// Entity ID or null if nothing focused
 ```
 
 ### focusNext
@@ -118,8 +139,12 @@ Focus the next entity in tab order.
 
 ```typescript
 import { focusNext } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
-focusNext(world);
+const world = createWorld();
+const e1 = addEntity(world);
+const e2 = addEntity(world);
+focusNext(world, [e1, e2]);
 // Focuses next focusable entity, wraps around
 ```
 
@@ -129,8 +154,12 @@ Focus the previous entity in tab order.
 
 ```typescript
 import { focusPrev } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
-focusPrev(world);
+const world = createWorld();
+const e1 = addEntity(world);
+const e2 = addEntity(world);
+focusPrev(world, [e1, e2]);
 // Focuses previous focusable entity, wraps around
 ```
 
@@ -140,7 +169,10 @@ Set an entity's tab order index.
 
 ```typescript
 import { setTabIndex } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 setTabIndex(world, entity, 0);  // First in tab order
 setTabIndex(world, entity, -1); // Remove from tab order
 ```
@@ -151,9 +183,13 @@ Get an entity's tab order index.
 
 ```typescript
 import { getTabIndex } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const index = getTabIndex(world, entity);
 // number or undefined
+void index;
 ```
 
 ### isInTabOrder
@@ -162,7 +198,10 @@ Check if an entity is in the tab order.
 
 ```typescript
 import { isInTabOrder } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 isInTabOrder(world, entity); // true if tabIndex >= 0
 ```
 
@@ -172,9 +211,14 @@ Get all entities in tab order, sorted.
 
 ```typescript
 import { getTabOrder } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
-const entities = getTabOrder(world);
+const world = createWorld();
+const e1 = addEntity(world);
+const e2 = addEntity(world);
+const entities = getTabOrder(world, [e1, e2]);
 // [entityA, entityB, ...] sorted by tabIndex
+void entities;
 ```
 
 ### getFocusable
@@ -183,7 +227,10 @@ Get all focusable data for an entity.
 
 ```typescript
 import { getFocusable } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const data = getFocusable(world, entity);
 // {
 //   focusable: boolean,
@@ -192,6 +239,7 @@ const data = getFocusable(world, entity);
 //   focusEffectFg: number,
 //   focusEffectBg: number
 // }
+void data;
 ```
 
 ### resetFocusState
@@ -201,7 +249,7 @@ Clear all focus state (useful on screen change).
 ```typescript
 import { resetFocusState } from 'blecsd/components';
 
-resetFocusState(world);
+resetFocusState();
 ```
 
 ## Types
@@ -235,13 +283,13 @@ interface FocusableOptions {
 
 ```typescript
 import { createWorld, addEntity } from 'blecsd/core';
-import { makeFocusable, focus, isFocused, blur } from 'blecsd/components';
+import { makeFocusable, focusEntity, isFocused, blur } from 'blecsd/components';
 
 const world = createWorld();
 const button = addEntity(world);
 
-makeFocusable(world, button);
-focus(world, button);
+makeFocusable(world, button, true);
+focusEntity(world, button);
 
 isFocused(world, button); // true
 
@@ -252,43 +300,52 @@ isFocused(world, button); // false
 ### Tab Navigation
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   makeFocusable,
   setTabIndex,
   focusNext,
   focusPrev,
-  getFocusedEntity,
 } from 'blecsd/components';
+
+const world = createWorld();
 
 // Create focusable elements with tab order
 const button1 = addEntity(world);
 const button2 = addEntity(world);
 const button3 = addEntity(world);
+const allButtons = [button1, button2, button3];
 
-makeFocusable(world, button1);
-makeFocusable(world, button2);
-makeFocusable(world, button3);
+makeFocusable(world, button1, true);
+makeFocusable(world, button2, true);
+makeFocusable(world, button3, true);
 
 setTabIndex(world, button1, 0);
 setTabIndex(world, button2, 1);
 setTabIndex(world, button3, 2);
 
 // Navigate with Tab/Shift+Tab
-function handleKey(key) {
+const handleKey = (key: { name: string; shift: boolean }) => {
   if (key.name === 'tab') {
     if (key.shift) {
-      focusPrev(world);
+      focusPrev(world, allButtons);
     } else {
-      focusNext(world);
+      focusNext(world, allButtons);
     }
   }
-}
+};
+
+handleKey({ name: 'tab', shift: false });
 ```
 
 ### Focus Styling
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { setFocusable, isFocused, getStyle, getFocusable } from 'blecsd/components';
+
+const world = createWorld();
+const button = addEntity(world);
 
 // Set focus colors
 setFocusable(world, button, {
@@ -299,9 +356,9 @@ setFocusable(world, button, {
 });
 
 // In render, use focus colors when focused
-function getEffectiveStyle(world, entity) {
-  const style = getStyle(world, entity);
-  const focusData = getFocusable(world, entity);
+const getEffectiveStyle = (w: typeof world, entity: number) => {
+  const style = getStyle(w, entity);
+  const focusData = getFocusable(w, entity);
 
   if (focusData?.focused) {
     return {
@@ -312,5 +369,8 @@ function getEffectiveStyle(world, entity) {
   }
 
   return style;
-}
+};
+
+void isFocused(world, button);
+getEffectiveStyle(world, button);
 ```

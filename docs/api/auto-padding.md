@@ -44,6 +44,12 @@ console.log(`Left padding: ${padding.left}`);
 4. **Dynamic**: Calculated on-demand, not stored
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { BorderType, setBorder, setPadding } from 'blecsd/components';
+
+const world = createWorld();
+const box = addEntity(world);
+
 // Example: Box with border and explicit padding
 setBorder(world, box, { type: BorderType.Line });
 setPadding(world, box, { left: 2 });
@@ -59,8 +65,9 @@ setPadding(world, box, { left: 2 });
 Check if auto-padding is enabled globally.
 
 ```typescript
-import { hasAutoPadding } from 'blecsd/core';
+import { hasAutoPadding, createWorld } from 'blecsd/core';
 
+const world = createWorld();
 if (hasAutoPadding(world)) {
   // Auto-padding is enabled on the screen
 }
@@ -73,8 +80,10 @@ if (hasAutoPadding(world)) {
 Get the auto-padding values for an entity based on its borders.
 
 ```typescript
-import { getAutoPadding } from 'blecsd/core';
+import { getAutoPadding, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const auto = getAutoPadding(world, entity);
 console.log(auto.left);   // 1 if left border exists, 0 otherwise
 console.log(auto.top);    // 1 if top border exists, 0 otherwise
@@ -89,8 +98,10 @@ console.log(auto.bottom); // 1 if bottom border exists, 0 otherwise
 Get the total effective padding (explicit + auto-padding).
 
 ```typescript
-import { getEffectivePadding } from 'blecsd/core';
+import { getEffectivePadding, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const effective = getEffectivePadding(world, entity);
 console.log(effective.left);       // Total left padding
 console.log(effective.horizontal); // left + right
@@ -104,8 +115,10 @@ console.log(effective.vertical);   // top + bottom
 Get the sum of all effective padding.
 
 ```typescript
-import { getTotalEffectivePadding } from 'blecsd/core';
+import { getTotalEffectivePadding, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const total = getTotalEffectivePadding(world, entity);
 console.log(`Total padding: ${total}`);  // left + right + top + bottom
 ```
@@ -117,8 +130,10 @@ console.log(`Total padding: ${total}`);  // left + right + top + bottom
 Check if an entity has any auto-padding applied.
 
 ```typescript
-import { hasEntityAutoPadding } from 'blecsd/core';
+import { hasEntityAutoPadding, createWorld, addEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 if (hasEntityAutoPadding(world, entity)) {
   console.log('Entity has auto-padding from borders');
 }
@@ -157,17 +172,25 @@ interface EffectivePaddingData {
 Enable auto-padding when creating the screen:
 
 ```typescript
+import { createWorld, createScreenEntity } from 'blecsd/core';
+
+const world = createWorld();
 const screen = createScreenEntity(world, {
   width: 80,
   height: 24,
   autoPadding: true,  // Enable auto-padding
 });
+void screen;
 ```
 
 Or toggle it at runtime:
 
 ```typescript
 import { setAutoPadding, isAutoPadding } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const screen = addEntity(world);
 
 // Enable
 setAutoPadding(world, screen, true);
@@ -177,6 +200,7 @@ setAutoPadding(world, screen, false);
 
 // Check current state
 const enabled = isAutoPadding(world, screen);
+void enabled;
 ```
 
 ## Partial Borders
@@ -184,9 +208,11 @@ const enabled = isAutoPadding(world, screen);
 Auto-padding only applies to sides with borders:
 
 ```typescript
-import { BorderType } from 'blecsd/components';
-import { getAutoPadding } from 'blecsd/core';
-import { setBorder } from 'blecsd/components';
+import { BorderType, setBorder } from 'blecsd/components';
+import { getAutoPadding, createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 // Border only on left and right
 setBorder(world, entity, {
@@ -200,6 +226,7 @@ setBorder(world, entity, {
 const auto = getAutoPadding(world, entity);
 // auto.left = 1, auto.right = 1
 // auto.top = 0, auto.bottom = 0
+void auto;
 ```
 
 ## Integration with Layout
@@ -207,13 +234,18 @@ const auto = getAutoPadding(world, entity);
 The layout system uses effective padding when calculating inner dimensions:
 
 ```typescript
-import { getInnerDimensions, getEffectivePadding } from 'blecsd/core';
+import { getInnerDimensions, getEffectivePadding, createWorld, addEntity } from 'blecsd/core';
+import { setDimensions } from 'blecsd/components';
+
+const world = createWorld();
+const entity = addEntity(world);
+setDimensions(world, entity, 80, 24);
 
 // These account for both explicit padding and auto-padding
 const inner = getInnerDimensions(world, entity);
 const padding = getEffectivePadding(world, entity);
 
-console.log(`Content area: ${inner.width}x${inner.height}`);
+console.log(`Content area: ${inner?.width}x${inner?.height}`);
 console.log(`Total padding: ${padding.horizontal}x${padding.vertical}`);
 ```
 

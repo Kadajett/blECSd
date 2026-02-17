@@ -11,10 +11,10 @@ import {
   createEmptyLineStore,
   getLineAtIndex,
   getLineInfo,
-  getLineRange,
-  getVisibleLines,
+  getLineStoreRange as getLineRange,
+  getLineStoreVisibleLines as getVisibleLines,
   appendToStore,
-  appendLines,
+  appendLinesToStore as appendLines,
   getLineCount,
   getByteSize,
   isStoreEmpty,
@@ -23,7 +23,7 @@ import {
   getOffsetForLine,
   exportContent,
   exportLineRange,
-  trimToLineCount,
+  trimLineStore as trimToLineCount,
   CHUNKED_THRESHOLD,
 } from 'blecsd/utils';
 ```
@@ -236,10 +236,10 @@ function trimToLineCount(store: VirtualizedLineStore, maxLines: number): Virtual
 import {
   createLineStore,
   getLineAtIndex,
-  getLineRange,
+  getLineStoreRange as getLineRange,
   appendToStore,
   getStoreStats,
-  trimToLineCount,
+  trimLineStore as trimToLineCount,
 } from 'blecsd/utils';
 
 // Create store from content

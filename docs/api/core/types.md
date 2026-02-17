@@ -70,7 +70,7 @@ enum LoopPhase {
   EARLY_UPDATE = 1, // Pre-update logic
   UPDATE = 2,       // Main game logic
   LATE_UPDATE = 3,  // Post-update logic
-  PHYSICS = 4,      // Physics calculations
+  ANIMATION = 4,    // Physics and animation calculations
   LAYOUT = 5,       // UI layout calculation
   RENDER = 6,       // Render to screen buffer
   POST_RENDER = 7,  // Output to terminal, cleanup
@@ -78,19 +78,22 @@ enum LoopPhase {
 ```
 
 ```typescript
-import { LoopPhase } from 'blecsd/core';
+import { LoopPhase, createScheduler, createWorld } from 'blecsd/core';
 
-loop.registerSystem(LoopPhase.UPDATE, gameLogicSystem);
-loop.registerSystem(LoopPhase.RENDER, renderSystem);
-loop.registerInputSystem(inputSystem); // Always LoopPhase.INPUT
+const world = createWorld();
+const scheduler = createScheduler();
+const gameLogicSystem = (w: typeof world) => w;
+const renderSystem = (w: typeof world) => w;
+
+scheduler.registerSystem(LoopPhase.UPDATE, gameLogicSystem);
+scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
 ```
 
 ## Usage Example
 
 ```typescript
 import type { Entity, World, System, Unsubscribe } from 'blecsd/core';
-import { createWorld, addEntity } from 'blecsd/core';
-import { LoopPhase } from 'blecsd/core';
+import { createWorld, addEntity, createScheduler, LoopPhase } from 'blecsd/core';
 
 // Define a system
 const gravitySystem: System = (world: World): World => {
@@ -99,7 +102,7 @@ const gravitySystem: System = (world: World): World => {
 };
 
 // Use Entity type for function parameters
-function spawnEnemy(world: World, x: number, y: number): Entity {
+function spawnEnemy(world: World, _x: number, _y: number): Entity {
   const eid = addEntity(world);
   // ... setup components ...
   return eid;
@@ -108,12 +111,20 @@ function spawnEnemy(world: World, x: number, y: number): Entity {
 // Use Unsubscribe for cleanup
 function setupEventHandlers(): Unsubscribe {
   const handler = () => { /* ... */ };
-  eventBus.on('event', handler);
-  return () => eventBus.off('event', handler);
+  return () => { /* cleanup handler */ };
 }
 
+const world = createWorld();
+const scheduler = createScheduler();
+const aiSystem: System = (w) => w;
+const cleanupSystem: System = (w) => w;
+
 // Register systems at appropriate phases
-loop.registerSystem(LoopPhase.PHYSICS, gravitySystem);
-loop.registerSystem(LoopPhase.UPDATE, aiSystem);
-loop.registerSystem(LoopPhase.LATE_UPDATE, cleanupSystem);
+scheduler.registerSystem(LoopPhase.ANIMATION, gravitySystem);
+scheduler.registerSystem(LoopPhase.UPDATE, aiSystem);
+scheduler.registerSystem(LoopPhase.LATE_UPDATE, cleanupSystem);
+
+// Use the functions to avoid unused variable errors
+spawnEnemy(world, 0, 0);
+setupEventHandlers();
 ```

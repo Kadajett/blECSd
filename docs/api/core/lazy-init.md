@@ -8,12 +8,12 @@ Startup time optimization through lazy loading and deferred initialization. Subs
 import { lazy, registerSubsystem, InitPriority, initSubsystemsUpTo } from 'blecsd/core';
 
 // Create a lazy value
-const config = lazy(() => parseTerminfo());
+const config = lazy(() => 'terminfo-data');
 const value = config.get(); // Only computed on first call
 
 // Register subsystems with priority
-registerSubsystem('input', InitPriority.CRITICAL, () => setupInput());
-registerSubsystem('debug', InitPriority.LOW, () => setupDebug());
+registerSubsystem('input', InitPriority.CRITICAL, () => { console.log('input ready'); });
+registerSubsystem('debug', InitPriority.LOW, () => { console.log('debug ready'); });
 
 // Initialize critical systems first for fast startup
 initSubsystemsUpTo(InitPriority.CRITICAL);
@@ -110,7 +110,7 @@ function lazy<T>(factory: LazyInitFn<T>): LazyValue<T>;
 import { lazy } from 'blecsd/core';
 
 const expensiveConfig = lazy(() => {
-  return parseTerminfo(); // Only runs on first .get()
+  return 'terminfo-data'; // Only runs on first .get()
 });
 
 const config = expensiveConfig.get();
@@ -215,7 +215,7 @@ import { detectCapabilities } from 'blecsd/core';
 
 const caps = detectCapabilities();
 if (caps.trueColor) {
-  enableTrueColorMode();
+  console.log('true color mode enabled');
 }
 console.log(`Terminal: ${caps.width}x${caps.height}`);
 ```
@@ -239,33 +239,36 @@ import {
   getStartupReport,
   formatStartupReport,
   detectCapabilities,
+  resetSubsystems,
 } from 'blecsd/core';
 
+resetSubsystems(); // Start fresh for this example
+
 // Lazy-load expensive resources
-const spriteSheet = lazy(() => loadSpriteSheet('assets/sprites.png'));
-const soundBank = lazy(() => loadSounds('assets/sounds/'));
+const spriteSheet = lazy(() => ({ tiles: [] }));
+const soundBank = lazy(() => ({ sounds: [] }));
 
 // Register subsystems
 registerSubsystem('terminal', InitPriority.CRITICAL, () => {
   const caps = detectCapabilities();
-  configureTerminal(caps);
+  console.log(`Terminal: ${caps.width}x${caps.height}, trueColor: ${caps.trueColor}`);
 });
 
 registerSubsystem('input', InitPriority.CRITICAL, () => {
-  setupInputHandling();
+  console.log('input handling ready');
 });
 
 registerSubsystem('renderer', InitPriority.HIGH, () => {
-  initializeRenderer();
+  console.log('renderer ready');
 });
 
 registerSubsystem('debug-overlay', InitPriority.LOW, () => {
-  setupDebugOverlay();
+  console.log('debug overlay ready');
 });
 
 // Staged initialization for fast startup
 initSubsystemsUpTo(InitPriority.CRITICAL); // Input ready immediately
-renderFirstFrame(); // Can render before everything is loaded
+console.log('first frame rendered'); // Can render before everything is loaded
 initSubsystemsUpTo(InitPriority.LOW); // Load the rest
 
 // Report

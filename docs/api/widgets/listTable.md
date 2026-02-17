@@ -5,14 +5,8 @@ The ListTable widget combines table rendering with list selection, providing a s
 ## Import
 
 ```typescript
-import { createListTable, isListTableWidget } from 'blecsd/widgets';
-```
-
-## Basic Usage
-
-```typescript
 import { createWorld, addEntity } from 'blecsd/core';
-import { createListTable } from 'blecsd/widgets';
+import { createListTable, isListTableWidget, createPanel } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -23,7 +17,7 @@ const table = createListTable(world, eid, {
   width: 60,
   height: 15,
   data: [
-    ['Name', 'Age', 'City'],        // Header row
+    ['Name', 'Age', 'City'],
     ['Alice', '30', 'New York'],
     ['Bob', '25', 'Los Angeles'],
     ['Carol', '35', 'Chicago'],
@@ -105,8 +99,8 @@ table.hide();   // Hide the table
 ### Position
 
 ```typescript
-table.move(dx, dy);        // Move by offset
-table.setPosition(x, y);   // Set absolute position
+table.move(2, 0);          // Move by offset
+table.setPosition(10, 5);  // Set absolute position
 ```
 
 ### Focus
@@ -119,89 +113,109 @@ table.blur();   // Remove focus
 ### Data
 
 ```typescript
-table.setData(data);       // Replace all data
-table.getData();           // Get data as string[][]
-table.getFullData();       // Get data with cell metadata
-table.clearData();         // Clear all data
+table.setData([['Name', 'Score'], ['Alice', '95'], ['Bob', '87']]);
+const tData = table.getData();
+void tData;
+const tFullData = table.getFullData();
+void tFullData;
+table.clearData();
 ```
 
 ### Cells
 
 ```typescript
-table.setCell(row, col, value);     // Set cell value
-table.getCell(row, col);            // Get cell object
-table.getCellValue(row, col);       // Get cell string value
+table.setCell(0, 0, 'Name');
+const tCell = table.getCell(0, 0);
+void tCell;
+const tCellValue = table.getCellValue(0, 0);
+void tCellValue;
 ```
 
 ### Rows
 
 ```typescript
-table.getRow(index);        // Get row at index
-table.getRowCount();        // Total rows including headers
-table.getDataRowCount();    // Data rows excluding headers
+const tRow = table.getRow(0);
+void tRow;
+const tRowCount = table.getRowCount();
+void tRowCount;
+const tDataRowCount = table.getDataRowCount();
+void tDataRowCount;
 ```
 
 ### Columns
 
 ```typescript
-table.setColumns(columns);  // Set column configuration
-table.getColumns();         // Get column configuration
-table.getColCount();        // Get column count
+table.setColumns([{ header: 'Name' }, { header: 'Score' }]);
+const tColumns = table.getColumns();
+void tColumns;
+const tColCount = table.getColCount();
+void tColCount;
 ```
 
 ### Headers
 
 ```typescript
-table.setHeaderRowCount(2);  // Set number of header rows
-table.getHeaderRowCount();   // Get header row count
-table.getHeaderRows();       // Get header rows
-table.getDataRows();         // Get data rows (excluding headers)
+table.setHeaderRowCount(1);
+const tHeaderCount = table.getHeaderRowCount();
+void tHeaderCount;
+const tHeaderRows = table.getHeaderRows();
+void tHeaderRows;
+const tDataRows = table.getDataRows();
+void tDataRows;
 ```
 
 ### Display
 
 ```typescript
-table.setCellPadding(2);     // Set cell padding
-table.getCellPadding();      // Get cell padding
-table.setCellBorders(true);  // Toggle cell borders
-table.hasCellBorders();      // Check if borders shown
-table.setStyle(style);       // Update style
-table.getDisplay();          // Get display configuration
+table.setCellPadding(2);
+const tPadding = table.getCellPadding();
+void tPadding;
+table.setCellBorders(true);
+const tHasBorders = table.hasCellBorders();
+void tHasBorders;
+table.setStyle({ header: { fg: 0xffffffff, bg: 0x444444ff } });
+const tDisplay = table.getDisplay();
+void tDisplay;
 ```
 
 ### Selection
 
 ```typescript
-table.select(2);            // Select data row at index
-table.getSelectedIndex();   // Get selected index
-table.getSelectedRow();     // Get selected row data
-table.selectPrev();         // Select previous row
-table.selectNext();         // Select next row
-table.selectFirst();        // Select first data row
-table.selectLast();         // Select last data row
-table.activate();           // Trigger activation
+table.select(0);
+const tSelectedIdx = table.getSelectedIndex();
+void tSelectedIdx;
+const tSelectedRow = table.getSelectedRow();
+void tSelectedRow;
+table.selectPrev();
+table.selectNext();
+table.selectFirst();
+table.selectLast();
+table.activate();
 ```
 
 ### Scrolling
 
 ```typescript
-table.pageUp();    // Scroll up one page
-table.pageDown();  // Scroll down one page
+table.pageUp();
+table.pageDown();
 ```
 
 ### Search
 
 ```typescript
-table.startSearch();       // Enter search mode
-table.endSearch();         // Exit search mode
-table.getSearchQuery();    // Get current query
-table.isSearching();       // Check if searching
+table.startSearch();
+table.endSearch();
+const tQuery = table.getSearchQuery();
+void tQuery;
+const tIsSearching = table.isSearching();
+void tIsSearching;
 ```
 
 ### State
 
 ```typescript
-table.getState();          // Get current state
+const tState = table.getState();
+void tState;
 ```
 
 ### Events
@@ -210,6 +224,7 @@ table.getState();          // Get current state
 // Row selection changed
 const unsubSelect = table.onSelect((index, item) => {
   console.log(`Selected row ${index}`);
+  void item;
 });
 
 // Row activated (Enter pressed)
@@ -248,14 +263,7 @@ table.destroy();  // Remove entity and cleanup
 ## Example: Process List
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createListTable } from 'blecsd/widgets';
-import { createPanel } from 'blecsd/widgets';
-
-const world = createWorld();
-
-const panel = createPanel(world, {
-  x: 0, y: 0,
+const processPanel = createPanel(world, addEntity(world), {
   width: 80, height: 20,
   title: 'Process List',
 });
@@ -290,6 +298,7 @@ processTable.onActivate((index, item) => {
 });
 
 processTable.focus();
+void processPanel;
 ```
 
 ## Example: Log Viewer with Columns
@@ -315,7 +324,16 @@ const logTable = createListTable(world, addEntity(world), {
 // Filter by typing /
 logTable.onSearchChange((query) => {
   // Filter logic here
+  void query;
 });
+```
+
+## Type Guard
+
+```typescript
+if (isListTableWidget(world, eid)) {
+  // Entity has list table behavior
+}
 ```
 
 ## Related

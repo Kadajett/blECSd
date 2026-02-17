@@ -5,15 +5,13 @@ The Tree widget provides a hierarchical tree view with expandable nodes, keyboar
 ## Import
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { createTree, isTreeWidget } from 'blecsd/widgets';
 ```
 
 ## Basic Usage
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createTree } from 'blecsd/widgets';
-
 const world = createWorld();
 const eid = addEntity(world);
 
@@ -111,6 +109,9 @@ When focused and `keys: true`:
 ### Visibility
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, {});
 tree.show();   // Show the tree
 tree.hide();   // Hide the tree
 ```
@@ -118,6 +119,10 @@ tree.hide();   // Hide the tree
 ### Position
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, {});
+const dx = 5; const dy = 3; const x = 10; const y = 5;
 tree.move(dx, dy);         // Move by offset
 tree.setPosition(x, y);    // Set absolute position
 ```
@@ -125,6 +130,9 @@ tree.setPosition(x, y);    // Set absolute position
 ### Focus
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, {});
 tree.focus();  // Focus the tree (enables keyboard input)
 tree.blur();   // Remove focus
 ```
@@ -132,16 +140,23 @@ tree.blur();   // Remove focus
 ### Nodes
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const nodes = [{ label: 'Root', children: [{ label: 'Child' }] }];
+const tree = createTree(world, eid, { nodes });
 tree.setNodes(nodes);       // Replace all nodes
 tree.getNodes();            // Get root nodes
-tree.getNode('0.1');        // Get node by path
+tree.getNode('0.0');        // Get node by path
 tree.getVisibleNodes();     // Get all visible (flattened) nodes
 ```
 
 ### Selection
 
 ```typescript
-tree.select('0.1.0');       // Select by path
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, { nodes: [{ label: 'A', children: [{ label: 'B', children: [{ label: 'C' }] }] }] });
+tree.select('0.0.0');       // Select by path
 tree.getSelectedPath();     // Get selected path string
 tree.getSelectedNode();     // Get selected node object
 tree.selectPrev();          // Select previous visible node
@@ -154,6 +169,9 @@ tree.selectParent();        // Select parent of current node
 ### Expand/Collapse
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, { nodes: [{ label: 'Root', children: [{ label: 'Child' }] }] });
 tree.expand('0');           // Expand node at path
 tree.collapse('0');         // Collapse node at path
 tree.toggle('0');           // Toggle expansion
@@ -165,12 +183,19 @@ tree.isExpanded('0');       // Check if expanded
 ### State
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, {});
 tree.getState();            // Returns 'idle' or 'focused'
 ```
 
 ### Display
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, {});
+const style = {};
 tree.setStyle(style);       // Update style configuration
 tree.setShowLines(true);    // Toggle connection lines
 tree.getShowLines();        // Check if lines shown
@@ -179,6 +204,9 @@ tree.getShowLines();        // Check if lines shown
 ### Scrolling
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, {});
 tree.getFirstVisible();     // First visible index
 tree.setFirstVisible(5);    // Scroll to index
 tree.getVisibleCount();     // Number of visible rows
@@ -187,12 +215,20 @@ tree.getVisibleCount();     // Number of visible rows
 ### Rendering
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, {});
 const lines = tree.renderLines(40);  // Get text lines for rendering
+void lines;
 ```
 
 ### Events
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, {});
+
 // Selection changed
 const unsubSelect = tree.onSelect((path, node) => {
   console.log(`Selected: ${node.label} at ${path}`);
@@ -201,7 +237,7 @@ const unsubSelect = tree.onSelect((path, node) => {
 // Node activated (Enter pressed on leaf)
 const unsubActivate = tree.onActivate((path, node) => {
   console.log(`Activated: ${node.label}`);
-  openFile(node.value);
+  void node.value;
 });
 
 // Node expanded/collapsed
@@ -218,6 +254,9 @@ unsubToggle();
 ### Key Handling
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, {});
 // In your input loop
 const action = tree.handleKey('down');
 if (action) {
@@ -228,6 +267,9 @@ if (action) {
 ### Lifecycle
 
 ```typescript
+const world = createWorld();
+const eid = addEntity(world);
+const tree = createTree(world, eid, {});
 tree.destroy();  // Remove entity and cleanup
 ```
 
@@ -243,48 +285,33 @@ Nodes are addressed using dot-separated indices:
 ## Example: File Browser
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createTree } from 'blecsd/widgets';
-import { createPanel } from 'blecsd/widgets';
-import * as fs from 'fs';
-
 const world = createWorld();
-
-// Create container panel
-const panel = createPanel(world, {
-  x: 0, y: 0,
-  width: 40, height: 20,
-  title: 'File Browser',
-});
-
-// Build tree from directory
-function buildTree(path: string): TreeNode {
-  const stats = fs.statSync(path);
-  const name = path.split('/').pop() || path;
-
-  if (stats.isDirectory()) {
-    const children = fs.readdirSync(path)
-      .filter(f => !f.startsWith('.'))
-      .map(f => buildTree(`${path}/${f}`));
-    return { label: name, value: path, children, icon: '📁' };
-  }
-
-  return { label: name, value: path, icon: '📄' };
-}
-
 const treeEntity = addEntity(world);
 const tree = createTree(world, treeEntity, {
   x: 1, y: 2,
   width: 38, height: 17,
-  nodes: [buildTree('/home/user')],
+  nodes: [
+    {
+      label: 'Documents',
+      value: '/docs',
+      children: [
+        { label: 'report.pdf', value: '/docs/report.pdf' },
+        { label: 'notes.txt', value: '/docs/notes.txt' },
+      ],
+    },
+    {
+      label: 'Downloads',
+      value: '/downloads',
+      children: [
+        { label: 'image.png', value: '/downloads/image.png' },
+      ],
+    },
+  ],
 });
 
 tree.onActivate((path, node) => {
   if (typeof node.value === 'string') {
-    const stats = fs.statSync(node.value);
-    if (stats.isFile()) {
-      console.log(`Open file: ${node.value}`);
-    }
+    console.log(`Open file: ${node.value}`);
   }
 });
 

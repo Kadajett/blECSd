@@ -5,6 +5,7 @@ A file browser widget for navigating directories and selecting files. Supports d
 ## Overview
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createFileManager } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -24,6 +25,7 @@ fm.onSelect((entry) => {
 fm.onNavigate((path) => {
   console.log('Navigated to:', path);
 });
+fm.destroy();
 ```
 
 ---
@@ -79,8 +81,10 @@ const result = FileManagerConfigSchema.safeParse({
 Creates a FileManager widget.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createFileManager } from 'blecsd/widgets';
 
+const world = createWorld();
 const fm = createFileManager(world, {
   cwd: '/home/user/projects',
   showHidden: false,
@@ -89,6 +93,7 @@ const fm = createFileManager(world, {
   height: 25,
   border: { type: 'line', ch: 'single' },
 });
+fm.destroy();
 ```
 
 **Parameters:**
@@ -151,7 +156,12 @@ setCwd(path: string): FileManagerWidget
 Sets the current working directory. Reloads directory entries and resets the selection index.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createFileManager } from 'blecsd/widgets';
+const world = createWorld();
+const fm = createFileManager(world, { cwd: '/home/user' });
 fm.setCwd('/home/user/documents');
+fm.destroy();
 ```
 
 ### getCwd
@@ -219,12 +229,18 @@ Destroys the widget and removes the entity from the world.
 Handles keyboard input for a file manager widget.
 
 ```typescript
-import { handleFileManagerKey } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createFileManager, handleFileManagerKey } from 'blecsd/widgets';
+
+const world = createWorld();
+const fmWidget = createFileManager(world, { cwd: '/home/user' });
+const fmEid = fmWidget.eid;
 
 handleFileManagerKey(world, fmEid, 'down');      // Move selection down
 handleFileManagerKey(world, fmEid, 'up');         // Move selection up
 handleFileManagerKey(world, fmEid, 'enter');      // Open file or enter directory
 handleFileManagerKey(world, fmEid, 'backspace');  // Go to parent directory
+fmWidget.destroy();
 ```
 
 **Supported keys:**
@@ -250,8 +266,11 @@ handleFileManagerKey(world, fmEid, 'backspace');  // Go to parent directory
 ### isFileManager
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { isFileManager } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
 if (isFileManager(world, entity)) {
   // Entity is a file manager widget
 }
@@ -262,12 +281,18 @@ if (isFileManager(world, entity)) {
 Injects a custom directory-reading function. Primarily used for testing to mock filesystem operations.
 
 ```typescript
-import { setReadDirFn } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createFileManager, setReadDirFn } from 'blecsd/widgets';
+
+const world = createWorld();
+const fmW = createFileManager(world, { cwd: '/home/user' });
+const fmEid = fmW.eid;
 
 setReadDirFn(fmEid, (dir) => [
   { name: 'src', path: dir + '/src', isDirectory: true, size: 0 },
   { name: 'file.ts', path: dir + '/file.ts', isDirectory: false, size: 1024 },
 ]);
+fmW.destroy();
 ```
 
 ---
@@ -277,7 +302,10 @@ setReadDirFn(fmEid, (dir) => [
 ### File Picker Dialog
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createFileManager } from 'blecsd/widgets';
+
+const world = createWorld();
 
 const picker = createFileManager(world, {
   cwd: '/home/user',
@@ -299,7 +327,10 @@ picker.onSelect((entry) => {
 ### Directory Browser with Hidden Files
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createFileManager, handleFileManagerKey } from 'blecsd/widgets';
+
+const world = createWorld();
 
 const browser = createFileManager(world, {
   cwd: '/etc',
@@ -309,7 +340,7 @@ const browser = createFileManager(world, {
 });
 
 // In your input handler:
-function onKeyPress(key) {
+function onKeyPress(key: string) {
   handleFileManagerKey(world, browser.eid, key);
 }
 ```
@@ -317,7 +348,10 @@ function onKeyPress(key) {
 ### Filtered File Listing
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createFileManager } from 'blecsd/widgets';
+
+const world = createWorld();
 
 const fm = createFileManager(world, {
   cwd: '/home/user/project',
@@ -329,6 +363,7 @@ const entries = fm.getEntries();
 for (const entry of entries) {
   console.log(entry.isDirectory ? `[DIR] ${entry.name}` : entry.name);
 }
+fm.destroy();
 ```
 
 ---

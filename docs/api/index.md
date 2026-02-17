@@ -103,10 +103,11 @@ See [World Adapter](./core/worldAdapter.md) for customizing renderable queries a
 Optional game loop with phase ordering.
 
 ```typescript
-import { createScheduler, LoopPhase } from 'blecsd/core';
+import { createScheduler, LoopPhase, createWorld } from 'blecsd/core';
 
+const world = createWorld();
 const scheduler = createScheduler();
-scheduler.registerSystem(LoopPhase.UPDATE, (world, delta) => world);
+scheduler.registerSystem(LoopPhase.UPDATE, (w, _delta) => w);
 scheduler.run(world, 16);
 ```
 
@@ -115,7 +116,7 @@ Phases execute in order:
 2. EARLY_UPDATE
 3. UPDATE
 4. LATE_UPDATE
-5. PHYSICS
+5. ANIMATION
 6. LAYOUT
 7. RENDER
 8. POST_RENDER
@@ -154,7 +155,7 @@ ECS systems process entities and update world state. Register with the scheduler
 | System | Phase | Purpose | Documentation |
 |--------|-------|---------|---------------|
 | Animation System | UPDATE | Update sprite animations | [Animation System](./systems/animationSystem.md) |
-| Movement System | PHYSICS | Apply velocity to position | [Movement System](./systems/movementSystem.md) |
+| Movement System | ANIMATION | Apply velocity to position | [Movement System](./systems/movementSystem.md) |
 | Collision System | UPDATE | Detect entity collisions | [Collision System](./systems/collisionSystem.md) |
 | Camera System | UPDATE | Camera following with smoothing | [Camera System](./systems/cameraSystem.md) |
 | State Machine System | UPDATE | Track state age for transitions | [State Machine System](./systems/stateMachineSystem.md) |
@@ -178,11 +179,13 @@ See [Input Stream](./terminal/key-parser.md) for wrapping NodeJS readable stream
 import { parseMouseSequence } from 'blecsd/terminal';
 import { parseKeyBuffer } from 'blecsd/terminal';
 
+const buffer = Buffer.from('a');
 const key = parseKeyBuffer(buffer);
 // { name: 'a', ctrl: false, meta: false, shift: false, sequence: 'a' }
 
 const mouse = parseMouseSequence('\x1b[<0;10;5M');
 // { action: 'mousedown', button: 0, x: 10, y: 5, ... }
+void key; void mouse;
 ```
 
 ## Terminal I/O

@@ -5,8 +5,8 @@ A modal overlay/backdrop system with support for stacking multiple modals, backd
 ## Overview
 
 ```typescript
-import { createModal, closeAllModals } from 'blecsd/widgets';
-import { openModal } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createModal, closeAllModals, openModal } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -70,8 +70,10 @@ const result = ModalConfigSchema.safeParse({
 Creates a Modal widget in a hidden state. Call `show()` to display it.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createModal } from 'blecsd/widgets';
 
+const world = createWorld();
 const modal = createModal(world, {
   width: 50,
   height: 20,
@@ -95,8 +97,10 @@ modal.show();
 Creates a modal and immediately shows it.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { openModal } from 'blecsd/widgets';
 
+const world = createWorld();
 const modal = openModal(world, {
   content: 'Hello World!',
   width: 30,
@@ -157,6 +161,11 @@ center(termWidth: number, termHeight: number): ModalWidget
 Centers the modal within the given terminal dimensions.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { openModal } from 'blecsd/widgets';
+
+const world = createWorld();
+const modal = openModal(world, { content: 'Centered', width: 40, height: 10 });
 modal.center(80, 24);
 ```
 
@@ -218,8 +227,12 @@ Destroys the widget. If the modal is open, it is closed first (firing onClose ca
 Closes a specific modal by entity ID.
 
 ```typescript
-import { closeModal } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { openModal, closeModal } from 'blecsd/widgets';
 
+const world = createWorld();
+const modal = openModal(world, { content: 'Example', width: 30, height: 8 });
+const modalEid = modal.eid;
 closeModal(world, modalEid);
 ```
 
@@ -228,8 +241,11 @@ closeModal(world, modalEid);
 Closes all currently open modals in reverse stack order (most recent first).
 
 ```typescript
-import { closeAllModals } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { openModal, closeAllModals } from 'blecsd/widgets';
 
+const world = createWorld();
+openModal(world, { content: 'Modal 1', width: 30, height: 8 });
 closeAllModals(world);
 ```
 
@@ -238,8 +254,11 @@ closeAllModals(world);
 Returns whether any modal is currently open.
 
 ```typescript
-import { isModalOpen } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { openModal, isModalOpen } from 'blecsd/widgets';
 
+const world = createWorld();
+openModal(world, { content: 'Example', width: 30, height: 8 });
 if (isModalOpen(world)) {
   // Block background input
 }
@@ -250,8 +269,11 @@ if (isModalOpen(world)) {
 Returns the stack of currently open modal entity IDs. The last element is the topmost (most recently opened) modal.
 
 ```typescript
-import { getModalStack } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { openModal, getModalStack } from 'blecsd/widgets';
 
+const world = createWorld();
+openModal(world, { content: 'Example', width: 30, height: 8 });
 const stack = getModalStack(world);
 const topmost = stack[stack.length - 1];
 ```
@@ -265,8 +287,12 @@ const topmost = stack[stack.length - 1];
 Handles a backdrop click event. Closes the modal if `closeOnBackdropClick` is enabled.
 
 ```typescript
-import { handleModalBackdropClick } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { openModal, handleModalBackdropClick } from 'blecsd/widgets';
 
+const world = createWorld();
+const modal = openModal(world, { content: 'Example', width: 30, height: 8 });
+const modalEid = modal.eid;
 const wasClosed = handleModalBackdropClick(world, modalEid);
 ```
 
@@ -277,8 +303,11 @@ const wasClosed = handleModalBackdropClick(world, modalEid);
 Handles an Escape key event for a modal. Closes the modal if `closeOnEscape` is enabled.
 
 ```typescript
-import { handleModalEscape, getModalStack } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { openModal, handleModalEscape, getModalStack } from 'blecsd/widgets';
 
+const world = createWorld();
+openModal(world, { content: 'Example', width: 30, height: 8, closeOnEscape: true });
 const stack = getModalStack(world);
 if (stack.length > 0) {
   handleModalEscape(world, stack[stack.length - 1]);
@@ -294,8 +323,12 @@ if (stack.length > 0) {
 ### isModal
 
 ```typescript
-import { isModal } from 'blecsd/widgets';
+import { createWorld, addEntity } from 'blecsd/core';
+import { openModal, isModal } from 'blecsd/widgets';
 
+const world = createWorld();
+const modal = openModal(world, { content: 'Example', width: 30, height: 8 });
+const entity = modal.eid;
 if (isModal(world, entity)) {
   // Entity is a modal widget
 }
@@ -308,8 +341,10 @@ if (isModal(world, entity)) {
 ### Stacked Modals
 
 ```typescript
-import { getModalStack, closeAllModals } from 'blecsd/widgets';
-import { openModal } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { openModal, getModalStack, closeAllModals } from 'blecsd/widgets';
+
+const world = createWorld();
 
 const first = openModal(world, {
   content: 'First modal',
@@ -333,8 +368,10 @@ closeAllModals(world);
 ### Confirmation Modal with Callback
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { openModal } from 'blecsd/widgets';
 
+const world = createWorld();
 const modal = openModal(world, {
   content: 'Are you sure you want to delete this?',
   width: 50,
@@ -352,9 +389,12 @@ modal.center(80, 24).onClose(() => {
 ### Input Blocking Pattern
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { isModalOpen, getModalStack, handleModalEscape } from 'blecsd/widgets';
 
-function handleKeyPress(world, key) {
+const world = createWorld();
+
+function handleKeyPress(key: string) {
   // Block all input when a modal is open, except Escape
   if (isModalOpen(world)) {
     if (key === 'escape') {

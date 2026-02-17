@@ -5,6 +5,7 @@ A toggle switch widget for on/off controls. Can be toggled by clicking or pressi
 ## Overview
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createSwitch } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -68,8 +69,10 @@ const validated = SwitchConfigSchema.parse({
 Creates a Switch widget with the given configuration.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createSwitch } from 'blecsd/widgets';
 
+const world = createWorld();
 const toggle = createSwitch(world, {
   x: 10,
   y: 5,
@@ -122,6 +125,10 @@ toggle(): SwitchWidget
 Toggles the checked state from on to off or vice versa. Returns `this` for chaining.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createSwitch } from 'blecsd/widgets';
+
+const world = createWorld();
 const toggle = createSwitch(world, { checked: false });
 toggle.toggle(); // Now checked = true
 toggle.toggle(); // Now checked = false
@@ -154,6 +161,11 @@ onChange(callback: (checked: boolean) => void): SwitchWidget
 Registers a callback that fires when the switch state changes (via toggle, setChecked, or user interaction).
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createSwitch } from 'blecsd/widgets';
+
+const world = createWorld();
+const toggle = createSwitch(world, { checked: false });
 toggle.onChange((checked) => {
   console.log(checked ? 'Switch turned ON' : 'Switch turned OFF');
 });
@@ -191,8 +203,11 @@ Destroys the widget and removes the entity from the world.
 ### isSwitch
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { isSwitch } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
 if (isSwitch(world, entity)) {
   // Entity is a switch widget
 }
@@ -207,8 +222,13 @@ if (isSwitch(world, entity)) {
 ### handleSwitchKey
 
 ```typescript
-import { handleSwitchKey } from 'blecsd/widgets';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createSwitch, handleSwitchKey } from 'blecsd/widgets';
 
+const world = createWorld();
+const toggle = createSwitch(world, { checked: false });
+const entity = toggle.eid;
+const key = 'space';
 const handled = handleSwitchKey(world, entity, key);
 ```
 
@@ -224,8 +244,12 @@ Toggles the switch if Space or Enter key is pressed. Fires onChange callback.
 ### handleSwitchClick
 
 ```typescript
-import { handleSwitchClick } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createSwitch, handleSwitchClick } from 'blecsd/widgets';
 
+const world = createWorld();
+const toggle = createSwitch(world, { checked: false });
+const entity = toggle.eid;
 const handled = handleSwitchClick(world, entity);
 ```
 
@@ -244,8 +268,10 @@ Toggles the switch when clicked. Fires onChange callback.
 ### Basic Toggle
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createSwitch } from 'blecsd/widgets';
 
+const world = createWorld();
 const darkMode = createSwitch(world, {
   x: 5,
   y: 2,
@@ -255,23 +281,21 @@ const darkMode = createSwitch(world, {
 });
 
 darkMode.onChange((checked) => {
-  if (checked) {
-    enableDarkMode();
-  } else {
-    enableLightMode();
-  }
+  console.log(checked ? 'Dark mode enabled' : 'Light mode enabled');
 });
 ```
 
 ### Custom Styled Switch
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createSwitch } from 'blecsd/widgets';
 
+const world = createWorld();
 const customToggle = createSwitch(world, {
   checked: true,
-  onLabel: '✓ YES',
-  offLabel: '✗ NO',
+  onLabel: 'YES',
+  offLabel: 'NO',
   onFg: '#000000',
   onBg: '#00ff00',
   offFg: '#ffffff',
@@ -282,8 +306,10 @@ const customToggle = createSwitch(world, {
 ### Settings Toggle
 
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { createSwitch } from 'blecsd/widgets';
 
+const world = createWorld();
 const soundToggle = createSwitch(world, {
   x: 20,
   y: 10,
@@ -293,8 +319,7 @@ const soundToggle = createSwitch(world, {
 });
 
 soundToggle.onChange((checked) => {
-  settings.soundEnabled = checked;
-  saveSettings(settings);
+  console.log(`Sound ${checked ? 'enabled' : 'disabled'}`);
 });
 ```
 

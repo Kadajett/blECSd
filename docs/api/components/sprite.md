@@ -72,7 +72,9 @@ const tankId = registerSprite({
 ### getSpriteSheet / getSpriteSheetByName / getSpriteIdByName
 
 ```typescript
-import { getSpriteSheet, getSpriteSheetByName, getSpriteIdByName } from 'blecsd/components';
+import { registerSprite, getSpriteSheet, getSpriteSheetByName, getSpriteIdByName } from 'blecsd/components';
+
+const playerId = registerSprite({ name: 'player', frames: [[[{ char: '@' }]]] });
 
 const sheet = getSpriteSheet(playerId);
 const same = getSpriteSheetByName('player');
@@ -86,8 +88,9 @@ if (sheet) {
 ### unregisterSprite
 
 ```typescript
-import { unregisterSprite } from 'blecsd/components';
+import { registerSprite, unregisterSprite } from 'blecsd/components';
 
+const playerId = registerSprite({ name: 'player', frames: [[[{ char: '@' }]]] });
 unregisterSprite(playerId); // returns true if found
 ```
 
@@ -110,7 +113,12 @@ const Sprite = {
 Assigns a sprite to an entity. Adds the component if not present.
 
 ```typescript
-import { setSprite, setSpriteByName } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { registerSprite, setSprite, setSpriteByName } from 'blecsd/components';
+
+const world = createWorld();
+const entity = addEntity(world);
+const playerId = registerSprite({ name: 'player', frames: [[[{ char: '@' }]], [[{ char: 'O' }]]] });
 
 setSprite(world, entity, playerId);
 setSprite(world, entity, playerId, 1); // Start at frame 1

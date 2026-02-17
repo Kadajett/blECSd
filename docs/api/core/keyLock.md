@@ -382,23 +382,16 @@ interface KeyLockOptions {
 ```typescript
 import { createKeyLockScope, shouldBlockKeyEvent } from 'blecsd/core';
 
-function openModal(): () => void {
-  // Lock all except dialog controls
-  const restore = createKeyLockScope({
-    lockAll: true,
-    ignore: ['escape', 'enter', 'tab', 'up', 'down'],
-  });
+// Lock all except dialog controls
+const restoreModal = createKeyLockScope({
+  lockAll: true,
+  ignore: ['escape', 'enter', 'tab', 'up', 'down'],
+});
 
-  // Return close function
-  return () => {
-    restore();
-  };
-}
-
-// Usage
-const closeModal = openModal();
 // ... modal is active ...
-closeModal();
+
+// Close modal - previous state is restored
+restoreModal();
 ```
 
 ### Game Input
@@ -406,24 +399,11 @@ closeModal();
 ```typescript
 import { grabKeys, releaseAllGrabbedKeys, shouldBlockKeyEvent } from 'blecsd/core';
 
-function startGame(): void {
-  // Grab movement keys
-  grabKeys(['up', 'down', 'left', 'right', 'space', 'w', 'a', 's', 'd']);
-}
+// Grab movement keys for game
+grabKeys(['up', 'down', 'left', 'right', 'space', 'w', 'a', 's', 'd']);
 
-function pauseGame(): void {
-  // Release keys when paused
-  releaseAllGrabbedKeys();
-}
-
-function handleGameInput(event: KeyEvent): void {
-  if (shouldBlockKeyEvent(event)) {
-    // Key is grabbed, handle it in game
-    handleMovement(event);
-    return;
-  }
-  // Other keys go to UI
-}
+// When paused, release keys
+releaseAllGrabbedKeys();
 ```
 
 ### Custom Input Validation
@@ -432,18 +412,15 @@ function handleGameInput(event: KeyEvent): void {
 import { setKeyLockFilter } from 'blecsd/core';
 
 // Only allow alphanumeric input
-function enableAlphanumericOnly(): void {
-  setKeyLockFilter((event) => {
-    const allowed = /^[a-zA-Z0-9]$/.test(event.name) ||
-      ['enter', 'backspace', 'escape', 'tab'].includes(event.name);
-    return !allowed; // Return true to block
-  });
-}
+setKeyLockFilter((event) => {
+  const key = event.key ?? '';
+  const allowed = /^[a-zA-Z0-9]$/.test(key) ||
+    ['enter', 'backspace', 'escape', 'tab'].includes(key);
+  return !allowed; // Return true to block
+});
 
 // Clear restriction
-function disableRestriction(): void {
-  setKeyLockFilter(null);
-}
+setKeyLockFilter(null);
 ```
 
 ## Best Practices

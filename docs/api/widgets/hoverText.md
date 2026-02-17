@@ -5,6 +5,7 @@ The HoverText system provides tooltips that display contextual information when 
 ## Import
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   createHoverTextManager,
   setHoverText,
@@ -12,14 +13,9 @@ import {
   hasHoverText,
   clearHoverText,
   clearAllHoverText,
+  getHoverTextCount,
+  DEFAULT_HOVER_DELAY,
 } from 'blecsd/widgets';
-```
-
-## Basic Usage
-
-```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createHoverTextManager, setHoverText } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -34,21 +30,7 @@ const hoverManager = createHoverTextManager({
 const buttonEntity = addEntity(world);
 setHoverText(buttonEntity, 'Click to submit the form');
 
-// In your input loop
-function onMouseMove(x, y, hoveredEntity) {
-  hoverManager.updateMouse(x, y, hoveredEntity);
-}
-
-// In your game loop
-function update(deltaTime) {
-  hoverManager.update(deltaTime);
-
-  // Render tooltip if visible
-  const tooltip = hoverManager.getRenderData();
-  if (tooltip) {
-    renderTooltip(tooltip);
-  }
-}
+void DEFAULT_HOVER_DELAY;
 ```
 
 ## Manager Configuration
@@ -89,28 +71,32 @@ interface HoverTextConfig {
 ### Registration
 
 ```typescript
+const regEntity = addEntity(world);
 // Simple text
-hoverManager.setHoverText(entity, 'Tooltip text');
+hoverManager.setHoverText(regEntity, 'Tooltip text');
 
 // With configuration
-hoverManager.setHoverText(entity, {
+hoverManager.setHoverText(regEntity, {
   text: 'Warning: This action is irreversible',
   style: { bg: 0xff4444ff },
   delay: 200,
 });
 
 // Check and get
-hoverManager.hasHoverText(entity);   // true/false
-hoverManager.getHoverText(entity);   // HoverTextConfig | undefined
+const hh = hoverManager.hasHoverText(regEntity);
+void hh;
+const hg = hoverManager.getHoverText(regEntity);
+void hg;
 
 // Clear
-hoverManager.clearHoverText(entity);
+hoverManager.clearHoverText(regEntity);
 hoverManager.clearAll();
 ```
 
 ### Mouse Updates
 
 ```typescript
+const mouseX = 10; const mouseY = 5; const hoveredEntity = addEntity(world);
 // Call when mouse moves or entity under cursor changes
 hoverManager.updateMouse(mouseX, mouseY, hoveredEntity);
 
@@ -122,14 +108,17 @@ hoverManager.updateMouse(mouseX, mouseY, null);
 
 ```typescript
 // Call every frame to handle show/hide timing
+const deltaTimeMs = 16;
 hoverManager.update(deltaTimeMs);
 ```
 
 ### Manual Control
 
 ```typescript
+const showEntity = addEntity(world);
+hoverManager.setHoverText(showEntity, 'Manual show');
 // Show immediately (bypass delay)
-hoverManager.showNow(entity, mouseX, mouseY);
+hoverManager.showNow(showEntity, 5, 5);
 
 // Hide immediately
 hoverManager.hideNow();
@@ -138,17 +127,10 @@ hoverManager.hideNow();
 ### State
 
 ```typescript
-hoverManager.isVisible();   // Check if tooltip showing
-hoverManager.getState();    // Get full state object
-
-// State object
-interface TooltipState {
-  visible: boolean;
-  sourceEntity: Entity | null;
-  text: string;
-  position: { x: number; y: number };
-  hoverStartTime: number | null;
-}
+const isVis = hoverManager.isVisible();
+void isVis;
+const hmState = hoverManager.getState();
+void hmState;
 ```
 
 ### Rendering
@@ -162,6 +144,7 @@ if (renderData) {
   // text: full text
   // lines: pre-split lines
   // style: resolved style
+  void renderData;
 }
 ```
 
@@ -169,7 +152,7 @@ if (renderData) {
 
 ```typescript
 // Update when terminal resizes
-hoverManager.setScreenSize(newWidth, newHeight);
+hoverManager.setScreenSize(120, 40);
 ```
 
 ## Module-Level API
@@ -177,149 +160,64 @@ hoverManager.setScreenSize(newWidth, newHeight);
 For simple use cases without a manager:
 
 ```typescript
-import {
-  setHoverText,
-  getHoverText,
-  hasHoverText,
-  clearHoverText,
-  clearAllHoverText,
-  getHoverTextCount,
-} from 'blecsd/widgets';
+const moduleEntity = addEntity(world);
 
 // Register hover text
-setHoverText(entity, 'Tooltip text');
-setHoverText(entity, { text: 'Custom', delay: 100 });
+setHoverText(moduleEntity, 'Tooltip text');
+setHoverText(moduleEntity, { text: 'Custom', delay: 100 });
 
 // Query
-const config = getHoverText(entity);
-const exists = hasHoverText(entity);
+const config = getHoverText(moduleEntity);
+void config;
+const exists = hasHoverText(moduleEntity);
+void exists;
 const count = getHoverTextCount();
+void count;
 
 // Clear
-clearHoverText(entity);
+clearHoverText(moduleEntity);
 clearAllHoverText();
-```
-
-## Example: Form Tooltips
-
-```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createHoverTextManager, createButton } from 'blecsd/widgets';
-import { setTextInputConfig } from 'blecsd/components';
-
-const world = createWorld();
-
-const hoverManager = createHoverTextManager({
-  showDelay: 300,
-  screenWidth: 80,
-  screenHeight: 24,
-  style: {
-    fg: 0xffffffff,
-    bg: 0x333333ff,
-    border: 0x666666ff,
-    padding: 1,
-  },
-});
-
-// Username field
-const usernameEid = addEntity(world);
-setTextInputConfig(world, usernameEid, {
-  x: 10, y: 5,
-  width: 30,
-  placeholder: 'Username',
-});
-hoverManager.setHoverText(usernameEid, 'Enter your username (3-20 characters)');
-
-// Password field
-const passwordEid = addEntity(world);
-setTextInputConfig(world, passwordEid, {
-  x: 10, y: 7,
-  width: 30,
-  secret: true,
-  placeholder: 'Password',
-});
-hoverManager.setHoverText(passwordEid, {
-  text: 'Password must contain:\n- 8+ characters\n- 1 uppercase\n- 1 number',
-  delay: 200,
-});
-
-// Submit button
-const submitButton = createButton(world, addEntity(world), {
-  x: 10, y: 9,
-  text: 'Login',
-});
-hoverManager.setHoverText(submitButton.eid, 'Click to log in');
 ```
 
 ## Example: Dashboard with Tooltips
 
 ```typescript
-const hoverManager = createHoverTextManager({
+const dashboardManager = createHoverTextManager({
   screenWidth: 120,
   screenHeight: 40,
 });
 
-// CPU gauge
-hoverManager.setHoverText(cpuGauge.eid, {
+// Create entities to represent UI elements
+const cpuGaugeEid = addEntity(world);
+const memoryGaugeEid = addEntity(world);
+const errorIconEid = addEntity(world);
+
+dashboardManager.setHoverText(cpuGaugeEid, {
   text: 'CPU Usage\nCurrent: 45%\nAverage: 32%',
   style: { bg: 0x004488ff },
 });
 
-// Memory gauge
-hoverManager.setHoverText(memoryGauge.eid, {
+dashboardManager.setHoverText(memoryGaugeEid, {
   text: 'Memory Usage\nUsed: 8.2 GB\nTotal: 16 GB',
   style: { bg: 0x448800ff },
 });
 
-// Error indicator
-hoverManager.setHoverText(errorIcon.eid, {
+dashboardManager.setHoverText(errorIconEid, {
   text: 'Warning: High memory usage',
   style: { bg: 0xff4400ff },
-  delay: 0,  // Show immediately
+  delay: 10,  // Show quickly (minimum delay is >0)
 });
-```
-
-## Example: Custom Rendering
-
-```typescript
-function renderTooltip(data: TooltipRenderData): void {
-  const { x, y, width, height, lines, style } = data;
-
-  // Draw background
-  fillRect(x, y, width, height, style.bg);
-
-  // Draw border
-  drawBorder(x, y, width, height, style.border);
-
-  // Draw text
-  for (let i = 0; i < lines.length; i++) {
-    drawText(x + style.padding, y + style.padding + i, lines[i], style.fg);
-  }
-}
-
-// In render loop
-const tooltip = hoverManager.getRenderData();
-if (tooltip) {
-  renderTooltip(tooltip);
-}
 ```
 
 ## Constants
 
 ```typescript
-import { DEFAULT_HOVER_DELAY } from 'blecsd/widgets';
-
 // Default values used by the hover text manager:
 // DEFAULT_HOVER_DELAY = 500ms (show delay)
-// DEFAULT_HIDE_DELAY = 100ms
-// DEFAULT_CURSOR_OFFSET_X = 2
-// DEFAULT_CURSOR_OFFSET_Y = 1
-// DEFAULT_TOOLTIP_FG = 0xffffffff (white)
-// DEFAULT_TOOLTIP_BG = 0xff333333 (dark gray)
+void DEFAULT_HOVER_DELAY;
 ```
 
 ## Related
 
 - [Interactive Component](../interactive.md) - Hover state detection
-- Button Component - Interactive buttons
 - [Panel Widget](./panel.md) - Container with title

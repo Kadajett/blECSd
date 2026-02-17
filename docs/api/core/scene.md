@@ -118,8 +118,11 @@ function createFadeTransition(
 ```
 
 ```typescript
-import { createFadeTransition } from 'blecsd/core';
+import { createFadeTransition, createSceneManager, createWorld } from 'blecsd/core';
 
+const world = createWorld();
+const sceneManager = createSceneManager();
+sceneManager.registerScene({ name: 'game' });
 sceneManager.switchTo(world, 'game', createFadeTransition(0.5));
 ```
 
@@ -136,8 +139,11 @@ function createSlideTransition(
 ```
 
 ```typescript
-import { createSlideTransition } from 'blecsd/core';
+import { createSlideTransition, createSceneManager, createWorld } from 'blecsd/core';
 
+const world = createWorld();
+const sceneManager = createSceneManager();
+sceneManager.registerScene({ name: 'settings' });
 sceneManager.switchTo(world, 'settings', createSlideTransition(0.3, 'left'));
 ```
 
@@ -150,9 +156,12 @@ function createSceneSystem(sceneManager: SceneManager, getDelta: () => number): 
 ```
 
 ```typescript
-import { createSceneManager, createSceneSystem } from 'blecsd/core';
+import { createSceneManager, createSceneSystem, createScheduler, LoopPhase } from 'blecsd/core';
 
 const scenes = createSceneManager();
+const scheduler = createScheduler();
+let lastTime = 0;
+const getDeltaTime = () => { const now = performance.now(); const dt = now - lastTime; lastTime = now; return dt; };
 const sceneSystem = createSceneSystem(scenes, getDeltaTime);
 scheduler.registerSystem(LoopPhase.UPDATE, sceneSystem);
 ```
@@ -168,23 +177,22 @@ const scenes = createSceneManager();
 // Register scenes
 scenes.registerScene({
   name: 'title',
-  onEnter(world) { setupTitleScreen(world); },
-  onExit(world) { cleanupTitleScreen(world); },
-  onUpdate(world, dt) { updateTitleAnimations(world, dt); },
+  onEnter(_world) { console.log('entering title screen'); },
+  onExit(_world) { console.log('exiting title screen'); },
+  onUpdate(_world, _dt) { /* update title animations */ },
 });
 
 scenes.registerScene({
   name: 'gameplay',
-  onCreate(world) { loadLevel(world); },
-  onEnter(world) { resumeGameplay(world); },
-  onUpdate(world, dt) { updateGameplay(world, dt); },
-  systems: [movementSystem, collisionSystem, aiSystem],
+  onCreate(_world) { console.log('loading level'); },
+  onEnter(_world) { console.log('resuming gameplay'); },
+  onUpdate(_world, _dt) { /* update game logic */ },
 });
 
 scenes.registerScene({
   name: 'pause',
-  onEnter(world) { showPauseMenu(world); },
-  onExit(world) { hidePauseMenu(world); },
+  onEnter(_world) { console.log('showing pause menu'); },
+  onExit(_world) { console.log('hiding pause menu'); },
 });
 
 // Start at title

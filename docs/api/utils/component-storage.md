@@ -159,6 +159,8 @@ import { createSparseStore, createTypedArrayPool, estimateMemoryUsage } from 'bl
 
 // Sparse store for debug labels (only some entities have them)
 const debugInfo = createSparseStore<{ label: string }>();
+const playerEid = 1;
+const bossEid = 2;
 debugInfo.set(playerEid, { label: 'Player' });
 debugInfo.set(bossEid, { label: 'Boss' });
 console.log(debugInfo.size);           // 2

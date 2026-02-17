@@ -188,6 +188,9 @@ process.stdout.write(tput.sgr(4));  // Underline
 Set foreground color.
 
 ```typescript
+import { createTput } from 'blecsd/terminal';
+
+const tput = createTput();
 // Basic colors (0-7)
 process.stdout.write(tput.setaf(0));  // Black
 process.stdout.write(tput.setaf(1));  // Red
@@ -210,6 +213,9 @@ process.stdout.write(tput.setaf(196));  // Red from extended palette
 Set background color.
 
 ```typescript
+import { createTput } from 'blecsd/terminal';
+
+const tput = createTput();
 process.stdout.write(tput.setab(4));    // Blue background
 process.stdout.write(tput.setab(232));  // Dark gray background
 ```

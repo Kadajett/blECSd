@@ -84,6 +84,7 @@ console.log(text.eid); // Entity ID number
 Shows the text.
 
 ```typescript
+const text = createText(world, eid);
 text.show();
 ```
 
@@ -94,6 +95,7 @@ text.show();
 Hides the text.
 
 ```typescript
+const text = createText(world, eid);
 text.hide();
 ```
 
@@ -108,6 +110,7 @@ text.hide();
 Sets the absolute position.
 
 ```typescript
+const text = createText(world, eid);
 text.setPosition(20, 15);
 ```
 
@@ -122,6 +125,7 @@ text.setPosition(20, 15);
 Moves the text by a relative amount.
 
 ```typescript
+const text = createText(world, eid);
 text.move(5, -3); // Move right 5, up 3
 ```
 
@@ -140,6 +144,7 @@ text.move(5, -3); // Move right 5, up 3
 Sets the text content.
 
 ```typescript
+const text = createText(world, eid);
 text.setContent('New label');
 ```
 
@@ -153,6 +158,8 @@ text.setContent('New label');
 Gets the current text content.
 
 ```typescript
+const text = createText(world, eid);
+text.setContent('New label');
 const content = text.getContent(); // 'New label'
 ```
 
@@ -167,6 +174,7 @@ const content = text.getContent(); // 'New label'
 Focuses the text.
 
 ```typescript
+const text = createText(world, eid);
 text.focus();
 ```
 
@@ -177,6 +185,7 @@ text.focus();
 Removes focus from the text.
 
 ```typescript
+const text = createText(world, eid);
 text.blur();
 ```
 
@@ -187,7 +196,9 @@ text.blur();
 Checks if the text is currently focused.
 
 ```typescript
+const text = createText(world, eid);
 const focused = text.isFocused(); // boolean
+void focused;
 ```
 
 **Returns:** `boolean`
@@ -201,6 +212,7 @@ const focused = text.isFocused(); // boolean
 Appends a child entity to this text.
 
 ```typescript
+const text = createText(world, eid);
 const childEid = addEntity(world);
 text.append(childEid);
 ```
@@ -215,7 +227,9 @@ text.append(childEid);
 Gets all direct children of this text.
 
 ```typescript
+const text = createText(world, eid);
 const children = text.getChildren(); // Entity[]
+void children;
 ```
 
 **Returns:** `Entity[]`
@@ -229,6 +243,7 @@ const children = text.getChildren(); // Entity[]
 Destroys the widget and removes it from the world.
 
 ```typescript
+const text = createText(world, eid);
 text.destroy();
 ```
 
@@ -241,8 +256,11 @@ text.destroy();
 Sets the content of a text entity.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { setTextContent } from 'blecsd/widgets';
 
+const world = createWorld();
+const textEntity = addEntity(world);
 setTextContent(world, textEntity, 'Updated label');
 ```
 
@@ -260,9 +278,13 @@ setTextContent(world, textEntity, 'Updated label');
 Gets the content of a text entity.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { getTextContent } from 'blecsd/widgets';
 
+const world = createWorld();
+const textEntity = addEntity(world);
 const content = getTextContent(world, textEntity); // string
+void content;
 ```
 
 **Parameters:**
@@ -278,8 +300,11 @@ const content = getTextContent(world, textEntity); // string
 Checks if an entity is a text widget.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { isText } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
 if (isText(world, entity)) {
   // Handle text-specific logic
 }
@@ -384,7 +409,7 @@ interface TextWidget {
 Zod schemas are provided for runtime validation.
 
 ```typescript
-import { TextConfigSchema } from 'blecsd/core';
+import { TextConfigSchema } from 'blecsd';
 
 // Validate configuration
 const result = TextConfigSchema.safeParse({

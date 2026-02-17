@@ -171,15 +171,15 @@ const value = getSelectedValue(world, eid);
 // Returns: string | undefined
 
 // Get selected label
-const label = getSelectedLabel(eid);
+const label = getSelectedLabel(world, eid);
 // Returns: string | undefined
 
 // Get selected option object
-const option = getSelectedOption(eid);
+const option = getSelectedOption(world, eid);
 // Returns: { label, value } | undefined
 
 // Get selected index
-const index = getSelectedIndex(eid);
+const index = getSelectedIndex(world, eid);
 // Returns: number (-1 if none)
 
 // Select by value
@@ -210,7 +210,7 @@ attachSelectBehavior(world, eid, [
 ]);
 
 // Get highlighted index
-const idx = getHighlightedIndex(eid);
+const idx = getHighlightedIndex(world, eid);
 
 // Set highlighted index
 setHighlightedIndex(world, eid, 2);
@@ -235,14 +235,14 @@ attachSelectBehavior(world, eid, [
 ]);
 
 // Get all options
-const options = getSelectOptions(eid);
+const options = getSelectOptions(world, eid);
 // Returns: SelectOption[]
 
 // Get option count
-const count = getOptionCount(eid);
+const count = getOptionCount(world, eid);
 
 // Get option at index
-const opt = getOptionAt(eid, 2);
+const opt = getOptionAt(world, eid, 2);
 // Returns: SelectOption | undefined
 
 // Set new options
@@ -252,7 +252,7 @@ setSelectOptions(world, eid, [
 ]);
 
 // Get indicator character
-const indicator = getSelectIndicator(eid);
+const indicator = getSelectIndicator(world, eid);
 // Returns: '▼' or '▲' depending on state
 ```
 
@@ -285,7 +285,7 @@ const eid = addEntity(world);
 attachSelectBehavior(world, eid, [{ label: 'A', value: 'a' }]);
 
 // Get display configuration
-const display = getSelectDisplay(eid);
+const display = getSelectDisplay(world, eid);
 
 // Set display configuration
 setSelectDisplay(world, eid, {
@@ -295,7 +295,7 @@ setSelectDisplay(world, eid, {
 });
 
 // Clear display (revert to defaults)
-clearSelectDisplay(eid);
+clearSelectDisplay(world, eid);
 ```
 
 ### State
@@ -352,7 +352,7 @@ unsub2();
 unsub3();
 
 // Clear all callbacks
-clearSelectCallbacks(eid);
+clearSelectCallbacks(world, eid);
 ```
 
 ### Key Handling

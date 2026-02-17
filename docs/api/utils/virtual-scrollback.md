@@ -26,7 +26,7 @@ import {
   DEFAULT_MAX_MEMORY,
   COMPRESSION_RATIO,
 } from 'blecsd/utils';
-import { scrollBy, scrollToTop, scrollToBottom } from 'blecsd/components';
+import { scrollbackScrollBy as scrollBy, scrollbackScrollToTop as scrollToTop, scrollbackScrollToBottom as scrollToBottom } from 'blecsd/utils';
 ```
 
 ## Types
@@ -334,7 +334,7 @@ import {
   getVisibleLines,
   getScrollbackStats,
 } from 'blecsd/utils';
-import { scrollToBottom } from 'blecsd/components';
+import { scrollbackScrollToBottom as scrollToBottom } from 'blecsd/utils';
 
 const buffer = createScrollbackBuffer({ chunkSize: 500 });
 

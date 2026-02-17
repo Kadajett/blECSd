@@ -466,6 +466,7 @@ Pre-computed Set of all combining character code points for O(1) lookup.
 ```typescript
 import { COMBINING_SET } from 'blecsd/utils';
 
+const codePoint = 0x0300; // Combining grave accent
 if (COMBINING_SET.has(codePoint)) {
   // Character is a combining mark
 }

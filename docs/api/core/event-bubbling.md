@@ -5,11 +5,16 @@ Hierarchical event propagation system. Events bubble up from a target entity thr
 ## Quick Start
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBubbleableEvent, bubbleEvent, createEntityEventBusStore } from 'blecsd/core';
 
+const world = createWorld();
+const buttonEntity = addEntity(world);
+
+interface MyEvents { click: { x: number; y: number } }
 const store = createEntityEventBusStore<MyEvents>();
-const bus = store.getOrCreate(buttonEntity, createBus);
-bus.on('click', (e) => console.log('clicked!', e.payload));
+const bus = store.getOrCreate(world, buttonEntity);
+bus.on('click', (e) => console.log('clicked!', e));
 
 const event = createBubbleableEvent({
   type: 'click',
@@ -17,7 +22,7 @@ const event = createBubbleableEvent({
   payload: { x: 10, y: 20 },
 });
 
-const result = bubbleEvent(world, event, store.get);
+const result = bubbleEvent(world, event, (w, eid) => store.get(w, eid));
 if (!result.defaultPrevented) {
   // Perform default click behavior
 }
@@ -98,8 +103,11 @@ function createBubbleableEvent<T>(options: BubbleableEventOptions<T>): Bubbleabl
 ```
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBubbleableEvent } from 'blecsd/core';
 
+const world = createWorld();
+const buttonEntity = addEntity(world);
 const event = createBubbleableEvent({
   type: 'click',
   target: buttonEntity,
@@ -145,34 +153,37 @@ function createEntityEventBusStore<E extends EventMap>(): {
 ## Usage Example
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBubbleableEvent, bubbleEvent, createEntityEventBusStore } from 'blecsd/core';
+
+const world = createWorld();
+const buttonEntity = addEntity(world);
+const containerEntity = addEntity(world);
+const rootEntity = addEntity(world);
 
 // Define event types
 interface UIEvents {
-  click: BubbleableEvent<{ x: number; y: number }>;
-  focus: BubbleableEvent<void>;
-  keydown: BubbleableEvent<{ key: string }>;
+  click: { x: number; y: number };
+  focus: Record<string, never>;
+  keydown: { key: string };
 }
 
 // Create event bus store
 const store = createEntityEventBusStore<UIEvents>();
 
 // Attach handlers to entities
-const buttonBus = store.getOrCreate(buttonEntity, createBus);
-buttonBus.on('click', (event) => {
-  console.log(`Button clicked at ${event.payload.x}, ${event.payload.y}`);
-  // Prevent default if handled
-  event.preventDefault();
+const buttonBus = store.getOrCreate(world, buttonEntity);
+buttonBus.on('click', (payload) => {
+  console.log(`Button clicked at ${payload.x}, ${payload.y}`);
 });
 
-const containerBus = store.getOrCreate(containerEntity, createBus);
-containerBus.on('click', (event) => {
+const containerBus = store.getOrCreate(world, containerEntity);
+containerBus.on('click', (_payload) => {
   console.log('Click bubbled to container');
-  // This fires unless button called stopPropagation()
 });
 
-const rootBus = store.getOrCreate(rootEntity, createBus);
-rootBus.on('click', (event) => {
+const rootBus = store.getOrCreate(world, rootEntity);
+rootBus.on('click', (_payload) => {
   console.log('Click reached root');
 });
 
@@ -183,12 +194,11 @@ const clickEvent = createBubbleableEvent({
   payload: { x: 10, y: 20 },
 });
 
-const result = bubbleEvent(world, clickEvent, store.get);
-// result.dispatchCount = 3 (button, container, root)
-// result.defaultPrevented = true (button called preventDefault)
+const result = bubbleEvent(world, clickEvent, (w, eid) => store.get(w, eid));
+console.log(result.dispatchCount);
 
 // Cleanup
-store.delete(buttonEntity);
+store.delete(world, buttonEntity);
 store.clear();
 ```
 
@@ -296,13 +306,24 @@ console.log(result);
 ### Example: Exclude Root
 
 ```typescript
+import { createWorld, addEntity, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+import { appendChild } from 'blecsd/components';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child1 = addEntity(world);
+appendChild(world, parent, child1);
+const store = createEntityEventBusStore();
+store.getOrCreate(world, parent).on('childOnly', () => {});
+store.getOrCreate(world, child1).on('childOnly', () => {});
+
 // Emit only to descendants, not the root
 const result = emitDescendants(
   world,
   parent,
   'childOnly',
   { message: 'for children' },
-  getEventBus,
+  (w, eid) => store.get(w, eid),
   { includeRoot: false }
 );
 
@@ -312,13 +333,24 @@ const result = emitDescendants(
 ### Example: Limit Depth
 
 ```typescript
+import { createWorld, addEntity, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+import { appendChild } from 'blecsd/components';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child1 = addEntity(world);
+appendChild(world, parent, child1);
+const store = createEntityEventBusStore();
+store.getOrCreate(world, parent).on('action', () => {});
+store.getOrCreate(world, child1).on('action', () => {});
+
 // Only emit to immediate children (depth 1)
 const result = emitDescendants(
   world,
   parent,
   'action',
   { level: 'shallow' },
-  getEventBus,
+  (w, eid) => store.get(w, eid),
   { maxDepth: 1 }
 );
 
@@ -328,13 +360,20 @@ const result = emitDescendants(
 ### Example: Circular Reference Detection
 
 ```typescript
+import { createWorld, addEntity, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
+const store = createEntityEventBusStore();
+store.getOrCreate(world, entity).on('test', () => {});
+
 // If entity hierarchy has a cycle (should not happen in correct usage)
 const result = emitDescendants(
   world,
   entity,
   'test',
   {},
-  getEventBus
+  (w, eid) => store.get(w, eid)
 );
 
 if (result.circularReferenceDetected) {
@@ -346,22 +385,34 @@ if (result.circularReferenceDetected) {
 
 1. **Disable/Enable entire widget trees**
    ```typescript
-   emitDescendants(world, container, 'disable', {}, getEventBus);
+   import { createWorld, addEntity, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+   const world = createWorld(); const container = addEntity(world);
+   const store = createEntityEventBusStore();
+   emitDescendants(world, container, 'disable', {}, (w, eid) => store.get(w, eid));
    ```
 
 2. **Propagate theme changes**
    ```typescript
-   emitDescendants(world, root, 'theme:changed', { theme: 'dark' }, getEventBus);
+   import { createWorld, addEntity, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+   const world = createWorld(); const root = addEntity(world);
+   const store = createEntityEventBusStore();
+   emitDescendants(world, root, 'theme:changed', { theme: 'dark' }, (w, eid) => store.get(w, eid));
    ```
 
 3. **Batch updates to nested components**
    ```typescript
-   emitDescendants(world, panel, 'update', { timestamp: Date.now() }, getEventBus);
+   import { createWorld, addEntity, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+   const world = createWorld(); const panel = addEntity(world);
+   const store = createEntityEventBusStore();
+   emitDescendants(world, panel, 'update', { timestamp: Date.now() }, (w, eid) => store.get(w, eid));
    ```
 
 4. **Destroy entire widget hierarchies**
    ```typescript
-   emitDescendants(world, dialog, 'destroy', {}, getEventBus);
+   import { createWorld, addEntity, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+   const world = createWorld(); const dialog = addEntity(world);
+   const store = createEntityEventBusStore();
+   emitDescendants(world, dialog, 'destroy', {}, (w, eid) => store.get(w, eid));
    ```
 
 ### Comparison: bubbleEvent vs emitDescendants
@@ -390,9 +441,11 @@ function createEntityEventBusStore<T extends EventMap>(): EntityEventBusStore<T>
 - `clear()` - Clears all event buses
 
 ```typescript
-import { createEntityEventBusStore } from 'blecsd/core';
-import { createEventBus } from 'blecsd/core';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createEntityEventBusStore, createEventBus } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 const store = createEntityEventBusStore();
 const eventBus = createEventBus();
 
@@ -413,13 +466,22 @@ store.clear(); // Remove all
 ### Pattern 1: Bidirectional Communication
 
 ```typescript
+import { createWorld, addEntity, createBubbleableEvent, bubbleEvent, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+
+const world = createWorld();
+const button = addEntity(world);
+const form = addEntity(world);
+const store = createEntityEventBusStore();
+store.getOrCreate(world, button);
+store.getOrCreate(world, form);
+
 // Child emits event that bubbles to parent
 const clickEvent = createBubbleableEvent({
   type: 'click',
   target: button,
   payload: { value: 'submit' }
 });
-bubbleEvent(world, clickEvent, getEventBus);
+bubbleEvent(world, clickEvent, (w, eid) => store.get(w, eid));
 
 // Parent responds by emitting to all children
 emitDescendants(
@@ -427,35 +489,47 @@ emitDescendants(
   form,
   'validation:result',
   { valid: true },
-  getEventBus
+  (w, eid) => store.get(w, eid)
 );
 ```
 
 ### Pattern 2: Hierarchical Updates
 
 ```typescript
+import { createWorld, addEntity, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+
+const world = createWorld();
+const store = createEntityEventBusStore();
+
 // When parent state changes, notify all descendants
-function updateTheme(root: Entity, theme: Theme) {
+function updateTheme(root: number, theme: string) {
   emitDescendants(
     world,
     root,
     'theme:update',
     { theme },
-    getEventBus
+    (w, eid) => store.get(w, eid)
   );
 }
+const root = addEntity(world);
+updateTheme(root, 'dark');
 ```
 
 ### Pattern 3: Selective Propagation
 
 ```typescript
+import { createWorld, addEntity, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+
+const world = createWorld();
+const panel = addEntity(world);
+const store = createEntityEventBusStore();
 // Only propagate to specific depth
 emitDescendants(
   world,
   panel,
   'refresh',
   {},
-  getEventBus,
+  (w, eid) => store.get(w, eid),
   { maxDepth: 2 }  // Only direct children and grandchildren
 );
 ```

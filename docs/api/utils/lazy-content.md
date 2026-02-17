@@ -160,11 +160,14 @@ function createArraySource(lines: readonly string[]): ContentSource
 ```typescript
 import { createLazyContent, getLazyLines, prefetchAround, getLazyContentState } from 'blecsd/utils';
 
+// Simulate file lines (in practice, loaded from a file)
+const fileLines = Array.from({ length: 1000000 }, (_, i) => `Line ${i + 1}`);
+
 // Create a source from a large file (e.g., via readline)
 const source = {
   totalLines: 1000000,
   isExactCount: true,
-  loadRange: (start, end) => fileLines.slice(start, end),
+  loadRange: (start: number, end: number) => fileLines.slice(start, end),
 };
 
 const loader = createLazyContent(source, { chunkSize: 500 });

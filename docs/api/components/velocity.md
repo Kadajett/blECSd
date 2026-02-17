@@ -251,8 +251,15 @@ console.log(`Speed: ${getSpeed(world, entity)}`);
 For high-performance code in systems, access arrays directly:
 
 ```typescript
-import { Acceleration } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { Acceleration, setVelocity, setAcceleration } from 'blecsd/components';
 import { Velocity } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+setVelocity(world, eid, { x: 5, y: 0 });
+setAcceleration(world, eid, { x: 0, y: 9.8 });
+const entities = [eid];
 
 for (const eid of entities) {
   const vx = Velocity.x[eid];

@@ -6,7 +6,7 @@ The ScrollableText widget is a thin wrapper over ScrollableBox optimized for rea
 
 ```typescript
 import { createWorld, addEntity } from 'blecsd/core';
-import { createScrollableText } from 'blecsd/widgets';
+import { createScrollableText, isScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -23,6 +23,7 @@ const logView = createScrollableText(world, eid, {
 
 // Scroll to bottom to see latest logs
 logView.scrollToBottom();
+logView.destroy();
 ```
 
 ---
@@ -34,14 +35,8 @@ logView.scrollToBottom();
 Creates a new ScrollableText widget with the specified configuration.
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createScrollableText } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
 // Basic scrollable text
-const textView = createScrollableText(world, eid, {
+const textView = createScrollableText(world, addEntity(world), {
   width: 60,
   height: 20,
   content: 'Your scrollable content here...',
@@ -53,9 +48,8 @@ const logViewer = createScrollableText(world, addEntity(world), {
   height: 24,
   border: { type: 'line' },
   scrollbar: { mode: 'visible' },
-  keysScroll: true,
-  mouseScroll: true,
 });
+void textView; void logViewer;
 ```
 
 **Parameters:**
@@ -80,8 +74,9 @@ The ScrollableText widget provides the same API as ScrollableBox.
 The underlying entity ID.
 
 ```typescript
-const text = createScrollableText(world, eid);
-console.log(text.eid); // Entity ID number
+const stA = createScrollableText(world, addEntity(world));
+console.log(stA.eid); // Entity ID number
+stA.destroy();
 ```
 
 ### Visibility Methods
@@ -91,7 +86,9 @@ console.log(text.eid); // Entity ID number
 Shows the widget.
 
 ```typescript
-text.show();
+const stB = createScrollableText(world, addEntity(world));
+stB.show();
+stB.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -101,7 +98,9 @@ text.show();
 Hides the widget.
 
 ```typescript
-text.hide();
+const stC = createScrollableText(world, addEntity(world));
+stC.hide();
+stC.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -115,7 +114,9 @@ text.hide();
 Sets the absolute position.
 
 ```typescript
-text.setPosition(20, 15);
+const stD = createScrollableText(world, addEntity(world));
+stD.setPosition(20, 15);
+stD.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -125,7 +126,9 @@ text.setPosition(20, 15);
 Moves the widget by a relative amount.
 
 ```typescript
-text.move(5, -3);
+const stE = createScrollableText(world, addEntity(world));
+stE.move(5, -3);
+stE.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -139,7 +142,9 @@ text.move(5, -3);
 Sets the text content.
 
 ```typescript
-text.setContent('New log entries...');
+const stF = createScrollableText(world, addEntity(world));
+stF.setContent('New log entries...');
+stF.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -149,7 +154,10 @@ text.setContent('New log entries...');
 Gets the current text content.
 
 ```typescript
-const content = text.getContent();
+const stG = createScrollableText(world, addEntity(world));
+const content = stG.getContent();
+void content;
+stG.destroy();
 ```
 
 **Returns:** `string`
@@ -163,7 +171,9 @@ const content = text.getContent();
 Scrolls to an absolute position.
 
 ```typescript
-text.scrollTo(0, 100); // Scroll to x=0, y=100
+const stH = createScrollableText(world, addEntity(world));
+stH.scrollTo(0, 100); // Scroll to x=0, y=100
+stH.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -173,7 +183,9 @@ text.scrollTo(0, 100); // Scroll to x=0, y=100
 Scrolls by a relative amount.
 
 ```typescript
-text.scrollBy(0, 10); // Scroll down 10 lines
+const stI = createScrollableText(world, addEntity(world));
+stI.scrollBy(0, 10); // Scroll down 10 lines
+stI.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -183,7 +195,9 @@ text.scrollBy(0, 10); // Scroll down 10 lines
 Scrolls to the top.
 
 ```typescript
-text.scrollToTop();
+const stJ = createScrollableText(world, addEntity(world));
+stJ.scrollToTop();
+stJ.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -193,7 +207,9 @@ text.scrollToTop();
 Scrolls to the bottom.
 
 ```typescript
-text.scrollToBottom();
+const stK = createScrollableText(world, addEntity(world));
+stK.scrollToBottom();
+stK.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -203,7 +219,9 @@ text.scrollToBottom();
 Scrolls to the left edge.
 
 ```typescript
-text.scrollToLeft();
+const stL = createScrollableText(world, addEntity(world));
+stL.scrollToLeft();
+stL.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -213,7 +231,9 @@ text.scrollToLeft();
 Scrolls to the right edge.
 
 ```typescript
-text.scrollToRight();
+const stM = createScrollableText(world, addEntity(world));
+stM.scrollToRight();
+stM.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -223,7 +243,9 @@ text.scrollToRight();
 Sets scroll position by percentage.
 
 ```typescript
-text.setScrollPerc(0, 50); // Scroll to 50% vertically
+const stN = createScrollableText(world, addEntity(world));
+stN.setScrollPerc(0, 50); // Scroll to 50% vertically
+stN.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -233,8 +255,10 @@ text.setScrollPerc(0, 50); // Scroll to 50% vertically
 Gets the current scroll position.
 
 ```typescript
-const scroll = text.getScroll();
-console.log(scroll.x, scroll.y);
+const stO = createScrollableText(world, addEntity(world));
+const scroll = stO.getScroll();
+void scroll;
+stO.destroy();
 ```
 
 **Returns:** `ScrollPosition`
@@ -244,8 +268,10 @@ console.log(scroll.x, scroll.y);
 Gets the current scroll position as percentages.
 
 ```typescript
-const perc = text.getScrollPerc();
-console.log(perc.x, perc.y); // 0-100
+const stP = createScrollableText(world, addEntity(world));
+const perc = stP.getScrollPerc();
+void perc;
+stP.destroy();
 ```
 
 **Returns:** `ScrollPercentage`
@@ -259,9 +285,11 @@ console.log(perc.x, perc.y); // 0-100
 Checks if scrolled to the top.
 
 ```typescript
-if (text.isAtTop()) {
+const stQ = createScrollableText(world, addEntity(world));
+if (stQ.isAtTop()) {
   console.log('At top');
 }
+stQ.destroy();
 ```
 
 **Returns:** `boolean`
@@ -271,9 +299,11 @@ if (text.isAtTop()) {
 Checks if scrolled to the bottom.
 
 ```typescript
-if (text.isAtBottom()) {
+const stR = createScrollableText(world, addEntity(world));
+if (stR.isAtBottom()) {
   console.log('At bottom');
 }
+stR.destroy();
 ```
 
 **Returns:** `boolean`
@@ -283,9 +313,11 @@ if (text.isAtBottom()) {
 Checks if scrolled to the left edge.
 
 ```typescript
-if (text.isAtLeft()) {
+const stS = createScrollableText(world, addEntity(world));
+if (stS.isAtLeft()) {
   console.log('At left');
 }
+stS.destroy();
 ```
 
 **Returns:** `boolean`
@@ -295,9 +327,11 @@ if (text.isAtLeft()) {
 Checks if scrolled to the right edge.
 
 ```typescript
-if (text.isAtRight()) {
+const stT = createScrollableText(world, addEntity(world));
+if (stT.isAtRight()) {
   console.log('At right');
 }
+stT.destroy();
 ```
 
 **Returns:** `boolean`
@@ -311,7 +345,9 @@ if (text.isAtRight()) {
 Focuses the widget.
 
 ```typescript
-text.focus();
+const stU = createScrollableText(world, addEntity(world));
+stU.focus();
+stU.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -321,7 +357,9 @@ text.focus();
 Removes focus from the widget.
 
 ```typescript
-text.blur();
+const stV = createScrollableText(world, addEntity(world));
+stV.blur();
+stV.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -331,7 +369,10 @@ text.blur();
 Checks if the widget is currently focused.
 
 ```typescript
-const focused = text.isFocused();
+const stW = createScrollableText(world, addEntity(world));
+const focused = stW.isFocused();
+void focused;
+stW.destroy();
 ```
 
 **Returns:** `boolean`
@@ -345,8 +386,10 @@ const focused = text.isFocused();
 Appends a child entity.
 
 ```typescript
+const stX = createScrollableText(world, addEntity(world));
 const childEid = addEntity(world);
-text.append(childEid);
+stX.append(childEid);
+stX.destroy();
 ```
 
 **Returns:** `ScrollableTextWidget` for chaining
@@ -356,7 +399,10 @@ text.append(childEid);
 Gets all direct children.
 
 ```typescript
-const children = text.getChildren();
+const stY = createScrollableText(world, addEntity(world));
+const children = stY.getChildren();
+void children;
+stY.destroy();
 ```
 
 **Returns:** `Entity[]`
@@ -370,7 +416,8 @@ const children = text.getChildren();
 Destroys the widget.
 
 ```typescript
-text.destroy();
+const stZ = createScrollableText(world, addEntity(world));
+stZ.destroy();
 ```
 
 ---
@@ -382,11 +429,11 @@ text.destroy();
 Checks if an entity is a scrollable text widget.
 
 ```typescript
-import { isScrollableText } from 'blecsd/widgets';
-
-if (isScrollableText(world, entity)) {
+const stAA = createScrollableText(world, addEntity(world));
+if (isScrollableText(world, stAA.eid)) {
   // Handle scrollable text logic
 }
+stAA.destroy();
 ```
 
 **Returns:** `boolean`
@@ -402,32 +449,26 @@ Configuration for creating a scrollable text widget. Inherits all options from S
 ```typescript
 interface ScrollableTextConfig {
   // Position
-  readonly left?: PositionValue;
-  readonly top?: PositionValue;
-  readonly width?: DimensionValue;
-  readonly height?: DimensionValue;
+  readonly left?: number;
+  readonly top?: number;
+  readonly width?: number;
+  readonly height?: number;
 
   // Style
   readonly fg?: string | number;
   readonly bg?: string | number;
-  readonly border?: BorderConfig;
-  readonly padding?: PaddingConfig;
+  readonly border?: { type?: string; fg?: string | number };
+  readonly padding?: number;
 
   // Content
   readonly content?: string;
-  readonly align?: Align;
-  readonly valign?: VAlign;
 
   // Scroll content size
-  readonly contentWidth?: number;
-  readonly contentHeight?: number;
+  readonly scrollWidth?: number;
+  readonly scrollHeight?: number;
 
   // Scrollbar configuration
-  readonly scrollbar?: ScrollbarConfig;
-
-  // Input handling
-  readonly keysScroll?: boolean;
-  readonly mouseScroll?: boolean;
+  readonly scrollbar?: boolean | { mode?: string; fg?: string | number };
 }
 ```
 
@@ -436,7 +477,34 @@ interface ScrollableTextConfig {
 The scrollable text widget interface. Same as ScrollableBoxWidget.
 
 ```typescript
-type ScrollableTextWidget = ScrollableBoxWidget;
+type ScrollableTextWidget = {
+  readonly eid: number;
+  show(): ScrollableTextWidget;
+  hide(): ScrollableTextWidget;
+  setPosition(x: number, y: number): ScrollableTextWidget;
+  move(dx: number, dy: number): ScrollableTextWidget;
+  setContent(text: string): ScrollableTextWidget;
+  getContent(): string;
+  scrollTo(x: number, y: number): ScrollableTextWidget;
+  scrollBy(dx: number, dy: number): ScrollableTextWidget;
+  scrollToTop(): ScrollableTextWidget;
+  scrollToBottom(): ScrollableTextWidget;
+  scrollToLeft(): ScrollableTextWidget;
+  scrollToRight(): ScrollableTextWidget;
+  setScrollPerc(x: number, y: number): ScrollableTextWidget;
+  getScroll(): { x: number; y: number };
+  getScrollPerc(): { x: number; y: number };
+  isAtTop(): boolean;
+  isAtBottom(): boolean;
+  isAtLeft(): boolean;
+  isAtRight(): boolean;
+  focus(): ScrollableTextWidget;
+  blur(): ScrollableTextWidget;
+  isFocused(): boolean;
+  append(child: number): ScrollableTextWidget;
+  getChildren(): number[];
+  destroy(): void;
+};
 ```
 
 ---
@@ -446,42 +514,32 @@ type ScrollableTextWidget = ScrollableBoxWidget;
 ### Log Viewer
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createScrollableText } from 'blecsd/widgets';
-
-const world = createWorld();
-
-const logViewer = createScrollableText(world, addEntity(world), {
+const logViewerEx = createScrollableText(world, addEntity(world), {
   left: 0,
   top: 0,
   width: 80,
   height: 20,
   border: { type: 'line' },
   scrollbar: { mode: 'visible' },
-  keysScroll: true,
 });
 
 // Add log entries
 function appendLog(message: string) {
-  const current = logViewer.getContent();
+  const current = logViewerEx.getContent();
   const timestamp = new Date().toISOString();
-  logViewer.setContent(`${current}[${timestamp}] ${message}\n`);
-  logViewer.scrollToBottom();
+  logViewerEx.setContent(`${current}[${timestamp}] ${message}\n`);
+  logViewerEx.scrollToBottom();
 }
 
 appendLog('Application started');
 appendLog('Loading configuration...');
 appendLog('Ready');
+logViewerEx.destroy();
 ```
 
 ### Help Text Display
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createScrollableText } from 'blecsd/widgets';
-
-const world = createWorld();
-
 const helpText = `
 KEYBOARD SHORTCUTS
 ==================
@@ -495,8 +553,6 @@ Editing:
   Enter         New line
   Backspace     Delete character
   Ctrl+S        Save file
-
-For more help, visit https://example.com/docs
 `;
 
 const helpView = createScrollableText(world, addEntity(world), {
@@ -505,20 +561,16 @@ const helpView = createScrollableText(world, addEntity(world), {
   width: 60,
   height: 15,
   content: helpText.trim(),
-  border: { type: 'line', ch: 'rounded' },
+  border: { type: 'line' },
   padding: 1,
 });
+helpView.destroy();
 ```
 
 ### Auto-Scrolling Terminal Output
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createScrollableText } from 'blecsd/widgets';
-
-const world = createWorld();
-
-const terminal = createScrollableText(world, addEntity(world), {
+const terminalView = createScrollableText(world, addEntity(world), {
   width: 80,
   height: 24,
   fg: '#00ff00',
@@ -528,39 +580,34 @@ const terminal = createScrollableText(world, addEntity(world), {
 
 // Simulate terminal output with auto-scroll
 function output(line: string) {
-  const current = terminal.getContent();
-  terminal.setContent(current + line + '\n');
+  const current = terminalView.getContent();
+  terminalView.setContent(current + line + '\n');
 
   // Auto-scroll to bottom for new content
-  terminal.scrollToBottom();
+  terminalView.scrollToBottom();
 }
 
 output('$ ls -la');
 output('total 32');
 output('drwxr-xr-x  5 user user 4096 Jan 1 12:00 .');
 output('drwxr-xr-x 10 user user 4096 Jan 1 11:00 ..');
+terminalView.destroy();
 ```
 
 ### Method Chaining
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
-import { createScrollableText } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const text = createScrollableText(world, eid, {
+const chainedText = createScrollableText(world, addEntity(world), {
   left: 0,
   top: 0,
   width: 60,
   height: 20,
-  contentHeight: 100,
 })
   .setContent('Line 1\nLine 2\nLine 3\n...')
   .setPosition(10, 5)
   .scrollToBottom()
   .show();
+chainedText.destroy();
 ```
 
 ---

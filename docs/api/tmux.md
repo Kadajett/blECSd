@@ -75,8 +75,9 @@ function isWrapped(sequence: string): boolean
 **Example:**
 
 ```typescript
-import { tmux } from 'blecsd/terminal';
+import { tmux, title } from 'blecsd/terminal';
 
+const sequence = title.set('My App');
 if (tmux.isWrapped(sequence)) {
   // Already wrapped, use as-is
   process.stdout.write(sequence);
@@ -127,6 +128,7 @@ import { tmux } from 'blecsd/terminal';
 process.stdout.write(tmux.begin());
 
 // Write content with doubled ESCs
+const mySequence = '\x1b]0;Title\x07';
 const content = mySequence.replace(/\x1b/g, '\x1b\x1b');
 process.stdout.write(content);
 
@@ -148,13 +150,13 @@ const PT_START = '\x1bPtmux;'
 ### Basic Usage
 
 ```typescript
-import { tmux, title, cursor, isTmux } from 'blecsd/terminal';
+import { tmux, title, cursorSeq, isTmux } from 'blecsd/terminal';
 
 // Check if running in tmux
 const inTmux = isTmux();
 
 // Build the sequence
-const seq = cursor.hide() + title.set('My App');
+const seq = cursorSeq.hide() + title.set('My App');
 
 // Wrap if necessary
 const output = inTmux ? tmux.wrap(seq) : seq;
@@ -175,12 +177,12 @@ process.stdout.write(seq);
 ### Combining Multiple Sequences
 
 ```typescript
-import { tmux, title, cursor, screen, isTmux } from 'blecsd/terminal';
+import { tmux, title, cursorSeq, screenSeq, isTmux } from 'blecsd/terminal';
 
 // Combine all sequences first, then wrap once
 const sequences = [
-  cursor.hide(),
-  screen.alternateBuffer.enter(),
+  cursorSeq.hide(),
+  screenSeq.alternateOn(),
   title.set('My App'),
 ].join('');
 

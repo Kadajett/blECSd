@@ -169,7 +169,7 @@ const eid = addEntity(world);
 attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
 
 // Get current value
-const value = getSliderValue(eid);
+const value = getSliderValue(world, eid);
 
 // Set value
 setSliderValue(world, eid, 75);
@@ -199,14 +199,14 @@ const eid = addEntity(world);
 attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
 
 // Get min/max
-const min = getSliderMin(eid);
-const max = getSliderMax(eid);
+const min = getSliderMin(world, eid);
+const max = getSliderMax(world, eid);
 
 // Get step
-const step = getSliderStep(eid);
+const step = getSliderStep(world, eid);
 
 // Get percentage (0-1)
-const pct = getSliderPercentage(eid);
+const pct = getSliderPercentage(world, eid);
 
 // Set range
 setSliderRange(world, eid, 0, 200);
@@ -266,14 +266,14 @@ const eid = addEntity(world);
 attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
 
 // Get/set orientation
-const orient = getSliderOrientation(eid);
+const orient = getSliderOrientation(world, eid);
 setSliderOrientation(world, eid, SliderOrientation.Vertical);
 
 // Check orientation
-if (isSliderHorizontal(eid)) {
+if (isSliderHorizontal(world, eid)) {
   // Horizontal layout
 }
-if (isSliderVertical(eid)) {
+if (isSliderVertical(world, eid)) {
   // Vertical layout
 }
 ```
@@ -290,12 +290,12 @@ attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
 
 // Show/hide value text
 setShowSliderValue(world, eid, true);
-if (isShowingSliderValue(eid)) {
+if (isShowingSliderValue(world, eid)) {
   // Include value in render
 }
 
 // Get display configuration
-const display = getSliderDisplay(eid);
+const display = getSliderDisplay(world, eid);
 
 // Set display configuration
 setSliderDisplay(world, eid, {
@@ -305,10 +305,10 @@ setSliderDisplay(world, eid, {
 });
 
 // Clear display (revert to defaults)
-clearSliderDisplay(eid);
+clearSliderDisplay(world, eid);
 
 // Render to string
-const str = renderSliderString(eid, 20);
+const str = renderSliderString(world, eid, 20);
 // Returns: "────────●══════════"
 ```
 
@@ -463,9 +463,9 @@ setSliderDisplay(world, colorSliders.green, { fillFg: 0x00ff00ff });
 setSliderDisplay(world, colorSliders.blue, { fillFg: 0x0000ffff });
 
 function updateColor() {
-  const r = getSliderValue(colorSliders.red);
-  const g = getSliderValue(colorSliders.green);
-  const b = getSliderValue(colorSliders.blue);
+  const r = getSliderValue(world, colorSliders.red);
+  const g = getSliderValue(world, colorSliders.green);
+  const b = getSliderValue(world, colorSliders.blue);
   console.log(`Color: rgb(${r}, ${g}, ${b})`);
 }
 

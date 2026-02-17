@@ -196,16 +196,16 @@ Creates a screen entity, the root container for all other entities.
 ```typescript
 import { createWorld, createScreenEntity } from 'blecsd/core';
 
-const world = createWorld();
-
 // Basic screen
-const screen = createScreenEntity(world, {
+const world1 = createWorld();
+const screen = createScreenEntity(world1, {
   width: 80,
   height: 24,
 });
 
-// Screen with title
-const namedScreen = createScreenEntity(world, {
+// Screen with title (uses its own world - only one screen per world)
+const world2 = createWorld();
+const namedScreen = createScreenEntity(world2, {
   width: 120,
   height: 40,
   title: 'File Manager',

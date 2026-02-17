@@ -5,8 +5,9 @@ Node lifecycle events for tracking entity hierarchy changes. These events integr
 ## Quick Start
 
 ```typescript
-import { onReparent, onDestroy } from 'blecsd/core';
-import { createEventBus } from 'blecsd/core';
+import { onReparent, onDestroy, createEventBus } from 'blecsd/core';
+
+const entity = 1;
 
 // Listen for reparent events on an entity
 const unsub = onReparent(entity, (event) => {
@@ -259,18 +260,20 @@ import {
   createEventBus,
 } from 'blecsd/core';
 
+const widgetEntity = 1;
+
 // Subscribe to events on a widget
 const unsub1 = onReparent(widgetEntity, (event) => {
   console.log(`Widget moved from parent ${event.oldParent} to ${event.newParent}`);
-  invalidateLayout(event.entity);
+  console.log('invalidate layout for', event.entity);
 }, createEventBus);
 
 const unsub2 = onDestroy(widgetEntity, (event) => {
-  cleanupResources(event.entity);
+  console.log('cleanup resources for', event.entity);
 }, createEventBus);
 
 // Emit events when hierarchy changes
-function reparentEntity(entity: Entity, oldParent: Entity, newParent: Entity) {
+function reparentEntity(entity: number, oldParent: number, newParent: number) {
   const bus = getLifecycleEventBus(entity, createEventBus);
   emitReparent(bus, entity, oldParent, newParent);
 
@@ -279,11 +282,14 @@ function reparentEntity(entity: Entity, oldParent: Entity, newParent: Entity) {
 }
 
 // Cleanup
-function destroyEntity(entity: Entity) {
+function destroyEntity(entity: number) {
   const bus = getLifecycleEventBus(entity, createEventBus);
   emitDestroy(bus, entity);
   removeLifecycleEventBus(entity);
 }
+
+reparentEntity(widgetEntity, 0, 2);
+destroyEntity(widgetEntity);
 
 // Unsubscribe when done
 unsub1();
