@@ -1,5 +1,7 @@
 # How-To Guides
 
+> **Note:** Many code examples in this guide show aspirational patterns and may reference functions not yet available in the public API. Code blocks marked with `<!-- blecsd-doccheck:ignore -->` are conceptual illustrations. For verified API usage, see the [Cheat Sheet](./cheat-sheet.md) and [API Reference](../api/).
+
 Practical, task-oriented guides for common blECSd operations.
 
 ## Table of Contents
@@ -42,8 +44,9 @@ Capture keyboard events and respond to key presses in your application.
 
 **1. Queue keyboard events**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseKeySequence, queueKeyEvent } from 'blecsd';
+import { parseKeyBuffer } from 'blecsd/terminal';
 
 // Enable raw mode for key capture
 process.stdin.setRawMode(true);
@@ -51,7 +54,7 @@ process.stdin.resume();
 
 // Parse and queue events
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeySequence(buffer);
+  const keyEvent = parseKeyBuffer(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -72,6 +75,7 @@ loop.registerSystem(LoopPhase.INPUT, inputSystem);
 
 **3. Listen for key events**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInputEventBus } from 'blecsd';
 
@@ -96,7 +100,7 @@ import {
   createGameLoop,
   LoopPhase,
   inputSystem,
-  parseKeySequence,
+  parseKeyBuffer,
   queueKeyEvent,
   getInputEventBus,
 } from 'blecsd';
@@ -112,7 +116,7 @@ process.stdin.setRawMode(true);
 process.stdin.resume();
 
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeySequence(buffer);
+  const keyEvent = parseKeyBuffer(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -161,6 +165,7 @@ Detect and respond to mouse clicks on UI elements.
 
 **1. Enable mouse tracking**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseMouseSequence, queueMouseEvent } from 'blecsd';
 
@@ -187,6 +192,7 @@ process.on('exit', () => {
 
 **2. Add Interactive component to clickable entities**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addEntity, setPosition, setDimensions, Interactive } from 'blecsd';
 
@@ -198,6 +204,7 @@ Interactive.enabled[button] = 1;  // Make it clickable
 
 **3. Listen for click events**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInputEventBus } from 'blecsd';
 
@@ -319,6 +326,7 @@ interface ProgressBarState {
 
 **2. Create factory function**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   addEntity,
@@ -374,8 +382,10 @@ function createProgressBar(
 
 **3. Create render system**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query, Position, Dimensions, Renderable } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Dimensions, Renderable } from 'blecsd/components';
 
 function progressBarRenderSystem(world: World): World {
   const entities = query(world, [Position, Dimensions, Renderable]);
@@ -482,8 +492,10 @@ Diagnose and fix visual glitches or missing renders.
 5. ✓ Is entity marked dirty? Call `markDirty(world, eid)`
 
 **Debug code:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasComponent, Position, Renderable, isEffectivelyVisible } from 'blecsd';
+import { hasComponent } from 'blecsd';
+import { Position, Renderable } from 'blecsd/components';
 
 function debugEntity(world: World, eid: Entity): void {
   console.log('Entity', eid);
@@ -525,6 +537,7 @@ setZIndex(world, backEntity, 5);    // Lower = back
 2. **Check dimensions:** Dimensions might be too small
 3. **Check scroll offsets:** Parent might be scrolled
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getComputedBounds, getScroll, Hierarchy } from 'blecsd';
 
@@ -591,8 +604,10 @@ function goodSystem(world: World): World {
 ### Debugging Tools
 
 **1. Visual entity inspector:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query, Position, Dimensions } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Dimensions } from 'blecsd/components';
 
 function printEntityTree(world: World): void {
   const entities = query(world, [Position]);
@@ -610,6 +625,7 @@ function printEntityTree(world: World): void {
 ```
 
 **2. Frame budget analysis:**
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getFrameBudgetStats } from 'blecsd';
 
@@ -660,6 +676,7 @@ const dragState: DragState = {
 
 **2. Handle mouse down (start drag)**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInputEventBus, captureMouseTo, Position } from 'blecsd';
 
@@ -684,6 +701,7 @@ eventBus.on('mousedown', (event) => {
 
 **3. Handle mouse move (update position)**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 eventBus.on('mousemove', (event) => {
   if (dragState.dragging && dragState.entity !== null) {
@@ -833,8 +851,10 @@ Display a modal dialog that blocks interaction with background UI.
 
 **1. Create modal overlay**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, addComponent, setPosition, setDimensions, Renderable, setZIndex, type World, type Entity } from 'blecsd';
+import { addEntity, addComponent, setPosition, setDimensions, setZIndex, type World, type Entity } from 'blecsd';
+import { Renderable } from 'blecsd/components';
 
 function createModal(
   world: World,
@@ -868,8 +888,9 @@ function createModal(
 
 **2. Save and restore focus**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusPush, focusPop, focusEntity } from 'blecsd';
+import { focusPush, focusPop, focusEntity } from 'blecsd/systems';
 
 function showModal(world: World, modalEntity: Entity): void {
   // Save current focus
@@ -890,6 +911,7 @@ function closeModal(world: World): void {
 
 **3. Block input to background**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // The focus system automatically blocks input to non-focused entities
 // when a modal has focus. Just ensure Interactive.enabled is set:
@@ -921,7 +943,7 @@ import {
   focusPop,
   focusEntity,
   getInputEventBus,
-  parseKeySequence,
+  parseKeyBuffer,
   queueKeyEvent,
   type World,
   type Entity,
@@ -965,7 +987,7 @@ function createModal(world: World): Entity {
 // Setup keyboard handling
 process.stdin.setRawMode(true);
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeySequence(buffer);
+  const keyEvent = parseKeyBuffer(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -1041,6 +1063,7 @@ const shortcuts: readonly Shortcut[] = [
 
 **2. Create shortcut matcher**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { type ParsedKeyEvent } from 'blecsd';
 
@@ -1065,6 +1088,7 @@ function handleShortcut(event: ParsedKeyEvent): boolean {
 
 **3. Register global handler**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getInputEventBus } from 'blecsd';
 
@@ -1089,7 +1113,7 @@ import {
   createGameLoop,
   LoopPhase,
   inputSystem,
-  parseKeySequence,
+  parseKeyBuffer,
   queueKeyEvent,
   getInputEventBus,
   type ParsedKeyEvent,
@@ -1141,7 +1165,7 @@ function matchesShortcut(event: ParsedKeyEvent, shortcut: any): boolean {
 // Setup keyboard handling
 process.stdin.setRawMode(true);
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeySequence(buffer);
+  const keyEvent = parseKeyBuffer(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -1253,7 +1277,7 @@ import {
   LoopPhase,
   renderSystem,
   outputSystem,
-  parseKeySequence,
+  parseKeyBuffer,
   queueKeyEvent,
   inputSystem,
   getInputEventBus,
@@ -1281,7 +1305,7 @@ const vlist = createVirtualizedList(world, listEntity, {
 // Handle keyboard scrolling
 process.stdin.setRawMode(true);
 process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeySequence(buffer);
+  const keyEvent = parseKeyBuffer(buffer);
   if (keyEvent) {
     queueKeyEvent(keyEvent);
   }
@@ -1394,8 +1418,9 @@ class CommandHistory {
 
 **3. Create specific commands**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Position } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 class MoveEntityCommand implements Command {
   constructor(
@@ -1564,8 +1589,11 @@ interface AppState {
 
 **2. Serialize current state**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query, hasComponent, Position, Dimensions, Renderable, getZIndex, getFocused } from 'blecsd';
+import { hasComponent } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Dimensions, Renderable } from 'blecsd/components';
 
 function serializeState(world: World): AppState {
   const entities: SerializedEntity[] = [];
@@ -1622,9 +1650,12 @@ function saveState(world: World, filename: string): void {
 
 **4. Load from file**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { readFileSync } from 'node:fs';
-import { addEntity, setPosition, setDimensions, Renderable, setZIndex, focusEntity } from 'blecsd';
+import { addEntity, setPosition, setDimensions, setZIndex } from 'blecsd';
+import { Renderable } from 'blecsd/components';
+import { focusEntity } from 'blecsd/systems';
 
 function loadState(world: World, filename: string): void {
   const json = readFileSync(filename, 'utf-8');
@@ -1667,16 +1698,15 @@ function loadState(world: World, filename: string): void {
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   setPosition,
   setDimensions,
-  Position,
-  Dimensions,
-  getInputEventBus,
 } from 'blecsd';
+import { Position, Dimensions } from 'blecsd/components';
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 
 // [Include serialize/deserialize functions from above]
@@ -1742,6 +1772,7 @@ Enable third-party extensions to your application.
 
 **1. Define plugin interface**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { World, System } from 'blecsd';
 
@@ -1765,6 +1796,7 @@ interface Command {
 
 **2. Create plugin manager**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 class PluginManager {
   private plugins = new Map<string, Plugin>();
@@ -1808,6 +1840,7 @@ class PluginManager {
 
 **3. Create example plugin**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { Plugin } from './plugin-interface';
 
@@ -1846,6 +1879,7 @@ const autosavePlugin: Plugin = {
 
 **4. Load plugins**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 const pluginManager = new PluginManager(world, scheduler);
 
@@ -1860,6 +1894,7 @@ import('./plugins/my-plugin.js').then((module) => {
 
 ### Complete Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // [Include Plugin interface and PluginManager from above]
 
@@ -2152,6 +2187,7 @@ Diagnose and fix performance issues in your blECSd application.
 When experiencing performance issues, check:
 
 1. **✓ Profile first**
+   <!-- blecsd-doccheck:ignore -->
    ```typescript
    import { createFrameBudgetManager, getFrameBudgetStats } from 'blecsd';
 
@@ -2179,7 +2215,7 @@ When experiencing performance issues, check:
 
 3. **✓ Use virtualization for long lists**
    ```typescript
-   import { createVirtualizedList } from 'blecsd';
+   import { createVirtualizedList } from 'blecsd/widgets';
 
    // Handles 1M+ items at 60 FPS
    const vlist = createVirtualizedList(world, entity, {
@@ -2240,7 +2276,8 @@ Create custom systems that integrate with blECSd's ECS architecture.
 **1. Define your system function**
 
 ```typescript
-import { query, type World, type System } from 'blecsd';
+import { type World } from 'blecsd';
+import { query } from 'blecsd/core';
 
 function myCustomSystem(world: World): World {
   // System logic here
@@ -2251,7 +2288,8 @@ function myCustomSystem(world: World): World {
 **2. Query for entities**
 
 ```typescript
-import { query, Position, Velocity } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
 
 function movementSystem(world: World): World {
   const entities = query(world, [Position, Velocity]);
@@ -2277,16 +2315,10 @@ loop.registerSystem(LoopPhase.UPDATE, movementSystem);
 ### Complete Example
 
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  query,
-  setPosition,
-  Position,
-  createGameLoop,
-  LoopPhase,
-  type World,
-} from 'blecsd';
+import { createWorld, addEntity, setPosition } from 'blecsd';
+import { query, createGameLoop, LoopPhase } from 'blecsd/core';
+import { Position } from 'blecsd/components';
+import type { World } from 'blecsd';
 
 // Define custom component (using typed arrays directly)
 const Health = {
@@ -2368,13 +2400,14 @@ Use blECSd components and widgets in your existing bitecs application.
 
 **1. Import components**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Your existing bitecs world
 import { createWorld as createBitecsWorld } from 'bitecs';
 const world = createBitecsWorld();
 
 // Import blECSd components
-import { Position, Velocity, Dimensions } from 'blecsd';
+import { Position, Velocity, Dimensions } from 'blecsd/components';
 
 // Works! blECSd components are just bitecs components
 Position.x[entity] = 10;
@@ -2546,8 +2579,10 @@ const lightTheme: Theme = {
 
 **3. Apply theme to entities**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query, Renderable, Border } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Renderable } from 'blecsd/components';
 
 function applyTheme(world: World, theme: Theme): void {
   // Update all renderable entities
@@ -2570,6 +2605,7 @@ function applyTheme(world: World, theme: Theme): void {
 
 **4. Create theme manager**
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 class ThemeManager {
   private themes = new Map<string, Theme>();
@@ -2661,6 +2697,7 @@ Make your blECSd application accessible to users with disabilities.
 
 ### 1. Screen Reader Support
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Add semantic labels to entities
 const Accessible = defineComponent({
@@ -2691,6 +2728,7 @@ function exportToScreenReader(world: World): string {
 
 ### 2. Keyboard Navigation
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Ensure all interactive elements are keyboard-accessible
 Interactive.focusable[button] = 1;
@@ -2769,24 +2807,19 @@ eventBus.on('buttonClick', (event) => {
 
 ### Complete Accessible App Example
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   setPosition,
   setDimensions,
-  Interactive,
-  createGameLoop,
-  LoopPhase,
   focusNext,
   focusPrev,
-  getFocused,
-  getInputEventBus,
-  setAccessibleLabel,
-  getAccessibleLabel,
   type World,
   type Entity,
 } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();
 

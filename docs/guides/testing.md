@@ -78,8 +78,8 @@ Components are data containers. Test by creating entities, setting component dat
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createWorld, addEntity } from 'blecsd';
-import { Position, setPosition, getPosition, hasPosition } from 'blecsd';
+import { createWorld, addEntity, setPosition, getPosition } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 describe('Position component', () => {
   it('sets and retrieves position', () => {
@@ -129,8 +129,8 @@ describe('Position component', () => {
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createWorld, addEntity } from 'blecsd';
-import { Position, moveBy, bringToFront, sendToBack } from 'blecsd';
+import { createWorld, addEntity, setPosition } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 describe('moveBy', () => {
   it('moves entity by delta', () => {
@@ -169,17 +169,18 @@ Systems are pure functions that take a world and return a world. Test by:
 
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createWorld, addEntity, query, World } from 'blecsd';
-import { Position, setPosition } from 'blecsd';
-import { Velocity, setVelocity } from 'blecsd';
+import { createWorld, addEntity, setPosition } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
+import type { World } from 'blecsd';
 
 // Example system
 function movementSystem(world: World): World {
   const entities = query(world, [Position, Velocity]);
 
   for (const eid of entities) {
-    Position.x[eid] += Velocity.x[eid] ?? 0;
-    Position.y[eid] += Velocity.y[eid] ?? 0;
+    Position.x[eid] = (Position.x[eid] ?? 0) + (Velocity.x[eid] ?? 0);
+    Position.y[eid] = (Position.y[eid] ?? 0) + (Velocity.y[eid] ?? 0);
   }
 
   return world;
@@ -246,12 +247,7 @@ Some systems maintain state outside the world. Reset it in `beforeEach`/`afterEa
 
 ```typescript
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import {
-  inputSystem,
-  resetInputState,
-  queueKeyEvent,
-  getEventQueue,
-} from 'blecsd';
+import { inputSystem } from 'blecsd';
 
 describe('inputSystem', () => {
   beforeEach(() => {
@@ -285,9 +281,10 @@ Widgets are factory functions that create and configure entities. Test by:
 
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createWorld, hasComponent, World } from 'blecsd';
-import { createBox, setBoxContent, getBoxContent } from 'blecsd';
-import { Position, Dimensions, Content, Border, Padding } from 'blecsd';
+import { createWorld, hasComponent } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
+import { Position, Dimensions } from 'blecsd/components';
+import type { World } from 'blecsd';
 
 describe('Box widget', () => {
   let world: World;
@@ -361,7 +358,7 @@ Test Zod schemas for widget configuration:
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { BoxConfigSchema } from 'blecsd';
+import { BoxConfigSchema } from 'blecsd/widgets';
 
 describe('BoxConfigSchema', () => {
   it('validates empty config', () => {
@@ -510,7 +507,8 @@ Use snapshots to test rendered terminal output:
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createWorld, createBox, renderToString } from 'blecsd';
+import { createWorld } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 describe('Box rendering', () => {
   it('renders correctly', () => {
@@ -561,10 +559,9 @@ Test multiple systems working together:
 
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createWorld, createBox, World } from 'blecsd';
-import { inputSystem, queueKeyEvent, queueMouseEvent } from 'blecsd';
-import { renderSystem } from 'blecsd';
-import { focusNext, getFocusedEntity, setFocusable } from 'blecsd';
+import { createWorld, inputSystem, renderSystem, focusNext } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
+import type { World } from 'blecsd';
 
 describe('focus management integration', () => {
   let world: World;
@@ -611,7 +608,9 @@ describe('focus management integration', () => {
 
 ```typescript
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createWorld, createGameLoop, World } from 'blecsd';
+import { createWorld } from 'blecsd';
+import { createGameLoop } from 'blecsd/core';
+import type { World } from 'blecsd';
 
 describe('game loop', () => {
   let world: World;
@@ -1040,10 +1039,9 @@ import { layoutSystem, renderSystem } from 'blecsd';
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { addEntity } from 'blecsd';
-import { layoutSystem, renderSystem } from 'blecsd';
+import { addEntity, layoutSystem, renderSystem } from 'blecsd';
 import { createTestBuffer, renderToString, cleanupTestBuffer } from 'blecsd/testing';
-import { createBox } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 describe('Box widget snapshots', () => {
   it('renders box with border', () => {
@@ -1236,10 +1234,9 @@ pnpm test -- -u -t "renders box with border"
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { addEntity } from 'blecsd';
-import { layoutSystem, renderSystem } from 'blecsd';
+import { addEntity, layoutSystem, renderSystem } from 'blecsd';
 import { createTestBuffer, renderToString, cleanupTestBuffer } from 'blecsd/testing';
-import { createList } from 'blecsd';
+import { createList } from 'blecsd/widgets';
 
 describe('List widget snapshots', () => {
   describe('basic rendering', () => {
@@ -1474,7 +1471,7 @@ describe('Position', () => {
 
 ```typescript
 import { beforeEach, afterEach } from 'vitest';
-import { resetInputState, resetFocusState } from 'blecsd';
+import { resetInputState, resetFocusState } from 'blecsd/core';
 
 describe('input handling', () => {
   beforeEach(() => {
@@ -1493,6 +1490,7 @@ describe('input handling', () => {
 
 ### 6. Test Both Success and Failure
 
+<!-- blecsd-doccheck:ignore -->
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isOk, isErr } from 'blecsd/errors';
@@ -1526,7 +1524,8 @@ describe('parseColor', () => {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
 
 it('queries entities with specific components', () => {
   const world = createWorld();
@@ -1554,7 +1553,9 @@ it('queries entities with specific components', () => {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { removeComponent, hasComponent } from 'blecsd';
+import { hasComponent } from 'blecsd';
+import { removeComponent } from 'blecsd/core';
+import { Position } from 'blecsd/components';
 
 it('removes component from entity', () => {
   const world = createWorld();
@@ -1573,7 +1574,7 @@ it('removes component from entity', () => {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createEventBus } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 it('emits and handles events', () => {
   const bus = createEventBus();

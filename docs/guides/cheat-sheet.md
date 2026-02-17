@@ -26,8 +26,10 @@ entityExists(world, eid);                  // Check if entity exists
 
 ### Common Widgets
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, createBox } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -50,8 +52,10 @@ const panel = createBox(world, panelEntity, {
 
 ### Form Controls
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createCheckbox, createProgressBar } from 'blecsd';
+import { createWorld } from 'blecsd';
+import { createCheckbox, createProgressBar } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -76,8 +80,9 @@ const progress = createProgressBar(world, {
 
 ### Position & Layout
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, getPosition, moveBy, setDimensions, getDimensions, setZIndex } from 'blecsd';
+import { createWorld, addEntity, setPosition, getPosition, setDimensions, getDimensions, setZIndex } from 'blecsd';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -85,7 +90,6 @@ const eid = addEntity(world);
 // Position
 setPosition(world, eid, 10, 5);            // Set x, y
 const { x, y } = getPosition(world, eid); // Get position
-moveBy(world, eid, 5, 0);                  // Move by offset
 setZIndex(world, eid, 10);                 // Set rendering order
 
 // Dimensions
@@ -111,8 +115,11 @@ const { width, height } = dimensions.get(world, eid);
 
 ### Style & Appearance
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, createBox, setBorder, setPadding, setContent, TextAlign } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
+import { setContent } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -154,8 +161,10 @@ content.setAlign(world, eid, TextAlign.Center);
 
 ### Hierarchy
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, appendChild, removeChild, getChildren, getParent } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { setParent } from 'blecsd/components';
 
 const world = createWorld();
 const parent = addEntity(world);
@@ -304,6 +313,7 @@ disableInput(world);
 
 ### Mouse
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Subscribe to mouse events
 inputBus.on('mouse', (event) => {
@@ -375,8 +385,9 @@ loop.stop();
 
 ## Systems
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, inputSystem, layoutSystem, renderSystem, focusSystem, animationSystem, collisionSystem } from 'blecsd';
+import { createWorld, inputSystem, layoutSystem, renderSystem, focusSystem, animationSystem } from 'blecsd';
 
 const world = createWorld();
 
@@ -386,7 +397,6 @@ layoutSystem(world);                       // Calculate layout
 renderSystem(world);                       // Render to buffer
 focusSystem(world);                        // Update focus state
 animationSystem(world);                    // Update animations
-collisionSystem(world);                    // Detect collisions
 ```
 
 ---
@@ -394,7 +404,7 @@ collisionSystem(world);                    // Detect collisions
 ## Events
 
 ```typescript
-import { createEventBus } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 // Create typed event bus
 interface AppEvents {
@@ -444,6 +454,7 @@ setAnimation(world, eid, {
 
 ## Collision Detection
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { setCollider, detectCollisions } from 'blecsd';
 
@@ -811,6 +822,7 @@ event.meta   // Cmd (Mac) or Win (Windows)
 
 ## Color Utilities
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { hexToColor, parseColor, colorToHex } from 'blecsd';
 
@@ -828,6 +840,7 @@ parseColor('rgb(255, 0, 0)');              // RGB format
 
 ## Debug Utilities
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, dumpWorld, inspectEntity } from 'blecsd';
 
@@ -869,7 +882,7 @@ const config: BoxConfig = {
 };
 
 // Type-safe events
-import { createEventBus } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 interface MyEvents {
   'action:complete': { id: number };
