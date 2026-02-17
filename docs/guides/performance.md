@@ -153,7 +153,8 @@ For micro-optimizations, use Vitest benchmarks:
 
 ```typescript
 import { bench, describe } from 'vitest';
-import { createWorld, addEntity, Position } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 describe('component access patterns', () => {
   const world = createWorld();
@@ -771,7 +772,8 @@ For large worlds with collision detection:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSpatialHash, insertEntity, queryArea, Position } from 'blecsd';
+import { createSpatialHash, insertEntity, queryArea } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 // Create grid with 10x10 cell size
 const grid = createSpatialHash({ cellSize: 10 });

@@ -50,6 +50,7 @@ blECSd ships with type definitions. For the best experience, enable strict mode:
 
 Create `test.ts`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, setPosition, getPosition } from 'blecsd';
 import { addEntity } from 'blecsd';

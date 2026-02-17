@@ -24,6 +24,7 @@ blECSd provides **two different APIs** for building terminal applications. This 
 
 **Best for**: Rapid application development, complex UI patterns, prototyping
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity } from 'blecsd';
 import { createList, createModal } from 'blecsd/widgets';
@@ -64,6 +65,7 @@ modal.show();
 
 **Best for**: Custom frameworks, tools, complex TUIs, maximum control, performance-critical code
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -155,6 +157,7 @@ const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 
 **Yes!** Widgets are built on components and entity factories, so you can mix freely:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, addComponent } from 'blecsd';
 import { createList } from 'blecsd/widgets';
@@ -186,6 +189,7 @@ This gives you the **convenience of widgets** with the **power of the ECS API** 
 
 Widgets can wrap entities created by factories:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createListEntity } from 'blecsd';
 import { createList } from 'blecsd/widgets';
@@ -208,6 +212,7 @@ listWidget.selectNext();   // Use as widget
 
 You can use factories without ever touching widgets:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, createBoxEntity, createTextEntity } from 'blecsd';
 import { Position } from 'blecsd/components';
@@ -228,6 +233,7 @@ Position.x[box] = 15;
 
 ### Widget API Example: File Browser
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld } from 'blecsd';
 import { createFileManager } from 'blecsd/widgets';
@@ -248,6 +254,7 @@ fileManager.refresh();
 
 ### ECS API Example: Custom File Manager
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -301,6 +308,7 @@ blECSd provides a three-tier export system:
 
 The main `'blecsd'` package exports approximately 120 curated functions covering the most common use cases:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,

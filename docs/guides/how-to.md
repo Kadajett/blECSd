@@ -67,7 +67,8 @@ The `inputSystem` automatically processes queued events. Just register it with a
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop, LoopPhase, inputSystem } from 'blecsd';
+import { inputSystem } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const loop = createGameLoop(world, { targetFPS: 60 });
 loop.registerSystem(LoopPhase.INPUT, inputSystem);
@@ -539,7 +540,8 @@ setZIndex(world, backEntity, 5);    // Lower = back
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getComputedBounds, getScroll, Hierarchy } from 'blecsd';
+import { getComputedBounds, getScroll } from 'blecsd';
+import { Hierarchy } from 'blecsd/components';
 
 const bounds = getComputedBounds(world, eid);
 console.log('Computed bounds:', bounds);
@@ -678,7 +680,8 @@ const dragState: DragState = {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getInputEventBus, captureMouseTo, Position } from 'blecsd';
+import { getInputEventBus, captureMouseTo } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 const eventBus = getInputEventBus();
 
@@ -1219,7 +1222,8 @@ Display millions of list items with smooth scrolling by only rendering visible i
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, setPosition, createVirtualizedList } from 'blecsd';
+import { addEntity, setPosition } from 'blecsd';
+import { createVirtualizedList } from 'blecsd/widgets';
 
 const listEntity = addEntity(world);
 setPosition(world, listEntity, 5, 2);
@@ -1236,7 +1240,7 @@ const vlist = createVirtualizedList(world, listEntity, {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createVirtualizedList } from 'blecsd';
+import { createVirtualizedList } from 'blecsd/widgets';
 
 const data: string[] = loadLargeDataset();  // 100,000 items
 
@@ -1997,7 +2001,8 @@ Don't register `outputSystem` - render manually instead:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop, LoopPhase, inputSystem, layoutSystem, renderSystem } from 'blecsd';
+import { inputSystem, layoutSystem, renderSystem } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const loop = createGameLoop(world, { targetFPS: 60 });
 
@@ -2307,7 +2312,7 @@ function movementSystem(world: World): World {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { LoopPhase } from 'blecsd';
+import { LoopPhase } from 'blecsd/core';
 
 loop.registerSystem(LoopPhase.UPDATE, movementSystem);
 ```
@@ -2436,7 +2441,8 @@ function update(): void {
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { addEntity } from 'bitecs';
-import { createBox, setPosition } from 'blecsd';
+import { setPosition } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 // Create entity with your ECS
 const entity = addEntity(world);
@@ -2457,7 +2463,8 @@ MyCustomComponent.value[entity] = 42;
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld as createBitecsWorld, addEntity } from 'bitecs';
-import { Position, Velocity, layoutSystem, renderSystem, setPosition } from 'blecsd';
+import { layoutSystem, renderSystem, setPosition } from 'blecsd';
+import { Position, Velocity } from 'blecsd/components';
 
 // Your bitecs world
 const world = createBitecsWorld();

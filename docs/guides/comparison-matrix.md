@@ -266,7 +266,8 @@ Rendering only visible items in large lists (1000s of items) instead of all item
 **blECSd Virtualization Example:**
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, createList } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd';
+import { createList } from 'blecsd/widgets';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -417,7 +418,8 @@ const box = blessed.box({
 });
 
 // blECSd (ECS)
-import { createWorld, addEntity, setPosition, setDimensions, createBox } from 'blecsd';
+import { createWorld, addEntity, setPosition, setDimensions } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 const world = createWorld();
 const box = addEntity(world);
 setPosition(world, box, 10, 5);
@@ -438,7 +440,8 @@ const App = () => <Text>Hello</Text>;
 render(<App />);
 
 // blECSd (ECS)
-import { createWorld, createText } from 'blecsd';
+import { createWorld } from 'blecsd';
+import { createText } from 'blecsd/widgets';
 const world = createWorld();
 createText(world, { content: 'Hello' });
 ```

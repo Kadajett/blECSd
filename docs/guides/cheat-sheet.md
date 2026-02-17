@@ -193,7 +193,8 @@ const parentEid = hierarchy.getParent(world, child);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, createBox, setFocusable, setUserFocus, getFocusedEntity, focusNext, focusPrev } from 'blecsd';
+import { createWorld, addEntity, setFocusable, setUserFocus, getFocusedEntity, focusNext, focusPrev } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -224,7 +225,9 @@ focus.prev(world);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, createBox, setScrollable, scrollBy, scrollToTop, scrollToBottom, scrollToLine, setContent } from 'blecsd';
+import { createWorld, addEntity, setScrollable, scrollBy, scrollToTop, scrollToBottom, scrollToLine } from 'blecsd';
+import { setContent } from 'blecsd/components';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -259,7 +262,8 @@ scroll.viewport.toLine(world, eid, 2);
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, createBox, getAllEntities, filterVisible, queryFocusable, getPosition } from 'blecsd';
+import { createWorld, addEntity, getAllEntities, filterVisible, queryFocusable, getPosition } from 'blecsd';
+import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -289,7 +293,8 @@ for (const eid of entities) {
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createEventBus, enableInput, disableInput } from 'blecsd';
+import { createWorld, enableInput, disableInput } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 const world = createWorld();
 
@@ -353,7 +358,7 @@ endFrame(world);                           // End frame and flush
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop } from 'blecsd';
+import { createGameLoop } from 'blecsd/core';
 
 // Start default game loop (60 FPS)
 const loop = createGameLoop(world, {
@@ -623,7 +628,8 @@ Use namespace imports from `'blecsd/components'`, `'blecsd/systems'`, etc. for:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createPanelEntity, createListEntity, enableInput, render, createEventBus, addEntity } from 'blecsd';
+import { createWorld, createPanelEntity, createListEntity, enableInput, render, addEntity } from 'blecsd';
+import { createEventBus } from 'blecsd/core';
 
 // Setup
 const world = createWorld();

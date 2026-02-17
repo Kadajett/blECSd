@@ -212,7 +212,8 @@ Entity factories handle component setup for you.
 #### 2. **Low-Level: Manual Component Assembly** (for custom entities)
 
 ```typescript
-import { addEntity, addComponent, Position, Dimensions } from 'blecsd';
+import { addEntity, addComponent } from 'blecsd';
+import { Position, Dimensions } from 'blecsd/components';
 
 const customEntity = addEntity(world);
 addComponent(world, customEntity, Position);
@@ -231,7 +232,8 @@ Use this when you need precise control.
 Find entities with specific components:
 
 ```typescript
-import { query, Position, Velocity } from 'blecsd';
+import { query } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
 
 // Use query in a system
 function animationSystem(world: World): World {
@@ -255,7 +257,8 @@ Systems are pure functions that transform world state:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop, LoopPhase, inputSystem, renderSystem, layoutSystem } from 'blecsd';
+import { inputSystem, renderSystem, layoutSystem } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const loop = createGameLoop(world, { targetFPS: 60 });
 
@@ -315,7 +318,8 @@ Behavior lives in systems, not in the entity.
 ### Pattern 1: Checking if an Entity Has a Component
 
 ```typescript
-import { hasComponent, Position } from 'blecsd';
+import { hasComponent } from 'blecsd';
+import { Position } from 'blecsd/components';
 
 if (hasComponent(world, eid, Position)) {
   console.log(`Entity ${eid} has a position`);
@@ -325,7 +329,8 @@ if (hasComponent(world, eid, Position)) {
 ### Pattern 2: Adding a Component at Runtime
 
 ```typescript
-import { addComponent, Velocity } from 'blecsd';
+import { addComponent } from 'blecsd';
+import { Velocity } from 'blecsd/components';
 
 // Make a static entity start moving
 addComponent(world, eid, Velocity);
@@ -336,7 +341,8 @@ Velocity.y[eid] = 0;
 ### Pattern 3: Removing a Component
 
 ```typescript
-import { removeComponent, Velocity } from 'blecsd';
+import { removeComponent } from 'blecsd/core';
+import { Velocity } from 'blecsd/components';
 
 // Stop an entity from moving
 removeComponent(world, eid, Velocity);
@@ -345,7 +351,8 @@ removeComponent(world, eid, Velocity);
 ### Pattern 4: Iterating Over Query Results
 
 ```typescript
-import { query, Focusable } from 'blecsd';
+import { Focusable } from 'blecsd';
+import { query } from 'blecsd/core';
 
 function handleTabKey(world: World): void {
   const entities = query(world, [Focusable]);
@@ -361,7 +368,8 @@ function handleTabKey(world: World): void {
 ### Pattern 5: Parent-Child Relationships
 
 ```typescript
-import { setParent, getChildren, createBoxEntity } from 'blecsd';
+import { getChildren, createBoxEntity } from 'blecsd';
+import { setParent } from 'blecsd/components';
 
 const parent = createBoxEntity(world, { x: 10, y: 5, width: 50, height: 20 });
 const child = createBoxEntity(world, { x: 5, y: 2, width: 20, height: 5 });
