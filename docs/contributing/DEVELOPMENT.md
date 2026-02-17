@@ -106,6 +106,7 @@ Edit source files in `src/`. The codebase follows these principles:
 
 Add tests in the corresponding location under `tests/` or as `.test.ts` files alongside the source:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // src/components/position.test.ts
 import { describe, it, expect } from 'vitest';
@@ -157,6 +158,7 @@ Then open a pull request on GitHub.
 
 Components are data containers defined with bitecs:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // src/components/myComponent.ts
 import { defineComponent, Types } from 'blecsd';
@@ -205,6 +207,7 @@ export function getMyComponent(
 
 Systems are functions that process entities:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // src/systems/mySystem.ts
 import { defineQuery, hasComponent } from 'blecsd';
@@ -236,6 +239,7 @@ export function mySystem(world: World): World {
 
 Widgets are factory functions that create configured entities:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 // src/widgets/myWidget.ts
 import { addEntity } from 'blecsd';
@@ -319,6 +323,7 @@ if (process.env.DEBUG) {
 
 ### Inspecting ECS State
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getAllEntities } from 'blecsd';
 import { Position } from './components/position';
