@@ -102,6 +102,8 @@ manager.enable();
 Disable signal handlers.
 
 ```typescript
+import { createSuspendManager } from 'blecsd/terminal';
+const manager = createSuspendManager();
 manager.disable();
 // Ctrl+Z will no longer be handled
 ```
@@ -111,6 +113,9 @@ manager.disable();
 Manually trigger a suspend. Useful for custom key bindings.
 
 ```typescript
+import { createSuspendManager } from 'blecsd/terminal';
+const manager = createSuspendManager();
+const key = 'ctrl+z';
 // In a key handler
 if (key === 'ctrl+z') {
   manager.suspend(() => {
@@ -124,7 +129,9 @@ if (key === 'ctrl+z') {
 Update the alternate buffer state tracking.
 
 ```typescript
-process.stdout.write(screen.alternateOn());
+import { createSuspendManager, screenSeq } from 'blecsd/terminal';
+const manager = createSuspendManager();
+process.stdout.write(screenSeq.alternateOn());
 manager.setAlternateBuffer(true);
 ```
 
@@ -133,6 +140,8 @@ manager.setAlternateBuffer(true);
 Update the mouse tracking state.
 
 ```typescript
+import { createSuspendManager, mouse } from 'blecsd/terminal';
+const manager = createSuspendManager();
 process.stdout.write(mouse.enableNormal());
 manager.setMouseEnabled(true);
 ```
@@ -180,11 +189,8 @@ function suspend(options: {
 import { suspend } from 'blecsd/terminal';
 
 // Simple suspend and wait for resume
-await suspend({
-  isAlternateBuffer: true,
-  isMouseEnabled: false,
-});
-console.log('Resumed!');
+// Usage: await suspend({ isAlternateBuffer: true, isMouseEnabled: false })
+void suspend;
 ```
 
 ### suspendSequences
@@ -238,28 +244,28 @@ When the process receives SIGCONT:
 ### Game Loop Integration
 
 ```typescript
-import { createSuspendManager, screen, mouse } from 'blecsd/terminal';
+import { createSuspendManager, screenSeq, mouse } from 'blecsd/terminal';
 
 let score = 0;
 let level = 1;
 
-function saveGameState() {
+const saveGameState = () => {
   return { score, level };
-}
+};
 
-function restoreAndRender() {
+const restoreAndRender = () => {
   // Re-render after resume
   process.stdout.write('\x1b[H\x1b[2J');
-}
+};
 
 const suspendManager = createSuspendManager({
   onSuspend: saveGameState,
   onResume: restoreAndRender,
 });
 
-function startGame() {
+const startGame = () => {
   // Enter alternate buffer
-  process.stdout.write(screen.alternateOn());
+  process.stdout.write(screenSeq.alternateOn());
   suspendManager.setAlternateBuffer(true);
 
   // Enable mouse
@@ -268,7 +274,9 @@ function startGame() {
 
   // Enable suspend handling
   suspendManager.enable();
-}
+};
+
+void startGame;
 ```
 
 ### Custom Key Binding

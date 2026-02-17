@@ -13,7 +13,7 @@ const terminal = createTerminal(world, {
   width: 80,
   height: 24,
   scrollback: 1000,
-  border: 'single',
+  border: { type: 'line' },
 });
 
 // Write ANSI content
@@ -21,6 +21,7 @@ terminal.write('\x1b[32mGreen text\x1b[0m');
 
 // Or spawn a shell
 terminal.spawn('/bin/bash');
+terminal.destroy();
 ```
 
 ## Features
@@ -58,78 +59,110 @@ interface TerminalConfig {
 ### Content Methods
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createTerminal } from 'blecsd/widgets';
+const world = createWorld();
+const terminal = createTerminal(world, { width: 80, height: 24 });
+
 // Write content (supports ANSI escape sequences)
-terminal.write(data: string): TerminalWidget;
+terminal.write('\x1b[32mGreen text\x1b[0m');
 
 // Write with newline
-terminal.writeln(data: string): TerminalWidget;
+terminal.writeln('Regular text');
 
 // Clear screen
-terminal.clear(): TerminalWidget;
+terminal.clear();
 
 // Reset terminal state
-terminal.reset(): TerminalWidget;
+terminal.reset();
+terminal.destroy();
 ```
 
 ### Scrolling
 
 ```typescript
-terminal.scrollUp(lines?: number): TerminalWidget;
-terminal.scrollDown(lines?: number): TerminalWidget;
-terminal.scrollToTop(): TerminalWidget;
-terminal.scrollToBottom(): TerminalWidget;
+import { createWorld } from 'blecsd/core';
+import { createTerminal } from 'blecsd/widgets';
+const world = createWorld();
+const termScroll = createTerminal(world, { width: 80, height: 24 });
+termScroll.scrollUp(3);
+termScroll.scrollDown(3);
+termScroll.scrollToTop();
+termScroll.scrollToBottom();
+termScroll.destroy();
 ```
 
 ### Cursor Control
 
 ```typescript
-terminal.setCursor(x: number, y: number): TerminalWidget;
-terminal.showCursor(): TerminalWidget;
-terminal.hideCursor(): TerminalWidget;
+import { createWorld } from 'blecsd/core';
+import { createTerminal } from 'blecsd/widgets';
+const world = createWorld();
+const termCursor = createTerminal(world, { width: 80, height: 24 });
+termCursor.setCursor(10, 5);
+termCursor.showCursor();
+termCursor.hideCursor();
+termCursor.destroy();
 ```
 
 ### PTY Process (requires node-pty)
 
 ```typescript
-// Spawn a shell
-terminal.spawn(shell?: string): TerminalWidget;
+import { createWorld } from 'blecsd/core';
+import { createTerminal } from 'blecsd/widgets';
+const world = createWorld();
+const termPty = createTerminal(world, { width: 80, height: 24 });
 
-// Spawn with options
-terminal.spawn({
-  shell: '/bin/zsh',
-  args: ['-l'],
-  cwd: '/home/user',
-  env: { TERM: 'xterm-256color' },
-}): TerminalWidget;
+// Spawn a shell
+// termPty.spawn('/bin/bash');
+
+// Spawn with options:
+// termPty.spawn({ shell: '/bin/zsh', args: ['-l'], cwd: '/home/user', env: { TERM: 'xterm-256color' } });
 
 // Send input to the PTY
-terminal.sendInput(data: string): TerminalWidget;
+// termPty.sendInput('ls\n');
 
 // Resize the PTY
-terminal.resize(cols: number, rows: number): TerminalWidget;
+// termPty.resize(120, 40);
 
 // Kill the process
-terminal.kill(signal?: string): TerminalWidget;
+// termPty.kill();
+
+termPty.destroy();
 ```
 
 ### Events
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createTerminal } from 'blecsd/widgets';
+const world = createWorld();
+const termEvents = createTerminal(world, { width: 80, height: 24 });
+
 // Data received from PTY
-terminal.onData(callback: (data: string) => void): TerminalWidget;
+termEvents.onData((data) => {
+  void data;
+});
 
 // Process exited
-terminal.onExit(callback: (code: number) => void): TerminalWidget;
+termEvents.onExit((code) => {
+  void code;
+});
+termEvents.destroy();
 ```
 
 ### Widget Methods
 
 ```typescript
-terminal.show(): TerminalWidget;
-terminal.hide(): TerminalWidget;
-terminal.focus(): TerminalWidget;
-terminal.blur(): TerminalWidget;
-terminal.destroy(): void;
+import { createWorld } from 'blecsd/core';
+import { createTerminal } from 'blecsd/widgets';
+const world = createWorld();
+const termWidget = createTerminal(world, { width: 80, height: 24 });
+termWidget.show();
+termWidget.hide();
+termWidget.focus();
+termWidget.blur();
+termWidget.destroy();
 ```
 
 ## Input Handling
@@ -137,15 +170,23 @@ terminal.destroy(): void;
 Use `handleTerminalKey` to route keyboard input:
 
 ```typescript
-import { handleTerminalKey } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createTerminal, handleTerminalKey } from 'blecsd/widgets';
+const world = createWorld();
+const termInput = createTerminal(world, { width: 80, height: 24 });
 
-program.on('key', (event) => {
-  handleTerminalKey(terminal, event.key, {
-    ctrl: event.ctrl,
-    alt: event.alt,
-    shift: event.shift,
-  });
-});
+// Route keyboard events to the terminal
+// program.on('key', (event) => {
+//   handleTerminalKey(termInput, event.key, {
+//     ctrl: event.ctrl,
+//     alt: event.alt,
+//     shift: event.shift,
+//   });
+// });
+
+// Direct call example: handleTerminalKey(widget, key, char, ctrl, alt, shift)
+handleTerminalKey(termInput, 'a', 'a', false, false, false);
+termInput.destroy();
 ```
 
 ## Examples
@@ -153,59 +194,66 @@ program.on('key', (event) => {
 ### Basic ANSI Display
 
 ```typescript
-const terminal = createTerminal(world, {
+import { createWorld } from 'blecsd/core';
+import { createTerminal } from 'blecsd/widgets';
+const world = createWorld();
+
+const termDisplay = createTerminal(world, {
   width: 80,
   height: 24,
-  border: 'single',
+  border: { type: 'line' },
   label: ' Output ',
 });
 
-terminal.write('\x1b[1;34mBold Blue\x1b[0m\n');
-terminal.write('\x1b[41;37mWhite on Red\x1b[0m\n');
-terminal.writeln('Regular text');
+termDisplay.write('\x1b[1;34mBold Blue\x1b[0m\n');
+termDisplay.write('\x1b[41;37mWhite on Red\x1b[0m\n');
+termDisplay.writeln('Regular text');
+termDisplay.destroy();
 ```
 
 ### Interactive Shell
 
 ```typescript
-const terminal = createTerminal(world, {
+import { createWorld } from 'blecsd/core';
+import { createTerminal } from 'blecsd/widgets';
+const world = createWorld();
+
+const termShell = createTerminal(world, {
   width: 120,
   height: 40,
 });
 
-terminal.spawn('/bin/bash');
-
-terminal.onData(() => {
+termShell.onData(() => {
   // Terminal content updated, trigger re-render
-  markDirty(world, terminal.eid);
 });
 
-terminal.onExit((code) => {
-  terminal.writeln(`\nProcess exited with code ${code}`);
+termShell.onExit((code) => {
+  termShell.writeln(`\nProcess exited with code ${code}`);
 });
 
-// Route keyboard input
-program.on('key', (event) => {
-  handleTerminalKey(terminal, event.key, event);
-});
+// Spawn shell (requires node-pty):
+// termShell.spawn('/bin/bash');
+
+// Route keyboard input via handleTerminalKey
+termShell.destroy();
 ```
 
 ### ANSI Art Viewer
 
 ```typescript
-import { encoding } from 'blecsd/utils';
+import { createWorld } from 'blecsd/core';
+import { createTerminal } from 'blecsd/widgets';
 
-// Load CP437-encoded ANSI art
-const buffer = await fetch(artUrl).then(r => r.arrayBuffer());
-const content = encoding.bufferToString(Buffer.from(buffer), 'cp437');
-
-const terminal = createTerminal(world, {
+const world = createWorld();
+const termArt = createTerminal(world, {
   width: 82,  // Standard ANSI art width + borders
   height: 60,
   scrollback: 0,  // No scrollback for art
 });
 
-terminal.write(content);
+// Write CP437-encoded ANSI art content
+termArt.write('\x1b[32mANSI Art Content\x1b[0m');
+termArt.destroy();
 ```
 
 ## ANSI Escape Sequences
