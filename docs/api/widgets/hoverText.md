@@ -4,7 +4,6 @@ The HoverText system provides tooltips that display contextual information when 
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createHoverTextManager,
@@ -13,15 +12,14 @@ import {
   hasHoverText,
   clearHoverText,
   clearAllHoverText,
-} from 'blecsd';
+} from 'blecsd/widgets';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createHoverTextManager, setHoverText } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createHoverTextManager, setHoverText } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -178,7 +176,6 @@ hoverManager.setScreenSize(newWidth, newHeight);
 
 For simple use cases without a manager:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setHoverText,
@@ -187,7 +184,7 @@ import {
   clearHoverText,
   clearAllHoverText,
   getHoverTextCount,
-} from 'blecsd';
+} from 'blecsd/widgets';
 
 // Register hover text
 setHoverText(entity, 'Tooltip text');
@@ -205,14 +202,10 @@ clearAllHoverText();
 
 ## Example: Form Tooltips
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createHoverTextManager,
-  createTextInput,
-  createButton,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createHoverTextManager, createButton } from 'blecsd/widgets';
+import { setTextInputConfig } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -229,21 +222,23 @@ const hoverManager = createHoverTextManager({
 });
 
 // Username field
-const usernameInput = createTextInput(world, addEntity(world), {
+const usernameEid = addEntity(world);
+setTextInputConfig(world, usernameEid, {
   x: 10, y: 5,
   width: 30,
   placeholder: 'Username',
 });
-hoverManager.setHoverText(usernameInput.eid, 'Enter your username (3-20 characters)');
+hoverManager.setHoverText(usernameEid, 'Enter your username (3-20 characters)');
 
 // Password field
-const passwordInput = createTextInput(world, addEntity(world), {
+const passwordEid = addEntity(world);
+setTextInputConfig(world, passwordEid, {
   x: 10, y: 7,
   width: 30,
   secret: true,
   placeholder: 'Password',
 });
-hoverManager.setHoverText(passwordInput.eid, {
+hoverManager.setHoverText(passwordEid, {
   text: 'Password must contain:\n- 8+ characters\n- 1 uppercase\n- 1 number',
   delay: 200,
 });
@@ -311,17 +306,16 @@ if (tooltip) {
 
 ## Constants
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  DEFAULT_HOVER_DELAY,      // 500ms
-  DEFAULT_HIDE_DELAY,       // 100ms
-  DEFAULT_CURSOR_OFFSET_X,  // 2
-  DEFAULT_CURSOR_OFFSET_Y,  // 1
-  DEFAULT_TOOLTIP_FG,       // 0xffffffff (white)
-  DEFAULT_TOOLTIP_BG,       // 0xff333333 (dark gray)
-  DEFAULT_TOOLTIP_BORDER,   // 0xff888888 (light gray)
-} from 'blecsd';
+import { DEFAULT_HOVER_DELAY } from 'blecsd/widgets';
+
+// Default values used by the hover text manager:
+// DEFAULT_HOVER_DELAY = 500ms (show delay)
+// DEFAULT_HIDE_DELAY = 100ms
+// DEFAULT_CURSOR_OFFSET_X = 2
+// DEFAULT_CURSOR_OFFSET_Y = 1
+// DEFAULT_TOOLTIP_FG = 0xffffffff (white)
+// DEFAULT_TOOLTIP_BG = 0xff333333 (dark gray)
 ```
 
 ## Related

@@ -14,13 +14,17 @@ The particle system handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createParticleSystem } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createParticleSystem } from 'blecsd/systems';
+
+const world = createWorld();
+const myEmitterEntities: number[] = [];
+const myParticleEntities: number[] = [];
 
 const particleSystem = createParticleSystem({
-  emitters: (world) => myEmitterEntities,
-  particles: (world) => myParticleEntities,
+  emitters: (_world) => myEmitterEntities,
+  particles: (_world) => myParticleEntities,
   maxParticles: 500,
 });
 
@@ -66,9 +70,8 @@ function createParticleSystem(config: ParticleSystemConfig): System
 
 **Returns:** A `System` function.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createParticleSystem } from 'blecsd';
+import { createParticleSystem } from 'blecsd/systems';
 
 const particleSystem = createParticleSystem({
   emitters: (world) => activeEmitters,
@@ -119,12 +122,16 @@ function burstParticles(
 
 **Returns:** Array of spawned particle entity IDs.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { burstParticles } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { burstParticles } from 'blecsd/systems';
+
+const world = createWorld();
+const explosionEmitter = addEntity(world);
 
 // Explosion effect
 const particles = burstParticles(world, explosionEmitter, 50);
+void particles;
 ```
 
 ### ageParticle
@@ -155,18 +162,15 @@ function killParticle(world: World, eid: Entity): void
 
 Complete particle effect setup with emitters:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   createScheduler,
-  createParticleSystem,
-  burstParticles,
-  setPosition,
-  setEmitter,
   LoopPhase,
-} from 'blecsd';
+} from 'blecsd/core';
+import { createParticleSystem, burstParticles } from 'blecsd/systems';
+import { setPosition, setEmitter } from 'blecsd/components';
 
 const world = createWorld();
 const scheduler = createScheduler();

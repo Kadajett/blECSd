@@ -10,9 +10,8 @@ Queries return arrays of entity IDs that have specific components.
 
 Entities with the Renderable component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryRenderable } from 'blecsd';
+import { queryRenderable } from 'blecsd/core';
 
 const entities = queryRenderable(world);
 // [1, 2, 5] - entity IDs with Renderable
@@ -20,63 +19,56 @@ const entities = queryRenderable(world);
 
 ### queryFocusable
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryFocusable } from 'blecsd';
+import { queryFocusable } from 'blecsd/core';
 
 const entities = queryFocusable(world);
 ```
 
 ### queryInteractive
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryInteractive } from 'blecsd';
+import { queryInteractive } from 'blecsd/core';
 
 const entities = queryInteractive(world);
 ```
 
 ### queryHierarchy
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryHierarchy } from 'blecsd';
+import { queryHierarchy } from 'blecsd/core';
 
 const entities = queryHierarchy(world);
 ```
 
 ### queryBorder
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryBorder } from 'blecsd';
+import { queryBorder } from 'blecsd/core';
 
 const entities = queryBorder(world);
 ```
 
 ### queryContent
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryContent } from 'blecsd';
+import { queryContent } from 'blecsd/core';
 
 const entities = queryContent(world);
 ```
 
 ### queryPadding
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryPadding } from 'blecsd';
+import { queryPadding } from 'blecsd/core';
 
 const entities = queryPadding(world);
 ```
 
 ### queryScrollable
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryScrollable } from 'blecsd';
+import { queryScrollable } from 'blecsd/core';
 
 const entities = queryScrollable(world);
 ```
@@ -91,9 +83,8 @@ Filters take an array of entity IDs and return a subset matching specific criter
 
 Keep only visible entities.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryRenderable, filterVisible } from 'blecsd';
+import { queryRenderable, filterVisible } from 'blecsd/core';
 
 const all = queryRenderable(world);
 const visible = filterVisible(world, all);
@@ -103,9 +94,8 @@ const visible = filterVisible(world, all);
 
 Keep only entities marked dirty (needing redraw).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryRenderable, filterDirty } from 'blecsd';
+import { queryRenderable, filterDirty } from 'blecsd/core';
 
 const all = queryRenderable(world);
 const dirty = filterDirty(world, all);
@@ -115,9 +105,8 @@ const dirty = filterDirty(world, all);
 
 Keep entities that are both visible and dirty.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryRenderable, filterVisibleDirty } from 'blecsd';
+import { queryRenderable, filterVisibleDirty } from 'blecsd/core';
 
 const toRender = filterVisibleDirty(world, queryRenderable(world));
 ```
@@ -126,9 +115,8 @@ const toRender = filterVisibleDirty(world, queryRenderable(world));
 
 Keep only focusable entities.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryFocusable, filterFocusable } from 'blecsd';
+import { queryFocusable, filterFocusable } from 'blecsd/core';
 
 const focusable = filterFocusable(world, queryFocusable(world));
 ```
@@ -137,9 +125,8 @@ const focusable = filterFocusable(world, queryFocusable(world));
 
 Keep only clickable entities.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryInteractive, filterClickable } from 'blecsd';
+import { queryInteractive, filterClickable } from 'blecsd/core';
 
 const clickable = filterClickable(world, queryInteractive(world));
 ```
@@ -154,9 +141,8 @@ Sort functions return a new sorted array (they don't mutate the input).
 
 Sort by z-index, lowest first. Use for render order.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd';
+import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd/core';
 
 const entities = queryRenderable(world);
 const visible = filterVisible(world, entities);
@@ -168,9 +154,8 @@ const sorted = sortByZIndex(world, visible);
 
 Sort by hierarchy depth, shallowest first.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryHierarchy, sortByDepth } from 'blecsd';
+import { queryHierarchy, sortByDepth } from 'blecsd/core';
 
 const entities = queryHierarchy(world);
 const sorted = sortByDepth(world, entities);
@@ -181,9 +166,8 @@ const sorted = sortByDepth(world, entities);
 
 Sort by tab index for focus navigation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryFocusable, filterFocusable, sortByTabIndex } from 'blecsd';
+import { queryFocusable, filterFocusable, sortByTabIndex } from 'blecsd/core';
 
 const focusable = filterFocusable(world, queryFocusable(world));
 const tabOrder = sortByTabIndex(world, focusable);
@@ -197,9 +181,8 @@ const tabOrder = sortByTabIndex(world, focusable);
 
 Entities with no parent.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getRootEntities } from 'blecsd';
+import { getRootEntities } from 'blecsd/core';
 
 const roots = getRootEntities(world);
 ```
@@ -208,10 +191,12 @@ const roots = getRootEntities(world);
 
 Direct children of an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getChildEntities } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { getChildEntities } from 'blecsd/core';
 
+const world = createWorld();
+const parentEntity = addEntity(world);
 const children = getChildEntities(world, parentEntity);
 ```
 
@@ -219,10 +204,12 @@ const children = getChildEntities(world, parentEntity);
 
 All descendants (children, grandchildren, etc.).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getDescendantEntities } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { getDescendantEntities } from 'blecsd/core';
 
+const world = createWorld();
+const rootEntity = addEntity(world);
 const descendants = getDescendantEntities(world, rootEntity);
 ```
 
@@ -232,13 +219,8 @@ const descendants = getDescendantEntities(world, rootEntity);
 
 ### Render Pipeline
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  queryRenderable,
-  filterVisible,
-  sortByZIndex,
-} from 'blecsd';
+import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd/core';
 
 function getRenderOrder(world) {
   const entities = queryRenderable(world);
@@ -249,13 +231,8 @@ function getRenderOrder(world) {
 
 ### Focus Navigation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  queryFocusable,
-  filterFocusable,
-  sortByTabIndex,
-} from 'blecsd';
+import { queryFocusable, filterFocusable, sortByTabIndex } from 'blecsd/core';
 
 function getTabOrder(world) {
   const entities = queryFocusable(world);
@@ -266,16 +243,14 @@ function getTabOrder(world) {
 
 ### Hit Testing
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   queryInteractive,
   filterClickable,
   filterVisible,
   sortByZIndex,
-  getPosition,
-  getDimensions,
-} from 'blecsd';
+} from 'blecsd/core';
+import { getPosition, getDimensions } from 'blecsd/components';
 
 function getEntityAtPoint(world, x, y) {
   const entities = queryInteractive(world);

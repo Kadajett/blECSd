@@ -4,7 +4,6 @@ The RadioButton component provides single-selection functionality within a group
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachRadioSetBehavior,
@@ -20,20 +19,19 @@ import {
   setRadioValue,
   getRadioValue,
   setRadioButtonDisplay,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachRadioSetBehavior,
   attachRadioButtonBehavior,
   setRadioValue,
   onRadioSelect,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const world = createWorld();
 
@@ -91,13 +89,15 @@ Default characters:
 
 Customize with:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, attachRadioButtonBehavior, setRadioButtonDisplay } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, attachRadioButtonBehavior, setRadioButtonDisplay } from 'blecsd/components';
 
 const world = createWorld();
+const radioSet = addEntity(world);
 const eid = addEntity(world);
-attachRadioButtonBehavior(world, eid, 'group1');
+attachRadioSetBehavior(world, radioSet);
+attachRadioButtonBehavior(world, eid, radioSet);
 
 setRadioButtonDisplay(world, eid, {
   selectedChar: '(•)',
@@ -116,6 +116,18 @@ setRadioButtonDisplay(world, eid, {
 ### RadioSet (Container)
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, attachRadioButtonBehavior, isRadioSet, getSelectedValue, getSelectedButton, getRadioButtonsInSet, getRadioSet, setRadioValue } from 'blecsd/components';
+
+const world = createWorld();
+const containerEntity = addEntity(world);
+const setEntity = addEntity(world);
+const buttonEntity = addEntity(world);
+const eid = addEntity(world);
+attachRadioSetBehavior(world, setEntity);
+attachRadioButtonBehavior(world, buttonEntity, setEntity);
+setRadioValue(buttonEntity, 'option1');
+
 // Mark entity as a radio set container
 attachRadioSetBehavior(world, containerEntity);
 
@@ -143,6 +155,15 @@ const set = getRadioSet(world, buttonEntity);
 ### RadioButton
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, attachRadioButtonBehavior, isRadioButton, isRadioSelected } from 'blecsd/components';
+
+const world = createWorld();
+const setEntity = addEntity(world);
+const buttonEntity = addEntity(world);
+const eid = addEntity(world);
+attachRadioSetBehavior(world, setEntity);
+
 // Attach radio button to a set
 attachRadioButtonBehavior(world, buttonEntity, setEntity);
 
@@ -160,6 +181,16 @@ if (isRadioSelected(world, eid)) {
 ### Selection
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, attachRadioButtonBehavior, selectRadioButton, deselectRadioButton, selectRadioByValue, setRadioValue } from 'blecsd/components';
+
+const world = createWorld();
+const setEntity = addEntity(world);
+const buttonEntity = addEntity(world);
+attachRadioSetBehavior(world, setEntity);
+attachRadioButtonBehavior(world, buttonEntity, setEntity);
+setRadioValue(buttonEntity, 'medium');
+
 // Select a specific button (deselects others in set)
 selectRadioButton(world, buttonEntity);
 
@@ -173,6 +204,15 @@ selectRadioByValue(world, setEntity, 'medium');
 ### Values
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, attachRadioButtonBehavior, setRadioValue, getRadioValue } from 'blecsd/components';
+
+const world = createWorld();
+const setEntity = addEntity(world);
+const buttonEntity = addEntity(world);
+attachRadioSetBehavior(world, setEntity);
+attachRadioButtonBehavior(world, buttonEntity, setEntity);
+
 // Set value for a radio button
 setRadioValue(buttonEntity, 'option1');
 
@@ -184,6 +224,17 @@ const value = getRadioValue(buttonEntity);
 ### Enable/Disable
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, attachRadioButtonBehavior, disableRadioButton, enableRadioButton, isRadioButtonDisabled } from 'blecsd/components';
+
+const world = createWorld();
+const setEntity = addEntity(world);
+const buttonEntity = addEntity(world);
+const eid = addEntity(world);
+attachRadioSetBehavior(world, setEntity);
+attachRadioButtonBehavior(world, buttonEntity, setEntity);
+attachRadioButtonBehavior(world, eid, setEntity);
+
 // Disable a radio button
 disableRadioButton(world, buttonEntity);
 
@@ -199,19 +250,27 @@ if (isRadioButtonDisabled(world, eid)) {
 ### Display
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, attachRadioButtonBehavior, getRadioButtonChar, getRadioButtonDisplay, setRadioButtonDisplay, clearRadioButtonDisplay } from 'blecsd/components';
+
+const world = createWorld();
+const setEntity = addEntity(world);
+const eid = addEntity(world);
+attachRadioSetBehavior(world, setEntity);
+attachRadioButtonBehavior(world, eid, setEntity);
+
 // Get current display character
 const char = getRadioButtonChar(world, eid);
 // Returns: '◉' or '○' (or custom)
 
-// Get display configuration
-const display = getRadioButtonDisplay(eid);
-// { selectedChar: '◉', unselectedChar: '○' }
-
 // Set custom display
-setRadioButtonDisplay(eid, {
+setRadioButtonDisplay(world, eid, {
   selectedChar: '●',
   unselectedChar: '○',
 });
+
+// Get display configuration
+const display = getRadioButtonDisplay(world, eid);
 
 // Clear display (revert to defaults)
 clearRadioButtonDisplay(eid);
@@ -220,6 +279,13 @@ clearRadioButtonDisplay(eid);
 ### Events
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, onRadioSelect, clearRadioSetCallbacks } from 'blecsd/components';
+
+const world = createWorld();
+const setEntity = addEntity(world);
+attachRadioSetBehavior(world, setEntity);
+
 // Listen for selection changes on the SET
 const unsubscribe = onRadioSelect(setEntity, (value, buttonEntity) => {
   console.log(`Selected: ${value}`);
@@ -235,6 +301,15 @@ clearRadioSetCallbacks(setEntity);
 ### State Queries
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, attachRadioButtonBehavior, getRadioButtonState, isRadioButtonInState } from 'blecsd/components';
+
+const world = createWorld();
+const setEntity = addEntity(world);
+const eid = addEntity(world);
+attachRadioSetBehavior(world, setEntity);
+attachRadioButtonBehavior(world, eid, setEntity);
+
 // Get state of radio button
 const state = getRadioButtonState(world, eid);
 // Returns: 'unselected' | 'selected' | 'disabled'
@@ -248,6 +323,16 @@ if (isRadioButtonInState(world, eid, 'selected')) {
 ### Key Handling
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, attachRadioButtonBehavior, handleRadioButtonKeyPress } from 'blecsd/components';
+
+const world = createWorld();
+const setEntity = addEntity(world);
+const eid = addEntity(world);
+attachRadioSetBehavior(world, setEntity);
+attachRadioButtonBehavior(world, eid, setEntity);
+const key = 'space';
+
 // In your input loop
 const action = handleRadioButtonKeyPress(world, eid, key);
 
@@ -259,6 +344,15 @@ if (action === 'select') {
 ### State Machine Events
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachRadioSetBehavior, attachRadioButtonBehavior, sendRadioButtonEvent } from 'blecsd/components';
+
+const world = createWorld();
+const setEntity = addEntity(world);
+const eid = addEntity(world);
+attachRadioSetBehavior(world, setEntity);
+attachRadioButtonBehavior(world, eid, setEntity);
+
 // Send raw events
 sendRadioButtonEvent(world, eid, 'select');
 sendRadioButtonEvent(world, eid, 'deselect');
@@ -268,16 +362,15 @@ sendRadioButtonEvent(world, eid, 'enable');
 
 ## Example: Size Selection
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachRadioSetBehavior,
   attachRadioButtonBehavior,
   setRadioValue,
   onRadioSelect,
   selectRadioByValue,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const world = createWorld();
 
@@ -299,14 +392,14 @@ selectRadioByValue(world, sizeSet, 'medium');
 
 // Handle selection
 onRadioSelect(sizeSet, (value) => {
-  updateProductSize(value);
+  console.log(`Size selected: ${value}`);
 });
 ```
 
 ## Example: Form with Radio Buttons
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachFormBehavior,
   attachRadioSetBehavior,
@@ -314,8 +407,9 @@ import {
   registerFormField,
   setRadioValue,
   getFormValues,
-} from 'blecsd';
+} from 'blecsd/components';
 
+const world = createWorld();
 const form = addEntity(world);
 attachFormBehavior(world, form);
 

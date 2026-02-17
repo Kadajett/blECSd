@@ -6,9 +6,8 @@ Store arbitrary application-specific data on entities. Provides blessed-compatib
 
 ### setUserData
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setUserData } from 'blecsd';
+import { setUserData } from 'blecsd/components';
 
 setUserData(world, entity, {
   customId: 'player1',
@@ -29,9 +28,8 @@ setUserData(world, entity, {
 
 Get user data for an entity. Returns `undefined` if the entity has no user data.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getUserData } from 'blecsd';
+import { getUserData } from 'blecsd/components';
 
 const data = getUserData(world, entity);
 if (data) {
@@ -47,9 +45,8 @@ if (data) {
 
 Get existing user data or create an empty object if none exists. Useful for lazy initialization.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getOrCreateUserData } from 'blecsd';
+import { getOrCreateUserData } from 'blecsd/components';
 
 const data = getOrCreateUserData(world, entity);
 data.newProperty = 'value'; // Safe to assign
@@ -65,9 +62,8 @@ data.newProperty = 'value'; // Safe to assign
 
 ### hasUserData
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasUserData } from 'blecsd';
+import { hasUserData } from 'blecsd/components';
 
 if (hasUserData(world, entity)) {
   console.log('Entity has custom data');
@@ -84,9 +80,8 @@ if (hasUserData(world, entity)) {
 
 ### removeUserData
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { removeUserData } from 'blecsd';
+import { removeUserData } from 'blecsd/components';
 
 removeUserData(world, entity);
 ```
@@ -103,9 +98,8 @@ removeUserData(world, entity);
 
 Remove user data from all entities. Useful for testing or cleanup.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearAllUserData } from 'blecsd';
+import { clearAllUserData } from 'blecsd/components';
 
 clearAllUserData();
 ```
@@ -114,9 +108,8 @@ clearAllUserData();
 
 Get the total number of entities with user data. Useful for debugging and metrics.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getUserDataCount } from 'blecsd';
+import { getUserDataCount } from 'blecsd/components';
 
 console.log(`${getUserDataCount()} entities have user data`);
 ```

@@ -12,7 +12,6 @@ Terminal detection helps your application adapt to different terminal environmen
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getTerminalInfo,
@@ -54,7 +53,6 @@ function getTerminalInfo(): TerminalInfo
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalInfo } from 'blecsd/terminal';
 
@@ -88,7 +86,6 @@ function isColorSupported(): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isColorSupported, style } from 'blecsd/terminal';
 
@@ -111,7 +108,6 @@ function isTrueColorSupported(): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTrueColorSupported, style } from 'blecsd/terminal';
 
@@ -136,7 +132,6 @@ function getColorDepth(): ColorSupport
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getColorDepth } from 'blecsd/terminal';
 
@@ -168,14 +163,13 @@ function isTmux(): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTmux, tmux } from 'blecsd/terminal';
 
 function writeOutput(seq: string) {
   if (isTmux()) {
     // Wrap in tmux passthrough
-    process.stdout.write(tmux.passThrough(seq));
+    process.stdout.write(tmux.wrap(seq));
   } else {
     process.stdout.write(seq);
   }
@@ -258,7 +252,6 @@ function isUnicodeSupported(): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isUnicodeSupported, boxDrawing } from 'blecsd/terminal';
 
@@ -277,7 +270,6 @@ function isMouseSupported(): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isMouseSupported, mouse } from 'blecsd/terminal';
 
@@ -297,7 +289,6 @@ function isBracketedPasteSupported(): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isBracketedPasteSupported, bracketedPaste } from 'blecsd/terminal';
 
@@ -318,7 +309,6 @@ function getTerminalVersion(): string | undefined
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalVersion, isITerm2 } from 'blecsd/terminal';
 
@@ -406,40 +396,36 @@ The detection functions check these environment variables:
 
 ### Feature-Based Rendering
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getTerminalInfo,
   isUnicodeSupported,
   isTrueColorSupported,
+  style,
 } from 'blecsd/terminal';
 
-class Renderer {
-  private info = getTerminalInfo();
-  private useUnicode = isUnicodeSupported();
-  private useTrueColor = isTrueColorSupported();
+const info = getTerminalInfo();
+const useUnicode = isUnicodeSupported();
+const useTrueColor = isTrueColorSupported();
 
-  drawBorder() {
-    const chars = this.useUnicode
-      ? { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', v: '│' }
-      : { tl: '+', tr: '+', bl: '+', br: '+', h: '-', v: '|' };
-    // ...
-  }
+function getBoxChars() {
+  return useUnicode
+    ? { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', v: '│' }
+    : { tl: '+', tr: '+', bl: '+', br: '+', h: '-', v: '|' };
+}
 
-  setColor(r: number, g: number, b: number) {
-    if (this.useTrueColor) {
-      return style.fgRgb(r, g, b);
-    }
-    return style.fg256(this.toAnsi256(r, g, b));
+function setColor(r: number, g: number, b: number) {
+  if (useTrueColor) {
+    return style.fg({ r, g, b });
   }
+  return style.fg(196); // fallback to closest 256-color
 }
 ```
 
 ### Multiplexer Awareness
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isTmux, isScreen, tmux } from 'blecsd/terminal';
+import { isTmux, isScreen } from 'blecsd/terminal';
 
 function setTitle(newTitle: string) {
   if (isTmux() || isScreen()) {

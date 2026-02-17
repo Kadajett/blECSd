@@ -17,9 +17,8 @@ Think of iOS's bounce scroll, Material Design's ripples, or macOS's rubber-bandi
 
 The Velocity component enables smooth movement:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPosition, setVelocity, getVelocity } from 'blecsd';
+import { setPosition, setVelocity, getVelocity } from 'blecsd/components';
 
 const panel = addEntity(world);
 setPosition(world, panel, 10, 5);
@@ -336,19 +335,18 @@ function particleSystem(delta: number): void {
 
 Register animation systems in the ANIMATION phase:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
 
-scheduler.add(LoopPhase.ANIMATION, momentumScrollSystem);
-scheduler.add(LoopPhase.ANIMATION, springSystem);
-scheduler.add(LoopPhase.ANIMATION, tweenSystem);
-scheduler.add(LoopPhase.ANIMATION, inertiaSystem);
-scheduler.add(LoopPhase.ANIMATION, rubberBandSystem);
+scheduler.registerSystem(LoopPhase.ANIMATION, momentumScrollSystem);
+scheduler.registerSystem(LoopPhase.ANIMATION, springSystem);
+scheduler.registerSystem(LoopPhase.ANIMATION, tweenSystem);
+scheduler.registerSystem(LoopPhase.ANIMATION, inertiaSystem);
+scheduler.registerSystem(LoopPhase.ANIMATION, rubberBandSystem);
 
-scheduler.start(world);
+scheduler.run(world, 16);
 ```
 
 ## Performance Considerations

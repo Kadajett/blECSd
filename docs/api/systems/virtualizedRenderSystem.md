@@ -4,9 +4,10 @@ The virtualized render system efficiently renders large content by only drawing 
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
+  type LineRenderConfig,
+  type VirtualizedRenderContext,
   virtualizedRenderSystem,
   createVirtualizedRenderSystem,
   setVirtualizedRenderBuffer,
@@ -22,26 +23,18 @@ import {
   cleanupVirtualizedRenderSystem,
   cleanupEntityResources,
   LineRenderConfigSchema,
-  type LineRenderConfig,
-  type VirtualizedRenderContext,
-} from 'blecsd';
+} from 'blecsd/systems';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createScheduler,
-  LoopPhase,
-  virtualizedRenderSystem,
-  setVirtualizedRenderBuffer,
-  registerLineStore,
-  createLineStore,
-  createDoubleBuffer,
-  attachVirtualViewport,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { virtualizedRenderSystem, setVirtualizedRenderBuffer, registerLineStore } from 'blecsd/systems';
+import { setVirtualViewport, setPosition, setDimensions } from 'blecsd/components';
+import { createLineStore } from 'blecsd/utils';
+import { createDoubleBuffer } from 'blecsd/terminal';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -54,7 +47,7 @@ setVirtualizedRenderBuffer(doubleBuffer);
 const viewer = addEntity(world);
 setPosition(world, viewer, 0, 0);
 setDimensions(world, viewer, 80, 24);
-attachVirtualViewport(world, viewer, {
+setVirtualViewport(world, viewer, {
   totalLineCount: 1000000,
   visibleLineCount: 24,
 });
@@ -196,9 +189,8 @@ clearLineRenderConfig(viewer);
 
 Line render config is validated with Zod:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { LineRenderConfigSchema } from 'blecsd';
+import { LineRenderConfigSchema } from 'blecsd/systems';
 
 // Validate config
 const config = LineRenderConfigSchema.parse({
@@ -211,17 +203,15 @@ const config = LineRenderConfigSchema.parse({
 
 ## Example: Log Viewer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { setVirtualViewport, scrollByLines, scrollToTop, scrollToBottom } from 'blecsd/components';
 import {
   virtualizedRenderSystem,
   setVirtualizedRenderBuffer,
   registerLineStore,
   setLineRenderConfig,
-  createLineStore,
-  attachVirtualViewport,
-  scrollViewport,
-} from 'blecsd';
+} from 'blecsd/systems';
+import { createLineStore } from 'blecsd/utils';
 
 const world = createWorld();
 
@@ -229,7 +219,7 @@ const world = createWorld();
 const logViewer = addEntity(world);
 setPosition(world, logViewer, 0, 0);
 setDimensions(world, logViewer, 80, 20);
-attachVirtualViewport(world, logViewer, {
+setVirtualViewport(world, logViewer, {
   totalLineCount: 0,
   visibleLineCount: 20,
 });
@@ -263,16 +253,16 @@ function appendLog(line: string) {
 function onKeyPress(key: string) {
   switch (key) {
     case 'up':
-      scrollViewport(world, logViewer, -1);
+      scrollByLines(world, logViewer, -1);
       break;
     case 'down':
-      scrollViewport(world, logViewer, 1);
+      scrollByLines(world, logViewer, 1);
       break;
     case 'pageup':
-      scrollViewport(world, logViewer, -20);
+      scrollByLines(world, logViewer, -20);
       break;
     case 'pagedown':
-      scrollViewport(world, logViewer, 20);
+      scrollByLines(world, logViewer, 20);
       break;
     case 'g':
       scrollToTop(world, logViewer);

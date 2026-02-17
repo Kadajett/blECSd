@@ -21,10 +21,10 @@ This guide covers practical performance optimization techniques for blECSd appli
 
 **Start simple, measure first.**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // ✅ GOOD - Start simple
-import { createWorld, addEntity, setPosition } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
 
 const world = createWorld();
 for (let i = 0; i < 100; i++) {
@@ -55,14 +55,13 @@ Optimize when you measure these issues:
 
 **Always measure before optimizing:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createFrameBudgetManager,
   profiledSystem,
   getFrameBudgetStats,
   renderSystem,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 // Enable profiling
 createFrameBudgetManager({ targetFrameMs: 16.67 });
@@ -88,13 +87,9 @@ for (const timing of stats.systemTimings) {
 
 Use the built-in frame budget manager to track performance:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createFrameBudgetManager,
-  onBudgetAlert,
-  LoopPhase,
-} from 'blecsd';
+import { createFrameBudgetManager, onBudgetAlert } from 'blecsd/systems';
+import { LoopPhase } from 'blecsd/core';
 
 // Set budget limits per phase
 createFrameBudgetManager({
@@ -154,10 +149,9 @@ node --inspect-brk your-app.js
 
 For micro-optimizations, use Vitest benchmarks:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { bench, describe } from 'vitest';
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
 describe('component access patterns', () => {
@@ -266,7 +260,6 @@ for (let i = 0; i < 100000; i++) {
 
 ✅ **FAST - Use virtualization:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createVirtualizedList } from 'blecsd/widgets';
 
@@ -540,9 +533,8 @@ function renderSystem(world: World): World {
 
 ✅ **FAST - Check visibility first:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isEffectivelyVisible } from 'blecsd';
+import { isEffectivelyVisible } from 'blecsd/components';
 
 function renderSystem(world: World): World {
   const entities = query(world, [Position, Renderable]);
@@ -562,9 +554,8 @@ function renderSystem(world: World): World {
 
 For scenes larger than the viewport:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getComputedBounds } from 'blecsd';
+import { getComputedBounds } from 'blecsd/systems';
 
 function isInViewport(
   world: World,
@@ -708,26 +699,27 @@ for (let i = 0; i < 10000; i++) {
 
 blECSd automatically uses double buffering to avoid tearing:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScreenBuffer, renderToTerminal } from 'blecsd';
+import { createDoubleBuffer } from 'blecsd/terminal';
+import { outputSystem } from 'blecsd/systems';
+import { createWorld } from 'blecsd/core';
 
-// Back buffer - render here
-const backBuffer = createScreenBuffer(80, 24);
+const world = createWorld();
+// Double buffer - render to back buffer, swap to front on flush
+const db = createDoubleBuffer(process.stdout, 80, 24);
 
-// ... render to backBuffer ...
+// ... render to back buffer ...
 
-// Swap to front buffer and output
-renderToTerminal(backBuffer);
+// Flush output (swap buffers and write to terminal)
+outputSystem(world);
 ```
 
 ### Dirty Rectangle Tracking
 
 Only redraw changed regions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { markAllDirty, clearRenderBuffer, renderSystem } from 'blecsd';
+import { markAllDirty, clearRenderBuffer, renderSystem } from 'blecsd/systems';
 
 // First frame - full render
 markAllDirty(world);
@@ -750,22 +742,20 @@ for (let y = 0; y < height; y++) {
 ```
 
 ✅ **FAST - Batch same colors:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { optimizeOutput } from 'blecsd';
-
-// Groups adjacent cells with same color
-const optimized = optimizeOutput(cells);
+// blECSd's output system automatically groups adjacent cells with same color
+// Run outputSystem to get compressed output sequences
+import { outputSystem } from 'blecsd/systems';
 // Output: \x1b[38;2;255;0;0mHello world (single color sequence)
+outputSystem(world);
 ```
 
 ### Use Compressed Output
 
 blECSd's output system automatically compresses:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { generateOutput } from 'blecsd';
+import { generateOutput } from 'blecsd/systems';
 
 // Generates minimal updates
 const output = generateOutput(world);
@@ -778,9 +768,8 @@ const output = generateOutput(world);
 
 For large worlds with collision detection:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSpatialHash, insertEntity, queryArea } from 'blecsd';
+import { createSpatialHash, insertEntity, queryArea } from 'blecsd/systems';
 import { Position } from 'blecsd/components';
 
 // Create grid with 10x10 cell size
@@ -810,7 +799,6 @@ for (const eid of nearby) {
 
 Offload heavy computation to background threads:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Worker } from 'node:worker_threads';
 
@@ -930,9 +918,8 @@ Use this checklist when optimizing:
 
 After optimization, verify improvement:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getFrameBudgetStats } from 'blecsd';
+import { getFrameBudgetStats } from 'blecsd/systems';
 
 const before = getFrameBudgetStats();
 console.log(`Before: ${before.stats.avgFps.toFixed(1)} FPS`);

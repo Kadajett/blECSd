@@ -13,9 +13,8 @@ The layout system:
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { layoutSystem } from 'blecsd';
+import { layoutSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
@@ -29,9 +28,8 @@ scheduler.run(world, deltaTime);
 
 After the layout system runs, each entity with a Position component has computed layout data:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getComputedLayout, hasComputedLayout } from 'blecsd';
+import { getComputedLayout, hasComputedLayout } from 'blecsd/systems';
 
 // Check if layout is computed
 if (hasComputedLayout(world, entity)) {
@@ -47,9 +45,8 @@ if (hasComputedLayout(world, entity)) {
 
 Child positions are relative to their parent:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPosition, setDimensions, appendChild } from 'blecsd';
+import { setPosition, setDimensions, appendChild } from 'blecsd/components';
 
 const parent = addEntity(world);
 setPosition(world, parent, 10, 5);  // At (10, 5)
@@ -67,9 +64,8 @@ appendChild(world, parent, child);
 
 Entities can use absolute screen coordinates:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPosition, setAbsolute } from 'blecsd';
+import { setPosition, setAbsolute } from 'blecsd/components';
 
 const overlay = addEntity(world);
 setPosition(world, overlay, 50, 10);
@@ -82,9 +78,8 @@ setAbsolute(world, overlay, true);  // Uses screen coordinates directly
 
 Dimensions can be specified as percentages of the parent container:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setDimensions } from 'blecsd';
+import { setDimensions } from 'blecsd/components';
 
 // 50% of parent width, fixed 10 height
 setDimensions(world, entity, '50%', 10);
@@ -100,9 +95,8 @@ setDimensions(world, entity, 'auto', 10);
 
 Set min/max constraints on dimensions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setDimensions, setConstraints } from 'blecsd';
+import { setDimensions, setConstraints } from 'blecsd/components';
 
 setDimensions(world, entity, '100%', '100%');
 setConstraints(world, entity, {
@@ -117,9 +111,8 @@ setConstraints(world, entity, {
 
 When positions or dimensions change outside the normal flow:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { invalidateLayout, invalidateAllLayouts } from 'blecsd';
+import { invalidateLayout, invalidateAllLayouts } from 'blecsd/systems';
 
 // Invalidate single entity
 invalidateLayout(world, entity);
@@ -132,9 +125,8 @@ invalidateAllLayouts(world);
 
 Compute layout for a single entity immediately:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { computeLayoutNow, getComputedBounds } from 'blecsd';
+import { computeLayoutNow, getComputedBounds } from 'blecsd/systems';
 
 // Compute layout for entity (and parents if needed)
 const layout = computeLayoutNow(world, entity);
@@ -153,9 +145,8 @@ if (bounds) {
 
 The layout system uses the Screen entity's dimensions as the root container:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScreenEntity } from 'blecsd';
+import { createScreenEntity } from 'blecsd/core';
 
 // Screen dimensions define the root container size
 createScreenEntity(world, { width: 80, height: 24 });

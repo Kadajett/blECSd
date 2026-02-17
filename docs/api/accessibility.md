@@ -4,15 +4,9 @@ Foundational accessibility features for terminal UIs. Provides ARIA-like roles a
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  setAccessibleRole,
-  setAccessibleLabel,
-  announce,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleRole, setAccessibleLabel, announce } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -70,9 +64,9 @@ Sets the accessible role for an entity. Automatically adds the Accessible compon
 - `role` - The accessible role
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setAccessibleRole } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleRole } from 'blecsd/components';
 
 const world = createWorld();
 const buttonEntity = addEntity(world);
@@ -95,9 +89,9 @@ Gets the accessible role for an entity.
 **Returns:** `AccessibleRole | undefined` - The accessible role or undefined if not set
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setAccessibleRole, getAccessibleRole } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleRole, getAccessibleRole } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -119,9 +113,9 @@ Sets the accessible label for an entity. The label provides a human-readable des
 - `label` - The label text
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setAccessibleLabel } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleLabel } from 'blecsd/components';
 
 const world = createWorld();
 const buttonEntity = addEntity(world);
@@ -144,9 +138,9 @@ Gets the accessible label for an entity.
 **Returns:** `string | undefined` - The label text or undefined if not set
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setAccessibleLabel, getAccessibleLabel } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleLabel, getAccessibleLabel } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -164,9 +158,8 @@ Announces a message to screen readers. Uses terminal title or OSC sequences for 
 - `message` - The message to announce
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { announce } from 'blecsd';
+import { announce } from 'blecsd/components';
 
 // Announce status changes
 announce('Form submitted successfully');
@@ -180,23 +173,20 @@ announce('Loading complete');
 Clears all accessibility label storage. Useful for testing or resetting state.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearAccessibilityLabels } from 'blecsd';
+import { clearAccessibilityLabels } from 'blecsd/components';
 
-// In tests
-afterEach(() => {
-  clearAccessibilityLabels();
-});
+// Clear all labels - call between test cases or on reset
+clearAccessibilityLabels();
 ```
 
 ## Common Patterns
 
 ### Accessible Button
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleRole, setAccessibleLabel } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -211,9 +201,9 @@ setAccessibleLabel(world, cancelButton, 'Cancel');
 
 ### Accessible Form
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleRole, setAccessibleLabel } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -232,9 +222,9 @@ setAccessibleLabel(world, termsCheckbox, 'I agree to the terms and conditions');
 
 ### Accessible List
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleRole, setAccessibleLabel } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -253,9 +243,9 @@ setAccessibleLabel(world, user2, 'Bob Johnson');
 
 ### Accessible Menu
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleRole, setAccessibleLabel } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -278,9 +268,9 @@ setAccessibleLabel(world, saveItem, 'Save file');
 
 ### Accessible Dialog
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel, announce } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleRole, setAccessibleLabel, announce } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -297,9 +287,9 @@ announce('Dialog closed');
 
 ### Accessible Tree View
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setAccessibleRole, setAccessibleLabel } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setAccessibleRole, setAccessibleLabel } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -322,9 +312,8 @@ setAccessibleLabel(world, file, 'File: button.ts');
 
 ### Status Announcements
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { announce } from 'blecsd';
+import { announce } from 'blecsd/components';
 
 // Loading states
 announce('Loading data');
@@ -347,9 +336,10 @@ announce('Upload complete');
 
 ### Dynamic Labels
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setAccessibleLabel, getAccessibleLabel } from 'blecsd';
+import { setAccessibleLabel, getAccessibleLabel } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import type { World, Entity } from 'blecsd/core';
 
 // Update label based on state
 function updateButtonLabel(world: World, button: Entity, isEnabled: boolean) {
@@ -357,6 +347,10 @@ function updateButtonLabel(world: World, button: Entity, isEnabled: boolean) {
   const newLabel = isEnabled ? baseLabel : `${baseLabel} (disabled)`;
   setAccessibleLabel(world, button, newLabel);
 }
+
+const world = createWorld();
+const button = addEntity(world);
+updateButtonLabel(world, button, true);
 ```
 
 ## Best Practices
@@ -384,21 +378,25 @@ function updateButtonLabel(world: World, button: Entity, isEnabled: boolean) {
 
 ### Testing
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getAccessibleRole, getAccessibleLabel } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import {
+  getAccessibleRole,
+  getAccessibleLabel,
+  setAccessibleRole,
+  setAccessibleLabel,
+} from 'blecsd/components';
 
-// Verify accessibility in tests
-describe('Button accessibility', () => {
-  it('has correct role and label', () => {
-    const button = addEntity(world);
-    setAccessibleRole(world, button, 'button');
-    setAccessibleLabel(world, button, 'Submit');
+// Verify accessibility
+const world = createWorld();
+const button = addEntity(world);
+setAccessibleRole(world, button, 'button');
+setAccessibleLabel(world, button, 'Submit');
 
-    expect(getAccessibleRole(world, button)).toBe('button');
-    expect(getAccessibleLabel(world, button)).toBe('Submit');
-  });
-});
+const role = getAccessibleRole(world, button);
+const label = getAccessibleLabel(world, button);
+console.assert(role === 'button', 'Expected role to be button');
+console.assert(label === 'Submit', 'Expected label to be Submit');
 ```
 
 ## Technical Details

@@ -4,9 +4,8 @@ Input action mapping system for game controls. Maps physical inputs (keys, mouse
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputActionManager, ActionPresets } from 'blecsd';
+import { createInputActionManager, ActionPresets } from 'blecsd/core';
 
 // Create with preset bindings
 const actions = createInputActionManager(ActionPresets.platformer);
@@ -146,9 +145,8 @@ function createInputActionManager(
 
 **Returns:** A new InputActionManager instance.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputActionManager } from 'blecsd';
+import { createInputActionManager } from 'blecsd/core';
 
 const actions = createInputActionManager([
   { action: 'jump', keys: ['space'] },
@@ -162,9 +160,8 @@ const actions = createInputActionManager([
 
 Zod schema for validating action bindings at runtime.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ActionBindingSchema } from 'blecsd';
+import { ActionBindingSchema } from 'blecsd/core';
 
 const result = ActionBindingSchema.parse({
   action: 'jump',
@@ -177,9 +174,8 @@ const result = ActionBindingSchema.parse({
 
 Zod schema for validating serialized binding data.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { SerializedBindingsSchema } from 'blecsd';
+import { SerializedBindingsSchema } from 'blecsd/core';
 
 const result = SerializedBindingsSchema.parse(loadedData);
 ```
@@ -190,9 +186,8 @@ const result = SerializedBindingsSchema.parse(loadedData);
 
 Common action presets for quick setup.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ActionPresets, createInputActionManager } from 'blecsd';
+import { ActionPresets, createInputActionManager } from 'blecsd/core';
 
 // Standard platformer controls (move_left, move_right, jump, crouch, attack)
 const platformer = createInputActionManager(ActionPresets.platformer);
@@ -206,9 +201,8 @@ const menu = createInputActionManager(ActionPresets.menu);
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputActionManager, createInputState } from 'blecsd';
+import { createInputActionManager, createInputState } from 'blecsd/core';
 
 const inputState = createInputState();
 const actions = createInputActionManager([

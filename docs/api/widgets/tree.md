@@ -4,17 +4,15 @@ The Tree widget provides a hierarchical tree view with expandable nodes, keyboar
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTree, isTreeWidget } from 'blecsd';
+import { createTree, isTreeWidget } from 'blecsd/widgets';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTree } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTree } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -244,10 +242,9 @@ Nodes are addressed using dot-separated indices:
 
 ## Example: File Browser
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTree } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTree } from 'blecsd/widgets';
 import { createPanel } from 'blecsd/widgets';
 import * as fs from 'fs';
 

@@ -4,7 +4,6 @@ The Select component provides dropdown selection functionality with state machin
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachSelectBehavior,
@@ -20,19 +19,14 @@ import {
   onSelectChange,
   handleSelectKeyPress,
   setSelectDisplay,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  attachSelectBehavior,
-  onSelectChange,
-  selectOptionByValue,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, onSelectChange, selectOptionByValue } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -95,9 +89,9 @@ Default appearance:
 
 Customize with:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, attachSelectBehavior, setSelectDisplay } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, setSelectDisplay } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -116,6 +110,12 @@ setSelectDisplay(world, eid, {
 ### Behavior Setup
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, isSelect } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+
 // Attach with options
 attachSelectBehavior(world, eid, [
   { label: 'Option 1', value: 'opt1' },
@@ -131,6 +131,13 @@ if (isSelect(world, eid)) {
 ### Open/Close
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, openSelect, closeSelect, toggleSelect, isSelectOpen } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSelectBehavior(world, eid, [{ label: 'A', value: 'a' }]);
+
 // Open the dropdown
 openSelect(world, eid);
 
@@ -149,6 +156,16 @@ if (isSelectOpen(world, eid)) {
 ### Selection
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, getSelectedValue, getSelectedLabel, getSelectedOption, getSelectedIndex, selectOptionByValue, selectOptionByIndex, selectHighlighted, clearSelection } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSelectBehavior(world, eid, [
+  { label: 'Option 1', value: 'opt1' },
+  { label: 'Option 2', value: 'opt2' },
+], 0);
+
 // Get selected value
 const value = getSelectedValue(world, eid);
 // Returns: string | undefined
@@ -181,8 +198,19 @@ clearSelection(world, eid);
 ### Highlight (when open)
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, getHighlightedIndex, setHighlightedIndex, highlightNext, highlightPrev } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSelectBehavior(world, eid, [
+  { label: 'A', value: 'a' },
+  { label: 'B', value: 'b' },
+  { label: 'C', value: 'c' },
+]);
+
 // Get highlighted index
-const index = getHighlightedIndex(eid);
+const idx = getHighlightedIndex(eid);
 
 // Set highlighted index
 setHighlightedIndex(world, eid, 2);
@@ -195,6 +223,17 @@ highlightPrev(world, eid);
 ### Options
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, getSelectOptions, getOptionCount, getOptionAt, setSelectOptions, getSelectIndicator } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSelectBehavior(world, eid, [
+  { label: 'A', value: 'a' },
+  { label: 'B', value: 'b' },
+  { label: 'C', value: 'c' },
+]);
+
 // Get all options
 const options = getSelectOptions(eid);
 // Returns: SelectOption[]
@@ -220,6 +259,13 @@ const indicator = getSelectIndicator(eid);
 ### Enable/Disable
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, enableSelect, disableSelect, isSelectDisabled } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSelectBehavior(world, eid, [{ label: 'A', value: 'a' }]);
+
 enableSelect(world, eid);
 disableSelect(world, eid);
 
@@ -231,11 +277,18 @@ if (isSelectDisabled(world, eid)) {
 ### Display
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, getSelectDisplay, setSelectDisplay, clearSelectDisplay } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSelectBehavior(world, eid, [{ label: 'A', value: 'a' }]);
+
 // Get display configuration
 const display = getSelectDisplay(eid);
 
 // Set display configuration
-setSelectDisplay(eid, {
+setSelectDisplay(world, eid, {
   closedIndicator: '▾',
   openIndicator: '▴',
   selectedMark: '→',
@@ -248,6 +301,13 @@ clearSelectDisplay(eid);
 ### State
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, getSelectState, isSelectInState } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSelectBehavior(world, eid, [{ label: 'A', value: 'a' }]);
+
 // Get current state
 const state = getSelectState(world, eid);
 // Returns: 'closed' | 'open' | 'disabled'
@@ -261,18 +321,28 @@ if (isSelectInState(world, eid, 'open')) {
 ### Events
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, onSelectChange, onSelectOpen, onSelectClose, clearSelectCallbacks } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSelectBehavior(world, eid, [
+  { label: 'A', value: 'a' },
+  { label: 'B', value: 'b' },
+]);
+
 // Selection changed
-const unsub1 = onSelectChange(eid, (value, label, index) => {
+const unsub1 = onSelectChange(world, eid, (value, label, index) => {
   console.log(`Selected: ${label}`);
 });
 
 // Dropdown opened
-const unsub2 = onSelectOpen(eid, () => {
+const unsub2 = onSelectOpen(world, eid, () => {
   console.log('Dropdown opened');
 });
 
 // Dropdown closed
-const unsub3 = onSelectClose(eid, () => {
+const unsub3 = onSelectClose(world, eid, () => {
   console.log('Dropdown closed');
 });
 
@@ -288,6 +358,14 @@ clearSelectCallbacks(eid);
 ### Key Handling
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, handleSelectKeyPress } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSelectBehavior(world, eid, [{ label: 'A', value: 'a' }]);
+const key = 'down';
+
 // In your input loop
 const action = handleSelectKeyPress(world, eid, key);
 
@@ -302,14 +380,9 @@ const action = handleSelectKeyPress(world, eid, key);
 
 ## Example: Country Selector
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  attachSelectBehavior,
-  onSelectChange,
-  setSelectDisplay,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSelectBehavior, onSelectChange, setSelectDisplay } from 'blecsd/components';
 
 const world = createWorld();
 const countrySelect = addEntity(world);
@@ -332,21 +405,21 @@ setSelectDisplay(world, countrySelect, {
 
 onSelectChange(world, countrySelect, (value, label) => {
   console.log(`Country: ${label} (${value})`);
-  updateShippingOptions(value);
 });
 ```
 
 ## Example: Form with Select
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachFormBehavior,
   attachSelectBehavior,
   registerFormField,
   getFormValues,
-} from 'blecsd';
+} from 'blecsd/components';
 
+const world = createWorld();
 const form = addEntity(world);
 attachFormBehavior(world, form);
 

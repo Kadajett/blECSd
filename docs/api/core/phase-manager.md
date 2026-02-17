@@ -4,9 +4,8 @@ Configurable game loop execution order. Allows users to add custom phases betwee
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createPhaseManager } from 'blecsd';
+import { createPhaseManager } from 'blecsd/core';
 import { LoopPhase } from 'blecsd/core';
 
 const manager = createPhaseManager();
@@ -53,9 +52,8 @@ interface PhaseManager {
 
 Maps built-in LoopPhase values to their string names.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BUILTIN_PHASE_NAMES } from 'blecsd';
+import { BUILTIN_PHASE_NAMES } from 'blecsd/core';
 import { LoopPhase } from 'blecsd/core';
 
 console.log(BUILTIN_PHASE_NAMES[LoopPhase.INPUT]);  // 'INPUT'
@@ -68,9 +66,8 @@ Built-in phases (in order): INPUT, EARLY_UPDATE, UPDATE, LATE_UPDATE, PHYSICS, L
 
 Default global phase manager for simple use cases.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defaultPhaseManager } from 'blecsd';
+import { defaultPhaseManager } from 'blecsd/core';
 ```
 
 ## Functions
@@ -142,9 +139,8 @@ getPhaseOrder(): readonly PhaseId[];
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createPhaseManager } from 'blecsd';
+import { createPhaseManager } from 'blecsd/core';
 import { LoopPhase } from 'blecsd/core';
 
 const phases = createPhaseManager();

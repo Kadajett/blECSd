@@ -8,9 +8,8 @@ The Renderable component controls how entities appear visually: colors, text dec
 
 Converts RGBA values (0-255 each) into a single 32-bit integer for efficient storage.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { packColor } from 'blecsd';
+import { packColor } from 'blecsd/components';
 
 const red = packColor(255, 0, 0);
 // Returns: 4278190335 (0xFFFF0000)
@@ -32,9 +31,8 @@ const white = packColor(255, 255, 255);
 
 Extracts RGBA components from a packed color.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { unpackColor, packColor } from 'blecsd';
+import { unpackColor, packColor } from 'blecsd/components';
 
 const red = packColor(255, 0, 0);
 const { r, g, b, a } = unpackColor(red);
@@ -49,9 +47,8 @@ const { r, g, b, a } = unpackColor(red);
 
 Converts hex color strings to packed 32-bit colors.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hexToColor } from 'blecsd';
+import { hexToColor } from 'blecsd/components';
 
 hexToColor('#ff0000');    // Red, returns 4278190335
 hexToColor('#ff000080');  // Red, 50% transparent
@@ -69,9 +66,8 @@ hexToColor('#fff8');      // Short form white, semi-transparent
 
 Converts packed colors back to hex strings.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { colorToHex, packColor } from 'blecsd';
+import { colorToHex, packColor } from 'blecsd/components';
 
 const red = packColor(255, 0, 0);
 colorToHex(red);        // '#ff0000'
@@ -86,9 +82,8 @@ colorToHex(red, true);  // '#ff0000ff' (with alpha)
 
 ## Color Constants
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { DEFAULT_FG, DEFAULT_BG, unpackColor } from 'blecsd';
+import { DEFAULT_FG, DEFAULT_BG, unpackColor } from 'blecsd/components';
 
 DEFAULT_FG  // White, fully opaque (0xFFFFFFFF)
 DEFAULT_BG  // Black, fully transparent (0x00000000)
@@ -98,7 +93,6 @@ DEFAULT_BG  // Black, fully transparent (0x00000000)
 
 ## Component Structure
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Renderable } from 'blecsd/components';
 
@@ -119,10 +113,9 @@ Renderable.transparent // Uint8Array  - Transparent background flag
 
 ### hasRenderable
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, hasRenderable } from 'blecsd';
-import { setStyle } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { hasRenderable, setStyle } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -140,9 +133,8 @@ hasRenderable(world, eid);            // true
 
 Sets colors and text decorations. Adds the Renderable component if not present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { setStyle } from 'blecsd/components';
 
 const world = createWorld();
@@ -175,10 +167,9 @@ setStyle(world, entity, { blink: true });
 
 Returns style data or `undefined` if no Renderable component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, getStyle, colorToHex } from 'blecsd';
-import { setStyle } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { getStyle, colorToHex, setStyle } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -211,10 +202,9 @@ console.log(colorToHex(style.fg));  // '#ff0000'
 
 Returns full renderable data including visibility and dirty state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, getRenderable } from 'blecsd';
-import { setStyle } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { getRenderable, setStyle } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -245,9 +235,9 @@ const data = getRenderable(world, eid);
 
 Marks an entity as needing redraw. Adds Renderable if not present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, markDirty, isDirty } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { markDirty, isDirty } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -264,10 +254,9 @@ isDirty(world, eid);  // true
 
 Clears the dirty flag after rendering.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, markClean, isDirty } from 'blecsd';
-import { setStyle } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { markClean, isDirty, setStyle } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -285,10 +274,9 @@ isDirty(world, eid);  // false
 
 ### isDirty
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, markClean, markDirty, isDirty } from 'blecsd';
-import { setStyle } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { markClean, markDirty, isDirty, setStyle } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -308,10 +296,9 @@ isDirty(world, eid);  // false
 
 ### setVisible
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, isVisible } from 'blecsd';
-import { setVisible } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { isVisible, setVisible } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -333,10 +320,9 @@ Automatically marks the entity dirty when visibility changes.
 
 Convenience functions for visibility control.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, show, hide, toggle, isVisible } from 'blecsd';
-import { setStyle } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { show, hide, toggle, isVisible, setStyle } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -360,11 +346,9 @@ isVisible(world, eid);  // false
 
 Checks if an entity and all its ancestors are visible. An entity with a hidden parent is not effectively visible.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { show, hide, isEffectivelyVisible } from 'blecsd';
-import { setStyle, setParent } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { show, hide, isEffectivelyVisible, setStyle, setParent } from 'blecsd/components';
 
 const world = createWorld();
 const parent = addEntity(world);
@@ -388,11 +372,9 @@ isEffectivelyVisible(world, child);  // true
 
 Checks if an entity has a hierarchy but no path to a root.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { removeChild, isDetached } from 'blecsd';
-import { setStyle, setParent } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { removeChild, isDetached, setStyle, setParent } from 'blecsd/components';
 
 const world = createWorld();
 const root = addEntity(world);

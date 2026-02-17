@@ -4,9 +4,8 @@ Arbitrary key-value data storage for entities. Store custom data on entities wit
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setEntityData, getEntityData, hasEntityData } from 'blecsd';
+import { setEntityData, getEntityData, hasEntityData } from 'blecsd/core';
 
 // Store data on an entity
 setEntityData(entity, 'name', 'Player 1');
@@ -48,9 +47,8 @@ function getEntityData<T = DataValue>(eid: Entity, key: string, defaultValue?: T
 
 **Returns:** The stored value or defaultValue.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getEntityData } from 'blecsd';
+import { getEntityData } from 'blecsd/core';
 
 const score = getEntityData<number>(entity, 'score', 0);
 ```
@@ -63,9 +61,8 @@ Sets a value on an entity.
 function setEntityData(eid: Entity, key: string, value: DataValue): void;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setEntityData } from 'blecsd';
+import { setEntityData } from 'blecsd/core';
 
 setEntityData(entity, 'name', 'Player 1');
 setEntityData(entity, 'inventory', { gold: 100, items: [] });
@@ -112,9 +109,8 @@ Sets multiple values on an entity at once.
 function setEntityDataBulk(eid: Entity, data: Record<string, DataValue>): void;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setEntityDataBulk } from 'blecsd';
+import { setEntityDataBulk } from 'blecsd/core';
 
 setEntityDataBulk(entity, {
   name: 'Player 1',
@@ -168,9 +164,8 @@ function updateEntityData<T = DataValue>(
 ): void;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateEntityData } from 'blecsd';
+import { updateEntityData } from 'blecsd/core';
 
 // Increment score
 updateEntityData<number>(entity, 'score', (current) => (current ?? 0) + 10);
@@ -184,7 +179,6 @@ updateEntityData<string[]>(entity, 'items', (current) => [...(current ?? []), ne
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setEntityData,
@@ -193,7 +187,7 @@ import {
   updateEntityData,
   clearEntityData,
   getAllEntityData,
-} from 'blecsd';
+} from 'blecsd/core';
 
 // Initialize player data
 setEntityDataBulk(playerEntity, {

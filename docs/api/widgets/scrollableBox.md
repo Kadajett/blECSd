@@ -4,10 +4,9 @@ The ScrollableBox widget is a container that supports scrolling content. It comb
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScrollableBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -41,10 +40,9 @@ scrollBox.scrollToBottom();
 
 Creates a new ScrollableBox widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScrollableBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -481,9 +479,8 @@ scrollBox.destroy();
 
 Checks if an entity is a scrollable box widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isScrollableBox } from 'blecsd';
+import { isScrollableBox } from 'blecsd/widgets';
 
 if (isScrollableBox(world, entity)) {
   // Handle scrollable-box-specific logic
@@ -498,9 +495,8 @@ if (isScrollableBox(world, entity)) {
 
 Checks if mouse scrolling is enabled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isMouseScrollEnabled } from 'blecsd';
+import { isMouseScrollEnabled } from 'blecsd/widgets';
 
 if (isMouseScrollEnabled(world, entity)) {
   // Mouse scroll is enabled
@@ -515,9 +511,8 @@ if (isMouseScrollEnabled(world, entity)) {
 
 Checks if keyboard scrolling is enabled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isKeysScrollEnabled } from 'blecsd';
+import { isKeysScrollEnabled } from 'blecsd/widgets';
 
 if (isKeysScrollEnabled(world, entity)) {
   // Keyboard scroll is enabled
@@ -648,9 +643,8 @@ interface ScrollableBoxWidget {
 
 ## Zod Schemas
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ScrollableBoxConfigSchema } from 'blecsd';
+import { ScrollableBoxConfigSchema } from 'blecsd/widgets';
 
 // Validate configuration
 const result = ScrollableBoxConfigSchema.safeParse({
@@ -671,10 +665,9 @@ if (result.success) {
 
 ### Basic Scrollable Container
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScrollableBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -691,10 +684,9 @@ const scrollBox = createScrollableBox(world, eid, {
 
 ### Log Viewer with Auto-Scroll
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScrollableBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -721,10 +713,9 @@ function addLog(message: string) {
 
 ### Scroll Position Indicator
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScrollableBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -750,10 +741,9 @@ function updateStatusBar() {
 
 ### Keyboard Navigation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox, isKeysScrollEnabled } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScrollableBox, isKeysScrollEnabled } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -794,10 +784,9 @@ function onKeyPress(key: string) {
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScrollableBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);

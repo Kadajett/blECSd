@@ -4,7 +4,6 @@ Efficient virtualized scrollback buffer with chunked storage, LRU caching, optio
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScrollbackBuffer,
@@ -15,9 +14,6 @@ import {
   getLineRange,
   getVisibleLines,
   jumpToLine,
-  scrollBy,
-  scrollToTop,
-  scrollToBottom,
   getScrollbackStats,
   getMemoryUsage,
   loadFromText,
@@ -29,7 +25,8 @@ import {
   DEFAULT_MAX_CACHED,
   DEFAULT_MAX_MEMORY,
   COMPRESSION_RATIO,
-} from 'blecsd';
+} from 'blecsd/utils';
+import { scrollBy, scrollToTop, scrollToBottom } from 'blecsd/components';
 ```
 
 ## Types
@@ -142,9 +139,8 @@ function createScrollbackBuffer(config?: Partial<ScrollbackConfig>): ScrollbackB
 ```
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScrollbackBuffer } from 'blecsd';
+import { createScrollbackBuffer } from 'blecsd/utils';
 
 const buffer = createScrollbackBuffer({
   chunkSize: 1000,
@@ -177,9 +173,8 @@ function appendLine(
 ```
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScrollbackBuffer, appendLine } from 'blecsd';
+import { createScrollbackBuffer, appendLine } from 'blecsd/utils';
 
 const buffer = createScrollbackBuffer();
 appendLine(buffer, 'Hello, world!');
@@ -332,15 +327,14 @@ function decompressAll(buffer: ScrollbackBuffer): void
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createScrollbackBuffer,
   appendLine,
   getVisibleLines,
-  scrollToBottom,
   getScrollbackStats,
-} from 'blecsd';
+} from 'blecsd/utils';
+import { scrollToBottom } from 'blecsd/components';
 
 const buffer = createScrollbackBuffer({ chunkSize: 500 });
 

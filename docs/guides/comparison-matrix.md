@@ -183,13 +183,9 @@ A comprehensive, honest comparison of terminal UI libraries across different lan
 | **Ratatui** | ✅ Excellent | Manual but efficient | Manual | Manual but fast | 60fps+ |
 
 **blECSd Example - Terminal Game:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  setPosition,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
 import { setVelocity } from 'blecsd/components';
 import { collisionSystem, movementSystem } from 'blecsd/systems';
 
@@ -219,9 +215,8 @@ collisionSystem(world);
 | **Ratatui** | Manual implementation | No | No | No |
 
 **blECSd Physics Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { setVelocity } from 'blecsd/components';
 
 const world = createWorld();
@@ -264,9 +259,8 @@ Rendering only visible items in large lists (1000s of items) instead of all item
 | **Ratatui** | ⚠️ Manual | ⚠️ Manual | ❌ Immediate mode | Extremely fast raw perf |
 
 **blECSd Virtualization Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createList } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -287,7 +281,6 @@ const list = createList(world, entity, {
 ### State Management Patterns
 
 #### blECSd: Query-Based
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Query entities with specific components
 const entities = query(world, [Position, Velocity]);
@@ -307,7 +300,6 @@ function App() {
 ```
 
 #### Textual: Reactive Attributes
-<!-- blecsd-doccheck:ignore -->
 ```python
 class MyWidget(Widget):
     counter = reactive(0)  # Automatically triggers re-render
@@ -404,7 +396,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 ## Migration Paths
 
 ### From blessed to blECSd
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // blessed (OOP)
 const blessed = require('blessed');
@@ -419,7 +410,8 @@ const box = blessed.box({
 });
 
 // blECSd (ECS)
-import { createWorld, addEntity, setPosition, setDimensions } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
 import { createBox } from 'blecsd/widgets';
 const world = createWorld();
 const box = addEntity(world);
@@ -433,15 +425,15 @@ See [Migration Guide](./migrating-from-blessed.md) for complete details.
 ---
 
 ### From React/Ink to blECSd
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Ink (React)
-import { render, Text } from 'ink';
+import { render } from 'blecsd/systems';
+import { Text } from 'blecsd/widgets';
 const App = () => <Text>Hello</Text>;
 render(<App />);
 
 // blECSd (ECS)
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 import { createText } from 'blecsd/widgets';
 const world = createWorld();
 createText(world, { content: 'Hello' });

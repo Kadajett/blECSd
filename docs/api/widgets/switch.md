@@ -4,9 +4,8 @@ A toggle switch widget for on/off controls. Can be toggled by clicking or pressi
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSwitch } from 'blecsd';
+import { createSwitch } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -50,9 +49,8 @@ toggle.onChange((checked) => {
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { SwitchConfigSchema } from 'blecsd';
+import { SwitchConfigSchema } from 'blecsd/widgets';
 
 const validated = SwitchConfigSchema.parse({
   checked: true,
@@ -69,9 +67,8 @@ const validated = SwitchConfigSchema.parse({
 
 Creates a Switch widget with the given configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSwitch } from 'blecsd';
+import { createSwitch } from 'blecsd/widgets';
 
 const toggle = createSwitch(world, {
   x: 10,
@@ -124,7 +121,6 @@ toggle(): SwitchWidget
 
 Toggles the checked state from on to off or vice versa. Returns `this` for chaining.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 const toggle = createSwitch(world, { checked: false });
 toggle.toggle(); // Now checked = true
@@ -157,7 +153,6 @@ onChange(callback: (checked: boolean) => void): SwitchWidget
 
 Registers a callback that fires when the switch state changes (via toggle, setChecked, or user interaction).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 toggle.onChange((checked) => {
   console.log(checked ? 'Switch turned ON' : 'Switch turned OFF');
@@ -195,9 +190,8 @@ Destroys the widget and removes the entity from the world.
 
 ### isSwitch
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isSwitch } from 'blecsd';
+import { isSwitch } from 'blecsd/widgets';
 
 if (isSwitch(world, entity)) {
   // Entity is a switch widget
@@ -212,9 +206,8 @@ if (isSwitch(world, entity)) {
 
 ### handleSwitchKey
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleSwitchKey } from 'blecsd';
+import { handleSwitchKey } from 'blecsd/widgets';
 
 const handled = handleSwitchKey(world, entity, key);
 ```
@@ -230,9 +223,8 @@ Toggles the switch if Space or Enter key is pressed. Fires onChange callback.
 
 ### handleSwitchClick
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleSwitchClick } from 'blecsd';
+import { handleSwitchClick } from 'blecsd/widgets';
 
 const handled = handleSwitchClick(world, entity);
 ```
@@ -251,9 +243,8 @@ Toggles the switch when clicked. Fires onChange callback.
 
 ### Basic Toggle
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSwitch } from 'blecsd';
+import { createSwitch } from 'blecsd/widgets';
 
 const darkMode = createSwitch(world, {
   x: 5,
@@ -274,9 +265,8 @@ darkMode.onChange((checked) => {
 
 ### Custom Styled Switch
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSwitch } from 'blecsd';
+import { createSwitch } from 'blecsd/widgets';
 
 const customToggle = createSwitch(world, {
   checked: true,
@@ -291,9 +281,8 @@ const customToggle = createSwitch(world, {
 
 ### Settings Toggle
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSwitch } from 'blecsd';
+import { createSwitch } from 'blecsd/widgets';
 
 const soundToggle = createSwitch(world, {
   x: 20,

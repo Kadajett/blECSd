@@ -20,9 +20,9 @@ blECSd provides three layers of abstraction for building terminal UIs:
 
 **Components** are the foundation - they hold data in typed arrays for efficient processing.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, addComponent, Position, Dimensions, setContent } from 'blecsd';
+import { createWorld, addEntity, addComponent } from 'blecsd/core';
+import { Position, Dimensions, setContent } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -58,9 +58,9 @@ setContent(world, eid, 'Hello, World!');
 
 **Entity factories** create entities with pre-configured components. They return entity IDs.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createBoxEntity, createButtonEntity, Position, setContent, BorderType } from 'blecsd';
+import { createWorld, createBoxEntity, createButtonEntity } from 'blecsd/core';
+import { Position, setContent, BorderType } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -99,9 +99,10 @@ setContent(world, box, 'New text');
 
 **Widgets** are higher-level wrappers that add methods and manage internal state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, createList, getListState } from 'blecsd/widgets';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createList } from 'blecsd/widgets';
+import { getListState } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -260,7 +261,6 @@ modal.show();
 
 ✅ **Prototyping**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Quick UI for testing ideas
 const chart = createLineChart(world, entity, {
@@ -360,9 +360,9 @@ Most applications use **both** - factories for simple elements, widgets for comp
 
 **Yes.** Entity factories are just functions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, addComponent, Position, Dimensions } from 'blecsd';
+import { addEntity, addComponent } from 'blecsd/core';
+import { Position, Dimensions } from 'blecsd/components';
 
 export function createCustomPanelEntity(
   world: World,
@@ -451,9 +451,8 @@ All three approaches are valid - choose based on your requirements.
 
 Mix factories and components:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createBoxEntity, createTextEntity, createButtonEntity, addEntity } from 'blecsd';
+import { createWorld, createBoxEntity, createTextEntity, createButtonEntity, addEntity } from 'blecsd/core';
 
 const world = createWorld();
 
@@ -484,29 +483,18 @@ const button = createButtonEntity(world, {
 
 Use components directly:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, addComponent, Position, CustomComponent } from 'blecsd';
+import { addEntity, addComponent } from 'blecsd/core';
+import { Position } from 'blecsd/components';
 
 // Framework creates entities with unique components
 function createFrameworkElement(world: World): Entity {
   const eid = addEntity(world);
 
   addComponent(world, eid, Position);
-  addComponent(world, eid, CustomComponent);
+  // Add your own custom components here
 
   return eid;
-}
-
-// Framework systems process custom components
-function frameworkSystem(world: World): World {
-  const entities = customQuery(world);
-
-  for (const eid of entities) {
-    // Process custom components
-  }
-
-  return world;
 }
 ```
 
@@ -514,9 +502,9 @@ function frameworkSystem(world: World): World {
 
 Use widgets for quick iteration:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createFileManager, createModal } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createFileManager, createModal } from 'blecsd/widgets';
 
 const world = createWorld();
 

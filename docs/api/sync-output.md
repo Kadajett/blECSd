@@ -1,6 +1,6 @@
 # Synchronized Output
 
-The SynchronizedOutput class manages synchronized output mode for flicker-free rendering, essential for smooth 60fps game rendering.
+The `createSynchronizedOutput` factory manages synchronized output mode for flicker-free rendering, essential for smooth 60fps game rendering.
 
 ## Overview
 
@@ -10,11 +10,12 @@ In synchronized output mode (DEC 2026), the terminal buffers all output until th
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { SynchronizedOutput } from 'blecsd/terminal';
+import { createSynchronizedOutput, screen } from 'blecsd/terminal';
 
-const syncOut = new SynchronizedOutput(process.stdout);
+function renderGameState() { return ''; }
+
+const syncOut = createSynchronizedOutput(process.stdout);
 
 // Render a complete frame
 syncOut.renderFrame(() => {
@@ -23,10 +24,10 @@ syncOut.renderFrame(() => {
 });
 ```
 
-## Constructor
+## Factory Function
 
 ```typescript
-new SynchronizedOutput(output: Writable, options?: SyncOutputOptions)
+function createSynchronizedOutput(output: Writable, options?: SyncOutputOptions): SynchronizedOutput
 ```
 
 ### SyncOutputOptions
@@ -84,7 +85,6 @@ renderFrame(renderFn: () => void): void
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 syncOut.renderFrame(() => {
   process.stdout.write(screen.clear());
@@ -170,11 +170,10 @@ function isSyncOutputSupported(): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { SynchronizedOutput, isSyncOutputSupported } from 'blecsd/terminal';
+import { createSynchronizedOutput, isSyncOutputSupported } from 'blecsd/terminal';
 
-const syncOut = new SynchronizedOutput(process.stdout, {
+const syncOut = createSynchronizedOutput(process.stdout, {
   supported: isSyncOutputSupported()
 });
 ```
@@ -183,42 +182,42 @@ const syncOut = new SynchronizedOutput(process.stdout, {
 
 ### Game Loop
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { SynchronizedOutput, isSyncOutputSupported, screen } from 'blecsd/terminal';
+import { createSynchronizedOutput, isSyncOutputSupported, screen } from 'blecsd/terminal';
 
-class Game {
-  private syncOut: SynchronizedOutput;
+function drawWorld() { /* draw world */ }
+function drawEntities() { /* draw entities */ }
+function drawUI() { /* draw UI */ }
+function update() { /* update game state */ }
 
-  constructor() {
-    this.syncOut = new SynchronizedOutput(process.stdout, {
-      supported: isSyncOutputSupported()
-    });
-  }
+const syncOut = createSynchronizedOutput(process.stdout, {
+  supported: isSyncOutputSupported()
+});
 
-  gameLoop() {
-    setInterval(() => {
-      this.update();
-      this.render();
-    }, 16); // ~60fps
-  }
+function render() {
+  syncOut.renderFrame(() => {
+    process.stdout.write(screen.clear());
+    drawWorld();
+    drawEntities();
+    drawUI();
+  });
+}
 
-  render() {
-    this.syncOut.renderFrame(() => {
-      process.stdout.write(screen.clear());
-      this.drawWorld();
-      this.drawEntities();
-      this.drawUI();
-    });
-  }
+function startGameLoop() {
+  setInterval(() => {
+    update();
+    render();
+  }, 16); // ~60fps
 }
 ```
 
 ### Manual Frame Control
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-const syncOut = new SynchronizedOutput(process.stdout);
+import { createSynchronizedOutput, screen, cursor } from 'blecsd/terminal';
+
+const syncOut = createSynchronizedOutput(process.stdout);
+const entities: Array<{ x: number; y: number; char: string }> = [];
 
 function render() {
   syncOut.beginFrame();
@@ -240,8 +239,12 @@ function render() {
 ### Fallback for Unsupported Terminals
 
 ```typescript
+import { createSynchronizedOutput, isSyncOutputSupported } from 'blecsd/terminal';
+
+function renderScene() { /* render scene */ }
+
 const supported = isSyncOutputSupported();
-const syncOut = new SynchronizedOutput(process.stdout, { supported });
+const syncOut = createSynchronizedOutput(process.stdout, { supported });
 
 // Code works the same regardless of support
 syncOut.renderFrame(() => {
@@ -253,28 +256,26 @@ syncOut.renderFrame(() => {
 
 ### Building Frames with OutputBuffer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { OutputBuffer, SynchronizedOutput } from 'blecsd/terminal';
+import { createSynchronizedOutput, createDoubleBuffer, screen } from 'blecsd/terminal';
 
-const outputBuffer = new OutputBuffer();
-const syncOut = new SynchronizedOutput(process.stdout);
+const playerX = 10;
+const playerY = 5;
+const syncOut = createSynchronizedOutput(process.stdout);
 
 function render() {
-  // Build frame in memory
-  outputBuffer.clear();
-  outputBuffer.write(screen.clear());
-  outputBuffer.writeAt(playerX, playerY, '@');
-
-  // Write complete frame with sync
-  syncOut.writeFrame(outputBuffer.getContents());
+  // Build frame and write with sync
+  const content = screen.clear() + `\x1b[${playerY};${playerX}H@`;
+  syncOut.writeFrame(content);
 }
 ```
 
 ### Auto-Sync Mode
 
 ```typescript
-const syncOut = new SynchronizedOutput(process.stdout, {
+import { createSynchronizedOutput, isSyncOutputSupported } from 'blecsd/terminal';
+
+const syncOut = createSynchronizedOutput(process.stdout, {
   supported: isSyncOutputSupported(),
   autoSync: true
 });

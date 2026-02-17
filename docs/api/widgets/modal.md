@@ -4,9 +4,8 @@ A modal overlay/backdrop system with support for stacking multiple modals, backd
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createModal, closeAllModals } from 'blecsd';
+import { createModal, closeAllModals } from 'blecsd/widgets';
 import { openModal } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -50,9 +49,8 @@ modal.onClose(() => {
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ModalConfigSchema } from 'blecsd';
+import { ModalConfigSchema } from 'blecsd/widgets';
 
 const result = ModalConfigSchema.safeParse({
   backdrop: true,
@@ -71,9 +69,8 @@ const result = ModalConfigSchema.safeParse({
 
 Creates a Modal widget in a hidden state. Call `show()` to display it.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createModal } from 'blecsd';
+import { createModal } from 'blecsd/widgets';
 
 const modal = createModal(world, {
   width: 50,
@@ -97,7 +94,6 @@ modal.show();
 
 Creates a modal and immediately shows it.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { openModal } from 'blecsd/widgets';
 
@@ -221,9 +217,8 @@ Destroys the widget. If the modal is open, it is closed first (firing onClose ca
 
 Closes a specific modal by entity ID.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { closeModal } from 'blecsd';
+import { closeModal } from 'blecsd/widgets';
 
 closeModal(world, modalEid);
 ```
@@ -232,9 +227,8 @@ closeModal(world, modalEid);
 
 Closes all currently open modals in reverse stack order (most recent first).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { closeAllModals } from 'blecsd';
+import { closeAllModals } from 'blecsd/widgets';
 
 closeAllModals(world);
 ```
@@ -243,9 +237,8 @@ closeAllModals(world);
 
 Returns whether any modal is currently open.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isModalOpen } from 'blecsd';
+import { isModalOpen } from 'blecsd/widgets';
 
 if (isModalOpen(world)) {
   // Block background input
@@ -256,9 +249,8 @@ if (isModalOpen(world)) {
 
 Returns the stack of currently open modal entity IDs. The last element is the topmost (most recently opened) modal.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getModalStack } from 'blecsd';
+import { getModalStack } from 'blecsd/widgets';
 
 const stack = getModalStack(world);
 const topmost = stack[stack.length - 1];
@@ -272,9 +264,8 @@ const topmost = stack[stack.length - 1];
 
 Handles a backdrop click event. Closes the modal if `closeOnBackdropClick` is enabled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleModalBackdropClick } from 'blecsd';
+import { handleModalBackdropClick } from 'blecsd/widgets';
 
 const wasClosed = handleModalBackdropClick(world, modalEid);
 ```
@@ -285,9 +276,8 @@ const wasClosed = handleModalBackdropClick(world, modalEid);
 
 Handles an Escape key event for a modal. Closes the modal if `closeOnEscape` is enabled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleModalEscape, getModalStack } from 'blecsd';
+import { handleModalEscape, getModalStack } from 'blecsd/widgets';
 
 const stack = getModalStack(world);
 if (stack.length > 0) {
@@ -303,9 +293,8 @@ if (stack.length > 0) {
 
 ### isModal
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isModal } from 'blecsd';
+import { isModal } from 'blecsd/widgets';
 
 if (isModal(world, entity)) {
   // Entity is a modal widget
@@ -318,9 +307,8 @@ if (isModal(world, entity)) {
 
 ### Stacked Modals
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getModalStack, closeAllModals } from 'blecsd';
+import { getModalStack, closeAllModals } from 'blecsd/widgets';
 import { openModal } from 'blecsd/widgets';
 
 const first = openModal(world, {
@@ -344,7 +332,6 @@ closeAllModals(world);
 
 ### Confirmation Modal with Callback
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { openModal } from 'blecsd/widgets';
 
@@ -364,9 +351,8 @@ modal.center(80, 24).onClose(() => {
 
 ### Input Blocking Pattern
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isModalOpen, getModalStack, handleModalEscape } from 'blecsd';
+import { isModalOpen, getModalStack, handleModalEscape } from 'blecsd/widgets';
 
 function handleKeyPress(world, key) {
   // Block all input when a modal is open, except Escape

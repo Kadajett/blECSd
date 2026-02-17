@@ -70,9 +70,8 @@ const loop = createGameLoop(world, {
 
 For simple applications, handle input directly:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputHandler } from 'blecsd/core';
+import { createInputHandler } from 'blecsd/terminal';
 
 const handler = createInputHandler(process.stdin);
 
@@ -92,7 +91,6 @@ handler.start();
 
 For games and complex UIs, register input as a system:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 
@@ -120,9 +118,8 @@ loop.registerSystem(LoopPhase.UPDATE, (world) => {
 
 For complex input handling with key combinations:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputHandler } from 'blecsd/core';
+import { createInputHandler } from 'blecsd/terminal';
 
 const handler = createInputHandler(process.stdin, {
   escapeTimeout: 50,      // Short timeout for responsive escape detection
@@ -208,7 +205,6 @@ loop.registerSystem(LoopPhase.INPUT, (world) => {
 
 Use the `step()` method to verify input processing:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop } from 'blecsd/core';
 

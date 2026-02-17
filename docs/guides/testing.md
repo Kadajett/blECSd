@@ -76,10 +76,10 @@ export default defineConfig({
 
 Components are data containers. Test by creating entities, setting component data, and reading it back.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createWorld, addEntity, setPosition, getPosition } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, getPosition } from 'blecsd/components';
 import { Position } from 'blecsd/components';
 
 describe('Position component', () => {
@@ -128,10 +128,10 @@ describe('Position component', () => {
 
 ### Testing Component Helpers
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createWorld, addEntity, setPosition } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
 import { Position } from 'blecsd/components';
 
 describe('moveBy', () => {
@@ -169,13 +169,13 @@ Systems are pure functions that take a world and return a world. Test by:
 2. Running the system
 3. Asserting the new state
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createWorld, addEntity, setPosition } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
 import { query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 // Example system
 function movementSystem(world: World): World {
@@ -248,10 +248,9 @@ describe('movementSystem', () => {
 
 Some systems maintain state outside the world. Reset it in `beforeEach`/`afterEach`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { inputSystem } from 'blecsd';
+import { inputSystem } from 'blecsd/systems';
 
 describe('inputSystem', () => {
   beforeEach(() => {
@@ -283,13 +282,12 @@ Widgets are factory functions that create and configure entities. Test by:
 2. Checking the created components
 3. Testing widget-specific behavior
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createWorld, hasComponent } from 'blecsd';
+import { createWorld, hasComponent } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 import { Position, Dimensions } from 'blecsd/components';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 describe('Box widget', () => {
   let world: World;
@@ -361,10 +359,9 @@ describe('Box widget', () => {
 
 Test Zod schemas for widget configuration:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { BoxConfigSchema } from 'blecsd/widgets';
+import { BoxConfigSchema } from 'blecsd/core';
 
 describe('BoxConfigSchema', () => {
   it('validates empty config', () => {
@@ -418,14 +415,13 @@ For code that interacts with the terminal, use test helpers or mocks:
 
 ### Helper Functions for Input Events
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { KeyEvent, KeyName } from 'blecsd';
+import type { ParsedKeyEvent, KeyName } from 'blecsd/terminal';
 
 function createKeyEvent(
   name: KeyName,
   opts: { ctrl?: boolean; meta?: boolean; shift?: boolean } = {}
-): KeyEvent {
+): ParsedKeyEvent {
   return {
     sequence: name,
     name,
@@ -452,16 +448,15 @@ it('handles Ctrl+C', () => {
 
 ### Helper Functions for Mouse Events
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { MouseEvent, MouseButton, MouseAction } from 'blecsd';
+import type { ParsedMouseEvent, MouseButton, MouseAction } from 'blecsd/terminal';
 
 function createMouseEvent(
   x: number,
   y: number,
   button: MouseButton,
   action: MouseAction
-): MouseEvent {
+): ParsedMouseEvent {
   return {
     x,
     y,
@@ -487,15 +482,14 @@ it('handles mouse click', () => {
 
 Use Vitest's `vi.fn()` to spy on terminal writes:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, vi } from 'vitest';
-import type { TerminalOutput } from 'blecsd';
+// TerminalOutput is a conceptual type for testing - inline the shape:
 
 describe('terminal rendering', () => {
   it('writes to terminal', () => {
     const mockWrite = vi.fn();
-    const terminal: TerminalOutput = {
+    const terminal: { write: (s: string) => void; flush: () => void } = {
       write: mockWrite,
       flush: vi.fn(),
     };
@@ -512,10 +506,9 @@ describe('terminal rendering', () => {
 
 Use snapshots to test rendered terminal output:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 describe('Box rendering', () => {
@@ -565,12 +558,13 @@ pnpm test -- src/widgets/box.test.ts -u
 
 Test multiple systems working together:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createWorld, inputSystem, renderSystem, focusNext } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { inputSystem, renderSystem } from 'blecsd/systems';
+import { focusNext } from 'blecsd/components';
 import { createBox } from 'blecsd/widgets';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 describe('focus management integration', () => {
   let world: World;
@@ -615,12 +609,11 @@ describe('focus management integration', () => {
 
 ### Testing Game Loops
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 import { createGameLoop } from 'blecsd/core';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 describe('game loop', () => {
   let world: World;
@@ -675,22 +668,22 @@ describe('game loop', () => {
 
 Test asynchronous operations with async/await:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { loadImage, Image } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 
-describe('image loading', () => {
-  it('loads image successfully', async () => {
-    const image = await loadImage('./test-image.png');
+// Example of async test pattern in blECSd
+describe('async operations', () => {
+  it('resolves successfully', async () => {
+    const world = createWorld();
+    const result = await Promise.resolve({ width: 100, height: 100 });
 
-    expect(image.width).toBeGreaterThan(0);
-    expect(image.height).toBeGreaterThan(0);
-    expect(image.data).toBeInstanceOf(Uint8Array);
+    expect(result.width).toBeGreaterThan(0);
+    expect(result.height).toBeGreaterThan(0);
   });
 
-  it('rejects on invalid path', async () => {
-    await expect(loadImage('./nonexistent.png')).rejects.toThrow();
+  it('rejects on error', async () => {
+    await expect(Promise.reject(new Error('test error'))).rejects.toThrow();
   });
 });
 ```
@@ -703,7 +696,6 @@ blECSd provides a comprehensive set of test utilities in `src/testing/` to reduc
 
 Import from `'blecsd/testing'`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createTestWorld,
@@ -719,7 +711,6 @@ import {
 
 Creates a pre-configured ECS world for testing:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTestWorld } from 'blecsd/testing';
 
@@ -731,7 +722,6 @@ const world = createTestWorld();
 
 Creates an entity with common components based on configuration. This eliminates boilerplate for setting up test entities:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTestWorld, createTestEntity } from 'blecsd/testing';
 
@@ -796,7 +786,6 @@ const hoverable = createHoverableEntity(world, 0, 0, 15, 8);
 
 Creates a screen entity with standard terminal configuration:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTestWorld, createTestScreen } from 'blecsd/testing';
 
@@ -814,7 +803,6 @@ blECSd provides shared test fixtures to reduce duplication and improve consisten
 
 #### Screen Dimensions
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SCREEN_80X24, SCREEN_40X12, SCREEN_120X40, SCREEN_10X5 } from 'blecsd/testing';
 
@@ -830,7 +818,6 @@ const screen = createTestScreen(world, SCREEN_80X24);
 
 #### Position and Size Presets
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   POSITION_ORIGIN,
@@ -858,7 +845,6 @@ const box = createTestEntity(world, {
 
 #### Text Content
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   TEXT_HELLO,
@@ -890,9 +876,9 @@ const entity = createTestEntity(world, {
 
 #### Colors
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { COLORS, COLOR_PAIRS } from 'blecsd/testing';
+import { COLORS } from 'blecsd/terminal';
+import { COLOR_PAIRS } from 'blecsd/testing';
 
 // Use in style tests
 const button = createTestEntity(world, {
@@ -930,7 +916,6 @@ const text = createTestEntity(world, {
 
 #### Keyboard Input
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { KEYS } from 'blecsd/testing';
 
@@ -945,7 +930,6 @@ queueKeyEvent({ sequence: KEYS.ARROW_UP, name: 'up' });
 
 #### Mouse Positions
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { MOUSE_POSITIONS } from 'blecsd/testing';
 
@@ -964,9 +948,9 @@ queueMouseEvent({
 
 #### ANSI Codes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ANSI, ANSI_TEXT } from 'blecsd/testing';
+import { ANSI } from 'blecsd/terminal';
+import { ANSI_TEXT } from 'blecsd/testing';
 
 // Use in ANSI parsing tests
 const stripped = stripAnsi(ANSI_TEXT.RED_TEXT);
@@ -979,7 +963,6 @@ expect(stripped).toBe('Red Text');
 
 #### Timeouts
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { TIMEOUTS } from 'blecsd/testing';
 
@@ -996,7 +979,6 @@ await new Promise(resolve => setTimeout(resolve, TIMEOUTS.SHORT));
 
 ### Complete Example with Utilities and Fixtures
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { createTestWorld, createTestEntity } from 'blecsd/testing';
@@ -1005,9 +987,9 @@ import {
   POSITION_CENTER,
   SIZE_BUTTON,
   TEXT_HELLO_WORLD,
-  COLORS,
   COLOR_PAIRS,
 } from 'blecsd/testing';
+import { COLORS } from 'blecsd/terminal';
 
 describe('Button widget', () => {
   it('creates a styled button at center', () => {
@@ -1039,22 +1021,21 @@ Snapshot tests capture exact rendered terminal output to detect visual regressio
 
 Import snapshot testing utilities from `'blecsd/testing'`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createTestBuffer,
   renderToString,
   cleanupTestBuffer,
 } from 'blecsd/testing';
-import { layoutSystem, renderSystem } from 'blecsd';
+import { layoutSystem, renderSystem } from 'blecsd/systems';
 ```
 
 ### Basic Snapshot Test Pattern
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { addEntity, layoutSystem, renderSystem } from 'blecsd';
+import { addEntity } from 'blecsd/core';
+import { layoutSystem, renderSystem } from 'blecsd/systems';
 import { createTestBuffer, renderToString, cleanupTestBuffer } from 'blecsd/testing';
 import { createBox } from 'blecsd/widgets';
 
@@ -1247,10 +1228,10 @@ pnpm test -- -u -t "renders box with border"
 
 ### Example: Complete Snapshot Test Suite
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { addEntity, layoutSystem, renderSystem } from 'blecsd';
+import { addEntity } from 'blecsd/core';
+import { layoutSystem, renderSystem } from 'blecsd/systems';
 import { createTestBuffer, renderToString, cleanupTestBuffer } from 'blecsd/testing';
 import { createList } from 'blecsd/widgets';
 
@@ -1485,10 +1466,10 @@ describe('Position', () => {
 
 ### 5. Reset Global State
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { beforeEach, afterEach } from 'vitest';
-import { resetInputState, resetFocusState } from 'blecsd/core';
+import { resetInputState } from 'blecsd/systems';
+import { resetFocusState } from 'blecsd/components';
 
 describe('input handling', () => {
   beforeEach(() => {
@@ -1507,8 +1488,6 @@ describe('input handling', () => {
 
 ### 6. Test Both Success and Failure
 
-<!-- blecsd-doccheck:ignore -->
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isOk, isErr } from 'blecsd/errors';
 
@@ -1539,7 +1518,6 @@ describe('parseColor', () => {
 
 ### Testing Entity Queries
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
@@ -1568,9 +1546,8 @@ it('queries entities with specific components', () => {
 
 ### Testing Component Removal
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasComponent } from 'blecsd';
+import { hasComponent } from 'blecsd/core';
 import { removeComponent } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
@@ -1589,7 +1566,6 @@ it('removes component from entity', () => {
 
 ### Testing Events
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEventBus } from 'blecsd/core';
 

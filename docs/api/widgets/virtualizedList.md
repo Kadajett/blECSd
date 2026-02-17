@@ -4,21 +4,19 @@ The VirtualizedList widget provides high-performance rendering for large dataset
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createVirtualizedList,
   isVirtualizedList,
   handleVirtualizedListKey,
   handleVirtualizedListWheel,
-} from 'blecsd';
+} from 'blecsd/widgets';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 import { createVirtualizedList } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -175,9 +173,8 @@ list.destroy();   // Remove entity and cleanup
 
 ### Keyboard Handler
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleVirtualizedListKey } from 'blecsd';
+import { handleVirtualizedListKey } from 'blecsd/widgets';
 
 // In your input loop
 function onKeyDown(event) {
@@ -191,9 +188,8 @@ function onKeyDown(event) {
 
 ### Mouse Wheel Handler
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleVirtualizedListWheel } from 'blecsd';
+import { handleVirtualizedListWheel } from 'blecsd/widgets';
 
 // In your input loop
 function onWheel(event) {
@@ -204,10 +200,9 @@ function onWheel(event) {
 
 ## Example: Log Viewer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { handleVirtualizedListKey } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { handleVirtualizedListKey } from 'blecsd/widgets';
 import { createVirtualizedList } from 'blecsd/widgets';
 import * as fs from 'fs';
 

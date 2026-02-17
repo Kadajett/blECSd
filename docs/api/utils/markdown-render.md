@@ -4,7 +4,6 @@ Streaming markdown parser with block-level caching, syntax highlighting for code
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   parseMarkdown,
@@ -19,7 +18,7 @@ import {
   getTotalLineCount,
   getMarkdownStats,
   DEFAULT_PARSE_BATCH,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -254,9 +253,8 @@ function parseMarkdown(source: string): MarkdownParseResult
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseMarkdown } from 'blecsd';
+import { parseMarkdown } from 'blecsd/utils';
 
 const result = parseMarkdown('# Hello\n\nSome **bold** text.');
 console.log(result.blocks.length); // 2 (heading + paragraph)
@@ -273,9 +271,8 @@ function parseInline(text: string): readonly InlineElement[]
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseInline } from 'blecsd';
+import { parseInline } from 'blecsd/utils';
 
 const elements = parseInline('Hello **world** and `code`');
 // [{ type: 'text', content: 'Hello ' },
@@ -364,13 +361,8 @@ function getMarkdownStats(result: MarkdownParseResult): MarkdownStats
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  parseMarkdownCached,
-  createMarkdownCache,
-  getVisibleMarkdown,
-} from 'blecsd';
+import { parseMarkdownCached, createMarkdownCache, getVisibleMarkdown } from 'blecsd/utils';
 
 const cache = createMarkdownCache();
 const source = '# Title\n\nParagraph text.\n\n```ts\nconst x = 1;\n```';

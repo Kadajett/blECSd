@@ -13,11 +13,8 @@ Tile data uses `Uint16Array` for compact storage, supporting up to 65,535 tile t
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  TileMap,
-  EMPTY_TILE,
   // Tileset store
   registerTileset,
   getTileset,
@@ -36,6 +33,8 @@ import {
   setLayerVisible,
   isLayerVisible,
   // TileMap component
+  TileMap,
+  EMPTY_TILE,
   setTileMap,
   getTileMap,
   hasTileMap,
@@ -43,7 +42,7 @@ import {
   getTileMapDataId,
   // Rendering
   renderTileMapArea,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Tileset Store
@@ -52,9 +51,8 @@ import {
 
 Registers a tileset and returns its numeric ID.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerTileset } from 'blecsd';
+import { registerTileset } from 'blecsd/components';
 
 const tilesetId = registerTileset({
   name: 'dungeon',
@@ -69,9 +67,8 @@ const tilesetId = registerTileset({
 
 ### getTileset / getTilesetByName / unregisterTileset
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getTileset, getTilesetByName, unregisterTileset } from 'blecsd';
+import { getTileset, getTilesetByName, unregisterTileset } from 'blecsd/components';
 
 const tileset = getTileset(tilesetId);
 const same = getTilesetByName('dungeon');
@@ -84,9 +81,8 @@ unregisterTileset(tilesetId);
 
 Creates a tile data grid with specified dimensions and layer count. Returns a data ID.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTileData } from 'blecsd';
+import { createTileData } from 'blecsd/components';
 
 const dataId = createTileData(32, 32, 2); // 32x32 map, 2 layers
 ```
@@ -95,9 +91,8 @@ const dataId = createTileData(32, 32, 2); // 32x32 map, 2 layers
 
 Set or get individual tiles by position and layer.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setTile, getTile, EMPTY_TILE } from 'blecsd';
+import { setTile, getTile, EMPTY_TILE } from 'blecsd/components';
 
 setTile(dataId, 0, 5, 3, 2);  // Layer 0, position (5,3), tile index 2
 
@@ -111,9 +106,8 @@ if (tile !== EMPTY_TILE) {
 
 Fill operations for bulk tile placement.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { fillTiles, fillTileRect } from 'blecsd';
+import { fillTiles, fillTileRect } from 'blecsd/components';
 
 fillTiles(dataId, 0, 1);                // Fill entire layer with floor
 fillTileRect(dataId, 0, 2, 4, 5, 3, 2); // 5x3 wall region at (2,4)
@@ -121,9 +115,8 @@ fillTileRect(dataId, 0, 2, 4, 5, 3, 2); // 5x3 wall region at (2,4)
 
 ### Layer Management
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLayerCount, addLayer, setLayerVisible, isLayerVisible } from 'blecsd';
+import { getLayerCount, addLayer, setLayerVisible, isLayerVisible } from 'blecsd/components';
 
 const count = getLayerCount(dataId);     // Number of layers
 const newIdx = addLayer(dataId);          // Add a new empty layer
@@ -133,9 +126,8 @@ const visible = isLayerVisible(dataId, 0); // Check visibility
 
 ### getTileData / removeTileData
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getTileData, removeTileData } from 'blecsd';
+import { getTileData, removeTileData } from 'blecsd/components';
 
 const data = getTileData(dataId);
 if (data) {
@@ -164,9 +156,8 @@ const TileMap = {
 
 Creates a tile map on an entity. Automatically creates tile data if not provided.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setTileMap } from 'blecsd';
+import { setTileMap } from 'blecsd/components';
 
 setTileMap(world, entity, {
   width: 20,
@@ -187,9 +178,8 @@ setTileMap(world, entity, {
 
 ### getTileMap
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getTileMap } from 'blecsd';
+import { getTileMap } from 'blecsd/components';
 
 const map = getTileMap(world, entity);
 if (map) {
@@ -201,9 +191,8 @@ if (map) {
 
 ### hasTileMap / removeTileMap / getTileMapDataId
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasTileMap, removeTileMap, getTileMapDataId } from 'blecsd';
+import { hasTileMap, removeTileMap, getTileMapDataId } from 'blecsd/components';
 
 if (hasTileMap(world, entity)) {
   const dataId = getTileMapDataId(world, entity);
@@ -218,9 +207,8 @@ if (hasTileMap(world, entity)) {
 
 Renders a rectangular viewport of the tile map to a 2D array of cells. Composites all visible layers from bottom to top.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderTileMapArea } from 'blecsd';
+import { renderTileMapArea } from 'blecsd/components';
 
 const cells = renderTileMapArea(dataId, tilesetId, viewX, viewY, viewWidth, viewHeight);
 for (let y = 0; y < cells.length; y++) {
@@ -235,9 +223,8 @@ for (let y = 0; y < cells.length; y++) {
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   registerTileset,
   setTileMap,
@@ -246,7 +233,7 @@ import {
   fillTileRect,
   setTile,
   renderTileMapArea,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);

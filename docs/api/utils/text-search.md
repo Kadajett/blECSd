@@ -4,7 +4,6 @@ Fast search across massive text buffers with Boyer-Moore-Horspool for literal st
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   // Search functions
@@ -31,7 +30,7 @@ import {
   // Constants
   DEFAULT_TIMEOUT,
   DEFAULT_SEARCH_BATCH,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -271,13 +270,17 @@ function getMatchStatus(cache: SearchCache): { current: number; total: number; c
 
 ## Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  search, searchLiteral, createSearchCache,
-  updateSearchQuery, searchWithCache,
-  getNextMatch, getMatchStatus, getVisibleMatches,
-} from 'blecsd';
+  search,
+  searchLiteral,
+  createSearchCache,
+  updateSearchQuery,
+  searchWithCache,
+  getNextMatch,
+  getMatchStatus,
+  getVisibleMatches,
+} from 'blecsd/utils';
 
 // Simple literal search
 const result = searchLiteral(document, 'TODO', { caseSensitive: false });

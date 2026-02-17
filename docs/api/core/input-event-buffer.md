@@ -4,9 +4,8 @@ Frame-independent input event buffering. Buffers keyboard and mouse events betwe
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputEventBuffer, pushKeyEvent, drainKeys, drainMouse } from 'blecsd';
+import { createInputEventBuffer, pushKeyEvent, drainKeys, drainMouse } from 'blecsd/core';
 
 const buffer = createInputEventBuffer({ maxBufferSize: 500 });
 
@@ -270,9 +269,8 @@ function isProcessingTimeAcceptable(buffer: InputEventBufferData, maxProcessingT
 
 Global shared input buffer for simple use cases.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { globalInputBuffer, pushKeyEvent, drainAllEvents } from 'blecsd';
+import { globalInputBuffer, pushKeyEvent, drainAllEvents } from 'blecsd/core';
 
 pushKeyEvent(globalInputBuffer, event);
 const events = drainAllEvents(globalInputBuffer);
@@ -280,7 +278,6 @@ const events = drainAllEvents(globalInputBuffer);
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createInputEventBuffer,
@@ -291,7 +288,7 @@ import {
   beginFrame,
   endFrame,
   getLatencyStats,
-} from 'blecsd';
+} from 'blecsd/core';
 
 const buffer = createInputEventBuffer({
   maxBufferSize: 500,

@@ -41,7 +41,6 @@ Lists, ListTables, and VirtualizedLists share these shortcuts:
 | `1-9` | Quick Jump | Jump to item by number (if enabled) |
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createList } from 'blecsd/widgets';
 
@@ -87,9 +86,8 @@ TextBox, TextArea, and other text input widgets:
 | `Ctrl+D` | Delete Line | Delete current line |
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTextboxEntity } from 'blecsd/widgets';
+import { createTextboxEntity } from 'blecsd/core';
 
 const textBox = createTextboxEntity(world, {
   value: 'Hello',
@@ -119,9 +117,8 @@ textBox.handleKey('w', true);  // Deletes 'Hello'
 | `Space` | Activate | Trigger button click |
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createButtonEntity } from 'blecsd/widgets';
+import { createButtonEntity } from 'blecsd/core';
 
 const button = createButtonEntity(world, {
   label: 'Submit',
@@ -140,9 +137,8 @@ button.handleKey('enter');  // Triggers onClick
 | `Enter` | Toggle | Toggle checked state |
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCheckboxEntity } from 'blecsd/widgets';
+import { createCheckboxEntity } from 'blecsd/core';
 
 const checkbox = createCheckboxEntity(world, {
   label: 'Accept terms',
@@ -172,9 +168,8 @@ checkbox.handleKey('space');  // checked becomes true
 | `Escape` | Cancel | Cancel form, reset values |
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFormEntity } from 'blecsd/widgets';
+import { createFormEntity } from 'blecsd/core';
 
 const form = createFormEntity(world, {
   fields: [
@@ -298,7 +293,6 @@ Key strings use `+` to separate modifiers:
 
 ### Using the KeyBindings System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createKeyBindingRegistry, registerBinding, parseKeyString } from 'blecsd/core';
 
@@ -333,10 +327,9 @@ registry = registerBinding(registry, {
 
 Override default behavior by handling keys before the widget:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createList } from 'blecsd/widgets';
-import { queueKeyEvent } from 'blecsd/core';
+import { queueKeyEvent } from 'blecsd/systems';
 
 const list = createList(world, eid, {
   items: ['Item 1', 'Item 2', 'Item 3'],
@@ -357,9 +350,9 @@ function handleCustomKeys(event: KeyEvent): boolean {
 
 ### Global Key Binding Configuration
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createKeyBindingRegistry, registerBinding, KeyBinding } from 'blecsd/core';
+import { KeyBinding } from 'blecsd/core';
+import { createKeyBindingRegistry, registerBinding } from 'blecsd/core';
 
 const bindings: KeyBinding[] = [
   // Application-wide shortcuts
@@ -470,9 +463,8 @@ On Windows and Linux:
 
 ### Logging Key Events
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queueKeyEvent, getEventQueue } from 'blecsd/core';
+import { queueKeyEvent, getEventQueue } from 'blecsd/systems';
 
 // Log all key events
 function logKeyEvent(event: KeyEvent): void {
@@ -494,7 +486,6 @@ function loggingQueueKeyEvent(event: KeyEvent): void {
 
 ### Testing Key Bindings
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { createList } from 'blecsd/widgets';

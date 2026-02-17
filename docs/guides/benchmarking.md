@@ -138,10 +138,9 @@ The performance check workflow runs automatically on pull requests:
 
 Use Vitest's `bench` function:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, bench } from 'vitest';
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 
 describe('Entity Operations', () => {
   bench('create 100 entities', () => {
@@ -190,7 +189,6 @@ Benchmarks in `benchmarks/ci.bench.ts` should:
 
 Example:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 describe('CI: System Operations', () => {
   bench('layout 50 entities', () => {
@@ -218,7 +216,6 @@ Benchmarks in `benchmarks/scenarios-*.bench.ts` should:
 
 Example:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 describe('Dashboard Scenario', () => {
   bench('16-panel dashboard @ 60 FPS (1000 frames)', () => {

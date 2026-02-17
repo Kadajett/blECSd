@@ -102,13 +102,12 @@ See [World Adapter](./core/worldAdapter.md) for customizing renderable queries a
 
 Optional game loop with phase ordering.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
-scheduler.add(LoopPhase.UPDATE, (world, delta) => world);
-scheduler.start(world);
+scheduler.registerSystem(LoopPhase.UPDATE, (world, delta) => world);
+scheduler.run(world, 16);
 ```
 
 Phases execute in order:
@@ -175,9 +174,8 @@ See [Input Stream](./terminal/key-parser.md) for wrapping NodeJS readable stream
 
 ### Input Parsing
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseMouseSequence } from 'blecsd';
+import { parseMouseSequence } from 'blecsd/terminal';
 import { parseKeyBuffer } from 'blecsd/terminal';
 
 const key = parseKeyBuffer(buffer);
@@ -208,14 +206,9 @@ Low-level terminal control. Import from `blecsd/terminal`.
 
 Zod schemas for configuration validation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  ColorStringSchema,
-  DimensionSchema,
-  PositionValueSchema,
-  PositiveIntSchema,
-} from 'blecsd';
+import { ColorStringSchema, DimensionSchema, PositiveIntSchema } from 'blecsd/schemas';
+import { PositionValueSchema } from 'blecsd/core';
 
 ColorStringSchema.parse('#ff0000');
 DimensionSchema.parse('50%');
@@ -260,9 +253,8 @@ See [Text Wrapping](./utils/text-wrap.md) for the full API.
 
 ### World and Entity
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { World, Entity, System } from 'blecsd';
+import type { World, Entity, System } from 'blecsd/core';
 
 type World = ReturnType<typeof createWorld>;
 type Entity = number;
@@ -271,21 +263,18 @@ type System = (world: World, deltaTime: number) => World;
 
 ### Event Types
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { EventHandler, EventMap, Unsubscribe } from 'blecsd';
+import type { EventHandler, EventMap, Unsubscribe } from 'blecsd/core';
 ```
 
 ### Input Types
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { KeyEvent, MouseEvent, KeyName, MouseAction } from 'blecsd';
+import type { ParsedKeyEvent, ParsedMouseEvent, KeyName, MouseAction } from 'blecsd/terminal';
 ```
 
 ### Component Data Types
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type {
   PositionData,
@@ -300,5 +289,5 @@ import type {
   ContentData,
   PaddingData,
   LabelData,
-} from 'blecsd';
+} from 'blecsd/components';
 ```

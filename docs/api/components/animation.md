@@ -12,7 +12,6 @@ Animation definitions are stored in a global registry. Each entity references a 
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Animation,
@@ -33,7 +32,7 @@ import {
   removeAnimation,
   updateAnimationEntity,
   AnimationDirection,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Animation Store
@@ -42,9 +41,8 @@ import {
 
 Registers a new animation definition and returns its numeric ID.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerAnimation } from 'blecsd';
+import { registerAnimation } from 'blecsd/components';
 
 const walkId = registerAnimation({
   name: 'walk',
@@ -65,9 +63,18 @@ const walkId = registerAnimation({
 
 Retrieve a registered animation by ID or name.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getAnimation, getAnimationByName } from 'blecsd';
+import { registerAnimation, getAnimation, getAnimationByName } from 'blecsd/components';
+
+const walkId = registerAnimation({
+  name: 'walk',
+  frames: [
+    { frameIndex: 0, duration: 0.1 },
+    { frameIndex: 1, duration: 0.1 },
+    { frameIndex: 2, duration: 0.1 },
+    { frameIndex: 3, duration: 0.1 },
+  ],
+});
 
 const anim = getAnimation(walkId);
 const same = getAnimationByName('walk');
@@ -80,11 +87,11 @@ console.log(anim?.totalDuration); // 0.4
 
 Removes a registered animation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { unregisterAnimation } from 'blecsd';
+import { registerAnimation, unregisterAnimation } from 'blecsd/components';
 
-unregisterAnimation(walkId); // returns true if found
+const walkId2 = registerAnimation({ name: 'walk2', frames: [{ frameIndex: 0, duration: 0.1 }] });
+unregisterAnimation(walkId2); // returns true if found
 ```
 
 ## Animation Component
@@ -105,9 +112,8 @@ const Animation = {
 
 ### AnimationDirection
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { AnimationDirection } from 'blecsd';
+import { AnimationDirection } from 'blecsd/components';
 
 AnimationDirection.FORWARD  // 1
 AnimationDirection.REVERSE  // -1
@@ -117,11 +123,15 @@ AnimationDirection.REVERSE  // -1
 
 Starts an animation on an entity. Adds the Animation component if not present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { playAnimation } from 'blecsd';
+import { registerAnimation, playAnimation, AnimationDirection } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
-playAnimation(world, entity, walkId, {
+const world2 = createWorld();
+const entity2 = addEntity(world2);
+const walkId3 = registerAnimation({ name: 'walk3', frames: [{ frameIndex: 0, duration: 0.1 }, { frameIndex: 1, duration: 0.1 }] });
+
+playAnimation(world2, entity2, walkId3, {
   loop: true,       // default: true
   speed: 1.5,       // default: 1.0
   direction: AnimationDirection.FORWARD, // default
@@ -135,18 +145,16 @@ playAnimation(world, entity, walkId, {
 
 Same as `playAnimation` but looks up the animation by name.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { playAnimationByName } from 'blecsd';
+import { playAnimationByName } from 'blecsd/components';
 
 playAnimationByName(world, entity, 'walk', { loop: true });
 ```
 
 ### stopAnimation / pauseAnimation / resumeAnimation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { stopAnimation, pauseAnimation, resumeAnimation } from 'blecsd';
+import { stopAnimation, pauseAnimation, resumeAnimation } from 'blecsd/components';
 
 pauseAnimation(world, entity);  // Pauses without resetting position
 resumeAnimation(world, entity); // Continues from where paused
@@ -157,9 +165,8 @@ stopAnimation(world, entity);   // Stops and resets to frame 0
 
 Returns a snapshot of the entity's animation state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getAnimationData } from 'blecsd';
+import { getAnimationData } from 'blecsd/components';
 
 const anim = getAnimationData(world, entity);
 if (anim?.playing) {
@@ -171,9 +178,8 @@ if (anim?.playing) {
 
 ### isAnimationPlaying / hasAnimation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isAnimationPlaying, hasAnimation } from 'blecsd';
+import { isAnimationPlaying, hasAnimation } from 'blecsd/components';
 
 if (hasAnimation(world, entity) && isAnimationPlaying(world, entity)) {
   // Animation is active
@@ -184,9 +190,8 @@ if (hasAnimation(world, entity) && isAnimationPlaying(world, entity)) {
 
 Modify playback properties on a running animation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setAnimationSpeed, setAnimationLoop, setAnimationDirection, AnimationDirection } from 'blecsd';
+import { setAnimationSpeed, setAnimationLoop, setAnimationDirection, AnimationDirection } from 'blecsd/components';
 
 setAnimationSpeed(world, entity, 2.0);
 setAnimationLoop(world, entity, false);
@@ -197,9 +202,8 @@ setAnimationDirection(world, entity, AnimationDirection.REVERSE);
 
 Removes the Animation component and resets all fields to defaults.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { removeAnimation } from 'blecsd';
+import { removeAnimation } from 'blecsd/components';
 
 removeAnimation(world, entity);
 ```
@@ -208,9 +212,8 @@ removeAnimation(world, entity);
 
 Advances animation state for a single entity by delta time. Typically called by the animation system, but can be used manually.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateAnimationEntity } from 'blecsd';
+import { updateAnimationEntity } from 'blecsd/components';
 
 const completed = updateAnimationEntity(world, entity, 0.016);
 if (completed) {
@@ -222,16 +225,15 @@ if (completed) {
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   registerSprite,
   setSprite,
   registerAnimation,
   playAnimation,
   updateAnimationEntity,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);

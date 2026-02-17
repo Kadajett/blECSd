@@ -21,9 +21,8 @@ The ECS API gives you direct control over the Entity Component System:
 
 ### 1. Create a World
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 
 const world = createWorld();
 ```
@@ -32,9 +31,8 @@ The world holds all entities, components, and state.
 
 ### 2. Create the Screen Entity
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScreenEntity } from 'blecsd';
+import { createScreenEntity } from 'blecsd/core';
 
 const screen = createScreenEntity(world, {
   width: 80,
@@ -47,9 +45,8 @@ The screen is the root entity that represents the terminal viewport.
 
 ### 3. Create UI Elements
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBoxEntity, createTextEntity } from 'blecsd';
+import { createBoxEntity, createTextEntity } from 'blecsd/core';
 import { BorderType } from 'blecsd/components';
 
 // Container box
@@ -81,11 +78,10 @@ const title = createTextEntity(world, {
 
 Systems process entities with specific components:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 // System that moves entities
 function movementSystem(world: World): World {
@@ -103,12 +99,11 @@ function movementSystem(world: World): World {
 
 ### 5. Set Up the Game Loop
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 import { query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 // Define a system
 function movementSystem(world: World): World {
@@ -136,17 +131,11 @@ See [System Execution Order](../guides/system-execution-order.md) for phase deta
 
 ## Complete Example: Interactive Box
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  createScreenEntity,
-  createBoxEntity,
-  addComponent,
-} from 'blecsd';
+import { createWorld, createScreenEntity, createBoxEntity, addComponent } from 'blecsd/core';
 import { createGameLoop, LoopPhase, query } from 'blecsd/core';
 import { Position, Velocity, BorderType } from 'blecsd/components';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 // Create world and screen
 const world = createWorld();
@@ -203,9 +192,8 @@ loop.start();
 
 Entities are just numbers:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity } from 'blecsd';
+import { addEntity } from 'blecsd/core';
 
 const entity = addEntity(world);
 console.log(typeof entity); // "number"
@@ -215,9 +203,8 @@ console.log(typeof entity); // "number"
 
 Components are typed arrays. Import them from `blecsd/components`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, addComponent } from 'blecsd';
+import { addEntity, addComponent } from 'blecsd/core';
 import { Position, Dimensions } from 'blecsd/components';
 
 const box = addEntity(world);
@@ -245,9 +232,8 @@ function mySystem(world: World): World {
 
 ### Adding Components
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, addComponent } from 'blecsd';
+import { addEntity, addComponent } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
 
 const entity = addEntity(world);
@@ -265,7 +251,6 @@ Velocity.y[entity] = 0;
 
 ### Removing Components
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { removeComponent } from 'blecsd/core';
 import { Velocity } from 'blecsd/components';
@@ -276,9 +261,8 @@ removeComponent(world, entity, Velocity);
 
 ### Checking Components
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasComponent } from 'blecsd';
+import { hasComponent } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
 if (hasComponent(world, entity, Position)) {
@@ -292,11 +276,10 @@ if (hasComponent(world, entity, Position)) {
 
 Queries are created using the `query` function from `blecsd/core`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Renderable } from 'blecsd/components';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 function myRenderSystem(world: World): World {
   // Query entities with Position and Renderable
@@ -319,10 +302,9 @@ function myRenderSystem(world: World): World {
 
 Systems run in phases:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, LoopPhase } from 'blecsd/core';
-import { layoutSystem, renderSystem, outputSystem } from 'blecsd';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 
 const loop = createGameLoop(world, { targetFPS: 60 });
 
@@ -357,12 +339,11 @@ See [System Execution Order](../guides/system-execution-order.md) for details.
 
 ## Example: Moving Particles
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, addComponent } from 'blecsd';
+import { createWorld, addEntity, addComponent } from 'blecsd/core';
 import { createGameLoop, LoopPhase, query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 const world = createWorld();
 
@@ -427,9 +408,9 @@ loop.start();
 
 blECSd provides helper functions so you don't have to work with raw component arrays:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, getPosition, setDimensions } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, getPosition, setDimensions } from 'blecsd/components';
 import { setContent, getContent, moveBy } from 'blecsd/components';
 
 const world = createWorld();
@@ -454,9 +435,8 @@ setContent(world, entity, 'Hello, World!');
 
 ## Parent-Child Hierarchies
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createBoxEntity } from 'blecsd';
+import { createWorld, createBoxEntity } from 'blecsd/core';
 import { setParent, getChildren } from 'blecsd/components';
 
 const world = createWorld();
@@ -489,7 +469,6 @@ for (const childEid of children) {
 
 ### Collision Detection System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Dimensions } from 'blecsd/components';
@@ -515,7 +494,6 @@ function collisionSystem(world: World): World {
 
 ### Camera Follow System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Position, Dimensions } from 'blecsd/components';
 import { LoopPhase } from 'blecsd/core';
@@ -539,11 +517,10 @@ loop.registerSystem(LoopPhase.LATE_UPDATE, cameraFollowSystem);
 
 ### Cleanup System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, removeEntity } from 'blecsd';
+import { createWorld, removeEntity } from 'blecsd/core';
 import { createGameLoop, LoopPhase, query } from 'blecsd/core';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 const world = createWorld();
 
@@ -583,15 +560,13 @@ Namespace imports help with:
 
 Instead of importing many individual functions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPosition, getPosition, setDimensions, getDimensions } from 'blecsd';
+import { setPosition, getPosition, setDimensions, getDimensions } from 'blecsd/components';
 import { setContent, getText, moveBy } from 'blecsd/components';
 ```
 
 Use component namespaces:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { position, dimensions, content } from 'blecsd/components';
 
@@ -601,7 +576,7 @@ const pos = position.get(world, eid);
 position.moveBy(world, eid, 2, 0);
 
 // Dimensions operations
-dimensions.set(world, eid, { width: 40, height: 10 });
+dimensions.set(world, eid, 40, 10);
 const size = dimensions.get(world, eid);
 
 // Content operations
@@ -613,10 +588,10 @@ const text = content.getText(world, eid);
 
 Systems can also be imported as namespaces:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { animation, layout, render } from 'blecsd/systems';
-import type { World } from 'blecsd';
+import { layout, render } from 'blecsd/systems';
+import { animation } from 'blecsd/components';
+import type { World } from 'blecsd/core';
 
 function gameLoop(world: World): void {
   // Update animations
@@ -634,7 +609,6 @@ function gameLoop(world: World): void {
 
 For terminal operations, use `createProgram` for high-level control:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createProgram } from 'blecsd/terminal';
 
@@ -653,7 +627,6 @@ program.destroy();
 
 For low-level ANSI escape sequences, use the `ansiCodes` namespace:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ansiCodes } from 'blecsd/terminal';
 
@@ -667,21 +640,21 @@ const clear = ansiCodes.screen.clear();
 
 You can mix flat imports and namespace imports freely:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Core ECS always from 'blecsd'
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 
 // Namespaces for organization
 import { position, dimensions, scroll } from 'blecsd/components';
-import { animation, layout } from 'blecsd/systems';
+import { layout } from 'blecsd/systems';
+import { animation } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
 
 // Use both styles
 position.set(world, eid, 10, 5);
-dimensions.set(world, eid, { width: 40, height: 10 });
+dimensions.set(world, eid, 40, 10);
 
 // Systems
 animation.update(world);
@@ -690,14 +663,14 @@ layout.system(world);
 
 ### Complete Example with Namespaces
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 import { position, dimensions, velocity } from 'blecsd/components';
-import { animation, layout, render } from 'blecsd/systems';
+import { layout, render } from 'blecsd/systems';
+import { animation } from 'blecsd/components';
 import { createProgram } from 'blecsd/terminal';
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 
 // Create world
 const world = createWorld();
@@ -707,7 +680,7 @@ for (let i = 0; i < 10; i++) {
   const particle = addEntity(world);
 
   position.set(world, particle, Math.random() * 80, Math.random() * 24);
-  dimensions.set(world, particle, { width: 1, height: 1 });
+  dimensions.set(world, particle, 1, 1);
   velocity.set(world, particle, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2);
 }
 

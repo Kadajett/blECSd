@@ -6,11 +6,8 @@ Practical patterns for building terminal applications with blECSd. Each section 
 
 blECSd ships with a `createCommandPalette` widget that provides VS Code-style quick command search.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, addEntity,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createKeyBindingRegistry, registerBinding, matchEvent } from 'blecsd/core';
 import { parseKeyBuffer } from 'blecsd/terminal';
 import { createCommandPalette } from 'blecsd/widgets';
@@ -77,17 +74,15 @@ The command palette uses blECSd's `fuzzySearchBy` internally, so results rank by
 
 Build a search overlay by combining a `createTextboxEntity` for input, `fuzzySearch` for matching, and the focus system for keyboard control.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, addEntity,
-  setPosition, setDimensions,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
 import { createEventBus } from 'blecsd/core';
 import { parseKeyBuffer } from 'blecsd/terminal';
-import { createTextboxEntity } from 'blecsd/widgets';
+import { createTextboxEntity } from 'blecsd/core';
 import { setVisible } from 'blecsd/components';
-import { focusEntity, focusPush, focusPop } from 'blecsd/systems';
+import { focusPush, focusPop } from 'blecsd/systems';
+import { focusEntity } from 'blecsd/components';
 import { fuzzySearch } from 'blecsd/utils';
 
 interface SearchEvents {
@@ -180,9 +175,8 @@ For a full-featured search, wire the match results to scroll the content view an
 
 Use `createFooter` for a fixed bottom status bar with left, center, and right sections. Use `createHeader` for a top title bar.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createFooter, createHeader } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -226,9 +220,8 @@ function updateFilename(name: string): void {
 
 For richer status bars with clickable items, use `createListbar`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createListbar } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -254,13 +247,13 @@ const menuBar = createListbar(world, barEntity, {
 
 Build autocomplete by combining `createTextboxEntity` with `fuzzySearchBy` and a popup list.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { parseKeyBuffer } from 'blecsd/terminal';
-import { createTextboxEntity, createList } from 'blecsd/widgets';
+import { createList } from 'blecsd/widgets';
+import { createTextboxEntity } from 'blecsd/core';
 import { setVisible } from 'blecsd/components';
-import { focusEntity } from 'blecsd/systems';
+import { focusEntity } from 'blecsd/components';
 import { fuzzySearchBy } from 'blecsd/utils';
 
 const world = createWorld();
@@ -341,9 +334,8 @@ process.stdin.on('data', (data) => {
 
 Use `createToast` for non-blocking notifications that auto-dismiss:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createToast } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -384,9 +376,8 @@ function notifyError(message: string): void {
 
 Use `createModal` for blocking dialogs and `openModal` for a convenience wrapper:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { openModal } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -414,7 +405,6 @@ function confirmDelete(filename: string): void {
 
 The `createKeyBindingRegistry` provides a configurable key binding system with conditional activation ("when" clauses) similar to VS Code's keybindings.json.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createKeyBindingRegistry, registerBinding, matchEvent } from 'blecsd/core';
 import { parseKeyBuffer } from 'blecsd/terminal';
@@ -487,13 +477,11 @@ function handleAction(action: string): void {
 
 blECSd provides a focus stack for managing keyboard focus across overlays, modals, and nested views.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, addEntity,
-  focusNext, focusPrev,
-} from 'blecsd';
-import { focusEntity, focusPush, focusPop, blurAll } from 'blecsd/systems';
+import { createWorld, addEntity } from 'blecsd/core';
+import { focusNext, focusPrev } from 'blecsd/components';
+import { focusPush, focusPop, blurAll } from 'blecsd/systems';
+import { focusEntity } from 'blecsd/components';
 
 const world = createWorld();
 const myButton = addEntity(world);
@@ -519,9 +507,8 @@ focusPop(world);                    // restore previous focus when modal closes
 
 Use `attachStateMachine` to manage complex application states (editing, searching, navigating). State machines are attached to entities and driven by the ECS:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { attachStateMachine, sendEvent, getState } from 'blecsd/components';
 
 const world = createWorld();
@@ -562,7 +549,6 @@ console.log(getState(world, appEntity)); // 'normal'
 
 Use `createEventBus` for decoupled communication between application components:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEventBus } from 'blecsd/core';
 
@@ -601,11 +587,9 @@ function moveCursor(line: number, col: number): void {
 
 For applications that need a continuous update loop (animations, real-time updates), use `createScheduler`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();
@@ -637,11 +621,9 @@ setInterval(() => {
 
 For non-realtime applications (forms, menus), you can skip the scheduler entirely and call systems directly:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 
 const world = createWorld();
 
@@ -657,11 +639,9 @@ function redraw(): void {
 
 A minimal terminal editor skeleton combining several patterns:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, addEntity, layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 import {
   createScheduler, LoopPhase, createEventBus,
   createKeyBindingRegistry, registerBinding, matchEvent,

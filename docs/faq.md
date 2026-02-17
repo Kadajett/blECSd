@@ -38,7 +38,6 @@ Node.js 18+ is required. LTS versions are recommended.
 
 For basic usage, no. The widget API hides ECS details:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createPanel } from 'blecsd/widgets';
 
@@ -112,7 +111,6 @@ See the [VirtualizedList widget](./api/widgets/virtualizedList.md) for built-in 
 
 ### How do I check terminal capabilities?
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { capabilities, detection } from 'blecsd/terminal';
 
@@ -235,9 +233,8 @@ function log(msg: string) {
 
 ### How do I inspect ECS state?
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getPosition } from 'blecsd';
+import { getPosition } from 'blecsd/components';
 import { getAllEntities } from 'blecsd/core';
 
 function debugWorld(world: World): void {
@@ -264,7 +261,6 @@ echo -e '\e[?1049l\e[?25h\e[0m'
 ```
 
 Add cleanup to your app:
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createProgram } from 'blecsd/terminal';
 

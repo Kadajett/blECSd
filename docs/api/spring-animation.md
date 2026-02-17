@@ -4,18 +4,19 @@ Physics-based spring animations for smooth, natural motion. The spring system us
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
+  createScheduler,
+  LoopPhase,
+} from 'blecsd/core';
+import {
   createSpring,
   setSpringTarget,
   springSystem,
   springBouncy,
-  createScheduler,
-  LoopPhase,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -30,17 +31,9 @@ setSpringTarget(world, entity, 100, 50);
 const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.ANIMATION, springSystem);
 
-// In game loop
-let lastTime = Date.now();
-function gameLoop() {
-  const now = Date.now();
-  const deltaTime = (now - lastTime) / 1000;
-  lastTime = now;
-
-  scheduler.run(world, deltaTime);
-  requestAnimationFrame(gameLoop);
-}
-gameLoop();
+// Run one frame (16ms ~60fps)
+const deltaTime = 0.016;
+scheduler.run(world, deltaTime);
 ```
 
 ## API Reference
@@ -82,9 +75,8 @@ High stiffness, low damping. Creates bouncy, playful animations.
 - `precision: 0.01`
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSpring, springBouncy } from 'blecsd';
+import { createSpring, springBouncy } from 'blecsd/systems';
 
 createSpring(world, entity, springBouncy);
 ```
@@ -99,9 +91,8 @@ Moderate stiffness and damping. Creates smooth, fluid animations (default).
 - `precision: 0.01`
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSpring, springSmooth } from 'blecsd';
+import { createSpring, springSmooth } from 'blecsd/systems';
 
 createSpring(world, entity, springSmooth);
 ```
@@ -116,9 +107,8 @@ Very high stiffness, high damping. Creates quick, snappy animations.
 - `precision: 0.01`
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSpring, springSnappy } from 'blecsd';
+import { createSpring, springSnappy } from 'blecsd/systems';
 
 createSpring(world, entity, springSnappy);
 ```
@@ -137,9 +127,9 @@ Creates a spring animation component on an entity. Automatically adds `Position`
 **Returns:** `Entity` - The entity ID for chaining
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, createSpring, springBouncy } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createSpring, springBouncy } from 'blecsd/systems';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -169,9 +159,8 @@ Sets the target position for a spring animation. Activates the spring if it's cu
 - `targetY` - Target Y position
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setSpringTarget } from 'blecsd';
+import { setSpringTarget } from 'blecsd/systems';
 
 // Animate to new position
 setSpringTarget(world, entity, 100, 50);
@@ -191,9 +180,8 @@ Gets the spring target position.
 **Returns:** `{ x: number, y: number } | undefined` - Target position or undefined if no spring component
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getSpringTarget } from 'blecsd';
+import { getSpringTarget } from 'blecsd/systems';
 
 const target = getSpringTarget(world, entity);
 if (target) {
@@ -212,9 +200,8 @@ Checks if a spring animation is currently active.
 **Returns:** `boolean` - True if spring is animating, false otherwise
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isSpringActive } from 'blecsd';
+import { isSpringActive } from 'blecsd/systems';
 
 if (isSpringActive(world, entity)) {
   console.log('Animation in progress');
@@ -232,9 +219,9 @@ Spring physics system that updates all entities with active spring animations. S
 **Returns:** `World` - The world (unchanged reference)
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, springSystem } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { springSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();
@@ -250,9 +237,10 @@ scheduler.run(world, deltaTime);
 
 ### UI Element Animation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, createSpring, setSpringTarget, springSmooth } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
+import { createSpring, setSpringTarget, springSmooth } from 'blecsd/systems';
 
 const world = createWorld();
 
@@ -270,9 +258,10 @@ setSpringTarget(world, button, 10, 5);
 
 ### Dialog Slide-In Animation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, createSpring, setSpringTarget, springSnappy } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
+import { createSpring, setSpringTarget, springSnappy } from 'blecsd/systems';
 
 const world = createWorld();
 
@@ -287,9 +276,10 @@ setSpringTarget(world, dialog, 10, 10);
 
 ### Bouncy Notification
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, createSpring, setSpringTarget, springBouncy } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
+import { createSpring, setSpringTarget, springBouncy } from 'blecsd/systems';
 
 const world = createWorld();
 
@@ -304,9 +294,8 @@ setSpringTarget(world, notification, 0, 2);
 
 ### Custom Spring Behavior
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSpring } from 'blecsd';
+import { createSpring } from 'blecsd/systems';
 
 // Very stiff, heavily damped (no overshoot)
 createSpring(world, entity, {
@@ -325,9 +314,8 @@ createSpring(world, entity, {
 
 ### Chained Animations
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setSpringTarget, isSpringActive } from 'blecsd';
+import { setSpringTarget, isSpringActive } from 'blecsd/systems';
 
 // Animate in sequence
 setSpringTarget(world, entity, 50, 50);
@@ -343,9 +331,14 @@ function checkAndContinue() {
 
 ### Following Mouse/Target
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setSpringTarget } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createSpring } from 'blecsd/systems';
+import { setSpringTarget } from 'blecsd/systems';
+
+const world = createWorld();
+const follower = addEntity(world);
+createSpring(world, follower);
 
 // In input handler
 function onMouseMove(x: number, y: number) {

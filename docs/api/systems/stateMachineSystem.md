@@ -4,33 +4,27 @@ The state machine system updates the `stateAge` for all entities with a StateMac
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { hasStateMachineSystem } from 'blecsd/systems';
 import {
   stateMachineSystem,
   createStateMachineSystem,
   registerStateMachineSystem,
   queryStateMachine,
-  hasStateMachineSystem,
   getStateAgeStore,
   updateStateAges,
   resetStateAge,
   getSystemStateAge,
-} from 'blecsd';
+} from 'blecsd/systems';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createScheduler,
-  LoopPhase,
-  registerStateMachineSystem,
-  attachStateMachine,
-  getSystemStateAge,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { registerStateMachineSystem, getSystemStateAge } from 'blecsd/systems';
+import { attachStateMachine } from 'blecsd/components';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -134,15 +128,10 @@ The state machine system uses a Structure of Arrays (SoA) pattern:
 
 ## Example: Enemy AI
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  registerStateMachineSystem,
-  attachStateMachine,
-  sendEvent,
-  getSystemStateAge,
-  getCurrentState,
-} from 'blecsd';
+import { getState } from 'blecsd/components';
+import { registerStateMachineSystem, getSystemStateAge } from 'blecsd/systems';
+import { attachStateMachine, sendEvent } from 'blecsd/components';
 
 // Define enemy state machine
 const enemyMachine = {
@@ -163,7 +152,7 @@ attachStateMachine(world, enemy, enemyMachine);
 
 // AI update function
 function updateEnemyAI(enemy: Entity) {
-  const state = getCurrentState(world, enemy);
+  const state = getState(world, enemy);
   const age = getSystemStateAge(enemy);
 
   switch (state) {
@@ -227,7 +216,7 @@ attachAnimation(world, player);
 
 // Update animation based on state age
 function updatePlayerAnimation(player: Entity) {
-  const state = getCurrentState(world, player);
+  const state = getState(world, player);
   const age = getSystemStateAge(player);
 
   switch (state) {
@@ -268,7 +257,7 @@ attachStateMachine(world, button, {
 
 // Visual feedback based on state age
 function renderButton(button: Entity) {
-  const state = getCurrentState(world, button);
+  const state = getState(world, button);
   const age = getSystemStateAge(button);
 
   switch (state) {
@@ -301,7 +290,7 @@ attachStateMachine(world, player, {
 });
 
 function handleAttackInput(player: Entity) {
-  const state = getCurrentState(world, player);
+  const state = getState(world, player);
   const age = getSystemStateAge(player);
 
   // Combo window: can chain within 0.3-0.6 seconds
@@ -328,7 +317,7 @@ function handleAttackInput(player: Entity) {
 
 // Auto-transition to recovery after attack finishes
 function updateComboState(player: Entity) {
-  const state = getCurrentState(world, player);
+  const state = getState(world, player);
   const age = getSystemStateAge(player);
 
   if (state.startsWith('attack') && age > 0.6) {

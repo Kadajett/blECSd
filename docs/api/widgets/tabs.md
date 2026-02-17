@@ -4,10 +4,9 @@ The Tabs widget is a tabbed container that manages multiple content panels with 
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTabs } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -38,10 +37,9 @@ tabs.setActiveTab(2);
 
 Creates a new Tabs widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTabs } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -77,13 +75,12 @@ const styledTabs = createTabs(world, addEntity(world), {
 
 ## Constants
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  DEFAULT_TAB_POSITION,  // 'top'
-  TAB_SEPARATOR,         // ' │ '
-  TAB_CLOSE_CHAR,        // '✕'
-} from 'blecsd';
+  DEFAULT_TAB_POSITION, // 'top'
+  TAB_SEPARATOR, // ' │ '
+  TAB_CLOSE_CHAR,
+} from 'blecsd/widgets';
 ```
 
 ---
@@ -337,9 +334,8 @@ tabs.destroy();
 
 Checks if an entity is a tabs widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isTabs } from 'blecsd';
+import { isTabs } from 'blecsd/widgets';
 
 if (isTabs(world, entity)) {
   // Handle tabs-specific logic
@@ -354,9 +350,8 @@ if (isTabs(world, entity)) {
 
 Gets the active tab index of a tabs entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getActiveTabIndex } from 'blecsd';
+import { getActiveTabIndex } from 'blecsd/widgets';
 
 const index = getActiveTabIndex(world, tabsEntity);
 ```
@@ -369,9 +364,8 @@ const index = getActiveTabIndex(world, tabsEntity);
 
 Gets the tab count of a tabs entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getTabCount } from 'blecsd';
+import { getTabCount } from 'blecsd/widgets';
 
 const count = getTabCount(world, tabsEntity);
 ```
@@ -384,9 +378,8 @@ const count = getTabCount(world, tabsEntity);
 
 Gets the tab bar position of a tabs entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getTabPosition } from 'blecsd';
+import { getTabPosition } from 'blecsd/widgets';
 
 const position = getTabPosition(world, tabsEntity);
 // 'top' or 'bottom'
@@ -400,9 +393,8 @@ const position = getTabPosition(world, tabsEntity);
 
 Renders the tab bar as a string.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderTabBar } from 'blecsd';
+import { renderTabBar } from 'blecsd/widgets';
 
 const tabBar = renderTabBar(world, tabsEntity, 60);
 // "[Tab 1] │  Tab 2  │  Tab 3 ✕"
@@ -563,9 +555,8 @@ interface TabsWidget {
 
 ## Zod Schemas
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { TabsConfigSchema } from 'blecsd';
+import { TabsConfigSchema } from 'blecsd/widgets';
 
 // Validate configuration
 const result = TabsConfigSchema.safeParse({
@@ -587,10 +578,9 @@ if (result.success) {
 
 ### Basic Tab Navigation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTabs } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -612,10 +602,9 @@ tabs.prevTab(); // Back to Profile
 
 ### Closable Tabs
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTabs } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -633,10 +622,9 @@ tabs.removeTab(1); // Remove "Document 1"
 
 ### Lazy Content Loading
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTabs } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -667,10 +655,9 @@ tabs.setActiveTab(1);
 
 ### Keyboard Navigation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTabs } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -699,10 +686,9 @@ onKeyPress('left');  // Goes to previous tab
 
 ### Dynamic Tab Management
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTabs } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -726,10 +712,9 @@ tabs.removeTab(2);
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTabs } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTabs } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);

@@ -38,9 +38,9 @@ function clearEventQueue(): void
 Queue input events for processing in the next frame.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queueKeyEvent, inputSystem, createWorld } from 'blecsd';
+import { queueKeyEvent, inputSystem } from 'blecsd/systems';
+import { createWorld } from 'blecsd/core';
 
 const world = createWorld();
 
@@ -70,9 +70,8 @@ function getMouseCaptureEntity(): Entity | null
 Capture mouse events to a specific entity (for drag operations).
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { captureMouseTo, releaseMouse } from 'blecsd';
+import { captureMouseTo, releaseMouse } from 'blecsd/systems';
 
 // Start drag
 function onMouseDown(world: World, eid: Entity): void {
@@ -96,9 +95,8 @@ function getInteractiveEntityAt(world: World, x: number, y: number): Entity | nu
 Test which entity is at a screen coordinate.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, hitTest } from 'blecsd';
+import { createWorld, hitTest } from 'blecsd/core';
 
 const world = createWorld();
 const mouseX = 10, mouseY = 20;
@@ -179,9 +177,8 @@ function renderRect(buffer: ScreenBufferData, x: number, y: number, width: numbe
 Individual rendering functions for different UI elements.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderBackground, renderBorder, renderContent } from 'blecsd';
+import { renderBackground, renderBorder, renderContent } from 'blecsd/systems';
 
 // Render a complete entity
 function renderEntity(ctx: RenderContext, eid: Entity): void {
@@ -250,9 +247,8 @@ function invalidateAllLayouts(world: World): void
 Manually trigger layout computation or mark entities as needing layout.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { invalidateLayout, computeLayoutNow } from 'blecsd';
+import { invalidateLayout, computeLayoutNow } from 'blecsd/systems';
 
 // Mark entity layout as dirty
 setDimensions(world, eid, 100, 50);
@@ -273,9 +269,8 @@ function getComputedBounds(world: World, eid: Entity): { x: number; y: number; w
 Check and retrieve computed layout data.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getComputedBounds } from 'blecsd';
+import { getComputedBounds } from 'blecsd/systems';
 
 const bounds = getComputedBounds(world, eid);
 if (bounds) {
@@ -352,10 +347,11 @@ function blurAll(world: World): void
 Control which entity has focus.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, focusNext, getFocused } from 'blecsd';
-import { focusEntity } from 'blecsd/systems';
+import { createWorld, addEntity } from 'blecsd/core';
+import { focusNext } from 'blecsd/components';
+import { getFocused } from 'blecsd/systems';
+import { focusEntity } from 'blecsd/components';
 
 const world = createWorld();
 const buttonEntity = addEntity(world);
@@ -389,10 +385,10 @@ function clearFocusStack(): void
 Save and restore focus (useful for modals, menus).
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { focusPush, focusPop, focusEntity } from 'blecsd/systems';
+import { createWorld, addEntity } from 'blecsd/core';
+import { focusPush, focusPop } from 'blecsd/systems';
+import { focusEntity } from 'blecsd/components';
 
 const world = createWorld();
 const modalEntity = addEntity(world);
@@ -467,9 +463,8 @@ function writeRaw(data: string): void
 Generate output string or write directly to terminal.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { generateOutput, writeRaw } from 'blecsd';
+import { generateOutput, writeRaw } from 'blecsd/systems';
 
 // Generate escape sequences
 const output = generateOutput(world);
@@ -493,9 +488,8 @@ function resetAttributes(): void
 Low-level terminal control functions.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enterAlternateScreen, leaveAlternateScreen, clearScreen } from 'blecsd';
+import { enterAlternateScreen, leaveAlternateScreen, clearScreen } from 'blecsd/systems';
 
 // Setup
 enterAlternateScreen();
@@ -574,20 +568,24 @@ function registerAnimationSystem(world: World): void
 Control animation processing.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createAnimation, animationSystem } from 'blecsd';
+import { animationSystem } from 'blecsd/systems';
+import { registerAnimation, playAnimation } from 'blecsd/components';
 
 // Create animated sprite
 const spriteEntity = addEntity(world);
 setPosition(world, spriteEntity, 10, 10);
 
-createAnimation(world, spriteEntity, {
-  frames: [0, 1, 2, 3],  // Frame indices
-  frameDuration: 100,     // 100ms per frame
-  loop: true,
-  playing: true,
+const animId = registerAnimation({
+  name: 'walk',
+  frames: [
+    { index: 0, duration: 100 },
+    { index: 1, duration: 100 },
+    { index: 2, duration: 100 },
+    { index: 3, duration: 100 },
+  ],
 });
+playAnimation(world, spriteEntity, animId, { loop: true });
 
 // System updates automatically
 animationSystem(world);  // Called by game loop
@@ -627,9 +625,10 @@ function registerMovementSystem(world: World): void
 ```
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, setVelocity, movementSystem } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setVelocity } from 'blecsd/components';
+import { movementSystem } from 'blecsd/systems';
 
 const world = createWorld();
 
@@ -656,7 +655,6 @@ The movement system applies simple Euler integration: `position += velocity * de
 
 Systems must be registered with the scheduler to run automatically:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, LoopPhase } from 'blecsd/core';
 import {
@@ -664,20 +662,18 @@ import {
   createLayoutSystem,
   createRenderSystem,
   createOutputSystem,
-} from 'blecsd';
+} from 'blecsd/systems';
 
-const scheduler = createScheduler(world, {
-  targetFPS: 60,
-});
+const scheduler = createScheduler();
 
 // Register systems to specific phases
-scheduler.addSystem(LoopPhase.INPUT, createInputSystem());
-scheduler.addSystem(LoopPhase.LAYOUT, createLayoutSystem());
-scheduler.addSystem(LoopPhase.RENDER, createRenderSystem());
-scheduler.addSystem(LoopPhase.POST_RENDER, createOutputSystem());
+scheduler.registerSystem(LoopPhase.INPUT, createInputSystem());
+scheduler.registerSystem(LoopPhase.LAYOUT, createLayoutSystem());
+scheduler.registerSystem(LoopPhase.RENDER, createRenderSystem());
+scheduler.registerSystem(LoopPhase.POST_RENDER, createOutputSystem());
 
-// Start game loop
-scheduler.start();
+// Run one frame (call in a loop for continuous rendering)
+scheduler.run(world, 16);
 ```
 
 ## System Execution Order
@@ -697,15 +693,14 @@ See [System Execution Order Guide](../guides/system-execution-order.md) for deta
 
 ## Writing Custom Systems
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defineSystem, World } from 'blecsd';
+import type { World } from 'blecsd/core';
 import { query } from 'blecsd/core';
-import { Health } from 'blecsd';
+import { Health } from 'blecsd/components';
 import { Position, Velocity } from 'blecsd/components';
 
-// Define a system
-const damageOverTimeSystem = defineSystem((world: World) => {
+// Systems in blECSd are plain functions - no defineSystem() needed
+function damageOverTimeSystem(world: World): World {
   const entities = query(world, [Position, Health]);
 
   for (const eid of entities) {

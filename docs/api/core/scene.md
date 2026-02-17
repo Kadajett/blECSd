@@ -4,9 +4,8 @@ Scene management for game screens. Provides a scene stack with lifecycle callbac
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSceneManager } from 'blecsd';
+import { createSceneManager } from 'blecsd/core';
 
 const scenes = createSceneManager();
 
@@ -118,9 +117,8 @@ function createFadeTransition(
 ): SceneTransition;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFadeTransition } from 'blecsd';
+import { createFadeTransition } from 'blecsd/core';
 
 sceneManager.switchTo(world, 'game', createFadeTransition(0.5));
 ```
@@ -137,9 +135,8 @@ function createSlideTransition(
 ): SceneTransition;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSlideTransition } from 'blecsd';
+import { createSlideTransition } from 'blecsd/core';
 
 sceneManager.switchTo(world, 'settings', createSlideTransition(0.3, 'left'));
 ```
@@ -152,9 +149,8 @@ Creates a system that updates the scene manager each frame. Advances transitions
 function createSceneSystem(sceneManager: SceneManager, getDelta: () => number): System;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSceneManager, createSceneSystem } from 'blecsd';
+import { createSceneManager, createSceneSystem } from 'blecsd/core';
 
 const scenes = createSceneManager();
 const sceneSystem = createSceneSystem(scenes, getDeltaTime);
@@ -163,9 +159,8 @@ scheduler.registerSystem(LoopPhase.UPDATE, sceneSystem);
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSceneManager, createFadeTransition, createWorld } from 'blecsd';
+import { createSceneManager, createFadeTransition, createWorld } from 'blecsd/core';
 
 const world = createWorld();
 const scenes = createSceneManager();

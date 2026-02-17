@@ -18,6 +18,33 @@ TypeScript (strict), bitecs (ECS), Zod (validation), Biome (lint/format), Vitest
 - Test improvements are allowed
 - All PRs adding new features must be rejected until the v0.5.1 milestone is closed
 
+### No doccheck:ignore as a Fix (HARD REQUIREMENT)
+**`<!-- blecsd-doccheck:ignore -->` markers must NEVER be used to hide broken docs.**
+The ONLY acceptable uses of `doccheck:ignore` are:
+1. Code blocks showing **anti-patterns** (examples of what NOT to do)
+2. Code blocks demonstrating **other libraries** in comparison
+
+If a doc code block fails doccheck, the fix is one of:
+- Fix the doc to use the correct API
+- Fix the transform/sanitizer to handle the syntax pattern
+- Fix the library to export what the doc says it exports
+
+Never add ignore markers to skip blocks that use wrong function names, wrong APIs, OOP-style patterns, non-existent exports, or context variables. Fix the root cause instead.
+
+### No Mocks or Stubs as a Fix (HARD REQUIREMENT)
+**Doc code examples must use real imports and real API calls, not mocks/stubs.**
+The doccheck transform should handle only:
+- TypeScript syntax stripping (interfaces, type aliases, enums)
+- Scoping to avoid cross-block declaration conflicts
+- Minimal infrastructure (world/eid creation, stdin neutralization, forced exit)
+
+It must NOT:
+- Define mock functions for APIs that the docs claim to import
+- Stub variables with fake values to make broken examples "pass"
+- Paper over wrong function names, wrong argument counts, or wrong import paths with shims
+
+If a doc example uses a function that doesn't exist or calls an API incorrectly, the doc must be fixed to use the correct API. A passing doccheck with mocks proves nothing. A passing doccheck with real imports proves the example actually works.
+
 ### File Size Limits
 - Component files: max 200 lines (defineComponent + typed getters/setters only)
 - Widget files: max 300 lines per sub-file (use decomposition pattern)

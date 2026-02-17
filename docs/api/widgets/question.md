@@ -4,9 +4,8 @@ A yes/no confirmation dialog with customizable button text, keyboard bindings, a
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createQuestion, ask, confirm } from 'blecsd';
+import { createQuestion, ask, confirm } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -55,9 +54,8 @@ q.onConfirm((answer) => {
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { QuestionConfigSchema } from 'blecsd';
+import { QuestionConfigSchema } from 'blecsd/widgets';
 
 const config = QuestionConfigSchema.parse({
   message: 'Are you sure?',
@@ -74,9 +72,8 @@ const config = QuestionConfigSchema.parse({
 
 Creates a Question widget for yes/no confirmation dialogs.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createQuestion } from 'blecsd';
+import { createQuestion } from 'blecsd/widgets';
 
 const question = createQuestion(world, {
   message: 'Save changes?',
@@ -220,9 +217,8 @@ Destroys the question widget and cleans up all state.
 
 Displays a question dialog and returns a Promise resolving to the user's answer.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ask } from 'blecsd';
+import { ask } from 'blecsd/widgets';
 
 const answer = await ask(world, 'Save changes before closing?', {
   yesText: 'Save',
@@ -245,9 +241,8 @@ if (answer) {
 
 Shorthand for a simple yes/no dialog with default button text.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { confirm } from 'blecsd';
+import { confirm } from 'blecsd/widgets';
 
 if (await confirm(world, 'Delete this file?')) {
   deleteFile();
@@ -266,9 +261,8 @@ if (await confirm(world, 'Delete this file?')) {
 
 ### isQuestion
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isQuestion } from 'blecsd';
+import { isQuestion } from 'blecsd/widgets';
 
 if (isQuestion(world, entity)) {
   // Entity is a question widget
@@ -279,9 +273,8 @@ if (isQuestion(world, entity)) {
 
 Handles keyboard input for a question widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleQuestionKey } from 'blecsd';
+import { handleQuestionKey } from 'blecsd/widgets';
 
 handleQuestionKey(questionWidget, 'y');       // Selects yes and confirms
 handleQuestionKey(questionWidget, 'n');       // Selects no and confirms
@@ -303,9 +296,8 @@ handleQuestionKey(questionWidget, 'escape');  // Cancels
 
 ### Confirmation Before Destructive Action
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ask } from 'blecsd';
+import { ask } from 'blecsd/widgets';
 
 async function handleDelete(world, filename) {
   const confirmed = await ask(world, `Delete "${filename}"?`, {
@@ -322,9 +314,8 @@ async function handleDelete(world, filename) {
 
 ### Centered Question Dialog
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createQuestion } from 'blecsd';
+import { createQuestion } from 'blecsd/widgets';
 
 const q = createQuestion(world, {
   message: 'Exit without saving?',

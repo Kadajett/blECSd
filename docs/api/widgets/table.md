@@ -4,17 +4,15 @@ The Table widget provides a data grid with headers, cell borders, column configu
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isTableWidget } from 'blecsd';
+import { isTableWidget } from 'blecsd/widgets';
 import { createTable } from 'blecsd/widgets';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createTable } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -300,9 +298,8 @@ const table = createTable(world, eid, {
 
 ## Type Guard
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isTableWidget } from 'blecsd';
+import { isTableWidget } from 'blecsd/widgets';
 
 if (isTableWidget(world, eid)) {
   // Entity has table behavior attached
@@ -322,9 +319,8 @@ Destroying a table removes the entity and detaches all table behavior.
 
 Configuration is validated using Zod:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { TableWidgetConfigSchema } from 'blecsd';
+import { TableWidgetConfigSchema } from 'blecsd/widgets';
 
 const result = TableWidgetConfigSchema.safeParse(config);
 if (!result.success) {

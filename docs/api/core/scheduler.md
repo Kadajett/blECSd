@@ -4,15 +4,13 @@ The Scheduler manages the ordered execution of ECS systems across phases. It enf
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getDeltaTime } from 'blecsd';
+import { getDeltaTime } from 'blecsd/core';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createScheduler, LoopPhase } from 'blecsd/core';
 
@@ -96,9 +94,8 @@ scheduler.clearAllSystems();
 
 Access the current frame's delta time from within a system:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getDeltaTime } from 'blecsd';
+import { getDeltaTime } from 'blecsd/core';
 
 const movementSystem = (world) => {
   const dt = getDeltaTime();
@@ -126,9 +123,8 @@ scheduler.registerSystem(LoopPhase.UPDATE, aiSystem, 20);
 
 ## Example: Custom Game Loop
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getDeltaTime } from 'blecsd';
+import { getDeltaTime } from 'blecsd/core';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();

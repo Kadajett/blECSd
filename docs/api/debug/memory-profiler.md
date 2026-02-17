@@ -4,9 +4,8 @@ Memory profiling and leak detection for development. Tracks entity and component
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMemoryProfiler } from 'blecsd';
+import { createMemoryProfiler } from 'blecsd/debug';
 
 const profiler = createMemoryProfiler({
   trackedComponents: [
@@ -189,9 +188,9 @@ reset(): void;
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMemoryProfiler, createWorld, addEntity } from 'blecsd';
+import { createMemoryProfiler } from 'blecsd/debug';
+import { createWorld, addEntity } from 'blecsd/core';
 import { Position, Renderable } from 'blecsd/components';
 
 const profiler = createMemoryProfiler({

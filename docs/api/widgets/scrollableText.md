@@ -4,9 +4,8 @@ The ScrollableText widget is a thin wrapper over ScrollableBox optimized for rea
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -34,9 +33,8 @@ logView.scrollToBottom();
 
 Creates a new ScrollableText widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -383,9 +381,8 @@ text.destroy();
 
 Checks if an entity is a scrollable text widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isScrollableText } from 'blecsd';
+import { isScrollableText } from 'blecsd/widgets';
 
 if (isScrollableText(world, entity)) {
   // Handle scrollable text logic
@@ -448,9 +445,8 @@ type ScrollableTextWidget = ScrollableBoxWidget;
 
 ### Log Viewer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -480,9 +476,8 @@ appendLog('Ready');
 
 ### Help Text Display
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -517,9 +512,8 @@ const helpView = createScrollableText(world, addEntity(world), {
 
 ### Auto-Scrolling Terminal Output
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -549,9 +543,8 @@ output('drwxr-xr-x 10 user user 4096 Jan 1 11:00 ..');
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createScrollableText } from 'blecsd/widgets';
 
 const world = createWorld();

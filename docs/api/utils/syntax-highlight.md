@@ -4,7 +4,6 @@ Line-based incremental syntax highlighting with state tracking. Only changed lin
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   // Cache management
@@ -38,7 +37,7 @@ import {
   // Constants
   EMPTY_STATE,
   DEFAULT_HIGHLIGHT_BATCH,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -288,12 +287,16 @@ function getGrammarByName(name: string): Grammar
 
 ## Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  createHighlightCache, highlightVisibleFirst, continueHighlight,
-  detectLanguage, GRAMMAR_JAVASCRIPT, tokenizeLine, EMPTY_STATE,
-} from 'blecsd';
+  createHighlightCache,
+  highlightVisibleFirst,
+  continueHighlight,
+  detectLanguage,
+  GRAMMAR_JAVASCRIPT,
+  tokenizeLine,
+  EMPTY_STATE,
+} from 'blecsd/utils';
 
 // Detect language and create cache
 const grammar = detectLanguage('app.ts');

@@ -4,13 +4,8 @@ Parses ANSI escape sequences into structured key events with strict typing. Hand
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  parseKeySequence,
-  parseKeyBuffer,
-  isMouseSequence,
-} from 'blecsd';
+import { parseKeySequence, parseKeyBuffer, isMouseSequence } from 'blecsd/terminal';
 
 // Parse a single key sequence
 const event = parseKeySequence(Buffer.from([0x1b, 0x5b, 0x41]));
@@ -74,9 +69,8 @@ Parses a key sequence from a buffer. Handles regular characters, control charact
 function parseKeySequence(buffer: Uint8Array): KeyEvent | null
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseKeySequence } from 'blecsd';
+import { parseKeySequence } from 'blecsd/terminal';
 
 // Parse Ctrl+C
 const ctrlC = parseKeySequence(Buffer.from([0x03]));
@@ -100,7 +94,6 @@ Parses multiple key sequences from a buffer. Handles cases where multiple keypre
 function parseKeyBuffer(buffer: Uint8Array): readonly KeyEvent[]
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKeyBuffer } from 'blecsd/terminal';
 
@@ -140,10 +133,10 @@ Modifier values follow the standard encoding: `1 + (shift * 1) + (alt * 2) + (ct
 
 ## Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { KeyEventSchema } from 'blecsd';
+import { KeyEventSchema, parseKeySequence } from 'blecsd/terminal';
 
+const event = parseKeySequence(Buffer.from([0x61])); // 'a'
 const result = KeyEventSchema.safeParse(event);
 if (result.success) {
   console.log('Valid key event');

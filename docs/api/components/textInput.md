@@ -4,7 +4,6 @@ The TextInput component provides text entry fields with cursor management, selec
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachTextInputBehavior,
@@ -27,20 +26,19 @@ import {
   clearValidationError,
   type ValidationFunction,
   type ValidationTiming,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachTextInputBehavior,
   focusTextInput,
   handleTextInputKeyPress,
   onTextInputChange,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -105,9 +103,8 @@ TextInput uses a state machine with these states:
 
 ## Cursor Modes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { CursorMode } from 'blecsd';
+import { CursorMode } from 'blecsd/components';
 
 // Line cursor (insert mode)
 CursorMode.Line;  // 0
@@ -323,15 +320,14 @@ Word boundaries are detected using the built-in `isWordBoundary` function, which
 
 ## Example: Login Form
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachTextInputBehavior,
   onTextInputSubmit,
   setTextInputConfig,
   focusTextInput,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const world = createWorld();
 
@@ -415,14 +411,8 @@ clearValidationError(eid);
 
 ## Example: Email Validation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  attachTextInputBehavior,
-  setTextInputConfig,
-  hasValidationError,
-  getValidationError,
-} from 'blecsd';
+import { attachTextInputBehavior, setTextInputConfig, hasValidationError, getValidationError } from 'blecsd/components';
 
 const emailInput = addEntity(world);
 attachTextInputBehavior(world, emailInput);

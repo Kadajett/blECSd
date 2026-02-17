@@ -16,9 +16,9 @@ The screen buffer provides efficient storage and manipulation of these cells.
 
 ### Creating Cells
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCell, Attr, DEFAULT_FG, DEFAULT_BG } from 'blecsd';
+import { createCell, Attr } from 'blecsd/terminal';
+import { DEFAULT_FG, DEFAULT_BG } from 'blecsd/components';
 
 // Default empty cell (space with white on black)
 const empty = createCell();
@@ -49,9 +49,8 @@ interface Cell {
 
 Attributes can be combined using bitwise OR:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Attr } from 'blecsd';
+import { Attr } from 'blecsd/terminal';
 
 // Available attributes
 Attr.NONE          // No attributes (0)
@@ -73,7 +72,6 @@ const isBold = (attrs & Attr.BOLD) !== 0;
 
 ### Cell Utilities
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   cloneCell,
@@ -81,7 +79,7 @@ import {
   hasAttr,
   withAttr,
   withoutAttr,
-} from 'blecsd';
+} from 'blecsd/terminal';
 
 const cell = createCell('X', 0xff0000ff, 0x000000ff, Attr.BOLD);
 
@@ -109,9 +107,8 @@ const notBold = withoutAttr(cell, Attr.BOLD);
 
 ### Creating a Buffer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScreenBuffer, createCell } from 'blecsd';
+import { createScreenBuffer, createCell } from 'blecsd/terminal';
 
 // Create an 80x24 buffer with default cells
 const buffer = createScreenBuffer(80, 24);
@@ -132,15 +129,9 @@ interface ScreenBufferData {
 
 ### Reading and Writing Cells
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  getCell,
-  setCell,
-  setChar,
-  isInBounds,
-  cellIndex,
-} from 'blecsd';
+import { getCell, setCell } from 'blecsd/components';
+import { setChar, isInBounds, cellIndex } from 'blecsd/terminal';
 
 const buffer = createScreenBuffer(80, 24);
 
@@ -166,15 +157,14 @@ if (idx >= 0) {
 
 ### Buffer Operations
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { clearBuffer } from 'blecsd/core';
 import {
-  clearBuffer,
   fillRect,
   writeString,
   copyRegion,
   resizeBuffer,
-} from 'blecsd';
+} from 'blecsd/terminal';
 
 const buffer = createScreenBuffer(80, 24);
 
@@ -206,9 +196,9 @@ const larger = resizeBuffer(buffer, 120, 40);
 
 For efficient terminal updates, compare buffers and only output changed cells:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScreenBuffer, setCell, createCell, diffBuffers } from 'blecsd';
+import { createScreenBuffer, createCell, diffBuffers } from 'blecsd/terminal';
+import { setCell } from 'blecsd/components';
 
 // Previous frame
 const oldBuffer = createScreenBuffer(80, 24);
@@ -232,13 +222,12 @@ for (const { x, y, cell } of changes) {
 
 Colors are packed as 32-bit RGBA values:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Pack color manually
 const red = 0xff0000ff;  // AARRGGBB format
 
 // Color constants
-import { DEFAULT_FG, DEFAULT_BG } from 'blecsd';
+import { DEFAULT_FG, DEFAULT_BG } from 'blecsd/components';
 // DEFAULT_FG = 0xffffffff (white)
 // DEFAULT_BG = 0x000000ff (black)
 ```

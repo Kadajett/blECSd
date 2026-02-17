@@ -4,7 +4,6 @@ Lazy content loading and pagination for huge files. Loads only the visible viewp
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createLazyContent,
@@ -15,7 +14,7 @@ import {
   getLazyContentState,
   isRangeLoaded,
   createArraySource,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -158,9 +157,8 @@ function createArraySource(lines: readonly string[]): ContentSource
 
 ## Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createLazyContent, getLazyLines, prefetchAround, getLazyContentState } from 'blecsd';
+import { createLazyContent, getLazyLines, prefetchAround, getLazyContentState } from 'blecsd/utils';
 
 // Create a source from a large file (e.g., via readline)
 const source = {

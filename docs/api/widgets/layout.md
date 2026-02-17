@@ -4,9 +4,8 @@ The Layout widget is an auto-layout container that arranges children using diffe
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createLayout, createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -42,9 +41,8 @@ layout.recalculate();
 
 Creates a new Layout widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createLayout } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -313,9 +311,9 @@ These functions can be used independently of the widget for custom layout calcul
 
 Calculates inline (flow) layout positions.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { calculateInlineLayout, type ChildLayoutData } from 'blecsd';
+import { calculateInlineLayout } from 'blecsd/widgets';
+import { type ChildLayoutData } from 'blecsd/widgets';
 
 const children: ChildLayoutData[] = [
   { eid: 1, width: 10, height: 5 },
@@ -345,9 +343,9 @@ const positions = calculateInlineLayout(
 
 Calculates grid layout positions.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { calculateGridLayout, type ChildLayoutData } from 'blecsd';
+import { calculateGridLayout } from 'blecsd/widgets';
+import { type ChildLayoutData } from 'blecsd/widgets';
 
 const children: ChildLayoutData[] = [
   { eid: 1, width: 10, height: 5 },
@@ -374,9 +372,9 @@ const positions = calculateGridLayout(
 
 Calculates flex layout positions.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { calculateFlexLayout, type ChildLayoutData } from 'blecsd';
+import { calculateFlexLayout } from 'blecsd/widgets';
+import { type ChildLayoutData } from 'blecsd/widgets';
 
 const children: ChildLayoutData[] = [
   { eid: 1, width: 10, height: 5 },
@@ -411,9 +409,8 @@ const positions = calculateFlexLayout(
 
 Checks if an entity is a layout widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isLayout } from 'blecsd';
+import { isLayout } from 'blecsd/widgets';
 
 if (isLayout(world, entity)) {
   // Handle layout-specific logic
@@ -428,9 +425,8 @@ if (isLayout(world, entity)) {
 
 Gets the layout mode of a layout entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLayoutMode } from 'blecsd';
+import { getLayoutMode } from 'blecsd/widgets';
 
 const mode = getLayoutMode(world, layoutEntity);
 // 'inline', 'grid', or 'flex'
@@ -570,9 +566,8 @@ interface LayoutWidget {
 
 ## Zod Schemas
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { LayoutConfigSchema } from 'blecsd';
+import { LayoutConfigSchema } from 'blecsd/widgets';
 
 // Validate configuration
 const result = LayoutConfigSchema.safeParse({
@@ -593,9 +588,8 @@ if (result.success) {
 
 ### Dashboard Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createLayout, createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -626,9 +620,8 @@ dashboard.recalculate();
 
 ### Toolbar Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createLayout, createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -660,9 +653,8 @@ toolbar.recalculate();
 
 ### Centered Content
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createLayout, createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -691,9 +683,8 @@ container.recalculate();
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createLayout, createBox } from 'blecsd/widgets';
 
 const world = createWorld();

@@ -4,17 +4,15 @@ The List widget provides a selectable, scrollable list with keyboard and mouse s
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isListWidget } from 'blecsd';
+import { isListWidget } from 'blecsd/widgets';
 import { createList } from 'blecsd/widgets';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createList } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -251,9 +249,8 @@ palette.focus().startSearch();
 
 ## Type Guard
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isListWidget } from 'blecsd';
+import { isListWidget } from 'blecsd/widgets';
 
 if (isListWidget(world, eid)) {
   // Entity has list behavior attached
@@ -273,9 +270,8 @@ Destroying a list removes the entity and clears all callbacks.
 
 Configuration is validated using Zod:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ListWidgetConfigSchema } from 'blecsd';
+import { ListWidgetConfigSchema } from 'blecsd/widgets';
 
 const result = ListWidgetConfigSchema.safeParse(config);
 if (!result.success) {

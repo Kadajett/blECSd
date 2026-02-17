@@ -13,20 +13,15 @@ The focus system handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createScheduler,
-  focusSystem,
-  focusNext,
-  focusPrev,
-  focusEntity,
-  getFocused,
-  getFocusEventBus
-} from 'blecsd';
+import { createWorld, addEntity, createScheduler, LoopPhase } from 'blecsd/core';
+import { focusSystem, getFocused, getFocusEventBus, focusNext, focusPrev } from 'blecsd/systems';
+import { focusEntity } from 'blecsd/components';
 
+const world = createWorld();
+const buttonEntity = addEntity(world);
 const scheduler = createScheduler();
-scheduler.registerSystem(LoopPhase.INPUT, focusSystem);
+scheduler.registerSystem(LoopPhase.UPDATE, focusSystem);
 
 // Subscribe to focus events
 getFocusEventBus().on('focus', (e) => {
@@ -42,6 +37,7 @@ focusEntity(world, buttonEntity);
 
 // Check current focus
 const focused = getFocused(world);
+void focused;
 ```
 
 ## Focus Management
@@ -50,10 +46,12 @@ const focused = getFocused(world);
 
 Focus a specific entity. Automatically blurs the previously focused entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusEntity } from 'blecsd/systems';
+import { createWorld, addEntity } from 'blecsd/core';
+import { focusEntity } from 'blecsd/components';
 
+const world = createWorld();
+const buttonEntity = addEntity(world);
 const success = focusEntity(world, buttonEntity);
 if (success) {
   console.log('Focus set successfully');
@@ -66,9 +64,8 @@ if (success) {
 
 Get the currently focused entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getFocused } from 'blecsd';
+import { getFocused } from 'blecsd/systems';
 
 const focused = getFocused(world);
 if (focused) {
@@ -82,7 +79,6 @@ if (focused) {
 
 Remove focus from all entities.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { blurAll } from 'blecsd/systems';
 
@@ -95,9 +91,13 @@ blurAll(world);
 
 Focus the next focusable entity in tab order. Wraps around to first.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusNext } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { focusNext } from 'blecsd/systems';
+
+const world = createWorld();
+const key = 'Tab';
+const shift = false;
 
 // Handle Tab key
 if (key === 'Tab' && !shift) {
@@ -111,9 +111,13 @@ if (key === 'Tab' && !shift) {
 
 Focus the previous focusable entity in tab order. Wraps around to last.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusPrev } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { focusPrev } from 'blecsd/systems';
+
+const world = createWorld();
+const key = 'Tab';
+const shift = true;
 
 // Handle Shift+Tab
 if (key === 'Tab' && shift) {
@@ -127,9 +131,8 @@ if (key === 'Tab' && shift) {
 
 Focus the first focusable entity in tab order.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusFirst } from 'blecsd';
+import { focusFirst } from 'blecsd/systems';
 
 focusFirst(world);
 ```
@@ -140,9 +143,8 @@ focusFirst(world);
 
 Focus the last focusable entity in tab order.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusLast } from 'blecsd';
+import { focusLast } from 'blecsd/systems';
 
 focusLast(world);
 ```
@@ -155,9 +157,8 @@ focusLast(world);
 
 Get all focusable entities sorted by tab order.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getFocusableEntities } from 'blecsd';
+import { getFocusableEntities } from 'blecsd/systems';
 
 const focusable = getFocusableEntities(world);
 console.log(`${focusable.length} focusable entities`);
@@ -176,9 +177,8 @@ Entities are sorted by:
 
 Get the event bus to subscribe to focus events.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getFocusEventBus } from 'blecsd';
+import { getFocusEventBus } from 'blecsd/systems';
 
 const bus = getFocusEventBus();
 
@@ -201,9 +201,8 @@ bus.on('blur', ({ entity, nextEntity }) => {
 
 Reset the focus event bus (for testing).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetFocusEventBus } from 'blecsd';
+import { resetFocusEventBus } from 'blecsd/systems';
 
 resetFocusEventBus();
 ```
@@ -214,13 +213,12 @@ resetFocusEventBus();
 
 The focus system function. Validates current focus state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusSystem } from 'blecsd';
+import { focusSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
-scheduler.registerSystem(LoopPhase.INPUT, focusSystem);
+scheduler.registerSystem(LoopPhase.UPDATE, focusSystem);
 ```
 
 The system automatically:
@@ -231,21 +229,25 @@ The system automatically:
 
 Create a new focus system instance.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFocusSystem } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { createFocusSystem } from 'blecsd/systems';
 
+const scheduler = createScheduler();
 const system = createFocusSystem();
-scheduler.registerSystem(LoopPhase.INPUT, system);
+scheduler.registerSystem(LoopPhase.UPDATE, system);
 ```
 
 ## Making Entities Focusable
 
 Use the Interactive component to make entities focusable:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setInteractive, isFocused } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setInteractive, isFocused } from 'blecsd/components';
+
+const world = createWorld();
+const button = addEntity(world);
 
 // Make an entity focusable
 setInteractive(world, button, {
@@ -298,30 +300,27 @@ interface FocusEventMap {
 
 Complete example with focus management:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   createScheduler,
   LoopPhase,
-  focusSystem,
-  focusNext,
-  focusPrev,
+} from 'blecsd/core';
+import { focusSystem, getFocused, getFocusEventBus, focusNext, focusPrev } from 'blecsd/systems';
+import {
   focusEntity,
-  getFocused,
-  getFocusEventBus,
   setPosition,
   setDimensions,
   setStyle,
   setInteractive,
-  isFocused
-} from 'blecsd';
+  isFocused,
+} from 'blecsd/components';
 
 // Create world and scheduler
 const world = createWorld();
 const scheduler = createScheduler();
-scheduler.registerSystem(LoopPhase.INPUT, focusSystem);
+scheduler.registerSystem(LoopPhase.UPDATE, focusSystem);
 
 // Create focusable buttons
 const button1 = addEntity(world);
@@ -371,7 +370,6 @@ The focus system includes a stack mechanism for managing focus in modal/popup sc
 
 Push current focus onto the stack and focus a new entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focusPush } from 'blecsd/systems';
 
@@ -387,7 +385,6 @@ function openModal(world: World, modalEntity: Entity): void {
 
 Pop the focus stack and restore the previous focus.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { focusPop } from 'blecsd/systems';
 
@@ -404,9 +401,8 @@ if (previousFocus) {
 
 Move focus by a specified offset in the tab order.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { focusOffset } from 'blecsd';
+import { focusOffset } from 'blecsd/systems';
 
 // Move focus forward by 2
 focusOffset(world, 2);
@@ -421,9 +417,8 @@ focusOffset(world, -1);
 
 Save and restore focus without using the stack (for temporary changes).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { saveFocus, restoreFocus } from 'blecsd';
+import { saveFocus, restoreFocus } from 'blecsd/systems';
 
 // Save current focus before temporary change
 saveFocus(world);
@@ -438,9 +433,8 @@ const restored = restoreFocus(world);
 
 Rewind focus to the last valid entity in the stack when the current entity is destroyed.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { rewindFocus } from 'blecsd';
+import { rewindFocus } from 'blecsd/systems';
 
 // After destroying a focused entity
 rewindFocus(world);
@@ -450,13 +444,8 @@ rewindFocus(world);
 
 ### Stack Utilities
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  getFocusStackDepth,
-  clearFocusStack,
-  peekFocusStack
-} from 'blecsd';
+import { getFocusStackDepth, clearFocusStack, peekFocusStack } from 'blecsd/systems';
 
 // Get stack depth
 const depth = getFocusStackDepth(world);
@@ -470,56 +459,65 @@ clearFocusStack(world);
 
 ### Modal Pattern Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   focusPush,
   focusPop,
   focusFirst,
-  getFocusStackDepth
-} from 'blecsd';
+  getFocusStackDepth,
+} from 'blecsd/systems';
+
+const world = createWorld();
 
 // Open modal - push focus stack
-function openModal(world: World, modal: Entity): void {
-  focusPush(world, modal);
+function openModal(w: typeof world, modal: number): void {
+  focusPush(w, modal);
   // Focus first element in modal
-  focusFirst(world);
+  focusFirst(w);
 }
 
 // Close modal - pop focus stack
-function closeModal(world: World): void {
-  focusPop(world);
+function closeModal(w: typeof world): void {
+  focusPop(w);
 }
 
 // Nested modals work naturally
+const dialog1 = addEntity(world);
+const dialog2 = addEntity(world);
 openModal(world, dialog1);  // depth = 1
 openModal(world, dialog2);  // depth = 2
 closeModal(world);          // restores to dialog1
 closeModal(world);          // restores to original focus
+void getFocusStackDepth(world);
 ```
 
 ## Focus Styling
 
 When rendering, check if an entity is focused to apply focus styling:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isFocused, getFocusEffect } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { isFocused, getFocusEffect, getStyle } from 'blecsd/components';
 
-function renderEntity(world: World, entity: Entity) {
-  const style = getStyle(world, entity);
-  let fg = style.fg;
-  let bg = style.bg;
+const world = createWorld();
+
+function renderEntity(w: typeof world, entity: number) {
+  const style = getStyle(w, entity);
+  let fg = style?.fg ?? 0;
+  let bg = style?.bg ?? 0;
 
   // Apply focus effect
-  if (isFocused(world, entity)) {
-    const focusEffect = getFocusEffect(world, entity);
+  if (isFocused(w, entity)) {
+    const focusEffect = getFocusEffect(w, entity);
     if (focusEffect) {
       // Blend or replace colors
       fg = focusEffect.fg;
     }
   }
 
+  void fg;
+  void bg;
   // Render with final colors...
 }
 ```

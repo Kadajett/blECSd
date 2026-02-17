@@ -10,7 +10,6 @@ The most common use case is enabling DEC Special Graphics (line drawing characte
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { charset, boxDrawing } from 'blecsd/terminal';
 
@@ -42,7 +41,6 @@ function designate(set: CharacterSetId, gn?: CharacterSetRegister): string
 **Returns:** The escape sequence
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { charset } from 'blecsd/terminal';
 
@@ -121,7 +119,6 @@ function smacs(): string     // Alias for enterAcs()
 ```
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { charset } from 'blecsd/terminal';
 
@@ -167,7 +164,6 @@ function rmacs(): string    // Alias for exitAcs()
 
 The `DEC_SPECIAL_GRAPHICS` constant maps input characters (when in ACS mode) to their Unicode equivalents:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { DEC_SPECIAL_GRAPHICS } from 'blecsd/terminal';
 
@@ -230,7 +226,6 @@ DEC_SPECIAL_GRAPHICS['g']  // '±' plus-minus
 
 The `boxDrawing` namespace provides pre-built character sets for different box styles:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { boxDrawing } from 'blecsd/terminal';
 
@@ -282,7 +277,6 @@ Each box drawing set contains:
 
 The `UNICODE_TO_ASCII` constant provides ASCII fallbacks for Unicode box drawing:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { UNICODE_TO_ASCII } from 'blecsd/terminal';
 
@@ -296,7 +290,6 @@ const ascii = UNICODE_TO_ASCII[char]; // '-'
 
 Best for quick box drawing:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { charset } from 'blecsd/terminal';
 
@@ -319,7 +312,6 @@ function drawBox(width: number, height: number): string {
 
 Keep normal text and line drawing available:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { charset } from 'blecsd/terminal';
 
@@ -338,7 +330,6 @@ process.stdout.write(' Normal text');
 
 Skip escape sequences entirely for modern terminals:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { boxDrawing } from 'blecsd/terminal';
 

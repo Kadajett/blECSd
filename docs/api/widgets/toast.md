@@ -4,9 +4,8 @@ Non-blocking notification widget that auto-dismisses. Multiple toasts can be sta
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showSuccessToast, showErrorToast } from 'blecsd';
+import { showSuccessToast, showErrorToast } from 'blecsd/widgets';
 import { createToast } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -76,9 +75,8 @@ interface ToastStyleConfig {
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ToastConfigSchema } from 'blecsd';
+import { ToastConfigSchema } from 'blecsd/widgets';
 
 const validated = ToastConfigSchema.parse({
   content: 'Hello',
@@ -107,7 +105,6 @@ const validated = ToastConfigSchema.parse({
 
 Creates a Toast widget with the given configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createToast } from 'blecsd/widgets';
 
@@ -210,9 +207,8 @@ Destroys the widget, clears timers, removes from position tracking, and removes 
 
 ### showInfoToast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showInfoToast } from 'blecsd';
+import { showInfoToast } from 'blecsd/widgets';
 
 const toast = showInfoToast(world, 'Operation completed', {}, 80, 24);
 ```
@@ -228,27 +224,24 @@ const toast = showInfoToast(world, 'Operation completed', {}, 80, 24);
 
 ### showSuccessToast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showSuccessToast } from 'blecsd';
+import { showSuccessToast } from 'blecsd/widgets';
 
 const toast = showSuccessToast(world, 'File saved successfully', {}, 80, 24);
 ```
 
 ### showWarningToast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showWarningToast } from 'blecsd';
+import { showWarningToast } from 'blecsd/widgets';
 
 const toast = showWarningToast(world, 'Unsaved changes', {}, 80, 24);
 ```
 
 ### showErrorToast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showErrorToast } from 'blecsd';
+import { showErrorToast } from 'blecsd/widgets';
 
 const toast = showErrorToast(world, 'Connection lost', {}, 80, 24);
 ```
@@ -259,9 +252,8 @@ const toast = showErrorToast(world, 'Connection lost', {}, 80, 24);
 
 ### isToast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isToast } from 'blecsd';
+import { isToast } from 'blecsd/widgets';
 
 if (isToast(world, entity)) {
   // Entity is a toast widget
@@ -280,9 +272,8 @@ if (isToast(world, entity)) {
 
 Multiple toasts at the same position are automatically stacked:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showSuccessToast, showInfoToast } from 'blecsd';
+import { showSuccessToast, showInfoToast } from 'blecsd/widgets';
 
 // These will stack vertically
 const toast1 = showSuccessToast(world, 'First notification', { position: 'top-right' }, 80, 24);
@@ -301,7 +292,6 @@ Toasts are spaced by `TOAST_STACK_SPACING` (1 line) between each notification.
 
 ### Notification with Callback
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createToast } from 'blecsd/widgets';
 
@@ -320,7 +310,6 @@ toast.onDismiss(() => {
 
 ### Persistent Toast (Manual Dismiss)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createToast } from 'blecsd/widgets';
 
@@ -337,7 +326,6 @@ toast.dismiss();
 
 ### Custom Styled Toast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createToast } from 'blecsd/widgets';
 
@@ -354,9 +342,8 @@ const toast = createToast(world, {
 
 ### Multi-Stack Toasts
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showSuccessToast, showErrorToast } from 'blecsd';
+import { showSuccessToast, showErrorToast } from 'blecsd/widgets';
 
 // Top-right stack for success messages
 showSuccessToast(world, 'File 1 saved', { position: 'top-right' }, 80, 24);

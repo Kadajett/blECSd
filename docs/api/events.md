@@ -6,7 +6,6 @@ Type-safe event emitter for decoupling application systems. Events let systems c
 
 ### createEventBus
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEventBus } from 'blecsd/core';
 
@@ -242,9 +241,8 @@ blECSd provides a built-in warning system for non-fatal issues like small termin
 
 Creates a warning event emitter with typed warning events.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWarningEmitter, WarningType } from 'blecsd';
+import { createWarningEmitter, WarningType } from 'blecsd/core';
 
 const warnings = createWarningEmitter();
 
@@ -340,9 +338,8 @@ warnings.on('warning', (event) => {
 
 #### emitTerminalTooSmallWarning
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWarningEmitter, emitTerminalTooSmallWarning } from 'blecsd';
+import { createWarningEmitter, emitTerminalTooSmallWarning } from 'blecsd/core';
 
 const warnings = createWarningEmitter();
 emitTerminalTooSmallWarning(warnings, 40, 15, 80, 24);
@@ -358,9 +355,8 @@ emitTerminalTooSmallWarning(warnings, 40, 15, 80, 24);
 
 #### emitUnsupportedCapabilityWarning
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWarningEmitter, emitUnsupportedCapabilityWarning } from 'blecsd';
+import { createWarningEmitter, emitUnsupportedCapabilityWarning } from 'blecsd/core';
 
 const warnings = createWarningEmitter();
 emitUnsupportedCapabilityWarning(
@@ -377,9 +373,8 @@ emitUnsupportedCapabilityWarning(
 
 #### emitDeprecatedAPIWarning
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWarningEmitter, emitDeprecatedAPIWarning } from 'blecsd';
+import { createWarningEmitter, emitDeprecatedAPIWarning } from 'blecsd/core';
 
 const warnings = createWarningEmitter();
 emitDeprecatedAPIWarning(
@@ -398,9 +393,8 @@ emitDeprecatedAPIWarning(
 
 #### emitPerformanceWarning
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWarningEmitter, emitPerformanceWarning } from 'blecsd';
+import { createWarningEmitter, emitPerformanceWarning } from 'blecsd/core';
 
 const warnings = createWarningEmitter();
 emitPerformanceWarning(
@@ -436,13 +430,8 @@ interface WarningEvent {
 
 ### Complete Warning System Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWarningEmitter,
-  WarningType,
-  emitTerminalTooSmallWarning
-} from 'blecsd';
+import { createWarningEmitter, WarningType, emitTerminalTooSmallWarning } from 'blecsd/core';
 
 // Create warning emitter
 const warnings = createWarningEmitter();
@@ -511,7 +500,6 @@ warnings.on('warning', (event) => {
 
 All warnings are validated using Zod schemas:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   WarningEventSchema,
@@ -519,8 +507,8 @@ import {
   UnsupportedCapabilityMetadataSchema,
   DeprecatedAPIMetadataSchema,
   PerformanceIssueMetadataSchema,
-  WarningType
-} from 'blecsd';
+  WarningType,
+} from 'blecsd/core';
 
 // Validate warning event
 const event = {

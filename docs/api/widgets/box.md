@@ -4,9 +4,8 @@ The Box widget is a basic container for building terminal UI elements. It provid
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -35,9 +34,8 @@ box.setContent('Updated content').focus().show();
 
 Creates a new Box widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -258,9 +256,8 @@ box.destroy();
 
 Sets the content of a box entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBoxContent } from 'blecsd';
+import { setBoxContent } from 'blecsd/widgets';
 
 setBoxContent(world, boxEntity, 'Updated content');
 ```
@@ -278,9 +275,8 @@ setBoxContent(world, boxEntity, 'Updated content');
 
 Gets the content of a box entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getBoxContent } from 'blecsd';
+import { getBoxContent } from 'blecsd/widgets';
 
 const content = getBoxContent(world, boxEntity); // string
 ```
@@ -297,9 +293,8 @@ const content = getBoxContent(world, boxEntity); // string
 
 Checks if an entity is a box widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isBox } from 'blecsd';
+import { isBox } from 'blecsd/widgets';
 
 if (isBox(world, entity)) {
   // Handle box-specific logic
@@ -431,9 +426,8 @@ interface BoxWidget {
 
 Zod schemas are provided for runtime validation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BoxConfigSchema } from 'blecsd';
+import { BoxConfigSchema } from 'blecsd/core';
 
 // Validate configuration
 const result = BoxConfigSchema.safeParse({
@@ -456,9 +450,8 @@ if (result.success) {
 
 ### Basic Container
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -475,9 +468,8 @@ const box = createBox(world, eid, {
 
 ### Styled Box with Border
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -504,9 +496,8 @@ const dialog = createBox(world, eid, {
 
 ### Nested Boxes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -537,9 +528,8 @@ parent.append(childEid);
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -559,9 +549,8 @@ const box = createBox(world, eid, { left: 0, top: 0 })
 
 ### Focus Management
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -583,10 +572,9 @@ console.log(box2.isFocused()); // true
 
 ### Dynamic Content Update
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setBoxContent, getBoxContent } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setBoxContent, getBoxContent } from 'blecsd/widgets';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();

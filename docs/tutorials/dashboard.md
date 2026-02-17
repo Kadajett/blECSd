@@ -39,14 +39,13 @@ In this tutorial, you'll build a system monitoring dashboard that displays CPU, 
 
 Create `dashboard.ts`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, addEntity, setPosition, setDimensions,
-  layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
-import { createProgram, type KeyEvent } from 'blecsd/terminal';
+import { type KeyEvent } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
 import {
   createPanel, createText, createProgressBar, createLayout,
 } from 'blecsd/widgets';
@@ -158,7 +157,6 @@ function formatTime(seconds: number): string {
 
 ## Step 3: Create Main Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Main container panel
 const mainPanel = createPanel(world, {
@@ -184,7 +182,6 @@ setParent(world, topLayout, mainPanel);
 
 ## Step 4: CPU Panel
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 const cpuPanel = createPanel(world, {
   title: 'CPU',
@@ -224,7 +221,6 @@ for (let i = 0; i < cpuCount; i++) {
 
 ## Step 5: Memory Panel
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 const memPanel = createPanel(world, {
   title: 'Memory',
@@ -283,7 +279,6 @@ setParent(world, memInfoText, memPanel);
 
 ## Step 6: Process List Panel
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 const processPanel = createPanel(world, {
   title: 'Top Processes',

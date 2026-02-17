@@ -4,7 +4,6 @@ The collision system detects collisions between entities with Collider and Posit
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   collisionSystem,
@@ -21,22 +20,17 @@ import {
   getCollidingEntities,
   getTriggerZones,
   areColliding,
-} from 'blecsd';
+} from 'blecsd/systems';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createScheduler,
-  LoopPhase,
-  registerCollisionSystem,
-  getCollisionEventBus,
-  attachCollider,
-  setPosition,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setCollider } from 'blecsd/components';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { registerCollisionSystem, getCollisionEventBus } from 'blecsd/systems';
+import { setPosition } from 'blecsd/components';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -53,11 +47,11 @@ bus.on('collisionStart', ({ entityA, entityB }) => {
 // Create colliding entities
 const player = addEntity(world);
 setPosition(world, player, 10, 10);
-attachCollider(world, player, { width: 2, height: 2 });
+setCollider(world, player, { width: 2, height: 2 });
 
 const wall = addEntity(world);
 setPosition(world, wall, 12, 10);
-attachCollider(world, wall, { width: 1, height: 5 });
+setCollider(world, wall, { width: 1, height: 5 });
 ```
 
 ## Recommended Phase
@@ -206,7 +200,7 @@ const LAYER_BULLET = 1 << 2;  // 0b0100
 const LAYER_WALL = 1 << 3;    // 0b1000
 
 // Player collides with enemies and walls
-attachCollider(world, player, {
+setCollider(world, player, {
   width: 2,
   height: 2,
   layer: LAYER_PLAYER,
@@ -214,7 +208,7 @@ attachCollider(world, player, {
 });
 
 // Enemy collides with player and bullets
-attachCollider(world, enemy, {
+setCollider(world, enemy, {
   width: 2,
   height: 2,
   layer: LAYER_ENEMY,
@@ -222,7 +216,7 @@ attachCollider(world, enemy, {
 });
 
 // Bullet collides with enemies only
-attachCollider(world, bullet, {
+setCollider(world, bullet, {
   width: 1,
   height: 1,
   layer: LAYER_BULLET,
@@ -238,7 +232,7 @@ Trigger zones detect overlaps without blocking movement:
 // Create a trigger zone (door activation)
 const doorTrigger = addEntity(world);
 setPosition(world, doorTrigger, 20, 10);
-attachCollider(world, doorTrigger, {
+setCollider(world, doorTrigger, {
   width: 3,
   height: 1,
   isTrigger: true,
@@ -260,14 +254,13 @@ bus.on('triggerExit', ({ entityA, entityB }) => {
 
 ## Example: Platformer Collisions
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   registerCollisionSystem,
   getCollisionEventBus,
   isColliding,
   getCollidingEntities,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 const LAYER_PLAYER = 1;
 const LAYER_GROUND = 2;
@@ -276,7 +269,7 @@ const LAYER_COIN = 8;
 
 // Player
 const player = addEntity(world);
-attachCollider(world, player, {
+setCollider(world, player, {
   width: 2,
   height: 3,
   layer: LAYER_PLAYER,
@@ -285,7 +278,7 @@ attachCollider(world, player, {
 
 // Ground platform
 const ground = addEntity(world);
-attachCollider(world, ground, {
+setCollider(world, ground, {
   width: 80,
   height: 1,
   layer: LAYER_GROUND,
@@ -294,7 +287,7 @@ attachCollider(world, ground, {
 
 // Coin (trigger)
 const coin = addEntity(world);
-attachCollider(world, coin, {
+setCollider(world, coin, {
   width: 1,
   height: 1,
   layer: LAYER_COIN,
@@ -327,7 +320,7 @@ bus.on('triggerEnter', ({ entityA, entityB }) => {
 // Button with collision for clicks
 const button = addEntity(world);
 setPosition(world, button, 10, 5);
-attachCollider(world, button, {
+setCollider(world, button, {
   width: 15,
   height: 3,
   isTrigger: true, // Non-blocking
@@ -335,7 +328,7 @@ attachCollider(world, button, {
 
 // Cursor "entity" for hit testing
 const cursor = addEntity(world);
-attachCollider(world, cursor, {
+setCollider(world, cursor, {
   width: 1,
   height: 1,
   isTrigger: true,

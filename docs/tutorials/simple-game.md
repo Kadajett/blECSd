@@ -36,14 +36,13 @@ In this tutorial, you'll build a simple snake-like game that demonstrates blECSd
 
 Create `snake.ts`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, addEntity, removeEntity, hasComponent, addComponent,
-  setPosition, getPosition, layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
+import { createWorld, addEntity, removeEntity, hasComponent, addComponent } from 'blecsd/core';
+import { setPosition, getPosition } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase, withStore } from 'blecsd/core';
-import { createProgram, type KeyEvent } from 'blecsd/terminal';
+import { type KeyEvent } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
 import { createPanel, createText } from 'blecsd/widgets';
 import { setContent, setParent, setVisible, setStyle } from 'blecsd/components';
 
@@ -112,7 +111,6 @@ const state: GameState = {
 
 ## Step 3: Create UI
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 const { columns, rows } = process.stdout;
 
@@ -165,7 +163,6 @@ function updateScore(): void {
 
 Define custom marker components for the snake, then create factory functions for the head and body segments.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Custom marker component (no data needed, just a tag)
 const SnakeHead = withStore(() => ({

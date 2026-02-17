@@ -16,7 +16,6 @@ Rectangular area operations allow manipulation of rectangular regions on the scr
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rectangle, SGR } from 'blecsd/terminal';
 
@@ -210,7 +209,6 @@ rectangle.requestChecksum(
 
 ### Drawing a Box Border
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rectangle, cursor } from 'blecsd/terminal';
 
@@ -228,7 +226,6 @@ function drawBoxBorder(x: number, y: number, width: number, height: number) {
 
 ### Copying a Window
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rectangle } from 'blecsd/terminal';
 
@@ -249,7 +246,6 @@ function copyWindow(
 
 ### Clearing a Dialog Area
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rectangle } from 'blecsd/terminal';
 
@@ -262,7 +258,6 @@ function clearDialog(x: number, y: number, width: number, height: number) {
 
 ### Protected Status Line
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rectangle, cursor } from 'blecsd/terminal';
 
@@ -281,7 +276,6 @@ function setupProtectedStatusLine(row: number, cols: number) {
 
 ### Highlighting a Region
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { rectangle, SGR } from 'blecsd/terminal';
 

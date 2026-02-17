@@ -4,19 +4,17 @@ The game loop manages the main update cycle with input priority guarantees, life
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import type { GameLoop, PhaseManager } from 'blecsd/core';
 import {
   createGameLoop,
-  GameLoop,
   LoopPhase,
   LoopState,
-  PhaseManager,
   BUILTIN_PHASE_NAMES,
   isBuiltinPhase,
   isLoopRunning,
   isLoopPaused,
-} from 'blecsd';
+} from 'blecsd/core';
 ```
 
 ## Phase Execution Order
@@ -52,9 +50,8 @@ loop.registerSystem(LoopPhase.RENDER, renderSystem);
 
 ## Creating a Game Loop
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();
@@ -218,12 +215,10 @@ const loop = createGameLoop(world, {
 
 The PhaseManager allows adding custom phases between built-in phases.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { PhaseManager } from 'blecsd';
-import { LoopPhase } from 'blecsd/core';
+import { createPhaseManager, LoopPhase, isBuiltinPhase } from 'blecsd/core';
 
-const manager = new PhaseManager();
+const manager = createPhaseManager();
 
 // Add custom phase after UPDATE
 const aiPhaseId = manager.registerPhase('AI', LoopPhase.UPDATE);
@@ -254,9 +249,8 @@ enum LoopPhase {
 
 ## Helper Functions
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isLoopRunning, isLoopPaused } from 'blecsd';
+import { isLoopRunning, isLoopPaused } from 'blecsd/core';
 
 // Safe checks that handle undefined
 isLoopRunning(loop);    // true/false
@@ -267,9 +261,8 @@ isLoopPaused(loop);     // true/false
 
 ## Complete Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();

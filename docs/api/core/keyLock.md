@@ -13,7 +13,6 @@ The key lock module provides:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   grabKeys,
@@ -21,7 +20,7 @@ import {
   setIgnoredKeys,
   shouldBlockKeyEvent,
   unlockAllKeys,
-} from 'blecsd';
+} from 'blecsd/core';
 
 // Modal dialog: lock all except escape/enter
 lockAllKeys();
@@ -47,9 +46,8 @@ Grabbed keys are consumed but not propagated to the application.
 
 Grabs specified keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { grabKeys } from 'blecsd';
+import { grabKeys } from 'blecsd/core';
 
 // Grab movement keys for game
 grabKeys(['up', 'down', 'left', 'right', 'space']);
@@ -59,9 +57,8 @@ grabKeys(['up', 'down', 'left', 'right', 'space']);
 
 Releases grabbed keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { releaseKeys } from 'blecsd';
+import { releaseKeys } from 'blecsd/core';
 
 releaseKeys(['up', 'down']);
 ```
@@ -70,9 +67,8 @@ releaseKeys(['up', 'down']);
 
 Releases all grabbed keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { releaseAllGrabbedKeys } from 'blecsd';
+import { releaseAllGrabbedKeys } from 'blecsd/core';
 
 releaseAllGrabbedKeys();
 ```
@@ -81,9 +77,8 @@ releaseAllGrabbedKeys();
 
 Checks if a key is grabbed.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isKeyGrabbed } from 'blecsd';
+import { isKeyGrabbed } from 'blecsd/core';
 
 if (isKeyGrabbed('escape')) {
   // Key is grabbed
@@ -94,9 +89,8 @@ if (isKeyGrabbed('escape')) {
 
 Gets all grabbed keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getGrabbedKeys } from 'blecsd';
+import { getGrabbedKeys } from 'blecsd/core';
 
 const keys = getGrabbedKeys();
 // ['up', 'down', 'left', 'right']
@@ -110,9 +104,8 @@ Lock all keys at once, with optional exceptions.
 
 Locks all keys from processing.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { lockAllKeys } from 'blecsd';
+import { lockAllKeys } from 'blecsd/core';
 
 lockAllKeys();
 ```
@@ -121,9 +114,8 @@ lockAllKeys();
 
 Unlocks all keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { unlockAllKeys } from 'blecsd';
+import { unlockAllKeys } from 'blecsd/core';
 
 unlockAllKeys();
 ```
@@ -132,9 +124,8 @@ unlockAllKeys();
 
 Checks if all keys are locked.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { areAllKeysLocked } from 'blecsd';
+import { areAllKeysLocked } from 'blecsd/core';
 
 if (areAllKeysLocked()) {
   // Lock is active
@@ -149,9 +140,8 @@ Keys that bypass the lock when all keys are locked.
 
 Sets keys to ignore (replaces previous list).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setIgnoredKeys } from 'blecsd';
+import { setIgnoredKeys } from 'blecsd/core';
 
 // Only allow escape and enter when locked
 setIgnoredKeys(['escape', 'enter']);
@@ -161,9 +151,8 @@ setIgnoredKeys(['escape', 'enter']);
 
 Adds keys to ignored list.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addIgnoredKeys } from 'blecsd';
+import { addIgnoredKeys } from 'blecsd/core';
 
 addIgnoredKeys(['tab']);
 ```
@@ -172,9 +161,8 @@ addIgnoredKeys(['tab']);
 
 Removes keys from ignored list.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { removeIgnoredKeys } from 'blecsd';
+import { removeIgnoredKeys } from 'blecsd/core';
 
 removeIgnoredKeys(['tab']);
 ```
@@ -183,9 +171,8 @@ removeIgnoredKeys(['tab']);
 
 Clears all ignored keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearIgnoredKeys } from 'blecsd';
+import { clearIgnoredKeys } from 'blecsd/core';
 
 clearIgnoredKeys();
 ```
@@ -194,9 +181,8 @@ clearIgnoredKeys();
 
 Gets all ignored keys.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getIgnoredKeys } from 'blecsd';
+import { getIgnoredKeys } from 'blecsd/core';
 
 const keys = getIgnoredKeys();
 // ['escape', 'enter']
@@ -206,9 +192,8 @@ const keys = getIgnoredKeys();
 
 Checks if a key is ignored.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isKeyIgnored } from 'blecsd';
+import { isKeyIgnored } from 'blecsd/core';
 
 if (isKeyIgnored('escape')) {
   // Key will bypass lock
@@ -223,9 +208,8 @@ For complex blocking logic.
 
 Sets a custom filter function.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setKeyLockFilter } from 'blecsd';
+import { setKeyLockFilter } from 'blecsd/core';
 
 // Block all number keys
 setKeyLockFilter((event) => /^[0-9]$/.test(event.name));
@@ -238,9 +222,8 @@ setKeyLockFilter(null);
 
 Gets the current filter.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getKeyLockFilter } from 'blecsd';
+import { getKeyLockFilter } from 'blecsd/core';
 
 const filter = getKeyLockFilter();
 ```
@@ -251,9 +234,8 @@ const filter = getKeyLockFilter();
 
 Checks if a key event should be blocked.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { shouldBlockKeyEvent } from 'blecsd';
+import { shouldBlockKeyEvent } from 'blecsd/core';
 
 function processKeyEvent(event: KeyEvent): void {
   if (shouldBlockKeyEvent(event)) {
@@ -272,9 +254,8 @@ The function checks in order:
 
 Simplified check by key name only.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isKeyLocked } from 'blecsd';
+import { isKeyLocked } from 'blecsd/core';
 
 if (isKeyLocked('a')) {
   // Key is locked
@@ -287,9 +268,8 @@ if (isKeyLocked('a')) {
 
 Applies multiple options at once.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { applyKeyLockOptions } from 'blecsd';
+import { applyKeyLockOptions } from 'blecsd/core';
 
 applyKeyLockOptions({
   grab: ['tab'],
@@ -303,9 +283,8 @@ applyKeyLockOptions({
 
 Creates a scoped lock context that auto-restores.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createKeyLockScope } from 'blecsd';
+import { createKeyLockScope } from 'blecsd/core';
 
 // Open modal
 const restore = createKeyLockScope({
@@ -336,9 +315,8 @@ restore1(); // Back to original state
 
 Gets the current state object.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getKeyLockState } from 'blecsd';
+import { getKeyLockState } from 'blecsd/core';
 
 const state = getKeyLockState();
 console.log(state.allKeysLocked);
@@ -349,9 +327,8 @@ console.log(state.grabbedKeys);
 
 Creates a new state with defaults.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createKeyLockState } from 'blecsd';
+import { createKeyLockState } from 'blecsd/core';
 
 const state = createKeyLockState();
 // { grabbedKeys: Set, allKeysLocked: false, ignoredKeys: Set, customFilter: null }
@@ -361,9 +338,8 @@ const state = createKeyLockState();
 
 Resets global state to defaults (for testing).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetKeyLockState } from 'blecsd';
+import { resetKeyLockState } from 'blecsd/core';
 
 resetKeyLockState();
 ```
@@ -403,12 +379,8 @@ interface KeyLockOptions {
 
 ### Modal Dialog
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createKeyLockScope,
-  shouldBlockKeyEvent,
-} from 'blecsd';
+import { createKeyLockScope, shouldBlockKeyEvent } from 'blecsd/core';
 
 function openModal(): () => void {
   // Lock all except dialog controls
@@ -431,13 +403,8 @@ closeModal();
 
 ### Game Input
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  grabKeys,
-  releaseAllGrabbedKeys,
-  shouldBlockKeyEvent,
-} from 'blecsd';
+import { grabKeys, releaseAllGrabbedKeys, shouldBlockKeyEvent } from 'blecsd/core';
 
 function startGame(): void {
   // Grab movement keys
@@ -461,9 +428,8 @@ function handleGameInput(event: KeyEvent): void {
 
 ### Custom Input Validation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setKeyLockFilter } from 'blecsd';
+import { setKeyLockFilter } from 'blecsd/core';
 
 // Only allow alphanumeric input
 function enableAlphanumericOnly(): void {

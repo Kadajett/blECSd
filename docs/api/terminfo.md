@@ -6,9 +6,8 @@ The Tput module provides access to terminal capabilities through the terminfo da
 
 ### createTput
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTput } from 'blecsd';
+import { createTput } from 'blecsd/terminal';
 
 // Create with default terminal ($TERM)
 const tput = createTput();
@@ -37,9 +36,8 @@ const custom = createTput({
 
 Gets the shared default Tput instance. Creates one on first call using $TERM.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getDefaultTput } from 'blecsd';
+import { getDefaultTput } from 'blecsd/terminal';
 
 const tput = getDefaultTput();
 console.log(`Terminal: ${tput.terminal}`);
@@ -49,9 +47,8 @@ console.log(`Terminal: ${tput.terminal}`);
 
 Resets the default instance. Useful when terminal changes or for testing.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetDefaultTput } from 'blecsd';
+import { resetDefaultTput } from 'blecsd/terminal';
 
 resetDefaultTput();
 ```
@@ -60,9 +57,8 @@ resetDefaultTput();
 
 Gets xterm-256color data as a fallback.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getDefaultXtermData } from 'blecsd';
+import { getDefaultXtermData } from 'blecsd/terminal';
 
 const data = getDefaultXtermData();
 console.log(data.name);  // 'xterm-256color'
@@ -77,6 +73,9 @@ console.log(data.name);  // 'xterm-256color'
 Checks if a boolean capability is present.
 
 ```typescript
+import { createTput } from 'blecsd/terminal';
+
+const tput = createTput();
 if (tput.has('has_meta_key')) {
   // Terminal supports meta key
 }
@@ -91,6 +90,9 @@ if (tput.has('auto_right_margin')) {
 Gets a numeric capability value.
 
 ```typescript
+import { createTput } from 'blecsd/terminal';
+
+const tput = createTput();
 const colors = tput.getNumber('max_colors');
 console.log(`Terminal supports ${colors} colors`);
 
@@ -105,8 +107,10 @@ console.log(`Terminal size: ${cols}x${rows}`);
 
 Gets a string capability (control sequence).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createTput } from 'blecsd/terminal';
+
+const tput = createTput();
 const clearSeq = tput.getString('clear_screen');
 if (clearSeq) {
   process.stdout.write(clearSeq);
@@ -114,6 +118,7 @@ if (clearSeq) {
 
 const boldSeq = tput.getString('enter_bold_mode');
 const resetSeq = tput.getString('exit_attribute_mode');
+void boldSeq; void resetSeq;
 ```
 
 **Returns:** `string | null`
@@ -126,8 +131,10 @@ const resetSeq = tput.getString('exit_attribute_mode');
 
 Formats a parameterized string capability. Replaces placeholders with values.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createTput } from 'blecsd/terminal';
+
+const tput = createTput();
 // Move cursor to row 10, column 5
 const seq = tput.tparm('cursor_address', 10, 5);
 if (seq) {
@@ -139,6 +146,7 @@ const insertSeq = tput.tparm('parm_insert_line', 5);
 
 // Change scroll region
 const scrollSeq = tput.tparm('change_scroll_region', 5, 20);
+void insertSeq; void scrollSeq;
 ```
 
 **Returns:** `string | null`
@@ -151,8 +159,10 @@ const scrollSeq = tput.tparm('change_scroll_region', 5, 20);
 
 Cursor positioning shortcut.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createTput } from 'blecsd/terminal';
+
+const tput = createTput();
 // Move cursor to row 10, column 5 (0-indexed)
 process.stdout.write(tput.cup(10, 5));
 
@@ -164,8 +174,10 @@ process.stdout.write(tput.cup(0, 0));
 
 Set graphics rendition.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createTput } from 'blecsd/terminal';
+
+const tput = createTput();
 process.stdout.write(tput.sgr(0));  // Reset all
 process.stdout.write(tput.sgr(1));  // Bold
 process.stdout.write(tput.sgr(4));  // Underline
@@ -175,7 +187,6 @@ process.stdout.write(tput.sgr(4));  // Underline
 
 Set foreground color.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Basic colors (0-7)
 process.stdout.write(tput.setaf(0));  // Black
@@ -198,7 +209,6 @@ process.stdout.write(tput.setaf(196));  // Red from extended palette
 
 Set background color.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 process.stdout.write(tput.setab(4));    // Blue background
 process.stdout.write(tput.setab(232));  // Dark gray background
@@ -333,9 +343,8 @@ The `tparm` method processes terminfo parameter strings:
 
 ### Basic Terminal Control
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTput } from 'blecsd';
+import { createTput } from 'blecsd/terminal';
 
 const tput = createTput();
 
@@ -355,9 +364,8 @@ process.stdout.write(tput.getString('orig_pair') ?? '');  // Reset
 
 ### Alternate Screen Buffer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTput } from 'blecsd';
+import { createTput } from 'blecsd/terminal';
 
 const tput = createTput();
 
@@ -372,9 +380,8 @@ process.stdout.write(tput.getString('exit_ca_mode') ?? '');
 
 ### Cursor Visibility
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTput } from 'blecsd';
+import { createTput } from 'blecsd/terminal';
 
 const tput = createTput();
 
@@ -385,9 +392,8 @@ process.stdout.write(tput.getString('cursor_normal') ?? '');
 
 ### Checking Capabilities
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTput } from 'blecsd';
+import { createTput } from 'blecsd/terminal';
 
 const tput = createTput();
 

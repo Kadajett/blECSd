@@ -20,7 +20,6 @@ The system supports two error handling patterns:
 
 All blECSd errors share a common structure and are part of the `BlECSdError` discriminated union:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { BlECSdError } from 'blecsd/errors';
 
@@ -53,7 +52,6 @@ interface BlECSdErrorBase {
 
 Errors can include rich context for debugging:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { ErrorContext } from 'blecsd/errors';
 
@@ -72,7 +70,6 @@ interface ErrorContext {
 
 Use factory functions to create errors:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createValidationError,
@@ -116,10 +113,16 @@ function startGameLoop(world: World): Result<void> {
 
 For recoverable operations, use the `Result<T, E>` type instead of throwing exceptions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Result, ok, err, isOk, isErr, unwrapOr } from 'blecsd/errors';
-import { createWorld, addEntity } from 'blecsd';
+import { Result } from 'blecsd/errors';
+import {
+  ok,
+  err,
+  isOk,
+  isErr,
+  unwrapOr,
+} from 'blecsd/errors';
+import { createWorld, addEntity } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
 // Function that might fail
@@ -158,7 +161,6 @@ const position = unwrapOr(result, { x: 0, y: 0 });
 
 ### Result Type Utilities
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { map, flatMap, mapError, unwrapOrElse, ok, err } from 'blecsd/errors';
 
@@ -192,7 +194,6 @@ const value = unwrapOrElse(
 
 For exceptional cases or compatibility with existing try/catch code, convert blECSd errors to native Error instances:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { toNativeError, fromNativeError, createValidationError } from 'blecsd/errors';
 
@@ -225,7 +226,6 @@ try {
 
 When catching errors from external code, wrap them as blECSd errors:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { wrapError, InternalErrorCode } from 'blecsd/errors';
 
@@ -249,7 +249,6 @@ function processExternalData(data: unknown): Result<ParsedData> {
 
 Use type guards to narrow error types for specific handling:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   isValidationError,
@@ -288,12 +287,12 @@ function handleError(error: BlECSdError): void {
 
 Systems should handle errors gracefully and avoid crashing the game loop:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasComponent } from 'blecsd';
+import { hasComponent } from 'blecsd/core';
 import { query } from 'blecsd/core';
-import type { World } from 'blecsd';
-import { Result, ok, err } from 'blecsd/errors';
+import type { World } from 'blecsd/core';
+import { Result } from 'blecsd/errors';
+import { ok, err } from 'blecsd/errors';
 
 // System that processes entities and collects errors
 function processEntitiesSystem(world: World) {
@@ -341,7 +340,6 @@ function updateEntityPosition(
 
 Input errors are often recoverable - log them and continue processing:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKeyBuffer } from 'blecsd/terminal';
 import { isInputError, InputErrorCode } from 'blecsd/errors';
@@ -373,7 +371,6 @@ Different error types require different recovery strategies:
 
 ### Validation Errors (Recoverable)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isValidationError } from 'blecsd/errors';
 
@@ -389,7 +386,6 @@ function handleConfigError(error: BlECSdError, config: Config): Config {
 
 ### Terminal Errors (May require fallback)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTerminalError, TerminalErrorCode } from 'blecsd/errors';
 
@@ -413,7 +409,6 @@ function initializeTerminal(): Result<Terminal> {
 
 ### System Errors (Usually fatal)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isSystemError } from 'blecsd/errors';
 
@@ -436,7 +431,6 @@ function handleSystemError(error: BlECSdError): void {
 
 ### Internal Errors (Always report)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isInternalError } from 'blecsd/errors';
 
@@ -460,9 +454,8 @@ function handleError(error: BlECSdError): void {
 
 Create error boundaries to prevent one component's errors from crashing the entire UI:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { World, Entity } from 'blecsd';
+import type { World, Entity } from 'blecsd/core';
 import { BlECSdError } from 'blecsd/errors';
 
 interface ErrorBoundaryState {
@@ -638,10 +631,9 @@ function updateEntity(world: World, eid: Entity): Result<void> {
 
 Test both success and error cases:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { isOk, isErr } from 'blecsd/errors';
 
 describe('getEntityPosition', () => {

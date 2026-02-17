@@ -14,15 +14,10 @@ The render system:
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createScheduler,
-  LoopPhase,
-  renderSystem,
-  setRenderBuffer,
-  createDoubleBuffer,
-} from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { renderSystem, setRenderBuffer } from 'blecsd/systems';
+import { createDoubleBuffer } from 'blecsd/terminal';
 
 // Create double buffer for rendering
 const db = createDoubleBuffer(80, 24);
@@ -42,9 +37,9 @@ scheduler.run(world, deltaTime);
 
 Before the render system can work, you must set a double buffer:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createDoubleBuffer, setRenderBuffer, clearRenderBuffer } from 'blecsd';
+import { createDoubleBuffer } from 'blecsd/terminal';
+import { setRenderBuffer, clearRenderBuffer } from 'blecsd/systems';
 
 // Create and set buffer
 const db = createDoubleBuffer(80, 24);
@@ -61,9 +56,8 @@ clearRenderBuffer();
 
 Entities are rendered in z-index order:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPosition, setZIndex } from 'blecsd';
+import { setPosition, setZIndex } from 'blecsd/components';
 import { setStyle } from 'blecsd/components';
 
 // Background panel (z=0)
@@ -91,9 +85,8 @@ setStyle(world, overlay, { bg: '#ff0000' });
 
 The render context provides access to rendering resources:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { RenderContext } from 'blecsd';
+import type { RenderContext } from 'blecsd/systems';
 
 interface RenderContext {
   readonly world: World;
@@ -108,9 +101,8 @@ interface RenderContext {
 
 Fills the entity's bounds with its background color:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderBackground } from 'blecsd';
+import { renderBackground } from 'blecsd/systems';
 
 // Render background for entity
 renderBackground(ctx, entity, { x: 10, y: 5, width: 20, height: 10 });
@@ -127,9 +119,9 @@ setStyle(world, entity, { bg: '#ff0000', transparent: true });
 
 Renders the entity's border if configured:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderBorder, BorderType } from 'blecsd';
+import { renderBorder } from 'blecsd/systems';
+import { BorderType } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
 
 // Set up border
@@ -143,9 +135,8 @@ renderBorder(ctx, entity, { x: 10, y: 5, width: 20, height: 10 });
 
 Base implementation is a placeholder for widget extensions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderContent } from 'blecsd';
+import { renderContent } from 'blecsd/systems';
 
 // Called by render system, can be overridden by widgets
 renderContent(ctx, entity, contentBounds);
@@ -155,9 +146,8 @@ renderContent(ctx, entity, contentBounds);
 
 Placeholder for scrollable content support:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderScrollbar } from 'blecsd';
+import { renderScrollbar } from 'blecsd/systems';
 
 // Called by render system when scrollable
 renderScrollbar(ctx, entity, bounds);
@@ -169,9 +159,9 @@ renderScrollbar(ctx, entity, bounds);
 
 Writes text to the buffer:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderText, Attr } from 'blecsd';
+import { renderText } from 'blecsd/systems';
+import { Attr } from 'blecsd/terminal';
 
 // Simple text
 renderText(buffer, 10, 5, 'Hello, World!', 0xffffffff, 0x000000ff);
@@ -187,9 +177,9 @@ renderText(buffer, 10, 9, 'Styled', 0xff0000ff, 0x000000ff, Attr.BOLD | Attr.UND
 
 Fills a rectangular region:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderRect, createCell } from 'blecsd';
+import { renderRect } from 'blecsd/systems';
+import { createCell } from 'blecsd/terminal';
 
 // Fill region with blue background
 renderRect(buffer, 10, 5, 20, 10, createCell(' ', 0xffffffff, 0x0000ffff));
@@ -202,9 +192,8 @@ renderRect(buffer, 0, 0, 80, 1, createCell('=', 0xffff00ff, 0x000000ff));
 
 Forces all entities to re-render:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { markAllDirty } from 'blecsd';
+import { markAllDirty } from 'blecsd/systems';
 
 // After major state change
 markAllDirty(world);
@@ -214,9 +203,8 @@ markAllDirty(world);
 
 The render system uses computed layout for positions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { layoutSystem, renderSystem } from 'blecsd';
+import { layoutSystem, renderSystem } from 'blecsd/systems';
 
 // Layout must run before render
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
@@ -225,25 +213,19 @@ scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
 
 ## Complete Render Loop Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createDoubleBuffer, clearDirtyRegions } from 'blecsd/terminal';
+import { clearDirtyRegions } from 'blecsd/terminal';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
-  createWorld,
-  addEntity,
   setPosition,
   setDimensions,
   setStyle,
   setBorder,
   BorderType,
-  layoutSystem,
-  renderSystem,
-  setRenderBuffer,
-  createDoubleBuffer,
-  getBackBuffer,
-  getMinimalUpdates,
-  swapBuffers,
-  clearDirtyRegions,
-} from 'blecsd';
+} from 'blecsd/components';
+import { layoutSystem, renderSystem, setRenderBuffer } from 'blecsd/systems';
+import { createDoubleBuffer } from 'blecsd/terminal';
 
 // Setup
 const world = createWorld();

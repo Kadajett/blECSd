@@ -8,7 +8,6 @@ Debug logging is controlled by environment variables and writes to a log file ra
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDebugLogger, configureDebugLogger, LogLevel } from 'blecsd/terminal';
 
@@ -62,7 +61,6 @@ function configureDebugLogger(config: DebugLoggerConfig): void
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { configureDebugLogger, LogLevel } from 'blecsd/terminal';
 
@@ -95,7 +93,6 @@ function createDebugLogger(namespace: string): DebugLogger
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDebugLogger } from 'blecsd/terminal';
 
@@ -122,7 +119,6 @@ function isDebugLoggingEnabled(): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isDebugLoggingEnabled } from 'blecsd/terminal';
 
@@ -153,7 +149,6 @@ function clearLog(): void
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { clearLog } from 'blecsd/terminal';
 
@@ -174,7 +169,6 @@ function dumpTerminalState(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { dumpTerminalState } from 'blecsd/terminal';
 
@@ -196,7 +190,6 @@ function dumpRaw(data: string | Buffer, label?: string): void
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { dumpRaw } from 'blecsd/terminal';
 
@@ -290,7 +283,6 @@ interface TerminalStateDump {
 
 The module provides pre-configured loggers for common namespaces:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { debugLoggers } from 'blecsd/terminal';
 
@@ -345,7 +337,6 @@ Default log format:
 
 ### Game Development
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDebugLogger, dumpTerminalState } from 'blecsd/terminal';
 
@@ -372,7 +363,6 @@ class GameLoop {
 
 ### Input Debugging
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDebugLogger, dumpRaw } from 'blecsd/terminal';
 
@@ -390,7 +380,6 @@ function onData(data: Buffer) {
 
 ### Conditional Expensive Operations
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createDebugLogger, isDebugLoggingEnabled } from 'blecsd/terminal';
 

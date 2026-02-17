@@ -35,14 +35,13 @@ In this tutorial, you'll build a dual-pane file browser similar to Midnight Comm
 
 Create `file-browser.ts`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, addEntity, setPosition, setDimensions,
-  layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
-import { createProgram, type KeyEvent } from 'blecsd/terminal';
+import { type KeyEvent } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
 import {
   createVirtualizedList, createPanel, createText, createScrollableText,
   setPanelTitle,
@@ -183,7 +182,6 @@ function formatSize(bytes: number): string {
 
 ## Step 4: Create UI Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 const { columns, rows } = process.stdout;
 
@@ -246,7 +244,6 @@ setDimensions(world, statusBar, columns, 1);
 
 ## Step 5: Format File List Items
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 function formatFileEntry(entry: FileEntry, width: number): string {
   const icon = entry.isDirectory ? '📁' : '📄';

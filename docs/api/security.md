@@ -31,7 +31,6 @@ function sanitizeForTerminal(input: string, options?: SanitizeOptions): string
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sanitizeForTerminal } from 'blecsd/terminal';
 
@@ -67,7 +66,6 @@ function containsEscapeSequences(input: string): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { containsEscapeSequences } from 'blecsd/terminal';
 
@@ -86,7 +84,6 @@ function isSafeForTerminal(input: string): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isSafeForTerminal } from 'blecsd/terminal';
 
@@ -107,7 +104,6 @@ function extractEscapeSequences(input: string): string[]
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { extractEscapeSequences } from 'blecsd/terminal';
 
@@ -135,7 +131,6 @@ function categorizeEscapeSequences(input: string): {
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { categorizeEscapeSequences } from 'blecsd/terminal';
 
@@ -149,31 +144,24 @@ if (categories.dcs.length > 0) {
 }
 ```
 
-## Classes
+## Builder
 
-### SafeStringBuilder
+### createSafeStringBuilder
 
-A builder class for combining trusted and untrusted content safely.
+Creates a builder for combining trusted and untrusted content safely.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-class SafeStringBuilder {
-  constructor(defaultOptions?: SanitizeOptions)
-  append(trusted: string): this
-  appendUntrusted(untrusted: string, options?: SanitizeOptions): this
-  clear(): this
-  toString(): string
-  get length(): number
-}
+function createSafeStringBuilder(defaultOptions?: SanitizeOptions): SafeStringBuilder
 ```
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { SafeStringBuilder } from 'blecsd/terminal';
+import { createSafeStringBuilder } from 'blecsd/terminal';
 
-const builder = new SafeStringBuilder();
+const builder = createSafeStringBuilder();
+const userName = 'user';
+const message = 'hello';
 const output = builder
   .append('\x1b[1m')           // Trusted: bold on
   .appendUntrusted(userName)   // Sanitized user input
@@ -187,12 +175,16 @@ process.stdout.write(output);
 
 **With custom default options:**
 ```typescript
+import { createSafeStringBuilder } from 'blecsd/terminal';
+
 // Allow colors in all untrusted content by default
-const builder = new SafeStringBuilder({
+const builder = createSafeStringBuilder({
   stripAllEscapes: false,
   allowColors: true,
 });
 
+const coloredInput = '\x1b[32mgreen text\x1b[0m';
+const otherInput = 'plain text';
 builder
   .appendUntrusted(coloredInput)  // Colors preserved
   .appendUntrusted(otherInput, { stripAllEscapes: true });  // Override for this one
@@ -266,7 +258,6 @@ The following sequence types are always stripped (even when `stripAllEscapes: fa
 
 4. **Validate before display** - Use `isSafeForTerminal` to check input before deciding how to handle it.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Recommended pattern
 import { isSafeForTerminal, sanitizeForTerminal } from 'blecsd/terminal';

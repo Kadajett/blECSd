@@ -4,9 +4,9 @@ Efficiently renders text that streams in character-by-character or chunk-by-chun
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createStreamingText, addEntity, createWorld } from 'blecsd';
+import { createStreamingText } from 'blecsd/widgets';
+import { addEntity, createWorld } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -40,9 +40,8 @@ stream.endStream();
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { StreamingTextConfigSchema } from 'blecsd';
+import { StreamingTextConfigSchema } from 'blecsd/widgets';
 
 const config = StreamingTextConfigSchema.parse({
   maxLines: 5000,
@@ -59,9 +58,9 @@ const config = StreamingTextConfigSchema.parse({
 
 Creates a streaming text widget attached to an existing entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createStreamingText, addEntity } from 'blecsd';
+import { createStreamingText } from 'blecsd/widgets';
+import { addEntity } from 'blecsd/core';
 
 const eid = addEntity(world);
 const stream = createStreamingText(world, eid, {
@@ -228,9 +227,8 @@ These functions operate on `StreamingTextState` objects and can be used independ
 
 ### createStreamingState
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createStreamingState } from 'blecsd';
+import { createStreamingState } from 'blecsd/widgets';
 
 const state = createStreamingState({ wrapWidth: 120 }, 24);
 ```
@@ -243,9 +241,8 @@ const state = createStreamingState({ wrapWidth: 120 }, 24);
 
 ### appendToState
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { appendToState } from 'blecsd';
+import { appendToState } from 'blecsd/widgets';
 
 let state = createStreamingState();
 state = appendToState(state, 'Hello world\n');
@@ -255,27 +252,24 @@ Appends text to a state object, handling wrapping, eviction, and auto-scroll.
 
 ### clearState
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearState } from 'blecsd';
+import { clearState } from 'blecsd/widgets';
 
 state = clearState(state);
 ```
 
 ### getStreamVisibleLines
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getStreamVisibleLines } from 'blecsd';
+import { getStreamVisibleLines } from 'blecsd/widgets';
 
 const visible = getStreamVisibleLines(state);
 ```
 
 ### scrollToLine / scrollByLines
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { scrollToLine, scrollByLines } from 'blecsd';
+import { scrollToLine, scrollByLines } from 'blecsd/components';
 
 state = scrollToLine(state, 100);
 state = scrollByLines(state, -5);
@@ -287,9 +281,8 @@ state = scrollByLines(state, -5);
 
 ### wrapLine
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { wrapLine } from 'blecsd';
+import { wrapLine } from 'blecsd/widgets';
 
 const lines = wrapLine('Hello World, this is a long line', 10);
 // ['Hello Worl', 'd, this is', ' a long li', 'ne']
@@ -297,9 +290,8 @@ const lines = wrapLine('Hello World, this is a long line', 10);
 
 ### stripAnsiSequences
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { stripAnsiSequences } from 'blecsd';
+import { stripAnsiSequences } from 'blecsd/widgets';
 
 const clean = stripAnsiSequences('\x1b[31mRed text\x1b[0m');
 // 'Red text'
@@ -352,9 +344,9 @@ interface StreamDirtyRegion {
 
 ### Streaming from an Async Source
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createStreamingText, addEntity, createWorld } from 'blecsd';
+import { createStreamingText } from 'blecsd/widgets';
+import { addEntity, createWorld } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);

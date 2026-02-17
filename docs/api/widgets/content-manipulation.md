@@ -4,7 +4,6 @@ A set of functions for line-level manipulation of entity text content. Provides 
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getLines,
@@ -14,7 +13,7 @@ import {
   pushLine,
   popLine,
   spliceLines,
-} from 'blecsd';
+} from 'blecsd/widgets';
 
 // Set content, then manipulate by line
 setContent(world, entity, 'Line 1\nLine 2\nLine 3');
@@ -35,9 +34,8 @@ const removed = popLine(world, entity);
 
 Gets the content of an entity as an array of lines.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLines } from 'blecsd';
+import { getLines } from 'blecsd/widgets';
 
 setContent(world, entity, 'Line 1\nLine 2\nLine 3');
 const lines = getLines(world, entity);
@@ -54,9 +52,8 @@ const lines = getLines(world, entity);
 
 Gets the number of lines in an entity's content.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLineCount } from 'blecsd';
+import { getLineCount } from 'blecsd/utils';
 
 setContent(world, entity, 'Line 1\nLine 2\nLine 3');
 console.log(getLineCount(world, entity)); // 3
@@ -68,9 +65,8 @@ console.log(getLineCount(world, entity)); // 3
 
 Gets a specific line by index (0-based).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLine } from 'blecsd';
+import { getLine } from 'blecsd/utils';
 
 setContent(world, entity, 'Line 1\nLine 2\nLine 3');
 console.log(getLine(world, entity, 1)); // 'Line 2'
@@ -82,9 +78,8 @@ console.log(getLine(world, entity, 1)); // 'Line 2'
 
 Gets a line from the base content (before scroll adjustment). Equivalent to `getLine` since scroll offset is applied during rendering, not storage.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getBaseLine } from 'blecsd';
+import { getBaseLine } from 'blecsd/widgets';
 
 console.log(getBaseLine(world, entity, 0)); // Same as getLine
 ```
@@ -97,9 +92,8 @@ console.log(getBaseLine(world, entity, 0)); // Same as getLine
 
 Sets a specific line by index. Marks the entity dirty.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setLine } from 'blecsd';
+import { setLine } from 'blecsd/widgets';
 
 setContent(world, entity, 'Line 1\nLine 2\nLine 3');
 setLine(world, entity, 1, 'Modified Line');
@@ -118,9 +112,8 @@ setLine(world, entity, 1, 'Modified Line');
 
 Sets a line in the base content. Equivalent to `setLine`.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBaseLine } from 'blecsd';
+import { setBaseLine } from 'blecsd/widgets';
 
 setBaseLine(world, entity, 0, 'New first line');
 ```
@@ -129,9 +122,8 @@ setBaseLine(world, entity, 0, 'New first line');
 
 Sets all content lines at once. Marks the entity dirty and adjusts scroll if content is now shorter.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setLines } from 'blecsd';
+import { setLines } from 'blecsd/widgets';
 
 setLines(world, entity, ['Line 1', 'Line 2', 'Line 3']);
 // Content: 'Line 1\nLine 2\nLine 3'
@@ -148,9 +140,8 @@ setLines(world, entity, ['Line 1', 'Line 2', 'Line 3']);
 
 Clears all lines and resets scroll position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearLines } from 'blecsd';
+import { clearLines } from 'blecsd/widgets';
 
 clearLines(world, entity);
 // Content: ''
@@ -164,9 +155,8 @@ clearLines(world, entity);
 
 Inserts a line at a specific position. Adjusts scroll if inserting above the current scroll position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { insertLine } from 'blecsd';
+import { insertLine } from 'blecsd/widgets';
 
 setContent(world, entity, 'Line 1\nLine 3');
 insertLine(world, entity, 1, 'Line 2');
@@ -185,9 +175,8 @@ insertLine(world, entity, 1, 'Line 2');
 
 Inserts a line at the top of the content.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { insertTop } from 'blecsd';
+import { insertTop } from 'blecsd/widgets';
 
 setContent(world, entity, 'Line 2\nLine 3');
 insertTop(world, entity, 'Line 1');
@@ -198,9 +187,8 @@ insertTop(world, entity, 'Line 1');
 
 Inserts a line at the bottom of the content.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { insertBottom } from 'blecsd';
+import { insertBottom } from 'blecsd/widgets';
 
 setContent(world, entity, 'Line 1\nLine 2');
 insertBottom(world, entity, 'Line 3');
@@ -215,9 +203,8 @@ insertBottom(world, entity, 'Line 3');
 
 Deletes one or more lines starting at a specific position. Adjusts scroll if deleting above the current scroll position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { deleteLine } from 'blecsd';
+import { deleteLine } from 'blecsd/widgets';
 
 setContent(world, entity, 'Line 1\nLine 2\nLine 3\nLine 4');
 deleteLine(world, entity, 1, 2);
@@ -236,9 +223,8 @@ deleteLine(world, entity, 1, 2);
 
 Deletes lines from the top.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { deleteTop } from 'blecsd';
+import { deleteTop } from 'blecsd/widgets';
 
 setContent(world, entity, 'Line 1\nLine 2\nLine 3');
 deleteTop(world, entity, 1);
@@ -249,9 +235,8 @@ deleteTop(world, entity, 1);
 
 Deletes lines from the bottom.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { deleteBottom } from 'blecsd';
+import { deleteBottom } from 'blecsd/widgets';
 
 setContent(world, entity, 'Line 1\nLine 2\nLine 3');
 deleteBottom(world, entity, 1);
@@ -266,9 +251,8 @@ deleteBottom(world, entity, 1);
 
 Pushes a line to the bottom (alias for `insertBottom`).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { pushLine } from 'blecsd';
+import { pushLine } from 'blecsd/widgets';
 
 pushLine(world, entity, 'Log entry 1');
 pushLine(world, entity, 'Log entry 2');
@@ -279,9 +263,8 @@ pushLine(world, entity, 'Log entry 2');
 
 Removes and returns the last line.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { popLine } from 'blecsd';
+import { popLine } from 'blecsd/widgets';
 
 setContent(world, entity, 'Line 1\nLine 2\nLine 3');
 const removed = popLine(world, entity);
@@ -295,9 +278,8 @@ const removed = popLine(world, entity);
 
 Removes and returns the first line. Adjusts scroll position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { shiftLine } from 'blecsd';
+import { shiftLine } from 'blecsd/widgets';
 
 setContent(world, entity, 'Line 1\nLine 2\nLine 3');
 const removed = shiftLine(world, entity);
@@ -311,9 +293,8 @@ const removed = shiftLine(world, entity);
 
 Adds a line to the top (alias for `insertTop`).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { unshiftLine } from 'blecsd';
+import { unshiftLine } from 'blecsd/widgets';
 
 unshiftLine(world, entity, 'New first line');
 ```
@@ -326,9 +307,8 @@ unshiftLine(world, entity, 'New first line');
 
 Replaces multiple lines starting at an index (in-place, does not change line count).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { replaceLines } from 'blecsd';
+import { replaceLines } from 'blecsd/widgets';
 
 setContent(world, entity, 'A\nB\nC\nD\nE');
 replaceLines(world, entity, 1, ['X', 'Y']);
@@ -347,9 +327,8 @@ replaceLines(world, entity, 1, ['X', 'Y']);
 
 Deletes and/or inserts lines at a position (like `Array.splice`).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { spliceLines } from 'blecsd';
+import { spliceLines } from 'blecsd/widgets';
 
 setContent(world, entity, 'A\nB\nC\nD');
 const deleted = spliceLines(world, entity, 1, 2, ['X', 'Y', 'Z']);
@@ -383,9 +362,9 @@ All modification functions automatically adjust the scroll position for entities
 
 ### Log Buffer with Maximum Lines
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { pushLine, getLineCount, deleteTop } from 'blecsd';
+import { pushLine, deleteTop } from 'blecsd/widgets';
+import { getLineCount } from 'blecsd/utils';
 
 const MAX_LINES = 1000;
 
@@ -402,9 +381,9 @@ function addLogEntry(world, entity, message) {
 
 ### Editable Text Buffer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLine, setLine, insertLine, deleteLine } from 'blecsd';
+import { getLine } from 'blecsd/utils';
+import { setLine, insertLine, deleteLine } from 'blecsd/widgets';
 
 // Insert a line at the cursor
 function insertAtCursor(world, entity, cursorLine, text) {

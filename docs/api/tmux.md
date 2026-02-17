@@ -31,7 +31,6 @@ function wrap(sequence: string): string
 **Returns:** The wrapped sequence for tmux pass-through
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title } from 'blecsd/terminal';
 
@@ -57,7 +56,6 @@ function unwrap(wrapped: string): string | null
 **Returns:** The original sequence, or `null` if not a valid tmux pass-through
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -76,7 +74,6 @@ function isWrapped(sequence: string): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -104,7 +101,6 @@ function wrapIf(sequence: string, inTmux: boolean): string
 **Returns:** The sequence, wrapped if in tmux and not already wrapped
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title, isTmux } from 'blecsd/terminal';
 
@@ -124,7 +120,6 @@ function end(): string    // Returns '\x1b\\'
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -152,7 +147,6 @@ const PT_START = '\x1bPtmux;'
 
 ### Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title, cursor, isTmux } from 'blecsd/terminal';
 
@@ -170,7 +164,6 @@ process.stdout.write(output);
 
 ### With wrapIf Helper
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title, isTmux } from 'blecsd/terminal';
 
@@ -181,7 +174,6 @@ process.stdout.write(seq);
 
 ### Combining Multiple Sequences
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title, cursor, screen, isTmux } from 'blecsd/terminal';
 
@@ -198,7 +190,6 @@ process.stdout.write(output);
 
 ### Round-Trip Verification
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -224,7 +215,6 @@ Use tmux pass-through for sequences that:
 
 Use `isTmux()` from the detection module to check if running inside tmux:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTmux } from 'blecsd/terminal';
 

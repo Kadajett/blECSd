@@ -25,6 +25,7 @@ export interface Report {
   readonly ignoredCount: number;
   readonly skippedCount: number;
   readonly results: readonly ExecutionResult[];
+  readonly signatureWarnings: readonly SignatureWarning[];
 }
 
 export interface CliOptions {
@@ -34,4 +35,23 @@ export interface CliOptions {
   readonly timeout: number;
   readonly file: string;
   readonly noCleanup: boolean;
+  readonly strictSignatures: boolean;
+}
+
+export interface FactorySignature {
+  readonly name: string;
+  readonly paramCount: number;
+  readonly requiredParams: number;
+  readonly paramTypes: readonly string[];
+  readonly sourceFile: string;
+}
+
+export interface SignatureWarning {
+  readonly block: CodeBlock;
+  readonly functionName: string;
+  readonly expectedArgsMin: number;
+  readonly expectedArgsMax: number;
+  readonly actualArgs: number;
+  readonly callSite: string;
+  readonly lineInBlock: number;
 }

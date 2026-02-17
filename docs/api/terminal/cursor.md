@@ -13,7 +13,6 @@ The artificial cursor system provides:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createArtificialCursor,
@@ -21,13 +20,14 @@ import {
   updateCursorBlink,
   isCursorVisible,
   hideTerminalCursor,
-} from 'blecsd';
+  createCell,
+} from 'blecsd/terminal';
 
 // Hide the terminal's native cursor
 process.stdout.write(hideTerminalCursor());
 
 // Create an artificial cursor
-const cursor = createArtificialCursor({
+let cursor = createArtificialCursor({
   x: 10,
   y: 5,
   shape: 'block',
@@ -36,13 +36,16 @@ const cursor = createArtificialCursor({
 
 // In render loop
 function render(time: number) {
-  const updated = updateCursorBlink(cursor, time);
+  cursor = updateCursorBlink(cursor, time);
 
-  if (isCursorVisible(updated)) {
-    const rendered = renderCursor(updated, getCell(updated.x, updated.y));
-    setCell(updated.x, updated.y, rendered.cell);
+  if (isCursorVisible(cursor)) {
+    const originalCell = createCell(' ', 0xffffffff, 0xff000000);
+    const rendered = renderCursor(cursor, originalCell);
+    void rendered.cell;
   }
 }
+
+void render;
 ```
 
 ## Creating Cursors
@@ -51,9 +54,8 @@ function render(time: number) {
 
 Create a new artificial cursor with configurable options.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createArtificialCursor } from 'blecsd';
+import { createArtificialCursor } from 'blecsd/terminal';
 
 // Basic cursor
 const cursor = createArtificialCursor();
@@ -119,10 +121,10 @@ const barCursor = createArtificialCursor({ shape: 'bar' });
 
 Move cursor to absolute position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { moveCursorTo } from 'blecsd';
+import { createArtificialCursor, moveCursorTo } from 'blecsd/terminal';
 
+let cursor = createArtificialCursor();
 cursor = moveCursorTo(cursor, 15, 10);
 ```
 
@@ -130,10 +132,10 @@ cursor = moveCursorTo(cursor, 15, 10);
 
 Move cursor by delta.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { moveCursorBy } from 'blecsd';
+import { createArtificialCursor, moveCursorBy } from 'blecsd/terminal';
 
+let cursor = createArtificialCursor();
 cursor = moveCursorBy(cursor, 1, 0);  // Move right
 cursor = moveCursorBy(cursor, 0, -1); // Move up
 ```
@@ -142,38 +144,40 @@ cursor = moveCursorBy(cursor, 0, -1); // Move up
 
 ### setCursorVisible
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCursorVisible } from 'blecsd';
+import { createArtificialCursor, setCursorVisible } from 'blecsd/terminal';
 
+let cursor = createArtificialCursor();
 cursor = setCursorVisible(cursor, false); // Hide
 cursor = setCursorVisible(cursor, true);  // Show
 ```
 
 ### setCursorShape
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCursorShape } from 'blecsd';
+import { createArtificialCursor, setCursorShape } from 'blecsd/terminal';
 
+let cursor = createArtificialCursor();
 cursor = setCursorShape(cursor, 'underline');
 ```
 
 ### setCursorBlink
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCursorBlink } from 'blecsd';
+import { createArtificialCursor, setCursorBlink } from 'blecsd/terminal';
 
+let cursor = createArtificialCursor();
 cursor = setCursorBlink(cursor, true, 400); // Enable with 400ms rate
 cursor = setCursorBlink(cursor, false);     // Disable
 ```
 
 ### setCursorColors
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCursorColors, packColor } from 'blecsd';
+import { createArtificialCursor, setCursorColors } from 'blecsd/terminal';
+import { packColor } from 'blecsd/components';
+
+let cursor = createArtificialCursor();
 
 // Red cursor on black background
 cursor = setCursorColors(cursor, packColor(255, 0, 0), packColor(0, 0, 0));
@@ -188,9 +192,10 @@ cursor = setCursorColors(cursor, undefined, undefined);
 
 Update cursor blink state based on elapsed time. Call every frame.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateCursorBlink } from 'blecsd';
+import { createArtificialCursor, updateCursorBlink } from 'blecsd/terminal';
+
+let cursor = createArtificialCursor();
 
 function gameLoop() {
   cursor = updateCursorBlink(cursor, performance.now());
@@ -202,9 +207,10 @@ function gameLoop() {
 
 Force blink state to on. Useful after user input.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetCursorBlink } from 'blecsd';
+import { createArtificialCursor, resetCursorBlink } from 'blecsd/terminal';
+
+let cursor = createArtificialCursor();
 
 // On keypress, restart blink cycle
 cursor = resetCursorBlink(cursor, performance.now());
@@ -214,12 +220,13 @@ cursor = resetCursorBlink(cursor, performance.now());
 
 Check if cursor should be rendered (considering blink state).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isCursorVisible } from 'blecsd';
+import { createArtificialCursor, isCursorVisible } from 'blecsd/terminal';
 
+const cursor = createArtificialCursor();
 if (isCursorVisible(cursor)) {
-  renderCursorCell(cursor);
+  // renderCursorCell(cursor);
+  void cursor;
 }
 ```
 
@@ -229,19 +236,19 @@ if (isCursorVisible(cursor)) {
 
 Apply cursor styling to an existing cell.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderCursor } from 'blecsd';
+import { createArtificialCursor, renderCursor, createCell } from 'blecsd/terminal';
 
-const originalCell = getCell(cursor.x, cursor.y);
+const cursor = createArtificialCursor();
+const originalCell = createCell(' ', 0xffffffff, 0xff000000);
 const result = renderCursor(cursor, originalCell);
 
 if (result.fullCell) {
   // Block cursor replaces entire cell
-  setCell(cursor.x, cursor.y, result.cell);
+  void result.cell;
 } else {
   // Underline/bar overlays partial cell
-  overlayCell(cursor.x, cursor.y, result.cell);
+  void result.cell;
 }
 ```
 
@@ -249,11 +256,12 @@ if (result.fullCell) {
 
 Create a cell for just the cursor character.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCursorCell } from 'blecsd';
+import { createArtificialCursor, createCursorCell } from 'blecsd/terminal';
 
+const cursor = createArtificialCursor();
 const cursorCell = createCursorCell(cursor);
+void cursorCell;
 ```
 
 ## Multi-Cursor Support
@@ -262,21 +270,22 @@ const cursorCell = createCursorCell(cursor);
 
 Manage multiple cursors with a primary cursor.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
+  createArtificialCursor,
   createCursorManager,
   getPrimaryCursor,
   addCursor,
   removeCursor,
   getVisibleCursors,
-} from 'blecsd';
+} from 'blecsd/terminal';
 
 // Create manager
-const manager = createCursorManager();
+let manager = createCursorManager();
 
 // Get primary cursor
 const primary = getPrimaryCursor(manager);
+void primary;
 
 // Add secondary cursor
 const secondary = createArtificialCursor({ id: 'secondary', x: 20, y: 10 });
@@ -287,16 +296,17 @@ manager = removeCursor(manager, 'secondary');
 
 // Get all visible cursors for rendering
 const visible = getVisibleCursors(manager);
+void visible;
 ```
 
 ### updateAllCursorBlinks
 
 Update blink state for all cursors in manager.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateAllCursorBlinks } from 'blecsd';
+import { createCursorManager, updateAllCursorBlinks } from 'blecsd/terminal';
 
+let manager = createCursorManager();
 manager = updateAllCursorBlinks(manager, performance.now());
 ```
 
@@ -304,10 +314,10 @@ manager = updateAllCursorBlinks(manager, performance.now());
 
 Get cursor at a specific position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getCursorAt } from 'blecsd';
+import { createCursorManager, getCursorAt } from 'blecsd/terminal';
 
+const manager = createCursorManager();
 const cursor = getCursorAt(manager, 10, 5);
 if (cursor) {
   // There's a cursor here
@@ -320,9 +330,8 @@ if (cursor) {
 
 When using artificial cursors, hide the terminal's native cursor.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hideTerminalCursor, showTerminalCursor } from 'blecsd';
+import { hideTerminalCursor, showTerminalCursor } from 'blecsd/terminal';
 
 // Enter artificial cursor mode
 process.stdout.write(hideTerminalCursor());
@@ -335,31 +344,35 @@ process.stdout.write(showTerminalCursor());
 
 ### Constants
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  HIDE_TERMINAL_CURSOR,  // '\x1b[?25l'
-  SHOW_TERMINAL_CURSOR,  // '\x1b[?25h'
-  BLOCK_CURSOR_CHAR,     // '\u2588' (full block)
-  UNDERLINE_CURSOR_CHAR, // '\u2581' (lower one eighth)
-  BAR_CURSOR_CHAR,       // '\u258F' (left one eighth)
-} from 'blecsd';
+  // '\x1b[?25l'
+  SHOW_TERMINAL_CURSOR,
+  // '\x1b[?25h'
+  BLOCK_CURSOR_CHAR,
+  // '\u2588' (full block)
+  UNDERLINE_CURSOR_CHAR,
+  // '\u2581' (lower one eighth)
+  BAR_CURSOR_CHAR,
+  HIDE_TERMINAL_CURSOR,
+} from 'blecsd/terminal';
 ```
 
 ## Example: Text Editor Cursor
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createArtificialCursor,
   moveCursorTo,
+  moveCursorBy,
   updateCursorBlink,
+  renderCursor,
   resetCursorBlink,
   isCursorVisible,
-  renderCursor,
+  createCell,
   hideTerminalCursor,
   showTerminalCursor,
-} from 'blecsd';
+} from 'blecsd/terminal';
 
 // Initialize
 process.stdout.write(hideTerminalCursor());
@@ -390,17 +403,19 @@ function onKeyDown(key: string) {
 function render(time: number) {
   cursor = updateCursorBlink(cursor, time);
 
-  // Clear previous cursor position if needed
-  // ...
-
   if (isCursorVisible(cursor)) {
-    const cell = renderCursor(cursor, buffer.getCell(cursor.x, cursor.y));
-    buffer.setCell(cursor.x, cursor.y, cell.cell);
+    const originalCell = createCell(' ', 0xffffffff, 0xff000000);
+    const result = renderCursor(cursor, originalCell);
+    void result.cell;
   }
 
   // Output to terminal
   // ...
 }
+
+void onKeyDown;
+void render;
+void moveCursorTo;
 
 // Cleanup
 process.on('exit', () => {

@@ -14,15 +14,14 @@ The effects system provides:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setEffects,
   applyFocusEffect,
   removeFocusEffect,
   syncEffects,
-  packColor,
-} from 'blecsd';
+} from 'blecsd/core';
+import { packColor } from 'blecsd/components';
 
 // Configure all effects for a button
 setEffects(world, buttonEntity, {
@@ -45,9 +44,8 @@ syncEffects(world, entity);
 
 Configure all effects for an entity in one call.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setEffects } from 'blecsd';
+import { setEffects } from 'blecsd/core';
 
 setEffects(world, entity, {
   focus: { fg: 0xffff00ff, bold: true },
@@ -75,9 +73,8 @@ interface EffectsConfig {
 
 Apply or remove focus styling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { applyFocusEffect, removeFocusEffect } from 'blecsd';
+import { applyFocusEffect, removeFocusEffect } from 'blecsd/core';
 
 // When entity gains focus
 applyFocusEffect(world, entity);
@@ -90,9 +87,8 @@ removeFocusEffect(world, entity);
 
 Check if focus effect is active.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasFocusEffectApplied } from 'blecsd';
+import { hasFocusEffectApplied } from 'blecsd/core';
 
 if (hasFocusEffectApplied(entity)) {
   // Focus styling is applied
@@ -105,9 +101,8 @@ if (hasFocusEffectApplied(entity)) {
 
 Apply or remove hover styling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { applyHoverEffect, removeHoverEffect } from 'blecsd';
+import { applyHoverEffect, removeHoverEffect } from 'blecsd/core';
 
 // When mouse enters
 applyHoverEffect(world, entity);
@@ -120,9 +115,8 @@ removeHoverEffect(world, entity);
 
 Check if hover effect is active.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasHoverEffectApplied } from 'blecsd';
+import { hasHoverEffectApplied } from 'blecsd/core';
 
 if (hasHoverEffectApplied(entity)) {
   // Hover styling is applied
@@ -135,9 +129,8 @@ if (hasHoverEffectApplied(entity)) {
 
 Apply or remove press/active styling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { applyPressEffect, removePressEffect } from 'blecsd';
+import { applyPressEffect, removePressEffect } from 'blecsd/core';
 
 // On mouse down
 applyPressEffect(world, entity);
@@ -150,9 +143,8 @@ removePressEffect(world, entity);
 
 Check if press effect is active.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasPressEffectApplied } from 'blecsd';
+import { hasPressEffectApplied } from 'blecsd/core';
 
 if (hasPressEffectApplied(entity)) {
   // Press styling is applied
@@ -165,9 +157,8 @@ if (hasPressEffectApplied(entity)) {
 
 Apply or remove disabled styling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { applyDisabledEffect, removeDisabledEffect } from 'blecsd';
+import { applyDisabledEffect, removeDisabledEffect } from 'blecsd/core';
 
 // When entity becomes disabled
 applyDisabledEffect(world, entity);
@@ -180,9 +171,8 @@ removeDisabledEffect(world, entity);
 
 Check if disabled effect is active.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasDisabledEffectApplied } from 'blecsd';
+import { hasDisabledEffectApplied } from 'blecsd/core';
 
 if (hasDisabledEffectApplied(entity)) {
   // Disabled styling is applied
@@ -195,9 +185,9 @@ if (hasDisabledEffectApplied(entity)) {
 
 Apply arbitrary effect configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { applyCustomEffect, packColor } from 'blecsd';
+import { applyCustomEffect } from 'blecsd/core';
+import { packColor } from 'blecsd/components';
 
 // Static effect
 applyCustomEffect(world, entity, {
@@ -221,9 +211,8 @@ applyCustomEffect(world, entity, {
 
 Synchronize effects with current entity state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { syncEffects } from 'blecsd';
+import { syncEffects } from 'blecsd/core';
 
 // After changing focus/hover state programmatically
 syncEffects(world, entity);
@@ -233,9 +222,8 @@ syncEffects(world, entity);
 
 Remove all active effects and restore original style.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { removeAllEffects } from 'blecsd';
+import { removeAllEffects } from 'blecsd/core';
 
 removeAllEffects(world, entity);
 ```
@@ -244,9 +232,8 @@ removeAllEffects(world, entity);
 
 Get current effect state for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getEffectState } from 'blecsd';
+import { getEffectState } from 'blecsd/core';
 
 const state = getEffectState(entity);
 // state = { focus: true, hover: false, press: false, disabled: false }
@@ -256,9 +243,8 @@ const state = getEffectState(entity);
 
 Check if any effect is active.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasAnyEffectApplied } from 'blecsd';
+import { hasAnyEffectApplied } from 'blecsd/core';
 
 if (hasAnyEffectApplied(entity)) {
   // At least one effect is applied
@@ -271,9 +257,8 @@ if (hasAnyEffectApplied(entity)) {
 
 Get the original style before effects were applied.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getOriginalStyle } from 'blecsd';
+import { getOriginalStyle } from 'blecsd/core';
 
 const original = getOriginalStyle(world, entity);
 // original.fg is the color before effects
@@ -283,9 +268,8 @@ const original = getOriginalStyle(world, entity);
 
 Get the current style (with effects applied).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getComputedEffectStyle } from 'blecsd';
+import { getComputedEffectStyle } from 'blecsd/core';
 
 const current = getComputedEffectStyle(world, entity);
 // current.fg is the effective color now
@@ -316,7 +300,6 @@ type DynamicValue<T> = T | ((world: World, entity: Entity) => T);
 
 ## Example: Interactive Button
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createBoxEntity,
@@ -327,8 +310,8 @@ import {
   removeHoverEffect,
   applyPressEffect,
   removePressEffect,
-  packColor,
-} from 'blecsd';
+} from 'blecsd/core';
+import { packColor } from 'blecsd/components';
 
 // Create button
 const button = createBoxEntity(world, {
@@ -376,9 +359,8 @@ function onBlur(entity: Entity) {
 
 Clear effects config and remove all effects.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearEffects } from 'blecsd';
+import { clearEffects } from 'blecsd/core';
 
 clearEffects(world, entity);
 ```
@@ -387,9 +369,8 @@ clearEffects(world, entity);
 
 Clear all effect-related state for an entity. Call when destroying entities.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearEffectState } from 'blecsd';
+import { clearEffectState } from 'blecsd/core';
 
 clearEffectState(entity);
 ```

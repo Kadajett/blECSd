@@ -8,7 +8,6 @@ The Collision module provides a `Collider` component that supports axis-aligned 
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Collider,
@@ -31,7 +30,7 @@ import {
   collisionPairKey,
   DEFAULT_LAYER,
   DEFAULT_MASK,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Component Data Layout
@@ -53,9 +52,8 @@ const Collider = {
 
 ### ColliderType
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ColliderType } from 'blecsd';
+import { ColliderType } from 'blecsd/components';
 
 ColliderType.BOX    // 0
 ColliderType.CIRCLE // 1
@@ -63,9 +61,8 @@ ColliderType.CIRCLE // 1
 
 ### DEFAULT_LAYER / DEFAULT_MASK
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { DEFAULT_LAYER, DEFAULT_MASK } from 'blecsd';
+import { DEFAULT_LAYER, DEFAULT_MASK } from 'blecsd/components';
 
 DEFAULT_LAYER // 1
 DEFAULT_MASK  // 0xFFFF (collide with all layers)
@@ -77,9 +74,13 @@ DEFAULT_MASK  // 0xFFFF (collide with all layers)
 
 Creates or updates a collider on an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCollider, ColliderType } from 'blecsd';
+import { setCollider, ColliderType } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const player = addEntity(world);
+const checkpoint = addEntity(world);
 
 // Box collider with layer filtering
 setCollider(world, player, {
@@ -111,9 +112,8 @@ setCollider(world, checkpoint, {
 
 Returns collider data for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getCollider } from 'blecsd';
+import { getCollider } from 'blecsd/components';
 
 const col = getCollider(world, entity);
 if (col) {
@@ -125,9 +125,8 @@ if (col) {
 
 ### hasCollider / removeCollider
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasCollider, removeCollider } from 'blecsd';
+import { hasCollider, removeCollider } from 'blecsd/components';
 
 if (hasCollider(world, entity)) {
   removeCollider(world, entity);
@@ -138,9 +137,8 @@ if (hasCollider(world, entity)) {
 
 ### setCollisionLayer / setCollisionMask
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCollisionLayer, setCollisionMask } from 'blecsd';
+import { setCollisionLayer, setCollisionMask } from 'blecsd/components';
 
 setCollisionLayer(world, entity, 0b0010); // Entity is on layer 2
 setCollisionMask(world, entity, 0b0101);  // Collide with layers 1 and 3
@@ -150,9 +148,8 @@ setCollisionMask(world, entity, 0b0101);  // Collide with layers 1 and 3
 
 Checks if two entities can collide based on their layer/mask configuration. Both entities must include the other's layer in their mask.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { canLayersCollide } from 'blecsd';
+import { canLayersCollide } from 'blecsd/components';
 
 const canCollide = canLayersCollide(
   1, 6,  // entity A: layer 1, mask 6
@@ -162,9 +159,8 @@ const canCollide = canLayersCollide(
 
 ### setTrigger / isTrigger
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setTrigger, isTrigger } from 'blecsd';
+import { setTrigger, isTrigger } from 'blecsd/components';
 
 setTrigger(world, entity, true);
 if (isTrigger(world, entity)) {
@@ -178,10 +174,10 @@ if (isTrigger(world, entity)) {
 
 Gets the axis-aligned bounding box for an entity's collider at a given position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getColliderAABB } from 'blecsd';
+import { getColliderAABB } from 'blecsd/components';
 
+const posX = 0, posY = 0;
 const bounds = getColliderAABB(entity, posX, posY);
 // bounds: { minX, minY, maxX, maxY }
 ```
@@ -190,9 +186,14 @@ const bounds = getColliderAABB(entity, posX, posY);
 
 Low-level overlap tests.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { testAABBOverlap, testCircleOverlap, testCircleAABBOverlap } from 'blecsd';
+import { testAABBOverlap, testCircleOverlap, testCircleAABBOverlap } from 'blecsd/components';
+
+const boundsA = { minX: 0, minY: 0, maxX: 5, maxY: 5 };
+const boundsB = { minX: 3, minY: 3, maxX: 8, maxY: 8 };
+const aabb = boundsA;
+const x1 = 0, y1 = 0, r1 = 3, x2 = 4, y2 = 4, r2 = 2;
+const cx = 5, cy = 5, radius = 2;
 
 testAABBOverlap(boundsA, boundsB);              // AABB vs AABB
 testCircleOverlap(x1, y1, r1, x2, y2, r2);     // Circle vs Circle
@@ -203,9 +204,14 @@ testCircleAABBOverlap(cx, cy, radius, aabb);    // Circle vs AABB
 
 Tests if two entities' colliders overlap. Handles all shape combinations.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { testCollision } from 'blecsd';
+import { testCollision } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entityA = addEntity(world);
+const entityB = addEntity(world);
+const posAX = 0, posAY = 0, posBX = 1, posBY = 1;
 
 const colliding = testCollision(
   entityA, posAX, posAY,
@@ -219,9 +225,13 @@ const colliding = testCollision(
 
 Utility for tracking collision pairs with consistent ordering.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCollisionPair, collisionPairKey } from 'blecsd';
+import { createCollisionPair, collisionPairKey } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entityA = addEntity(world);
+const entityB = addEntity(world);
 
 const pair = createCollisionPair(entityA, entityB, false);
 const key = collisionPairKey(pair); // "1:5" (lower ID first)
@@ -229,10 +239,9 @@ const key = collisionPairKey(pair); // "1:5" (lower ID first)
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setCollider, ColliderType, testCollision, canLayersCollide } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setCollider, ColliderType, testCollision, canLayersCollide } from 'blecsd/components';
 
 const world = createWorld();
 const player = addEntity(world);

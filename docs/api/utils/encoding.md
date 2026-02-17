@@ -4,9 +4,8 @@ Utilities for handling legacy character encodings, primarily CP437 (IBM PC / DOS
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encoding } from 'blecsd';
+import { encoding } from 'blecsd/utils';
 
 // Convert CP437 buffer to UTF-8 string
 const content = encoding.bufferToString(buffer, 'cp437');
@@ -48,9 +47,8 @@ function bufferToString(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encoding } from 'blecsd';
+import { encoding } from 'blecsd/utils';
 
 // Fetch ANSI art file
 const response = await fetch('https://example.com/art.ans');
@@ -82,9 +80,8 @@ function stringToBuffer(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encoding } from 'blecsd';
+import { encoding } from 'blecsd/utils';
 import { writeFileSync } from 'node:fs';
 
 // Create ANSI art with box-drawing characters
@@ -143,9 +140,8 @@ Mixed:   ╒ ╓ ╕ ╖ ╘ ╙ ╛ ╜ ╞ ╟ ╡ ╢ ╤ ╥ ╧ ╨
 
 ### ANSI Art Viewer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encoding } from 'blecsd';
+import { encoding } from 'blecsd/utils';
 import { createTerminal } from 'blecsd/widgets';
 
 async function displayAnsiArt(url: string): Promise<void> {
@@ -164,9 +160,8 @@ async function displayAnsiArt(url: string): Promise<void> {
 
 ### Legacy File Conversion
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encoding } from 'blecsd';
+import { encoding } from 'blecsd/utils';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 // Convert CP437 file to UTF-8

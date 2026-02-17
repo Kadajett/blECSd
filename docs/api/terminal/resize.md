@@ -14,7 +14,6 @@ The resize module handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createResizeHandler,
@@ -22,11 +21,12 @@ import {
   disableResizeHandling,
   getResizeEventBus,
   setupSigwinchHandler,
-} from 'blecsd';
+  createProgram,
+} from 'blecsd/terminal';
 
-const program = new Program();
 const world = createWorld();
 const screen = createScreenEntity(world, { width: 80, height: 24 });
+const program = createProgram({ useBuffer: true });
 
 // Create resize handler
 const handler = createResizeHandler(world);
@@ -49,9 +49,8 @@ disableResizeHandling(program, handler);
 
 Creates a resize handler for the given world.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createResizeHandler } from 'blecsd';
+import { createResizeHandler } from 'blecsd/terminal';
 
 const handler = createResizeHandler(world);
 ```
@@ -69,9 +68,8 @@ The handler will automatically:
 
 Enables resize handling on a Program instance.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableResizeHandling } from 'blecsd';
+import { enableResizeHandling } from 'blecsd/terminal';
 
 const handler = createResizeHandler(world);
 enableResizeHandling(program, handler);
@@ -81,9 +79,8 @@ enableResizeHandling(program, handler);
 
 Disables resize handling on a Program instance.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { disableResizeHandling } from 'blecsd';
+import { disableResizeHandling } from 'blecsd/terminal';
 
 disableResizeHandling(program, handler);
 ```
@@ -92,9 +89,8 @@ disableResizeHandling(program, handler);
 
 Gets the active resize handler for a world.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getResizeHandler } from 'blecsd';
+import { getResizeHandler } from 'blecsd/terminal';
 
 const handler = getResizeHandler(world);
 if (handler) {
@@ -108,9 +104,8 @@ if (handler) {
 
 Manually triggers a resize. Useful for testing or external size sources.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { triggerResize } from 'blecsd';
+import { triggerResize } from 'blecsd/terminal';
 
 // Handle resize from external source
 triggerResize(world, process.stdout.columns, process.stdout.rows);
@@ -124,9 +119,8 @@ This performs all resize handling steps without requiring a Program instance.
 
 Sets up a SIGWINCH signal handler as an alternative to Program-based handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setupSigwinchHandler } from 'blecsd';
+import { setupSigwinchHandler } from 'blecsd/terminal';
 
 const cleanup = setupSigwinchHandler(world);
 
@@ -142,9 +136,8 @@ The SIGWINCH signal is sent by the operating system when the terminal is resized
 
 Gets the resize event bus for subscribing to resize events.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getResizeEventBus } from 'blecsd';
+import { getResizeEventBus } from 'blecsd/terminal';
 
 const bus = getResizeEventBus();
 
@@ -162,9 +155,8 @@ bus.on('resize', ({ width, height, previousWidth, previousHeight }) => {
 
 Resets the resize event bus (for testing).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetResizeEventBus } from 'blecsd';
+import { resetResizeEventBus } from 'blecsd/terminal';
 
 resetResizeEventBus();
 ```
@@ -205,21 +197,22 @@ interface ResizeEventMap {
 
 Complete example with Program and game loop:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   createScheduler,
   LoopPhase,
-  Program,
   createScreenEntity,
+} from 'blecsd/core';
+import {
+  createProgram,
   createResizeHandler,
   enableResizeHandling,
   disableResizeHandling,
   getResizeEventBus,
-  setOutputBuffer,
   createDoubleBuffer,
-} from 'blecsd';
+} from 'blecsd/terminal';
+import { setOutputBuffer } from 'blecsd/systems';
 
 // Create world and screen
 const world = createWorld();
@@ -230,7 +223,7 @@ const db = createDoubleBuffer(80, 24);
 setOutputBuffer(db);
 
 // Create program
-const program = new Program();
+const program = createProgram({ useBuffer: true });
 await program.init();
 
 // Set up resize handling

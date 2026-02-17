@@ -92,7 +92,6 @@ loop.start();
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 
@@ -137,7 +136,6 @@ loop.registerSystem(LoopPhase.EARLY_UPDATE, prepareInputSystem);
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
@@ -215,10 +213,10 @@ loop.registerSystem(LoopPhase.LATE_UPDATE, cameraFollowSystem);
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
-import { Position, Velocity, Spring } from 'blecsd/components';
+import { Position, Velocity } from 'blecsd/components';
+import { Spring } from 'blecsd/systems';
 
 function springAnimationSystem(world: World, dt: number): World {
   const entities = query(world, [Position, Velocity, Spring]);
@@ -269,7 +267,6 @@ loop.registerSystem(LoopPhase.ANIMATION, springAnimationSystem);
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Dimensions, Hierarchy } from 'blecsd/components';
@@ -315,7 +312,6 @@ loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Renderable } from 'blecsd/components';
@@ -494,7 +490,6 @@ See [Input Priority](./input-priority.md) for details on why INPUT always runs a
 
 Verify systems run in the correct order:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 import { describe, it, expect } from 'vitest';

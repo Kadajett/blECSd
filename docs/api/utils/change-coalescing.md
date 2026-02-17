@@ -4,7 +4,6 @@ Batches multiple text changes within a single frame into a single re-layout/re-r
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createCoalescer,
@@ -15,7 +14,7 @@ import {
   deleteChange,
   replaceChange,
   destroyCoalescer,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -188,9 +187,8 @@ function destroyCoalescer(state: MutableCoalescingState): FlushResult | undefine
 
 ## Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCoalescer, queueChange, insertChange } from 'blecsd';
+import { createCoalescer, queueChange, insertChange } from 'blecsd/utils';
 
 const coalescer = createCoalescer((result) => {
   console.log(`Flushing ${result.changeCount} changes`);

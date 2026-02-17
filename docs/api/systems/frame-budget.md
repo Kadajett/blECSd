@@ -13,21 +13,28 @@ The frame budget manager handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld } from 'blecsd/core';
 import {
   createFrameBudgetManager,
   profiledSystem,
   recordFrameTime,
   getFrameBudgetStats,
-} from 'blecsd';
+} from 'blecsd/systems';
+import type { World } from 'blecsd/core';
 
 const manager = createFrameBudgetManager({ targetFrameMs: 16.67 });
+void manager;
+
+// A placeholder system function
+function movementSystem(w: World) { return w; }
 
 // Wrap systems with profiling
 const timedMovement = profiledSystem('movement', movementSystem);
+void timedMovement;
 
 // Record frame times in your loop
+const frameTimeMs = 16;
 recordFrameTime(frameTimeMs);
 
 // Check stats
@@ -130,9 +137,8 @@ function createFrameBudgetManager(config?: Partial<FrameBudgetConfig>): FrameBud
 
 **Returns:** The initial `FrameBudgetManager` state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFrameBudgetManager } from 'blecsd';
+import { createFrameBudgetManager } from 'blecsd/systems';
 import { LoopPhase } from 'blecsd/core';
 
 const manager = createFrameBudgetManager({
@@ -159,12 +165,18 @@ function profiledSystem(name: string, system: System): System
 
 **Returns:** A wrapped `System` that records its execution time.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { profiledSystem } from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { profiledSystem } from 'blecsd/systems';
+import type { World } from 'blecsd/core';
 
-const timedMovement = profiledSystem('movement', movementSystem);
-const timedRender = profiledSystem('render', renderSystem);
+function movementSystem2(w: World) { return w; }
+function renderSystem2(w: World) { return w; }
+
+const scheduler = createScheduler();
+
+const timedMovement = profiledSystem('movement', movementSystem2);
+const timedRender = profiledSystem('render', renderSystem2);
 
 scheduler.registerSystem(LoopPhase.UPDATE, timedMovement);
 scheduler.registerSystem(LoopPhase.RENDER, timedRender);
@@ -202,9 +214,8 @@ Gets a snapshot of current frame budget statistics.
 function getFrameBudgetStats(): FrameBudgetManager
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getFrameBudgetStats } from 'blecsd';
+import { getFrameBudgetStats } from 'blecsd/systems';
 
 const { stats, alerts } = getFrameBudgetStats();
 console.log(`FPS: ${stats.fps.toFixed(1)}, Avg: ${stats.avgFps.toFixed(1)}`);
@@ -223,9 +234,8 @@ Registers a callback for budget overrun alerts.
 function onBudgetAlert(callback: (alert: BudgetAlert) => void): void
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { onBudgetAlert } from 'blecsd';
+import { onBudgetAlert } from 'blecsd/systems';
 
 onBudgetAlert((alert) => {
   console.warn(
@@ -258,9 +268,8 @@ Exports metrics as a JSON-serializable object for external analysis.
 function exportFrameBudgetMetrics(): Record<string, unknown>
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { exportFrameBudgetMetrics } from 'blecsd';
+import { exportFrameBudgetMetrics } from 'blecsd/systems';
 
 const metrics = exportFrameBudgetMetrics();
 // Send to analytics, write to file, etc.
@@ -270,11 +279,9 @@ const metrics = exportFrameBudgetMetrics();
 
 Complete example with budget alerts and profiled systems:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, createScheduler, LoopPhase } from 'blecsd/core';
 import {
-  createWorld,
-  createScheduler,
   createFrameBudgetManager,
   profiledSystem,
   recordFrameTime,
@@ -282,8 +289,7 @@ import {
   onBudgetAlert,
   getFrameBudgetStats,
   destroyFrameBudgetManager,
-  LoopPhase,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -303,6 +309,8 @@ onBudgetAlert((alert) => {
 });
 
 // Wrap systems with profiling
+function myUpdateSystem(w: typeof world) { return w; }
+function myRenderSystem(w: typeof world) { return w; }
 const timedUpdate = profiledSystem('gameLogic', myUpdateSystem);
 const timedRender = profiledSystem('renderer', myRenderSystem);
 

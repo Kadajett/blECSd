@@ -4,7 +4,6 @@ Memory-efficient component storage utilities for measuring, optimizing, and mana
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createSparseStore,
@@ -12,7 +11,7 @@ import {
   estimateMemoryUsage,
   getComponentMemoryReport,
   isWithinMemoryBounds,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -155,9 +154,8 @@ function isWithinMemoryBounds(
 
 ## Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSparseStore, createTypedArrayPool, estimateMemoryUsage } from 'blecsd';
+import { createSparseStore, createTypedArrayPool, estimateMemoryUsage } from 'blecsd/utils';
 
 // Sparse store for debug labels (only some entities have them)
 const debugInfo = createSparseStore<{ label: string }>();

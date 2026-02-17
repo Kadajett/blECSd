@@ -4,9 +4,9 @@ Provides printf-style string formatting for terminal capabilities and general ou
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sprintf, createFormatter, parseFormat } from 'blecsd';
+import { sprintf } from 'blecsd/terminal';
+import { createFormatter, parseFormat } from 'blecsd/terminal';
 
 // Basic formatting
 sprintf('%d items', 42);           // '42 items'
@@ -27,9 +27,8 @@ fmt(10, 20);  // 'Point(10, 20)'
 
 Printf-style string formatting with support for common format specifiers.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sprintf } from 'blecsd';
+import { sprintf } from 'blecsd/terminal';
 
 // Decimal integers
 sprintf('%d', 42);         // '42'
@@ -82,9 +81,8 @@ sprintf('%X', 255);        // 'FF'
 
 ### Width and Precision
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sprintf } from 'blecsd';
+import { sprintf } from 'blecsd/terminal';
 
 // Width: minimum field width
 sprintf('%5d', 42);        // '   42'
@@ -115,9 +113,8 @@ sprintf('%8.5d', 42);      // '   00042'
 
 Creates a reusable formatter function for a format string. More efficient when formatting the same pattern multiple times.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFormatter } from 'blecsd';
+import { createFormatter } from 'blecsd/terminal';
 
 const pointFmt = createFormatter('Point(%d, %d)');
 pointFmt(10, 20);   // 'Point(10, 20)'
@@ -142,9 +139,8 @@ hexFmt(255);         // '0x000000FF'
 
 Parses a format string and returns information about its specifiers. Useful for analyzing format strings or validating arguments.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseFormat } from 'blecsd';
+import { parseFormat } from 'blecsd/terminal';
 
 const specs = parseFormat('%5d %s');
 // [
@@ -195,9 +191,8 @@ interface FormatFlags {
 
 Counts the number of format specifiers in a format string.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { countFormatArgs } from 'blecsd';
+import { countFormatArgs } from 'blecsd/terminal';
 
 countFormatArgs('%d + %d = %d');  // 3
 countFormatArgs('Hello %s!');     // 1
@@ -216,9 +211,8 @@ countFormatArgs('[%d;%dH');       // 2
 
 Checks if a format string contains only valid specifiers.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isValidFormat } from 'blecsd';
+import { isValidFormat } from 'blecsd/terminal';
 
 isValidFormat('%d');       // true
 isValidFormat('%5.2s');    // true
@@ -239,9 +233,9 @@ isValidFormat('%');        // false (incomplete specifier)
 
 ### Terminal Escape Sequences
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sprintf, createFormatter } from 'blecsd';
+import { sprintf } from 'blecsd/terminal';
+import { createFormatter } from 'blecsd/terminal';
 
 // Cursor positioning
 const cup = createFormatter('\x1b[%d;%dH');
@@ -263,9 +257,8 @@ fgRgb(255, 128, 0);  // Orange foreground
 
 ### Formatted Output
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sprintf } from 'blecsd';
+import { sprintf } from 'blecsd/terminal';
 
 // Table-like output
 function formatRow(name: string, value: number): string {
@@ -287,9 +280,8 @@ formatHexLine(0, [0x48, 0x65, 0x6c, 0x6c, 0x6f]);
 
 ### Time Formatting
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFormatter } from 'blecsd';
+import { createFormatter } from 'blecsd/terminal';
 
 const timeFmt = createFormatter('%02d:%02d:%02d');
 const dateFmt = createFormatter('%04d-%02d-%02d');
@@ -308,9 +300,8 @@ formatDate(2026, 2, 2);   // '2026-02-02'
 
 ### Debugging Output
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sprintf } from 'blecsd';
+import { sprintf } from 'blecsd/terminal';
 
 function debugValue(name: string, value: number): string {
   return sprintf(

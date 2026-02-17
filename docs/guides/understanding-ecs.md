@@ -19,7 +19,6 @@ Instead of objects with methods, you have:
 
 ### Traditional OOP Approach
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // OOP: Objects contain both data AND behavior
 class Button {
@@ -174,9 +173,8 @@ for (const eid of entities) {
 
 Everything lives in a **World**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 
 const world = createWorld();
 ```
@@ -189,9 +187,9 @@ blECSd provides two ways to create entities:
 
 #### 1. **High-Level: Entity Factories** (recommended for most cases)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBoxEntity, createButtonEntity, BorderType } from 'blecsd';
+import { createBoxEntity, createButtonEntity } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
 
 const box = createBoxEntity(world, {
   x: 10,
@@ -214,9 +212,8 @@ Entity factories handle component setup for you.
 
 #### 2. **Low-Level: Manual Component Assembly** (for custom entities)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, addComponent } from 'blecsd';
+import { addEntity, addComponent } from 'blecsd/core';
 import { Position, Dimensions } from 'blecsd/components';
 
 const customEntity = addEntity(world);
@@ -235,7 +232,6 @@ Use this when you need precise control.
 
 Find entities with specific components:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
@@ -260,9 +256,8 @@ Queries are **cached** and **fast**.
 
 Systems are pure functions that transform world state:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { inputSystem, renderSystem, layoutSystem } from 'blecsd';
+import { inputSystem, renderSystem, layoutSystem } from 'blecsd/systems';
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 
 const loop = createGameLoop(world, { targetFPS: 60 });
@@ -322,9 +317,8 @@ Behavior lives in systems, not in the entity.
 
 ### Pattern 1: Checking if an Entity Has a Component
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasComponent } from 'blecsd';
+import { hasComponent } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
 if (hasComponent(world, eid, Position)) {
@@ -334,9 +328,8 @@ if (hasComponent(world, eid, Position)) {
 
 ### Pattern 2: Adding a Component at Runtime
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addComponent } from 'blecsd';
+import { addComponent } from 'blecsd/core';
 import { Velocity } from 'blecsd/components';
 
 // Make a static entity start moving
@@ -347,7 +340,6 @@ Velocity.y[eid] = 0;
 
 ### Pattern 3: Removing a Component
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { removeComponent } from 'blecsd/core';
 import { Velocity } from 'blecsd/components';
@@ -358,9 +350,8 @@ removeComponent(world, eid, Velocity);
 
 ### Pattern 4: Iterating Over Query Results
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Focusable } from 'blecsd';
+import { Focusable } from 'blecsd/components';
 import { query } from 'blecsd/core';
 
 function handleTabKey(world: World): void {
@@ -376,9 +367,9 @@ function handleTabKey(world: World): void {
 
 ### Pattern 5: Parent-Child Relationships
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getChildren, createBoxEntity } from 'blecsd';
+import { getChildren } from 'blecsd/components';
+import { createBoxEntity } from 'blecsd/core';
 import { setParent } from 'blecsd/components';
 
 const parent = createBoxEntity(world, { x: 10, y: 5, width: 50, height: 20 });
@@ -496,7 +487,6 @@ Systems are for recurring logic. One-off operations can just be functions.
 
 ## Example: Building a Simple Menu
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -505,9 +495,9 @@ import {
   createButtonEntity,
   createTextEntity,
   LoopPhase,
-  BorderType,
-  renderSystem,
-} from 'blecsd';
+} from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
+import { renderSystem } from 'blecsd/systems';
 
 const world = createWorld();
 

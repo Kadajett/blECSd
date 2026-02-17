@@ -4,9 +4,8 @@ Vi-style navigation mode for scrollable elements. Provides vi key bindings for s
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createViState, createViConfig, processViKey } from 'blecsd';
+import { createViState, createViConfig, processViKey } from 'blecsd/input';
 
 const state = createViState();
 const config = createViConfig({ enabled: true, viewportHeight: 40 });
@@ -122,9 +121,8 @@ Resolves a vi page action to a concrete scroll amount.
 function resolvePageAmount(amount: 'half' | 'full', viewportHeight: number): number;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resolvePageAmount } from 'blecsd';
+import { resolvePageAmount } from 'blecsd/input';
 
 const lines = resolvePageAmount('half', 40); // 20
 const fullPage = resolvePageAmount('full', 40); // 39
@@ -178,7 +176,6 @@ function resolveJumpTarget(
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createViState,
@@ -187,7 +184,7 @@ import {
   isViKey,
   resolvePageAmount,
   resolveJumpTarget,
-} from 'blecsd';
+} from 'blecsd/input';
 
 let viState = createViState();
 const viConfig = createViConfig({

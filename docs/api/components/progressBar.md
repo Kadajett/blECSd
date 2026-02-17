@@ -4,7 +4,6 @@ The ProgressBar component provides visual progress indication with customizable 
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachProgressBarBehavior,
@@ -20,19 +19,14 @@ import {
   setProgressBarDisplay,
   renderProgressString,
   ProgressOrientation,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  attachProgressBarBehavior,
-  setProgress,
-  onProgressComplete,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachProgressBarBehavior, setProgress, onProgressComplete } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -65,9 +59,8 @@ setProgress(world, eid, 50);
 
 ## Orientation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ProgressOrientation, attachProgressBarBehavior } from 'blecsd';
+import { ProgressOrientation, attachProgressBarBehavior } from 'blecsd/components';
 
 // Horizontal (default)
 attachProgressBarBehavior(world, eid, {
@@ -88,9 +81,9 @@ Default appearance:
 
 Customize with:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, attachProgressBarBehavior, setProgressBarDisplay } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachProgressBarBehavior, setProgressBarDisplay } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -111,6 +104,12 @@ setProgressBarDisplay(world, eid, {
 ### Behavior Setup
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachProgressBarBehavior, isProgressBar, ProgressOrientation } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+
 // Attach with options
 attachProgressBarBehavior(world, eid, {
   min: 0,
@@ -129,6 +128,13 @@ if (isProgressBar(world, eid)) {
 ### Value Operations
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachProgressBarBehavior, getProgress, setProgress, incrementProgress, decrementProgress, completeProgress, resetProgress } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachProgressBarBehavior(world, eid, { min: 0, max: 100, value: 25 });
+
 // Get current value
 const value = getProgress(eid);
 
@@ -151,6 +157,13 @@ resetProgress(world, eid);
 ### Range Operations
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachProgressBarBehavior, getProgressMin, getProgressMax, getProgressPercentage, setProgressRange, isProgressComplete } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachProgressBarBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 // Get min/max
 const min = getProgressMin(eid);
 const max = getProgressMax(eid);
@@ -170,6 +183,13 @@ if (isProgressComplete(eid)) {
 ### Orientation
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachProgressBarBehavior, getProgressOrientation, setProgressOrientation, ProgressOrientation } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachProgressBarBehavior(world, eid, { min: 0, max: 100, value: 0 });
+
 // Get orientation
 const orient = getProgressOrientation(eid);
 
@@ -179,9 +199,9 @@ setProgressOrientation(world, eid, ProgressOrientation.Vertical);
 
 ### Display
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, attachProgressBarBehavior, setShowPercentage, isShowingPercentage, getProgressFillChar, getProgressEmptyChar, setProgressBarDisplay, getProgressBarDisplay, clearProgressBarDisplay, renderProgressString } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachProgressBarBehavior, setShowPercentage, isShowingPercentage, getProgressFillChar, getProgressEmptyChar, setProgressBarDisplay, getProgressBarDisplay, clearProgressBarDisplay, renderProgressString } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -218,6 +238,13 @@ const str = renderProgressString(eid, 20);
 ### Events
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachProgressBarBehavior, onProgressChange, onProgressComplete, clearProgressBarCallbacks } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachProgressBarBehavior(world, eid, { min: 0, max: 100, value: 0 });
+
 // Value changed
 const unsub1 = onProgressChange(eid, (value, percentage) => {
   console.log(`Progress: ${percentage * 100}%`);
@@ -238,16 +265,15 @@ clearProgressBarCallbacks(eid);
 
 ## Example: Download Progress
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachProgressBarBehavior,
   setProgress,
   onProgressChange,
   onProgressComplete,
   setProgressBarDisplay,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const world = createWorld();
 const downloadProgress = addEntity(world);
@@ -265,18 +291,18 @@ setProgressBarDisplay(world, downloadProgress, {
 });
 
 onProgressChange(downloadProgress, (value, pct) => {
-  updateStatusText(`Downloading: ${Math.round(pct * 100)}%`);
+  console.log(`Downloading: ${Math.round(pct * 100)}%`);
 });
 
 onProgressComplete(downloadProgress, () => {
-  updateStatusText('Download complete!');
+  console.log('Download complete!');
 });
 
 // Simulate download
 async function download() {
   for (let i = 0; i <= 100; i += 10) {
     setProgress(world, downloadProgress, i);
-    await sleep(100);
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 }
 ```
@@ -284,6 +310,11 @@ async function download() {
 ## Example: Multi-bar Progress
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import type { Entity } from 'blecsd/core';
+import { attachProgressBarBehavior, setProgressBarDisplay, setProgress } from 'blecsd/components';
+
+const world = createWorld();
 const stages = ['Download', 'Extract', 'Install', 'Configure'];
 const progressBars: Entity[] = [];
 
@@ -296,7 +327,7 @@ stages.forEach((stage, index) => {
 
   // Color code by stage
   const colors = [0x00aaffff, 0x00ff00ff, 0xffaa00ff, 0xff00ffff];
-  setProgressBarDisplay(bar, {
+  setProgressBarDisplay(world, bar, {
     fillFg: colors[index],
   });
 
@@ -305,16 +336,17 @@ stages.forEach((stage, index) => {
 
 // Update specific stage
 function updateStage(stageIndex: number, progress: number) {
-  setProgress(world, progressBars[stageIndex], progress);
+  setProgress(world, progressBars[stageIndex]!, progress);
 }
 ```
 
 ## Example: Vertical Health Bar
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ProgressOrientation } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachProgressBarBehavior, setProgressBarDisplay, decrementProgress, getProgress, isProgressComplete, ProgressOrientation } from 'blecsd/components';
 
+const world = createWorld();
 const healthBar = addEntity(world);
 
 attachProgressBarBehavior(world, healthBar, {
@@ -324,7 +356,7 @@ attachProgressBarBehavior(world, healthBar, {
   orientation: ProgressOrientation.Vertical,
 });
 
-setProgressBarDisplay(healthBar, {
+setProgressBarDisplay(world, healthBar, {
   fillFg: 0xff0000ff,  // Red
   emptyFg: 0x330000ff, // Dark red
 });
@@ -334,7 +366,7 @@ function takeDamage(amount: number) {
   decrementProgress(world, healthBar, amount);
 
   if (isProgressComplete(healthBar) === false && getProgress(healthBar) <= 0) {
-    gameOver();
+    console.log('Game over!');
   }
 }
 ```

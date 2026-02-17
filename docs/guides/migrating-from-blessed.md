@@ -42,6 +42,7 @@ This guide helps you transition from the original blessed.js library to blECSd's
 
 ### blessed.js: Object-Oriented
 
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 // OLD: blessed.js (OOP)
 const blessed = require('blessed');
@@ -79,23 +80,23 @@ screen.render();
 
 ### blECSd: Entity Component System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // NEW: blECSd (ECS)
 import {
   createWorld,
   addEntity,
   addComponent,
+  createGameLoop,
+  LoopPhase,
+} from 'blecsd/core';
+import {
   setPosition,
   setDimensions,
   setContent,
   setBorder,
   Renderable,
-  createGameLoop,
-  LoopPhase,
-  renderSystem,
-  outputSystem,
-} from 'blecsd';
+} from 'blecsd/components';
+import { renderSystem, outputSystem } from 'blecsd/systems';
 
 // YOU create the world (no global singleton)
 const world = createWorld();
@@ -265,6 +266,7 @@ Start with the simplest screen, then move to complex ones.
 ### Pattern 1: Simple Box
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const box = blessed.box({
   parent: screen,
@@ -286,17 +288,10 @@ screen.render();
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  addComponent,
-  setPosition,
-  setDimensions,
-  renderSystem,
-  outputSystem,
-} from 'blecsd';
+import { createWorld, addEntity, addComponent } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+import { renderSystem, outputSystem } from 'blecsd/systems';
 import { setText, setBorder } from 'blecsd/components';
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 
@@ -317,6 +312,7 @@ loop.start();
 ### Pattern 2: Interactive List
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const list = blessed.list({
   parent: screen,
@@ -343,22 +339,23 @@ screen.render();
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
-  setPosition,
-  createList,
   createGameLoop,
   LoopPhase,
+} from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
+import { createList } from 'blecsd/widgets';
+import {
   inputSystem,
   focusSystem,
   renderSystem,
   outputSystem,
-  parseKeySequence,
   queueKeyEvent,
-} from 'blecsd';
+} from 'blecsd/systems';
+import { parseKeySequence } from 'blecsd/terminal';
 
 const world = createWorld();
 const listEntity = addEntity(world);
@@ -398,6 +395,7 @@ loop.start();
 ### Pattern 3: Form with Input
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const form = blessed.form({
   parent: screen,
@@ -439,22 +437,22 @@ screen.render();
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
-  setPosition,
   createTextareaEntity,
-  createButton,
-  createBox,
   createGameLoop,
   LoopPhase,
+} from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
+import { createButton, createBox } from 'blecsd/widgets';
+import {
   inputSystem,
   focusSystem,
   renderSystem,
   outputSystem,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 const world = createWorld();
 
@@ -501,6 +499,7 @@ loop.start();
 ### Pattern 4: Updating Content
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 // Mutate directly
 box.setContent('New content');
@@ -509,10 +508,9 @@ screen.render();  // Manual render required
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Update component data
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { setText } from 'blecsd/components';
 
 const world = createWorld();
@@ -535,10 +533,10 @@ MyWidget.prototype._render = function() {
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Create custom render system (clean)
-import { createWorld, type World } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { type World } from 'blecsd/core';
 import { query, createGameLoop, LoopPhase } from 'blecsd/core';
 import { Position, Renderable } from 'blecsd/components';
 
@@ -567,6 +565,7 @@ loop.start();
 ### Box → createBox
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const box = blessed.box({
   parent: screen,
@@ -584,7 +583,6 @@ const box = blessed.box({
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createBox } from 'blecsd/widgets';
 
@@ -603,6 +601,7 @@ createBox(world, boxEntity, {
 ### List → createList
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const list = blessed.list({
   parent: screen,
@@ -621,7 +620,6 @@ list.on('select', (item, index) => {
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createList } from 'blecsd/widgets';
 
@@ -643,6 +641,7 @@ list.on('select', (event) => {
 ### TextBox → createTextareaEntity
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const input = blessed.textbox({
   parent: screen,
@@ -659,7 +658,6 @@ input.on('submit', (value) => {
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 const inputEntity = createTextareaEntity(world, {
   width: 20,
@@ -671,6 +669,7 @@ setPosition(world, inputEntity, 2, 5);
 ### Table → createTable
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const table = blessed.table({
   parent: screen,
@@ -683,7 +682,6 @@ const table = blessed.table({
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createTable } from 'blecsd/widgets';
 
@@ -706,6 +704,7 @@ const table = createTable(world, tableEntity, {
 ### Event Listeners
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 // String-based events (no type safety)
 element.on('focus', () => {
@@ -724,10 +723,9 @@ element.on('click', (data) => {
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Typed event buses
-import { getFocusEventBus, getInputEventBus } from 'blecsd';
+import { getFocusEventBus, getInputEventBus } from 'blecsd/systems';
 
 const focusBus = getFocusEventBus();
 focusBus.on('focus', (event) => {
@@ -750,6 +748,7 @@ inputBus.on('click', (event) => {
 ### Custom Events
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 // Custom events on elements
 element.on('myCustomEvent', (data) => {
@@ -761,7 +760,6 @@ element.emit('myCustomEvent', { value: 42 });
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Create typed event bus
 import { createEventBus } from 'blecsd/core';
@@ -786,6 +784,7 @@ myBus.emit('customEvent', { value: 42 });
 ### No Global Screen
 
 **blessed.js had a global screen:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const screen = blessed.screen();  // Global singleton
 // All widgets implicitly know about screen
@@ -803,12 +802,12 @@ setPosition(world, entity, 10, 5);
 ### No Automatic Rendering
 
 **blessed.js auto-renders on mutations:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 box.setContent('New');  // Implicitly calls screen.render()
 ```
 
 **blECSd requires explicit dirty tracking:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 setText(world, box, 'New');
 markDirty(world, box);  // Must mark dirty
@@ -820,6 +819,7 @@ markDirty(world, box);  // Must mark dirty
 ### No String-Based Positioning
 
 **blessed.js supports string positions:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const box = blessed.box({
   top: 'center',      // String
@@ -843,6 +843,7 @@ setDimensions(world, box, width, height);
 ### No Tags/Markup
 
 **blessed.js supports markup:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 box.setContent('Hello {bold}world{/bold}!');
 element.tags = true;
@@ -860,6 +861,7 @@ setText(world, box, 'Hello world!');
 ### No Method Chaining
 
 **blessed.js supports chaining:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 box.setContent('Hello')
    .show()
@@ -891,10 +893,9 @@ npm install blecsd
 
 Create initial structure:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // src/world.ts
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 
 export const world = createWorld();
 
@@ -970,6 +971,7 @@ A: No. Port them to blECSd patterns or create custom widgets.
 
 ### Before (blessed.js)
 
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const blessed = require('blessed');
 
@@ -1035,29 +1037,32 @@ screen.render();
 
 ### After (blECSd)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   addComponent,
+  createGameLoop,
+  LoopPhase,
+} from 'blecsd/core';
+import {
   setPosition,
   setDimensions,
   setContent,
   Renderable,
   setBorder,
-  createList,
-  createGameLoop,
-  LoopPhase,
+} from 'blecsd/components';
+import { createList } from 'blecsd/widgets';
+import {
   inputSystem,
   focusSystem,
   layoutSystem,
   renderSystem,
   outputSystem,
-  parseKeySequence,
   queueKeyEvent,
   getInputEventBus,
-} from 'blecsd';
+} from 'blecsd/systems';
+import { parseKeySequence } from 'blecsd/terminal';
 
 const world = createWorld();
 

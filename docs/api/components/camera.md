@@ -8,7 +8,6 @@ The Camera component manages a 2D viewport into a larger world space. It support
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Camera,
@@ -32,7 +31,7 @@ import {
   isInView,
   isAreaInView,
   updateCameraFollow,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Component Data Layout
@@ -61,9 +60,12 @@ const Camera = {
 
 Creates or updates a camera on an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCamera } from 'blecsd';
+import { setCamera } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const cameraEntity = addEntity(world);
 
 setCamera(world, cameraEntity, {
   width: 80,
@@ -86,9 +88,13 @@ setCamera(world, cameraEntity, {
 
 Returns a snapshot of camera state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getCamera } from 'blecsd';
+import { getCamera, setCamera } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const cameraEntity = addEntity(world);
+setCamera(world, cameraEntity, { width: 80, height: 24 });
 
 const cam = getCamera(world, cameraEntity);
 if (cam) {
@@ -100,9 +106,8 @@ if (cam) {
 
 ### hasCamera / removeCamera
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasCamera, removeCamera } from 'blecsd';
+import { hasCamera, removeCamera } from 'blecsd/components';
 
 if (hasCamera(world, entity)) {
   removeCamera(world, entity);
@@ -115,9 +120,14 @@ if (hasCamera(world, entity)) {
 
 Sets the entity for the camera to follow with optional smoothing.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCameraTarget } from 'blecsd';
+import { setCameraTarget, setCamera } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const camera = addEntity(world);
+const player = addEntity(world);
+setCamera(world, camera, { width: 80, height: 24 });
 
 setCameraTarget(world, camera, player, 0.1); // Follow with smooth interpolation
 setCameraTarget(world, camera, 0);            // Stop following
@@ -125,9 +135,13 @@ setCameraTarget(world, camera, 0);            // Stop following
 
 ### getCameraTarget / isFollowingTarget
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getCameraTarget, isFollowingTarget } from 'blecsd';
+import { getCameraTarget, isFollowingTarget, setCamera } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const camera = addEntity(world);
+setCamera(world, camera, { width: 80, height: 24 });
 
 const target = getCameraTarget(world, camera); // Entity ID or 0
 const following = isFollowingTarget(world, camera); // boolean
@@ -137,9 +151,13 @@ const following = isFollowingTarget(world, camera); // boolean
 
 Sets the dead zone. The camera only moves when the target exits this zone around the viewport center.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCameraDeadZone } from 'blecsd';
+import { setCameraDeadZone, setCamera } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const camera = addEntity(world);
+setCamera(world, camera, { width: 80, height: 24 });
 
 setCameraDeadZone(world, camera, 10, 5);
 ```
@@ -148,9 +166,13 @@ setCameraDeadZone(world, camera, 10, 5);
 
 Updates camera position to follow its target. Call each frame.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateCameraFollow } from 'blecsd';
+import { updateCameraFollow, setCamera } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const camera = addEntity(world);
+setCamera(world, camera, { width: 80, height: 24 });
 
 updateCameraFollow(world, camera, deltaTime);
 ```
@@ -161,9 +183,13 @@ updateCameraFollow(world, camera, deltaTime);
 
 Restrict the camera to a rectangular area.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCameraBounds, clearCameraBounds, isCameraBounded } from 'blecsd';
+import { setCameraBounds, clearCameraBounds, isCameraBounded, setCamera } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const camera = addEntity(world);
+setCamera(world, camera, { width: 80, height: 24 });
 
 setCameraBounds(world, camera, {
   minX: 0, maxX: 200,
@@ -179,9 +205,13 @@ if (isCameraBounded(world, camera)) {
 
 ### setCameraPosition / getCameraPosition / moveCameraBy / centerCameraOn
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCameraPosition, getCameraPosition, moveCameraBy, centerCameraOn } from 'blecsd';
+import { setCameraPosition, getCameraPosition, moveCameraBy, centerCameraOn, setCamera } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const camera = addEntity(world);
+setCamera(world, camera, { width: 80, height: 24 });
 
 setCameraPosition(world, camera, 50, 25);
 moveCameraBy(world, camera, 10, 0);     // Relative move
@@ -195,13 +225,18 @@ const pos = getCameraPosition(world, camera);
 
 ### worldToScreen / screenToWorld
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { worldToScreen, screenToWorld } from 'blecsd';
+import { worldToScreen, screenToWorld, setCamera } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
 
-const screen = worldToScreen(world, camera, worldX, worldY);
-if (screen) {
-  // Draw at screen.x, screen.y
+const world = createWorld();
+const camera = addEntity(world);
+setCamera(world, camera, { width: 80, height: 24 });
+const worldX = 10, worldY = 5, mouseX = 5, mouseY = 3;
+
+const screenPos = worldToScreen(world, camera, worldX, worldY);
+if (screenPos) {
+  // Draw at screenPos.x, screenPos.y
 }
 
 const worldPos = screenToWorld(world, camera, mouseX, mouseY);
@@ -212,9 +247,15 @@ if (worldPos) {
 
 ### isInView / isAreaInView
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isInView, isAreaInView } from 'blecsd';
+import { isInView, isAreaInView, setCamera } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const camera = addEntity(world);
+setCamera(world, camera, { width: 80, height: 24 });
+const enemy = { x: 5, y: 5 };
+const rect = { x: 0, y: 0, w: 10, h: 10 };
 
 if (isInView(world, camera, enemy.x, enemy.y)) {
   // Point is visible
@@ -227,10 +268,9 @@ if (isAreaInView(world, camera, rect.x, rect.y, rect.w, rect.h)) {
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setCamera, setCameraTarget, setCameraBounds, updateCameraFollow } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setCamera, setCameraTarget, setCameraBounds, updateCameraFollow } from 'blecsd/components';
 
 const world = createWorld();
 const camera = addEntity(world);

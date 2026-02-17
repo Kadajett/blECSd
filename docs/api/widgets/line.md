@@ -4,10 +4,9 @@ The Line widget is a simple separator for creating horizontal or vertical lines.
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLine } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLine } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -39,10 +38,9 @@ const vLine = createLine(world, addEntity(world), {
 
 Creates a new Line widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLine } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLine } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -74,13 +72,12 @@ const verticalLine = createLine(world, eid, {
 
 ### Default Characters
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  DEFAULT_HORIZONTAL_CHAR,  // '─'
-  DEFAULT_VERTICAL_CHAR,    // '│'
-  DEFAULT_LINE_LENGTH,      // 10
-} from 'blecsd';
+  DEFAULT_HORIZONTAL_CHAR, // '─'
+  DEFAULT_VERTICAL_CHAR, // '│'
+  DEFAULT_LINE_LENGTH,
+} from 'blecsd/widgets';
 ```
 
 ---
@@ -245,9 +242,8 @@ line.destroy();
 
 Checks if an entity is a line widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isLine } from 'blecsd';
+import { isLine } from 'blecsd/widgets';
 
 if (isLine(world, entity)) {
   // Handle line-specific logic
@@ -262,9 +258,8 @@ if (isLine(world, entity)) {
 
 Gets the line character of a line entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLineChar } from 'blecsd';
+import { getLineChar } from 'blecsd/widgets';
 
 const char = getLineChar(world, lineEntity);
 ```
@@ -277,9 +272,8 @@ const char = getLineChar(world, lineEntity);
 
 Sets the line character of a line entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setLineChar } from 'blecsd';
+import { setLineChar } from 'blecsd/widgets';
 
 setLineChar(world, lineEntity, '═');
 ```
@@ -292,9 +286,8 @@ setLineChar(world, lineEntity, '═');
 
 Gets the orientation of a line entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLineOrientation } from 'blecsd';
+import { getLineOrientation } from 'blecsd/widgets';
 
 const orientation = getLineOrientation(world, lineEntity);
 // 'horizontal' or 'vertical'
@@ -376,9 +369,8 @@ interface LineWidget {
 
 ## Zod Schemas
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { LineConfigSchema } from 'blecsd';
+import { LineConfigSchema } from 'blecsd/widgets';
 
 // Validate configuration
 const result = LineConfigSchema.safeParse({
@@ -398,10 +390,9 @@ if (result.success) {
 
 ### Horizontal Separator
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLine } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLine } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -417,10 +408,9 @@ const separator = createLine(world, eid, {
 
 ### Vertical Divider
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLine } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLine } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -436,10 +426,9 @@ const divider = createLine(world, eid, {
 
 ### Double Line Border
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLine } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLine } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -482,10 +471,9 @@ const rightLine = createLine(world, addEntity(world), {
 
 ### Dynamic Length
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLine } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLine } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -503,10 +491,9 @@ function onResize(terminalWidth: number) {
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLine } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createLine } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);

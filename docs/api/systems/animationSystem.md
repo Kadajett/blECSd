@@ -4,7 +4,6 @@ The animation system updates sprite animations for all entities with the Animati
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   animationSystem,
@@ -13,20 +12,16 @@ import {
   queryAnimation,
   hasAnimationSystem,
   updateAnimations,
-} from 'blecsd';
+} from 'blecsd/systems';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createScheduler,
-  LoopPhase,
-  registerAnimationSystem,
-  attachAnimation,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { registerAnimation, playAnimation } from 'blecsd/components';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { registerAnimationSystem } from 'blecsd/systems';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -34,14 +29,15 @@ const scheduler = createScheduler();
 // Register the animation system
 registerAnimationSystem(scheduler);
 
+// Register an animation definition
+const walkAnimation = registerAnimation({
+  name: 'walk',
+  frames: [{ duration: 0.1 }, { duration: 0.1 }, { duration: 0.1 }],
+});
+
 // Create an animated entity
 const entity = addEntity(world);
-attachAnimation(world, entity, {
-  animationId: walkAnimation,
-  playing: true,
-  loop: true,
-  speed: 1.0,
-});
+playAnimation(world, entity, walkAnimation, { loop: true, speed: 1.0 });
 
 // In your game loop
 function gameLoop(deltaTime: number) {
@@ -123,85 +119,66 @@ The animation system uses a Structure of Arrays (SoA) pattern for cache efficien
 
 ## Example: Character Animation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createScheduler,
-  LoopPhase,
-  registerAnimationSystem,
-  attachAnimation,
-  setAnimationPlaying,
-  setAnimationId,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { registerAnimation, playAnimation } from 'blecsd/components';
+import { createScheduler } from 'blecsd/core';
+import { registerAnimationSystem } from 'blecsd/systems';
 
 const world = createWorld();
 const scheduler = createScheduler();
 registerAnimationSystem(scheduler);
 
-// Animation definitions (from your asset system)
-const ANIM_IDLE = 1;
-const ANIM_WALK = 2;
-const ANIM_ATTACK = 3;
+// Register animation definitions
+const ANIM_IDLE = registerAnimation({ name: 'idle', frames: [{ duration: 0.2 }, { duration: 0.2 }] });
+const ANIM_WALK = registerAnimation({ name: 'walk', frames: [{ duration: 0.1 }, { duration: 0.1 }] });
+const ANIM_ATTACK = registerAnimation({ name: 'attack', frames: [{ duration: 0.08 }, { duration: 0.08 }] });
 
 // Create player
 const player = addEntity(world);
-attachAnimation(world, player, {
-  animationId: ANIM_IDLE,
-  playing: true,
-  loop: true,
-  speed: 1.0,
-});
+playAnimation(world, player, ANIM_IDLE, { loop: true, speed: 1.0 });
 
 // State transitions
-function playerIdle() {
-  setAnimationId(world, player, ANIM_IDLE);
-  setAnimationPlaying(world, player, true);
+function playerIdle(): void {
+  playAnimation(world, player, ANIM_IDLE, { loop: true });
 }
 
-function playerWalk() {
-  setAnimationId(world, player, ANIM_WALK);
-  setAnimationPlaying(world, player, true);
+function playerWalk(): void {
+  playAnimation(world, player, ANIM_WALK, { loop: true });
 }
 
-function playerAttack() {
-  setAnimationId(world, player, ANIM_ATTACK);
-  setAnimationPlaying(world, player, true);
-  // Attack animation doesn't loop
+function playerAttack(): void {
+  playAnimation(world, player, ANIM_ATTACK, { loop: false });
 }
 
 // In game loop
-function gameLoop(dt: number) {
+function gameLoop(dt: number): void {
   scheduler.run(world, dt);
 }
 ```
 
 ## Example: Animated UI Elements
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  attachAnimation,
-  registerAnimationSystem,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { registerAnimation, playAnimation } from 'blecsd/components';
+import { registerAnimationSystem } from 'blecsd/systems';
+import { createScheduler } from 'blecsd/core';
+
+const world = createWorld();
+const scheduler = createScheduler();
+registerAnimationSystem(scheduler);
+
+const spinnerAnim = registerAnimation({ name: 'spinner', frames: [{ duration: 0.1 }, { duration: 0.1 }] });
+const blinkAnim = registerAnimation({ name: 'blink', frames: [{ duration: 0.5 }, { duration: 0.5 }] });
 
 // Loading spinner
 const spinner = addEntity(world);
-attachAnimation(world, spinner, {
-  animationId: spinnerAnim,
-  playing: true,
-  loop: true,
-  speed: 2.0, // Double speed
-});
+playAnimation(world, spinner, spinnerAnim, { loop: true, speed: 2.0 });
 
 // Blinking cursor
 const cursor = addEntity(world);
-attachAnimation(world, cursor, {
-  animationId: blinkAnim,
-  playing: true,
-  loop: true,
-  speed: 0.5, // Slow blink
-});
+playAnimation(world, cursor, blinkAnim, { loop: true, speed: 0.5 });
 ```
 
 ## Performance Considerations

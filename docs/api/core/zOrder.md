@@ -8,15 +8,9 @@ The z-order system determines which entities appear on top of others during rend
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  setZIndex,
-  setFront,
-  setBack,
-  getZIndex,
-  sortByZIndex,
-} from 'blecsd';
+import { setZIndex, getZIndex } from 'blecsd/components';
+import { setFront, setBack, sortByZIndex } from 'blecsd/core';
 
 // Set specific z-index
 setZIndex(world, background, -10);
@@ -36,9 +30,8 @@ const renderOrder = sortByZIndex(world, entities);
 
 Sets the z-index of an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setZIndex } from 'blecsd';
+import { setZIndex } from 'blecsd/components';
 
 setZIndex(world, entity, 10);
 setZIndex(world, background, -5);
@@ -48,9 +41,8 @@ setZIndex(world, background, -5);
 
 Gets the current z-index.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getZIndex } from 'blecsd';
+import { getZIndex } from 'blecsd/components';
 
 const z = getZIndex(world, entity);
 ```
@@ -59,9 +51,8 @@ const z = getZIndex(world, entity);
 
 Brings entity to front (highest z among siblings).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setFront } from 'blecsd';
+import { setFront } from 'blecsd/core';
 
 setFront(world, dialog);
 ```
@@ -70,9 +61,8 @@ setFront(world, dialog);
 
 Sends entity to back (lowest z among siblings).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBack } from 'blecsd';
+import { setBack } from 'blecsd/core';
 
 setBack(world, background);
 ```
@@ -81,9 +71,8 @@ setBack(world, background);
 
 Swaps z-index with adjacent sibling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { moveUp, moveDown } from 'blecsd';
+import { moveUp, moveDown } from 'blecsd/core';
 
 if (moveUp(world, entity)) {
   console.log('Moved up one layer');
@@ -100,9 +89,8 @@ if (moveDown(world, entity)) {
 
 Sorts entities by z-index (lowest first).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sortByZIndex } from 'blecsd';
+import { sortByZIndex } from 'blecsd/core';
 
 const sorted = sortByZIndex(world, entities);
 for (const entity of sorted) {
@@ -114,9 +102,8 @@ for (const entity of sorted) {
 
 Gets children sorted for rendering.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getChildrenByZIndex } from 'blecsd';
+import { getChildrenByZIndex } from 'blecsd/core';
 
 const children = getChildrenByZIndex(world, container);
 ```
@@ -125,9 +112,8 @@ const children = getChildrenByZIndex(world, container);
 
 Normalizes z-indices to sequential values (0, 1, 2...).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { normalizeZIndices } from 'blecsd';
+import { normalizeZIndices } from 'blecsd/components';
 
 // After many operations, normalize to prevent drift
 normalizeZIndices(world, container);
@@ -139,9 +125,8 @@ normalizeZIndices(world, container);
 
 Direct component access (low-level).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ZOrder } from 'blecsd';
+import { ZOrder } from 'blecsd/core';
 
 // Direct access
 const z = ZOrder.zIndex[entity];
@@ -150,9 +135,8 @@ const localZ = ZOrder.localZ[entity];
 
 ## Constants
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { DEFAULT_Z_INDEX, MAX_Z_INDEX, MIN_Z_INDEX } from 'blecsd';
+import { DEFAULT_Z_INDEX, MAX_Z_INDEX, MIN_Z_INDEX } from 'blecsd/core';
 
 DEFAULT_Z_INDEX  // 0
 MAX_Z_INDEX      // 2147483647
@@ -163,9 +147,8 @@ MIN_Z_INDEX      // -2147483648
 
 For sibling-relative ordering:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setLocalZ, getLocalZ } from 'blecsd';
+import { setLocalZ, getLocalZ } from 'blecsd/core';
 
 setLocalZ(world, entity, 5);
 const local = getLocalZ(world, entity);

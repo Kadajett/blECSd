@@ -14,13 +14,8 @@ The worker pool handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorkerPool,
-  registerTaskHandler,
-  submitTask,
-} from 'blecsd';
+import { createWorkerPool, registerTaskHandler, submitTask } from 'blecsd/systems';
 
 createWorkerPool({ maxWorkers: 4 });
 
@@ -121,9 +116,8 @@ Creates and initializes the worker pool. Uses synchronous fallback handlers on t
 function createWorkerPool(config?: Partial<WorkerPoolConfig>): WorkerPoolState
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorkerPool } from 'blecsd';
+import { createWorkerPool } from 'blecsd/systems';
 
 createWorkerPool({
   maxWorkers: 4,
@@ -143,9 +137,8 @@ function registerTaskHandler<TInput = unknown, TOutput = unknown>(
 ): void
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerTaskHandler } from 'blecsd';
+import { registerTaskHandler } from 'blecsd/systems';
 
 registerTaskHandler('search', (input: { query: string; text: string }) => {
   return input.text.indexOf(input.query);
@@ -175,9 +168,12 @@ function submitTask<TInput = unknown, TOutput = unknown>(
 
 **Returns:** Promise resolving to `TaskResult`.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { submitTask } from 'blecsd';
+import { submitTask } from 'blecsd/systems';
+
+const sourceCode = 'const x = 1;';
+const query = 'hello';
+const text = 'hello world';
 
 // Normal priority
 const result = await submitTask('highlight', { code: sourceCode, lang: 'ts' });
@@ -215,9 +211,8 @@ function cancelAllOfType(type: string): number
 
 **Returns:** Number of tasks cancelled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { cancelAllOfType } from 'blecsd';
+import { cancelAllOfType } from 'blecsd/systems';
 
 // Cancel all pending search tasks when query changes
 const cancelled = cancelAllOfType('search');
@@ -232,9 +227,8 @@ Gets the current worker pool state and statistics.
 function getWorkerPoolState(): WorkerPoolState
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getWorkerPoolState } from 'blecsd';
+import { getWorkerPoolState } from 'blecsd/systems';
 
 const { stats } = getWorkerPoolState();
 console.log(`Active: ${stats.activeWorkers}, Queued: ${stats.queuedTasks}`);
@@ -254,7 +248,6 @@ function destroyWorkerPool(): void
 
 Complete worker pool setup for text processing tasks:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorkerPool,
@@ -263,7 +256,7 @@ import {
   cancelAllOfType,
   getWorkerPoolState,
   destroyWorkerPool,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 // Initialize pool
 createWorkerPool({

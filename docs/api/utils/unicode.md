@@ -30,9 +30,8 @@ type CodePointRange = readonly [number, number];
 
 Wide character ranges that display as two terminal cells.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { WIDE_RANGES } from 'blecsd';
+import { WIDE_RANGES } from 'blecsd/utils';
 
 // Includes CJK, Hangul, fullwidth forms
 console.log(WIDE_RANGES.length); // Number of wide ranges
@@ -50,9 +49,8 @@ console.log(WIDE_RANGES.length); // Number of wide ranges
 
 Fullwidth character ranges from the Halfwidth and Fullwidth Forms Unicode block.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { FULLWIDTH_RANGES } from 'blecsd';
+import { FULLWIDTH_RANGES } from 'blecsd/utils';
 
 // U+FF01-FF5E: Fullwidth ASCII variants
 // U+FFE0-FFE6: Fullwidth currency symbols
@@ -62,9 +60,8 @@ import { FULLWIDTH_RANGES } from 'blecsd';
 
 Zero-width characters that don't occupy display cells.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ZERO_WIDTH_RANGES } from 'blecsd';
+import { ZERO_WIDTH_RANGES } from 'blecsd/utils';
 
 // Includes combining marks, control characters, modifiers
 ```
@@ -82,9 +79,8 @@ import { ZERO_WIDTH_RANGES } from 'blecsd';
 
 Characters with ambiguous width that may display as 1 or 2 cells depending on context.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { AMBIGUOUS_RANGES } from 'blecsd';
+import { AMBIGUOUS_RANGES } from 'blecsd/utils';
 
 // Greek letters, Cyrillic, box drawing, geometric shapes
 ```
@@ -101,9 +97,8 @@ import { AMBIGUOUS_RANGES } from 'blecsd';
 
 Emoji ranges typically displayed as wide characters.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { EMOJI_WIDE_RANGES } from 'blecsd';
+import { EMOJI_WIDE_RANGES } from 'blecsd/utils';
 
 // Emoticons, pictographs, transport symbols
 ```
@@ -125,9 +120,8 @@ function isWideChar(codePoint: number): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isWideChar } from 'blecsd';
+import { isWideChar } from 'blecsd/utils';
 
 isWideChar(0x4e00);  // true - CJK ideograph "一"
 isWideChar(0x0041);  // false - Latin 'A'
@@ -151,9 +145,8 @@ function isZeroWidthChar(codePoint: number): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isZeroWidthChar } from 'blecsd';
+import { isZeroWidthChar } from 'blecsd/utils';
 
 isZeroWidthChar(0x0300); // true - Combining grave accent
 isZeroWidthChar(0x200b); // true - Zero-width space
@@ -177,9 +170,8 @@ function isAmbiguousChar(codePoint: number): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isAmbiguousChar } from 'blecsd';
+import { isAmbiguousChar } from 'blecsd/utils';
 
 isAmbiguousChar(0x03b1); // true - Greek alpha (α)
 isAmbiguousChar(0x0410); // true - Cyrillic A (А)
@@ -205,9 +197,8 @@ function getCharWidth(codePoint: number, ambiguousIsWide?: boolean): number
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getCharWidth } from 'blecsd';
+import { getCharWidth } from 'blecsd/utils';
 
 // Basic usage
 getCharWidth(0x0041);  // 1 - Latin 'A'
@@ -240,9 +231,8 @@ const elapsed = performance.now() - start;
 
 ### Calculating String Display Width
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getCharWidth } from 'blecsd';
+import { getCharWidth } from 'blecsd/utils';
 
 function getStringWidth(str: string): number {
   let width = 0;
@@ -263,9 +253,8 @@ getStringWidth('Hello🚀');   // 7 (5 + 2)
 
 ### Text Truncation with Ellipsis
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getCharWidth } from 'blecsd';
+import { getCharWidth } from 'blecsd/utils';
 
 function truncate(str: string, maxWidth: number): string {
   let width = 0;
@@ -293,9 +282,8 @@ truncate('你好世界', 5);      // '你好…'
 
 ### Terminal Column Alignment
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getCharWidth } from 'blecsd';
+import { getCharWidth } from 'blecsd/utils';
 
 function padEnd(str: string, targetWidth: number): string {
   let currentWidth = 0;
@@ -332,9 +320,8 @@ function isSurrogate(str: string, index: number): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isHighSurrogate, isLowSurrogate, isSurrogate } from 'blecsd';
+import { isHighSurrogate, isLowSurrogate, isSurrogate } from 'blecsd/utils';
 
 const emoji = '😀';
 isHighSurrogate(emoji.charCodeAt(0));  // true (0xD83D)
@@ -352,9 +339,8 @@ function codePointToSurrogatePair(codePoint: number): [number, number]
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { surrogatePairToCodePoint, codePointToSurrogatePair } from 'blecsd';
+import { surrogatePairToCodePoint, codePointToSurrogatePair } from 'blecsd/utils';
 
 // 😀 is U+1F600, encoded as D83D DE00
 surrogatePairToCodePoint(0xD83D, 0xDE00);  // 0x1F600
@@ -371,9 +357,8 @@ function fromCodePoint(...codePoints: number[]): string
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { codePointAt, fromCodePoint } from 'blecsd';
+import { codePointAt, fromCodePoint } from 'blecsd/utils';
 
 codePointAt('😀', 0);         // 0x1F600
 fromCodePoint(0x1F600);       // '😀'
@@ -390,9 +375,8 @@ function toCodePoints(str: string): number[]
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { codePoints, characters, toCodePoints } from 'blecsd';
+import { codePoints, characters, toCodePoints } from 'blecsd/utils';
 
 for (const cp of codePoints('A😀B')) {
   console.log(cp.toString(16));  // '41', '1f600', '42'
@@ -415,9 +399,8 @@ function sliceCodePoints(str: string, start: number, end?: number): string
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { codePointLength, charAtCodePoint, sliceCodePoints } from 'blecsd';
+import { codePointLength, charAtCodePoint, sliceCodePoints } from 'blecsd/utils';
 
 const str = 'A😀B';
 str.length;              // 4 (code units)
@@ -437,9 +420,8 @@ function isAstral(codePoint: number): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isValidCodePoint, isBMP, isAstral } from 'blecsd';
+import { isValidCodePoint, isBMP, isAstral } from 'blecsd/utils';
 
 isValidCodePoint(0x1F600);  // true
 isValidCodePoint(0xD800);   // false (surrogate)
@@ -462,9 +444,8 @@ Combining characters are marks that attach to the preceding base character. They
 
 Sorted array of combining character ranges.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { COMBINING_RANGES } from 'blecsd';
+import { COMBINING_RANGES } from 'blecsd/utils';
 
 // Check how many ranges are covered
 console.log(COMBINING_RANGES.length);
@@ -482,9 +463,8 @@ console.log(COMBINING_RANGES.length);
 
 Pre-computed Set of all combining character code points for O(1) lookup.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { COMBINING_SET } from 'blecsd';
+import { COMBINING_SET } from 'blecsd/utils';
 
 if (COMBINING_SET.has(codePoint)) {
   // Character is a combining mark
@@ -506,9 +486,8 @@ function isCombiningChar(codePoint: number): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isCombiningChar } from 'blecsd';
+import { isCombiningChar } from 'blecsd/utils';
 
 isCombiningChar(0x0300); // true - Combining grave accent
 isCombiningChar(0x0301); // true - Combining acute accent
@@ -528,9 +507,8 @@ function isCombiningCharBinarySearch(codePoint: number): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isCombiningCharBinarySearch } from 'blecsd';
+import { isCombiningCharBinarySearch } from 'blecsd/utils';
 
 isCombiningCharBinarySearch(0x0300); // true
 isCombiningCharBinarySearch(0x0041); // false
@@ -546,9 +524,8 @@ function getCombiningCharCount(): number
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getCombiningCharCount } from 'blecsd';
+import { getCombiningCharCount } from 'blecsd/utils';
 
 const count = getCombiningCharCount();
 console.log(`Covering ${count} combining characters`);
@@ -598,9 +575,8 @@ function strWidth(str: string, options?: WidthOptions): number  // alias
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { stringWidth, strWidth } from 'blecsd';
+import { stringWidth, strWidth } from 'blecsd/utils';
 
 stringWidth('Hello');      // 5
 stringWidth('你好');        // 4
@@ -623,9 +599,8 @@ function charWidth(char: string, ambiguousAsWide?: boolean): 0 | 1 | 2
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { charWidth } from 'blecsd';
+import { charWidth } from 'blecsd/utils';
 
 charWidth('A');  // 1
 charWidth('中'); // 2
@@ -642,9 +617,8 @@ function charWidthAt(str: string, index: number, ambiguousAsWide?: boolean): 0 |
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { charWidthAt } from 'blecsd';
+import { charWidthAt } from 'blecsd/utils';
 
 const str = 'A中😀';
 charWidthAt(str, 0);  // 1
@@ -669,9 +643,8 @@ interface SliceResult {
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sliceByWidth } from 'blecsd';
+import { sliceByWidth } from 'blecsd/utils';
 
 sliceByWidth('Hello World', 8);
 // { text: 'Hello Wo', width: 8, truncated: true }
@@ -690,9 +663,8 @@ function truncateByWidth(str: string, maxWidth: number, options?: WidthOptions):
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { truncateByWidth } from 'blecsd';
+import { truncateByWidth } from 'blecsd/utils';
 
 truncateByWidth('Hello World', 8);  // 'Hello Wo'
 truncateByWidth('你好世界', 5);      // '你好'
@@ -713,9 +685,8 @@ function truncateWithEllipsis(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { truncateWithEllipsis } from 'blecsd';
+import { truncateWithEllipsis } from 'blecsd/utils';
 
 truncateWithEllipsis('Hello World', 8);       // 'Hello W…'
 truncateWithEllipsis('Hello World', 8, '...'); // 'Hello...'
@@ -732,9 +703,8 @@ function centerByWidth(str: string, targetWidth: number, padChar?: string, optio
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { padEndByWidth, padStartByWidth, centerByWidth } from 'blecsd';
+import { padEndByWidth, padStartByWidth, centerByWidth } from 'blecsd/utils';
 
 padEndByWidth('Hi', 5);      // 'Hi   '
 padStartByWidth('Hi', 5);    // '   Hi'
@@ -753,9 +723,8 @@ function columnAtIndex(str: string, index: number, options?: WidthOptions): numb
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { indexAtColumn, columnAtIndex } from 'blecsd';
+import { indexAtColumn, columnAtIndex } from 'blecsd/utils';
 
 const str = 'A中B';
 indexAtColumn(str, 0);  // 0 ('A')
@@ -777,9 +746,8 @@ function hasZeroWidthChars(str: string): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasWideChars, hasZeroWidthChars } from 'blecsd';
+import { hasWideChars, hasZeroWidthChars } from 'blecsd/utils';
 
 hasWideChars('Hello');     // false
 hasWideChars('Hello中');   // true
@@ -813,9 +781,8 @@ interface DropUnicodeOptions {
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { dropUnicode } from 'blecsd';
+import { dropUnicode } from 'blecsd/utils';
 
 dropUnicode('Hello 世界');     // 'Hello ??'
 dropUnicode('Hello😀');       // 'Hello?'
@@ -837,9 +804,8 @@ function toAscii(text: string, replacement?: string): string
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { toAscii } from 'blecsd';
+import { toAscii } from 'blecsd/utils';
 
 toAscii('Hello 世界');  // 'Hello ??'
 toAscii('café');        // 'caf?'
@@ -855,9 +821,8 @@ function stripControl(text: string): string
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { stripZeroWidth, stripCombining, stripControl } from 'blecsd';
+import { stripZeroWidth, stripCombining, stripControl } from 'blecsd/utils';
 
 stripZeroWidth('a\u200Bb');  // 'ab'
 stripCombining('e\u0301');   // 'e'
@@ -875,9 +840,8 @@ function normalizeNFKD(text: string): string  // Compatibility decomposition
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { normalizeNFC, normalizeNFD, normalizeNFKC } from 'blecsd';
+import { normalizeNFC, normalizeNFD, normalizeNFKC } from 'blecsd/utils';
 
 normalizeNFC('e\u0301');   // 'é' (composed)
 normalizeNFD('é');         // 'e\u0301' (decomposed)

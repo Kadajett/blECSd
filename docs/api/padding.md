@@ -6,9 +6,8 @@ Padding controls the internal spacing of elements, defining the space between an
 
 The Padding component stores padding values using bitecs SoA (Structure of Arrays) pattern.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Padding } from 'blecsd';
+import { Padding } from 'blecsd/components';
 
 // Component arrays
 Padding.left   // Uint8Array - Left padding in cells
@@ -25,11 +24,11 @@ Padding.bottom // Uint8Array - Bottom padding in cells
 
 Checks if an entity has a Padding component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, hasPadding } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { hasPadding } from 'blecsd/components';
 import { setPadding } from 'blecsd/components';
-import { addEntity } from 'blecsd';
+import { addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -46,11 +45,10 @@ hasPadding(world, eid); // true
 
 Sets individual padding sides on an entity. Adds the Padding component if not already present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 import { setPadding } from 'blecsd/components';
-import { addEntity } from 'blecsd';
+import { addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -81,10 +79,10 @@ setPadding(world, eid, { left: 3, right: 3 });
 
 Sets all padding sides to the same value. Adds the Padding component if not already present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, setPaddingAll, getPadding } from 'blecsd';
-import { addEntity } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { setPaddingAll, getPadding } from 'blecsd/components';
+import { addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -109,10 +107,10 @@ const padding = getPadding(world, eid);
 
 Sets horizontal (left/right) and vertical (top/bottom) padding separately. Adds the Padding component if not already present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, setPaddingHV, getPadding } from 'blecsd';
-import { addEntity } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { setPaddingHV, getPadding } from 'blecsd/components';
+import { addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -138,11 +136,11 @@ const padding = getPadding(world, eid);
 
 Gets the padding data for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, getPadding } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { getPadding } from 'blecsd/components';
 import { setPadding } from 'blecsd/components';
-import { addEntity } from 'blecsd';
+import { addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -168,11 +166,11 @@ const padding = getPadding(world, eid);
 
 Gets the total horizontal padding (left + right).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, getHorizontalPadding } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { getHorizontalPadding } from 'blecsd/components';
 import { setPadding } from 'blecsd/components';
-import { addEntity } from 'blecsd';
+import { addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -191,11 +189,11 @@ getHorizontalPadding(world, eid); // 5
 
 Gets the total vertical padding (top + bottom).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, getVerticalPadding } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { getVerticalPadding } from 'blecsd/components';
 import { setPadding } from 'blecsd/components';
-import { addEntity } from 'blecsd';
+import { addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -214,11 +212,11 @@ getVerticalPadding(world, eid); // 5
 
 Checks if an entity has any padding value greater than 0.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, setPaddingAll, hasPaddingValue } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { setPaddingAll, hasPaddingValue } from 'blecsd/components';
 import { setPadding } from 'blecsd/components';
-import { addEntity } from 'blecsd';
+import { addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);

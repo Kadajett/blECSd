@@ -14,14 +14,9 @@ The tilemap renderer handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  setTileMapRendererConfig,
-  tilemapRenderSystem,
-  getTileMapRenderBuffer,
-  LoopPhase,
-} from 'blecsd';
+import { setTileMapRendererConfig, tilemapRenderSystem, getTileMapRenderBuffer } from 'blecsd/systems';
+import { LoopPhase } from 'blecsd/core';
 
 setTileMapRendererConfig({
   viewportWidth: 80,
@@ -78,9 +73,8 @@ Sets the tile map renderer configuration. Must be called before the system runs.
 function setTileMapRendererConfig(config: TileMapRendererConfig): void
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setTileMapRendererConfig } from 'blecsd';
+import { setTileMapRendererConfig } from 'blecsd/systems';
 
 setTileMapRendererConfig({
   viewportWidth: 80,
@@ -105,9 +99,8 @@ Gets the current render buffer after the system has run.
 function getTileMapRenderBuffer(): TileMapBuffer | null
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getTileMapRenderBuffer } from 'blecsd';
+import { getTileMapRenderBuffer } from 'blecsd/systems';
 
 const buffer = getTileMapRenderBuffer();
 if (buffer) {
@@ -157,9 +150,8 @@ function renderTileMapToBuffer(
 ): void
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createEmptyBuffer, renderTileMapToBuffer } from 'blecsd';
+import { createEmptyBuffer, renderTileMapToBuffer } from 'blecsd/systems';
 
 const buffer = createEmptyBuffer(80, 24);
 renderTileMapToBuffer(buffer, mapEntity, cameraX, cameraY);
@@ -193,21 +185,16 @@ function createTilemapRenderSystem(): System
 
 Complete tilemap rendering with camera scrolling:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { registerTileset, createTileData, setTileMap } from 'blecsd/components';
 import {
   createWorld,
   addEntity,
   createScheduler,
-  setTileMapRendererConfig,
-  tilemapRenderSystem,
-  getTileMapRenderBuffer,
-  setPosition,
-  setTileMap,
-  createTileset,
-  createTileMapData,
   LoopPhase,
-} from 'blecsd';
+} from 'blecsd/core';
+import { setTileMapRendererConfig, tilemapRenderSystem, getTileMapRenderBuffer } from 'blecsd/systems';
+import { setPosition } from 'blecsd/components';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -224,17 +211,16 @@ setTileMapRendererConfig({
 scheduler.registerSystem(LoopPhase.RENDER, tilemapRenderSystem);
 
 // Create a tileset
-const tilesetId = createTileset([
-  { char: '.', fg: 0x666666, bg: 0x000000 },  // Floor
-  { char: '#', fg: 0xaaaaaa, bg: 0x333333 },  // Wall
-  { char: '~', fg: 0x3333ff, bg: 0x000066 },  // Water
-]);
+const tilesetId = registerTileset({
+  tiles: [
+    { char: '.', fg: 0x666666, bg: 0x000000 },  // Floor
+    { char: '#', fg: 0xaaaaaa, bg: 0x333333 },  // Wall
+    { char: '~', fg: 0x3333ff, bg: 0x000066 },  // Water
+  ],
+});
 
 // Create tile map data
-const mapData = createTileMapData(20, 15, [
-  { name: 'ground', tiles: groundTiles, visible: true },
-  { name: 'objects', tiles: objectTiles, visible: true },
-]);
+const mapData = createTileData(20, 15, 2);
 
 // Create tile map entity
 const mapEntity = addEntity(world);
@@ -245,7 +231,7 @@ setTileMap(world, mapEntity, {
   tileWidth: 1,
   tileHeight: 1,
   dataId: mapData,
-  tilesetId: tilesetId,
+  tilesetId,
 });
 
 // Camera follows player

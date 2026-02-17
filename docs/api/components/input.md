@@ -19,9 +19,8 @@ Stores keyboard state for an entity.
 
 Add or update keyboard input state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setKeyboardInput } from 'blecsd';
+import { setKeyboardInput } from 'blecsd/components';
 
 setKeyboardInput(world, entity, {
   lastKeyCode: 65,      // 'A' key
@@ -44,9 +43,8 @@ setKeyboardInput(world, entity, {
 
 Get keyboard state for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getKeyboardInput } from 'blecsd';
+import { getKeyboardInput } from 'blecsd/components';
 
 const input = getKeyboardInput(world, entity);
 if (input) {
@@ -61,9 +59,8 @@ if (input) {
 
 Reset keyboard state to defaults.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearKeyboardInput } from 'blecsd';
+import { clearKeyboardInput } from 'blecsd/components';
 
 clearKeyboardInput(world, entity);
 ```
@@ -72,9 +69,8 @@ clearKeyboardInput(world, entity);
 
 Check or remove the component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasKeyboardInput, removeKeyboardInput } from 'blecsd';
+import { hasKeyboardInput, removeKeyboardInput } from 'blecsd/components';
 
 if (hasKeyboardInput(world, entity)) {
   removeKeyboardInput(world, entity);
@@ -87,9 +83,8 @@ if (hasKeyboardInput(world, entity)) {
 
 Constants for modifier key flags.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ModifierFlags } from 'blecsd';
+import { ModifierFlags } from 'blecsd/components';
 
 ModifierFlags.NONE  // 0
 ModifierFlags.CTRL  // 1
@@ -101,9 +96,8 @@ ModifierFlags.SHIFT // 4
 
 Pack boolean modifiers into a single value.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { packModifiers, ModifierFlags } from 'blecsd';
+import { packModifiers, ModifierFlags } from 'blecsd/components';
 
 const packed = packModifiers(true, false, true); // Ctrl + Shift
 // Result: ModifierFlags.CTRL | ModifierFlags.SHIFT = 5
@@ -113,9 +107,8 @@ const packed = packModifiers(true, false, true); // Ctrl + Shift
 
 Unpack modifiers to boolean values.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { unpackModifiers } from 'blecsd';
+import { unpackModifiers } from 'blecsd/components';
 
 const { ctrl, meta, shift } = unpackModifiers(5);
 // ctrl: true, meta: false, shift: true
@@ -129,9 +122,8 @@ Stores mouse state for an entity.
 
 Add or update mouse input state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setMouseInput, MouseButtons } from 'blecsd';
+import { setMouseInput, MouseButtons } from 'blecsd/components';
 
 setMouseInput(world, entity, {
   x: 10,
@@ -154,9 +146,8 @@ setMouseInput(world, entity, {
 
 Get mouse state for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getMouseInput } from 'blecsd';
+import { getMouseInput } from 'blecsd/components';
 
 const mouse = getMouseInput(world, entity);
 if (mouse) {
@@ -170,10 +161,10 @@ if (mouse) {
 
 Record a click and detect double/triple clicks.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { recordClick, MouseButtons } from 'blecsd';
+import { recordClick, MouseButtons } from 'blecsd/components';
 
+const x = 10, y = 5;
 const clickCount = recordClick(world, entity, x, y, MouseButtons.LEFT);
 if (clickCount === 2) {
   console.log('Double click!');
@@ -189,9 +180,8 @@ Click detection uses:
 
 ### clearMouseInput / removeMouseInput
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearMouseInput, removeMouseInput } from 'blecsd';
+import { clearMouseInput, removeMouseInput } from 'blecsd/components';
 
 clearMouseInput(world, entity);  // Reset to defaults
 removeMouseInput(world, entity); // Remove component
@@ -201,9 +191,8 @@ removeMouseInput(world, entity); // Remove component
 
 Mouse button constants.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { MouseButtons } from 'blecsd';
+import { MouseButtons } from 'blecsd/components';
 
 MouseButtons.NONE       // 0
 MouseButtons.LEFT       // 1
@@ -221,9 +210,8 @@ Text input buffer with cursor and selection support.
 
 Low-level store for managing text buffers.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { inputBufferStore } from 'blecsd';
+import { inputBufferStore } from 'blecsd/components';
 
 // Create a buffer
 const bufferId = inputBufferStore.create('Initial text');
@@ -246,9 +234,8 @@ inputBufferStore.clear(); // Remove all buffers
 
 Add or update input buffer state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setInputBuffer, inputBufferStore } from 'blecsd';
+import { setInputBuffer, inputBufferStore } from 'blecsd/components';
 
 const bufferId = inputBufferStore.create('Hello');
 
@@ -269,9 +256,8 @@ setInputBuffer(world, entity, {
 
 Get input buffer state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getInputBuffer } from 'blecsd';
+import { getInputBuffer } from 'blecsd/components';
 
 const buffer = getInputBuffer(world, entity);
 if (buffer) {
@@ -287,9 +273,8 @@ if (buffer) {
 
 Convenience functions for buffer text.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getInputBufferText, setInputBufferText } from 'blecsd';
+import { getInputBufferText, setInputBufferText } from 'blecsd/components';
 
 const text = getInputBufferText(world, entity);
 setInputBufferText(world, entity, 'New value');
@@ -297,12 +282,8 @@ setInputBufferText(world, entity, 'New value');
 
 ### Selection Management
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  setInputBufferSelection,
-  clearInputBufferSelection
-} from 'blecsd';
+import { setInputBufferSelection, clearInputBufferSelection } from 'blecsd/components';
 
 // Set selection
 setInputBufferSelection(world, entity, 0, 5);
@@ -315,9 +296,8 @@ clearInputBufferSelection(world, entity);
 
 Remove the component and its buffer.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { removeInputBuffer } from 'blecsd';
+import { removeInputBuffer } from 'blecsd/components';
 
 // Removes component AND deletes buffer from store
 removeInputBuffer(world, entity);
@@ -368,9 +348,13 @@ interface InputBufferData {
 
 For high-performance code, access arrays directly:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { KeyboardInput, MouseInput, InputBuffer } from 'blecsd';
+import { KeyboardInput, MouseInput, InputBuffer } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const eid = addEntity(world);
+const entities = [eid];
 
 // In a system
 for (const eid of entities) {

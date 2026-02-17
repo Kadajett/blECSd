@@ -4,9 +4,8 @@ A file browser widget for navigating directories and selecting files. Supports d
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFileManager } from 'blecsd';
+import { createFileManager } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -60,9 +59,8 @@ interface FileEntry {
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { FileManagerConfigSchema } from 'blecsd';
+import { FileManagerConfigSchema } from 'blecsd/widgets';
 
 const result = FileManagerConfigSchema.safeParse({
   cwd: '/home/user',
@@ -80,9 +78,8 @@ const result = FileManagerConfigSchema.safeParse({
 
 Creates a FileManager widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFileManager } from 'blecsd';
+import { createFileManager } from 'blecsd/widgets';
 
 const fm = createFileManager(world, {
   cwd: '/home/user/projects',
@@ -221,9 +218,8 @@ Destroys the widget and removes the entity from the world.
 
 Handles keyboard input for a file manager widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleFileManagerKey } from 'blecsd';
+import { handleFileManagerKey } from 'blecsd/widgets';
 
 handleFileManagerKey(world, fmEid, 'down');      // Move selection down
 handleFileManagerKey(world, fmEid, 'up');         // Move selection up
@@ -253,9 +249,8 @@ handleFileManagerKey(world, fmEid, 'backspace');  // Go to parent directory
 
 ### isFileManager
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isFileManager } from 'blecsd';
+import { isFileManager } from 'blecsd/widgets';
 
 if (isFileManager(world, entity)) {
   // Entity is a file manager widget
@@ -266,9 +261,8 @@ if (isFileManager(world, entity)) {
 
 Injects a custom directory-reading function. Primarily used for testing to mock filesystem operations.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setReadDirFn } from 'blecsd';
+import { setReadDirFn } from 'blecsd/widgets';
 
 setReadDirFn(fmEid, (dir) => [
   { name: 'src', path: dir + '/src', isDirectory: true, size: 0 },
@@ -282,9 +276,8 @@ setReadDirFn(fmEid, (dir) => [
 
 ### File Picker Dialog
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFileManager } from 'blecsd';
+import { createFileManager } from 'blecsd/widgets';
 
 const picker = createFileManager(world, {
   cwd: '/home/user',
@@ -305,9 +298,8 @@ picker.onSelect((entry) => {
 
 ### Directory Browser with Hidden Files
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFileManager, handleFileManagerKey } from 'blecsd';
+import { createFileManager, handleFileManagerKey } from 'blecsd/widgets';
 
 const browser = createFileManager(world, {
   cwd: '/etc',
@@ -324,9 +316,8 @@ function onKeyPress(key) {
 
 ### Filtered File Listing
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFileManager } from 'blecsd';
+import { createFileManager } from 'blecsd/widgets';
 
 const fm = createFileManager(world, {
   cwd: '/home/user/project',

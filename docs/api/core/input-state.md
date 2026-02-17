@@ -4,9 +4,8 @@ Frame-aware input state tracking for keyboard and mouse. Provides queries like `
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputState, getMovementDirection } from 'blecsd';
+import { createInputState, getMovementDirection } from 'blecsd/core';
 
 const inputState = createInputState({ trackRepeats: true });
 
@@ -151,9 +150,8 @@ function createInputState(config?: InputStateConfig): InputState;
 
 **Returns:** A new InputState instance.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputState } from 'blecsd';
+import { createInputState } from 'blecsd/core';
 
 const inputState = createInputState({
   trackRepeats: true,
@@ -169,9 +167,8 @@ Checks if any of the specified keys are pressed.
 function isAnyKeyDown(inputState: InputState, keys: readonly (KeyName | string)[]): boolean;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isAnyKeyDown } from 'blecsd';
+import { isAnyKeyDown } from 'blecsd/core';
 
 if (isAnyKeyDown(inputState, ['w', 'up'])) {
   moveForward();
@@ -186,9 +183,8 @@ Checks if all specified keys are pressed.
 function isAllKeysDown(inputState: InputState, keys: readonly (KeyName | string)[]): boolean;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isAllKeysDown } from 'blecsd';
+import { isAllKeysDown } from 'blecsd/core';
 
 if (isAllKeysDown(inputState, ['ctrl', 's'])) {
   save();
@@ -213,9 +209,8 @@ function getMovementDirection(inputState: InputState): { x: number; y: number };
 
 **Returns:** Object with `x` (-1, 0, or 1) and `y` (-1, 0, or 1).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getMovementDirection } from 'blecsd';
+import { getMovementDirection } from 'blecsd/core';
 
 const dir = getMovementDirection(inputState);
 player.x += dir.x * speed;
@@ -224,9 +219,8 @@ player.y += dir.y * speed;
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputState, createInputEventBuffer, drainKeys, drainMouse } from 'blecsd';
+import { createInputState, createInputEventBuffer, drainKeys, drainMouse } from 'blecsd/core';
 
 const inputState = createInputState({ trackRepeats: true });
 const buffer = createInputEventBuffer();

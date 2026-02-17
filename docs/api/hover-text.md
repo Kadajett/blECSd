@@ -9,9 +9,8 @@ The hover text system consists of:
 - A manager that handles timing, positioning, and state
 - Module-level functions for simple use cases
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createHoverTextManager, setHoverText } from 'blecsd';
+import { createHoverTextManager, setHoverText } from 'blecsd/widgets';
 
 // Create a manager for your application
 const hoverManager = createHoverTextManager({
@@ -31,17 +30,22 @@ setHoverText(entity, 'Hover text here');
 
 ## Constants
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  DEFAULT_HOVER_DELAY,      // 500ms - Delay before showing
-  DEFAULT_HIDE_DELAY,       // 100ms - Delay before hiding
-  DEFAULT_CURSOR_OFFSET_X,  // 2 - X offset from cursor
-  DEFAULT_CURSOR_OFFSET_Y,  // 1 - Y offset from cursor
-  DEFAULT_TOOLTIP_FG,       // 0xffffffff - White
-  DEFAULT_TOOLTIP_BG,       // 0xff333333 - Dark gray
-  DEFAULT_TOOLTIP_BORDER,   // 0xff888888 - Light gray
-} from 'blecsd';
+  // 500ms - Delay before showing
+  DEFAULT_HIDE_DELAY,
+  // 100ms - Delay before hiding
+  DEFAULT_CURSOR_OFFSET_X,
+  // 2 - X offset from cursor
+  DEFAULT_CURSOR_OFFSET_Y,
+  // 1 - Y offset from cursor
+  DEFAULT_TOOLTIP_FG,
+  // 0xffffffff - White
+  DEFAULT_TOOLTIP_BG,
+  // 0xff333333 - Dark gray
+  DEFAULT_TOOLTIP_BORDER,
+  DEFAULT_HOVER_DELAY,
+} from 'blecsd/widgets';
 ```
 
 ---
@@ -50,9 +54,8 @@ import {
 
 Creates a hover text manager for handling tooltip state, timing, and positioning.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createHoverTextManager } from 'blecsd';
+import { createHoverTextManager } from 'blecsd/widgets';
 
 const hoverManager = createHoverTextManager({
   showDelay: 500,      // ms before showing tooltip
@@ -239,9 +242,8 @@ For simple use cases, you can use module-level functions that operate on a globa
 
 Sets hover text for an entity in the global store.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setHoverText } from 'blecsd';
+import { setHoverText } from 'blecsd/widgets';
 
 setHoverText(entity, 'Click here to submit');
 ```
@@ -250,9 +252,8 @@ setHoverText(entity, 'Click here to submit');
 
 Clears hover text for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearHoverText } from 'blecsd';
+import { clearHoverText } from 'blecsd/widgets';
 
 clearHoverText(entity);
 ```
@@ -261,9 +262,8 @@ clearHoverText(entity);
 
 Gets hover text config for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getHoverText } from 'blecsd';
+import { getHoverText } from 'blecsd/widgets';
 
 const config = getHoverText(entity);
 ```
@@ -272,9 +272,8 @@ const config = getHoverText(entity);
 
 Checks if an entity has hover text.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasHoverText } from 'blecsd';
+import { hasHoverText } from 'blecsd/widgets';
 
 if (hasHoverText(entity)) {
   // ...
@@ -285,9 +284,8 @@ if (hasHoverText(entity)) {
 
 Clears all hover text registrations.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearAllHoverText } from 'blecsd';
+import { clearAllHoverText } from 'blecsd/widgets';
 
 clearAllHoverText();
 ```
@@ -296,9 +294,8 @@ clearAllHoverText();
 
 Gets the number of entities with hover text registered.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getHoverTextCount } from 'blecsd';
+import { getHoverTextCount } from 'blecsd/widgets';
 
 const count = getHoverTextCount();
 ```
@@ -307,9 +304,8 @@ const count = getHoverTextCount();
 
 Resets the hover text store. For testing purposes.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetHoverTextStore } from 'blecsd';
+import { resetHoverTextStore } from 'blecsd/widgets';
 
 resetHoverTextStore();
 ```
@@ -394,9 +390,8 @@ interface TooltipRenderData {
 
 ### Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createHoverTextManager } from 'blecsd';
+import { createHoverTextManager } from 'blecsd/widgets';
 
 const hoverManager = createHoverTextManager({
   showDelay: 500,

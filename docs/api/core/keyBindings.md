@@ -4,14 +4,13 @@ Configurable key binding system for keyboard shortcuts. Provides key combination
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createKeyBindingRegistry,
   registerBinding,
   matchEvent,
   parseKeyString,
-} from 'blecsd';
+} from 'blecsd/core';
 
 // Create a registry
 let registry = createKeyBindingRegistry();
@@ -41,9 +40,8 @@ for (const match of matches) {
 
 Parses a key combination string into a ParsedKey object.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseKeyString } from 'blecsd';
+import { parseKeyString } from 'blecsd/core';
 
 // Single key
 parseKeyString('a');
@@ -89,7 +87,6 @@ parseKeyString('alt+home');
 
 Creates an empty key binding registry.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createKeyBindingRegistry } from 'blecsd/core';
 
@@ -100,7 +97,6 @@ const registry = createKeyBindingRegistry();
 
 Registers a single key binding.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { registerBinding } from 'blecsd/core';
 
@@ -118,9 +114,8 @@ registry = registerBinding(registry, {
 
 Registers multiple bindings at once.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerBindings } from 'blecsd';
+import { registerBindings } from 'blecsd/core';
 
 const registry = registerBindings(createKeyBindingRegistry(), [
   { keys: 'ctrl+c', action: 'copy' },
@@ -133,9 +128,8 @@ const registry = registerBindings(createKeyBindingRegistry(), [
 
 Removes a binding by action name.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { unregisterBinding } from 'blecsd';
+import { unregisterBinding } from 'blecsd/core';
 
 registry = unregisterBinding(registry, 'save');
 ```
@@ -167,7 +161,6 @@ interface KeyBinding {
 
 Matches a key event against the registry and returns all matching bindings.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { matchEvent } from 'blecsd/core';
 
@@ -192,9 +185,8 @@ for (const match of matches) {
 
 Checks if a specific binding matches a key event.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { matchesKey } from 'blecsd';
+import { matchesKey } from 'blecsd/core';
 
 const binding = { keys: 'ctrl+c', action: 'copy' };
 const matches = matchesKey(binding, keyEvent);
@@ -204,9 +196,8 @@ const matches = matchesKey(binding, keyEvent);
 
 Gets all bindings for a parsed key combination (without condition evaluation).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getBindingsForKey, parseKeyString } from 'blecsd';
+import { getBindingsForKey, parseKeyString } from 'blecsd/core';
 
 const key = parseKeyString('ctrl+s')!;
 const bindings = getBindingsForKey(registry, key);
@@ -216,9 +207,8 @@ const bindings = getBindingsForKey(registry, key);
 
 Gets a binding by its action name.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getBindingForAction } from 'blecsd';
+import { getBindingForAction } from 'blecsd/core';
 
 const binding = getBindingForAction(registry, 'save');
 ```
@@ -252,9 +242,8 @@ The `when` property allows bindings to only activate in certain contexts.
 
 Evaluates a condition expression against a context.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { evaluateCondition } from 'blecsd';
+import { evaluateCondition } from 'blecsd/core';
 
 const context = {
   focus: 'editor',
@@ -275,9 +264,8 @@ evaluateCondition('textInputFocused && !modalOpen', context); // true
 
 Formats a ParsedKey back to a string.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { formatKey, parseKeyString } from 'blecsd';
+import { formatKey, parseKeyString } from 'blecsd/core';
 
 const key = parseKeyString('shift+ctrl+a')!;
 formatKey(key); // 'ctrl+shift+a' (normalized order)
@@ -287,9 +275,8 @@ formatKey(key); // 'ctrl+shift+a' (normalized order)
 
 Formats a KeyEvent as a key binding string.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { formatKeyEvent } from 'blecsd';
+import { formatKeyEvent } from 'blecsd/core';
 
 formatKeyEvent(keyEvent);
 // 'ctrl+shift+a' or 'escape' etc.
@@ -305,9 +292,8 @@ Pre-defined binding sets for common use cases.
 
 Standard text editing shortcuts.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { DEFAULT_TEXT_BINDINGS, registerBindings } from 'blecsd';
+import { DEFAULT_TEXT_BINDINGS, registerBindings } from 'blecsd/core';
 
 const registry = registerBindings(createKeyBindingRegistry(), DEFAULT_TEXT_BINDINGS);
 // Includes: copy, paste, cut, undo, redo, selectAll, deleteBack, deleteForward,
@@ -318,9 +304,8 @@ const registry = registerBindings(createKeyBindingRegistry(), DEFAULT_TEXT_BINDI
 
 Standard navigation shortcuts.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { DEFAULT_NAV_BINDINGS, registerBindings } from 'blecsd';
+import { DEFAULT_NAV_BINDINGS, registerBindings } from 'blecsd/core';
 
 const registry = registerBindings(createKeyBindingRegistry(), DEFAULT_NAV_BINDINGS);
 // Includes: focusNext (tab), focusPrev (shift+tab), cancel (escape),
@@ -333,9 +318,8 @@ const registry = registerBindings(createKeyBindingRegistry(), DEFAULT_NAV_BINDIN
 
 Zod schemas for runtime validation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { KeyBindingSchema, KeyBindingsArraySchema } from 'blecsd';
+import { KeyBindingSchema, KeyBindingsArraySchema } from 'blecsd/core';
 
 // Validate single binding
 const result = KeyBindingSchema.safeParse(binding);
@@ -350,9 +334,8 @@ const results = KeyBindingsArraySchema.safeParse(bindings);
 
 ### Game Controls
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerBindings } from 'blecsd';
+import { registerBindings } from 'blecsd/core';
 import { createKeyBindingRegistry, matchEvent } from 'blecsd/core';
 
 let registry = createKeyBindingRegistry();

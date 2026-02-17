@@ -4,27 +4,22 @@ ECS world state serialization and deserialization. Serialize world state to JSON
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  registerSerializable,
-  serializeWorld,
-  deserializeWorld,
-  createWorld,
-  Position,
-} from 'blecsd';
+import { serializeWorld, deserializeWorld, createWorld, registerComponents } from 'blecsd/core';
+import { position } from 'blecsd/components';
 
 // Register components for serialization
-registerSerializable({ name: 'Position', store: Position });
+registerComponents([{ name: 'Position', store: position.store }]);
 
 // Serialize
+const world = createWorld();
 const snapshot = serializeWorld(world);
 const json = JSON.stringify(snapshot);
 
 // Deserialize
 const newWorld = createWorld();
-const result = deserializeWorld(snapshot, newWorld);
-console.log(`Restored ${result.entityCount} entities`);
+deserializeWorld(snapshot);
+console.log(`Snapshot has ${snapshot.entityCount} entities`);
 ```
 
 ## Types
@@ -113,12 +108,11 @@ Registers a component for serialization.
 function registerSerializable(descriptor: ComponentDescriptor): void;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerSerializable } from 'blecsd';
-import { Position } from 'blecsd/components';
+import { registerComponents } from 'blecsd/core';
+import { position } from 'blecsd/components';
 
-registerSerializable({ name: 'Position', store: Position });
+registerComponents([{ name: 'Position', store: position.store }]);
 ```
 
 ### unregisterSerializable
@@ -213,30 +207,13 @@ Current serialization format version (currently `1`).
 
 ### Save/Load with Custom Serializers
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  registerSerializable,
-  serializeWorldToJSON,
-  deserializeWorldFromJSON,
-  createWorld,
-  addEntity,
-  setPosition,
-  Position,
-} from 'blecsd';
+import { createWorld, addEntity, registerComponents, serializeWorld, deserializeWorld } from 'blecsd/core';
+import { position } from 'blecsd/components';
+import { setPosition } from 'blecsd/components';
 
-// Register with custom serializer for non-typed-array data
-registerSerializable({
-  name: 'Position',
-  store: Position,
-});
-
-registerSerializable({
-  name: 'Inventory',
-  store: Inventory,
-  serialize: (eid) => getInventoryItems(eid),
-  deserialize: (eid, data) => setInventoryItems(eid, data as Item[]),
-});
+// Register components for serialization
+registerComponents([{ name: 'Position', store: position.store }]);
 
 // Create and populate world
 const world = createWorld();
@@ -244,20 +221,11 @@ const player = addEntity(world);
 setPosition(world, player, 100, 200);
 
 // Save to JSON
-const json = serializeWorldToJSON(world, {
-  metadata: { levelName: 'forest', saveSlot: 1 },
-});
+const snapshot = serializeWorld(world);
+const json = JSON.stringify(snapshot);
 
 // Load into new world
-const newWorld = createWorld();
-const result = deserializeWorldFromJSON(json, newWorld);
-
-// Entity IDs may differ; use entityMap for relationship fixup
-const newPlayerId = result.entityMap.get(player);
-
-// Selective serialization
-const partialJson = serializeWorldToJSON(world, {
-  componentFilter: ['Position'],
-  entityFilter: [player],
-});
+const parsed = JSON.parse(json);
+const newWorld = deserializeWorld(parsed);
+console.log(`Restored ${newWorld ? 'world' : 'failed'}`);
 ```

@@ -4,17 +4,15 @@ The ListTable widget combines table rendering with list selection, providing a s
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createListTable, isListTableWidget } from 'blecsd';
+import { createListTable, isListTableWidget } from 'blecsd/widgets';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createListTable } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createListTable } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -249,10 +247,9 @@ table.destroy();  // Remove entity and cleanup
 
 ## Example: Process List
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createListTable } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createListTable } from 'blecsd/widgets';
 import { createPanel } from 'blecsd/widgets';
 
 const world = createWorld();

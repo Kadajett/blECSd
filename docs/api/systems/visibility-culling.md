@@ -13,17 +13,17 @@ The visibility culling system handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createScheduler, LoopPhase } from 'blecsd/core';
 import {
   createSpatialHash,
   createPositionCache,
   createIncrementalSpatialSystem,
   createVisibilityCullingSystem,
   queryVisibleEntities,
-  LoopPhase,
-} from 'blecsd';
+} from 'blecsd/systems';
 
+const scheduler = createScheduler();
 const grid = createSpatialHash({ cellSize: 8 });
 const cache = createPositionCache();
 
@@ -35,6 +35,7 @@ scheduler.registerSystem(LoopPhase.EARLY_UPDATE, spatialSystem);
 const visible = queryVisibleEntities(grid, {
   x: 0, y: 0, width: 80, height: 24,
 });
+void visible;
 ```
 
 ## Types
@@ -126,14 +127,20 @@ function queryVisibleEntities(
 ): ReadonlySet<number>
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryVisibleEntities } from 'blecsd';
+import { queryVisibleEntities, createSpatialHash } from 'blecsd/systems';
+
+const grid = createSpatialHash({ cellSize: 8 });
+const cameraX = 0;
+const cameraY = 0;
+const terminalCols = 80;
+const terminalRows = 24;
 
 const visible = queryVisibleEntities(grid, {
   x: cameraX, y: cameraY,
   width: terminalCols, height: terminalRows,
 });
+void visible;
 ```
 
 ### performCulling
@@ -148,9 +155,11 @@ function performCulling(
 ): CullingResult
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { performCulling } from 'blecsd';
+import { performCulling, createSpatialHash } from 'blecsd/systems';
+
+const grid = createSpatialHash({ cellSize: 8 });
+const viewport = { x: 0, y: 0, width: 80, height: 24 };
 
 const result = performCulling(grid, viewport, 10000);
 console.log(`Visible: ${result.visible.length}, Culled: ${result.culled}`);
@@ -173,15 +182,11 @@ function createIncrementalSpatialSystem(
 
 **Returns:** A `System` function.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createSpatialHash,
-  createPositionCache,
-  createIncrementalSpatialSystem,
-  LoopPhase,
-} from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { createSpatialHash, createPositionCache, createIncrementalSpatialSystem } from 'blecsd/systems';
 
+const scheduler = createScheduler();
 const grid = createSpatialHash({ cellSize: 4 });
 const cache = createPositionCache();
 const system = createIncrementalSpatialSystem(grid, cache);
@@ -200,9 +205,14 @@ function createVisibilityCullingSystem(
 ): System
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createVisibilityCullingSystem } from 'blecsd';
+import { createVisibilityCullingSystem, createSpatialHash } from 'blecsd/systems';
+
+const grid = createSpatialHash({ cellSize: 8 });
+const scrollX = 0;
+const scrollY = 0;
+const terminalCols = 80;
+const terminalRows = 24;
 
 const cullSystem = createVisibilityCullingSystem(grid, () => ({
   x: scrollX,
@@ -210,28 +220,29 @@ const cullSystem = createVisibilityCullingSystem(grid, () => ({
   width: terminalCols,
   height: terminalRows,
 }));
+void cullSystem;
 ```
 
 ## Usage Example
 
 Complete visibility culling pipeline with incremental updates:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   createScheduler,
+  LoopPhase,
+} from 'blecsd/core';
+import {
   createSpatialHash,
   createPositionCache,
   createIncrementalSpatialSystem,
   createVisibilityCullingSystem,
   performCulling,
   queryVisibleEntities,
-  setPosition,
-  setDimensions,
-  LoopPhase,
-} from 'blecsd';
+} from 'blecsd/systems';
+import { setPosition, setDimensions } from 'blecsd/components';
 
 const world = createWorld();
 const scheduler = createScheduler();

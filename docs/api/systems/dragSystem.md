@@ -4,16 +4,8 @@ The drag system handles drag and drop interactions for UI elements. It supports 
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  createDragSystem,
-  setDragConstraints,
-  getDragConstraints,
-  clearDragConstraints,
-  setDragVerifyCallback,
-  getDragVerifyCallback,
-  resetDragStores,
   type DragConstraints,
   type DragVerifyCallback,
   type DragStartEvent,
@@ -22,20 +14,25 @@ import {
   type DropEvent,
   type DragEventMap,
   type DragState,
-} from 'blecsd';
+} from 'blecsd/core';
+import {
+  createDragSystem,
+  setDragConstraints,
+  getDragConstraints,
+  clearDragConstraints,
+  setDragVerifyCallback,
+  getDragVerifyCallback,
+  resetDragStores,
+} from 'blecsd/systems';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createDragSystem,
-  createEventBus,
-  setPosition,
-  setDraggable,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createDragSystem } from 'blecsd/systems';
+import { createEventBus } from 'blecsd/core';
+import { setPosition, setDraggable } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -71,6 +68,14 @@ dragEvents.on('drop', (e) => {
 The drag system is designed to integrate with your input handling:
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createEventBus } from 'blecsd/core';
+import { createDragSystem } from 'blecsd/systems';
+import type { Entity } from 'blecsd/core';
+
+const world = createWorld();
+const dragSystem = createDragSystem(createEventBus());
+
 // In your mouse event handlers
 function onMouseDown(x: number, y: number, entity: Entity) {
   if (dragSystem.canDrag(world, entity)) {
@@ -141,19 +146,25 @@ interface DragEventMap {
 ## Drag System API
 
 ```typescript
+import { createWorld, addEntity, createEventBus } from 'blecsd/core';
+import { createDragSystem } from 'blecsd/systems';
+
+const world = createWorld();
+const entity = addEntity(world);
+const eventBus = createEventBus();
 const dragSystem = createDragSystem(eventBus);
 
 // State queries
-dragSystem.getState(): Readonly<DragState>;
-dragSystem.isDragging(): boolean;
-dragSystem.getDraggingEntity(): Entity | null;
+dragSystem.getState();
+dragSystem.isDragging();
+dragSystem.getDraggingEntity();
 
 // Drag lifecycle
-dragSystem.canDrag(world, entity): boolean;
-dragSystem.startDrag(world, entity, mouseX, mouseY): boolean;
-dragSystem.updateDrag(world, mouseX, mouseY): boolean;
-dragSystem.endDrag(world, dropTarget?, cancelled?): void;
-dragSystem.cancelDrag(world): void;
+dragSystem.canDrag(world, entity);
+dragSystem.startDrag(world, entity, 0, 0);
+dragSystem.updateDrag(world, 0, 0);
+dragSystem.endDrag(world);
+dragSystem.cancelDrag(world);
 ```
 
 ## Drag Constraints
@@ -186,19 +197,29 @@ interface DragConstraints {
 ### Setting Constraints
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDragConstraints, clearDragConstraints } from 'blecsd/systems';
+
+const world = createWorld();
+const widget = addEntity(world);
+const slider = addEntity(world);
+const icon = addEntity(world);
+const handle = addEntity(world);
+const window2 = addEntity(world);
+
 // Constrain to parent bounds
-setDragConstraints(widget, { constrainToParent: true });
+setDragConstraints(world, widget, { constrainToParent: true });
 
 // Lock to horizontal axis
-setDragConstraints(slider, { constrainAxis: 'x' });
+setDragConstraints(world, slider, { constrainAxis: 'x' });
 
 // Grid snapping
-setDragConstraints(icon, {
+setDragConstraints(world, icon, {
   snapToGrid: { x: 10, y: 10 },
 });
 
 // Bounded region
-setDragConstraints(handle, {
+setDragConstraints(world, handle, {
   minX: 0,
   maxX: 100,
   minY: 0,
@@ -206,13 +227,13 @@ setDragConstraints(handle, {
 });
 
 // Bring to front when dragging
-setDragConstraints(window, {
+setDragConstraints(world, window2, {
   bringToFront: true,
   frontZIndex: 9999,
 });
 
 // Clear constraints
-clearDragConstraints(widget);
+clearDragConstraints(world, widget);
 ```
 
 ## Drag Verification
@@ -220,10 +241,19 @@ clearDragConstraints(widget);
 Use a verification callback to conditionally block drag movements:
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDragVerifyCallback, getDragVerifyCallback } from 'blecsd/systems';
+import { getPosition } from 'blecsd/components';
+
+const world = createWorld();
+const entity = addEntity(world);
+
 // Prevent dragging into forbidden zones
-setDragVerifyCallback(entity, (entity, dx, dy) => {
-  const newX = Position.x[entity] + dx;
-  const newY = Position.y[entity] + dy;
+setDragVerifyCallback(world, entity, (eid, dx, dy) => {
+  const pos = getPosition(world, eid);
+  if (!pos) return true;
+  const newX = pos.x + dx;
+  const newY = pos.y + dy;
 
   // Don't allow dragging into forbidden area
   if (newX > 50 && newX < 60 && newY > 10 && newY < 20) {
@@ -234,30 +264,29 @@ setDragVerifyCallback(entity, (entity, dx, dy) => {
 });
 
 // Remove callback
-setDragVerifyCallback(entity, null);
+setDragVerifyCallback(world, entity, null);
+void getDragVerifyCallback(world, entity);
 ```
 
 ## Example: Draggable Window
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createDragSystem,
-  createEventBus,
-  setDragConstraints,
-} from 'blecsd';
+import { createWorld, addEntity, createEventBus } from 'blecsd/core';
+import { createDragSystem, setDragConstraints } from 'blecsd/systems';
+import { setPosition, setDimensions, setDraggable } from 'blecsd/components';
 
-const dragEvents = createEventBus<DragEventMap>();
+const world = createWorld();
+const dragEvents = createEventBus();
 const dragSystem = createDragSystem(dragEvents);
 
 // Create a window entity
-const window = addEntity(world);
-setPosition(world, window, 10, 5);
-setDimensions(world, window, 40, 15);
-setDraggable(world, window, true);
+const windowEntity = addEntity(world);
+setPosition(world, windowEntity, 10, 5);
+setDimensions(world, windowEntity, 40, 15);
+setDraggable(world, windowEntity, true);
 
 // Constrain to screen and bring to front
-setDragConstraints(window, {
+setDragConstraints(world, windowEntity, {
   minX: 0,
   maxX: 80 - 40, // Screen width - window width
   minY: 0,
@@ -265,19 +294,29 @@ setDragConstraints(window, {
   bringToFront: true,
 });
 
-// Show drag handle cursor
+// Listen for drag events
 dragEvents.on('dragstart', () => {
-  setCursor('move');
+  // Handle drag start
 });
 
 dragEvents.on('dragend', () => {
-  setCursor('default');
+  // Handle drag end
 });
+
+void dragSystem;
 ```
 
 ## Example: Slider Control
 
 ```typescript
+import { createWorld, addEntity, createEventBus } from 'blecsd/core';
+import { createDragSystem, setDragConstraints } from 'blecsd/systems';
+import { setPosition, setDimensions, setDraggable } from 'blecsd/components';
+
+const world = createWorld();
+const dragEvents2 = createEventBus();
+const dragSystem2 = createDragSystem(dragEvents2);
+
 // Create horizontal slider
 const sliderTrack = addEntity(world);
 setPosition(world, sliderTrack, 10, 10);
@@ -289,34 +328,40 @@ setDimensions(world, sliderThumb, 1, 1);
 setDraggable(world, sliderThumb, true);
 
 // Lock to horizontal axis within track bounds
-setDragConstraints(sliderThumb, {
+setDragConstraints(world, sliderThumb, {
   constrainAxis: 'x',
   minX: 10,
   maxX: 10 + 30 - 1,
 });
 
 // Update value on drag
-dragEvents.on('drag', (e) => {
+dragEvents2.on('drag', (e: { entity: number; x: number }) => {
   if (e.entity === sliderThumb) {
     const value = (e.x - 10) / 29; // 0-1
-    updateSliderValue(value);
+    void value;
   }
 });
+
+void dragSystem2;
 ```
 
 ## Example: Grid-Based Layout
 
 ```typescript
-// Create icons that snap to grid
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDragConstraints } from 'blecsd/systems';
+import { setPosition, setDimensions, setDraggable } from 'blecsd/components';
+
+const world = createWorld();
 const GRID_SIZE = 8;
 
 for (let i = 0; i < 5; i++) {
-  const icon = addEntity(world);
-  setPosition(world, icon, i * GRID_SIZE, 0);
-  setDimensions(world, icon, GRID_SIZE - 1, GRID_SIZE - 1);
-  setDraggable(world, icon, true);
+  const gridIcon = addEntity(world);
+  setPosition(world, gridIcon, i * GRID_SIZE, 0);
+  setDimensions(world, gridIcon, GRID_SIZE - 1, GRID_SIZE - 1);
+  setDraggable(world, gridIcon, true);
 
-  setDragConstraints(icon, {
+  setDragConstraints(world, gridIcon, {
     snapToGrid: { x: GRID_SIZE, y: GRID_SIZE },
     constrainToParent: true,
   });
@@ -326,45 +371,50 @@ for (let i = 0; i < 5; i++) {
 ## Example: Drag and Drop File Manager
 
 ```typescript
-const dragEvents = createEventBus<DragEventMap>();
-const dragSystem = createDragSystem(dragEvents);
+import { createEventBus } from 'blecsd/core';
+import { createDragSystem } from 'blecsd/systems';
+
+const dragEvents3 = createEventBus();
+const dragSystem3 = createDragSystem(dragEvents3);
 
 // Track drag source for drop handling
-let dragSource: Entity | null = null;
+let dragSource: number | null = null;
 
-dragEvents.on('dragstart', (e) => {
+dragEvents3.on('dragstart', (e: { entity: number; mouseX: number; mouseY: number }) => {
   dragSource = e.entity;
-  showDragPreview(e.entity, e.mouseX, e.mouseY);
 });
 
-dragEvents.on('drag', (e) => {
-  updateDragPreview(e.mouseX, e.mouseY);
-  highlightDropTarget(findDropTarget(e.mouseX, e.mouseY));
+dragEvents3.on('drag', (e: { mouseX: number; mouseY: number }) => {
+  void e.mouseX;
 });
 
-dragEvents.on('drop', (e) => {
-  if (e.dropTarget && isFolder(e.dropTarget)) {
-    moveFileToFolder(dragSource!, e.dropTarget);
+dragEvents3.on('drop', (e: { dropTarget: number | null }) => {
+  if (e.dropTarget) {
+    // Handle drop
   }
-  hideDragPreview();
-  clearDropHighlight();
   dragSource = null;
 });
 
-dragEvents.on('dragend', (e) => {
+dragEvents3.on('dragend', (e: { cancelled: boolean }) => {
   if (e.cancelled) {
-    hideDragPreview();
-    clearDropHighlight();
     dragSource = null;
   }
 });
+
+void dragSystem3;
+void dragSource;
 ```
 
 ## Cleanup
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { resetDragStores } from 'blecsd/systems';
+
+const world = createWorld();
+
 // Reset all drag stores (useful for testing)
-resetDragStores();
+resetDragStores(world);
 ```
 
 ## Performance Considerations

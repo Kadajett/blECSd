@@ -8,14 +8,13 @@ The hit test system provides efficient point-in-entity testing with z-index awar
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createClickableCache,
   hitTest,
   hitTestAll,
   invalidateClickableCache,
-} from 'blecsd';
+} from 'blecsd/core';
 
 // Create cache for efficient hit testing
 const cache = createClickableCache();
@@ -36,9 +35,8 @@ invalidateClickableCache(cache);
 
 Creates a new cache for clickable element sorting.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createClickableCache } from 'blecsd';
+import { createClickableCache } from 'blecsd/core';
 
 const cache = createClickableCache();
 ```
@@ -50,9 +48,8 @@ Marks the cache as needing rebuild. Call when:
 - Z-index values change
 - Interactive state changes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { invalidateClickableCache } from 'blecsd';
+import { invalidateClickableCache } from 'blecsd/core';
 
 // After adding a new clickable entity
 invalidateClickableCache(cache);
@@ -62,9 +59,8 @@ invalidateClickableCache(cache);
 
 Rebuilds the cache if dirty.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateClickableCache } from 'blecsd';
+import { updateClickableCache } from 'blecsd/core';
 
 updateClickableCache(world, cache);
 ```
@@ -73,9 +69,8 @@ updateClickableCache(world, cache);
 
 Gets all clickable/hoverable entities sorted by z-index.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getClickableEntities } from 'blecsd';
+import { getClickableEntities } from 'blecsd/core';
 
 const entities = getClickableEntities(world, cache);
 // Returns entities sorted by z-index (highest first)
@@ -87,9 +82,8 @@ const entities = getClickableEntities(world, cache);
 
 Returns the topmost entity at a point.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hitTest, createClickableCache } from 'blecsd';
+import { hitTest, createClickableCache } from 'blecsd/core';
 
 const cache = createClickableCache();
 
@@ -116,9 +110,8 @@ hitTest(world, x, y, cache, {
 
 Returns all entities at a point, sorted by z-index.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hitTestAll, createClickableCache } from 'blecsd';
+import { hitTestAll, createClickableCache } from 'blecsd/core';
 
 const cache = createClickableCache();
 
@@ -133,9 +126,8 @@ for (const eid of entities) {
 
 Returns detailed results including z-index values.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hitTestDetailed, createClickableCache } from 'blecsd';
+import { hitTestDetailed, createClickableCache } from 'blecsd/core';
 
 const cache = createClickableCache();
 
@@ -152,9 +144,8 @@ for (const { entity, zIndex } of results) {
 
 Check if any clickable/hoverable entity is at a point.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasClickableAt, hasHoverableAt } from 'blecsd';
+import { hasClickableAt, hasHoverableAt } from 'blecsd/core';
 
 if (hasClickableAt(world, x, y, cache)) {
   // Show pointer cursor
@@ -169,9 +160,8 @@ if (hasHoverableAt(world, x, y, cache)) {
 
 Get the topmost clickable/hoverable at a point.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getClickableAt, getHoverableAt } from 'blecsd';
+import { getClickableAt, getHoverableAt } from 'blecsd/core';
 
 const clickable = getClickableAt(world, mouseX, mouseY, cache);
 const hoverable = getHoverableAt(world, mouseX, mouseY, cache);
@@ -181,9 +171,8 @@ const hoverable = getHoverableAt(world, mouseX, mouseY, cache);
 
 Get all clickables/hoverables at a point.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getAllClickablesAt, getAllHoverablesAt } from 'blecsd';
+import { getAllClickablesAt, getAllHoverablesAt } from 'blecsd/core';
 
 const clickables = getAllClickablesAt(world, x, y, cache);
 const hoverables = getAllHoverablesAt(world, x, y, cache);
@@ -223,15 +212,9 @@ interface HitTestOptions {
 
 ## Integration with Input System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createClickableCache,
-  hitTest,
-  invalidateClickableCache,
-  setHovered,
-  setPressed,
-} from 'blecsd';
+import { createClickableCache, hitTest, invalidateClickableCache } from 'blecsd/core';
+import { setHovered, setPressed } from 'blecsd/components';
 
 // Create cache once
 const clickableCache = createClickableCache();

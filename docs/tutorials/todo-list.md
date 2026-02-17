@@ -35,18 +35,18 @@ In this tutorial, you'll build a simple todo list application that demonstrates 
 
 Create a new file `todo.ts`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, addEntity, removeEntity,
-  setPosition, setDimensions,
-  layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
+import { createWorld, addEntity, removeEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase, createEventBus } from 'blecsd/core';
-import { createProgram, type KeyEvent } from 'blecsd/terminal';
-import { createPanel, createText, createTextboxEntity } from 'blecsd/widgets';
+import { type KeyEvent } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
+import { createPanel, createText } from 'blecsd/widgets';
+import { createTextboxEntity } from 'blecsd/core';
 import { setContent, setParent } from 'blecsd/components';
-import { focusEntity, blurAll } from 'blecsd/systems';
+import { blurAll } from 'blecsd/systems';
+import { focusEntity } from 'blecsd/components';
 
 // Create the ECS world
 const world = createWorld();
@@ -100,7 +100,6 @@ let nextId = 4;
 
 ## Step 3: Create the UI Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Create main panel
 const mainPanel = createPanel(world, {

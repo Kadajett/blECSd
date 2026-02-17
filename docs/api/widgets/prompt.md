@@ -4,9 +4,8 @@ A text input dialog with submit/cancel key bindings, optional validation, and a 
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createPrompt, prompt } from 'blecsd';
+import { createPrompt, prompt } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -60,9 +59,8 @@ Returns `true` if valid, or a string error message if invalid. Returning `false`
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { PromptConfigSchema } from 'blecsd';
+import { PromptConfigSchema } from 'blecsd/widgets';
 
 const config = PromptConfigSchema.parse({
   message: 'Enter name:',
@@ -78,9 +76,8 @@ const config = PromptConfigSchema.parse({
 
 Creates a Prompt widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createPrompt } from 'blecsd';
+import { createPrompt } from 'blecsd/widgets';
 
 const p = createPrompt(world, {
   message: 'Enter your name:',
@@ -215,9 +212,8 @@ Destroys the prompt widget and cleans up all state.
 
 A Promise-based API that creates a prompt and resolves with the result.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { prompt } from 'blecsd';
+import { prompt } from 'blecsd/widgets';
 
 const value = await prompt(world, 'Enter filename:', {
   defaultValue: 'untitled.txt',
@@ -246,9 +242,8 @@ if (value !== null) {
 
 ### isPrompt
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isPrompt } from 'blecsd';
+import { isPrompt } from 'blecsd/widgets';
 
 if (isPrompt(entity)) {
   // Entity is a prompt widget
@@ -262,9 +257,8 @@ if (isPrompt(entity)) {
 
 ### handlePromptKey
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handlePromptKey } from 'blecsd';
+import { handlePromptKey } from 'blecsd/widgets';
 
 handlePromptKey(promptWidget, 'return');  // triggers submit
 handlePromptKey(promptWidget, 'escape');  // triggers cancel
@@ -282,9 +276,8 @@ handlePromptKey(promptWidget, 'escape');  // triggers cancel
 
 ### With Validation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createPrompt } from 'blecsd';
+import { createPrompt } from 'blecsd/widgets';
 
 const p = createPrompt(world, {
   message: 'Enter port number:',
@@ -305,9 +298,8 @@ p.onSubmit((value) => {
 
 ### Centered Dialog
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createPrompt } from 'blecsd';
+import { createPrompt } from 'blecsd/widgets';
 
 const p = createPrompt(world, {
   message: 'Search:',

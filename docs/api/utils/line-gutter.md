@@ -4,7 +4,6 @@ Efficient line number gutter rendering with dynamic width, relative/hybrid numbe
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createGutterConfig,
@@ -14,7 +13,7 @@ import {
   computeVisibleGutter,
   gutterWidthChanged,
   renderGutterBlock,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -81,9 +80,8 @@ function createGutterConfig(config?: Partial<GutterConfig>): GutterConfig
 ```
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGutterConfig } from 'blecsd';
+import { createGutterConfig } from 'blecsd/utils';
 
 const config = createGutterConfig({ mode: 'relative' });
 ```
@@ -97,9 +95,8 @@ function computeDigitWidth(totalLines: number, minWidth: number): number
 ```
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { computeDigitWidth } from 'blecsd';
+import { computeDigitWidth } from 'blecsd/utils';
 
 computeDigitWidth(99, 3);    // 3 (minWidth applies)
 computeDigitWidth(1000, 3);  // 4
@@ -134,9 +131,8 @@ function formatLineNumber(
 - `mode` - Line numbering mode
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { formatLineNumber } from 'blecsd';
+import { formatLineNumber } from 'blecsd/utils';
 
 formatLineNumber(42, 42, 4, 'absolute');  // '  42'
 formatLineNumber(40, 42, 4, 'relative');  // '   2'
@@ -166,9 +162,8 @@ function computeVisibleGutter(
 - `config` - Optional gutter config overrides
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { computeVisibleGutter } from 'blecsd';
+import { computeVisibleGutter } from 'blecsd/utils';
 
 const result = computeVisibleGutter(100000, 500, 40, 520);
 for (const line of result.lines) {
@@ -186,9 +181,8 @@ function gutterWidthChanged(oldTotal: number, newTotal: number, minWidth?: numbe
 ```
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { gutterWidthChanged } from 'blecsd';
+import { gutterWidthChanged } from 'blecsd/utils';
 
 gutterWidthChanged(999, 1000, 3);  // true (3 digits -> 4 digits)
 gutterWidthChanged(100, 200, 3);   // false (both 3 digits)
@@ -214,9 +208,8 @@ function renderGutterBlock(
 - `reset` - ANSI reset sequence (default: `'\x1b[0m'`)
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { computeVisibleGutter, renderGutterBlock } from 'blecsd';
+import { computeVisibleGutter, renderGutterBlock } from 'blecsd/utils';
 
 const gutter = computeVisibleGutter(1000, 0, 40, 1);
 const styled = renderGutterBlock(gutter, '\x1b[1;33m', '\x1b[90m');
@@ -227,9 +220,8 @@ for (const line of styled) {
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { computeVisibleGutter, renderGutterBlock, gutterWidthChanged } from 'blecsd';
+import { computeVisibleGutter, renderGutterBlock, gutterWidthChanged } from 'blecsd/utils';
 
 let totalLines = 500;
 let viewportStart = 0;

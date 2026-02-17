@@ -9,19 +9,22 @@ blECSd does not own your update loop or world. You can:
 3. Use only the parts you need
 4. Integrate with existing systems
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, getPosition } from 'blecsd/components';
+
+const world = createWorld();
+const panel = addEntity(world);
+
 // Your own update loop
 function updateLoop() {
-  processInput();
-  updateUI(world);
-  render(world);
+  // processInput, updateUI, render - your own functions
+  const pos = getPosition(world, panel);
   requestAnimationFrame(updateLoop);
 }
 
-// blECSd components still work
-import { setPosition, getPosition } from 'blecsd';
-setPosition(world, panel, x, y);
+// blECSd components work in your own loop
+setPosition(world, panel, 10, 5);
 ```
 
 ## Entity Component System
@@ -32,9 +35,8 @@ blECSd uses [bitECS](https://github.com/NateTheGreatt/bitECS) for its ECS implem
 
 An entity is an integer ID with no data or behavior.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const sidebar = addEntity(world);   // Returns an integer like 1
@@ -45,10 +47,13 @@ const mainPanel = addEntity(world); // Returns 2
 
 Components are typed data stores. blECSd provides components for common UI needs. You interact with them through helper functions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPosition, getPosition, setDimensions } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, getPosition, setDimensions } from 'blecsd/components';
 import { setStyle } from 'blecsd/components';
+
+const world = createWorld();
+const player = addEntity(world);
 
 setPosition(world, player, 10, 5);
 setDimensions(world, player, 30, 10);
@@ -60,12 +65,15 @@ const pos = getPosition(world, player);
 
 Or use namespace imports for a more organized API:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { position, dimensions, renderable } from 'blecsd/components';
 
+const world = createWorld();
+const player = addEntity(world);
+
 position.set(world, player, 10, 5);
-dimensions.set(world, player, { width: 30, height: 10 });
+dimensions.set(world, player, 30, 10);
 renderable.setStyle(world, player, { fg: '#ffffff' });
 ```
 
@@ -73,9 +81,11 @@ renderable.setStyle(world, player, { fg: '#ffffff' });
 
 Systems are functions that process entities with specific components. blECSd provides pre-built systems for common tasks:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { layoutSystem, renderSystem, outputSystem } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+
+const world = createWorld();
 
 // Run the render pipeline manually
 layoutSystem(world);   // Compute layout
@@ -85,9 +95,11 @@ outputSystem(world);   // Flush to terminal
 
 blECSd also provides pre-built queries for filtering entities:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld } from 'blecsd/core';
 import { queryRenderable, filterVisible, sortByZIndex } from 'blecsd/core';
+
+const world = createWorld();
 
 const allRenderable = queryRenderable(world);
 const visibleOnly = filterVisible(world, allRenderable);
@@ -98,24 +110,24 @@ const sorted = sortByZIndex(world, visibleOnly);
 
 The scheduler provides phase-ordered execution when you want it:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler } from 'blecsd/core';
-import { LoopPhase } from 'blecsd/core';
+import { createWorld } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 
+const world = createWorld();
 const scheduler = createScheduler();
 
-scheduler.add(LoopPhase.UPDATE, (world, delta) => {
+scheduler.registerSystem(LoopPhase.UPDATE, (w, delta) => {
   // Game logic
-  return world;
+  return w;
 });
 
-scheduler.add(LoopPhase.RENDER, (world, delta) => {
+scheduler.registerSystem(LoopPhase.RENDER, (w, delta) => {
   // Drawing
-  return world;
+  return w;
 });
 
-scheduler.start(world);
+scheduler.run(world, 16);
 ```
 
 Phase execution order:
@@ -139,7 +151,6 @@ The INPUT phase is reserved and cannot be reordered. All other phases are option
 
 Type-safe event handling:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createEventBus } from 'blecsd/core';
 
@@ -171,9 +182,12 @@ unsubscribe();
 
 Attach FSMs to entities for state management:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { attachStateMachine, sendEvent, getState, isInState } from 'blecsd/components';
+
+const world = createWorld();
+const dialog = addEntity(world);
 
 // Example: Modal dialog states
 const modalBehavior = {
@@ -201,7 +215,6 @@ State machines are useful for UI workflows, form validation states, loading indi
 
 Use `createProgram` from `blecsd/terminal` for structured input events:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createProgram } from 'blecsd/terminal';
 
@@ -226,7 +239,6 @@ program.on('resize', (event) => {
 
 For lower-level parsing, the terminal module also provides individual parsers:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKeyBuffer, parseMouseSequence } from 'blecsd/terminal';
 ```

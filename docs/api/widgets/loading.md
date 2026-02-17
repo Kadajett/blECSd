@@ -4,10 +4,9 @@ The Loading widget displays an animated spinner with a customizable message. It 
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { createLoading, showLoading, hideLoading } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createLoading, showLoading, hideLoading } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -30,27 +29,31 @@ hideLoading(loader);
 
 ### Default Values
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  DEFAULT_LOADING_FG,  // 0xffffffff - White foreground
-  DEFAULT_LOADING_BG,  // 0x00000000 - Transparent background
-} from 'blecsd';
+import { DEFAULT_LOADING_FG, DEFAULT_LOADING_BG } from 'blecsd/widgets';
+
+// DEFAULT_LOADING_FG = 0xffffffff (white)
+// DEFAULT_LOADING_BG = 0x00000000 (transparent)
 ```
 
 ### Spinner Character Sets
 
 The Loading widget uses the Spinner component which provides multiple character sets.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  DEFAULT_SPINNER_CHARS,    // ['|', '/', '-', '\\']
-  DOTS_SPINNER_CHARS,       // ['.  ', '.. ', '...', ' ..', '  .', '   ']
-  BRAILLE_SPINNER_CHARS,    // Unicode braille animation
-  BLOCK_SPINNER_CHARS,      // Unicode block animation
-  DEFAULT_SPINNER_INTERVAL, // 100ms
-} from 'blecsd';
+  DEFAULT_SPINNER_CHARS,
+  DOTS_SPINNER_CHARS,
+  BRAILLE_SPINNER_CHARS,
+  BLOCK_SPINNER_CHARS,
+  DEFAULT_SPINNER_INTERVAL,
+} from 'blecsd/components';
+
+// DEFAULT_SPINNER_CHARS  = ['|', '/', '-', '\\']
+// DOTS_SPINNER_CHARS     = ['.  ', '.. ', '...', ' ..', '  .', '   ']
+// BRAILLE_SPINNER_CHARS  = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+// BLOCK_SPINNER_CHARS    = ['▖', '▘', '▝', '▗']
+// DEFAULT_SPINNER_INTERVAL = 100 (ms)
 ```
 
 ---
@@ -61,10 +64,10 @@ import {
 
 Creates a new loading widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { createLoading, BRAILLE_SPINNER_CHARS } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+import { BRAILLE_SPINNER_CHARS } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -206,9 +209,8 @@ const msg = loading.getMessage(); // 'Processing step 2...'
 
 Sets the spinner animation characters.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BRAILLE_SPINNER_CHARS } from 'blecsd';
+import { BRAILLE_SPINNER_CHARS } from 'blecsd/components';
 
 loading.setSpinnerChars(BRAILLE_SPINNER_CHARS);
 
@@ -267,9 +269,8 @@ loading.destroy();
 
 Creates and shows a loading indicator. Convenience function for quick loading display.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showLoading } from 'blecsd';
+import { showLoading } from 'blecsd/widgets';
 
 const loading = showLoading(world, 'Saving changes...');
 // ... do work ...
@@ -289,9 +290,8 @@ loading.destroy();
 
 Hides and destroys a loading widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showLoading, hideLoading } from 'blecsd';
+import { showLoading, hideLoading } from 'blecsd/widgets';
 
 const loading = showLoading(world, 'Working...');
 // ... do work ...
@@ -304,9 +304,8 @@ hideLoading(loading);
 
 Updates the message on a loading widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showLoading, setLoadingMessage } from 'blecsd';
+import { showLoading, setLoadingMessage } from 'blecsd/widgets';
 
 const loading = showLoading(world, 'Step 1...');
 // ... step 1 complete ...
@@ -319,9 +318,8 @@ setLoadingMessage(loading, 'Step 2...');
 
 Checks if an entity is a loading widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isLoadingWidget } from 'blecsd';
+import { isLoadingWidget } from 'blecsd/widgets';
 
 const isLoading = isLoadingWidget(world, entity); // boolean
 ```
@@ -332,9 +330,8 @@ const isLoading = isLoadingWidget(world, entity); // boolean
 
 Updates a loading widget's animation. Should be called each frame with delta time.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateLoadingAnimation } from 'blecsd';
+import { updateLoadingAnimation } from 'blecsd/widgets';
 
 // In game loop
 function update(deltaMs: number) {
@@ -413,9 +410,8 @@ interface LoadingWidget {
 
 Zod schemas are provided for runtime validation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { LoadingConfigSchema, LoadingStyleConfigSchema } from 'blecsd';
+import { LoadingConfigSchema, LoadingStyleConfigSchema } from 'blecsd/widgets';
 
 // Validate configuration
 const result = LoadingConfigSchema.safeParse({
@@ -431,10 +427,9 @@ const result = LoadingConfigSchema.safeParse({
 
 ### Basic Loading Indicator
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { showLoading, hideLoading } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { showLoading, hideLoading } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -451,10 +446,9 @@ async function saveDocument() {
 
 ### Multi-Step Progress
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { createLoading } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
 
 const world = createWorld();
 const loading = createLoading(world, {
@@ -479,10 +473,10 @@ async function runSteps() {
 
 ### Custom Spinner Animation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { createLoading, BRAILLE_SPINNER_CHARS } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+import { BRAILLE_SPINNER_CHARS } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -512,10 +506,9 @@ const progressLoading = createLoading(world, {
 
 ### Animated Loading in Game Loop
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { createLoading, updateLoadingAnimation } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createLoading, updateLoadingAnimation } from 'blecsd/widgets';
 
 const world = createWorld();
 const loading = createLoading(world, { message: 'Loading assets...' });
@@ -540,10 +533,10 @@ gameLoop();
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { createLoading, DOTS_SPINNER_CHARS } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createLoading } from 'blecsd/widgets';
+import { DOTS_SPINNER_CHARS } from 'blecsd/components';
 
 const world = createWorld();
 

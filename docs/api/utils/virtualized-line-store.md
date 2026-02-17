@@ -4,7 +4,6 @@ High-performance data structure for storing and accessing millions of lines with
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createLineStore,
@@ -26,7 +25,7 @@ import {
   exportLineRange,
   trimToLineCount,
   CHUNKED_THRESHOLD,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -90,9 +89,8 @@ interface LineInfo {
 
 Validation schemas are exported for runtime validation of parameters.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { LineIndexSchema, LineRangeParamsSchema, VisibleLinesParamsSchema, TrimParamsSchema } from 'blecsd';
+import { LineIndexSchema, LineRangeParamsSchema, VisibleLinesParamsSchema, TrimParamsSchema } from 'blecsd/utils';
 ```
 
 ## Functions
@@ -234,12 +232,15 @@ function trimToLineCount(store: VirtualizedLineStore, maxLines: number): Virtual
 
 ## Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  createLineStore, getLineAtIndex, getLineRange,
-  appendToStore, getStoreStats, trimToLineCount,
-} from 'blecsd';
+  createLineStore,
+  getLineAtIndex,
+  getLineRange,
+  appendToStore,
+  getStoreStats,
+  trimToLineCount,
+} from 'blecsd/utils';
 
 // Create store from content
 const store = createLineStore('Line 1\nLine 2\nLine 3');

@@ -15,16 +15,15 @@ When the process resumes (via `fg` command), it should:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { SuspendManager } from 'blecsd/terminal';
+import { createSuspendManager } from 'blecsd/terminal';
 
-const suspendManager = new SuspendManager({
+const suspendManager = createSuspendManager({
   isAlternateBuffer: true,
   isMouseEnabled: true,
-  onResume: (state) => {
+  onResume: () => {
     // Re-render your application after resume
-    screen.render();
+    process.stdout.write('\x1b[H');
   },
 });
 
@@ -35,23 +34,23 @@ suspendManager.enable();
 suspendManager.disable();
 ```
 
-## Classes
+## Factory Function
 
-### SuspendManager
+### createSuspendManager
 
-Manages terminal suspend and resume handling.
+Creates a suspend manager for SIGTSTP/SIGCONT handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-class SuspendManager {
-  constructor(options?: SuspendManagerOptions);
+function createSuspendManager(options?: SuspendManagerOptions): SuspendManager
+```
 
-  // Properties
+The returned `SuspendManager` object has:
+
+```typescript
+interface SuspendManager {
   readonly enabled: boolean;
   isAlternateBuffer: boolean;
   isMouseEnabled: boolean;
-
-  // Methods
   enable(): void;
   disable(): void;
   suspend(callback?: () => void): void;
@@ -60,9 +59,8 @@ class SuspendManager {
 }
 ```
 
-#### Constructor Options
+#### Options
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 interface SuspendManagerOptions {
   /** Output stream (default: process.stdout) */
@@ -92,7 +90,9 @@ interface SuspendManagerOptions {
 Enable SIGTSTP and SIGCONT signal handlers.
 
 ```typescript
-const manager = new SuspendManager();
+import { createSuspendManager } from 'blecsd/terminal';
+
+const manager = createSuspendManager();
 manager.enable();
 // Now Ctrl+Z will properly suspend the application
 ```
@@ -123,7 +123,6 @@ if (key === 'ctrl+z') {
 
 Update the alternate buffer state tracking.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 process.stdout.write(screen.alternateOn());
 manager.setAlternateBuffer(true);
@@ -133,7 +132,6 @@ manager.setAlternateBuffer(true);
 
 Update the mouse tracking state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 process.stdout.write(mouse.enableNormal());
 manager.setMouseEnabled(true);
@@ -178,7 +176,6 @@ function suspend(options: {
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { suspend } from 'blecsd/terminal';
 
@@ -202,7 +199,6 @@ const suspendSequences = {
 ```
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { suspendSequences } from 'blecsd/terminal';
 
@@ -241,53 +237,49 @@ When the process receives SIGCONT:
 
 ### Game Loop Integration
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { SuspendManager, screen, mouse } from 'blecsd/terminal';
+import { createSuspendManager, screen, mouse } from 'blecsd/terminal';
 
-class Game {
-  private suspendManager: SuspendManager;
+let score = 0;
+let level = 1;
 
-  constructor() {
-    this.suspendManager = new SuspendManager({
-      onSuspend: () => this.saveGameState(),
-      onResume: () => this.restoreAndRender(),
-    });
-  }
+function saveGameState() {
+  return { score, level };
+}
 
-  start() {
-    // Enter alternate buffer
-    process.stdout.write(screen.alternateOn());
-    this.suspendManager.setAlternateBuffer(true);
+function restoreAndRender() {
+  // Re-render after resume
+  process.stdout.write('\x1b[H\x1b[2J');
+}
 
-    // Enable mouse
-    process.stdout.write(mouse.enableNormal());
-    this.suspendManager.setMouseEnabled(true);
+const suspendManager = createSuspendManager({
+  onSuspend: saveGameState,
+  onResume: restoreAndRender,
+});
 
-    // Enable suspend handling
-    this.suspendManager.enable();
+function startGame() {
+  // Enter alternate buffer
+  process.stdout.write(screen.alternateOn());
+  suspendManager.setAlternateBuffer(true);
 
-    // Start game loop
-    this.gameLoop();
-  }
+  // Enable mouse
+  process.stdout.write(mouse.enableNormal());
+  suspendManager.setMouseEnabled(true);
 
-  private saveGameState() {
-    return { score: this.score, level: this.level };
-  }
-
-  private restoreAndRender() {
-    this.render();
-  }
+  // Enable suspend handling
+  suspendManager.enable();
 }
 ```
 
 ### Custom Key Binding
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { SuspendManager } from 'blecsd/terminal';
+import { createSuspendManager } from 'blecsd/terminal';
 
-const manager = new SuspendManager({
+function redraw() { process.stdout.write('\x1b[H'); }
+function saveProgress() { /* save state */ }
+
+const manager = createSuspendManager({
   isAlternateBuffer: true,
   onResume: () => redraw(),
 });

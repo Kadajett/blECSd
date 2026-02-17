@@ -4,9 +4,9 @@ An append-only scrollable log display optimized for log messages, console output
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createLog, addEntity } from 'blecsd';
+import { createLog } from 'blecsd/widgets';
+import { addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -63,9 +63,8 @@ interface ScrollbarConfig {
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { LogConfigSchema } from 'blecsd';
+import { LogConfigSchema } from 'blecsd/widgets';
 
 const validated = LogConfigSchema.parse({
   width: 80,
@@ -83,9 +82,9 @@ const validated = LogConfigSchema.parse({
 
 Creates a Log widget attached to an existing entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createLog, addEntity } from 'blecsd';
+import { createLog } from 'blecsd/widgets';
+import { addEntity } from 'blecsd/core';
 
 const eid = addEntity(world);
 const log = createLog(world, eid, {
@@ -236,9 +235,8 @@ Destroys the widget and removes the entity from the world.
 
 ### isLog
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isLog } from 'blecsd';
+import { isLog } from 'blecsd/widgets';
 
 if (isLog(world, entity)) {
   // Entity is a log widget
@@ -247,9 +245,8 @@ if (isLog(world, entity)) {
 
 ### isMouseScrollEnabled
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isMouseScrollEnabled } from 'blecsd';
+import { isMouseScrollEnabled } from 'blecsd/widgets';
 
 if (isMouseScrollEnabled(world, entity)) {
   // Mouse scrolling is active
@@ -258,9 +255,8 @@ if (isMouseScrollEnabled(world, entity)) {
 
 ### isKeysScrollEnabled
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isKeysScrollEnabled } from 'blecsd';
+import { isKeysScrollEnabled } from 'blecsd/widgets';
 
 if (isKeysScrollEnabled(world, entity)) {
   // Keyboard scrolling is active
@@ -269,9 +265,8 @@ if (isKeysScrollEnabled(world, entity)) {
 
 ### getScrollback
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getScrollback } from 'blecsd';
+import { getScrollback } from 'blecsd/widgets';
 
 const limit = getScrollback(world, entity);
 // Returns 0 if no limit
@@ -283,9 +278,9 @@ const limit = getScrollback(world, entity);
 
 ### Application Log Viewer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createLog, addEntity, createWorld } from 'blecsd';
+import { createLog } from 'blecsd/widgets';
+import { addEntity, createWorld } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);

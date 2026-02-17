@@ -4,7 +4,6 @@ Low-level terminal control utilities for cursor movement, screen management, and
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setOutputStream,
@@ -14,7 +13,7 @@ import {
   moveTo,
   writeRaw,
   cleanup,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 // Setup output stream
 setOutputStream(process.stdout);
@@ -49,9 +48,8 @@ Sets the output stream for all terminal control functions.
 **Returns:** `void`
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setOutputStream } from 'blecsd';
+import { setOutputStream } from 'blecsd/systems';
 
 setOutputStream(process.stdout);
 ```
@@ -75,9 +73,8 @@ Clears the output stream reference.
 Hides the terminal cursor.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hideCursor } from 'blecsd';
+import { hideCursor } from 'blecsd/systems';
 
 hideCursor();
 ```
@@ -87,9 +84,8 @@ hideCursor();
 Shows the terminal cursor.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showCursor } from 'blecsd';
+import { showCursor } from 'blecsd/systems';
 
 showCursor();
 ```
@@ -103,9 +99,8 @@ Moves cursor to a specific position.
 - `y` - Row position (0-indexed)
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { moveTo } from 'blecsd';
+import { moveTo } from 'blecsd/systems';
 
 moveTo(10, 5); // Move to column 10, row 5
 ```
@@ -115,9 +110,8 @@ moveTo(10, 5); // Move to column 10, row 5
 Saves the current cursor position for later restoration.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { saveCursorPosition, restoreCursorPosition } from 'blecsd';
+import { saveCursorPosition, restoreCursorPosition } from 'blecsd/systems';
 
 saveCursorPosition();
 // ... move cursor and draw ...
@@ -129,9 +123,8 @@ restoreCursorPosition(); // Return to saved position
 Restores the previously saved cursor position.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { restoreCursorPosition } from 'blecsd';
+import { restoreCursorPosition } from 'blecsd/systems';
 
 restoreCursorPosition();
 ```
@@ -144,9 +137,8 @@ Sets the terminal cursor shape.
 - `shape` - Cursor shape: `'block'`, `'underline'`, or `'bar'`
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setTerminalCursorShape } from 'blecsd';
+import { setTerminalCursorShape } from 'blecsd/systems';
 
 setTerminalCursorShape('block');     // Block cursor
 setTerminalCursorShape('underline'); // Underline cursor
@@ -160,9 +152,8 @@ setTerminalCursorShape('bar');       // Bar/vertical line cursor
 Enters alternate screen buffer mode. Creates a separate screen buffer that can be discarded on exit, preserving the user's terminal history.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enterAlternateScreen, leaveAlternateScreen } from 'blecsd';
+import { enterAlternateScreen, leaveAlternateScreen } from 'blecsd/systems';
 
 enterAlternateScreen();
 // ... render application ...
@@ -174,9 +165,8 @@ leaveAlternateScreen();
 Leaves alternate screen buffer mode and returns to the main screen.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { leaveAlternateScreen } from 'blecsd';
+import { leaveAlternateScreen } from 'blecsd/systems';
 
 leaveAlternateScreen();
 ```
@@ -186,9 +176,8 @@ leaveAlternateScreen();
 Clears the entire screen.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearScreen } from 'blecsd';
+import { clearScreen } from 'blecsd/systems';
 
 clearScreen();
 ```
@@ -198,9 +187,8 @@ clearScreen();
 Moves cursor to home position (0, 0).
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { cursorHome } from 'blecsd';
+import { cursorHome } from 'blecsd/systems';
 
 cursorHome();
 ```
@@ -218,9 +206,8 @@ Enables mouse tracking in the terminal.
   - `'any'` - Track all mouse motion (default)
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableMouseTracking } from 'blecsd';
+import { enableMouseTracking } from 'blecsd/systems';
 
 enableMouseTracking('any');    // Track all mouse motion
 enableMouseTracking('button'); // Track only when button pressed
@@ -232,9 +219,8 @@ enableMouseTracking('normal'); // Track clicks only
 Disables mouse tracking in the terminal.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { disableMouseTracking } from 'blecsd';
+import { disableMouseTracking } from 'blecsd/systems';
 
 disableMouseTracking();
 ```
@@ -246,9 +232,8 @@ disableMouseTracking();
 Begins synchronized output mode. Prevents partial screen updates from being displayed until `endSyncOutput()` is called. All updates appear atomically.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { beginSyncOutput, endSyncOutput } from 'blecsd';
+import { beginSyncOutput, endSyncOutput } from 'blecsd/systems';
 
 beginSyncOutput();
 // ... render multiple updates ...
@@ -260,9 +245,8 @@ endSyncOutput(); // All updates appear atomically
 Ends synchronized output mode and flushes buffered output to the screen.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { endSyncOutput } from 'blecsd';
+import { endSyncOutput } from 'blecsd/systems';
 
 endSyncOutput();
 ```
@@ -274,9 +258,8 @@ endSyncOutput();
 Resets all terminal attributes (colors, bold, italic, etc.) to defaults.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetAttributes } from 'blecsd';
+import { resetAttributes } from 'blecsd/systems';
 
 resetAttributes();
 ```
@@ -289,9 +272,8 @@ Sets the terminal window title.
 - `title` - Window title string
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setWindowTitle } from 'blecsd';
+import { setWindowTitle } from 'blecsd/systems';
 
 setWindowTitle('My Terminal App');
 ```
@@ -306,9 +288,8 @@ Writes raw output to the stream, bypassing the double buffer for immediate outpu
 - `data` - String data to write
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { writeRaw } from 'blecsd';
+import { writeRaw } from 'blecsd/systems';
 
 // Write raw ANSI sequence
 writeRaw('\x1b[2J'); // Clear screen
@@ -322,9 +303,8 @@ writeRaw('Hello!');   // Write text immediately
 Rings the terminal bell (produces audible or visual bell depending on terminal settings).
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { bell } from 'blecsd';
+import { bell } from 'blecsd/systems';
 
 bell(); // Produce audible or visual bell
 ```
@@ -344,9 +324,8 @@ Automatically handles:
 - Moving cursor to home
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { cleanup } from 'blecsd';
+import { cleanup } from 'blecsd/systems';
 
 // Before exiting
 process.on('SIGINT', () => {
@@ -359,7 +338,6 @@ process.on('SIGINT', () => {
 
 ### Setting Up a Fullscreen Application
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setOutputStream,
@@ -367,7 +345,7 @@ import {
   enterAlternateScreen,
   clearScreen,
   cleanup,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 // Setup
 setOutputStream(process.stdout);
@@ -384,9 +362,8 @@ process.on('SIGINT', () => {
 
 ### Drawing at Specific Positions
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { moveTo, writeRaw } from 'blecsd';
+import { moveTo, writeRaw } from 'blecsd/systems';
 
 // Draw box corners
 moveTo(0, 0);
@@ -401,9 +378,8 @@ writeRaw('┘');
 
 ### Atomic Screen Updates
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { beginSyncOutput, endSyncOutput, moveTo, writeRaw } from 'blecsd';
+import { beginSyncOutput, endSyncOutput, moveTo, writeRaw } from 'blecsd/systems';
 
 // All these updates appear together atomically
 beginSyncOutput();
@@ -418,9 +394,8 @@ endSyncOutput();
 
 ### Preserving Cursor Position
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { saveCursorPosition, restoreCursorPosition, moveTo, writeRaw } from 'blecsd';
+import { saveCursorPosition, restoreCursorPosition, moveTo, writeRaw } from 'blecsd/systems';
 
 // Save current position
 saveCursorPosition();

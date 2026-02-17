@@ -12,17 +12,14 @@ Program provides a high-level API for terminal applications:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Program } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
 
-const program = new Program({
+const program = createProgram({
   useAlternateScreen: true,
   hideCursor: true,
   title: 'My Application',
 });
-
-await program.init();
 
 program.on('key', (event) => {
   if (event.name === 'q') {
@@ -35,15 +32,14 @@ program.on('resize', ({ cols, rows }) => {
 });
 ```
 
-## Constructor
+## Factory Function
 
 ```typescript
-new Program(config?: ProgramConfig)
+createProgram(config?: ProgramConfig): Program
 ```
 
 ### ProgramConfig
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 interface ProgramConfig {
   /** Input stream (default: process.stdin) */
@@ -94,8 +90,8 @@ Sets up:
 **Example:**
 
 ```typescript
-const program = new Program();
-await program.init();
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
 // Program is now ready
 ```
 
@@ -338,90 +334,71 @@ program.on('blur', () => {
 
 ### Basic Application
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Program } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
 
-async function main() {
-  const program = new Program({
-    title: 'My App',
-    useAlternateScreen: true,
-  });
+const program = createProgram({
+  title: 'My App',
+  useAlternateScreen: true,
+});
 
-  await program.init();
+program.clear();
+program.move(1, 1);
+program.write('Press Q to quit');
 
+program.on('key', (event) => {
+  if (event.name === 'q') {
+    program.destroy();
+    process.exit(0);
+  }
+});
+
+program.on('resize', () => {
   program.clear();
   program.move(1, 1);
-  program.write('Press Q to quit');
-
-  program.on('key', (event) => {
-    if (event.name === 'q') {
-      program.destroy();
-      process.exit(0);
-    }
-  });
-
-  program.on('resize', () => {
-    program.clear();
-    program.move(1, 1);
-    program.write(`Size: ${program.cols}x${program.rows}`);
-  });
-}
-
-main();
+  program.write(`Size: ${program.cols}x${program.rows}`);
+});
 ```
 
 ### Game Loop
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Program, style } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
+import type { KeyEvent } from 'blecsd/terminal';
 
-class Game {
-  private program: Program;
-  private running = true;
+const program = createProgram();
+let running = true;
 
-  async start() {
-    this.program = new Program();
-    await this.program.init();
+function render(): void {
+  program.clear();
+  // Draw game state...
+  program.flush();
+}
 
-    this.program.on('key', (e) => this.handleKey(e));
-    this.program.on('resize', () => this.render());
-
-    this.gameLoop();
-  }
-
-  private gameLoop() {
-    if (!this.running) return;
-
-    this.update();
-    this.render();
-
-    setTimeout(() => this.gameLoop(), 16);
-  }
-
-  private render() {
-    this.program.clear();
-    // Draw game state...
-    this.program.flush();
-  }
-
-  private handleKey(event: KeyEvent) {
-    if (event.name === 'q') {
-      this.running = false;
-      this.program.destroy();
-    }
+function handleKey(event: KeyEvent): void {
+  if (event.name === 'q') {
+    running = false;
+    program.destroy();
   }
 }
+
+function gameLoop(): void {
+  if (!running) return;
+  render();
+  setTimeout(gameLoop, 16);
+}
+
+program.on('key', handleKey);
+program.on('resize', render);
+gameLoop();
 ```
 
 ## Schema Validation
 
 The config is validated using Zod:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ProgramConfigSchema } from 'blecsd/terminal';
+import { createProgram, ProgramConfigSchema } from 'blecsd/terminal';
 
 // Validate custom config
 const result = ProgramConfigSchema.safeParse({
@@ -432,7 +409,7 @@ const result = ProgramConfigSchema.safeParse({
 });
 
 if (result.success) {
-  const program = new Program(result.data);
+  const program = createProgram(result.data);
 }
 ```
 

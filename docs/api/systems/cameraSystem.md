@@ -4,7 +4,6 @@ The camera system updates camera positions to follow target entities. It support
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   cameraSystem,
@@ -12,21 +11,16 @@ import {
   registerCameraSystem,
   queryCameras,
   updateCameras,
-} from 'blecsd';
+} from 'blecsd/systems';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createScheduler,
-  LoopPhase,
-  registerCameraSystem,
-  attachCamera,
-  setCameraFollow,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setCamera, setCameraTarget, setPosition } from 'blecsd/components';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { registerCameraSystem } from 'blecsd/systems';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -40,12 +34,12 @@ setPosition(world, player, 40, 12);
 
 // Create camera that follows the player
 const camera = addEntity(world);
-attachCamera(world, camera, {
+setCamera(world, camera, {
   viewportWidth: 80,
   viewportHeight: 24,
   smoothing: 0.1,
 });
-setCameraFollow(world, camera, player);
+setCameraTarget(world, camera, player);
 
 // Camera will smoothly follow player
 ```
@@ -123,21 +117,21 @@ The smoothing factor controls how quickly the camera catches up to its target:
 
 ```typescript
 // Instant following (no smoothing)
-attachCamera(world, camera, {
+setCamera(world, camera, {
   viewportWidth: 80,
   viewportHeight: 24,
   smoothing: 1.0,
 });
 
 // Smooth following
-attachCamera(world, camera, {
+setCamera(world, camera, {
   viewportWidth: 80,
   viewportHeight: 24,
   smoothing: 0.1, // Takes ~10 frames to catch up
 });
 
 // Very smooth (cinematic)
-attachCamera(world, camera, {
+setCamera(world, camera, {
   viewportWidth: 80,
   viewportHeight: 24,
   smoothing: 0.02, // Slow, smooth pan
@@ -150,7 +144,7 @@ Dead zones prevent camera movement until the target moves past a threshold:
 
 ```typescript
 // Camera with dead zone
-attachCamera(world, camera, {
+setCamera(world, camera, {
   viewportWidth: 80,
   viewportHeight: 24,
   deadZoneX: 10, // Target can move 10 units before camera follows horizontally
@@ -160,15 +154,10 @@ attachCamera(world, camera, {
 
 ## Example: Side-Scroller Camera
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createScheduler,
-  registerCameraSystem,
-  registerMovementSystem,
-  attachCamera,
-  setCameraFollow,
-} from 'blecsd';
+import { setCamera, setCameraTarget } from 'blecsd/components';
+import { createScheduler } from 'blecsd/core';
+import { registerCameraSystem, registerMovementSystem } from 'blecsd/systems';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -183,7 +172,7 @@ setVelocity(world, player, { x: 0, y: 0, maxSpeed: 10, friction: 0.9 });
 
 // Create camera
 const camera = addEntity(world);
-attachCamera(world, camera, {
+setCamera(world, camera, {
   viewportWidth: 80,
   viewportHeight: 24,
   smoothing: 0.15,
@@ -191,7 +180,7 @@ attachCamera(world, camera, {
   deadZoneY: 5,
   offsetX: 20,    // Camera looks ahead of player
 });
-setCameraFollow(world, camera, player);
+setCameraTarget(world, camera, player);
 
 // Camera stays centered on player with some look-ahead
 ```
@@ -201,21 +190,21 @@ setCameraFollow(world, camera, player);
 ```typescript
 // Main game camera
 const mainCamera = addEntity(world);
-attachCamera(world, mainCamera, {
+setCamera(world, mainCamera, {
   viewportWidth: 60,
   viewportHeight: 20,
   smoothing: 0.1,
 });
-setCameraFollow(world, mainCamera, player);
+setCameraTarget(world, mainCamera, player);
 
 // Minimap camera (no smoothing, larger view)
 const minimapCamera = addEntity(world);
-attachCamera(world, minimapCamera, {
+setCamera(world, minimapCamera, {
   viewportWidth: 200,
   viewportHeight: 100,
   smoothing: 1.0, // Instant
 });
-setCameraFollow(world, minimapCamera, player);
+setCameraTarget(world, minimapCamera, player);
 
 // Use cameras for different viewports
 function render() {
@@ -229,9 +218,8 @@ function render() {
 
 ## Example: Camera Shake
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getPosition, setPosition } from 'blecsd';
+import { getPosition, setPosition } from 'blecsd/components';
 
 let shakeTime = 0;
 let shakeMagnitude = 0;

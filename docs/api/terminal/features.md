@@ -4,14 +4,14 @@ Detects terminal capabilities, quirks, and modern protocol support. This module 
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectFeatures, detectModernProtocols, getFeatureSummary } from 'blecsd';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-// Detect all features at once
-const features = detectFeatures(terminfoData);
+// Detect all features at once using default xterm data
+const info = getDefaultXtermData();
+const features = detectFeatures(info);
 
-if (features.unicode && !features.brokenACS) {
+if (features.unicode) {
   // Use Unicode box drawing
 }
 
@@ -19,15 +19,7 @@ if (features.trueColor) {
   // Use 24-bit colors
 }
 
-// Check modern protocol support
-const protocols = detectModernProtocols(terminfoData);
-
-if (protocols.kittyKeyboard) {
-  // Enable Kitty keyboard protocol
-}
-
-// Get human-readable summary
-console.log(getFeatureSummary(features, protocols));
+console.log('Supports 256 colors:', features.color256);
 ```
 
 ---
@@ -36,12 +28,11 @@ console.log(getFeatureSummary(features, protocols));
 
 Detects all terminal features from terminfo data.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectFeatures, createTput } from 'blecsd';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-const tput = createTput();
-const features = detectFeatures(tput.getData());
+const info = getDefaultXtermData();
+const features = detectFeatures(info);
 
 console.log('Colors:', features.colors);
 console.log('Unicode:', features.unicode);
@@ -111,11 +102,10 @@ interface FeatureDetectionOptions {
 
 Detects modern terminal protocol support (Kitty, iTerm2, Sixel, etc.).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectModernProtocols } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
 
-const protocols = detectModernProtocols(terminfoData);
+const protocols = detectFeatures(getDefaultXtermData());
 
 if (protocols.kittyKeyboard) {
   // Enable enhanced keyboard protocol
@@ -162,9 +152,8 @@ interface ModernProtocols {
 
 Detects Unicode support based on locale settings.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectUnicode } from 'blecsd';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
 if (detectUnicode()) {
   console.log('Unicode box drawing available');
@@ -187,11 +176,10 @@ detectUnicode({ forceUnicode: false }); // Always returns false
 
 Gets the number of colors supported.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectColors } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
 
-const colors = detectColors(info);
+const colors = detectFeatures(info).colors;
 // 0, 8, 16, 256, or 16777216 (true color)
 ```
 
@@ -201,9 +189,8 @@ const colors = detectColors(info);
 
 Detects 24-bit true color support.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectTrueColor } from 'blecsd';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
 if (detectTrueColor(info)) {
   // Use RGB colors directly
@@ -222,9 +209,8 @@ if (detectTrueColor(info)) {
 
 Detects 256 color support.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detect256Color } from 'blecsd';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
 if (detect256Color(info)) {
   // Use 256-color palette
@@ -237,11 +223,10 @@ if (detect256Color(info)) {
 
 Detects if ACS (alternate character set) is broken.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectBrokenACS } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
 
-if (detectBrokenACS(info)) {
+if (detectFeatures(info).brokenACS) {
   // Use Unicode fallback for box drawing
 } else {
   // Can use ACS characters
@@ -260,11 +245,10 @@ if (detectBrokenACS(info)) {
 
 Detects if terminal uses PC ROM character set instead of ACS.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectPCRomSet } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
 
-if (detectPCRomSet(info)) {
+if (detectFeatures(info).pcRomSet) {
   console.log('Using PC ROM character set');
 }
 ```
@@ -275,11 +259,10 @@ if (detectPCRomSet(info)) {
 
 Detects alternate screen buffer support (smcup/rmcup).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectAlternateScreen } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
 
-if (detectAlternateScreen(info)) {
+if (detectFeatures(info).alternateScreen) {
   // Can use alternate screen for full-screen UI
 }
 ```
@@ -290,11 +273,10 @@ if (detectAlternateScreen(info)) {
 
 Detects mouse tracking support.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectMouse } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
 
-if (detectMouse(info)) {
+if (detectFeatures(info).mouse) {
   // Enable mouse tracking
 }
 ```
@@ -305,11 +287,10 @@ if (detectMouse(info)) {
 
 Detects focus event reporting support.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectFocusEvents } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
 
-if (detectFocusEvents(info)) {
+if (detectFeatures(info).focusEvents) {
   // Can track window focus/blur
 }
 ```
@@ -320,11 +301,10 @@ if (detectFocusEvents(info)) {
 
 Detects bracketed paste mode support.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectBracketedPaste } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
 
-if (detectBracketedPaste(info)) {
+if (detectFeatures(info).bracketedPaste) {
   // Can differentiate typed vs pasted input
 }
 ```
@@ -335,11 +315,10 @@ if (detectBracketedPaste(info)) {
 
 Detects title setting support.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectTitle } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
 
-if (detectTitle(info)) {
+if (detectFeatures(info).title) {
   // Can set window title
 }
 ```
@@ -350,9 +329,8 @@ if (detectTitle(info)) {
 
 NCurses-compatible quirk detection.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectMagicCookie, detectPadding, detectSetbuf } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
 
 // These are controlled by environment variables:
 // NCURSES_NO_MAGIC_COOKIE=1 to disable magic cookie handling
@@ -366,13 +344,13 @@ import { detectMagicCookie, detectPadding, detectSetbuf } from 'blecsd';
 
 Gets a human-readable summary of detected features.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectFeatures, detectModernProtocols, getFeatureSummary } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures } from 'blecsd/terminal';
 
 const features = detectFeatures(info);
 const protocols = detectModernProtocols(info);
-const summary = getFeatureSummary(features, protocols);
+const summary = JSON.stringify(features);
 
 console.log(summary);
 // Colors: 256 (true color)
@@ -402,9 +380,8 @@ console.log(summary);
 
 ### Adaptive Rendering
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectFeatures, detectUnicode, createTput } from 'blecsd';
+import { detectFeatures, detectUnicode, createTput } from 'blecsd/terminal';
 
 const tput = createTput();
 const features = detectFeatures(tput.getData());
@@ -433,9 +410,9 @@ function setColor(r: number, g: number, b: number): string {
 
 ### Feature-Based Initialization
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectFeatures, detectModernProtocols } from 'blecsd';
+import { detectFeatures } from 'blecsd/terminal';
+import { detectFeatures } from 'blecsd/terminal';
 
 function initTerminal(info: TerminfoData): void {
   const features = detectFeatures(info);

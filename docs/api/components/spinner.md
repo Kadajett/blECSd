@@ -4,10 +4,9 @@ The Spinner component provides animated character sequences for loading indicato
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { addSpinner, updateSpinner, getSpinnerChar } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { addSpinner, updateSpinner, getSpinnerChar } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -28,9 +27,8 @@ function update(deltaMs: number) {
 
 The Spinner component stores animation state using SoA for performance.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Spinner } from 'blecsd';
+import { Spinner } from 'blecsd/components';
 
 // Component arrays
 Spinner.frame      // Uint8Array   - Current frame index
@@ -47,21 +45,24 @@ Spinner.elapsed    // Float32Array - Accumulated time since last frame
 
 Pre-defined character arrays for common spinner styles.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  DEFAULT_SPINNER_CHARS,    // ['|', '/', '-', '\\']
-  DOTS_SPINNER_CHARS,       // ['.  ', '.. ', '...', ' ..', '  .', '   ']
-  BRAILLE_SPINNER_CHARS,    // Unicode braille sequence
-  BLOCK_SPINNER_CHARS,      // Unicode block sequence
-} from 'blecsd';
+  DEFAULT_SPINNER_CHARS,
+  DOTS_SPINNER_CHARS,
+  BRAILLE_SPINNER_CHARS,
+  BLOCK_SPINNER_CHARS,
+} from 'blecsd/components';
+
+// DEFAULT_SPINNER_CHARS = ['|', '/', '-', '\\']
+// DOTS_SPINNER_CHARS   = ['.  ', '.. ', '...', ' ..', '  .', '   ']
+// BRAILLE_SPINNER_CHARS = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+// BLOCK_SPINNER_CHARS  = ['▖', '▘', '▝', '▗']
 ```
 
 ### Default Interval
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { DEFAULT_SPINNER_INTERVAL } from 'blecsd';
+import { DEFAULT_SPINNER_INTERVAL } from 'blecsd/components';
 
 // DEFAULT_SPINNER_INTERVAL = 100 (milliseconds)
 ```
@@ -74,10 +75,9 @@ import { DEFAULT_SPINNER_INTERVAL } from 'blecsd';
 
 Adds a Spinner component to an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { addSpinner, BRAILLE_SPINNER_CHARS } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { addSpinner, BRAILLE_SPINNER_CHARS } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -111,9 +111,8 @@ addSpinner(world, entity, {
 
 Removes a Spinner component from an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { removeSpinner, hasSpinner } from 'blecsd';
+import { removeSpinner, hasSpinner } from 'blecsd/components';
 
 removeSpinner(world, entity);
 hasSpinner(world, entity); // false
@@ -125,9 +124,8 @@ hasSpinner(world, entity); // false
 
 Checks if an entity has a Spinner component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasSpinner, addSpinner } from 'blecsd';
+import { hasSpinner, addSpinner } from 'blecsd/components';
 
 hasSpinner(world, entity); // false
 
@@ -141,9 +139,8 @@ hasSpinner(world, entity); // true
 
 Gets the current spinner character for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addSpinner, getSpinnerChar } from 'blecsd';
+import { addSpinner, getSpinnerChar } from 'blecsd/components';
 
 addSpinner(world, entity, { frames: ['A', 'B', 'C'] });
 
@@ -158,9 +155,8 @@ const char = getSpinnerChar(entity); // 'A' (first frame)
 
 Gets all spinner data for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addSpinner, getSpinnerData } from 'blecsd';
+import { addSpinner, getSpinnerData } from 'blecsd/components';
 
 addSpinner(world, entity, {
   frames: ['A', 'B', 'C'],
@@ -185,9 +181,8 @@ const data = getSpinnerData(entity);
 
 Sets the spinner animation interval.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setSpinnerInterval } from 'blecsd';
+import { setSpinnerInterval } from 'blecsd/components';
 
 setSpinnerInterval(entity, 50);  // Faster
 setSpinnerInterval(entity, 200); // Slower
@@ -199,9 +194,8 @@ setSpinnerInterval(entity, 200); // Slower
 
 Sets the spinner frame characters.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setSpinnerFrames, DOTS_SPINNER_CHARS } from 'blecsd';
+import { setSpinnerFrames, DOTS_SPINNER_CHARS } from 'blecsd/components';
 
 setSpinnerFrames(entity, DOTS_SPINNER_CHARS);
 
@@ -214,9 +208,8 @@ setSpinnerFrames(entity, DOTS_SPINNER_CHARS);
 
 Manually advances the spinner to the next frame.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { advanceSpinnerFrame, getSpinnerChar } from 'blecsd';
+import { advanceSpinnerFrame, getSpinnerChar } from 'blecsd/components';
 
 addSpinner(world, entity, { frames: ['A', 'B', 'C'] });
 
@@ -237,9 +230,8 @@ getSpinnerChar(entity); // 'A' (wraps around)
 
 Updates a spinner's elapsed time and potentially advances the frame. Call this each frame with delta time.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateSpinner, getSpinnerChar } from 'blecsd';
+import { updateSpinner, getSpinnerChar } from 'blecsd/components';
 
 addSpinner(world, entity, { interval: 100 });
 
@@ -266,9 +258,8 @@ if (frameChanged) {
 
 Resets a spinner to its initial state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetSpinner, advanceSpinnerFrame, getSpinnerChar } from 'blecsd';
+import { resetSpinner, advanceSpinnerFrame, getSpinnerChar } from 'blecsd/components';
 
 addSpinner(world, entity, { frames: ['A', 'B', 'C'] });
 
@@ -315,10 +306,9 @@ interface SpinnerData {
 
 ### Basic Spinner Animation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { addSpinner, updateSpinner, getSpinnerChar } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { addSpinner, updateSpinner, getSpinnerChar } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -344,7 +334,6 @@ function gameLoop() {
 
 ### Multiple Spinner Styles
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   addSpinner,
@@ -352,7 +341,7 @@ import {
   DOTS_SPINNER_CHARS,
   BRAILLE_SPINNER_CHARS,
   BLOCK_SPINNER_CHARS,
-} from 'blecsd';
+} from 'blecsd/components';
 
 // Classic ASCII spinner
 addSpinner(world, entity1, { frames: DEFAULT_SPINNER_CHARS });
@@ -369,9 +358,8 @@ addSpinner(world, entity4, { frames: BLOCK_SPINNER_CHARS });
 
 ### Custom Progress Spinner
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addSpinner, updateSpinner, getSpinnerChar } from 'blecsd';
+import { addSpinner, updateSpinner, getSpinnerChar } from 'blecsd/components';
 
 const progressFrames = [
   '[          ]',
@@ -394,9 +382,8 @@ addSpinner(world, entity, {
 
 ### Batch Spinner Updates
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateSpinner, getSpinnerChar } from 'blecsd';
+import { updateSpinner, getSpinnerChar } from 'blecsd/components';
 
 const spinnerEntities = [entity1, entity2, entity3];
 

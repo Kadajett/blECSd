@@ -4,9 +4,8 @@ Core type definitions for blECSd. Defines the fundamental types used throughout 
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { Entity, World, System, Unsubscribe } from 'blecsd';
+import type { Entity, World, System, Unsubscribe } from 'blecsd/core';
 import { LoopPhase } from 'blecsd/core';
 ```
 
@@ -20,9 +19,8 @@ Branded entity type from bitecs. Prevents accidentally passing raw numbers where
 type Entity = EntityId;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { Entity } from 'blecsd';
+import type { Entity } from 'blecsd/core';
 
 function moveEntity(eid: Entity, x: number, y: number): void {
   // eid is guaranteed to be a valid entity reference
@@ -45,9 +43,8 @@ A System is a function that processes entities in the world. Systems should be p
 type System = (world: World) => World;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { System } from 'blecsd';
+import type { System } from 'blecsd/core';
 
 const movementSystem: System = (world) => {
   // Process entities with Position and Velocity
@@ -80,7 +77,6 @@ enum LoopPhase {
 }
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { LoopPhase } from 'blecsd/core';
 
@@ -91,10 +87,9 @@ loop.registerInputSystem(inputSystem); // Always LoopPhase.INPUT
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { Entity, World, System, Unsubscribe } from 'blecsd';
-import { createWorld, addEntity } from 'blecsd';
+import type { Entity, World, System, Unsubscribe } from 'blecsd/core';
+import { createWorld, addEntity } from 'blecsd/core';
 import { LoopPhase } from 'blecsd/core';
 
 // Define a system

@@ -242,7 +242,7 @@ export {
 	createClipboardManager,
 	streamPaste,
 } from './clipboardManager';
-export { matchColor, matchColorCached, nameToColor } from './colors';
+export { CSS_COLORS, matchColor, matchColorCached, nameToColor } from './colors';
 export {
 	blend,
 	blendAlpha,
@@ -796,7 +796,7 @@ export {
 } from './screen';
 // Double buffer (from screen/doubleBuffer, not included in ./screen cherry-picks above)
 export type { DoubleBufferData } from './screen/doubleBuffer';
-export { createDoubleBuffer } from './screen/doubleBuffer';
+export { clearDirtyRegions, createDoubleBuffer } from './screen/doubleBuffer';
 // Screen buffer management (internal)
 export type { CleanupCallback, ScreenBuffer } from './screenBuffer';
 // Input sanitization
@@ -848,12 +848,19 @@ export type {
 } from './terminfo';
 export {
 	ACS,
+	ACSC_CODES,
+	countFormatArgs,
+	createFormatter,
 	createTput,
+	detect256Color,
 	detectFeatures,
 	detectTrueColor,
 	detectUnicode,
 	getDefaultTput,
 	getDefaultXtermData,
+	isValidFormat,
+	parseAcsc,
+	parseFormat,
 	resetDefaultTput,
 	sprintf,
 } from './terminfo';

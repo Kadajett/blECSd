@@ -4,9 +4,8 @@ Hierarchical event propagation system. Events bubble up from a target entity thr
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBubbleableEvent, bubbleEvent, createEntityEventBusStore } from 'blecsd';
+import { createBubbleableEvent, bubbleEvent, createEntityEventBusStore } from 'blecsd/core';
 
 const store = createEntityEventBusStore<MyEvents>();
 const bus = store.getOrCreate(buttonEntity, createBus);
@@ -98,9 +97,8 @@ Creates a new bubbleable event.
 function createBubbleableEvent<T>(options: BubbleableEventOptions<T>): BubbleableEvent<T>;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBubbleableEvent } from 'blecsd';
+import { createBubbleableEvent } from 'blecsd/core';
 
 const event = createBubbleableEvent({
   type: 'click',
@@ -146,13 +144,8 @@ function createEntityEventBusStore<E extends EventMap>(): {
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createBubbleableEvent,
-  bubbleEvent,
-  createEntityEventBusStore,
-} from 'blecsd';
+import { createBubbleableEvent, bubbleEvent, createEntityEventBusStore } from 'blecsd/core';
 
 // Define event types
 interface UIEvents {
@@ -239,9 +232,9 @@ function emitDescendants<T extends EventMap, K extends keyof T>(
 
 ### Example: Broadcast to All Children
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, emitDescendants, createEntityEventBusStore, appendChild } from 'blecsd';
+import { createWorld, addEntity, emitDescendants, createEntityEventBusStore } from 'blecsd/core';
+import { appendChild } from 'blecsd/components';
 import { createEventBus } from 'blecsd/core';
 
 const world = createWorld();
@@ -396,9 +389,8 @@ function createEntityEventBusStore<T extends EventMap>(): EntityEventBusStore<T>
 - `delete(world, eid)` - Removes the event bus for an entity
 - `clear()` - Clears all event buses
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createEntityEventBusStore } from 'blecsd';
+import { createEntityEventBusStore } from 'blecsd/core';
 import { createEventBus } from 'blecsd/core';
 
 const store = createEntityEventBusStore();

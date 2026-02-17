@@ -4,7 +4,6 @@ Fuzzy string matching with scoring, highlighting, and filtering support for buil
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   fuzzyMatch,
@@ -14,7 +13,7 @@ import {
   fuzzyTest,
   highlightMatch,
   FuzzyOptionsSchema,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -64,9 +63,8 @@ interface FuzzySearchOptions<T> extends FuzzyOptions {
 
 Zod schema for validating fuzzy options at runtime.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { FuzzyOptionsSchema } from 'blecsd';
+import { FuzzyOptionsSchema } from 'blecsd/utils';
 
 const validated = FuzzyOptionsSchema.parse({ threshold: 0.5 });
 ```
@@ -93,9 +91,8 @@ function fuzzyMatch(
 **Returns:** Match result with score and indices, or `null` if no match.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { fuzzyMatch } from 'blecsd';
+import { fuzzyMatch } from 'blecsd/utils';
 
 const result = fuzzyMatch('app', 'application');
 // { item: 'application', text: 'application', score: 0.9, indices: [0, 1, 2] }
@@ -123,9 +120,8 @@ function fuzzySearch(
 **Returns:** Array of matches sorted by score (highest first).
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { fuzzySearch } from 'blecsd';
+import { fuzzySearch } from 'blecsd/utils';
 
 const items = ['apple', 'application', 'banana', 'apply'];
 const results = fuzzySearch('app', items);
@@ -156,9 +152,8 @@ function fuzzySearchBy<T>(
 **Returns:** Array of matches with original item objects, sorted by score.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { fuzzySearchBy } from 'blecsd';
+import { fuzzySearchBy } from 'blecsd/utils';
 
 interface Command { name: string; shortcut: string }
 const commands: Command[] = [
@@ -193,9 +188,8 @@ function fuzzyFilter(
 **Returns:** Array of matching strings.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { fuzzyFilter } from 'blecsd';
+import { fuzzyFilter } from 'blecsd/utils';
 
 const items = ['apple', 'application', 'banana'];
 const filtered = fuzzyFilter('app', items);
@@ -222,9 +216,8 @@ function fuzzyTest(
 **Returns:** `true` if the text matches the query.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { fuzzyTest } from 'blecsd';
+import { fuzzyTest } from 'blecsd/utils';
 
 fuzzyTest('app', 'application'); // true
 fuzzyTest('xyz', 'application'); // false
@@ -250,9 +243,8 @@ function highlightMatch(
 **Returns:** Text with highlighted matches.
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { fuzzyMatch, highlightMatch } from 'blecsd';
+import { fuzzyMatch, highlightMatch } from 'blecsd/utils';
 
 const match = fuzzyMatch('app', 'application');
 if (match) {
@@ -263,9 +255,8 @@ if (match) {
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { fuzzySearch, highlightMatch } from 'blecsd';
+import { fuzzySearch, highlightMatch } from 'blecsd/utils';
 
 const files = ['README.md', 'package.json', 'src/index.ts', 'src/utils/rope.ts'];
 

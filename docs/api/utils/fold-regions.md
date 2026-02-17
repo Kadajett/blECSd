@@ -4,7 +4,6 @@ Folding/collapsing regions for efficient large document display. Manages fold st
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createFoldState,
@@ -23,7 +22,7 @@ import {
   originalToVisibleLine,
   getFoldStats,
   updateTotalLines,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -214,12 +213,14 @@ function updateTotalLines(state: MutableFoldState, totalLines: number): void
 
 ## Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  createFoldState, addFoldRegion, foldRegion,
-  getVisibleFoldLines, getFoldStats,
-} from 'blecsd';
+  createFoldState,
+  addFoldRegion,
+  foldRegion,
+  getVisibleFoldLines,
+  getFoldStats,
+} from 'blecsd/utils';
 
 const folds = createFoldState(10000);
 
