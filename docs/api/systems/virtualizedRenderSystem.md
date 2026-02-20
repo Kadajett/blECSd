@@ -97,7 +97,7 @@ setVirtualizedRenderBuffer(db);
 
 // Get current buffer
 const buffer = getVirtualizedRenderBuffer();
-void buffer;
+console.log('virtualized render buffer:', buffer);
 
 // Clear buffer reference
 clearVirtualizedRenderBuffer();
@@ -123,7 +123,7 @@ registerLineStore(world, entity, store);
 
 // Get the line store for an entity
 const currentStore = getLineStore(world, entity);
-void currentStore;
+console.log('current line store:', currentStore);
 
 // Update content (e.g., for streaming)
 const newStore = createLineStoreFromLines(newContent);
@@ -191,7 +191,7 @@ setLineRenderConfig(world, viewer, {
 
 // Get current config
 const config = getLineRenderConfig(world, viewer);
-void config;
+console.log('line render config:', config);
 
 // Clear config (use defaults)
 clearLineRenderConfig(world, viewer);

@@ -30,7 +30,9 @@ const panel = registry.create(world, 'panel', { title: 'Hello' });
 // Or use the pre-configured default registry
 const text = defaultRegistry.create(world, 'text', { content: 'Hello!' });
 
-void box; void panel; void text;
+console.log('box entity:', box);
+console.log('panel entity:', panel);
+console.log('text entity:', text);
 ```
 
 ---
@@ -59,7 +61,7 @@ const uiConfig = [
 const menuWidgets = uiConfig.map((item) =>
   registry.create(world, item.type, item.config)
 );
-void menuWidgets;
+console.log('created widgets count:', menuWidgets.length);
 ```
 
 ---
@@ -72,7 +74,7 @@ Creates a new empty widget registry.
 
 ```typescript
 const myRegistry = createWidgetRegistry();
-void myRegistry;
+console.log('registry has box:', myRegistry.has('box'));
 ```
 
 **Returns:** `WidgetRegistry`
@@ -113,7 +115,7 @@ aliasRegistry.alias('log', 'scrollableText');
 aliasRegistry.alias('textarea', 'scrollableText');
 
 const logWidget = aliasRegistry.create(world, 'log', {});
-void logWidget;
+console.log('log widget created:', logWidget !== null);
 ```
 
 **Parameters:**
@@ -131,7 +133,7 @@ Checks if a widget type is registered.
 ```typescript
 if (registry.has('panel')) {
   const panelWidget = registry.create(world, 'panel', { title: 'Hello' });
-  void panelWidget;
+  console.log('created panel widget:', panelWidget);
 }
 ```
 
@@ -158,7 +160,7 @@ Creates a widget with a new entity.
 
 ```typescript
 const boxWidget = registry.create(world, 'box', { width: 20, height: 10 });
-void boxWidget;
+console.log('box widget created:', boxWidget !== null);
 ```
 
 **Parameters:**
@@ -177,7 +179,7 @@ Creates a widget using a specific entity ID.
 ```typescript
 const cwEntity = addEntity(world);
 const cwBox = registry.createWithEntity(world, cwEntity, 'box', { width: 20 });
-void cwBox;
+console.log('entity box created:', cwBox !== null);
 ```
 
 **Parameters:**
@@ -194,7 +196,7 @@ Lists all registered widget type names (sorted).
 
 ```typescript
 const types = registry.list();
-void types;
+console.log('registered types:', types);
 ```
 
 **Returns:** `readonly string[]`
@@ -206,7 +208,8 @@ Lists widget types that have a specific tag.
 ```typescript
 const containers = registry.listByTag('container');
 const interactive = registry.listByTag('interactive');
-void containers; void interactive;
+console.log('containers:', containers);
+console.log('interactive:', interactive);
 ```
 
 **Returns:** `readonly string[]`
@@ -279,7 +282,8 @@ A pre-configured registry with all builtin widgets registered.
 ```typescript
 const drBox = defaultRegistry.create(world, 'box', { width: 20 });
 const drPanel = defaultRegistry.create(world, 'panel', { title: 'Hello' });
-void drBox; void drPanel;
+console.log('default registry box:', drBox !== null);
+console.log('default registry panel:', drPanel !== null);
 ```
 
 ---
@@ -292,7 +296,7 @@ Gets all widget type names from the default registry.
 
 ```typescript
 const types2 = getWidgetTypes();
-void types2;
+console.log('widget types:', types2);
 ```
 
 ### isWidgetType
@@ -304,7 +308,7 @@ const checkBox = isWidgetType('box');
 const checkBoxU = isWidgetType('Box');
 const checkLog = isWidgetType('log');
 const checkCustom = isWidgetType('custom');
-void checkBox; void checkBoxU; void checkLog; void checkCustom;
+console.log('box:', checkBox, 'Box:', checkBoxU, 'log:', checkLog, 'custom:', checkCustom);
 ```
 
 ### getWidgetsByTag
@@ -314,7 +318,8 @@ Gets widget types by tag from the default registry.
 ```typescript
 const containers2 = getWidgetsByTag('container');
 const scrolling = getWidgetsByTag('scrolling');
-void containers2; void scrolling;
+console.log('containers:', containers2);
+console.log('scrolling:', scrolling);
 ```
 
 ---
@@ -381,7 +386,7 @@ customReg.register('healthBar', {
 });
 
 const health = customReg.create(world, 'healthBar', { width: 30 });
-void health;
+console.log('health bar created:', health !== null);
 ```
 
 ### UI Theming
@@ -409,7 +414,8 @@ function createThemedRegistry(theme: 'dark' | 'light') {
 
 const darkRegistry = createThemedRegistry('dark');
 const lightRegistry = createThemedRegistry('light');
-void darkRegistry; void lightRegistry;
+console.log('dark registry created:', typeof darkRegistry);
+console.log('light registry created:', typeof lightRegistry);
 ```
 
 ---

@@ -113,7 +113,7 @@ if (hits && hits.length > 0) {
   const topEntity = hits[0].entity;
   const localX = hits[0].localX;
   const localY = hits[0].localY;
-  void topEntity; void localX; void localY;
+  console.log('hit entity:', topEntity, 'at local coords', localX, localY);
 }
 ```
 
@@ -293,7 +293,7 @@ import { queryInputReceivers } from 'blecsd/systems';
 const world = createWorld();
 const receivers = queryInputReceivers(world);
 // Returns entities with Interactive or Focusable components
-void receivers;
+console.log('input receivers:', receivers.length);
 ```
 
 ### resetInputState

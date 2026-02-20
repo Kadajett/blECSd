@@ -39,7 +39,8 @@ const vLine = createLine(world, addEntity(world), {
   fg: '#00ff00',
 });
 
-void hLine; void vLine;
+console.log('horizontal line entity:', hLine.eid);
+console.log('vertical line entity:', vLine.eid);
 ```
 
 ---
@@ -63,7 +64,8 @@ const verticalLine = createLine(world, addEntity(world), {
   char: '│',
   fg: '#888888',
 });
-void line; void verticalLine;
+console.log('basic line entity:', line.eid);
+console.log('vertical line entity:', verticalLine.eid);
 ```
 
 **Parameters:**
@@ -80,9 +82,9 @@ void line; void verticalLine;
 ### Default Characters
 
 ```typescript
-void DEFAULT_HORIZONTAL_CHAR; // '─'
-void DEFAULT_VERTICAL_CHAR;   // '│'
-void DEFAULT_LINE_LENGTH;
+console.log('horizontal char:', DEFAULT_HORIZONTAL_CHAR); // '─'
+console.log('vertical char:', DEFAULT_VERTICAL_CHAR);     // '│'
+console.log('default length:', DEFAULT_LINE_LENGTH);
 ```
 
 ---
@@ -180,7 +182,7 @@ Gets the current line character.
 ```typescript
 const lineG = createLine(world, addEntity(world));
 const char = lineG.getChar(); // '─'
-void char;
+console.log('line char:', char);
 lineG.destroy();
 ```
 
@@ -193,7 +195,7 @@ Gets the line orientation.
 ```typescript
 const lineH = createLine(world, addEntity(world));
 const orientation = lineH.getOrientation(); // 'horizontal' | 'vertical'
-void orientation;
+console.log('line orientation:', orientation);
 lineH.destroy();
 ```
 
@@ -218,7 +220,7 @@ Gets the current line length.
 ```typescript
 const lineJ = createLine(world, addEntity(world));
 const length = lineJ.getLength(); // 10
-void length;
+console.log('line length:', length);
 lineJ.destroy();
 ```
 
@@ -248,7 +250,7 @@ Gets all direct children.
 ```typescript
 const lineL = createLine(world, addEntity(world));
 const children = lineL.getChildren();
-void children;
+console.log('line children:', children.length);
 lineL.destroy();
 ```
 
@@ -294,7 +296,7 @@ Gets the line character of a line entity.
 ```typescript
 const lineO = createLine(world, addEntity(world));
 const lineChar = getLineChar(world, lineO.eid);
-void lineChar;
+console.log('line char from ECS:', lineChar);
 lineO.destroy();
 ```
 
@@ -323,7 +325,7 @@ Gets the orientation of a line entity.
 ```typescript
 const lineQ = createLine(world, addEntity(world));
 const lineOri = getLineOrientation(world, lineQ.eid);
-void lineOri;
+console.log('line orientation from ECS:', lineOri);
 // 'horizontal' or 'vertical'
 lineQ.destroy();
 ```
@@ -431,7 +433,7 @@ const separator = createLine(world, addEntity(world), {
   length: 80,
   fg: '#666666',
 });
-void separator;
+console.log('separator entity:', separator.eid);
 ```
 
 ### Vertical Divider
@@ -444,7 +446,7 @@ const divider = createLine(world, addEntity(world), {
   length: 24,
   char: '│',
 });
-void divider;
+console.log('divider entity:', divider.eid);
 ```
 
 ### Double Line Border
@@ -486,7 +488,7 @@ const rightLine = createLine(world, addEntity(world), {
   char: '║',
 });
 
-void topLine; void bottomLine; void leftLine; void rightLine;
+console.log('border entities:', topLine.eid, bottomLine.eid, leftLine.eid, rightLine.eid);
 ```
 
 ### Dynamic Length
@@ -501,7 +503,7 @@ const dynLine = createLine(world, addEntity(world), {
 function onResize(terminalWidth: number) {
   dynLine.setLength(terminalWidth);
 }
-void onResize;
+onResize(80);
 ```
 
 ### Method Chaining
@@ -513,7 +515,7 @@ const chainedLine = createLine(world, addEntity(world), { left: 0, top: 0 })
   .setLength(60)
   .move(0, 5)
   .show();
-void chainedLine;
+console.log('chained line entity:', chainedLine.eid);
 ```
 
 ---

@@ -16,7 +16,13 @@ import {
 } from 'blecsd/utils';
 
 // fuzzySearchFn is the search function (fuzzySearch is the namespace object)
-void fuzzyMatch; void fuzzySearchFn; void fuzzySearchBy; void fuzzyFilter; void fuzzyTest; void highlightMatch; void FuzzyOptionsSchema;
+console.log('fuzzyMatch:', typeof fuzzyMatch);
+console.log('fuzzySearchFn:', typeof fuzzySearchFn);
+console.log('fuzzySearchBy:', typeof fuzzySearchBy);
+console.log('fuzzyFilter:', typeof fuzzyFilter);
+console.log('fuzzyTest:', typeof fuzzyTest);
+console.log('highlightMatch:', typeof highlightMatch);
+console.log('FuzzyOptionsSchema:', typeof FuzzyOptionsSchema);
 ```
 
 ## Types

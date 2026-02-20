@@ -24,14 +24,14 @@ import {
 import type { World } from 'blecsd/core';
 
 const manager = createFrameBudgetManager({ targetFrameMs: 16.67 });
-void manager;
+console.log('frame budget manager:', typeof manager);
 
 // A placeholder system function
 function movementSystem(w: World) { return w; }
 
 // Wrap systems with profiling
 const timedMovement = profiledSystem('movement', movementSystem);
-void timedMovement;
+console.log('timedMovement system:', typeof timedMovement);
 
 // Record frame times in your loop
 const frameTimeMs = 16;

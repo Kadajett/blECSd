@@ -28,7 +28,7 @@ const menu = createContextMenu(world, {
 const onKeyPress = (key: string) => {
   handleContextMenuKey(world, menu, key);
 };
-void onKeyPress;
+onKeyPress('down');
 ```
 
 ## API Reference
@@ -55,7 +55,7 @@ const items: ContextMenuItem[] = [
   { separator: true },
   { label: 'Save', action: () => console.log('saveFile') },
 ];
-void items;
+console.log('menu items count:', items.length);
 ```
 
 #### ContextMenuConfig
@@ -97,7 +97,7 @@ const menu = createContextMenu(world, {
     { label: 'Delete', action: () => console.log('Delete'), disabled: true },
   ],
 });
-void menu;
+console.log('context menu entity:', menu);
 ```
 
 #### handleContextMenuKey
@@ -131,7 +131,7 @@ const onKeyPress = (key: string) => {
     // Handle other keys
   }
 };
-void onKeyPress;
+onKeyPress('down');
 ```
 
 #### getContextMenuSelectedIndex
@@ -183,7 +183,7 @@ const menu = createContextMenu(world, {
     { label: 'Exit', action: () => console.log('Exit') },
   ],
 });
-void menu;
+console.log('basic menu entity:', menu);
 ```
 
 ### File Operations Menu
@@ -207,7 +207,7 @@ const fileMenu = createContextMenu(world, {
     { label: 'Delete', action: () => console.log('delete') },
   ],
 });
-void fileMenu;
+console.log('file menu entity:', fileMenu);
 ```
 
 ### Conditional Items
@@ -232,7 +232,7 @@ const editMenu = createContextMenu(world, {
     { label: 'Delete', action: () => console.log('delete'), disabled: !hasSelection },
   ],
 });
-void editMenu;
+console.log('edit menu entity:', editMenu);
 ```
 
 ### Nested Actions
@@ -253,7 +253,7 @@ const showFormatMenu = () => {
       { label: 'Underline', action: () => console.log('underline') },
     ],
   });
-  void formatMenu;
+  console.log('format menu entity:', formatMenu);
 };
 
 const mainMenu = createContextMenu(world, {
@@ -264,7 +264,7 @@ const mainMenu = createContextMenu(world, {
     { label: 'Close', action: () => console.log('close') },
   ],
 });
-void mainMenu;
+console.log('main menu entity:', mainMenu);
 ```
 
 ### Right-Click Menu
@@ -292,9 +292,9 @@ const onRightClick = (x: number, y: number, item: FileItem) => {
       { label: 'Delete', action: () => console.log('delete') },
     ],
   });
-  void menu;
+  console.log('right-click menu entity:', menu);
 };
-void onRightClick;
+console.log('right-click handler:', typeof onRightClick);
 ```
 
 ### Keyboard Navigation
@@ -325,7 +325,7 @@ const onKeyPress = (key: string) => {
     updateMenuHighlight(selectedIndex);
   }
 };
-void onKeyPress;
+console.log('keyboard nav handler:', typeof onKeyPress);
 ```
 
 ### Dynamic Menu Items
@@ -360,7 +360,7 @@ const createDynamicMenu = (selectedFiles: string[]) => {
   });
 };
 
-void createDynamicMenu;
+console.log('dynamic menu factory:', typeof createDynamicMenu);
 ```
 
 ### Auto-Closing Menu
@@ -401,7 +401,8 @@ const onKeyPress = (key: string) => {
   }
 };
 
-void showMenu; void onKeyPress;
+console.log('show menu handler:', typeof showMenu);
+console.log('key handler:', typeof onKeyPress);
 ```
 
 ### Menu with Keyboard Shortcuts
@@ -423,7 +424,7 @@ const menu = createContextMenu(world, {
     { label: 'Quit (Ctrl+Q)', action: () => console.log('quit') },
   ],
 });
-void menu;
+console.log('shortcuts menu entity:', menu);
 ```
 
 ## Edge Detection
@@ -454,7 +455,7 @@ const menu2 = createContextMenu(world, {
   items: [{ label: 'Option 1' }, { label: 'Option 2' }],
 });
 
-void menu; void menu2;
+console.log('edge menu 1:', menu, 'edge menu 2:', menu2);
 ```
 
 ## Accessibility
@@ -482,7 +483,7 @@ const menu = createContextMenu(world, {
 
 // Menu container is accessible
 console.log(getAccessibleRole(world, menu)); // "menu"
-void getAccessibleLabel;
+console.log('accessible label:', getAccessibleLabel(world, menu));
 ```
 
 ## Integration with Input System
@@ -519,5 +520,7 @@ const handleKey = (w: typeof world, key: string): boolean => {
   return handled;
 };
 
-void showContextMenu; void hideContextMenu; void handleKey;
+console.log('showContextMenu:', typeof showContextMenu);
+console.log('hideContextMenu:', typeof hideContextMenu);
+console.log('handleKey:', typeof handleKey);
 ```

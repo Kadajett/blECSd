@@ -24,7 +24,7 @@ scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 // In game loop
 const deltaTime = 1 / 60;
 scheduler.run(world, deltaTime);
-void deltaTime;
+console.log('deltaTime used in layout:', deltaTime);
 ```
 
 ## Computed Layout Component

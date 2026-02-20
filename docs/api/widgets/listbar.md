@@ -152,7 +152,7 @@ menubar.setSeparator(' | ');  // Set separator string
 ```typescript
 const line = menubar.renderLine();    // Get rendered text
 const width = menubar.calculateWidth(); // Calculate total width
-void line; void width;
+console.log('rendered line:', line, 'width:', width);
 ```
 
 ### Events
@@ -268,7 +268,7 @@ const buttons = createListbar(world, addEntity(world), {
     selected: { fg: 0xffffffff, bg: 0x0066ccff },
   },
 });
-void buttons;
+console.log('button bar entity:', buttons.eid);
 ```
 
 ## Related

@@ -41,7 +41,7 @@ insertLine(world, entity, 1, 'Inserted');
 const removed = popLine(world, entity);
 // removed: 'Line 3'
 // Content: 'Line 1\nInserted\nLine 2'
-void removed;
+console.log('removed line:', removed);
 ```
 
 ---
@@ -56,7 +56,7 @@ Gets the content of an entity as an array of lines.
 setLines(world, entity, ['Line 1', 'Line 2', 'Line 3']);
 const lines = getLines(world, entity);
 // ['Line 1', 'Line 2', 'Line 3']
-void lines;
+console.log('lines:', lines);
 ```
 
 **Parameters:**
@@ -261,7 +261,7 @@ setLines(world, entity, ['Line 1', 'Line 2', 'Line 3']);
 const popped = popLine(world, entity);
 // popped: 'Line 3'
 // Content: 'Line 1\nLine 2'
-void popped;
+console.log('popped line:', popped);
 ```
 
 **Returns:** `string` - The removed line, or empty string if content is empty.
@@ -275,7 +275,7 @@ setLines(world, entity, ['Line 1', 'Line 2', 'Line 3']);
 const shifted = shiftLine(world, entity);
 // shifted: 'Line 1'
 // Content: 'Line 2\nLine 3'
-void shifted;
+console.log('shifted line:', shifted);
 ```
 
 **Returns:** `string` - The removed line, or empty string if content is empty.
@@ -320,7 +320,7 @@ setLines(world, entity, ['A', 'B', 'C', 'D']);
 const deleted = spliceLines(world, entity, 1, 2, ['X', 'Y', 'Z']);
 // deleted: ['B', 'C']
 // Content: 'A\nX\nY\nZ\nD'
-void deleted;
+console.log('deleted lines:', deleted);
 ```
 
 **Parameters:**
@@ -386,7 +386,7 @@ function replaceCurrentLine(cursorLine: number, newText: string) {
 
 insertAtCursor(1, '  console.log("hello");');
 const currentLine = contentGetLine(world, entity, 1);
-void currentLine;
+console.log('current line:', currentLine);
 replaceCurrentLine(1, '  console.log("world");');
 deleteCurrentLine(2);
 ```

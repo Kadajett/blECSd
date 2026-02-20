@@ -35,7 +35,7 @@ scheduler.registerSystem(LoopPhase.EARLY_UPDATE, spatialSystem);
 const visible = queryVisibleEntities(grid, {
   x: 0, y: 0, width: 80, height: 24,
 });
-void visible;
+console.log('visible entity count:', visible.length);
 ```
 
 ## Types
@@ -140,7 +140,7 @@ const visible = queryVisibleEntities(grid, {
   x: cameraX, y: cameraY,
   width: terminalCols, height: terminalRows,
 });
-void visible;
+console.log('visible entity count:', visible.length);
 ```
 
 ### performCulling
@@ -220,7 +220,7 @@ const cullSystem = createVisibilityCullingSystem(grid, () => ({
   width: terminalCols,
   height: terminalRows,
 }));
-void cullSystem;
+console.log('visibility cull system:', typeof cullSystem);
 ```
 
 ## Usage Example

@@ -44,7 +44,8 @@ const toolWindow = createPanel(world, addEntity(world), {
   collapsible: true,
 });
 
-void panel; void toolWindow;
+console.log('panel entity:', panel.eid);
+console.log('tool window entity:', toolWindow.eid);
 ```
 
 ---
@@ -75,7 +76,8 @@ const styledPanel = createPanel(world, addEntity(world), {
     title: { fg: '#ffffff', bg: '#0000ff' },
   },
 });
-void panelA; void styledPanel;
+console.log('panelA entity:', panelA.eid);
+console.log('styledPanel entity:', styledPanel.eid);
 ```
 
 **Parameters:**
@@ -92,10 +94,10 @@ void panelA; void styledPanel;
 ### Button Characters
 
 ```typescript
-void COLLAPSE_CHAR;    // '▼'
-void EXPAND_CHAR;      // '▶'
-void DEFAULT_PANEL_TITLE;
-void CLOSE_BUTTON_CHAR; // '✕'
+console.log('collapse char:', COLLAPSE_CHAR);    // '▼'
+console.log('expand char:', EXPAND_CHAR);      // '▶'
+console.log('default panel title:', DEFAULT_PANEL_TITLE);
+console.log('close button char:', CLOSE_BUTTON_CHAR); // '✕'
 ```
 
 ---
@@ -193,7 +195,7 @@ Gets the current panel title.
 ```typescript
 const panelH = createPanel(world, addEntity(world), { title: 'My Panel' });
 const title = panelH.getTitle(); // 'My Panel'
-void title;
+console.log('panel title:', title);
 panelH.destroy();
 ```
 
@@ -222,7 +224,7 @@ Gets the current content text.
 ```typescript
 const panelJ = createPanel(world, addEntity(world));
 const content = panelJ.getContent();
-void content;
+console.log('panel content:', content);
 panelJ.destroy();
 ```
 
@@ -275,7 +277,7 @@ Checks if the panel is collapsed.
 ```typescript
 const panelN = createPanel(world, addEntity(world), { collapsible: true });
 const collapsed = panelN.isCollapsed(); // boolean
-void collapsed;
+console.log('panel collapsed:', collapsed);
 panelN.destroy();
 ```
 
@@ -292,7 +294,7 @@ Checks if the panel has a close button.
 ```typescript
 const panelO = createPanel(world, addEntity(world), { closable: true });
 const closable = panelO.isClosable(); // boolean
-void closable;
+console.log('panel closable:', closable);
 panelO.destroy();
 ```
 
@@ -343,7 +345,7 @@ Checks if the panel is currently focused.
 ```typescript
 const panelS = createPanel(world, addEntity(world));
 const focused = panelS.isFocused(); // boolean
-void focused;
+console.log('panel focused:', focused);
 panelS.destroy();
 ```
 
@@ -373,7 +375,7 @@ Gets all direct children.
 ```typescript
 const panelU = createPanel(world, addEntity(world));
 const children = panelU.getChildren();
-void children;
+console.log('panel children:', children.length);
 panelU.destroy();
 ```
 
@@ -419,7 +421,7 @@ Gets the title of a panel entity.
 ```typescript
 const panelX = createPanel(world, addEntity(world), { title: 'Test' });
 const panelTitle = getPanelTitle(world, panelX.eid);
-void panelTitle;
+console.log('panel title from ECS:', panelTitle);
 panelX.destroy();
 ```
 
@@ -448,7 +450,7 @@ Gets the collapsed state of a panel entity.
 ```typescript
 const panelZ = createPanel(world, addEntity(world), { collapsible: true });
 const panelCollapsed = isPanelCollapsed(world, panelZ.eid);
-void panelCollapsed;
+console.log('panel collapsed from ECS:', panelCollapsed);
 panelZ.destroy();
 ```
 
@@ -463,7 +465,7 @@ Gets the title alignment of a panel entity.
 ```typescript
 const panelAA = createPanel(world, addEntity(world), { titleAlign: 'center' });
 const align = getPanelTitleAlign(world, panelAA.eid);
-void align;
+console.log('panel title alignment:', align);
 // 'left', 'center', or 'right'
 panelAA.destroy();
 ```
@@ -479,7 +481,7 @@ Renders the panel title bar as a string.
 ```typescript
 const panelAB = createPanel(world, addEntity(world), { title: 'My Panel', width: 40 });
 const titleBar = renderPanelTitleBar(world, panelAB.eid, 40);
-void titleBar;
+console.log('rendered title bar:', titleBar);
 // Returns formatted title bar with buttons
 panelAB.destroy();
 ```

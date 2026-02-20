@@ -104,7 +104,7 @@ const world = createWorld();
 // Query all entities with StateMachine
 const stateful = queryStateMachine(world);
 // Returns: number[] (entity IDs)
-void stateful;
+console.log('stateful entities:', stateful.length);
 ```
 
 ### State Age Functions

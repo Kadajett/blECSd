@@ -37,7 +37,7 @@ focusEntity(world, buttonEntity);
 
 // Check current focus
 const focused = getFocused(world);
-void focused;
+console.log('focused entity:', focused);
 ```
 
 ## Focus Management
@@ -489,7 +489,7 @@ openModal(world, dialog1);  // depth = 1
 openModal(world, dialog2);  // depth = 2
 closeModal(world);          // restores to dialog1
 closeModal(world);          // restores to original focus
-void getFocusStackDepth(world);
+console.log('focus stack depth:', getFocusStackDepth(world));
 ```
 
 ## Focus Styling
@@ -516,8 +516,7 @@ function renderEntity(w: typeof world, entity: number) {
     }
   }
 
-  void fg;
-  void bg;
+  console.log('rendering entity with fg:', fg, 'bg:', bg);
   // Render with final colors...
 }
 ```

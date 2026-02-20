@@ -30,7 +30,7 @@ scheduler.registerSystem(LoopPhase.RENDER, tilemapRenderSystem);
 
 // After system runs, read the buffer
 const buffer = getTileMapRenderBuffer();
-void buffer;
+console.log('tilemap render buffer:', buffer);
 ```
 
 ## Types

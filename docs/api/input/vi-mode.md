@@ -14,7 +14,7 @@ const config = createViConfig({ enabled: true, viewportHeight: 40 });
 // Process a key press
 const keyEvent: KeyEvent = { sequence: 'j', name: 'j', ctrl: false, meta: false, shift: false, raw: new Uint8Array([106]) };
 const [action, newState] = processViKey(keyEvent, state, config);
-void newState;
+console.log('new vi state mode:', newState.mode);
 if (action.type === 'scroll') {
   console.log('scroll by', action.amount);
 }

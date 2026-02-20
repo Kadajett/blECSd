@@ -58,7 +58,8 @@ setOutputBuffer(db);
 // Get current settings
 const stream = getOutputStream(); // Returns Writable or null
 const buffer = getOutputBuffer(); // Returns DoubleBufferData or null
-void stream; void buffer;
+console.log('output stream:', stream);
+console.log('output buffer:', buffer);
 
 // Clear when done
 clearOutputStream();

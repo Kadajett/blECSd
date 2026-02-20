@@ -118,8 +118,8 @@ const customBehaviorSystem = createBehaviorSystem(
   },
   () => myBehaviorEntities,
 );
-void behaviorSystem2;
-void customBehaviorSystem;
+console.log('behaviorSystem2:', typeof behaviorSystem2);
+console.log('customBehaviorSystem:', typeof customBehaviorSystem);
 ```
 
 ## Behavior Types
