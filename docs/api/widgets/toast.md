@@ -94,7 +94,7 @@ const validated = ToastConfigSchema.parse({
   position: 'top-right',
   timeout: 5000,
 });
-void validated;
+console.log('Validated toast config:', validated.content, validated.type);
 ```
 
 ---
@@ -325,7 +325,7 @@ const persistentToast = createToast(world, {
 
 // Check dismissed state
 const dismissed = persistentToast.isDismissed();
-void dismissed;
+console.log('Toast dismissed:', dismissed);
 // Later, call persistentToast.dismiss() when the condition is resolved
 persistentToast.destroy();
 ```

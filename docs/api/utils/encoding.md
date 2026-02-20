@@ -12,11 +12,11 @@ const text = 'Hello World';
 
 // Convert CP437 buffer to UTF-8 string
 const content = encoding.bufferToString(buffer, 'cp437');
-void content;
+console.log('decoded:', content);
 
 // Convert UTF-8 string to CP437 buffer
 const encoded = encoding.stringToBuffer(text, 'cp437');
-void encoded;
+console.log('encoded bytes:', encoded.length);
 ```
 
 ## Why CP437?
@@ -170,12 +170,12 @@ import { encoding } from 'blecsd/utils';
 // Convert CP437 buffer to UTF-8
 const cp437Buffer = Buffer.from([0xDA, 0xC4, 0xBF]); // Box-drawing in CP437
 const utf8Content = encoding.bufferToString(cp437Buffer, 'cp437');
-void utf8Content;
+console.log('utf8 content:', utf8Content);
 
 // Convert UTF-8 back to CP437
 const utf8Buffer = 'Hello World';
 const cp437Content = encoding.stringToBuffer(utf8Buffer, 'cp437');
-void cp437Content;
+console.log('cp437 bytes:', cp437Content.length);
 ```
 
 ## Resources

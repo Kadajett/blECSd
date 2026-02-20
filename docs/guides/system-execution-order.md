@@ -386,7 +386,7 @@ function myRenderSystem(world: World): World {
     // Draw entity at its position using terminal output
     const x = Position.x[eid];
     const y = Position.y[eid];
-    void x; void y;
+    process.stderr.write(`Entity ${eid} at (${x}, ${y})\n`);
     // process.stdout.write(...) in real usage
   }
 
@@ -395,7 +395,7 @@ function myRenderSystem(world: World): World {
 
 // Use the built-in renderSystem or register a custom one
 renLoop.registerSystem(LoopPhase.RENDER, myRenderSystem);
-void renderSystem;
+console.log('renderSystem available:', typeof renderSystem);
 renLoop.start();
 renLoop.stop();
 ```

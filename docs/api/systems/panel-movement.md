@@ -39,7 +39,7 @@ state = beginMove(state, entity, mouseX, mouseY, panelX, panelY, 30, 10);
 
 // On drag update
 const result = updateMove(state, mouseX, mouseY, constraints);
-void result;
+console.log('move result:', result.x, result.y, 'clamped:', result.clamped);
 // Apply result.x, result.y to entity position
 
 // On drag end
@@ -303,7 +303,7 @@ const handle = detectResizeHandle(localX, localY, panelWidth, panelHeight);
 if (handle) {
   state = beginResize(state, entity, handle, mouseX, mouseY, px, py, pw, ph);
 }
-void state;
+console.log('is resizing:', state.isResizing, 'is moving:', state.isMoving);
 ```
 
 ### mergeDirtyRects

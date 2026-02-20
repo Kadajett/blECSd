@@ -84,7 +84,8 @@ const onMouseUp = (): void => {
   releaseMouse();
 };
 
-void onMouseDown; void onMouseUp;
+console.log('onMouseDown ready:', typeof onMouseDown === 'function');
+console.log('onMouseUp ready:', typeof onMouseUp === 'function');
 ```
 
 #### Hit Testing
@@ -186,9 +187,11 @@ import type { Entity } from 'blecsd/core';
 
 // renderEntity is called with render context and entity id
 // Implementation uses renderBackground, renderBorder, renderContent
-void renderBackground; void renderBorder; void renderContent;
+console.log('renderBackground ready:', typeof renderBackground === 'function');
+console.log('renderBorder ready:', typeof renderBorder === 'function');
+console.log('renderContent ready:', typeof renderContent === 'function');
 const _eid: Entity = 1;
-void _eid;
+console.log('entity id:', _eid);
 ```
 
 #### Buffer Management
@@ -475,7 +478,9 @@ const world = createWorld();
 // Generate escape sequences (requires initialized render buffer)
 // const output = generateOutput(world);
 // writeRaw(output);
-void generateOutput; void writeRaw; void world;
+console.log('generateOutput ready:', typeof generateOutput === 'function');
+console.log('writeRaw ready:', typeof writeRaw === 'function');
+console.log('world created:', world !== null);
 ```
 
 #### Screen Control
@@ -594,8 +599,6 @@ const animId = registerAnimation({
   ],
 });
 playAnimation(world, spriteEntity, animId, { loop: true });
-void animationSystem;
-
 // System updates automatically
 animationSystem(world);  // Called by game loop
 ```
@@ -716,7 +719,7 @@ const damageOverTimeSystem = (world: World): World => {
   // for (const eid of entities) {
   //   Health.current[eid] = Math.max(0, (Health.current[eid] ?? 0) - 1);
   // }
-  void Health;
+  console.log('Health component available:', Health !== null);
   return world;
 };
 

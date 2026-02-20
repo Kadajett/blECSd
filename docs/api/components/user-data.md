@@ -207,7 +207,7 @@ In blessed.js, elements had `_data`, `__`, and `$` properties for user data. In 
 // blECSd equivalent to blessed.js element._data = { id: 'foo' }
 setUserData(world, entity, { id: 'foo' });
 const blessedData = getUserData(world, entity);
-void blessedData;
+console.log('Retrieved user data:', blessedData);
 ```
 
 The ECS approach provides:

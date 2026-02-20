@@ -189,7 +189,7 @@ const world = createWorld();
 const entity = addEntity(world);
 const index = getTabIndex(world, entity);
 // number or undefined
-void index;
+console.log('tab index:', index);
 ```
 
 ### isInTabOrder
@@ -218,7 +218,7 @@ const e1 = addEntity(world);
 const e2 = addEntity(world);
 const entities = getTabOrder(world, [e1, e2]);
 // [entityA, entityB, ...] sorted by tabIndex
-void entities;
+console.log('tab order entity count:', entities.length);
 ```
 
 ### getFocusable
@@ -239,7 +239,7 @@ const data = getFocusable(world, entity);
 //   focusEffectFg: number,
 //   focusEffectBg: number
 // }
-void data;
+console.log('focusable data:', data?.focusable, data?.focused);
 ```
 
 ### resetFocusState
@@ -371,6 +371,6 @@ const getEffectiveStyle = (w: typeof world, entity: number) => {
   return style;
 };
 
-void isFocused(world, button);
-getEffectiveStyle(world, button);
+console.log('button focused:', isFocused(world, button));
+console.log('effective style:', getEffectiveStyle(world, button));
 ```

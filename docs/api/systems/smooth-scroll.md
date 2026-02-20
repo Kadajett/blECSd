@@ -27,7 +27,7 @@ const scheduler = createScheduler();
 
 // Initialize scroll state for an entity
 const state = getScrollState(entity, contentWidth, contentHeight, 80, 24);
-void state;
+console.log('Scroll state initialized:', state.scrollX, state.scrollY);
 
 // Apply scroll impulse (e.g., from mouse wheel)
 applyScrollImpulse(entity, 0, -3);

@@ -92,7 +92,7 @@ const bigText = createBigText(world, eid, {
 // Or load a custom font from a JSON file:
 // const font = loadFont('./fonts/my-custom-font.json');
 // createBigText(world, addEntity(world), { text: 'HELLO', font });
-void loadFont; // imported for documentation completeness
+console.log('loadFont available:', typeof loadFont);
 ```
 
 ---

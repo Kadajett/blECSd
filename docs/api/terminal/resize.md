@@ -156,9 +156,7 @@ import { getResizeEventBus } from 'blecsd/terminal';
 const bus = getResizeEventBus();
 
 bus.on('resize', ({ width, height, previousWidth, previousHeight }) => {
-  console.log(`Terminal resized to ${width}x${height}`);
-  void previousWidth;
-  void previousHeight;
+  console.log(`Terminal resized to ${width}x${height} (was ${previousWidth}x${previousHeight})`);
   // Re-layout UI if needed
   if (width < 60) {
     console.log('compact mode');

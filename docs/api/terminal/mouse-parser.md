@@ -185,7 +185,7 @@ const result = MouseEventSchema.safeParse(event);
 if (result.success) {
   console.log('Valid mouse event');
 }
-void FocusEventSchema;
+console.log('FocusEventSchema available:', typeof FocusEventSchema);
 ```
 
 ## See Also

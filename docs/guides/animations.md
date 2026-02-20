@@ -69,7 +69,7 @@ function momentumScrollSystem(world: World, deltaTime: number): World {
   return world;
 }
 
-void scrollWorld;
+console.log('scroll world ready:', scrollWorld !== null);
 ```
 
 ## Spring Animations
@@ -123,7 +123,7 @@ function slideInSystem(world: World, delta: number): World {
   return world;
 }
 
-void slideInSystem;
+console.log('slide system ready:', typeof slideInSystem === 'function');
 ```
 
 ## Easing Functions
@@ -218,7 +218,7 @@ animate({
   onComplete: () => { /* focus restored */ },
 });
 
-void tweenSystem;
+console.log('tween system ready:', typeof tweenSystem === 'function');
 ```
 
 ## Drag with Inertia
@@ -292,7 +292,7 @@ function inertiaSystem(world: World, delta: number): World {
   return world;
 }
 
-void onDragStart; void onDragMove; void onDragEnd; void inertiaSystem;
+console.log('drag handlers ready:', typeof onDragStart === 'function', typeof onDragMove === 'function', typeof onDragEnd === 'function', typeof inertiaSystem === 'function');
 ```
 
 ## Bounce/Rubber-Band Effect
@@ -354,7 +354,8 @@ function rubberBandSystem(world: World, deltaTime: number): World {
   return world;
 }
 
-void rbWorld; void rubberBandSystem;
+console.log('rubber band world ready:', rbWorld !== null);
+console.log('rubber band system ready:', typeof rubberBandSystem === 'function');
 ```
 
 ## Particle Effects for Notifications

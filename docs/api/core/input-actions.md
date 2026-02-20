@@ -9,7 +9,7 @@ import { createInputActionManager, ActionPresets, createInputState } from 'blecs
 
 // Create with preset bindings
 const presetActions = createInputActionManager(ActionPresets.platformer);
-void presetActions;
+console.log('preset actions:', presetActions.getActions());
 
 // Or define custom bindings
 const actions = createInputActionManager([
@@ -182,7 +182,7 @@ import { SerializedBindingsSchema } from 'blecsd/core';
 
 const loadedData = { version: 1, bindings: [] };
 const result = SerializedBindingsSchema.parse(loadedData);
-void result;
+console.log('parsed bindings version:', result.version);
 ```
 
 ## Presets
@@ -249,5 +249,6 @@ actions.fromJSON(json);
 
 // Cleanup
 unsub();
-void update; void player;
+console.log('update ready:', typeof update === 'function');
+console.log('player state:', player.x, player.vy);
 ```

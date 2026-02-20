@@ -34,7 +34,7 @@ scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
 // In game loop
 const deltaTime = 1 / 60;
 scheduler.run(world, deltaTime);
-void deltaTime;
+console.log('delta time:', deltaTime);
 ```
 
 ## Setting Up Rendering
@@ -51,7 +51,7 @@ setRenderBuffer(db);
 
 // Get current double buffer
 const current = getRenderBuffer(); // Returns DoubleBufferData or null
-void current;
+console.log('buffer set:', current !== null);
 
 // Clear when done
 clearRenderBuffer();
@@ -96,7 +96,8 @@ The render context provides access to rendering resources:
 ```typescript
 import type { RenderContext } from 'blecsd/systems';
 // RenderContext provides: world, buffer (ScreenBufferData), dirtyTracker (DirtyTracker)
-void ({} as unknown as RenderContext);
+const _ctx: RenderContext = {} as unknown as RenderContext;
+console.log('RenderContext type available:', _ctx !== null || true);
 ```
 
 ## Render Functions
@@ -269,7 +270,7 @@ const scheduler = createScheduler();
 // Layout must run before render
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
-void world;
+console.log('world ready:', world !== null);
 ```
 
 ## Complete Render Loop Example
@@ -337,7 +338,8 @@ import type { RenderContext } from 'blecsd/systems';
 //   readonly buffer: ScreenBufferData;
 //   readonly dirtyTracker: DirtyTracker;
 // }
-void ({} as unknown as RenderContext);
+const _renderCtx: RenderContext = {} as unknown as RenderContext;
+console.log('RenderContext available:', _renderCtx !== null || true);
 ```
 
 ## Performance Tips

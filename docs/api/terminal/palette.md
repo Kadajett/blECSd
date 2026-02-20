@@ -152,7 +152,7 @@ Converts a number to Color256, throwing if invalid.
 import { asColor256 } from 'blecsd/terminal';
 
 const color = asColor256(196); // Returns 196 as Color256
-void color;
+console.log('Color256 value:', color);
 try {
   asColor256(256); // Throws Error
 } catch (_e) {

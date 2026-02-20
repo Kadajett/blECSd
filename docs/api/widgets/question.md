@@ -336,7 +336,7 @@ async function handleDelete(filename: string) {
   }
 }
 
-void handleDelete('example.txt');
+handleDelete('example.txt').then(() => { /* delete complete */ });
 ```
 
 ### Centered Question Dialog

@@ -278,7 +278,7 @@ const startGame = () => {
   suspendManager.enable();
 };
 
-void startGame;
+console.log('startGame ready:', typeof startGame);
 ```
 
 ### Custom Key Binding

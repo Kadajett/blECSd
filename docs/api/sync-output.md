@@ -216,7 +216,7 @@ const render = () => {
 };
 
 // In production: setInterval(() => { update(); render(); }, 16);
-void render;
+console.log('render function ready:', typeof render === 'function');
 ```
 
 ### Manual Frame Control
@@ -243,7 +243,7 @@ const render = () => {
   }
 };
 
-void render;
+console.log('render function ready:', typeof render === 'function');
 ```
 
 ### Fallback for Unsupported Terminals
@@ -279,7 +279,7 @@ const render = () => {
   syncOut.writeFrame(content);
 };
 
-void render;
+console.log('render function ready:', typeof render === 'function');
 ```
 
 ### Auto-Sync Mode

@@ -154,7 +154,8 @@ import { createScreenBuffer, cursor } from 'blecsd/terminal';
 //   process.exit(0);
 // }
 
-void createScreenBuffer; void cursor;
+console.log('createScreenBuffer available:', typeof createScreenBuffer);
+console.log('cursor available:', typeof cursor);
 ```
 
 ### Multiple Cleanup Handlers
@@ -169,7 +170,9 @@ import { createScreenBuffer, cursor, mouse } from 'blecsd/terminal';
 // buffer.onCleanup(() => { console.log('Application exiting...'); });
 // buffer.enterAlternateScreen();
 
-void createScreenBuffer; void cursor; void mouse;
+console.log('createScreenBuffer available:', typeof createScreenBuffer);
+console.log('cursor available:', typeof cursor);
+console.log('mouse available:', typeof mouse);
 ```
 
 ## Alternate Screen Buffer

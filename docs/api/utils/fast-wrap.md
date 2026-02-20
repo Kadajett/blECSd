@@ -215,7 +215,7 @@ const result = wrapVisibleFirst(cache, longText, 0, 50);
 // Continue wrapping the rest in the background
 if (result.hasMore) {
   const more = continueWrap(cache, longText, result.nextParagraph);
-  void more;
+  console.log('remaining lines:', more.lines.length, 'hasMore:', more.hasMore);
 }
 ```
 

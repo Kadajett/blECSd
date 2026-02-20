@@ -152,7 +152,7 @@ const helpText = createTextEntity(world, {
   text: '[Arrow Keys] Move  [P] Pause  [R] Restart  [Q] Quit',
   parent: gamePanel,
 });
-void helpText;
+console.log('Help text entity:', helpText);
 
 function updateScore(): void {
   setText(world, scoreText, `Score: ${state.score}`);

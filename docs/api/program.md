@@ -400,7 +400,7 @@ const handleKey = (event: KeyEvent): void => {
 
 // In production, call render in your game loop at ~60fps
 // Example: setInterval(render, 16)
-void running;
+console.log('Game loop running:', running);
 
 program.on('key', handleKey);
 program.on('resize', render);

@@ -17,7 +17,7 @@ const world = createWorld();
 
 // Full throttled resize handler with ECS world integration
 const handler = createThrottledResize(world, (width, height, isFinal) => {
-  void width; void height;
+  console.log(`Resize: ${width}x${height}, final: ${isFinal}`);
   if (isFinal) {
     // performFullLayout(world);
   } else {
@@ -27,7 +27,8 @@ const handler = createThrottledResize(world, (width, height, isFinal) => {
 
 // Clean up
 handler.dispose();
-void throttleResize; void debounceResize;
+console.log('throttleResize available:', typeof throttleResize);
+console.log('debounceResize available:', typeof debounceResize);
 ```
 
 ## Types
@@ -87,7 +88,7 @@ import { createWorld } from 'blecsd/core';
 
 const world = createWorld();
 const handler = createThrottledResize(world, (width, height, isFinal) => {
-  void width; void height;
+  console.log(`Resize: ${width}x${height}, final: ${isFinal}`);
   if (isFinal) {
     // performFullLayout(world);
   } else {

@@ -180,7 +180,7 @@ const screen = createScreenEntity(world, {
   height: 24,
   autoPadding: true,  // Enable auto-padding
 });
-void screen;
+console.log('screen entity:', screen);
 ```
 
 Or toggle it at runtime:
@@ -200,7 +200,7 @@ setAutoPadding(world, screen, false);
 
 // Check current state
 const enabled = isAutoPadding(world, screen);
-void enabled;
+console.log('auto-padding enabled:', enabled);
 ```
 
 ## Partial Borders
@@ -226,7 +226,7 @@ setBorder(world, entity, {
 const auto = getAutoPadding(world, entity);
 // auto.left = 1, auto.right = 1
 // auto.top = 0, auto.bottom = 0
-void auto;
+console.log('auto padding sides:', auto.left, auto.top, auto.right, auto.bottom);
 ```
 
 ## Integration with Layout

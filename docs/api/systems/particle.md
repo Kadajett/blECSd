@@ -131,7 +131,7 @@ const explosionEmitter = addEntity(world);
 
 // Explosion effect
 const particles = burstParticles(world, explosionEmitter, 50);
-void particles;
+console.log('Spawned particles:', particles.length);
 ```
 
 ### ageParticle

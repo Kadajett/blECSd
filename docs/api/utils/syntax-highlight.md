@@ -309,7 +309,7 @@ const result = highlightVisibleFirst(cache, sourceCode, 0, 40);
 for (const line of result.lines) {
   for (const token of line.tokens) {
     // Apply color based on token.type
-    void token.text; void token.type;
+    console.log('token:', token.text, 'type:', token.type);
   }
 }
 

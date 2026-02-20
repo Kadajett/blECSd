@@ -289,7 +289,7 @@ const world = createWorld();
 const entity = addEntity(world);
 const limit = getScrollback(world, entity);
 // Returns 0 if no limit
-void limit;
+console.log('Scrollback limit:', limit);
 ```
 
 ---

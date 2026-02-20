@@ -49,7 +49,8 @@ const logViewer = createScrollableText(world, addEntity(world), {
   border: { type: 'line' },
   scrollbar: { mode: 'visible' },
 });
-void textView; void logViewer;
+console.log('textView eid:', textView.eid);
+console.log('logViewer eid:', logViewer.eid);
 ```
 
 **Parameters:**
@@ -156,7 +157,7 @@ Gets the current text content.
 ```typescript
 const stG = createScrollableText(world, addEntity(world));
 const content = stG.getContent();
-void content;
+console.log('content:', content);
 stG.destroy();
 ```
 
@@ -257,7 +258,7 @@ Gets the current scroll position.
 ```typescript
 const stO = createScrollableText(world, addEntity(world));
 const scroll = stO.getScroll();
-void scroll;
+console.log('scroll position:', scroll.x, scroll.y);
 stO.destroy();
 ```
 
@@ -270,7 +271,7 @@ Gets the current scroll position as percentages.
 ```typescript
 const stP = createScrollableText(world, addEntity(world));
 const perc = stP.getScrollPerc();
-void perc;
+console.log('scroll percent:', perc.x, perc.y);
 stP.destroy();
 ```
 
@@ -371,7 +372,7 @@ Checks if the widget is currently focused.
 ```typescript
 const stW = createScrollableText(world, addEntity(world));
 const focused = stW.isFocused();
-void focused;
+console.log('isFocused:', focused);
 stW.destroy();
 ```
 
@@ -401,7 +402,7 @@ Gets all direct children.
 ```typescript
 const stY = createScrollableText(world, addEntity(world));
 const children = stY.getChildren();
-void children;
+console.log('children count:', children.length);
 stY.destroy();
 ```
 

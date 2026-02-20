@@ -103,7 +103,7 @@ const eid = addEntity(world);
 
 // Query all moving entities
 const moving = queryMovement(world);
-void moving;
+console.log('moving entities count:', moving.length);
 // Returns: number[] (entity IDs)
 
 // Check if entity has Velocity component
@@ -279,8 +279,10 @@ function createParticle(startX: number, startY: number) {
   return particle;
 }
 
-void createBullet(0, 0);
-void createParticle(0, 0);
+const bullet = createBullet(0, 0);
+console.log('bullet entity:', bullet);
+const particle = createParticle(0, 0);
+console.log('particle entity:', particle);
 ```
 
 ## Example: Smooth Scrolling
@@ -312,7 +314,7 @@ function onScroll(deltaY: number) {
     friction: 0.9,
   });
 }
-void onScroll;
+console.log('onScroll ready:', typeof onScroll === 'function');
 ```
 
 ## Performance Considerations

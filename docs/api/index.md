@@ -185,7 +185,8 @@ const key = parseKeyBuffer(buffer);
 
 const mouse = parseMouseSequence('\x1b[<0;10;5M');
 // { action: 'mousedown', button: 0, x: 10, y: 5, ... }
-void key; void mouse;
+console.log('Parsed key:', key);
+console.log('Parsed mouse:', mouse);
 ```
 
 ## Terminal I/O

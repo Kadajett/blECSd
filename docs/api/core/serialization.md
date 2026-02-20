@@ -17,7 +17,7 @@ console.log(`Snapshot has ${snapshot.entityCount} entities`);
 // Deserialize into a new world
 const parsed = JSON.parse(json);
 const newWorld = deserializeWorld(parsed);
-void newWorld;
+console.log('Restored world entity count:', newWorld.entityCount);
 ```
 
 ## Types
@@ -110,7 +110,7 @@ import { registerComponents, getRegisteredComponents } from 'blecsd/core';
 // Example: registerComponents([{ name: 'Position', component: PositionComponent, fields: ['x', 'y'] }])
 
 const registered = getRegisteredComponents();
-void registered;
+console.log('Registered components:', registered.length);
 ```
 
 ## Serialization Functions
@@ -126,7 +126,7 @@ const world = createWorld();
 
 // Serialize with no components (basic entity snapshot)
 const snapshot = serializeWorld(world, []);
-void snapshot;
+console.log('Snapshot entity count:', snapshot.entityCount);
 ```
 
 ### deserializeWorld
@@ -141,7 +141,7 @@ const snapshot = serializeWorld(world, []);
 
 // Deserialize creates a new world from the snapshot
 const restored = deserializeWorld(snapshot);
-void restored;
+console.log('Restored entity count:', restored.entityCount);
 ```
 
 ### Snapshot Round-Trip
@@ -158,8 +158,7 @@ const json = JSON.stringify(snapshot);
 // Restore from JSON
 const parsed = JSON.parse(json);
 const restored = deserializeWorld(parsed);
-console.log(`Restored world`);
-void restored;
+console.log(`Restored world with ${restored.entityCount} entities`);
 ```
 
 ## Constants

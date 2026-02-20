@@ -90,8 +90,7 @@ const largeText = 'A'.repeat(1000);
 
 // Copy with progress
 await cm.copy(largeText, (progress) => {
-  void progress.percentage;
-  // renderProgressBar(progress.percentage);
+  console.log('copy progress:', progress.percentage, '%');
 });
 ```
 
@@ -120,8 +119,7 @@ import { chunkText } from 'blecsd/terminal';
 const largeText = 'A'.repeat(1000);
 const chunks = chunkText(largeText, 64 * 1024);
 for (const chunk of chunks) {
-  // await processChunk(chunk);
-  void chunk;
+  console.log('chunk length:', chunk.length);
 }
 ```
 
@@ -142,10 +140,7 @@ import { streamPaste } from 'blecsd/terminal';
 
 const largeText = 'A'.repeat(1000);
 await streamPaste(largeText, (chunk, progress) => {
-  void chunk;
-  void progress;
-  // insertText(chunk);
-  // updateProgressBar(progress);
+  console.log('stream chunk length:', chunk.length, 'progress:', progress.percentage, '%');
 });
 ```
 

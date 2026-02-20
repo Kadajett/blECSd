@@ -219,7 +219,7 @@ const world = createWorld();
 const eid = addEntity(world);
 const tree = createTree(world, eid, {});
 const lines = tree.renderLines(40);  // Get text lines for rendering
-void lines;
+console.log('Rendered lines:', lines.length);
 ```
 
 ### Events
@@ -237,7 +237,7 @@ const unsubSelect = tree.onSelect((path, node) => {
 // Node activated (Enter pressed on leaf)
 const unsubActivate = tree.onActivate((path, node) => {
   console.log(`Activated: ${node.label}`);
-  void node.value;
+  console.log(`Value: ${JSON.stringify(node.value)}`);
 });
 
 // Node expanded/collapsed

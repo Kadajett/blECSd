@@ -45,7 +45,7 @@ import { createPanel } from 'blecsd/widgets';
 const world = createWorld();
 const eid = addEntity(world);
 const panel = createPanel(world, eid, { title: 'Hello', x: 0, y: 0, width: 40, height: 10 });
-void panel;
+console.log('Panel entity:', panel.eid);
 ```
 
 For advanced usage and custom systems, understanding ECS helps. See the [Architecture Guide](./contributing/ARCHITECTURE.md).
@@ -70,7 +70,7 @@ import { createPanel } from 'blecsd/widgets';
 const world = createWorld();
 const eid = addEntity(world);
 const panel = createPanel(world, eid, { x: 0, y: 0, width: 40, height: 10 });  // Sets up Position, Dimensions, Border, etc.
-void panel;
+console.log('Panel entity:', panel.eid);
 ```
 
 ### Can I mix blECSd with other ECS libraries?

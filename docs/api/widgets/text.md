@@ -198,7 +198,7 @@ Checks if the text is currently focused.
 ```typescript
 const text = createText(world, eid);
 const focused = text.isFocused(); // boolean
-void focused;
+console.log('isFocused:', focused);
 ```
 
 **Returns:** `boolean`
@@ -229,7 +229,7 @@ Gets all direct children of this text.
 ```typescript
 const text = createText(world, eid);
 const children = text.getChildren(); // Entity[]
-void children;
+console.log('children count:', children.length);
 ```
 
 **Returns:** `Entity[]`
@@ -284,7 +284,7 @@ import { getTextContent } from 'blecsd/widgets';
 const world = createWorld();
 const textEntity = addEntity(world);
 const content = getTextContent(world, textEntity); // string
-void content;
+console.log('text content:', content);
 ```
 
 **Parameters:**

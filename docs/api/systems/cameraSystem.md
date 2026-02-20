@@ -105,7 +105,7 @@ const world = createWorld();
 // Query all cameras
 const cameras = queryCameras(world);
 // Returns: number[] (entity IDs)
-void cameras;
+console.log('camera count:', cameras.length);
 ```
 
 ### Manual Updates
@@ -248,7 +248,8 @@ setCameraTarget(world, minimapCamera, player);
 
 // Use cameras for different viewports — your render function reads camera position
 // via getPosition(world, mainCamera) and getPosition(world, minimapCamera)
-void mainCamera; void minimapCamera;
+console.log('main camera entity:', mainCamera);
+console.log('minimap camera entity:', minimapCamera);
 ```
 
 ## Example: Camera Shake

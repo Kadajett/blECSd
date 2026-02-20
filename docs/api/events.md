@@ -357,7 +357,7 @@ warnings.on('warning', (event) => {
   if (event.type === WarningType.PERFORMANCE_ISSUE) {
     const { metric, value, threshold, frameTime } = event.metadata as { metric: string; value: number; threshold: number; frameTime?: number };
     console.warn(`${metric}: ${value} exceeds ${threshold}`);
-    void frameTime;
+    if (frameTime !== undefined) console.log('frame time:', frameTime, 'ms');
   }
 });
 ```

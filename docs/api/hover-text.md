@@ -221,7 +221,7 @@ const state = hoverManager.getState();
 //   position: { x: 15, y: 8 },
 //   hoverStartTime: 1234567890,
 // }
-void state;
+console.log('tooltip visible:', state.visible, 'text:', state.text);
 ```
 
 ### isVisible
@@ -314,7 +314,7 @@ import { getHoverText, setHoverText } from 'blecsd/widgets';
 const entity = 1;
 setHoverText(entity, 'test');
 const config = getHoverText(entity);
-void config;
+console.log('hover text config:', config?.text);
 ```
 
 ### hasHoverText

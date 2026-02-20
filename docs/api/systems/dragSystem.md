@@ -265,7 +265,8 @@ setDragVerifyCallback(world, entity, (eid, dx, dy) => {
 
 // Remove callback
 setDragVerifyCallback(world, entity, null);
-void getDragVerifyCallback(world, entity);
+const verifyCallback = getDragVerifyCallback(world, entity);
+console.log('verify callback cleared:', verifyCallback === null);
 ```
 
 ## Example: Draggable Window
@@ -303,7 +304,7 @@ dragEvents.on('dragend', () => {
   // Handle drag end
 });
 
-void dragSystem;
+console.log('dragSystem ready:', typeof dragSystem === 'object');
 ```
 
 ## Example: Slider Control
@@ -338,11 +339,11 @@ setDragConstraints(world, sliderThumb, {
 dragEvents2.on('drag', (e: { entity: number; x: number }) => {
   if (e.entity === sliderThumb) {
     const value = (e.x - 10) / 29; // 0-1
-    void value;
+    console.log('slider value (0-1):', value);
   }
 });
 
-void dragSystem2;
+console.log('dragSystem2 ready:', typeof dragSystem2 === 'object');
 ```
 
 ## Example: Grid-Based Layout
@@ -385,7 +386,7 @@ dragEvents3.on('dragstart', (e: { entity: number; mouseX: number; mouseY: number
 });
 
 dragEvents3.on('drag', (e: { mouseX: number; mouseY: number }) => {
-  void e.mouseX;
+  console.log('drag position:', e.mouseX, e.mouseY);
 });
 
 dragEvents3.on('drop', (e: { dropTarget: number | null }) => {
@@ -401,8 +402,8 @@ dragEvents3.on('dragend', (e: { cancelled: boolean }) => {
   }
 });
 
-void dragSystem3;
-void dragSource;
+console.log('dragSystem3 ready:', typeof dragSystem3 === 'object');
+console.log('dragSource after drop:', dragSource);
 ```
 
 ## Cleanup

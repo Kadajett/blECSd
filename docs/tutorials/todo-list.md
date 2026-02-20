@@ -119,7 +119,7 @@ const inputLabel = createTextEntity(world, {
   text: 'New task:',
   parent: mainPanel,
 });
-void inputLabel;
+console.log('inputLabel entity:', inputLabel);
 
 const textInput = createTextboxEntity(world, {
   x: 11,
@@ -136,7 +136,7 @@ const helpText = createTextEntity(world, {
   text: '[j/k] Navigate  [Space] Toggle  [Enter] Add',
   parent: mainPanel,
 });
-void helpText;
+console.log('helpText entity:', helpText);
 
 const helpText2 = createTextEntity(world, {
   x: 1,
@@ -144,7 +144,7 @@ const helpText2 = createTextEntity(world, {
   text: '[d] Delete  [q] Quit',
   parent: mainPanel,
 });
-void helpText2;
+console.log('helpText2 entity:', helpText2);
 ```
 
 ## Step 4: Render Todo Items

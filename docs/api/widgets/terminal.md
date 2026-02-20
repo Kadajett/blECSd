@@ -141,12 +141,12 @@ const termEvents = createTerminal(world, { width: 80, height: 24 });
 
 // Data received from PTY
 termEvents.onData((data) => {
-  void data;
+  console.log('PTY data received:', data.length, 'bytes');
 });
 
 // Process exited
 termEvents.onExit((code) => {
-  void code;
+  console.log('PTY exited with code:', code);
 });
 termEvents.destroy();
 ```

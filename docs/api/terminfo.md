@@ -118,7 +118,8 @@ if (clearSeq) {
 
 const boldSeq = tput.getString('enter_bold_mode');
 const resetSeq = tput.getString('exit_attribute_mode');
-void boldSeq; void resetSeq;
+if (boldSeq) process.stdout.write(boldSeq);
+if (resetSeq) process.stdout.write(resetSeq);
 ```
 
 **Returns:** `string | null`
@@ -146,7 +147,8 @@ const insertSeq = tput.tparm('parm_insert_line', 5);
 
 // Change scroll region
 const scrollSeq = tput.tparm('change_scroll_region', 5, 20);
-void insertSeq; void scrollSeq;
+if (insertSeq) process.stdout.write(insertSeq);
+if (scrollSeq) process.stdout.write(scrollSeq);
 ```
 
 **Returns:** `string | null`

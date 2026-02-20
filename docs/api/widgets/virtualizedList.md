@@ -177,7 +177,7 @@ function onKeyDown(event: { key: string; ctrl: boolean; shift: boolean }) {
   }
   // Handle other keys
 }
-void onKeyDown;
+console.log('onKeyDown handler registered:', typeof onKeyDown);
 ```
 
 ### Mouse Wheel Handler
@@ -188,7 +188,7 @@ function onWheel(event: { deltaY: number }) {
   const direction = event.deltaY < 0 ? 'up' : 'down';
   handleVirtualizedListWheel(list, direction, 3);
 }
-void onWheel;
+console.log('onWheel handler registered:', typeof onWheel);
 ```
 
 ## Example: Log Viewer
