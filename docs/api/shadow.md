@@ -34,11 +34,11 @@ import {
   DEFAULT_SHADOW_CHAR,
 } from 'blecsd/components';
 
-void DEFAULT_SHADOW_OFFSET_X;
-void DEFAULT_SHADOW_OFFSET_Y;
-void DEFAULT_SHADOW_COLOR;
-void DEFAULT_SHADOW_OPACITY;
-void DEFAULT_SHADOW_CHAR;
+console.log(DEFAULT_SHADOW_OFFSET_X);
+console.log(DEFAULT_SHADOW_OFFSET_Y);
+console.log(DEFAULT_SHADOW_COLOR);
+console.log(DEFAULT_SHADOW_OPACITY);
+console.log(DEFAULT_SHADOW_CHAR);
 ```
 
 ### Shadow Characters
@@ -53,10 +53,10 @@ import {
   DEFAULT_SHADOW_CHAR,
 } from 'blecsd/components';
 
-void SHADOW_CHAR_LIGHT;
-void SHADOW_CHAR_MEDIUM;
-void SHADOW_CHAR_DARK;
-void DEFAULT_SHADOW_CHAR;
+console.log(SHADOW_CHAR_LIGHT);
+console.log(SHADOW_CHAR_MEDIUM);
+console.log(SHADOW_CHAR_DARK);
+console.log(DEFAULT_SHADOW_CHAR);
 ```
 
 ---
@@ -594,8 +594,7 @@ function renderEntityShadow(w: typeof world, eid: number) {
       : shadow.color;
 
     // Render shadow character at p.x, p.y with finalColor
-    void finalColor;
-    void String.fromCodePoint(shadow.char);
+    console.log(`Shadow at (${p.x}, ${p.y}) type=${p.type} char=${String.fromCodePoint(shadow.char)} color=${finalColor}`);
   }
 }
 

@@ -30,7 +30,7 @@ const hoverManager = createHoverTextManager({
 const buttonEntity = addEntity(world);
 setHoverText(buttonEntity, 'Click to submit the form');
 
-void DEFAULT_HOVER_DELAY;
+console.log(DEFAULT_HOVER_DELAY);
 ```
 
 ## Manager Configuration
@@ -84,9 +84,9 @@ hoverManager.setHoverText(regEntity, {
 
 // Check and get
 const hh = hoverManager.hasHoverText(regEntity);
-void hh;
+console.log(hh);
 const hg = hoverManager.getHoverText(regEntity);
-void hg;
+console.log(hg);
 
 // Clear
 hoverManager.clearHoverText(regEntity);
@@ -128,9 +128,9 @@ hoverManager.hideNow();
 
 ```typescript
 const isVis = hoverManager.isVisible();
-void isVis;
+console.log(isVis);
 const hmState = hoverManager.getState();
-void hmState;
+console.log(hmState);
 ```
 
 ### Rendering
@@ -144,7 +144,7 @@ if (renderData) {
   // text: full text
   // lines: pre-split lines
   // style: resolved style
-  void renderData;
+  console.log(`Tooltip at (${renderData.x}, ${renderData.y}): ${renderData.text}`);
 }
 ```
 
@@ -168,11 +168,11 @@ setHoverText(moduleEntity, { text: 'Custom', delay: 100 });
 
 // Query
 const config = getHoverText(moduleEntity);
-void config;
+console.log(config);
 const exists = hasHoverText(moduleEntity);
-void exists;
+console.log(exists);
 const count = getHoverTextCount();
-void count;
+console.log(count);
 
 // Clear
 clearHoverText(moduleEntity);
@@ -214,7 +214,7 @@ dashboardManager.setHoverText(errorIconEid, {
 ```typescript
 // Default values used by the hover text manager:
 // DEFAULT_HOVER_DELAY = 500ms (show delay)
-void DEFAULT_HOVER_DELAY;
+console.log(DEFAULT_HOVER_DELAY);
 ```
 
 ## Related

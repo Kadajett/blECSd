@@ -115,31 +115,33 @@ table.blur();   // Remove focus
 ```typescript
 table.setData([['Name', 'Score'], ['Alice', '95'], ['Bob', '87']]);
 const tData = table.getData();
-void tData;
+console.log(tData.length);         // number of rows
 const tFullData = table.getFullData();
-void tFullData;
+console.log(tFullData.length);     // number of rows including full cell metadata
 table.clearData();
 ```
 
 ### Cells
 
 ```typescript
+table.setData([['Name', 'Score'], ['Alice', '95']]);
 table.setCell(0, 0, 'Name');
 const tCell = table.getCell(0, 0);
-void tCell;
+console.log(tCell);                // cell object
 const tCellValue = table.getCellValue(0, 0);
-void tCellValue;
+console.log(tCellValue);           // 'Name'
 ```
 
 ### Rows
 
 ```typescript
+table.setData([['Name', 'Score'], ['Alice', '95'], ['Bob', '87']]);
 const tRow = table.getRow(0);
-void tRow;
+console.log(tRow);                 // array of cells in row 0
 const tRowCount = table.getRowCount();
-void tRowCount;
+console.log(tRowCount);            // 3 (includes header)
 const tDataRowCount = table.getDataRowCount();
-void tDataRowCount;
+console.log(tDataRowCount);        // 2 (excludes header)
 ```
 
 ### Columns
@@ -147,9 +149,9 @@ void tDataRowCount;
 ```typescript
 table.setColumns([{ header: 'Name' }, { header: 'Score' }]);
 const tColumns = table.getColumns();
-void tColumns;
+console.log(tColumns.length);      // 2
 const tColCount = table.getColCount();
-void tColCount;
+console.log(tColCount);            // 2
 ```
 
 ### Headers
@@ -157,11 +159,11 @@ void tColCount;
 ```typescript
 table.setHeaderRowCount(1);
 const tHeaderCount = table.getHeaderRowCount();
-void tHeaderCount;
+console.log(tHeaderCount);         // 1
 const tHeaderRows = table.getHeaderRows();
-void tHeaderRows;
+console.log(tHeaderRows.length);   // 1
 const tDataRows = table.getDataRows();
-void tDataRows;
+console.log(tDataRows.length);     // data rows, not headers
 ```
 
 ### Display
@@ -169,23 +171,24 @@ void tDataRows;
 ```typescript
 table.setCellPadding(2);
 const tPadding = table.getCellPadding();
-void tPadding;
+console.log(tPadding);             // 2
 table.setCellBorders(true);
 const tHasBorders = table.hasCellBorders();
-void tHasBorders;
+console.log(tHasBorders);          // true
 table.setStyle({ header: { fg: 0xffffffff, bg: 0x444444ff } });
 const tDisplay = table.getDisplay();
-void tDisplay;
+console.log(typeof tDisplay);      // 'object'
 ```
 
 ### Selection
 
 ```typescript
+table.setData([['Name', 'Score'], ['Alice', '95'], ['Bob', '87']]);
 table.select(0);
 const tSelectedIdx = table.getSelectedIndex();
-void tSelectedIdx;
+console.log(tSelectedIdx);         // 0
 const tSelectedRow = table.getSelectedRow();
-void tSelectedRow;
+console.log(tSelectedRow);         // row data for selected index
 table.selectPrev();
 table.selectNext();
 table.selectFirst();
@@ -206,16 +209,16 @@ table.pageDown();
 table.startSearch();
 table.endSearch();
 const tQuery = table.getSearchQuery();
-void tQuery;
+console.log(tQuery);               // current search query string
 const tIsSearching = table.isSearching();
-void tIsSearching;
+console.log(tIsSearching);         // false (ended search above)
 ```
 
 ### State
 
 ```typescript
 const tState = table.getState();
-void tState;
+console.log(typeof tState);        // 'object'
 ```
 
 ### Events
@@ -224,7 +227,7 @@ void tState;
 // Row selection changed
 const unsubSelect = table.onSelect((index, item) => {
   console.log(`Selected row ${index}`);
-  void item;
+  console.log(`Item value: ${item.value}`);
 });
 
 // Row activated (Enter pressed)
@@ -298,7 +301,7 @@ processTable.onActivate((index, item) => {
 });
 
 processTable.focus();
-void processPanel;
+console.log('Panel eid:', processPanel.eid);
 ```
 
 ## Example: Log Viewer with Columns
@@ -323,8 +326,7 @@ const logTable = createListTable(world, addEntity(world), {
 
 // Filter by typing /
 logTable.onSearchChange((query) => {
-  // Filter logic here
-  void query;
+  console.log(`Filtering log entries for: ${query}`);
 });
 ```
 
@@ -333,6 +335,7 @@ logTable.onSearchChange((query) => {
 ```typescript
 if (isListTableWidget(world, eid)) {
   // Entity has list table behavior
+  console.log('Entity', eid, 'is a list table');
 }
 ```
 

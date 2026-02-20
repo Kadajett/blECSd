@@ -343,11 +343,9 @@ screen.render();
 ```typescript
 import {
   createWorld,
-  addEntity,
   createGameLoop,
   LoopPhase,
 } from 'blecsd/core';
-import { setPosition } from 'blecsd/components';
 import { createListEntity } from 'blecsd';
 import {
   inputSystem,
@@ -367,8 +365,7 @@ const listEntity = createListEntity(world, {
   height: 10,
   items: ['Item 1', 'Item 2', 'Item 3'],
 });
-
-void addEntity;
+console.log('List entity ID:', listEntity);
 
 // Listen for selection via event bus
 const inputBus = getInputEventBus();
@@ -440,11 +437,9 @@ screen.render();
 ```typescript
 import {
   createWorld,
-  addEntity,
   createGameLoop,
   LoopPhase,
 } from 'blecsd/core';
-import { setPosition } from 'blecsd/components';
 import { createBoxEntity, createButtonEntity } from 'blecsd';
 import {
   inputSystem,
@@ -463,6 +458,7 @@ const formContainer = createBoxEntity(world, {
   width: 40,
   height: 12,
 });
+console.log('Form container entity:', formContainer);
 
 // Submit button
 const submitButtonEntity = createButtonEntity(world, {
@@ -480,8 +476,6 @@ inputBus2.on('activate', (event: { entity: number }) => {
     console.log('Form submitted');
   }
 });
-
-void formContainer; void addEntity; void setPosition;
 
 // Setup game loop
 const loop3 = createGameLoop(world, { targetFPS: 60 });
@@ -547,8 +541,8 @@ function customRenderSystem(world: World): World {
     // Custom render logic per entity
     const x = Position.x[eid];
     const y = Position.y[eid];
-    void x; void y;
     // ... render at (x, y)
+    console.log(`Render entity ${eid} at (${x}, ${y})`);
   }
 
   return world;
@@ -940,7 +934,9 @@ const world = createWorld();
 // Create the game loop
 const loop = createGameLoop(world, { targetFPS: 60 });
 
-void world; void loop; void LoopPhase;
+// Register systems by phase before calling loop.start()
+// loop.registerSystem(LoopPhase.UPDATE, mySystem);
+console.log('World and loop ready. Phase count:', Object.keys(LoopPhase).length / 2);
 ```
 
 ### Phase 3: Port Simple Screens

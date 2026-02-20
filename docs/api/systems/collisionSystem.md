@@ -163,19 +163,19 @@ const enemy = addEntity(world);
 
 // Query all entities with Collider
 const colliders = queryColliders(world);
-void colliders;
+console.log(`${colliders.length} colliders`);
 
 // Detect collisions manually
 const pairs = detectCollisions(world);
-void pairs;
+console.log(`${pairs.length} collision pairs`);
 
 // Get active collision pairs
 const active = getActiveCollisions();
-void active;
+console.log(`${active.size} active collisions`);
 
 // Get active trigger pairs
 const triggers = getActiveTriggers();
-void triggers;
+console.log(`${triggers.size} active triggers`);
 ```
 
 ### Entity Queries
@@ -200,11 +200,11 @@ if (isInTrigger(player)) {
 
 // Get all entities colliding with this one
 const touching = getCollidingEntities(player);
-void touching;
+console.log(`Touching ${touching.length} entities`);
 
 // Get all trigger zones containing entity
 const zones = getTriggerZones(player);
-void zones;
+console.log(`In ${zones.length} trigger zones`);
 
 // Are two specific entities colliding?
 if (areColliding(player, enemy)) {
@@ -290,18 +290,18 @@ let doorOpen = false;
 bus.on('triggerEnter', ({ entityA, entityB }) => {
   if (entityB === doorTrigger) {
     doorOpen = true;
+    console.log(`Entity ${entityA} opened the door`);
   }
-  void entityA;
 });
 
 bus.on('triggerExit', ({ entityA, entityB }) => {
   if (entityB === doorTrigger) {
     doorOpen = false;
+    console.log(`Entity ${entityA} left the door area`);
   }
-  void entityA;
 });
 
-void doorOpen;
+console.log(doorOpen);
 ```
 
 ## Example: Platformer Collisions
@@ -353,7 +353,7 @@ setCollider(world, coin, {
   isTrigger: true,
 });
 
-void isColliding(player);
+console.log(isColliding(player));
 
 // Handle collisions
 const bus = getCollisionEventBus();
@@ -363,21 +363,20 @@ const coinEntities = new Set<number>([coin]);
 bus.on('collisionStart', ({ entityA, entityB }) => {
   // Check for enemy collision
   if (enemyEntities.has(entityB)) {
-    console.log('Player took damage');
+    console.log(`Entity ${entityA} took damage from enemy ${entityB}`);
   }
-  void entityA;
 });
 
 bus.on('triggerEnter', ({ entityA, entityB }) => {
   // Check for coin collection
   if (coinEntities.has(entityB)) {
+    console.log(`Entity ${entityA} collected coin ${entityB}`);
     coinEntities.delete(entityB);
     removeEntity(world, entityB);
   }
-  void entityA;
 });
 
-void ground;
+console.log(ground);
 ```
 
 ## Example: UI Hit Testing
@@ -420,7 +419,7 @@ const getHoveredButton = (): number | null => {
 };
 
 onMouseMove(10, 5);
-void getHoveredButton();
+console.log(getHoveredButton());
 ```
 
 ## Performance Considerations

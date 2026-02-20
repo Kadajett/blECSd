@@ -218,7 +218,7 @@ const world = createWorld();
 const entity = addEntity(world);
 const parent = getParent(world, entity);
 // Entity ID or undefined if no parent
-void parent;
+console.log('Parent entity:', parent);
 ```
 
 ### getChildren
@@ -233,7 +233,7 @@ const world = createWorld();
 const parent = addEntity(world);
 const children = getChildren(world, parent);
 // [childId1, childId2, ...]
-void children;
+console.log('Children:', children);
 ```
 
 ### getDescendants
@@ -247,7 +247,7 @@ import { createWorld, addEntity } from 'blecsd/core';
 const world = createWorld();
 const root = addEntity(world);
 const all = getDescendants(world, root);
-void all;
+console.log('All descendants:', all);
 ```
 
 ### getAncestors
@@ -262,7 +262,7 @@ const world = createWorld();
 const entity = addEntity(world);
 const ancestors = getAncestors(world, entity);
 // [parent, grandparent, ...]
-void ancestors;
+console.log('Ancestors:', ancestors);
 ```
 
 ### getFirstChild / getLastChild
@@ -275,7 +275,8 @@ const world = createWorld();
 const parent = addEntity(world);
 const first = getFirstChild(world, parent);  // Entity ID or NULL_ENTITY
 const last = getLastChild(world, parent);    // Entity ID or NULL_ENTITY
-void first; void last; void NULL_ENTITY;
+console.log('First child:', first, '(NULL_ENTITY:', NULL_ENTITY, ')');
+console.log('Last child:', last);
 ```
 
 ### getChildAt
@@ -325,7 +326,8 @@ const world = createWorld();
 const entity = addEntity(world);
 const next = getNextSibling(world, entity);  // Entity ID or NULL_ENTITY
 const prev = getPrevSibling(world, entity);  // Entity ID or NULL_ENTITY
-void next; void prev; void NULL_ENTITY;
+console.log('Next sibling:', next, '(NULL_ENTITY:', NULL_ENTITY, ')');
+console.log('Prev sibling:', prev);
 ```
 
 ### getDepth
@@ -377,7 +379,7 @@ const data = getHierarchy(world, entity);
 //   prevSibling: number | null,
 //   depth: number
 // }
-void data;
+console.log('Hierarchy data:', data);
 ```
 
 ---

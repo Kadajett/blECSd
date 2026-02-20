@@ -23,8 +23,11 @@ const table = createTable(world, eid, {
   headerRows: 1,
 });
 
+// Render table to inspect its output
 const lines = table.renderLines(80);
-void lines;
+for (const line of lines) {
+  console.log(line);
+}
 ```
 
 ## Configuration
@@ -77,152 +80,56 @@ type CellAlign = 'left' | 'center' | 'right';
 
 All methods return the widget for chaining (except getters).
 
-### Visibility
-
 ```typescript
-table.show();   // Show the table
-table.hide();   // Hide the table
-```
+// Visibility and position
+table.show();
+table.hide();
+table.setPosition(10, 5);
+table.move(2, 0);
 
-### Position
-
-```typescript
-table.setPosition(10, 5);  // Set absolute position
-table.move(2, 0);          // Move relative
-```
-
-### Data Management
-
-```typescript
-// Set all data at once
+// Data management
 table.setData([
   ['Name', 'Score'],
   ['Alice', '95'],
   ['Bob', '87'],
 ]);
+console.log(table.getData()[0]);              // ['Name', 'Score']
+console.log(table.getFullData().length);      // rows with metadata
+console.log(table.getCellValue(0, 0));        // 'Name'
+console.log(table.getRow(0));                 // cells in row 0
+console.log(table.getRowCount());             // total row count
 
-// Get data as string[][]
-const data = table.getData();
-void data;
-
-// Get full data with cell metadata
-const fullData = table.getFullData();
-void fullData;
-
-// Clear all data
-table.clearData();
-```
-
-### Cell Operations
-
-```typescript
-// Set a cell value (row, col)
-table.setCell(1, 0, 'Alice Smith');
-
-// Get a cell
-const cell = table.getCell(1, 0);
-void cell;
-
-// Get just the string value
-const value = table.getCellValue(1, 0);
-void value;
-```
-
-### Row Operations
-
-```typescript
-// Get a row
-const row = table.getRow(0);
-void row;
-
-// Append a row
+// Row operations
 table.appendRow(['Charlie', '92']);
-
-// Insert a row at index
 table.insertRow(1, ['Dave', '88']);
-
-// Remove a row
 table.removeRow(2);
 
-// Count rows
-const count = table.getRowCount();
-void count;
-```
-
-### Column Operations
-
-```typescript
-// Set column configuration
+// Column configuration
 table.setColumns([
   { header: 'Name', minWidth: 10, align: 'left' },
   { header: 'Score', width: 8, align: 'right' },
 ]);
+console.log(table.getColumns().length);           // 2
+console.log(table.getColCount());                 // 2
+console.log(table.calculateColumnWidths(80));     // array of widths
 
-// Get columns
-const columns = table.getColumns();
-void columns;
-
-// Get column count
-const colCount = table.getColCount();
-void colCount;
-
-// Calculate optimal column widths
-const widths = table.calculateColumnWidths(80);
-void widths;
-```
-
-### Headers
-
-```typescript
-// Set number of header rows
+// Header rows
 table.setHeaderRowCount(1);
+console.log(table.getHeaderRowCount());       // 1
+console.log(table.getHeaderRows().length);    // 1
+console.log(table.getDataRows().length);      // data rows only
 
-// Get header row count
-const headerCount = table.getHeaderRowCount();
-void headerCount;
-
-// Get just header rows
-const headers = table.getHeaderRows();
-void headers;
-
-// Get data rows (excluding headers)
-const dataRows = table.getDataRows();
-void dataRows;
-```
-
-### Display Options
-
-```typescript
-// Cell padding
+// Display options
 table.setCellPadding(2);
-const padding = table.getCellPadding();
-void padding;
-
-// Cell borders
+console.log(table.getCellPadding());          // 2
 table.setCellBorders(true);
-const hasBorders = table.hasCellBorders();
-void hasBorders;
+console.log(table.hasCellBorders());          // true
+table.setStyle({ header: { fg: 0xffffffff, bg: 0x333333ff } });
+console.log(typeof table.getDisplay());       // 'object'
 
-// Style
-table.setStyle({
-  header: { fg: 0xffffffff, bg: 0x333333ff },
-  cell: { fg: 0xccccccff },
-  altRowBg: 0x1a1a1aff,
-});
-
-// Get current display config
-const display = table.getDisplay();
-void display;
-```
-
-### Rendering
-
-```typescript
-// Render table as text lines for given width
-const renderedLines = table.renderLines(80);
-for (const line of renderedLines) {
-  console.log(line);
-}
+// Render as text for inspection
+const rendered = table.renderLines(80);
+console.log(rendered.length > 0);             // true
 ```
 
 ## Examples
@@ -291,7 +198,7 @@ alignedTable.destroy();
 const tableEid = addEntity(world);
 const tableWidget = createTable(world, tableEid, { data: [['Name'], ['Alice']], headerRows: 1 });
 if (isTableWidget(world, tableEid)) {
-  // Entity has table behavior attached
+  console.log('Entity', tableEid, 'is a table widget');
 }
 tableWidget.destroy();
 ```

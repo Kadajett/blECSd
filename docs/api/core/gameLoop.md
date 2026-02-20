@@ -76,10 +76,13 @@ const renderSystem = (w: typeof world) => w;
 // Register systems in their phases
 loop.registerSystem(LoopPhase.UPDATE, movementSystem);
 loop.registerSystem(LoopPhase.RENDER, renderSystem);
-void processInputSystem; void animationSystem;
+
+// processInputSystem and animationSystem registered in a real app:
+// loop.registerSystem(LoopPhase.INPUT, processInputSystem);
+// loop.registerSystem(LoopPhase.ANIMATION, animationSystem);
 
 // Start the loop (in production: loop.start())
-void loop;
+console.log('Loop state:', loop.getState());
 ```
 
 ## GameLoopOptions
@@ -117,7 +120,7 @@ const loop = createGameLoop(world, { targetFPS: 60 });
 loop.step(1/60);  // Run a single frame manually with explicit delta time
 
 // loop.stepFixed(); // Run a single fixed update (requires fixedTimestepMode)
-void loop;
+console.log('Loop state after step:', loop.getState());
 ```
 
 ## State Checking
@@ -171,7 +174,9 @@ const loop = createGameLoop(world, { targetFPS: 60 }, {
   onPause: () => console.log('Loop paused'),
   onResume: () => console.log('Loop resumed'),
 });
-void loop;
+// Run a single frame to verify the hook fires
+loop.start();
+loop.stop();
 ```
 
 ## Performance Statistics
@@ -183,11 +188,10 @@ const world = createWorld();
 const loop = createGameLoop(world, { targetFPS: 60 });
 const stats = loop.getStats();
 
-// stats.fps;                // Current frames per second
-// stats.frameTime;          // Current frame time in ms
-// stats.frameCount;         // Total frames since start
-// stats.runningTime;        // Total running time in seconds
-void stats;
+console.log('FPS:', stats.fps);
+console.log('Frame time (ms):', stats.frameTime);
+console.log('Frame count:', stats.frameCount);
+console.log('Running time (s):', stats.runningTime);
 ```
 
 ## Fixed Timestep Mode
@@ -212,7 +216,8 @@ const loop = createGameLoop(world, {
 // 3. Run fixed updates at consistent rate (UPDATE, LATE_UPDATE, PHYSICS)
 // 4. Calculate interpolation alpha
 // 5. Run render phases (LAYOUT, RENDER, POST_RENDER)
-void loop;
+loop.step(1/60);
+console.log('Fixed timestep loop state:', loop.getState());
 ```
 
 ### Interpolation
@@ -235,10 +240,11 @@ const loop = createGameLoop(world, {
     // even though logic runs at 30 ticks/sec
     const renderX = prevX + (currentX - prevX) * alpha;
     const renderY = prevY + (currentY - prevY) * alpha;
-    void renderX; void renderY;
+    console.log(`Render position: (${renderX.toFixed(2)}, ${renderY.toFixed(2)})`);
   },
 });
-void loop; void prevX; void currentX; void prevY; void currentY;
+loop.step(1/60);
+console.log('Interpolation example - prevX:', prevX, 'currentX:', currentX);
 ```
 
 ## PhaseManager
@@ -326,8 +332,11 @@ const loop = createGameLoop(world, {
 loop.registerSystem(LoopPhase.UPDATE, gameLogicSystem);
 loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 loop.registerSystem(LoopPhase.RENDER, renderSystem);
-void animationSystem;
+// animationSystem registered in a real app:
+// loop.registerSystem(LoopPhase.ANIMATION, animationSystem);
 
 // In production: loop.start();
-void loop;
+loop.step(1/60);
+const finalStats = loop.getStats();
+console.log('Frame count:', finalStats.frameCount);
 ```

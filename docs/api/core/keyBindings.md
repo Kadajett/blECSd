@@ -183,11 +183,11 @@ if (keyEvent) {
     textInputFocused: true,
   });
 
+  console.log('Simple matches:', matches.length);
   for (const match of ctxMatches) {
     console.log(match.action);        // Action identifier
     console.log(match.preventDefault); // Whether to prevent default
   }
-  void matches;
 }
 ```
 
@@ -202,7 +202,7 @@ const binding = { keys: 'ctrl+c', action: 'copy' };
 const keyEvent = parseKeyString('ctrl+c');
 if (keyEvent) {
   const matches = matchesKey(binding, keyEvent);
-  void matches;
+  console.log('Matches:', matches);
 }
 ```
 
@@ -216,7 +216,7 @@ import { createKeyBindingRegistry, registerBinding, getBindingsForKey, parseKeyS
 const registry = registerBinding(createKeyBindingRegistry(), { keys: 'ctrl+s', action: 'save' });
 const key = parseKeyString('ctrl+s')!;
 const bindings = getBindingsForKey(registry, key);
-void bindings;
+console.log('Bindings for ctrl+s:', bindings.map(b => b.action));
 ```
 
 ### getBindingForAction
@@ -228,7 +228,7 @@ import { createKeyBindingRegistry, registerBinding, getBindingForAction } from '
 
 const registry = registerBinding(createKeyBindingRegistry(), { keys: 'ctrl+s', action: 'save' });
 const binding = getBindingForAction(registry, 'save');
-void binding;
+console.log('Binding for save:', binding?.keys);
 ```
 
 ---
@@ -250,7 +250,7 @@ const registry = registerBindings(createKeyBindingRegistry(), [
   { keys: 'tab', action: 'indent', when: 'focus != search' },
   { keys: 'ctrl+s', action: 'saveAll', when: 'editorFocused && !modalOpen' },
 ]);
-void registry;
+console.log('Registered conditional bindings');
 ```
 
 ### evaluateCondition
@@ -312,9 +312,9 @@ Standard text editing shortcuts.
 import { DEFAULT_TEXT_BINDINGS, registerBindings, createKeyBindingRegistry } from 'blecsd/core';
 
 const registry = registerBindings(createKeyBindingRegistry(), DEFAULT_TEXT_BINDINGS);
-void registry;
 // Includes: copy, paste, cut, undo, redo, selectAll, deleteBack, deleteForward,
 // moveToLineStart, moveToLineEnd, moveToStart, moveToEnd
+console.log('Text binding count:', DEFAULT_TEXT_BINDINGS.length);
 ```
 
 ### DEFAULT_NAV_BINDINGS
@@ -325,9 +325,9 @@ Standard navigation shortcuts.
 import { DEFAULT_NAV_BINDINGS, registerBindings, createKeyBindingRegistry } from 'blecsd/core';
 
 const registry = registerBindings(createKeyBindingRegistry(), DEFAULT_NAV_BINDINGS);
-void registry;
 // Includes: focusNext (tab), focusPrev (shift+tab), cancel (escape),
 // confirm (enter), moveUp/Down/Left/Right, pageUp/Down
+console.log('Nav binding count:', DEFAULT_NAV_BINDINGS.length);
 ```
 
 ---
@@ -346,7 +346,8 @@ const result = KeyBindingSchema.safeParse(binding);
 
 // Validate array of bindings
 const results = KeyBindingsArraySchema.safeParse(bindings);
-void result; void results;
+console.log('Binding valid:', result.success);
+console.log('Bindings valid:', results.success);
 ```
 
 ---
@@ -384,7 +385,7 @@ const handleInput = (keyEvent: ParsedKey) => {
 
 const ev = parseKeyString('w');
 if (ev) handleInput(ev);
-void player;
+console.log('Player position:', player.x, player.y);
 ```
 
 ### Context-Aware Bindings
@@ -415,7 +416,7 @@ const context = {
 const keyEvent = parseKeyString('ctrl+s');
 if (keyEvent) {
   const matches = matchEvent(registry, keyEvent, context);
-  void matches;
+  console.log('Matched actions:', matches.map(m => m.action));
 }
 ```
 

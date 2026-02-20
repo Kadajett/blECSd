@@ -72,7 +72,9 @@ const flexLayout = createLayout(world, addEntity(world), {
   width: 80,
   height: 24,
 });
-void layoutA; void gridLayout; void flexLayout;
+console.log(layoutA.eid);
+console.log(gridLayout.eid);
+console.log(flexLayout.eid);
 ```
 
 **Parameters:**
@@ -97,7 +99,7 @@ const inlineLayout = createLayout(world, addEntity(world), {
   gap: 1,
   wrap: true,  // Enable wrapping (default)
 });
-void inlineLayout;
+console.log(inlineLayout.eid);
 ```
 
 ### Grid
@@ -111,7 +113,7 @@ const gridLayout2 = createLayout(world, addEntity(world), {
   gap: 2,      // Gap between cells
   width: 60,
 });
-void gridLayout2;
+console.log(gridLayout2.eid);
 ```
 
 ### Flex
@@ -127,7 +129,7 @@ const flexLayout2 = createLayout(world, addEntity(world), {
   gap: 2,
   width: 80,
 });
-void flexLayout2;
+console.log(flexLayout2.eid);
 ```
 
 ---
@@ -213,7 +215,7 @@ Gets the current layout mode.
 ```typescript
 const layoutG = createLayout(world, addEntity(world));
 const mode = layoutG.getLayoutMode(); // 'inline' | 'grid' | 'flex'
-void mode;
+console.log(mode);
 layoutG.destroy();
 ```
 
@@ -238,7 +240,7 @@ Gets the current gap between children.
 ```typescript
 const layoutI = createLayout(world, addEntity(world));
 const gap = layoutI.getGap(); // number
-void gap;
+console.log(gap);
 layoutI.destroy();
 ```
 
@@ -291,7 +293,7 @@ Checks if the layout is currently focused.
 ```typescript
 const layoutM = createLayout(world, addEntity(world));
 const focused = layoutM.isFocused(); // boolean
-void focused;
+console.log(focused);
 layoutM.destroy();
 ```
 
@@ -321,7 +323,7 @@ Gets all direct children.
 ```typescript
 const layoutO = createLayout(world, addEntity(world));
 const children = layoutO.getChildren();
-void children;
+console.log(children.length);
 layoutO.destroy();
 ```
 
@@ -365,7 +367,7 @@ const positions = calculateInlineLayout(
 );
 
 // positions is Map<Entity, { x: number, y: number }>
-void positions;
+console.log(positions.size);
 ```
 
 **Parameters:**
@@ -393,7 +395,7 @@ const gridPositions = calculateGridLayout(
   2,  // columns
   1   // gap
 );
-void gridPositions;
+console.log(gridPositions.size);
 ```
 
 **Parameters:**
@@ -421,7 +423,7 @@ const flexPositions = calculateFlexLayout(
   'center',        // justify
   'center'         // align
 );
-void flexPositions;
+console.log(flexPositions.size);
 ```
 
 **Parameters:**
@@ -461,8 +463,7 @@ Gets the layout mode of a layout entity.
 ```typescript
 const layoutR = createLayout(world, addEntity(world), { layout: 'grid' });
 const layoutModeVal = getLayoutMode(world, layoutR.eid);
-void layoutModeVal;
-// 'inline', 'grid', or 'flex'
+console.log(layoutModeVal); // 'inline', 'grid', or 'flex'
 layoutR.destroy();
 ```
 

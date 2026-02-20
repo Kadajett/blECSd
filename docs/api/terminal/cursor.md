@@ -41,11 +41,11 @@ function render(time: number) {
   if (isCursorVisible(cursor)) {
     const originalCell = createCell(' ', 0xffffffff, 0xff000000);
     const rendered = renderCursor(cursor, originalCell);
-    void rendered.cell;
+    console.log('Rendered cursor cell char:', rendered.cell.char);
   }
 }
 
-void render;
+render(0);
 ```
 
 ## Creating Cursors
@@ -225,8 +225,7 @@ import { createArtificialCursor, isCursorVisible } from 'blecsd/terminal';
 
 const cursor = createArtificialCursor();
 if (isCursorVisible(cursor)) {
-  // renderCursorCell(cursor);
-  void cursor;
+  console.log('Cursor is visible at:', cursor.x, cursor.y);
 }
 ```
 
@@ -245,10 +244,10 @@ const result = renderCursor(cursor, originalCell);
 
 if (result.fullCell) {
   // Block cursor replaces entire cell
-  void result.cell;
+  console.log('Full cell cursor char:', result.cell.char);
 } else {
   // Underline/bar overlays partial cell
-  void result.cell;
+  console.log('Partial cell cursor char:', result.cell.char);
 }
 ```
 
@@ -261,7 +260,7 @@ import { createArtificialCursor, createCursorCell } from 'blecsd/terminal';
 
 const cursor = createArtificialCursor();
 const cursorCell = createCursorCell(cursor);
-void cursorCell;
+console.log('Cursor cell char:', cursorCell.char);
 ```
 
 ## Multi-Cursor Support
@@ -285,7 +284,7 @@ let manager = createCursorManager();
 
 // Get primary cursor
 const primary = getPrimaryCursor(manager);
-void primary;
+console.log('Primary cursor position:', primary.x, primary.y);
 
 // Add secondary cursor
 const secondary = createArtificialCursor({ id: 'secondary', x: 20, y: 10 });
@@ -296,7 +295,7 @@ manager = removeCursor(manager, 'secondary');
 
 // Get all visible cursors for rendering
 const visible = getVisibleCursors(manager);
-void visible;
+console.log('Visible cursors:', visible.length);
 ```
 
 ### updateAllCursorBlinks
@@ -406,16 +405,18 @@ function render(time: number) {
   if (isCursorVisible(cursor)) {
     const originalCell = createCell(' ', 0xffffffff, 0xff000000);
     const result = renderCursor(cursor, originalCell);
-    void result.cell;
+    console.log('Render cursor at', cursor.x, cursor.y, '- char:', result.cell.char);
   }
 
   // Output to terminal
   // ...
 }
 
-void onKeyDown;
-void render;
-void moveCursorTo;
+onKeyDown('ArrowRight');
+render(performance.now());
+// moveCursorTo is used by passing the returned cursor to moveCursorTo(cursor, x, y)
+const movedCursor = moveCursorTo(cursor, 20, 10);
+console.log('Moved cursor to:', movedCursor.x, movedCursor.y);
 
 // Cleanup
 process.on('exit', () => {

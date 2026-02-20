@@ -47,7 +47,7 @@ const config = StreamingTextConfigSchema.parse({
   wrapWidth: 120,
   autoScroll: true,
 });
-void config;
+console.log(config.wrapWidth);
 ```
 
 ---
@@ -65,7 +65,7 @@ const stWidget = createStreamingText(world, stEid, {
   maxLines: 5000,
   autoScroll: true,
 });
-void stWidget;
+console.log(stWidget.eid);
 ```
 
 **Parameters:**
@@ -124,7 +124,7 @@ Returns the full internal state, including lines, scroll position, and configura
 ```typescript
 const stE = createStreamingText(world, addEntity(world));
 const stState = stE.getState();
-void stState;
+console.log(stState.totalBytes);
 ```
 
 ### getVisibleLines
@@ -134,7 +134,7 @@ Returns only the lines visible in the current viewport (based on scrollTop and v
 ```typescript
 const stF = createStreamingText(world, addEntity(world));
 const visible = stF.getVisibleLines();
-void visible;
+console.log(visible.length);
 ```
 
 ### getProgress
@@ -163,7 +163,7 @@ if (dirty) {
     // Re-render everything
   } else {
     // Only re-render from dirty.startLine for dirty.lineCount lines
-    void dirty.startLine; void dirty.lineCount;
+    console.log(`Re-render ${dirty.lineCount} lines from line ${dirty.startLine}`);
   }
 }
 ```
@@ -228,7 +228,7 @@ These functions operate on `StreamingTextState` objects and can be used independ
 
 ```typescript
 const state = createStreamingState({ wrapWidth: 120 }, 24);
-void state;
+console.log(state.viewportHeight);
 ```
 
 **Parameters:**
@@ -242,7 +242,7 @@ void state;
 ```typescript
 let stateA = createStreamingState();
 stateA = appendToState(stateA, 'Hello world\n');
-void stateA;
+console.log(stateA.lines.length);
 ```
 
 Appends text to a state object, handling wrapping, eviction, and auto-scroll.
@@ -253,7 +253,7 @@ Appends text to a state object, handling wrapping, eviction, and auto-scroll.
 let stateB = createStreamingState();
 stateB = appendToState(stateB, 'some content\n');
 stateB = clearState(stateB);
-void stateB;
+console.log(stateB.lines.length);
 ```
 
 ### getStreamVisibleLines
@@ -261,7 +261,7 @@ void stateB;
 ```typescript
 const stateC = createStreamingState();
 const visibleLines = getStreamVisibleLines(stateC);
-void visibleLines;
+console.log(visibleLines.length);
 ```
 
 ### scrollToLine
@@ -270,7 +270,7 @@ void visibleLines;
 let stateD = createStreamingState();
 stateD = appendToState(stateD, 'Line 1\nLine 2\nLine 3\n');
 stateD = scrollToLine(stateD, 1);
-void stateD;
+console.log(stateD.scrollTop);
 ```
 
 ---
@@ -282,7 +282,7 @@ void stateD;
 ```typescript
 const wrappedLines = wrapLine('Hello World, this is a long line', 10);
 // ['Hello Worl', 'd, this is', ' a long li', 'ne']
-void wrappedLines;
+console.log(wrappedLines);
 ```
 
 ### stripAnsiSequences
@@ -290,7 +290,7 @@ void wrappedLines;
 ```typescript
 const clean = stripAnsiSequences('\x1b[31mRed text\x1b[0m');
 // 'Red text'
-void clean;
+console.log(clean);
 ```
 
 ---
@@ -369,10 +369,10 @@ function renderFrame() {
 
   if (dirty.fullRedraw) {
     const lines = streamEx2.getVisibleLines();
-    void lines; // Re-render everything
+    console.log(`Full redraw: ${lines.length} lines`);
   } else {
-    void dirty.startLine; void dirty.lineCount;
     // Only re-render from dirty.startLine for dirty.lineCount lines
+    console.log(`Partial redraw: ${dirty.lineCount} lines from ${dirty.startLine}`);
   }
 }
 renderFrame();

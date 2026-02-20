@@ -213,7 +213,7 @@ const world = createWorld();
 const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 const button = createButtonEntity(world, { label: 'Click me' });
 const input = createTextboxEntity(world, { placeholder: 'Enter text...' });
-void box; void button; void input;
+console.log('Box:', box, 'Button:', button, 'Input:', input);
 ```
 
 ✅ **Building custom widgets**
@@ -233,7 +233,7 @@ const createCustomWidget = (world: World): Entity => {
 
 const world = createWorld();
 const widget = createCustomWidget(world);
-void widget;
+console.log('Custom widget entity ID:', widget);
 ```
 
 ✅ **When you need ECS flexibility**
@@ -512,11 +512,11 @@ Position.x[eid] = 10;
 
 // Mid-level: Entity factory
 const box = createBoxEntity(exWorld, { x: 10, y: 5, width: 40, height: 10 });
-void box;
+console.log('Box entity ID:', box);
 
 // High-level: Widget
 const modal = createModal(exWorld, { content: 'Hello' });
-void modal;
+modal.show();
 ```
 
 All three approaches are valid - choose based on your requirements.
@@ -590,14 +590,14 @@ const world = createWorld();
 const fileManager = createFileManager(world, {
   cwd: '/home/user',
 });
-void fileManager;
+fileManager.onSelect((entry) => console.log('Selected:', entry.name));
 
 const modal = createModal(world, {
   content: 'File uploaded successfully.',
   width: 40,
   height: 8,
 });
-void modal;
+modal.show();
 ```
 
 ---

@@ -40,7 +40,7 @@ const screen = createScreenEntity(world, {
   height: 24,
   title: 'My Application',
 });
-void screen;
+console.log('Screen entity ID:', screen);
 ```
 
 The screen is the root entity that represents the terminal viewport.
@@ -76,7 +76,7 @@ const title = createTextEntity(world, {
   text: 'Hello, ECS API!',
   fg: 0xffffffff,
 });
-void title;
+console.log('Container entity:', container, 'Title entity:', title);
 ```
 
 ### 4. Define Systems
@@ -102,7 +102,7 @@ function movementSystem(world: World): World {
 
   return world;
 }
-void movementSystem;
+// Register in a game loop: loop.registerSystem(LoopPhase.UPDATE, movementSystem);
 ```
 
 ### 5. Set Up the Game Loop
@@ -317,7 +317,7 @@ function myRenderSystem(world: World): World {
     const fg = Renderable.fg[eid];
 
     // Draw entity at position
-    void x; void y; void fg;
+    console.log(`Draw at (${x}, ${y}) with fg ${fg}`);
   }
 
   return world;
@@ -535,7 +535,7 @@ function collisionSystem(world: World): World {
 
   return world;
 }
-void collisionSystem;
+// Register in a game loop: loop.registerSystem(LoopPhase.UPDATE, collisionSystem);
 ```
 
 ### Camera Follow System
@@ -645,7 +645,9 @@ const size = dimensions.get(world, eid);
 // Content operations
 content.setText(world, eid, 'Hello, World!');
 const text = content.getText(world, eid);
-void pos; void size; void text;
+console.log('Position:', pos?.x, pos?.y);
+console.log('Dimensions:', size?.width, size?.height);
+console.log('Content:', text);
 ```
 
 ### System Namespaces
@@ -702,7 +704,9 @@ import { ansiCodes } from 'blecsd/terminal';
 const hide = ansiCodes.cursor.hide();
 const move = ansiCodes.cursor.move(10, 5);
 const clear = ansiCodes.screen.clear();
-void hide; void move; void clear;
+console.log('Hide cursor sequence:', JSON.stringify(hide));
+console.log('Move cursor sequence:', JSON.stringify(move));
+console.log('Clear screen sequence:', JSON.stringify(clear));
 ```
 
 ### Mixing Approaches

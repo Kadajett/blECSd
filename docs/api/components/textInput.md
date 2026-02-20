@@ -108,10 +108,10 @@ TextInput uses a state machine with these states:
 
 ```typescript
 // Line cursor (insert mode)
-void CursorMode.Line;  // 0
+console.log(CursorMode.Line);  // 0
 
 // Block cursor (overwrite mode)
-void CursorMode.Block; // 1
+console.log(CursorMode.Block); // 1
 ```
 
 ## Functions
@@ -146,12 +146,12 @@ endEditingTextInput(world, eid);     // Exit editing mode
 // Get current state
 const state = getTextInputState(world, eid);
 // Returns: 'idle' | 'focused' | 'editing' | 'error' | 'disabled'
-void state;
+console.log(state);
 
 // Get/set configuration
 const config = getTextInputConfig(world, eid);
 setTextInputConfig(world, eid, { maxLength: 100 });
-void config;
+console.log(config);
 
 // Enable/disable
 enableTextInput(world, eid);
@@ -165,7 +165,7 @@ enableTextInput(world, eid); // re-enable for later use
 // Get/set cursor position
 const pos = getCursorPos(eid);
 setCursorPos(world, eid, 10);
-void pos;
+console.log(pos);
 
 // Move cursor
 moveCursor(world, eid, 5);   // Move forward 5
@@ -175,13 +175,13 @@ moveCursor(world, eid, -3);  // Move back 3
 const mode = getCursorMode(eid);
 setCursorMode(world, eid, CursorMode.Block);
 toggleCursorMode(world, eid);
-void mode;
+console.log(mode);
 
 // Cursor visibility and blink
 const vis = isCursorVisible(eid);
 setCursorBlinkEnabled(eid, true);
 resetCursorBlink(eid);
-void vis;
+console.log(vis);
 ```
 
 ### Selection
@@ -190,7 +190,7 @@ void vis;
 // Get selection range
 const sel = getSelection(eid);
 // Returns: { start: number, end: number } or null
-void sel;
+console.log(sel);
 
 // Set selection
 setSelection(world, eid, 5, 15);
@@ -202,7 +202,7 @@ clearSelection(world, eid);
 if (hasSelection(eid)) {
   const normalized = getNormalizedSelection(eid);
   // { start: 5, end: 15 } (always start < end)
-  void normalized;
+  console.log(normalized);
 }
 ```
 
@@ -213,7 +213,7 @@ if (hasSelection(eid)) {
 if (isSecretMode(eid)) {
   const char = getCensorChar(eid);
   const masked = maskValue('secret', char);
-  void char; void masked;
+  console.log(char, masked);
 }
 
 // Multiline
@@ -223,11 +223,11 @@ if (isMultiline(eid)) {
 
 // Placeholder
 const placeholder = getPlaceholder(eid);
-void placeholder;
+console.log(placeholder);
 
 // Max length
 const max = getMaxLength(eid);
-void max;
+console.log(max);
 ```
 
 ### Error Handling
@@ -342,8 +342,7 @@ attachTextInputBehavior(world, password, {
 
 // Handle submit
 onTextInputSubmit(password, (value) => {
-  console.log('Login submitted');
-  void value;
+  console.log(`Login submitted with password length: ${value.length}`);
 });
 
 focusTextInput(world, username);

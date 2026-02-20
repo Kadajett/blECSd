@@ -59,7 +59,7 @@ queueKeyEvent({ name: 'down', sequence: '\x1b[B', ctrl: false, meta: false, shif
 // User presses 'G'
 queueKeyEvent({ name: 'G', sequence: 'G', ctrl: false, meta: false, shift: true, full: 'G' });
 
-void listEid;
+console.log('List entity ID:', listEid);
 ```
 
 ### Text Input Widgets
@@ -130,7 +130,7 @@ const buttonEid = createButtonEntity(bWorld, {
 // User presses Enter - queue key event for the input system
 queueKeyEvent({ name: 'enter', sequence: '\r', ctrl: false, meta: false, shift: false, full: 'enter' });
 
-void buttonEid;
+console.log('Button entity ID:', buttonEid);
 ```
 
 ### Checkbox Widgets
@@ -155,7 +155,7 @@ const checkboxEid = createCheckboxEntity(cbWorld, {
 // User presses Space - queue key event for the input system
 queueKeyEvent({ name: 'space', sequence: ' ', ctrl: false, meta: false, shift: false, full: 'space' });
 
-void checkboxEid;
+console.log('Checkbox entity ID:', checkboxEid);
 ```
 
 ### Radio Button Widgets
@@ -322,7 +322,7 @@ registry = registerBinding(registry, {
   description: 'Find in text',
 });
 
-void registry;
+console.log('Registered bindings for actions: save, quit, find');
 ```
 
 ### Widget-Specific Customization
@@ -345,7 +345,8 @@ function handleCustomKeys(event: { name: string; ctrl: boolean; meta: boolean; s
   return false;
 }
 
-void handleCustomKeys;
+const handled = handleCustomKeys({ name: 'd', ctrl: false, meta: false, sequence: 'd', shift: false, full: 'd' });
+console.log('Event handled by custom handler:', handled);
 ```
 
 ### Global Key Binding Configuration
@@ -421,7 +422,7 @@ const contextBindings: KeyBinding[] = [
   },
 ];
 
-void contextBindings;
+console.log('Context binding actions:', contextBindings.map(b => b.action));
 ```
 
 ## Accessibility
@@ -489,14 +490,14 @@ function loggingQueueKeyEvent(event: KeyEvent): void {
   queueKeyEvent(event);
 }
 
-void loggingQueueKeyEvent;
+loggingQueueKeyEvent({ name: 'a', ctrl: false, meta: false, shift: false, sequence: 'a', full: 'a' });
 ```
 
 ### Testing Key Bindings
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createWorld, addEntity } from 'blecsd/core';
+import { createWorld } from 'blecsd/core';
 import { createListEntity } from 'blecsd';
 import { queueKeyEvent } from 'blecsd/systems';
 
@@ -523,7 +524,6 @@ describe('List keyboard shortcuts', () => {
     });
 
     expect(listEid).toBeGreaterThan(0);
-    void addEntity;
   });
 });
 ```

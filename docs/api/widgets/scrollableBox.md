@@ -71,7 +71,8 @@ const styledScrollBox = createScrollableBox(world, addEntity(world), {
   mouse: true,
   keys: true,
 });
-void scrollBoxA; void styledScrollBox;
+console.log(scrollBoxA.eid);
+console.log(styledScrollBox.eid);
 ```
 
 **Parameters:**
@@ -176,7 +177,7 @@ Gets the current text content.
 ```typescript
 const sbG = createScrollableBox(world, addEntity(world));
 const sbContent = sbG.getContent();
-void sbContent;
+console.log(sbContent);
 sbG.destroy();
 ```
 
@@ -231,7 +232,7 @@ Gets the current scroll percentage.
 ```typescript
 const sbK = createScrollableBox(world, addEntity(world), { scrollHeight: 200 });
 const perc = sbK.getScrollPerc();
-void perc;
+console.log(perc);
 sbK.destroy();
 ```
 
@@ -244,7 +245,7 @@ Gets the current scroll position.
 ```typescript
 const sbL = createScrollableBox(world, addEntity(world), { scrollHeight: 200 });
 const scroll = sbL.getScroll();
-void scroll;
+console.log(scroll);
 sbL.destroy();
 ```
 
@@ -281,7 +282,7 @@ Gets the full scrollable data.
 ```typescript
 const sbO = createScrollableBox(world, addEntity(world), { scrollHeight: 200 });
 const scrollable = sbO.getScrollable();
-void scrollable;
+console.log(scrollable);
 sbO.destroy();
 ```
 
@@ -313,7 +314,7 @@ const sbQ = createScrollableBox(world, addEntity(world), { scrollHeight: 200, he
 const canS = sbQ.canScroll();
 const canSX = sbQ.canScrollX();
 const canSY = sbQ.canScrollY();
-void canS; void canSX; void canSY;
+console.log(canS, canSX, canSY);
 sbQ.destroy();
 ```
 
@@ -325,7 +326,7 @@ const atTop = sbR.isAtTop();
 const atBottom = sbR.isAtBottom();
 const atLeft = sbR.isAtLeft();
 const atRight = sbR.isAtRight();
-void atTop; void atBottom; void atLeft; void atRight;
+console.log(atTop, atBottom, atLeft, atRight);
 sbR.destroy();
 ```
 
@@ -340,7 +341,7 @@ const sbS = createScrollableBox(world, addEntity(world));
 sbS.focus();
 sbS.blur();
 const sbFocused = sbS.isFocused();
-void sbFocused;
+console.log(sbFocused);
 sbS.destroy();
 ```
 
@@ -355,7 +356,7 @@ const sbT = createScrollableBox(world, addEntity(world));
 const childEid = addEntity(world);
 sbT.append(childEid);
 const sbChildren = sbT.getChildren();
-void sbChildren;
+console.log(sbChildren.length);
 sbT.destroy();
 ```
 
@@ -472,7 +473,7 @@ const basicScrollBox = createScrollableBox(world, addEntity(world), {
   scrollHeight: 100,
   border: { type: 'line' },
 });
-void basicScrollBox;
+console.log(basicScrollBox.eid);
 ```
 
 ### Log Viewer with Auto-Scroll
@@ -493,7 +494,8 @@ function addLog(message: string) {
   logViewer.setContent(newContent);
   logViewer.scrollToBottom();
 }
-void addLog;
+addLog('Server started');
+addLog('Listening on port 3000');
 ```
 
 ### Keyboard Navigation
@@ -515,7 +517,7 @@ function onKeyPress(key: string) {
     case 'end': navBox.scrollToBottom(); break;
   }
 }
-void onKeyPress;
+onKeyPress('down');
 ```
 
 ### Method Chaining
@@ -529,7 +531,7 @@ const chainedScrollBox = createScrollableBox(world, addEntity(world), { left: 0,
   .scrollTo(0, 100)
   .focus()
   .show();
-void chainedScrollBox;
+console.log(chainedScrollBox.eid);
 ```
 
 ---
