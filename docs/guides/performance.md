@@ -21,10 +21,14 @@ This guide covers practical performance optimization techniques for blECSd appli
 
 **Start simple, measure first.**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // ✅ GOOD - Start simple
-import { createWorld, addEntity, setPosition } from 'blecsd';
+import { createWorld, addEntity, query, hasComponent, removeComponent } from 'blecsd/core';
+import {
+  setPosition, Position, Velocity, Renderable, Dimensions,
+  markDirty, isEffectivelyVisible, setParent,
+} from 'blecsd/components';
+import { createBoxEntity, createTextEntity } from 'blecsd/core';
 
 const world = createWorld();
 for (let i = 0; i < 100; i++) {
@@ -55,14 +59,13 @@ Optimize when you measure these issues:
 
 **Always measure before optimizing:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createFrameBudgetManager,
   profiledSystem,
   getFrameBudgetStats,
   renderSystem,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 // Enable profiling
 createFrameBudgetManager({ targetFrameMs: 16.67 });
@@ -88,13 +91,9 @@ for (const timing of stats.systemTimings) {
 
 Use the built-in frame budget manager to track performance:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createFrameBudgetManager,
-  onBudgetAlert,
-  LoopPhase,
-} from 'blecsd';
+import { createFrameBudgetManager, onBudgetAlert } from 'blecsd/systems';
+import { LoopPhase } from 'blecsd/core';
 
 // Set budget limits per phase
 createFrameBudgetManager({
@@ -154,10 +153,9 @@ node --inspect-brk your-app.js
 
 For micro-optimizations, use Vitest benchmarks:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { bench, describe } from 'vitest';
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
 describe('component access patterns', () => {
@@ -228,10 +226,10 @@ function renderSystem(world: World): World {
 
 ```typescript
 // 10 levels deep = slow tree traversal
-const root = createBox(world);
+const root = createBoxEntity(world);
 let current = root;
 for (let i = 0; i < 10; i++) {
-  const child = createBox(world);
+  const child = createBoxEntity(world);
   setParent(world, child, current);
   current = child;
 }
@@ -243,10 +241,10 @@ for (let i = 0; i < 10; i++) {
 
 ```typescript
 // Siblings share parent = fast traversal
-const root = createBox(world);
+const flatRoot = createBoxEntity(world);
 for (let i = 0; i < 10; i++) {
-  const child = createBox(world);
-  setParent(world, child, root);  // All children share root
+  const child = createBoxEntity(world);
+  setParent(world, child, flatRoot);  // All children share root
 }
 ```
 
@@ -257,16 +255,21 @@ for (let i = 0; i < 10; i++) {
 ❌ **SLOW - Render all 100,000 items:**
 
 ```typescript
-const list = createList(world, listEntity);
-for (let i = 0; i < 100000; i++) {
-  addListItem(list, `Item ${i}`);
-}
-// Renders all 100,000 items = 200ms per frame
+// This demonstrates the performance concern - NOT for actual execution:
+// Adding 100,000 items one by one is slow.
+// In practice, use createVirtualizedList (shown below) for large datasets.
+import { createList } from 'blecsd/widgets';
+
+const listEid = addEntity(world);
+const largeList = createList(world, listEid, {});
+// Adding items is O(n) per item due to re-renders
+largeList.addItem('Item 0');
+largeList.addItem('Item 1');
+// ... 100,000 more items would be slow
 ```
 
 ✅ **FAST - Use virtualization:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createVirtualizedList } from 'blecsd/widgets';
 
@@ -361,33 +364,27 @@ for (const eid of moving) {
 
 ### Avoid Redundant Queries
 
-❌ **SLOW:**
+❌ **SLOW - Multiple queries for similar data:**
 ```typescript
-function update(world: World): World {
-  const players = query(world, [Position, Player]);
-  const enemies = query(world, [Position, Enemy]);
-  const npcs = query(world, [Position, NPC]);
-
-  // Process each separately
-}
+// Querying entities with and without Velocity separately is slower
+const moving = query(world, [Position, Velocity]);
+const stationary = query(world, [Position]);
+// Two queries when one would suffice
+for (const eid of moving) { /* process moving */ }
+for (const eid of stationary) { /* process all */ }
 ```
 
-✅ **FAST - Use tags/enums:**
+✅ **FAST - Single query with conditional logic:**
 ```typescript
-const Position = defineComponent({ x: f32, y: f32, type: ui8 });
+// Single query, then branch on component presence
+const allPositioned = query(world, [Position]);
 
-const EntityType = { PLAYER: 0, ENEMY: 1, NPC: 2 } as const;
-
-function update(world: World): World {
-  const entities = query(world, [Position]);
-
-  for (const eid of entities) {
-    const type = Position.type[eid];
-    if (type === EntityType.PLAYER) {
-      // handle player
-    } else if (type === EntityType.ENEMY) {
-      // handle enemy
-    }
+for (const eid of allPositioned) {
+  // Check if moving
+  if (hasComponent(world, eid, Velocity)) {
+    // Apply velocity
+    Position.x[eid] = (Position.x[eid] ?? 0) + (Velocity.x[eid] ?? 0);
+    Position.y[eid] = (Position.y[eid] ?? 0) + (Velocity.y[eid] ?? 0);
   }
 }
 ```
@@ -399,14 +396,13 @@ function update(world: World): World {
 ❌ **SLOW - Multiple lookups:**
 
 ```typescript
-for (const eid of entities) {
+const renderEntities = query(world, [Position, Renderable]);
+for (const eid of renderEntities) {
   const x = Position.x[eid];         // Lookup 1
   const y = Position.y[eid];         // Lookup 2
-  const char = Renderable.char[eid]; // Lookup 3
-  const fg = Renderable.fg[eid];     // Lookup 4
-  const bg = Renderable.bg[eid];     // Lookup 5
-
-  drawCell(x, y, char, fg, bg);
+  const fg = Renderable.fg[eid];     // Lookup 3
+  const bg = Renderable.bg[eid];     // Lookup 4
+  // ... render cell
 }
 ```
 
@@ -417,17 +413,16 @@ for (const eid of entities) {
 ```typescript
 // Pull out arrays once
 const { x: px, y: py } = Position;
-const { char, fg, bg } = Renderable;
+const { fg: fgArr, bg: bgArr } = Renderable;
 
-for (const eid of entities) {
+const fastRenderEntities = query(world, [Position, Renderable]);
+for (const eid of fastRenderEntities) {
   // Direct array access
   const x = px[eid];
   const y = py[eid];
-  const c = char[eid];
-  const f = fg[eid];
-  const b = bg[eid];
-
-  drawCell(x, y, c, f, b);
+  const fg = fgArr[eid];
+  const bg = bgArr[eid];
+  // ... render cell
 }
 ```
 
@@ -437,7 +432,8 @@ for (const eid of entities) {
 
 ❌ **SLOW - Check every value:**
 ```typescript
-for (const eid of entities) {
+const checkedEntities = query(world, [Position]);
+for (const eid of checkedEntities) {
   const x = Position.x[eid] ?? 0;  // Check
   const y = Position.y[eid] ?? 0;  // Check
   // ...
@@ -460,25 +456,29 @@ for (const eid of positioned) {
 
 ❌ **SLOW - Helper function overhead:**
 ```typescript
-function getPosition(world: World, eid: Entity): { x: number; y: number } {
+function getPos(eid: number): { x: number; y: number } {
   return {
     x: Position.x[eid] ?? 0,
     y: Position.y[eid] ?? 0,
   };
 }
 
-for (const eid of entities) {
-  const pos = getPosition(world, eid);  // Function call + object allocation
-  render(pos.x, pos.y);
+const slowEntities = query(world, [Position]);
+for (const eid of slowEntities) {
+  const pos = getPos(eid);  // Function call + object allocation
+  // ... use pos.x, pos.y
 }
 ```
 
 ✅ **FAST - Access arrays directly:**
 ```typescript
-const { x, y } = Position;
+const { x: posX, y: posY } = Position;
 
-for (const eid of entities) {
-  render(x[eid]!, y[eid]!);  // Direct array access
+const fastEntities = query(world, [Position]);
+for (const eid of fastEntities) {
+  // Direct array access - no function call, no allocation
+  const x = posX[eid]!;
+  const y = posY[eid]!;
 }
 ```
 
@@ -540,9 +540,8 @@ function renderSystem(world: World): World {
 
 ✅ **FAST - Check visibility first:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isEffectivelyVisible } from 'blecsd';
+import { isEffectivelyVisible } from 'blecsd/components';
 
 function renderSystem(world: World): World {
   const entities = query(world, [Position, Renderable]);
@@ -562,9 +561,8 @@ function renderSystem(world: World): World {
 
 For scenes larger than the viewport:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getComputedBounds } from 'blecsd';
+import { getComputedBounds } from 'blecsd/systems';
 
 function isInViewport(
   world: World,
@@ -608,15 +606,16 @@ function renderSystem(world: World): World {
 ❌ **SLOW - Allocate every frame:**
 
 ```typescript
-function renderSystem(world: World): World {
-  for (const eid of entities) {
-    const bounds = {  // Object allocation
+function slowRenderSystem(world: World): World {
+  const ents = query(world, [Position, Dimensions]);
+  for (const eid of ents) {
+    const bounds = {  // Object allocation every frame
       x: Position.x[eid] ?? 0,
       y: Position.y[eid] ?? 0,
       width: Dimensions.width[eid] ?? 0,
       height: Dimensions.height[eid] ?? 0,
     };
-    render(bounds);
+    // process bounds...
   }
   return world;
 }
@@ -625,16 +624,17 @@ function renderSystem(world: World): World {
 ✅ **FAST - Reuse or pass primitives:**
 
 ```typescript
-// Reusable bounds object
-const tempBounds = { x: 0, y: 0, width: 0, height: 0 };
-
-function renderSystem(world: World): World {
+function fastRenderSystem(world: World): World {
   const { x, y } = Position;
   const { width, height } = Dimensions;
 
-  for (const eid of entities) {
-    // Pass primitives directly
-    render(x[eid]!, y[eid]!, width[eid]!, height[eid]!);
+  const ents = query(world, [Position, Dimensions]);
+  for (const eid of ents) {
+    // Pass primitives directly - no object allocation
+    const ex = x[eid]!;
+    const ey = y[eid]!;
+    const ew = width[eid]!;
+    const eh = height[eid]!;
   }
   return world;
 }
@@ -669,17 +669,19 @@ function releaseEntity(world: World, eid: Entity): void {
 
 ❌ **SLOW:**
 ```typescript
+const linesSlow = Array.from({ length: 1000 }, (_, i) => `line ${i}`);
 let output = '';
 for (let i = 0; i < 1000; i++) {
-  output += lines[i] + '\n';  // Creates new string each time
+  output += linesSlow[i] + '\n';  // Creates new string each time
 }
 ```
 
 ✅ **FAST:**
 ```typescript
+const linesFast = Array.from({ length: 1000 }, (_, i) => `line ${i}`);
 const parts: string[] = [];
 for (let i = 0; i < 1000; i++) {
-  parts.push(lines[i]);
+  parts.push(linesFast[i]!);
 }
 const output = parts.join('\n');  // Single allocation
 ```
@@ -708,26 +710,27 @@ for (let i = 0; i < 10000; i++) {
 
 blECSd automatically uses double buffering to avoid tearing:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScreenBuffer, renderToTerminal } from 'blecsd';
+import { createDoubleBuffer } from 'blecsd/terminal';
+import { outputSystem } from 'blecsd/systems';
+import { createWorld } from 'blecsd/core';
 
-// Back buffer - render here
-const backBuffer = createScreenBuffer(80, 24);
+const dbWorld = createWorld();
+// Double buffer - render to back buffer, swap to front on flush
+const db = createDoubleBuffer(80, 24);
 
-// ... render to backBuffer ...
+// ... render to back buffer ...
 
-// Swap to front buffer and output
-renderToTerminal(backBuffer);
+// Flush output (swap buffers and write to terminal)
+outputSystem(dbWorld);
 ```
 
 ### Dirty Rectangle Tracking
 
 Only redraw changed regions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { markAllDirty, clearRenderBuffer, renderSystem } from 'blecsd';
+import { markAllDirty, clearRenderBuffer, renderSystem } from 'blecsd/systems';
 
 // First frame - full render
 markAllDirty(world);
@@ -741,35 +744,37 @@ renderSystem(world);  // Automatically skips clean entities
 
 ❌ **SLOW - Redundant sequences:**
 ```typescript
-// Sets color for every cell
-for (let y = 0; y < height; y++) {
-  for (let x = 0; x < width; x++) {
-    output += `\x1b[38;2;255;0;0m${chars[y][x]}`;  // Color for each cell
+// Sets color for every cell - one sequence per cell
+const cellWidth = 80;
+const cellHeight = 24;
+let ansiOutput = '';
+for (let y = 0; y < cellHeight; y++) {
+  for (let x = 0; x < cellWidth; x++) {
+    ansiOutput += `\x1b[38;2;255;0;0m `;  // Color for each cell
   }
 }
 ```
 
 ✅ **FAST - Batch same colors:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { optimizeOutput } from 'blecsd';
-
-// Groups adjacent cells with same color
-const optimized = optimizeOutput(cells);
+// blECSd's output system automatically groups adjacent cells with same color
+// Run outputSystem to get compressed output sequences
+import { outputSystem } from 'blecsd/systems';
+import { createWorld } from 'blecsd/core';
 // Output: \x1b[38;2;255;0;0mHello world (single color sequence)
+outputSystem(createWorld());
 ```
 
 ### Use Compressed Output
 
 blECSd's output system automatically compresses:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { generateOutput } from 'blecsd';
-
-// Generates minimal updates
-const output = generateOutput(world);
-// Only outputs changed cells, not entire screen
+// The outputSystem handles compression internally.
+// Call it once per frame and it outputs only changed cells.
+import { outputSystem } from 'blecsd/systems';
+import { createWorld } from 'blecsd/core';
+outputSystem(createWorld());
 ```
 
 ## Advanced Techniques
@@ -778,16 +783,19 @@ const output = generateOutput(world);
 
 For large worlds with collision detection:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSpatialHash, insertEntity, queryArea } from 'blecsd';
+import { createSpatialHash, insertEntity, queryArea } from 'blecsd/systems';
 import { Position } from 'blecsd/components';
+import { createWorld, addEntity, query } from 'blecsd/core';
+
+const spatialWorld = createWorld();
 
 // Create grid with 10x10 cell size
 const grid = createSpatialHash({ cellSize: 10 });
 
 // Insert entities into grid
-for (const eid of entities) {
+const spatialEntities = query(spatialWorld, [Position]);
+for (const eid of spatialEntities) {
   const x = Position.x[eid] ?? 0;
   const y = Position.y[eid] ?? 0;
   insertEntity(grid, eid, x, y);
@@ -810,22 +818,15 @@ for (const eid of nearby) {
 
 Offload heavy computation to background threads:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Worker } from 'node:worker_threads';
-
-const worker = new Worker('./compute-worker.js');
-
-worker.on('message', (result) => {
-  // Apply result to world
-  applyComputedValues(world, result);
-});
-
-// Send work to thread
-worker.postMessage({
-  type: 'compute',
-  data: extractEntityData(world),
-});
+// Workers can offload heavy computation to background threads.
+// This example shows the communication pattern:
+//
+// In main thread:
+// import { Worker } from 'node:worker_threads';
+// const worker = new Worker('./compute-worker.js');
+// worker.on('message', (result) => applyComputedValues(world, result));
+// worker.postMessage({ type: 'compute', data: extractEntityData(world) });
 ```
 
 ### Lazy Initialization
@@ -848,19 +849,27 @@ function getResource(): ExpensiveResource {
 
 ❌ **SLOW - Individual system calls:**
 ```typescript
-for (const eid of newEntities) {
-  updatePhysics(world, eid);
-  updateAnimation(world, eid);
-  updateRender(world, eid);
+function processPerEntity(world: World, eids: number[]): void {
+  for (const eid of eids) {
+    // Each call processes one entity at a time
+    Position.x[eid] = (Position.x[eid] ?? 0) + (Velocity.x[eid] ?? 0);
+    markDirty(world, eid);
+  }
 }
 ```
 
 ✅ **FAST - Batch by system:**
 ```typescript
-// Process all entities per system (better cache locality)
-updatePhysics(world, newEntities);
-updateAnimation(world, newEntities);
-updateRender(world, newEntities);
+function processAllEntities(world: World): void {
+  // Process all entities in one pass per operation (better cache locality)
+  const moving = query(world, [Position, Velocity]);
+  for (const eid of moving) {
+    Position.x[eid] = (Position.x[eid] ?? 0) + (Velocity.x[eid] ?? 0);
+  }
+  for (const eid of moving) {
+    markDirty(world, eid);
+  }
+}
 ```
 
 ### Frame Budgeting
@@ -868,7 +877,9 @@ updateRender(world, newEntities);
 Spread work across multiple frames:
 
 ```typescript
-const workQueue: Entity[] = [...allEntities];
+import { type Entity } from 'blecsd/core';
+
+const workQueue: Entity[] = [...query(world, [Position])];
 const maxWorkPerFrame = 100;
 
 function expensiveUpdateSystem(world: World): World {
@@ -876,7 +887,8 @@ function expensiveUpdateSystem(world: World): World {
 
   while (workQueue.length > 0 && processed < maxWorkPerFrame) {
     const eid = workQueue.shift()!;
-    performExpensiveUpdate(world, eid);
+    // Process one entity per frame budget slot
+    markDirty(world, eid);
     processed++;
   }
 
@@ -930,9 +942,8 @@ Use this checklist when optimizing:
 
 After optimization, verify improvement:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getFrameBudgetStats } from 'blecsd';
+import { getFrameBudgetStats } from 'blecsd/systems';
 
 const before = getFrameBudgetStats();
 console.log(`Before: ${before.stats.avgFps.toFixed(1)} FPS`);

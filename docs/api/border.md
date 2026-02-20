@@ -6,9 +6,8 @@ Borders draw visual outlines around entities using box-drawing characters, backg
 
 ### BorderType Enum
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BorderType } from 'blecsd';
+import { BorderType } from 'blecsd/components';
 
 BorderType.None       // 0 - No border (hidden)
 BorderType.Line       // 1 - Line border using box-drawing characters
@@ -32,7 +31,6 @@ All charsets implement the `BorderCharset` interface.
 | `BORDER_BOLD` | Bold/thick | `┏ ┓ ┗ ┛ ━ ┃` |
 | `BORDER_ASCII` | ASCII-only | `+ + + + - \|` |
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   BORDER_SINGLE,
@@ -40,16 +38,15 @@ import {
   BORDER_ROUNDED,
   BORDER_BOLD,
   BORDER_ASCII,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ---
 
 ## Default Colors
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { DEFAULT_BORDER_FG, DEFAULT_BORDER_BG } from 'blecsd';
+import { DEFAULT_BORDER_FG, DEFAULT_BORDER_BG } from 'blecsd/components';
 
 DEFAULT_BORDER_FG  // 0xFFFFFFFF - White (fully opaque)
 DEFAULT_BORDER_BG  // 0x00000000 - Transparent
@@ -59,9 +56,8 @@ DEFAULT_BORDER_BG  // 0x00000000 - Transparent
 
 ## Component Structure
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Border } from 'blecsd';
+import { Border } from 'blecsd/components';
 
 Border.type           // Uint8Array  - Border type (BorderType enum)
 Border.left           // Uint8Array  - Left side enabled (0=no, 1=yes)
@@ -86,10 +82,9 @@ Border.charVertical   // Uint32Array - Vertical edge (Unicode codepoint)
 
 Sets or updates border configuration. Adds the Border component if not present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { BorderType, BORDER_DOUBLE } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { BorderType, BORDER_DOUBLE } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
 
 const world = createWorld();
@@ -129,9 +124,8 @@ setBorder(world, eid, {
 
 Sets the border characters on an entity. Adds the Border component if not present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBorderChars, BORDER_ROUNDED, BORDER_BOLD } from 'blecsd';
+import { setBorderChars, BORDER_ROUNDED, BORDER_BOLD } from 'blecsd/components';
 
 // Use rounded corners
 setBorderChars(world, eid, BORDER_ROUNDED);
@@ -160,9 +154,8 @@ setBorderChars(world, eid, {
 
 Returns full border configuration or `undefined` if no Border component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getBorder, BorderType, BORDER_DOUBLE } from 'blecsd';
+import { getBorder, BorderType, BORDER_DOUBLE } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
 
 setBorder(world, eid, {
@@ -201,9 +194,8 @@ const border = getBorder(world, eid);
 
 Gets a specific border character (Unicode codepoint).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBorderChars, getBorderChar, BorderType, BORDER_DOUBLE } from 'blecsd';
+import { setBorderChars, getBorderChar, BorderType, BORDER_DOUBLE } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
 
 setBorder(world, eid, { type: BorderType.Line });
@@ -227,9 +219,8 @@ getBorderChar(world, eid, 'vertical');    // 0x2551 (║)
 
 ### hasBorder
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasBorder, BorderType } from 'blecsd';
+import { hasBorder, BorderType } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
 
 hasBorder(world, eid);  // false
@@ -242,9 +233,8 @@ hasBorder(world, eid);  // true
 
 Checks if the entity has a visible border (type is not None and at least one side is enabled).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasBorderVisible, BorderType } from 'blecsd';
+import { hasBorderVisible, BorderType } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
 
 // No border component
@@ -275,9 +265,8 @@ hasBorderVisible(world, eid);  // false
 
 ### enableAllBorders / disableAllBorders
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableAllBorders, disableAllBorders, BorderType } from 'blecsd';
+import { enableAllBorders, disableAllBorders, BorderType } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
 
 setBorder(world, eid, {
@@ -353,10 +342,9 @@ interface BorderData {
 
 ### Dialog Box
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { BorderType, BORDER_DOUBLE } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { BorderType, BORDER_DOUBLE } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
 
 const world = createWorld();
@@ -372,10 +360,13 @@ setBorder(world, dialog, {
 
 ### Menu with Rounded Corners
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BorderType, BORDER_ROUNDED } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { BorderType, BORDER_ROUNDED } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
+
+const world = createWorld();
+const menu = addEntity(world);
 
 setBorder(world, menu, {
   type: BorderType.Line,
@@ -386,10 +377,13 @@ setBorder(world, menu, {
 
 ### Horizontal Divider
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BorderType } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
+
+const world = createWorld();
+const divider = addEntity(world);
 
 setBorder(world, divider, {
   type: BorderType.Line,
@@ -403,10 +397,13 @@ setBorder(world, divider, {
 
 ### ASCII-Only Terminal Support
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BorderType, BORDER_ASCII } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { BorderType, BORDER_ASCII } from 'blecsd/components';
 import { setBorder } from 'blecsd/components';
+
+const world = createWorld();
+const element = addEntity(world);
 
 // For terminals without Unicode support
 setBorder(world, element, {

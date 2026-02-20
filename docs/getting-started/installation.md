@@ -50,10 +50,10 @@ blECSd ships with type definitions. For the best experience, enable strict mode:
 
 Create `test.ts`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, setPosition, getPosition } from 'blecsd';
-import { addEntity } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { setPosition, getPosition } from 'blecsd/components';
+import { addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -111,7 +111,6 @@ Consider alternatives for these scenarios:
 
 blECSd provides detection utilities to check what your terminal supports:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { getTerminalInfo } from 'blecsd/terminal';
 

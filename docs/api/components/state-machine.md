@@ -8,7 +8,6 @@ The StateMachine module attaches a finite state machine to an entity. State mach
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   StateMachineStore,
@@ -22,7 +21,7 @@ import {
   isInState,
   updateStateAge,
   hasStateMachine,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Component Data Layout
@@ -42,9 +41,8 @@ interface StateMachineStore {
 
 The `StateMachineStore` object manages state machine definitions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { StateMachineStore } from 'blecsd';
+import { StateMachineStore } from 'blecsd/components';
 
 // Register a definition (returns machine ID)
 const id = StateMachineStore.register({
@@ -71,7 +69,6 @@ StateMachineStore.clear(); // Remove all
 
 Attaches a state machine to an entity. Returns the machine ID.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { attachStateMachine } from 'blecsd/components';
 
@@ -89,9 +86,8 @@ const machineId = attachStateMachine(world, entity, {
 
 Removes the state machine from an entity and unregisters its definition.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detachStateMachine } from 'blecsd';
+import { detachStateMachine } from 'blecsd/components';
 
 detachStateMachine(world, entity);
 ```
@@ -100,9 +96,8 @@ detachStateMachine(world, entity);
 
 Query current and previous state names.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getPreviousState } from 'blecsd';
+import { getPreviousState } from 'blecsd/components';
 import { getState } from 'blecsd/components';
 
 const current = getState(world, entity);    // 'idle'
@@ -115,7 +110,6 @@ const previous = getPreviousState(world, entity); // 'active'
 
 Sends an event to the entity's state machine. Returns whether a transition occurred.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sendEvent } from 'blecsd/components';
 
@@ -129,9 +123,8 @@ if (transitioned) {
 
 Checks if an event would cause a transition from the current state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { canSendEvent } from 'blecsd';
+import { canSendEvent } from 'blecsd/components';
 
 if (canSendEvent(world, entity, 'activate')) {
   sendEvent(world, entity, 'activate');
@@ -142,9 +135,8 @@ if (canSendEvent(world, entity, 'activate')) {
 
 Returns the time spent in the current state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getStateAge } from 'blecsd';
+import { getStateAge } from 'blecsd/components';
 
 const age = getStateAge(world, entity);
 if (age > 5.0) {
@@ -156,9 +148,8 @@ if (age > 5.0) {
 
 Convenience check for a specific state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isInState } from 'blecsd';
+import { isInState } from 'blecsd/components';
 
 if (isInState(world, entity, 'active')) {
   // Handle active state
@@ -167,9 +158,8 @@ if (isInState(world, entity, 'active')) {
 
 ### hasStateMachine
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasStateMachine } from 'blecsd';
+import { hasStateMachine } from 'blecsd/components';
 
 if (hasStateMachine(world, entity)) {
   // Entity has a state machine attached
@@ -180,19 +170,30 @@ if (hasStateMachine(world, entity)) {
 
 Updates state age for a batch of entities. Call each frame.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateStateAge } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { updateStateAge, attachStateMachine } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachStateMachine(world, eid, {
+  initial: 'idle',
+  states: {
+    idle: { on: { start: 'active' } },
+    active: { on: { stop: 'idle' } },
+  },
+});
+const entities = [eid];
+const deltaTime = 16;
 
 updateStateAge(world, entities, deltaTime);
 ```
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { isInState, updateStateAge } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { isInState, updateStateAge } from 'blecsd/components';
 import { attachStateMachine, sendEvent, getState } from 'blecsd/components';
 
 const world = createWorld();

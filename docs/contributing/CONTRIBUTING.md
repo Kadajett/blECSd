@@ -88,7 +88,6 @@ Include:
 
 blECSd follows functional programming principles:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Good: Pure function
 function moveEntity(world: World, eid: Entity, dx: number, dy: number): void {
@@ -154,7 +153,6 @@ All public API changes require documentation:
 
 Every public export needs:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 /**
  * Brief description of what this does.

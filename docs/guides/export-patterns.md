@@ -8,14 +8,10 @@ blECSd uses a three-tier export system. Each tier provides a different level of 
 
 The top-level import provides ~80 curated exports (64 values + 15 types): the most commonly used functions, types, and schemas. This is the default choice for most applications.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, addEntity, createBoxEntity,
-  setPosition, setDimensions, setText,
-  layoutSystem, renderSystem, outputSystem,
-  enableInput, enableMouse,
-} from 'blecsd';
+import { createWorld, addEntity, createBoxEntity } from 'blecsd/core';
+import { setPosition, setDimensions, setText, enableInput, enableMouse } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 ```
 
 **Included in Tier 1:**
@@ -32,28 +28,37 @@ import {
 
 Subpath imports provide complete access to every module's exports, including both flat functions and namespace objects. Use these when you need symbols not in Tier 1.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Advanced ECS primitives
-import { defineComponent, defineQuery, query, pipe, removeComponent } from 'blecsd/core';
+import {
+  defineComponent,
+  defineQuery,
+  pipe,
+} from 'blecsd/core';
+import { query, removeComponent } from 'blecsd/core';
 
 // Component data stores and helpers
 import { Position, Dimensions, Renderable, Border } from 'blecsd/components';
 
 // All systems including specialized ones
-import { scrollSystem, collisionSystem } from 'blecsd/systems';
+import { scrollSystem } from 'blecsd/systems';
+import { collisionSystem } from 'blecsd/systems';
 
 // Full terminal API
-import { CursorShape, style, getColorDepth } from 'blecsd/terminal';
+import { style, getColorDepth } from 'blecsd/terminal';
+import { CursorShape } from 'blecsd/components';
 
 // All widgets and widget-specific factories
-import { createAccordion, createBigText, createTextboxEntity } from 'blecsd/widgets';
+import { createAccordion, createBigText } from 'blecsd/widgets';
+import { createTextboxEntity } from 'blecsd/core';
 
 // All validation schemas
-import { ScreenConfigSchema, KeyEventSchema } from 'blecsd/schemas';
+import { ScreenConfigSchema } from 'blecsd/core';
+import { KeyEventSchema } from 'blecsd/terminal';
 
 // Utility functions
-import { truncateText, getLineCount } from 'blecsd/utils';
+import { truncateText } from 'blecsd/utils';
+import { getLineCount } from 'blecsd/utils';
 ```
 
 ### Tier 3: Functional Namespaces
@@ -62,45 +67,30 @@ Each module exports **namespace objects**: frozen plain objects that group relat
 
 Namespace objects are **not classes**. They are plain frozen objects of pure function references, following the same pattern as Node.js `fs`, Lodash `_`, or D3 modules. No `this`, no state, no inheritance.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-// Component namespaces
+// Component namespaces - grouped functions for each domain
+import { createWorld, addEntity } from 'blecsd/core';
 import { position, content, scroll, focus } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
 
 position.set(world, eid, 10, 5);
 position.moveBy(world, eid, 1, 0);
-position.zIndex.bringToFront(world, eid, siblings);
 content.setText(world, eid, 'Hello');
 scroll.toTop(world, eid);
-focus.next(world);
+focus.focus(world, eid);
 
 // Widget namespaces
-import { box, list, modal } from 'blecsd/widgets';
+import { box } from 'blecsd/widgets';
+import { list } from 'blecsd/components';
 
-const { eid } = box.create(world, config);
-box.setContent(world, eid, 'Hello');
-list.select(world, listEid, 0);
-modal.open(world, modalEid);
+const boxEid = addEntity(world);
+const boxWidget = box.create(world, boxEid, { width: 40, height: 10 });
+box.setContent(world, boxEid, 'Hello');
 
-// System namespaces
-import { layout, render, spring } from 'blecsd/systems';
-
-layout.create(world);
-render.system(world);
-spring.create(world, eid, { stiffness: 300, damping: 20 });
-
-// Terminal namespaces
-import { cursor, screen, ansiCodes } from 'blecsd/terminal';
-
-const manager = cursor.createCursorManager();
-cursor.moveCursorTo(manager, cursorId, 10, 5);
-
-// Utility namespaces
-import { rope, textWrap, unicode } from 'blecsd/utils';
-
-const r = rope.createRope('Hello, world!');
-const wrapped = textWrap.wordWrap(text, 80);
-const width = unicode.width.stringWidth('Hello');
+const listEid = addEntity(world);
+list.selection.first(world, listEid);
 ```
 
 **Why namespaces?** They solve the discoverability problem. Instead of autocompleting through thousands of flat function names, you import a namespace and explore its API via `.` notation. Namespace names are unambiguous: `textInput.cursor.set` is clearly different from `cursor.moveCursorTo`.
@@ -194,7 +184,6 @@ const width = unicode.width.stringWidth('Hello');
 
 ## Decision Tree
 
-<!-- blecsd-doccheck:ignore -->
 ```
 What are you building?
 |
@@ -219,7 +208,8 @@ What are you building?
 |
 +-- Game or physics-based UI
     +-- Use systems namespaces:
-        import { collision, spring, spatialHash } from 'blecsd/systems';
+import { spring, spatialHash } from 'blecsd/systems';
+import { collision } from 'blecsd/components';
         import { animation, velocity } from 'blecsd/components';
 ```
 
@@ -229,14 +219,10 @@ What are you building?
 
 ### Pattern 1: Typical Terminal App
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, createBoxEntity, createTextEntity,
-  setPosition, setDimensions, setText,
-  layoutSystem, renderSystem, outputSystem,
-  enableInput, cleanup,
-} from 'blecsd';
+import { createWorld, createBoxEntity, createTextEntity } from 'blecsd/core';
+import { setPosition, setDimensions, setText, enableInput } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem, cleanup } from 'blecsd/systems';
 
 const world = createWorld();
 const box = createBoxEntity(world, { x: 10, y: 5, width: 30, height: 10 });
@@ -245,28 +231,31 @@ setText(world, box, 'Hello, blECSd!');
 
 ### Pattern 2: Namespace-Based Development
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { position, content, scroll, focus } from 'blecsd/components';
-import { box, list } from 'blecsd/widgets';
-import { layout, render } from 'blecsd/systems';
+import { box, listWidget } from 'blecsd/widgets';
 
-// Create UI
-const { eid: boxEid } = box.create(world, { x: 0, y: 0, width: 80, height: 24 });
-const { eid: listEid } = list.create(world, { items: ['A', 'B', 'C'] });
+const world2 = createWorld();
+
+// Create UI using widget namespaces
+const boxEid2 = addEntity(world2);
+box.create(world2, boxEid2, { x: 0, y: 0, width: 80, height: 24 });
+
+const listEid2 = addEntity(world2);
+listWidget.create(world2, listEid2, { items: ['A', 'B', 'C'] });
 
 // Manipulate via namespaces
-position.set(world, listEid, 5, 2);
-content.setText(world, boxEid, 'Title');
-scroll.toTop(world, listEid);
-focus.focus(world, listEid);
+position.set(world2, listEid2, 5, 2);
+content.setText(world2, boxEid2, 'Title');
+scroll.toTop(world2, listEid2);
+focus.focus(world2, listEid2);
 ```
 
 ### Pattern 3: Custom ECS System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { World } from 'blecsd';
+import type { World } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
 import { query } from 'blecsd/core';
 
@@ -282,10 +271,10 @@ export function physicsSystem(world: World): World {
 
 ### Pattern 4: Mixed Tiers
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Tier 1 for common operations
-import { createBoxEntity, renderSystem } from 'blecsd';
+import { createBoxEntity } from 'blecsd/core';
+import { renderSystem } from 'blecsd/systems';
 
 // Tier 3 namespaces for specialized work
 import { cursor, ansiCodes } from 'blecsd/terminal';
@@ -314,12 +303,11 @@ Check the subpath import that matches the module:
 
 **Prefer namespaces** when working with a specific domain. They provide better discoverability and prevent name collisions. Use flat imports when you only need one or two functions from a module.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Good: namespace for multiple related operations
 import { scroll } from 'blecsd/components';
 scroll.toTop(world, eid);
-scroll.byLines(world, eid, 5);
+scroll.viewport.byLines(world, eid, 5);
 scroll.bar.enable(world, eid);
 
 // Also fine: flat import for a single function
@@ -331,9 +319,9 @@ scrollToTop(world, eid);
 
 Yes. Use multiple import paths to signal intent:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBoxEntity, setPosition } from 'blecsd';
+import { createBoxEntity } from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
 import { cursor } from 'blecsd/terminal';
 ```
 
@@ -341,10 +329,9 @@ import { cursor } from 'blecsd/terminal';
 
 Some domains exist in both components and systems (e.g., `animation`). Since they come from different subpath imports, just alias when needed:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { animation } from 'blecsd/components';
-import { animation as animationSystem } from 'blecsd/systems';
+import { animation as animationSystem } from 'blecsd/components';
 ```
 
 ### Q: Does tree-shaking still work?

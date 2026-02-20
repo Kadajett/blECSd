@@ -33,15 +33,26 @@ Every frame, blECSd executes systems in a fixed order across 8 phases:
 Systems that depend on other systems' output must run **after** those systems:
 
 ```typescript
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
+
+const world = createWorld();
+const loop = createGameLoop(world, { targetFPS: 60 });
+
+function playerMovementSystem(world: World): World { return world; }
+function cameraFollowSystem(world: World): World { return world; }
+
 // ❌ WRONG: Camera updates before player moves
-loop.registerSystem(LoopPhase.UPDATE, cameraFollowSystem);
-loop.registerSystem(LoopPhase.LATE_UPDATE, playerMovementSystem);
+// loop.registerSystem(LoopPhase.UPDATE, cameraFollowSystem);
+// loop.registerSystem(LoopPhase.LATE_UPDATE, playerMovementSystem);
 // Result: Camera is always one frame behind player
 
 // ✅ CORRECT: Player moves first, then camera follows
 loop.registerSystem(LoopPhase.UPDATE, playerMovementSystem);
 loop.registerSystem(LoopPhase.LATE_UPDATE, cameraFollowSystem);
 // Result: Camera tracks player smoothly
+loop.start();
+loop.stop();
 ```
 
 ## Phase Details
@@ -65,12 +76,16 @@ loop.registerSystem(LoopPhase.LATE_UPDATE, cameraFollowSystem);
 **You typically don't register custom systems here** - blECSd's input system handles this automatically.
 
 ```typescript
+import { createWorld, createGameLoop } from 'blecsd/core';
+
 // INPUT phase is managed by blECSd
 // You don't need to register input systems manually
-const loop = createGameLoop(world, { targetFPS: 60 });
+const inputWorld = createWorld();
+const inputLoop = createGameLoop(inputWorld, { targetFPS: 60 });
 
 // Input is automatically processed first
-loop.start();
+inputLoop.start();
+inputLoop.stop();
 ```
 
 ---
@@ -92,11 +107,16 @@ loop.start();
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop, LoopPhase } from 'blecsd/core';
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
 
-const loop = createGameLoop(world, { targetFPS: 60 });
+const euWorld = createWorld();
+const euLoop = createGameLoop(euWorld, { targetFPS: 60 });
+
+const PlayerIntent = { MoveForward: 'moveForward', Jump: 'jump' } as const;
+function getInputState(_world: World): Set<string> { return new Set(); }
+function setPlayerIntent(_world: World, _intent: string): void {}
 
 function prepareInputSystem(world: World): World {
   // Input events have been parsed by INPUT phase
@@ -113,7 +133,9 @@ function prepareInputSystem(world: World): World {
   return world;
 }
 
-loop.registerSystem(LoopPhase.EARLY_UPDATE, prepareInputSystem);
+euLoop.registerSystem(LoopPhase.EARLY_UPDATE, prepareInputSystem);
+euLoop.start();
+euLoop.stop();
 ```
 
 ---
@@ -137,10 +159,13 @@ loop.registerSystem(LoopPhase.EARLY_UPDATE, prepareInputSystem);
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query } from 'blecsd/core';
+import { createWorld, createGameLoop, query, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
+
+const upWorld = createWorld();
+const upLoop = createGameLoop(upWorld, { targetFPS: 60 });
 
 function movementSystem(world: World): World {
   const entities = query(world, [Position, Velocity]);
@@ -153,7 +178,9 @@ function movementSystem(world: World): World {
   return world;
 }
 
-loop.registerSystem(LoopPhase.UPDATE, movementSystem);
+upLoop.registerSystem(LoopPhase.UPDATE, movementSystem);
+upLoop.start();
+upLoop.stop();
 ```
 
 ---
@@ -176,7 +203,19 @@ loop.registerSystem(LoopPhase.UPDATE, movementSystem);
 **Example**:
 
 ```typescript
-function cameraFollowSystem(world: World): World {
+import { createWorld, addEntity, createGameLoop, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
+import { Position, Dimensions } from 'blecsd/components';
+
+const luWorld = createWorld();
+const luLoop = createGameLoop(luWorld, { targetFPS: 60 });
+const luPlayer = addEntity(luWorld);
+const luCamera = addEntity(luWorld);
+
+function getPlayerEntity(_world: World): number { return luPlayer; }
+function getCameraEntity(_world: World): number { return luCamera; }
+
+function cameraFollowSystem2(world: World): World {
   const player = getPlayerEntity(world);
   const camera = getCameraEntity(world);
 
@@ -190,7 +229,9 @@ function cameraFollowSystem(world: World): World {
   return world;
 }
 
-loop.registerSystem(LoopPhase.LATE_UPDATE, cameraFollowSystem);
+luLoop.registerSystem(LoopPhase.LATE_UPDATE, cameraFollowSystem2);
+luLoop.start();
+luLoop.stop();
 ```
 
 ---
@@ -215,29 +256,33 @@ loop.registerSystem(LoopPhase.LATE_UPDATE, cameraFollowSystem);
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query } from 'blecsd/core';
-import { Position, Velocity, Spring } from 'blecsd/components';
+import { createWorld, createGameLoop, query, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
+
+const animWorld = createWorld();
+const animLoop = createGameLoop(animWorld, { targetFPS: 60 });
+
+// Spring parameters per entity (stored externally for this example)
+const springTargetX = new Float32Array(10000);
+const springTargetY = new Float32Array(10000);
+const springStiffness = new Float32Array(10000).fill(0.1);
+const springDamping = new Float32Array(10000).fill(0.8);
 
 function springAnimationSystem(world: World, dt: number): World {
-  const entities = query(world, [Position, Velocity, Spring]);
+  const entities = query(world, [Position, Velocity]);
 
   for (const eid of entities) {
     // Spring physics: smooth motion toward target
-    const targetX = Spring.targetX[eid];
-    const targetY = Spring.targetY[eid];
-    const stiffness = Spring.stiffness[eid];
-    const damping = Spring.damping[eid];
+    const dx = springTargetX[eid] - Position.x[eid];
+    const dy = springTargetY[eid] - Position.y[eid];
 
-    const dx = targetX - Position.x[eid];
-    const dy = targetY - Position.y[eid];
+    Velocity.x[eid] += dx * springStiffness[eid] * dt;
+    Velocity.y[eid] += dy * springStiffness[eid] * dt;
 
-    Velocity.x[eid] += dx * stiffness * dt;
-    Velocity.y[eid] += dy * stiffness * dt;
-
-    Velocity.x[eid] *= (1 - damping);
-    Velocity.y[eid] *= (1 - damping);
+    Velocity.x[eid] *= (1 - springDamping[eid]);
+    Velocity.y[eid] *= (1 - springDamping[eid]);
 
     Position.x[eid] += Velocity.x[eid] * dt;
     Position.y[eid] += Velocity.y[eid] * dt;
@@ -246,7 +291,9 @@ function springAnimationSystem(world: World, dt: number): World {
   return world;
 }
 
-loop.registerSystem(LoopPhase.ANIMATION, springAnimationSystem);
+animLoop.registerSystem(LoopPhase.ANIMATION, springAnimationSystem);
+animLoop.start();
+animLoop.stop();
 ```
 
 ---
@@ -269,12 +316,15 @@ loop.registerSystem(LoopPhase.ANIMATION, springAnimationSystem);
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query } from 'blecsd/core';
-import { Position, Dimensions, Hierarchy } from 'blecsd/components';
+import { createWorld, createGameLoop, query, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
+import { Position, Dimensions, Hierarchy, getChildren } from 'blecsd/components';
 
-function layoutSystem(world: World): World {
+const layWorld = createWorld();
+const layLoop = createGameLoop(layWorld, { targetFPS: 60 });
+
+function layoutSystem2(world: World): World {
   const entities = query(world, [Position, Dimensions, Hierarchy]);
 
   for (const eid of entities) {
@@ -293,7 +343,9 @@ function layoutSystem(world: World): World {
   return world;
 }
 
-loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+layLoop.registerSystem(LoopPhase.LAYOUT, layoutSystem2);
+layLoop.start();
+layLoop.stop();
 ```
 
 ---
@@ -315,38 +367,37 @@ loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 
 **Example**:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { query } from 'blecsd/core';
+import { createWorld, createGameLoop, query, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
 import { Position, Renderable } from 'blecsd/components';
+import { renderSystem } from 'blecsd/systems';
 
+const renWorld = createWorld();
+const renLoop = createGameLoop(renWorld, { targetFPS: 60 });
+
+// Custom render system that iterates entities
 function myRenderSystem(world: World): World {
-  const screen = getScreenBuffer(world);
   const entities = query(world, [Position, Renderable]);
-
-  // Clear screen
-  screen.clear();
 
   for (const eid of entities) {
     if (!Renderable.visible[eid]) continue;
 
-    // Draw entity at its position
-    screen.write(
-      Position.x[eid],
-      Position.y[eid],
-      Renderable.char[eid],
-      Renderable.fg[eid],
-      Renderable.bg[eid],
-    );
+    // Draw entity at its position using terminal output
+    const x = Position.x[eid];
+    const y = Position.y[eid];
+    process.stderr.write(`Entity ${eid} at (${x}, ${y})\n`);
+    // process.stdout.write(...) in real usage
   }
-
-  // Flush to terminal
-  screen.flush();
 
   return world;
 }
 
-loop.registerSystem(LoopPhase.RENDER, renderSystem);
+// Use the built-in renderSystem or register a custom one
+renLoop.registerSystem(LoopPhase.RENDER, myRenderSystem);
+console.log('renderSystem available:', typeof renderSystem);
+renLoop.start();
+renLoop.stop();
 ```
 
 ---
@@ -370,23 +421,23 @@ loop.registerSystem(LoopPhase.RENDER, renderSystem);
 **Example**:
 
 ```typescript
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
+
+const prWorld = createWorld();
+const prLoop = createGameLoop(prWorld, { targetFPS: 60 });
+
 function debugOverlaySystem(world: World): World {
-  const screen = getScreenBuffer(world);
-  const fps = getFrameRate(world);
-
   // Draw FPS counter in top-right corner
-  screen.write(
-    screen.width - 10,
-    0,
-    `FPS: ${fps.toFixed(1)}`,
-    0xffffffff,
-    0x000000ff,
-  );
-
+  // In a real app, write FPS to terminal using ansi sequences
+  const fpsText = `FPS: 60.0`;
+  process.stderr.write(fpsText + '\r');
   return world;
 }
 
-loop.registerSystem(LoopPhase.POST_RENDER, debugOverlaySystem);
+prLoop.registerSystem(LoopPhase.POST_RENDER, debugOverlaySystem);
+prLoop.start();
+prLoop.stop();
 ```
 
 ---
@@ -418,6 +469,12 @@ Use this table to decide which phase to use:
 Some systems need to run in multiple phases:
 
 ```typescript
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
+
+const p1World = createWorld();
+const p1Loop = createGameLoop(p1World, { targetFPS: 60 });
+
 // Collision detection in UPDATE
 function collisionDetectionSystem(world: World): World {
   // Detect collisions, store results
@@ -430,8 +487,10 @@ function collisionResponseSystem(world: World): World {
   return world;
 }
 
-loop.registerSystem(LoopPhase.UPDATE, collisionDetectionSystem);
-loop.registerSystem(LoopPhase.LATE_UPDATE, collisionResponseSystem);
+p1Loop.registerSystem(LoopPhase.UPDATE, collisionDetectionSystem);
+p1Loop.registerSystem(LoopPhase.LATE_UPDATE, collisionResponseSystem);
+p1Loop.start();
+p1Loop.stop();
 ```
 
 ### Pattern 2: Conditional System Execution
@@ -439,6 +498,15 @@ loop.registerSystem(LoopPhase.LATE_UPDATE, collisionResponseSystem);
 Skip system execution when not needed:
 
 ```typescript
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
+
+const p2World = createWorld();
+const p2Loop = createGameLoop(p2World, { targetFPS: 60 });
+let paused = false;
+
+function isPaused(_world: World): boolean { return paused; }
+
 function aiSystem(world: World): World {
   if (isPaused(world)) return world;
 
@@ -446,7 +514,9 @@ function aiSystem(world: World): World {
   return world;
 }
 
-loop.registerSystem(LoopPhase.UPDATE, aiSystem);
+p2Loop.registerSystem(LoopPhase.UPDATE, aiSystem);
+p2Loop.start();
+p2Loop.stop();
 ```
 
 ### Pattern 3: Time-Based Systems
@@ -454,8 +524,16 @@ loop.registerSystem(LoopPhase.UPDATE, aiSystem);
 Use delta time for frame-rate independence:
 
 ```typescript
+import { createWorld, createGameLoop, query, LoopPhase } from 'blecsd/core';
+import type { World } from 'blecsd/core';
+import { Position, Velocity } from 'blecsd/components';
+
+const p3World = createWorld();
+const p3Loop = createGameLoop(p3World, { targetFPS: 60 });
+const GRAVITY = 9.8;
+
 function physicsSystem(world: World, dt: number): World {
-  const entities = physicsQuery(world);
+  const entities = query(world, [Position, Velocity]);
 
   for (const eid of entities) {
     // Multiply by dt for frame-rate independence
@@ -466,7 +544,9 @@ function physicsSystem(world: World, dt: number): World {
   return world;
 }
 
-loop.registerSystem(LoopPhase.ANIMATION, physicsSystem);
+p3Loop.registerSystem(LoopPhase.ANIMATION, physicsSystem);
+p3Loop.start();
+p3Loop.stop();
 ```
 
 ## Fixed Timestep Mode
@@ -474,7 +554,11 @@ loop.registerSystem(LoopPhase.ANIMATION, physicsSystem);
 For deterministic game logic, use fixed timestep:
 
 ```typescript
-const loop = createGameLoop(world, {
+import { createWorld, createGameLoop } from 'blecsd/core';
+
+const ftWorld = createWorld();
+const ftLoop = createGameLoop(ftWorld, {
+  targetFPS: 60,
   fixedTimestepMode: {
     tickRate: 30,           // Logic runs at 30 ticks/sec
     maxUpdatesPerFrame: 5,  // Prevent spiral of death
@@ -486,6 +570,8 @@ const loop = createGameLoop(world, {
 // - INPUT still runs at full frame rate (60+ fps)
 // - RENDER interpolates positions for smooth visuals
 // - Game logic (UPDATE, LATE_UPDATE) runs at 30 ticks/sec
+ftLoop.start();
+ftLoop.stop();
 ```
 
 See [Input Priority](./input-priority.md) for details on why INPUT always runs at full frame rate.
@@ -494,31 +580,31 @@ See [Input Priority](./input-priority.md) for details on why INPUT always runs a
 
 Verify systems run in the correct order:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createGameLoop, LoopPhase } from 'blecsd/core';
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
 import { describe, it, expect } from 'vitest';
 
 describe('system execution order', () => {
   it('runs UPDATE before LATE_UPDATE', () => {
-    const world = createWorld();
+    const testWorld = createWorld();
     const events: string[] = [];
 
-    const loop = createGameLoop(world, { targetFPS: 60 });
+    const testLoop = createGameLoop(testWorld, { targetFPS: 60 });
 
-    loop.registerSystem(LoopPhase.UPDATE, (world) => {
+    testLoop.registerSystem(LoopPhase.UPDATE, (world) => {
       events.push('update');
       return world;
     });
 
-    loop.registerSystem(LoopPhase.LATE_UPDATE, (world) => {
+    testLoop.registerSystem(LoopPhase.LATE_UPDATE, (world) => {
       events.push('late_update');
       return world;
     });
 
-    loop.step(1 / 60);
+    testLoop.step(1 / 60);
 
     expect(events).toEqual(['update', 'late_update']);
+    testLoop.stop();
   });
 });
 ```
@@ -528,70 +614,99 @@ describe('system execution order', () => {
 ### Mistake 1: Processing Input in RENDER
 
 ```typescript
-// ❌ WRONG: Checking input during render
-loop.registerSystem(LoopPhase.RENDER, (world) => {
-  if (isKeyPressed('space')) {  // Don't do this here
-    togglePause();
-  }
-  render(world);
-  return world;
-});
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
+
+const m1World = createWorld();
+const m1Loop = createGameLoop(m1World, { targetFPS: 60 });
+
+function isKeyPressed(_key: string): boolean { return false; }
+function togglePause(): void {}
+
+// ❌ WRONG: Checking input during render (illustrative - commented out)
+// m1Loop.registerSystem(LoopPhase.RENDER, (world) => {
+//   if (isKeyPressed('space')) { togglePause(); }
+//   return world;
+// });
 
 // ✅ CORRECT: Process input in UPDATE
-loop.registerSystem(LoopPhase.UPDATE, (world) => {
+m1Loop.registerSystem(LoopPhase.UPDATE, (world) => {
   if (isKeyPressed('space')) {
     togglePause();
   }
   return world;
 });
+
+m1Loop.start();
+m1Loop.stop();
 ```
 
 ### Mistake 2: Modifying Positions in RENDER
 
 ```typescript
-// ❌ WRONG: Changing game state during render
-loop.registerSystem(LoopPhase.RENDER, (world) => {
-  for (const eid of entities) {
-    Position.x[eid] += 1;  // Don't modify state here
-    render(eid);
-  }
-  return world;
-});
+import { createWorld, createGameLoop, query, LoopPhase } from 'blecsd/core';
+import { Position, Renderable } from 'blecsd/components';
+
+const m2World = createWorld();
+const m2Loop = createGameLoop(m2World, { targetFPS: 60 });
+function render(_eid: number): void {}
+
+// ❌ WRONG: Changing game state during render (illustrative - commented out)
+// m2Loop.registerSystem(LoopPhase.RENDER, (world) => {
+//   for (const eid of query(world, [Position])) {
+//     Position.x[eid] += 1;  // Don't modify state here
+//     render(eid);
+//   }
+//   return world;
+// });
 
 // ✅ CORRECT: Modify state in UPDATE, render in RENDER
-loop.registerSystem(LoopPhase.UPDATE, (world) => {
-  for (const eid of entities) {
+m2Loop.registerSystem(LoopPhase.UPDATE, (world) => {
+  for (const eid of query(world, [Position])) {
     Position.x[eid] += 1;
   }
   return world;
 });
 
-loop.registerSystem(LoopPhase.RENDER, (world) => {
-  for (const eid of entities) {
+m2Loop.registerSystem(LoopPhase.RENDER, (world) => {
+  for (const eid of query(world, [Position, Renderable])) {
     render(eid);
   }
   return world;
 });
+
+m2Loop.start();
+m2Loop.stop();
 ```
 
 ### Mistake 3: Heavy Computation Blocking INPUT
 
 ```typescript
-// ❌ WRONG: Expensive operation blocks next INPUT phase
-loop.registerSystem(LoopPhase.UPDATE, (world) => {
-  expensiveComputation(); // 200ms operation
-  return world;
-});
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
+
+const m3World = createWorld();
+const m3Loop = createGameLoop(m3World, { targetFPS: 60 });
+const CHUNK_SIZE = 100;
+const TOTAL_WORK = 10000;
+function processChunk(_index: number, _size: number): void {}
+
+// ❌ WRONG: Expensive operation blocks next INPUT phase (illustrative)
+// m3Loop.registerSystem(LoopPhase.UPDATE, (world) => {
+//   expensiveComputation(); // 200ms operation
+//   return world;
+// });
 
 // ✅ CORRECT: Break up heavy work across frames
 let workIndex = 0;
 
-loop.registerSystem(LoopPhase.UPDATE, (world) => {
+m3Loop.registerSystem(LoopPhase.UPDATE, (world) => {
   // Process a chunk per frame
   processChunk(workIndex, CHUNK_SIZE);
   workIndex = (workIndex + CHUNK_SIZE) % TOTAL_WORK;
   return world;
 });
+
+m3Loop.start();
+m3Loop.stop();
 ```
 
 ## Related Documentation

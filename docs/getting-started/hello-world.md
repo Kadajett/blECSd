@@ -4,9 +4,9 @@ A minimal example using blECSd components.
 
 ## The Code
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, setDimensions } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
 import {
   setStyle,
   setBorder,
@@ -55,9 +55,8 @@ console.log(`Content: ${content}`);
 
 For larger applications, you can use namespace imports from `blecsd/components` to organize your code:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { position, dimensions, content, border, renderable } from 'blecsd/components';
 import { BorderType } from 'blecsd/components';
 
@@ -69,7 +68,7 @@ const box = addEntity(world);
 position.set(world, box, 5, 3);
 
 // Size 30x5
-dimensions.set(world, box, { width: 30, height: 5 });
+dimensions.set(world, box, 30, 5);
 
 // White text on blue background
 renderable.setStyle(world, box, {
@@ -113,9 +112,8 @@ Namespace imports help organize related functions and reduce naming conflicts as
 
 Entity factories create entities with multiple components pre-configured:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createBoxEntity, createTextEntity } from 'blecsd';
+import { createWorld, createBoxEntity, createTextEntity } from 'blecsd/core';
 import { BorderType } from 'blecsd/components';
 
 const world = createWorld();
@@ -150,10 +148,10 @@ const text = createTextEntity(world, {
 
 blECSd includes a built-in two-phase rendering pipeline. The `renderSystem` draws entities into an internal buffer, and the `outputSystem` flushes that buffer to the terminal:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, setDimensions } from 'blecsd';
-import { layoutSystem, renderSystem, outputSystem, cleanup } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem, cleanup } from 'blecsd/systems';
 import { setContent, setStyle } from 'blecsd/components';
 
 const world = createWorld();
@@ -171,7 +169,6 @@ cleanup(world);
 
 For low-level terminal control, you can use the terminal module directly:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { cursor, style, screen } from 'blecsd/terminal';
 
@@ -183,19 +180,10 @@ import { cursor, style, screen } from 'blecsd/terminal';
 
 Combining ECS data with the built-in systems:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  createScreenEntity,
-  setPosition,
-  setDimensions,
-  layoutSystem,
-  renderSystem,
-  outputSystem,
-  cleanup,
-} from 'blecsd';
+import { createWorld, addEntity, createScreenEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem, cleanup } from 'blecsd/systems';
 import { setContent, setStyle } from 'blecsd/components';
 import { createProgram } from 'blecsd/terminal';
 
@@ -238,7 +226,6 @@ process.on('exit', () => {
 
 Add keyboard input using `createProgram` from `blecsd/terminal`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createProgram } from 'blecsd/terminal';
 import { moveBy, getPosition } from 'blecsd/components';

@@ -4,17 +4,9 @@ The ListTable widget combines table rendering with list selection, providing a s
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createListTable, isListTableWidget } from 'blecsd';
-```
-
-## Basic Usage
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createListTable } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createListTable, isListTableWidget, createPanel } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -25,7 +17,7 @@ const table = createListTable(world, eid, {
   width: 60,
   height: 15,
   data: [
-    ['Name', 'Age', 'City'],        // Header row
+    ['Name', 'Age', 'City'],
     ['Alice', '30', 'New York'],
     ['Bob', '25', 'Los Angeles'],
     ['Carol', '35', 'Chicago'],
@@ -107,8 +99,8 @@ table.hide();   // Hide the table
 ### Position
 
 ```typescript
-table.move(dx, dy);        // Move by offset
-table.setPosition(x, y);   // Set absolute position
+table.move(2, 0);          // Move by offset
+table.setPosition(10, 5);  // Set absolute position
 ```
 
 ### Focus
@@ -121,89 +113,112 @@ table.blur();   // Remove focus
 ### Data
 
 ```typescript
-table.setData(data);       // Replace all data
-table.getData();           // Get data as string[][]
-table.getFullData();       // Get data with cell metadata
-table.clearData();         // Clear all data
+table.setData([['Name', 'Score'], ['Alice', '95'], ['Bob', '87']]);
+const tData = table.getData();
+console.log(tData.length);         // number of rows
+const tFullData = table.getFullData();
+console.log(tFullData.length);     // number of rows including full cell metadata
+table.clearData();
 ```
 
 ### Cells
 
 ```typescript
-table.setCell(row, col, value);     // Set cell value
-table.getCell(row, col);            // Get cell object
-table.getCellValue(row, col);       // Get cell string value
+table.setData([['Name', 'Score'], ['Alice', '95']]);
+table.setCell(0, 0, 'Name');
+const tCell = table.getCell(0, 0);
+console.log(tCell);                // cell object
+const tCellValue = table.getCellValue(0, 0);
+console.log(tCellValue);           // 'Name'
 ```
 
 ### Rows
 
 ```typescript
-table.getRow(index);        // Get row at index
-table.getRowCount();        // Total rows including headers
-table.getDataRowCount();    // Data rows excluding headers
+table.setData([['Name', 'Score'], ['Alice', '95'], ['Bob', '87']]);
+const tRow = table.getRow(0);
+console.log(tRow);                 // array of cells in row 0
+const tRowCount = table.getRowCount();
+console.log(tRowCount);            // 3 (includes header)
+const tDataRowCount = table.getDataRowCount();
+console.log(tDataRowCount);        // 2 (excludes header)
 ```
 
 ### Columns
 
 ```typescript
-table.setColumns(columns);  // Set column configuration
-table.getColumns();         // Get column configuration
-table.getColCount();        // Get column count
+table.setColumns([{ header: 'Name' }, { header: 'Score' }]);
+const tColumns = table.getColumns();
+console.log(tColumns.length);      // 2
+const tColCount = table.getColCount();
+console.log(tColCount);            // 2
 ```
 
 ### Headers
 
 ```typescript
-table.setHeaderRowCount(2);  // Set number of header rows
-table.getHeaderRowCount();   // Get header row count
-table.getHeaderRows();       // Get header rows
-table.getDataRows();         // Get data rows (excluding headers)
+table.setHeaderRowCount(1);
+const tHeaderCount = table.getHeaderRowCount();
+console.log(tHeaderCount);         // 1
+const tHeaderRows = table.getHeaderRows();
+console.log(tHeaderRows.length);   // 1
+const tDataRows = table.getDataRows();
+console.log(tDataRows.length);     // data rows, not headers
 ```
 
 ### Display
 
 ```typescript
-table.setCellPadding(2);     // Set cell padding
-table.getCellPadding();      // Get cell padding
-table.setCellBorders(true);  // Toggle cell borders
-table.hasCellBorders();      // Check if borders shown
-table.setStyle(style);       // Update style
-table.getDisplay();          // Get display configuration
+table.setCellPadding(2);
+const tPadding = table.getCellPadding();
+console.log(tPadding);             // 2
+table.setCellBorders(true);
+const tHasBorders = table.hasCellBorders();
+console.log(tHasBorders);          // true
+table.setStyle({ header: { fg: 0xffffffff, bg: 0x444444ff } });
+const tDisplay = table.getDisplay();
+console.log(typeof tDisplay);      // 'object'
 ```
 
 ### Selection
 
 ```typescript
-table.select(2);            // Select data row at index
-table.getSelectedIndex();   // Get selected index
-table.getSelectedRow();     // Get selected row data
-table.selectPrev();         // Select previous row
-table.selectNext();         // Select next row
-table.selectFirst();        // Select first data row
-table.selectLast();         // Select last data row
-table.activate();           // Trigger activation
+table.setData([['Name', 'Score'], ['Alice', '95'], ['Bob', '87']]);
+table.select(0);
+const tSelectedIdx = table.getSelectedIndex();
+console.log(tSelectedIdx);         // 0
+const tSelectedRow = table.getSelectedRow();
+console.log(tSelectedRow);         // row data for selected index
+table.selectPrev();
+table.selectNext();
+table.selectFirst();
+table.selectLast();
+table.activate();
 ```
 
 ### Scrolling
 
 ```typescript
-table.pageUp();    // Scroll up one page
-table.pageDown();  // Scroll down one page
+table.pageUp();
+table.pageDown();
 ```
 
 ### Search
 
 ```typescript
-table.startSearch();       // Enter search mode
-table.endSearch();         // Exit search mode
-table.getSearchQuery();    // Get current query
-table.isSearching();       // Check if searching
+table.startSearch();
+table.endSearch();
+const tQuery = table.getSearchQuery();
+console.log(tQuery);               // current search query string
+const tIsSearching = table.isSearching();
+console.log(tIsSearching);         // false (ended search above)
 ```
 
 ### State
 
 ```typescript
-table.getState();          // Get current state
+const tState = table.getState();
+console.log(typeof tState);        // 'object'
 ```
 
 ### Events
@@ -212,6 +227,7 @@ table.getState();          // Get current state
 // Row selection changed
 const unsubSelect = table.onSelect((index, item) => {
   console.log(`Selected row ${index}`);
+  console.log(`Item value: ${item.value}`);
 });
 
 // Row activated (Enter pressed)
@@ -249,16 +265,8 @@ table.destroy();  // Remove entity and cleanup
 
 ## Example: Process List
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createListTable } from 'blecsd';
-import { createPanel } from 'blecsd/widgets';
-
-const world = createWorld();
-
-const panel = createPanel(world, {
-  x: 0, y: 0,
+const processPanel = createPanel(world, addEntity(world), {
   width: 80, height: 20,
   title: 'Process List',
 });
@@ -293,6 +301,7 @@ processTable.onActivate((index, item) => {
 });
 
 processTable.focus();
+console.log('Panel eid:', processPanel.eid);
 ```
 
 ## Example: Log Viewer with Columns
@@ -317,8 +326,17 @@ const logTable = createListTable(world, addEntity(world), {
 
 // Filter by typing /
 logTable.onSearchChange((query) => {
-  // Filter logic here
+  console.log(`Filtering log entries for: ${query}`);
 });
+```
+
+## Type Guard
+
+```typescript
+if (isListTableWidget(world, eid)) {
+  // Entity has list table behavior
+  console.log('Entity', eid, 'is a list table');
+}
 ```
 
 ## Related

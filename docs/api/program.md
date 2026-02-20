@@ -12,17 +12,14 @@ Program provides a high-level API for terminal applications:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Program } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
 
-const program = new Program({
+const program = createProgram({
   useAlternateScreen: true,
   hideCursor: true,
   title: 'My Application',
 });
-
-await program.init();
 
 program.on('key', (event) => {
   if (event.name === 'q') {
@@ -35,15 +32,14 @@ program.on('resize', ({ cols, rows }) => {
 });
 ```
 
-## Constructor
+## Factory Function
 
 ```typescript
-new Program(config?: ProgramConfig)
+createProgram(config?: ProgramConfig): Program
 ```
 
 ### ProgramConfig
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 interface ProgramConfig {
   /** Input stream (default: process.stdin) */
@@ -94,8 +90,8 @@ Sets up:
 **Example:**
 
 ```typescript
-const program = new Program();
-await program.init();
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
 // Program is now ready
 ```
 
@@ -116,6 +112,8 @@ Cleans up:
 **Example:**
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
 program.on('key', (event) => {
   if (event.name === 'q' || (event.ctrl && event.name === 'c')) {
     program.destroy();
@@ -139,6 +137,8 @@ Text is buffered and written on the next flush or tick.
 **Example:**
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
 program.write('Hello, ');
 program.write('World!');
 program.flush();  // Writes "Hello, World!"
@@ -189,6 +189,8 @@ move(x: number, y: number): void
 **Example:**
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
 program.move(10, 5);
 program.write('Text at 10, 5');
 ```
@@ -242,6 +244,9 @@ resetStyle(): void
 Emitted when a key is pressed.
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+import type { KeyEvent } from 'blecsd/terminal';
+const program = createProgram();
 program.on('key', (event: KeyEvent) => {
   console.log('Key:', event.name);
   console.log('Ctrl:', event.ctrl);
@@ -272,6 +277,9 @@ interface KeyEvent {
 Emitted when a mouse event occurs (if mouse tracking enabled).
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+import type { ParsedMouseEvent as MouseEvent } from 'blecsd/terminal';
+const program = createProgram();
 program.on('mouse', (event: MouseEvent) => {
   console.log(`Mouse ${event.action} at ${event.x}, ${event.y}`);
 });
@@ -303,7 +311,9 @@ interface MouseEvent {
 Emitted when the terminal is resized.
 
 ```typescript
-program.on('resize', (event: ResizeEvent) => {
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
+program.on('resize', (event: { cols: number; rows: number }) => {
   console.log(`New size: ${event.cols}x${event.rows}`);
   // Re-render application
 });
@@ -325,6 +335,8 @@ interface ResizeEvent {
 Emitted when the terminal gains or loses focus.
 
 ```typescript
+import { createProgram } from 'blecsd/terminal';
+const program = createProgram();
 program.on('focus', () => {
   // Terminal gained focus
 });
@@ -338,90 +350,68 @@ program.on('blur', () => {
 
 ### Basic Application
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Program } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
 
-async function main() {
-  const program = new Program({
-    title: 'My App',
-    useAlternateScreen: true,
-  });
+const program = createProgram({
+  title: 'My App',
+  useAlternateScreen: true,
+});
 
-  await program.init();
+program.clear();
+program.move(1, 1);
+program.write('Press Q to quit');
 
+program.on('key', (event) => {
+  if (event.name === 'q') {
+    program.destroy();
+    process.exit(0);
+  }
+});
+
+program.on('resize', () => {
   program.clear();
   program.move(1, 1);
-  program.write('Press Q to quit');
-
-  program.on('key', (event) => {
-    if (event.name === 'q') {
-      program.destroy();
-      process.exit(0);
-    }
-  });
-
-  program.on('resize', () => {
-    program.clear();
-    program.move(1, 1);
-    program.write(`Size: ${program.cols}x${program.rows}`);
-  });
-}
-
-main();
+  program.write(`Size: ${program.cols}x${program.rows}`);
+});
 ```
 
 ### Game Loop
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Program, style } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
+import type { KeyEvent } from 'blecsd/terminal';
 
-class Game {
-  private program: Program;
-  private running = true;
+const program = createProgram();
+let running = true;
 
-  async start() {
-    this.program = new Program();
-    await this.program.init();
+const render = (): void => {
+  program.clear();
+  // Draw game state...
+  program.flush();
+};
 
-    this.program.on('key', (e) => this.handleKey(e));
-    this.program.on('resize', () => this.render());
-
-    this.gameLoop();
+const handleKey = (event: KeyEvent): void => {
+  if (event.name === 'q') {
+    running = false;
+    program.destroy();
   }
+};
 
-  private gameLoop() {
-    if (!this.running) return;
+// In production, call render in your game loop at ~60fps
+// Example: setInterval(render, 16)
+console.log('Game loop running:', running);
 
-    this.update();
-    this.render();
-
-    setTimeout(() => this.gameLoop(), 16);
-  }
-
-  private render() {
-    this.program.clear();
-    // Draw game state...
-    this.program.flush();
-  }
-
-  private handleKey(event: KeyEvent) {
-    if (event.name === 'q') {
-      this.running = false;
-      this.program.destroy();
-    }
-  }
-}
+program.on('key', handleKey);
+program.on('resize', render);
 ```
 
 ## Schema Validation
 
 The config is validated using Zod:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ProgramConfigSchema } from 'blecsd/terminal';
+import { createProgram, ProgramConfigSchema } from 'blecsd/terminal';
 
 // Validate custom config
 const result = ProgramConfigSchema.safeParse({
@@ -432,7 +422,7 @@ const result = ProgramConfigSchema.safeParse({
 });
 
 if (result.success) {
-  const program = new Program(result.data);
+  const program = createProgram(result.data);
 }
 ```
 

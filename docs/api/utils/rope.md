@@ -4,7 +4,6 @@ Immutable rope data structure for efficient large text buffer operations. Provid
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createRope,
@@ -15,20 +14,20 @@ import {
   isEmpty,
   charAt,
   substring,
-  getText,
   getLineForIndex,
   getLineStart,
   getLineEnd,
   getLine,
+  getText,
   getLines,
+  getStats,
   insert,
   append,
   prepend,
   deleteRange,
   replaceRange,
-  getStats,
   verify,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -125,9 +124,8 @@ function createRope(text?: string): Rope
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createRope } from 'blecsd';
+import { createRope } from 'blecsd/utils';
 
 const rope = createRope('Hello, World!');
 ```
@@ -263,9 +261,8 @@ function getLine(rope: Rope, lineNumber: number): LineInfo | undefined
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createRope, getLine } from 'blecsd';
+import { createRope, getLine } from 'blecsd/utils';
 
 const rope = createRope('Line 1\nLine 2\nLine 3');
 const line = getLine(rope, 1);
@@ -301,9 +298,9 @@ function insert(rope: Rope, index: number, text: string): Rope
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createRope, insert, getText } from 'blecsd';
+import { createRope, insert } from 'blecsd/utils';
+import { getText } from 'blecsd/utils';
 
 let rope = createRope('Hello World');
 rope = insert(rope, 6, 'Beautiful ');
@@ -341,9 +338,9 @@ function deleteRange(rope: Rope, start: number, end: number): Rope
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createRope, deleteRange, getText } from 'blecsd';
+import { createRope, deleteRange } from 'blecsd/utils';
+import { getText } from 'blecsd/utils';
 
 let rope = createRope('Hello Beautiful World');
 rope = deleteRange(rope, 6, 16);
@@ -360,9 +357,9 @@ function replaceRange(rope: Rope, start: number, end: number, text: string): Rop
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createRope, replaceRange, getText } from 'blecsd';
+import { createRope, replaceRange } from 'blecsd/utils';
+import { getText } from 'blecsd/utils';
 
 let rope = createRope('Hello World');
 rope = replaceRange(rope, 6, 11, 'Universe');
@@ -389,9 +386,8 @@ function verify(rope: Rope): boolean
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createRope, insert, deleteRange, getLine, getText, getStats } from 'blecsd';
+import { createRope, insert, deleteRange, getLine, getText, getStats } from 'blecsd/utils';
 
 // Build a document
 let doc = createRope('');

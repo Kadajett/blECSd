@@ -4,22 +4,14 @@ The VirtualizedList widget provides high-performance rendering for large dataset
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld } from 'blecsd/core';
 import {
   createVirtualizedList,
   isVirtualizedList,
   handleVirtualizedListKey,
   handleVirtualizedListWheel,
-} from 'blecsd';
-```
-
-## Basic Usage
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { createWorld } from 'blecsd';
-import { createVirtualizedList } from 'blecsd/widgets';
+} from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -103,6 +95,7 @@ list.hide();   // Hide the list
 ### Position
 
 ```typescript
+const x = 5; const y = 2; const width = 80; const height = 24;
 list.setPosition(x, y);          // Set position
 list.setDimensions(width, height); // Set dimensions
 ```
@@ -110,12 +103,12 @@ list.setDimensions(width, height); // Set dimensions
 ### Content
 
 ```typescript
-list.setLines(lines);      // Replace all content
-list.appendLine(line);     // Append single line
-list.appendLines(lines);   // Append multiple lines
-list.getLineCount();       // Get total line count
-list.getLine(index);       // Get line at index
-list.clear();              // Clear all content
+list.setLines(['a', 'b', 'c']);  // Replace all content
+list.appendLine('line');          // Append single line
+list.appendLines(['x', 'y']);     // Append multiple lines
+list.getLineCount();              // Get total line count
+list.getLine(0);                  // Get line at index
+list.clear();                     // Clear all content
 ```
 
 ### Scrolling
@@ -175,44 +168,32 @@ list.destroy();   // Remove entity and cleanup
 
 ### Keyboard Handler
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleVirtualizedListKey } from 'blecsd';
-
 // In your input loop
-function onKeyDown(event) {
+function onKeyDown(event: { key: string; ctrl: boolean; shift: boolean }) {
   if (handleVirtualizedListKey(list, event.key, event.ctrl, event.shift)) {
     // Key was handled
     return;
   }
   // Handle other keys
 }
+console.log('onKeyDown handler registered:', typeof onKeyDown);
 ```
 
 ### Mouse Wheel Handler
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleVirtualizedListWheel } from 'blecsd';
-
 // In your input loop
-function onWheel(event) {
+function onWheel(event: { deltaY: number }) {
   const direction = event.deltaY < 0 ? 'up' : 'down';
   handleVirtualizedListWheel(list, direction, 3);
 }
+console.log('onWheel handler registered:', typeof onWheel);
 ```
 
 ## Example: Log Viewer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { handleVirtualizedListKey } from 'blecsd';
-import { createVirtualizedList } from 'blecsd/widgets';
-import * as fs from 'fs';
-
-const world = createWorld();
-
 // Create log viewer
 const logViewer = createVirtualizedList(world, {
   x: 0,
@@ -227,27 +208,14 @@ const logViewer = createVirtualizedList(world, {
     lineNumberWidth: 6,
   },
   border: {
-    type: BorderType.Single,
     fg: 0x666666ff,
   },
   maxLines: 100000,  // Keep last 100k lines
 });
 
-// Load initial file
-const content = fs.readFileSync('app.log', 'utf8');
-logViewer.setLines(content.split('\n'));
-
-// Watch for new lines
-fs.watchFile('app.log', () => {
-  const newContent = fs.readFileSync('app.log', 'utf8');
-  const newLines = newContent.split('\n');
-  const existingCount = logViewer.getLineCount();
-
-  if (newLines.length > existingCount) {
-    const addedLines = newLines.slice(existingCount);
-    logViewer.appendLines(addedLines);
-  }
-});
+// Load initial content
+const logLines = ['2024-01-01 INFO Server started', '2024-01-01 INFO Listening on :3000'];
+logViewer.setLines(logLines);
 
 // Enable follow mode for real-time viewing
 logViewer.follow(true);
@@ -264,15 +232,10 @@ const stream = createVirtualizedList(world, {
 
 stream.follow(true);
 
-// Simulate streaming data
-setInterval(() => {
-  const timestamp = new Date().toISOString();
-  const message = `[${timestamp}] Event received`;
-  stream.appendLine(message);
-}, 100);
-
-// User can scroll up to pause auto-scroll
-// and scroll down to re-enable it
+// Append streaming data
+const timestamp = new Date().toISOString();
+const message = `[${timestamp}] Event received`;
+stream.appendLine(message);
 ```
 
 ## Example: Code Editor Scrollback
@@ -290,13 +253,13 @@ const editor = createVirtualizedList(world, {
   },
 });
 
-// Load source file
-const source = fs.readFileSync('src/main.ts', 'utf8');
-editor.setLines(source.split('\n'));
+// Load source lines
+const sourceLines = ['function main() {', '  console.log("hello");', '}'];
+editor.setLines(sourceLines);
 
 // Jump to line
-editor.setCursor(150);
-editor.scrollToLine(150);
+editor.setCursor(2);
+editor.scrollToLine(2);
 ```
 
 ## Performance Characteristics

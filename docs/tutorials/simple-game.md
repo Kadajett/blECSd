@@ -36,16 +36,14 @@ In this tutorial, you'll build a simple snake-like game that demonstrates blECSd
 
 Create `snake.ts`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld, addEntity, removeEntity, hasComponent, addComponent,
-  setPosition, getPosition, layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
-import { createScheduler, LoopPhase, withStore } from 'blecsd/core';
-import { createProgram, type KeyEvent } from 'blecsd/terminal';
-import { createPanel, createText } from 'blecsd/widgets';
-import { setContent, setParent, setVisible, setStyle } from 'blecsd/components';
+  createBoxEntity, createTextEntity, createScheduler, LoopPhase,
+} from 'blecsd/core';
+import { setPosition, getPosition, setText, setContent, setStyle, setVisible } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+import { type KeyEvent, createProgram } from 'blecsd/terminal';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -71,15 +69,16 @@ const GRID_HEIGHT = 20;
 const CELL_SIZE = 1;
 const GAME_SPEED = 150; // ms per tick
 
-// Directions
-enum Direction {
-  Up = 'up',
-  Down = 'down',
-  Left = 'left',
-  Right = 'right',
-}
+// Directions (use const object instead of enum for runtime compatibility)
+const Direction = {
+  Up: 'up',
+  Down: 'down',
+  Left: 'left',
+  Right: 'right',
+} as const;
+type DirectionValue = typeof Direction[keyof typeof Direction];
 
-const DIRECTION_VELOCITY: Record<Direction, { x: number; y: number }> = {
+const DIRECTION_VELOCITY: Record<DirectionValue, { x: number; y: number }> = {
   [Direction.Up]: { x: 0, y: -1 },
   [Direction.Down]: { x: 0, y: 1 },
   [Direction.Left]: { x: -1, y: 0 },
@@ -89,8 +88,8 @@ const DIRECTION_VELOCITY: Record<Direction, { x: number; y: number }> = {
 // Game state
 interface GameState {
   score: number;
-  direction: Direction;
-  nextDirection: Direction;
+  direction: DirectionValue;
+  nextDirection: DirectionValue;
   gameOver: boolean;
   paused: boolean;
   snakeHead: number;
@@ -112,52 +111,51 @@ const state: GameState = {
 
 ## Step 3: Create UI
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-const { columns, rows } = process.stdout;
+const columns = process.stdout.columns || 80;
+const rows = process.stdout.rows || 24;
 
 // Calculate centered game area
 const gameX = Math.floor((columns - GRID_WIDTH - 2) / 2);
 const gameY = Math.floor((rows - GRID_HEIGHT - 4) / 2);
 
-// Game panel
-const gamePanel = createPanel(world, {
-  title: 'Snake Game',
+// Game panel (createBoxEntity returns an entity ID)
+const gamePanel = createBoxEntity(world, {
   x: gameX,
   y: gameY,
   width: GRID_WIDTH + 2,
   height: GRID_HEIGHT + 4,
-  border: 'single',
 });
 
-// Score display
-const scoreText = createText(world, {
+// Score display (createTextEntity returns an entity ID)
+const scoreText = createTextEntity(world, {
   x: 2,
   y: 1,
-  content: 'Score: 0',
+  text: 'Score: 0',
+  parent: gamePanel,
 });
-setParent(world, scoreText, gamePanel);
 
 // Game over text (hidden initially)
-const gameOverText = createText(world, {
-  x: GRID_WIDTH / 2 - 5,
-  y: GRID_HEIGHT / 2,
-  content: 'GAME OVER',
+const gameOverText = createTextEntity(world, {
+  x: Math.floor(GRID_WIDTH / 2) - 5,
+  y: Math.floor(GRID_HEIGHT / 2),
+  text: 'GAME OVER',
   fg: 0xff0000ff,
   visible: false,
+  parent: gamePanel,
 });
-setParent(world, gameOverText, gamePanel);
 
 // Help text
-const helpText = createText(world, {
+const helpText = createTextEntity(world, {
   x: 2,
   y: GRID_HEIGHT + 2,
-  content: '[Arrow Keys] Move  [P] Pause  [R] Restart  [Q] Quit',
+  text: '[Arrow Keys] Move  [P] Pause  [R] Restart  [Q] Quit',
+  parent: gamePanel,
 });
-setParent(world, helpText, gamePanel);
+console.log('Help text entity:', helpText);
 
 function updateScore(): void {
-  setContent(world, scoreText, `Score: ${state.score}`);
+  setText(world, scoreText, `Score: ${state.score}`);
 }
 ```
 
@@ -165,44 +163,35 @@ function updateScore(): void {
 
 Define custom marker components for the snake, then create factory functions for the head and body segments.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-// Custom marker component (no data needed, just a tag)
-const SnakeHead = withStore(() => ({
-  tag: new Uint8Array(10000),
-}));
-
-// Custom component with data store
-const SnakeBody = withStore(() => ({
-  index: new Uint16Array(10000),
-}));
+// Track snake entity types in a plain Map (no custom bitecs components needed)
+const snakeEntityType = new Map<number, 'head' | 'body'>();
 
 function createSnakeHead(x: number, y: number): number {
-  const eid = addEntity(world);
+  const headEid = addEntity(world);
 
   // Position in game grid (offset by panel position)
-  setPosition(world, eid, gameX + 1 + x, gameY + 2 + y);
+  setPosition(world, headEid, gameX + 1 + x, gameY + 2 + y);
 
   // Visual character and color
-  setContent(world, eid, '█');
-  setStyle(world, eid, { fg: 0x00ff00ff });
+  setContent(world, headEid, '█');
+  setStyle(world, headEid, { fg: 0x00ff00ff });
 
-  addComponent(world, eid, SnakeHead);
+  snakeEntityType.set(headEid, 'head');
 
-  return eid;
+  return headEid;
 }
 
-function createSnakeSegment(x: number, y: number, index: number): number {
-  const eid = addEntity(world);
+function createSnakeSegment(x: number, y: number): number {
+  const segEid = addEntity(world);
 
-  setPosition(world, eid, gameX + 1 + x, gameY + 2 + y);
-  setContent(world, eid, '█');
-  setStyle(world, eid, { fg: 0x00aa00ff });
+  setPosition(world, segEid, gameX + 1 + x, gameY + 2 + y);
+  setContent(world, segEid, '█');
+  setStyle(world, segEid, { fg: 0x00aa00ff });
 
-  addComponent(world, eid, SnakeBody);
-  SnakeBody.index[eid] = index;
+  snakeEntityType.set(segEid, 'body');
 
-  return eid;
+  return segEid;
 }
 
 function initializeSnake(): void {
@@ -216,8 +205,8 @@ function initializeSnake(): void {
   // Create initial body (3 segments)
   state.snakeBody = [];
   for (let i = 1; i <= 3; i++) {
-    const segment = createSnakeSegment(startX - i, startY, i - 1);
-    state.snakeBody.push(segment);
+    const bodySegment = createSnakeSegment(startX - i, startY);
+    state.snakeBody.push(bodySegment);
   }
 }
 ```
@@ -226,17 +215,17 @@ function initializeSnake(): void {
 
 ```typescript
 function createFood(): number {
-  const eid = addEntity(world);
+  const foodEid = addEntity(world);
 
   // Random position
-  const x = Math.floor(Math.random() * GRID_WIDTH);
-  const y = Math.floor(Math.random() * GRID_HEIGHT);
+  const foodX = Math.floor(Math.random() * GRID_WIDTH);
+  const foodY = Math.floor(Math.random() * GRID_HEIGHT);
 
-  setPosition(world, eid, gameX + 1 + x, gameY + 2 + y);
-  setContent(world, eid, '●');
-  setStyle(world, eid, { fg: 0xff0000ff });
+  setPosition(world, foodEid, gameX + 1 + foodX, gameY + 2 + foodY);
+  setContent(world, foodEid, '●');
+  setStyle(world, foodEid, { fg: 0xff0000ff });
 
-  return eid;
+  return foodEid;
 }
 
 function spawnFood(): void {
@@ -303,11 +292,7 @@ function growSnake(): void {
   const lastPos = positionHistory[positionHistory.length - 1];
 
   if (lastPos) {
-    const newSegment = createSnakeSegment(
-      lastPos.x,
-      lastPos.y,
-      state.snakeBody.length
-    );
+    const newSegment = createSnakeSegment(lastPos.x, lastPos.y);
     state.snakeBody.push(newSegment);
   }
 }
@@ -365,7 +350,7 @@ function handleCollisions(): void {
 function gameOver(): void {
   state.gameOver = true;
   setVisible(world, gameOverText, true);
-  setContent(world, gameOverText, `GAME OVER - Score: ${state.score}`);
+  setText(world, gameOverText, `GAME OVER - Score: ${state.score}`);
 }
 
 function restartGame(): void {
@@ -396,7 +381,7 @@ function togglePause(): void {
   state.paused = !state.paused;
 
   if (state.paused) {
-    setContent(world, gameOverText, 'PAUSED');
+    setText(world, gameOverText, 'PAUSED');
     setVisible(world, gameOverText, true);
   } else {
     setVisible(world, gameOverText, false);

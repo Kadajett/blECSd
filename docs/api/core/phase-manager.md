@@ -4,16 +4,15 @@ Configurable game loop execution order. Allows users to add custom phases betwee
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createPhaseManager } from 'blecsd';
+import { createPhaseManager } from 'blecsd/core';
 import { LoopPhase } from 'blecsd/core';
 
 const manager = createPhaseManager();
 
 // Add custom phases between built-in phases
 const preRender = manager.registerPhase('PRE_RENDER', LoopPhase.LAYOUT);
-const postPhysics = manager.registerPhase('POST_PHYSICS', LoopPhase.PHYSICS);
+const postAnim = manager.registerPhase('POST_ANIM', LoopPhase.ANIMATION);
 
 // Get execution order
 console.log(manager.getPhaseOrder());
@@ -53,24 +52,22 @@ interface PhaseManager {
 
 Maps built-in LoopPhase values to their string names.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BUILTIN_PHASE_NAMES } from 'blecsd';
+import { BUILTIN_PHASE_NAMES } from 'blecsd/core';
 import { LoopPhase } from 'blecsd/core';
 
 console.log(BUILTIN_PHASE_NAMES[LoopPhase.INPUT]);  // 'INPUT'
 console.log(BUILTIN_PHASE_NAMES[LoopPhase.RENDER]); // 'RENDER'
 ```
 
-Built-in phases (in order): INPUT, EARLY_UPDATE, UPDATE, LATE_UPDATE, PHYSICS, LAYOUT, RENDER, POST_RENDER.
+Built-in phases (in order): INPUT, EARLY_UPDATE, UPDATE, LATE_UPDATE, ANIMATION, LAYOUT, RENDER, POST_RENDER.
 
 ### defaultPhaseManager
 
 Default global phase manager for simple use cases.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { defaultPhaseManager } from 'blecsd';
+import { defaultPhaseManager } from 'blecsd/core';
 ```
 
 ## Functions
@@ -142,16 +139,15 @@ getPhaseOrder(): readonly PhaseId[];
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createPhaseManager } from 'blecsd';
+import { createPhaseManager } from 'blecsd/core';
 import { LoopPhase } from 'blecsd/core';
 
 const phases = createPhaseManager();
 
 // Add custom phases for specific needs
 const aiPhase = phases.registerPhase('AI', LoopPhase.UPDATE);
-const particlePhase = phases.registerPhase('PARTICLES', LoopPhase.PHYSICS);
+const particlePhase = phases.registerPhase('PARTICLES', LoopPhase.ANIMATION);
 const uiPhase = phases.registerPhase('UI_UPDATE', LoopPhase.LAYOUT);
 
 // Inspect execution order
@@ -166,7 +162,7 @@ for (const phase of phases.getPhaseOrder()) {
 // UPDATE (built-in)
 // AI
 // LATE_UPDATE (built-in)
-// PHYSICS (built-in)
+// ANIMATION (built-in)
 // PARTICLES
 // LAYOUT (built-in)
 // UI_UPDATE

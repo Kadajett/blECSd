@@ -13,18 +13,22 @@ The disposal system handles entity destruction with:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   destroyEntity,
   destroyAllChildren,
   flushDestroyQueue,
   registerCleanupCallback,
-} from 'blecsd';
+} from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
+const myCustomStore = new Map<number, unknown>();
 
 // Register cleanup for your custom stores
-registerCleanupCallback((world, entity) => {
-  myCustomStore.delete(entity);
+registerCleanupCallback((_w, eid) => {
+  myCustomStore.delete(eid);
 });
 
 // Queue entity for destruction (deferred)
@@ -40,10 +44,12 @@ flushDestroyQueue(world);
 
 Marks an entity for destruction.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { destroyEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { destroyEntity } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 // Deferred destruction (recommended)
 destroyEntity(world, entity);
 
@@ -69,10 +75,12 @@ destroyEntity(world, entity, { emitEvent: false });
 
 Destroys all children without destroying the parent.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { destroyAllChildren } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { destroyAllChildren } from 'blecsd/core';
 
+const world = createWorld();
+const container = addEntity(world);
 // Clear all children from container
 destroyAllChildren(world, container);
 
@@ -84,10 +92,11 @@ destroyAllChildren(world, container, { immediate: true });
 
 Clears all disposal state for a world.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { destroyWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { destroyWorld } from 'blecsd/core';
 
+const world = createWorld();
 destroyWorld(world);
 ```
 
@@ -97,10 +106,11 @@ destroyWorld(world);
 
 Processes all pending destructions. Call at end of frame.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { flushDestroyQueue } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { flushDestroyQueue } from 'blecsd/core';
 
+const world = createWorld();
 // In POST_RENDER phase:
 const destroyedCount = flushDestroyQueue(world);
 console.log(`Destroyed ${destroyedCount} entities`);
@@ -110,10 +120,12 @@ console.log(`Destroyed ${destroyedCount} entities`);
 
 Checks if an entity is queued for destruction.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isMarkedForDestruction } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { isMarkedForDestruction } from 'blecsd/core';
 
+const world = createWorld();
+const entity = addEntity(world);
 if (isMarkedForDestruction(entity)) {
   // Skip processing this entity
 }
@@ -123,10 +135,11 @@ if (isMarkedForDestruction(entity)) {
 
 Gets number of entities pending destruction.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getDestroyQueueSize } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { getDestroyQueueSize } from 'blecsd/core';
 
+const world = createWorld();
 // For specific world
 const count = getDestroyQueueSize(world);
 
@@ -138,10 +151,11 @@ const globalCount = getDestroyQueueSize();
 
 Cancels pending destructions without destroying.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearDestroyQueue } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { clearDestroyQueue } from 'blecsd/core';
 
+const world = createWorld();
 // Cancel all pending destructions
 clearDestroyQueue(world);
 ```
@@ -152,9 +166,8 @@ clearDestroyQueue(world);
 
 Registers cleanup logic for entity destruction.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerCleanupCallback } from 'blecsd';
+import { registerCleanupCallback } from 'blecsd/core';
 
 // Register cleanup for custom store
 const unregister = registerCleanupCallback((world, entity) => {
@@ -170,9 +183,8 @@ unregister();
 
 Removes all cleanup callbacks (for testing).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearCleanupCallbacks } from 'blecsd';
+import { clearCleanupCallbacks } from 'blecsd/core';
 
 clearCleanupCallbacks();
 ```
@@ -202,14 +214,16 @@ type CleanupCallback = (world: World, entity: Entity) => void;
 
 Destruction emits a `destroy` event that can be listened to:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLifecycleEventBus } from 'blecsd';
-import { createEventBus } from 'blecsd/core';
+import { createWorld, addEntity } from 'blecsd/core';
+import { registerCleanupCallback } from 'blecsd/core';
 
-const bus = getLifecycleEventBus(entity, createEventBus);
-bus.on('destroy', (event) => {
-  console.log(`Entity ${event.entity} being destroyed`);
+const world = createWorld();
+const entity = addEntity(world);
+
+// Listen for destruction via cleanup callbacks
+registerCleanupCallback((_w, eid) => {
+  console.log(`Entity ${eid} being destroyed`);
 });
 ```
 
@@ -222,48 +236,40 @@ bus.on('destroy', (event) => {
 
 ## Integration with Game Loop
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { flushDestroyQueue } from 'blecsd';
-import { createGameLoop, LoopPhase } from 'blecsd/core';
+import { createWorld } from 'blecsd/core';
+import { flushDestroyQueue } from 'blecsd/core';
 
-const loop = createGameLoop(world, { targetFPS: 60 });
+const world = createWorld();
 
-// Register cleanup system in POST_RENDER
-loop.registerSystem(LoopPhase.POST_RENDER, (w) => {
+// Call flushDestroyQueue in POST_RENDER phase each frame
+function postRender(w: typeof world): typeof world {
   flushDestroyQueue(w);
   return w;
-});
+}
+postRender(world);
 ```
 
 ## Example: Complete Cleanup
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  destroyEntity,
-  flushDestroyQueue,
-  registerCleanupCallback,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { destroyEntity, flushDestroyQueue, registerCleanupCallback } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
+const contentStore = new Map<number, unknown>();
+const spriteStore = new Map<number, unknown>();
 
 // Setup cleanup for all stores
-registerCleanupCallback((world, entity) => {
-  contentStore.delete(entity);
-  spriteStore.delete(entity);
-  animationStore.delete(entity);
+registerCleanupCallback((_w, eid) => {
+  contentStore.delete(eid);
+  spriteStore.delete(eid);
 });
 
-// In game logic
-function handleEntityDeath(world: World, entity: Entity): void {
-  // Play death animation, then destroy
-  playAnimation(world, entity, 'death').then(() => {
-    destroyEntity(world, entity);
-  });
-}
+// Queue entity for destruction
+destroyEntity(world, entity);
 
-// In game loop
-function postRender(world: World): World {
-  flushDestroyQueue(world);
-  return world;
-}
+// At end of frame, flush the queue
+flushDestroyQueue(world);
 ```

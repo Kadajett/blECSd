@@ -4,33 +4,26 @@ The state machine system updates the `stateAge` for all entities with a StateMac
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   stateMachineSystem,
   createStateMachineSystem,
   registerStateMachineSystem,
   queryStateMachine,
-  hasStateMachineSystem,
   getStateAgeStore,
   updateStateAges,
   resetStateAge,
   getSystemStateAge,
-} from 'blecsd';
+} from 'blecsd/systems';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createScheduler,
-  LoopPhase,
-  registerStateMachineSystem,
-  attachStateMachine,
-  getSystemStateAge,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { registerStateMachineSystem, getSystemStateAge } from 'blecsd/systems';
+import { attachStateMachine } from 'blecsd/components';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -60,6 +53,10 @@ function update() {
 Register in the **UPDATE** phase:
 
 ```typescript
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { stateMachineSystem } from 'blecsd/systems';
+
+const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.UPDATE, stateMachineSystem);
 ```
 
@@ -78,8 +75,15 @@ The `stateAge` is automatically reset to 0 when a state transition occurs (via `
 ### System Registration
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { stateMachineSystem, createStateMachineSystem, registerStateMachineSystem } from 'blecsd/systems';
+
+const world = createWorld();
+const scheduler = createScheduler();
+
 // Register with scheduler (convenience function)
-registerStateMachineSystem(scheduler, priority?);
+registerStateMachineSystem(scheduler);
 
 // Or create and register manually
 const system = createStateMachineSystem();
@@ -92,14 +96,15 @@ stateMachineSystem(world);
 ### Query Functions
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { queryStateMachine } from 'blecsd/systems';
+
+const world = createWorld();
+
 // Query all entities with StateMachine
 const stateful = queryStateMachine(world);
 // Returns: number[] (entity IDs)
-
-// Check if entity has StateMachine component
-if (hasStateMachineSystem(world, eid)) {
-  // Entity has state machine
-}
+console.log('stateful entities:', stateful.length);
 ```
 
 ### State Age Functions
@@ -134,15 +139,25 @@ The state machine system uses a Structure of Arrays (SoA) pattern:
 
 ## Example: Enemy AI
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  registerStateMachineSystem,
-  attachStateMachine,
-  sendEvent,
-  getSystemStateAge,
-  getCurrentState,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { getState, attachStateMachine, sendEvent } from 'blecsd/components';
+import { registerStateMachineSystem, getSystemStateAge, resetStateAge } from 'blecsd/systems';
+import { createScheduler } from 'blecsd/core';
+
+const world = createWorld();
+const scheduler = createScheduler();
+registerStateMachineSystem(scheduler);
+
+// Game-specific helper stubs (implement in your game)
+const canSeePlayer = (_eid: number): boolean => false;
+const moveAlongPatrolPath = (_eid: number): void => {};
+const moveTowardPlayer = (_eid: number): void => {};
+const isInAttackRange = (_eid: number): boolean => false;
+const isLowHealth = (_eid: number): boolean => false;
+const performAttack = (_eid: number): void => {};
+const moveAwayFromPlayer = (_eid: number): void => {};
+const isSafeDistance = (_eid: number): boolean => false;
 
 // Define enemy state machine
 const enemyMachine = {
@@ -162,103 +177,119 @@ const enemy = addEntity(world);
 attachStateMachine(world, enemy, enemyMachine);
 
 // AI update function
-function updateEnemyAI(enemy: Entity) {
-  const state = getCurrentState(world, enemy);
-  const age = getSystemStateAge(enemy);
+const updateEnemyAI = (eid: number): void => {
+  const state = getState(world, eid);
+  const age = getSystemStateAge(eid);
 
   switch (state) {
     case 'idle':
-      if (canSeePlayer(enemy)) {
-        sendEvent(world, enemy, 'seePlayer');
+      if (canSeePlayer(eid)) {
+        sendEvent(world, eid, 'seePlayer');
       } else if (age > 2.0) {
-        sendEvent(world, enemy, 'timeout');
+        sendEvent(world, eid, 'timeout');
       }
       break;
-
     case 'patrol':
-      moveAlongPatrolPath(enemy);
-      if (canSeePlayer(enemy)) {
-        sendEvent(world, enemy, 'seePlayer');
+      moveAlongPatrolPath(eid);
+      if (canSeePlayer(eid)) {
+        sendEvent(world, eid, 'seePlayer');
       }
       break;
-
     case 'chase':
-      moveTowardPlayer(enemy);
-      if (isInAttackRange(enemy)) {
-        sendEvent(world, enemy, 'inRange');
-      } else if (!canSeePlayer(enemy) && age > 3.0) {
-        sendEvent(world, enemy, 'losePlayer');
+      moveTowardPlayer(eid);
+      if (isInAttackRange(eid)) {
+        sendEvent(world, eid, 'inRange');
+      } else if (!canSeePlayer(eid) && age > 3.0) {
+        sendEvent(world, eid, 'losePlayer');
       }
-      if (isLowHealth(enemy)) {
-        sendEvent(world, enemy, 'lowHealth');
+      if (isLowHealth(eid)) {
+        sendEvent(world, eid, 'lowHealth');
       }
       break;
-
     case 'attack':
-      if (age > 0.5) { // Attack cooldown
-        performAttack(enemy);
-        resetStateAge(enemy); // Reset for next attack
+      if (age > 0.5) {
+        performAttack(eid);
+        resetStateAge(eid);
       }
-      if (!isInAttackRange(enemy)) {
-        sendEvent(world, enemy, 'outOfRange');
+      if (!isInAttackRange(eid)) {
+        sendEvent(world, eid, 'outOfRange');
       }
       break;
-
     case 'flee':
-      moveAwayFromPlayer(enemy);
-      if (isSafeDistance(enemy)) {
-        sendEvent(world, enemy, 'safe');
+      moveAwayFromPlayer(eid);
+      if (isSafeDistance(eid)) {
+        sendEvent(world, eid, 'safe');
       }
       break;
   }
-}
+};
+
+updateEnemyAI(enemy);
 ```
 
 ## Example: Animation State
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { getState, attachStateMachine } from 'blecsd/components';
+import { getSystemStateAge } from 'blecsd/systems';
+
+const world = createWorld();
+
+// Animation helper stubs (integrate with your animation system)
+const setAnimation = (_eid: number, _name: string): void => {};
+const setAnimationBlend = (_eid: number, _a: string, _b: string, _t: number): void => {};
+
 // Link animation to state machine
 const player = addEntity(world);
 attachStateMachine(world, player, {
   states: ['idle', 'walk', 'run', 'jump', 'fall'],
   initial: 'idle',
 });
-attachAnimation(world, player);
 
 // Update animation based on state age
-function updatePlayerAnimation(player: Entity) {
-  const state = getCurrentState(world, player);
-  const age = getSystemStateAge(player);
+const updatePlayerAnimation = (eid: number): void => {
+  const state = getState(world, eid);
+  const age = getSystemStateAge(eid);
 
   switch (state) {
     case 'idle':
-      // Blend to breathing animation after standing still
       if (age > 2.0) {
-        setAnimationBlend(player, 'idle', 'breathe', (age - 2.0) / 1.0);
+        setAnimationBlend(eid, 'idle', 'breathe', (age - 2.0) / 1.0);
       } else {
-        setAnimation(player, 'idle');
+        setAnimation(eid, 'idle');
       }
       break;
-
     case 'walk':
-      setAnimation(player, 'walk');
+      setAnimation(eid, 'walk');
       break;
-
     case 'jump':
-      // Jump has phases based on time
       if (age < 0.2) {
-        setAnimation(player, 'jump_start');
+        setAnimation(eid, 'jump_start');
       } else {
-        setAnimation(player, 'jump_air');
+        setAnimation(eid, 'jump_air');
       }
       break;
   }
-}
+};
+
+updatePlayerAnimation(player);
 ```
 
 ## Example: UI Button States
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { getState, attachStateMachine } from 'blecsd/components';
+import { getSystemStateAge } from 'blecsd/systems';
+
+const world = createWorld();
+
+// Render helper stubs (implement in your render system)
+const renderWithHighlight = (_eid: number, _alpha: number): void => {};
+const renderScaled = (_eid: number, _scale: number): void => {};
+const renderNormal = (_eid: number): void => {};
+
 // Button with hover/press states
 const button = addEntity(world);
 attachStateMachine(world, button, {
@@ -267,32 +298,40 @@ attachStateMachine(world, button, {
 });
 
 // Visual feedback based on state age
-function renderButton(button: Entity) {
-  const state = getCurrentState(world, button);
-  const age = getSystemStateAge(button);
+const renderButton = (eid: number): void => {
+  const state = getState(world, eid);
+  const age = getSystemStateAge(eid);
 
   switch (state) {
-    case 'hover':
+    case 'hover': {
       // Fade in hover effect
       const hoverAlpha = Math.min(1.0, age / 0.2);
-      renderWithHighlight(button, hoverAlpha);
+      renderWithHighlight(eid, hoverAlpha);
       break;
-
-    case 'pressed':
+    }
+    case 'pressed': {
       // Quick press animation
       const pressScale = 1.0 - Math.sin(age * Math.PI * 2) * 0.1;
-      renderScaled(button, pressScale);
+      renderScaled(eid, pressScale);
       break;
-
+    }
     default:
-      renderNormal(button);
+      renderNormal(eid);
   }
-}
+};
+
+renderButton(button);
 ```
 
 ## Example: Combo System
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { getState, attachStateMachine, sendEvent } from 'blecsd/components';
+import { getSystemStateAge } from 'blecsd/systems';
+
+const world = createWorld();
+
 // Fighting game combo tracking
 const player = addEntity(world);
 attachStateMachine(world, player, {
@@ -300,45 +339,46 @@ attachStateMachine(world, player, {
   initial: 'neutral',
 });
 
-function handleAttackInput(player: Entity) {
-  const state = getCurrentState(world, player);
-  const age = getSystemStateAge(player);
+const handleAttackInput = (eid: number): void => {
+  const state = getState(world, eid);
+  const age = getSystemStateAge(eid);
 
   // Combo window: can chain within 0.3-0.6 seconds
   const inComboWindow = age > 0.3 && age < 0.6;
 
   switch (state) {
     case 'neutral':
-      sendEvent(world, player, 'attack');
+      sendEvent(world, eid, 'attack');
       break;
-
     case 'attack1':
       if (inComboWindow) {
-        sendEvent(world, player, 'attack'); // Goes to attack2
+        sendEvent(world, eid, 'attack'); // Goes to attack2
       }
       break;
-
     case 'attack2':
       if (inComboWindow) {
-        sendEvent(world, player, 'attack'); // Goes to attack3
+        sendEvent(world, eid, 'attack'); // Goes to attack3
       }
       break;
   }
-}
+};
 
 // Auto-transition to recovery after attack finishes
-function updateComboState(player: Entity) {
-  const state = getCurrentState(world, player);
-  const age = getSystemStateAge(player);
+const updateComboState = (eid: number): void => {
+  const state = getState(world, eid);
+  const age = getSystemStateAge(eid);
 
   if (state.startsWith('attack') && age > 0.6) {
-    sendEvent(world, player, 'finish');
+    sendEvent(world, eid, 'finish');
   }
 
   if (state === 'recovery' && age > 0.3) {
-    sendEvent(world, player, 'recover');
+    sendEvent(world, eid, 'recover');
   }
-}
+};
+
+handleAttackInput(player);
+updateComboState(player);
 ```
 
 ## Performance Considerations

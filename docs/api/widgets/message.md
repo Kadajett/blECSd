@@ -4,9 +4,9 @@ Displays temporary notifications with auto-dismiss, click/key dismiss, and style
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMessage, showInfo, showError, showWarning, showSuccess } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createMessage, showInfo, showError, showWarning, showSuccess } from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -60,9 +60,8 @@ interface MessageStyleConfig {
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { MessageConfigSchema } from 'blecsd';
+import { MessageConfigSchema } from 'blecsd/widgets';
 
 const validated = MessageConfigSchema.parse({
   content: 'Hello',
@@ -90,10 +89,11 @@ const validated = MessageConfigSchema.parse({
 
 Creates a Message widget with the given configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMessage } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createMessage } from 'blecsd/widgets';
 
+const world = createWorld();
 const msg = createMessage(world, {
   content: 'Changes saved',
   type: 'success',
@@ -170,6 +170,11 @@ center(screenWidth: number, screenHeight: number): MessageWidget
 Centers the message on screen given the terminal dimensions.
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createMessage } from 'blecsd/widgets';
+
+const world = createWorld();
+const msg = createMessage(world, { content: 'Centered!', type: 'info' });
 msg.center(80, 24);
 ```
 
@@ -211,10 +216,11 @@ Destroys the widget, clears timers, and removes the entity from the world.
 
 ### showInfo
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showInfo } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { showInfo } from 'blecsd/widgets';
 
+const world = createWorld();
 const msg = showInfo(world, 'Operation completed', { timeout: 5000 });
 ```
 
@@ -227,28 +233,31 @@ const msg = showInfo(world, 'Operation completed', { timeout: 5000 });
 
 ### showWarning
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showWarning } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { showWarning } from 'blecsd/widgets';
 
+const world = createWorld();
 const msg = showWarning(world, 'This action cannot be undone');
 ```
 
 ### showError
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showError } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { showError } from 'blecsd/widgets';
 
+const world = createWorld();
 const msg = showError(world, 'Failed to save file');
 ```
 
 ### showSuccess
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showSuccess } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { showSuccess } from 'blecsd/widgets';
 
+const world = createWorld();
 const msg = showSuccess(world, 'File saved successfully');
 ```
 
@@ -258,10 +267,13 @@ const msg = showSuccess(world, 'File saved successfully');
 
 ### isMessage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isMessage } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createMessage, isMessage } from 'blecsd/widgets';
 
+const world = createWorld();
+const msg = createMessage(world, { content: 'Test', type: 'info' });
+const entity = msg.eid;
 if (isMessage(world, entity)) {
   // Entity is a message widget
 }
@@ -275,10 +287,13 @@ if (isMessage(world, entity)) {
 
 ### isDismissOnClick
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isDismissOnClick } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createMessage, isDismissOnClick } from 'blecsd/widgets';
 
+const world = createWorld();
+const msg = createMessage(world, { content: 'Test', type: 'info', dismissOnClick: true });
+const entity = msg.eid;
 if (isDismissOnClick(world, entity)) {
   // Click dismiss is enabled
 }
@@ -286,10 +301,13 @@ if (isDismissOnClick(world, entity)) {
 
 ### isDismissOnKey
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isDismissOnKey } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createMessage, isDismissOnKey } from 'blecsd/widgets';
 
+const world = createWorld();
+const msg = createMessage(world, { content: 'Test', type: 'info', dismissOnKey: true });
+const entity = msg.eid;
 if (isDismissOnKey(world, entity)) {
   // Key dismiss is enabled
 }
@@ -297,10 +315,13 @@ if (isDismissOnKey(world, entity)) {
 
 ### handleMessageClick
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleMessageClick } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createMessage, handleMessageClick } from 'blecsd/widgets';
 
+const world = createWorld();
+const msg = createMessage(world, { content: 'Test', type: 'info' });
+const entity = msg.eid;
 const wasDismissed = handleMessageClick(world, entity);
 ```
 
@@ -310,10 +331,13 @@ Dismisses the message if `dismissOnClick` is enabled and the message is not alre
 
 ### handleMessageKey
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { handleMessageKey } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createMessage, handleMessageKey } from 'blecsd/widgets';
 
+const world = createWorld();
+const msg = createMessage(world, { content: 'Test', type: 'info' });
+const entity = msg.eid;
 const wasDismissed = handleMessageKey(world, entity);
 ```
 
@@ -327,10 +351,11 @@ Dismisses the message if `dismissOnKey` is enabled and the message is not alread
 
 ### Notification with Callback
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMessage } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createMessage } from 'blecsd/widgets';
 
+const world = createWorld();
 const msg = createMessage(world, {
   content: 'Download complete!',
   type: 'success',
@@ -344,10 +369,11 @@ msg.center(80, 24).onDismiss(() => {
 
 ### Manual Dismiss Only
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMessage } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createMessage } from 'blecsd/widgets';
 
+const world = createWorld();
 const msg = createMessage(world, {
   content: 'Critical error: please restart',
   type: 'error',
@@ -362,10 +388,11 @@ msg.dismiss();
 
 ### Custom Styled Message
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMessage } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createMessage } from 'blecsd/widgets';
 
+const world = createWorld();
 const msg = createMessage(world, {
   content: 'Custom notification',
   fg: '#000000',

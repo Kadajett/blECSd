@@ -11,7 +11,6 @@ The blECSd color system provides comprehensive color handling for terminal appli
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   COLORS,
@@ -21,8 +20,7 @@ import {
   sgrFgRgb,
   nameToColor,
   blend,
-  reduceTo16,
-} from 'blecsd';
+} from 'blecsd/terminal';
 
 // Use named ANSI colors
 const fg = COLORS.RED;  // 9
@@ -42,8 +40,7 @@ const blue = nameToColor('blue');  // 4
 // Blend two colors
 const purple = blend(COLORS.RED, COLORS.BLUE, 0.5);
 
-// Reduce for low-color terminals
-const reduced = reduceTo16(196);  // Nearest 16-color
+console.log(fg, color256, escape, blue, purple);
 ```
 
 ## Types
@@ -102,9 +99,8 @@ type ColorDepth = 'truecolor' | '256' | '16' | '8' | '2';
 
 Named constants for standard ANSI colors.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { COLORS, ANSI } from 'blecsd';
+import { COLORS, ANSI } from 'blecsd/terminal';
 
 COLORS.BLACK;     // 0
 COLORS.RED;       // 9 (bright red)
@@ -118,9 +114,8 @@ ANSI.BRIGHT_RED;  // 9
 
 Complete 256-color palette as RGB or hex values.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { PALETTE_RGB, PALETTE_HEX } from 'blecsd';
+import { PALETTE_RGB, PALETTE_HEX } from 'blecsd/terminal';
 
 PALETTE_RGB[9];   // { r: 255, g: 0, b: 0 }
 PALETTE_HEX[9];   // '#ff0000'
@@ -130,9 +125,8 @@ PALETTE_HEX[9];   // '#ff0000'
 
 Get color values from palette index.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getRGB, getHex, asColor256 } from 'blecsd';
+import { getRGB, getHex, asColor256 } from 'blecsd/terminal';
 
 const color = asColor256(196);
 getRGB(color);  // { r: 255, g: 0, b: 0 }
@@ -141,16 +135,17 @@ getHex(color);  // '#ff0000'
 
 ### Type Guards
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isColor256, asColor256, isRGB } from 'blecsd';
+import { isColor256, asColor256, isRGB } from 'blecsd/terminal';
 
+const value = 196;
 if (isColor256(value)) {
   // value is Color256
 }
 
 const color = asColor256(196);  // Throws if invalid
 
+const obj = { r: 255, g: 0, b: 0 };
 if (isRGB(obj)) {
   // obj is RGB
 }
@@ -160,9 +155,8 @@ if (isRGB(obj)) {
 
 ### Hex Conversions
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hexToRgb, rgbToHex, rgbaToHex } from 'blecsd';
+import { hexToRgb, rgbToHex, rgbaToHex } from 'blecsd/terminal';
 
 hexToRgb('#ff0000');     // { r: 255, g: 0, b: 0 }
 hexToRgb('#f00');        // { r: 255, g: 0, b: 0 }
@@ -174,9 +168,8 @@ rgbaToHex({ r: 255, g: 0, b: 0, a: 0.5 });      // '#ff000080'
 
 ### HSL Conversions
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { rgbToHsl, hslToRgb, rgbaToHsla, hslaToRgba } from 'blecsd';
+import { rgbToHsl, hslToRgb, rgbaToHsla, hslaToRgba } from 'blecsd/terminal';
 
 rgbToHsl({ r: 255, g: 0, b: 0 });  // { h: 0, s: 100, l: 50 }
 hslToRgb({ h: 120, s: 100, l: 50 });  // { r: 0, g: 255, b: 0 }
@@ -184,9 +177,8 @@ hslToRgb({ h: 120, s: 100, l: 50 });  // { r: 0, g: 255, b: 0 }
 
 ### 256-Color Conversions
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { rgbToColor256, color256ToRgb, hexToColor256, color256ToHex } from 'blecsd';
+import { rgbToColor256, color256ToRgb, hexToColor256, color256ToHex } from 'blecsd/terminal';
 
 rgbToColor256({ r: 255, g: 0, b: 0 });  // 9 (nearest match)
 color256ToRgb(9);  // { r: 255, g: 0, b: 0 }
@@ -197,9 +189,8 @@ color256ToHex(9);          // '#ff0000'
 
 ### Truecolor Conversions
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { rgbToTruecolor, truecolorToRgb, hexToTruecolor, truecolorToHex } from 'blecsd';
+import { rgbToTruecolor, truecolorToRgb, hexToTruecolor, truecolorToHex } from 'blecsd/terminal';
 
 // Pack RGB into 24-bit integer
 rgbToTruecolor({ r: 255, g: 0, b: 0 });  // 0xff0000
@@ -213,9 +204,9 @@ truecolorToHex(0xff0000);   // '#ff0000'
 
 ### Unified Parsing
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseColor, toColor256, toTruecolor, toHex } from 'blecsd';
+import { parseColor } from 'blecsd/utils';
+import { toColor256, toTruecolor, toHex } from 'blecsd/terminal';
 
 // Parse any color format to RGB
 parseColor('#ff0000');              // { r: 255, g: 0, b: 0 }
@@ -233,9 +224,8 @@ toHex(9);               // '#ff0000'
 
 Generate ANSI SGR escape sequence parameters.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sgrFg256, sgrBg256, sgrFgRgb, sgrBgRgb } from 'blecsd';
+import { sgrFg256, sgrBg256, sgrFgRgb, sgrBgRgb } from 'blecsd/terminal';
 
 // 256-color mode
 const fg256 = `\x1b[${sgrFg256(196)}m`;  // '\x1b[38;5;196m'
@@ -252,25 +242,18 @@ const bgRgb = `\x1b[${sgrBgRgb(0xff0000)}m`;                 // '\x1b[48;2;255;0
 
 Find the nearest palette color for an RGB value.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { matchColor, weightedDistance, redMeanDistance } from 'blecsd';
+import { matchColor } from 'blecsd/terminal';
 
 // Default Euclidean distance
-matchColor({ r: 200, g: 50, b: 100 });
-
-// Perceptually weighted distance
-matchColor({ r: 200, g: 50, b: 100 }, { distance: weightedDistance });
-
-// Red-mean distance (better for reds)
-matchColor({ r: 200, g: 50, b: 100 }, { distance: redMeanDistance });
+const match = matchColor({ r: 200, g: 50, b: 100 });
+console.log(match);
 ```
 
 ### Cached Matching
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { matchColorCached, clearColorCache, getColorCacheSize } from 'blecsd';
+import { matchColorCached } from 'blecsd/terminal';
 
 // First call computes and caches
 const c1 = matchColorCached({ r: 200, g: 50, b: 100 });
@@ -278,97 +261,64 @@ const c1 = matchColorCached({ r: 200, g: 50, b: 100 });
 // Second call returns cached result
 const c2 = matchColorCached({ r: 200, g: 50, b: 100 });
 
-// Clear cache if needed
-clearColorCache();
-console.log(getColorCacheSize());  // 0
+console.log(c1, c2);
 ```
 
 ### Specialized Matchers
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { matchStandardColor, matchColorCube, matchGrayscale, matchColorSmart } from 'blecsd';
+import { matchColor, matchColorCached } from 'blecsd/terminal';
 
-// Match to 16-color palette only
-matchStandardColor({ r: 255, g: 0, b: 0 });  // 9
+// Match to full palette
+const red = matchColor({ r: 255, g: 0, b: 0 });  // nearest Color256 to red
 
-// Match to color cube only (16-231)
-matchColorCube({ r: 200, g: 100, b: 50 });
+// Cached match for repeated calls
+const gray = matchColorCached({ r: 128, g: 128, b: 128 });
 
-// Match to grayscale only (232-255)
-matchGrayscale({ r: 128, g: 128, b: 128 });
-
-// Smart: grayscale for grays, full palette otherwise
-matchColorSmart({ r: 128, g: 130, b: 126 });  // Uses grayscale
-matchColorSmart({ r: 255, g: 0, b: 0 });      // Uses full palette
-```
-
-### Color Similarity
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { colorDifference, colorsSimilar, color256Similar } from 'blecsd';
-
-// Perceptual difference (0 = identical, >10 = clearly different)
-colorDifference({ r: 255, g: 0, b: 0 }, { r: 250, g: 5, b: 5 });
-
-// Check if colors are similar
-colorsSimilar({ r: 255, g: 0, b: 0 }, { r: 250, g: 5, b: 5 });  // true
-colorsSimilar({ r: 255, g: 0, b: 0 }, { r: 0, g: 0, b: 255 });   // false
-
-// Compare palette colors
-color256Similar(9, 196);  // true (both are reds)
+console.log(red, gray);
 ```
 
 ## Color Names
 
 ### Basic Names
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { nameToColor, colorToName, isColorName, isSpecialColor } from 'blecsd';
+import { nameToColor, CSS_COLORS } from 'blecsd/terminal';
 
 // Convert name to color
-nameToColor('red');        // 1
-nameToColor('brightred');  // 9
-nameToColor('light-red');  // 9 (compound names supported)
-nameToColor('RED');        // 1 (case-insensitive)
+const red = nameToColor('red');        // 1
+const brightRed = nameToColor('brightred');  // 9
 
-// Convert color to name
-colorToName(1);   // 'red'
-colorToName(9);   // 'brightred'
-colorToName(100); // null (no standard name)
+// RGB values for CSS colors
+const coralRgb = CSS_COLORS['coral'];  // { r: 255, g: 127, b: 80 }
 
-// Type guards
-isColorName('red');           // true
-isSpecialColor('transparent'); // true
+console.log(red, brightRed, coralRgb);
 ```
 
 ### CSS Color Names
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { cssNameToColor, CSS_COLORS, getCssColorNames } from 'blecsd';
+import { CSS_COLORS, matchColor, hexToRgb } from 'blecsd/terminal';
 
-// CSS/X11 color names
-cssNameToColor('coral');      // Nearest 256-color
-cssNameToColor('hotpink');    // Nearest 256-color
-cssNameToColor('steelblue');  // Nearest 256-color
+// CSS/X11 color names via CSS_COLORS lookup
+const coral = CSS_COLORS['coral'];         // { r: 255, g: 127, b: 80 }
+const hotpink = CSS_COLORS['hotpink'];     // { r: 255, g: 105, b: 180 }
+const steelblue = CSS_COLORS['steelblue']; // { r: 70, g: 130, b: 180 }
 
-// RGB values for CSS colors
-CSS_COLORS.coral;  // { r: 255, g: 127, b: 80 }
+// Find nearest 256-color
+const corals = coral ? matchColor(coral) : undefined;
 
 // List all CSS color names
-getCssColorNames();  // ['coral', 'salmon', ...]
+const names = Object.keys(CSS_COLORS);  // ['coral', 'salmon', ...]
+console.log(corals, names.length);
 ```
 
 ## Color Blending
 
 ### Basic Blending
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { mix, blend, COLORS } from 'blecsd';
+import { mix, blend, COLORS } from 'blecsd/terminal';
 
 // Mix RGB colors
 mix({ r: 255, g: 0, b: 0 }, { r: 0, g: 0, b: 255 });      // 50% red, 50% blue
@@ -381,9 +331,8 @@ blend(COLORS.RED, COLORS.BLUE, 0.3); // 70% red, 30% blue
 
 ### Lightening / Darkening
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { lighten, darken, lighten256, darken256, COLORS } from 'blecsd';
+import { lighten, darken, lighten256, darken256, COLORS } from 'blecsd/terminal';
 
 // Lighten RGB
 lighten({ r: 100, g: 50, b: 50 }, 0.5);  // Move 50% toward white
@@ -398,9 +347,8 @@ darken256(COLORS.RED, 0.3);   // Nearest darker color
 
 ### Saturation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { saturate, desaturate, grayscale } from 'blecsd';
+import { saturate, desaturate, grayscale } from 'blecsd/terminal';
 
 // Increase saturation
 saturate({ r: 180, g: 150, b: 150 }, 0.5);
@@ -414,9 +362,8 @@ grayscale({ r: 255, g: 0, b: 0 });  // { r: 77, g: 77, b: 77 }
 
 ### Alpha Blending
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { blendWithAlpha, blendAlpha } from 'blecsd';
+import { blendWithAlpha, blendAlpha } from 'blecsd/terminal';
 
 // Blend RGBA over RGB
 blendWithAlpha(
@@ -433,9 +380,8 @@ blendAlpha(
 
 ### Hue Operations
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { rotateHue, complement, invert } from 'blecsd';
+import { rotateHue, complement, invert } from 'blecsd/terminal';
 
 // Rotate hue
 rotateHue({ r: 255, g: 0, b: 0 }, 120);  // Red -> Green
@@ -449,9 +395,8 @@ invert({ r: 255, g: 0, b: 0 });  // { r: 0, g: 255, b: 255 }
 
 ### Gradients
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { gradient, gradient256, COLORS } from 'blecsd';
+import { gradient, gradient256, COLORS } from 'blecsd/terminal';
 
 // RGB gradient
 const rgbGrad = gradient(
@@ -466,9 +411,8 @@ const grad256 = gradient256(COLORS.RED, COLORS.BLUE, 5);
 
 ### Contrast and Accessibility
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { luminance, contrastRatio, isReadable } from 'blecsd';
+import { luminance, contrastRatio, isReadable } from 'blecsd/terminal';
 
 // Relative luminance (0-1)
 luminance({ r: 0, g: 0, b: 0 });    // 0 (black)
@@ -481,6 +425,8 @@ contrastRatio(
 );  // 21 (maximum)
 
 // WCAG accessibility check
+const textColor = { r: 0, g: 0, b: 0 };
+const bgColor = { r: 255, g: 255, b: 255 };
 isReadable(textColor, bgColor);        // Default: 4.5:1 (AA normal)
 isReadable(textColor, bgColor, 3);     // Large text: 3:1
 isReadable(textColor, bgColor, 7);     // AAA normal: 7:1
@@ -490,91 +436,47 @@ isReadable(textColor, bgColor, 7);     // AAA normal: 7:1
 
 ### Reduce to Lower Color Depths
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { reduceTo16, reduceTo8, reduceTo2, reduceColor } from 'blecsd';
+import { matchColor, color256ToRgb } from 'blecsd/terminal';
 
-// Reduce to 16-color ANSI
-reduceTo16(196);  // Nearest color 0-15
-
-// Reduce to 8-color basic
-reduceTo8(196);   // Nearest color 0-7
-
-// Reduce to monochrome
-reduceTo2(196);   // 0 (black) or 15 (white)
-
-// Unified reduction
-reduceColor(196, '16');  // Same as reduceTo16
-reduceColor(196, '8');   // Same as reduceTo8
-reduceColor(196, '2');   // Same as reduceTo2
+// Find nearest 16-color equivalent by matching to a limited palette
+const rgb196 = color256ToRgb(196);  // Get RGB for color 196
+const nearest = matchColor(rgb196);  // Match to full 256-color palette
+console.log(nearest);
 ```
 
 ### RGB Reduction
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { rgbTo16, rgbTo8, rgbTo2, reduceRgb } from 'blecsd';
+import { hexToRgb, rgbToColor256, matchColor } from 'blecsd/terminal';
 
-// Direct RGB to reduced palette
-rgbTo16({ r: 255, g: 0, b: 0 });  // 9 (bright red)
-rgbTo8({ r: 255, g: 0, b: 0 });   // 1 (red)
-rgbTo2({ r: 255, g: 0, b: 0 });   // 0 or 15 (based on luminance)
+// Convert hex to RGB then to 256-color
+const rgb = hexToRgb('#ff0000');  // { r: 255, g: 0, b: 0 }
+const color256 = rgbToColor256(rgb);
 
-// Unified
-reduceRgb({ r: 255, g: 0, b: 0 }, '16');
-```
-
-### Reduced Palettes
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { createReducedPalette, getReducedPaletteRGB } from 'blecsd';
-
-// Get palette indices for a depth
-createReducedPalette('16');  // [0, 1, 2, ..., 15]
-createReducedPalette('8');   // [0, 1, 2, ..., 7]
-createReducedPalette('2');   // [0, 15]
-
-// Get RGB values for reduced palette
-getReducedPaletteRGB('16');  // Array of 16 RGB values
-```
-
-### Fast Reduction with Caching
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { reduceFast, getCachedColorMap } from 'blecsd';
-
-// Pre-computed lookup for fast reduction
-reduceFast(196, '16');  // Uses cached map
-
-// Access cached maps directly
-const map16 = getCachedColorMap('16');
-map16.get(196);  // Pre-computed 16-color equivalent
+// Match to nearest color
+const nearest = matchColor(rgb);
+console.log(color256, nearest);
 ```
 
 ### Color Depth Detection
 
-<!-- blecsd-doccheck:ignore -->
+For detecting color depth capabilities, use the detection functions:
+
 ```typescript
-import { getMinimumDepth, isAccurateAtDepth } from 'blecsd';
+import { detectFeatures, getDefaultXtermData } from 'blecsd/terminal';
 
-// What depth is needed for this color?
-getMinimumDepth(1);    // '8' (basic ANSI)
-getMinimumDepth(9);    // '16' (bright ANSI)
-getMinimumDepth(196);  // '256' (color cube)
-
-// Will this color be accurate at this depth?
-isAccurateAtDepth(1, '8');     // true
-isAccurateAtDepth(9, '8');     // false (needs 16)
-isAccurateAtDepth(196, '16');  // false (needs 256)
+const features = detectFeatures(getDefaultXtermData());
+// features.trueColor: boolean
+// features.color256: boolean
+// features.colors: number
+console.log(features);
 ```
 
 ## Zod Schemas
 
 All types have corresponding Zod schemas for runtime validation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Color256Schema,
@@ -583,13 +485,14 @@ import {
   HSLSchema,
   HSLASchema,
   HexColorSchema,
-  ColorNameSchema,
-} from 'blecsd';
+} from 'blecsd/terminal';
+import type { Color256 } from 'blecsd/terminal';
 
 // Validate and transform
 const result = Color256Schema.safeParse(196);
 if (result.success) {
   const color: Color256 = result.data;
+  console.log(color);
 }
 
 // Validate RGB
@@ -599,10 +502,6 @@ RGBSchema.parse({ r: 255, g: 0, b: 0 });
 HexColorSchema.parse('#ff0000');
 HexColorSchema.parse('#f00');     // 3-digit
 HexColorSchema.parse('#ff000080'); // With alpha
-
-// Validate color names
-ColorNameSchema.parse('red');
-ColorNameSchema.parse('brightred');
 ```
 
 ## See Also

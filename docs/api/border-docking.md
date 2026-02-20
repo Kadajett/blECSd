@@ -8,7 +8,6 @@ The border docking system detects when borders from different elements meet and 
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createBorderDockingContext,
@@ -16,10 +15,18 @@ import {
   detectJunctions,
   applyJunctions,
   JUNCTION_SINGLE,
-} from 'blecsd';
+} from 'blecsd/core';
 
 // Create docking context for the screen
 const ctx = createBorderDockingContext(80, 24);
+
+// Create a simple docking buffer
+const buffer = {
+  width: 80,
+  height: 24,
+  getCell(_x: number, _y: number) { return undefined; },
+  setCell(_x: number, _y: number, _cell: { char: string; fg: number; bg: number }) {},
+};
 
 // Register borders for two adjacent boxes
 registerRectBorder(ctx, 0, 0, 20, 10, 0x2500, 0x2502, 0xffffffff, 0x000000ff);
@@ -38,9 +45,8 @@ applyJunctions(buffer, junctions);
 
 Single line box-drawing characters.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { JUNCTION_SINGLE } from 'blecsd';
+import { JUNCTION_SINGLE } from 'blecsd/core';
 
 // Characters included:
 // ├ (teeRight)  - T pointing right
@@ -56,9 +62,8 @@ import { JUNCTION_SINGLE } from 'blecsd';
 
 Double line box-drawing characters.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { JUNCTION_DOUBLE } from 'blecsd';
+import { JUNCTION_DOUBLE } from 'blecsd/core';
 
 // Characters included:
 // ╠ (teeRight)  - T pointing right
@@ -74,9 +79,8 @@ import { JUNCTION_DOUBLE } from 'blecsd';
 
 Bold/thick line box-drawing characters.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { JUNCTION_BOLD } from 'blecsd';
+import { JUNCTION_BOLD } from 'blecsd/core';
 
 // Characters included:
 // ┣ (teeRight)  - T pointing right
@@ -92,9 +96,8 @@ import { JUNCTION_BOLD } from 'blecsd';
 
 ASCII fallback characters.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { JUNCTION_ASCII } from 'blecsd';
+import { JUNCTION_ASCII } from 'blecsd/core';
 
 // All junctions use +
 // horizontal uses -
@@ -107,9 +110,8 @@ import { JUNCTION_ASCII } from 'blecsd';
 
 Create a new docking context.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBorderDockingContext } from 'blecsd';
+import { createBorderDockingContext } from 'blecsd/core';
 
 const ctx = createBorderDockingContext(80, 24);
 
@@ -123,10 +125,10 @@ const ctx2 = createBorderDockingContext(80, 24, {
 
 Clear all registered edges.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearDockingContext } from 'blecsd';
+import { clearDockingContext, createBorderDockingContext } from 'blecsd/core';
 
+const ctx = createBorderDockingContext(80, 24);
 clearDockingContext(ctx);
 ```
 
@@ -134,10 +136,10 @@ clearDockingContext(ctx);
 
 Resize the context dimensions.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resizeDockingContext } from 'blecsd';
+import { resizeDockingContext, createBorderDockingContext } from 'blecsd/core';
 
+const ctx = createBorderDockingContext(80, 24);
 const resized = resizeDockingContext(ctx, 120, 40);
 ```
 
@@ -147,10 +149,10 @@ const resized = resizeDockingContext(ctx, 120, 40);
 
 Register a single border edge.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerEdge } from 'blecsd';
+import { registerEdge, createBorderDockingContext } from 'blecsd/core';
 
+const ctx = createBorderDockingContext(80, 24);
 // Register a horizontal edge
 registerEdge(ctx, 10, 5, 'h', 0x2500, 0xffffffff, 0x000000ff);
 
@@ -170,10 +172,10 @@ Edge types:
 
 Register all edges for a rectangular border.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerRectBorder } from 'blecsd';
+import { registerRectBorder, createBorderDockingContext } from 'blecsd/core';
 
+const ctx = createBorderDockingContext(80, 24);
 // Register a box border
 registerRectBorder(
   ctx,
@@ -192,10 +194,10 @@ registerRectBorder(
 
 Detect junctions where multiple edges meet.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectJunctions } from 'blecsd';
+import { detectJunctions, createBorderDockingContext } from 'blecsd/core';
 
+const ctx = createBorderDockingContext(80, 24);
 const junctions = detectJunctions(ctx);
 
 for (const junction of junctions) {
@@ -208,10 +210,10 @@ for (const junction of junctions) {
 
 More aggressive junction detection that also checks extended connections.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectAllJunctions } from 'blecsd';
+import { detectAllJunctions, createBorderDockingContext } from 'blecsd/core';
 
+const ctx = createBorderDockingContext(80, 24);
 const junctions = detectAllJunctions(ctx);
 ```
 
@@ -219,10 +221,10 @@ const junctions = detectAllJunctions(ctx);
 
 Get connection flags for a position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getConnectionFlags } from 'blecsd';
+import { getConnectionFlags, createBorderDockingContext } from 'blecsd/core';
 
+const ctx = createBorderDockingContext(80, 24);
 const flags = getConnectionFlags(ctx, 10, 5);
 // { left: true, top: false, right: true, bottom: true }
 ```
@@ -231,9 +233,8 @@ const flags = getConnectionFlags(ctx, 10, 5);
 
 Determine the appropriate junction character.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getJunctionChar, JUNCTION_SINGLE } from 'blecsd';
+import { getJunctionChar, JUNCTION_SINGLE } from 'blecsd/core';
 
 const char = getJunctionChar(
   { left: true, top: true, right: true, bottom: false },
@@ -248,12 +249,18 @@ const char = getJunctionChar(
 
 Apply detected junctions to a buffer.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { applyJunctions } from 'blecsd';
+import { applyJunctions, createBorderDockingContext, detectJunctions } from 'blecsd/core';
 
-const junctions = detectJunctions(ctx);
-applyJunctions(buffer, junctions);
+const ctx3 = createBorderDockingContext(80, 24);
+const junctions3 = detectJunctions(ctx3);
+const buffer3 = {
+  width: 80,
+  height: 24,
+  getCell(_x: number, _y: number) { return undefined; },
+  setCell(_x: number, _y: number, _cell: { char: string; fg: number; bg: number }) {},
+};
+applyJunctions(buffer3, junctions3);
 ```
 
 The buffer must implement the `DockingBuffer` interface:
@@ -277,10 +284,11 @@ interface DockingCell {
 
 Get junction data formatted for rendering.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getJunctionRenderData } from 'blecsd';
+import { getJunctionRenderData, detectJunctions, createBorderDockingContext } from 'blecsd/core';
 
+const ctx = createBorderDockingContext(80, 24);
+const junctions = detectJunctions(ctx);
 const renderData = getJunctionRenderData(junctions);
 // Returns: Array<{ x, y, char: string, fg, bg }>
 ```
@@ -291,9 +299,8 @@ const renderData = getJunctionRenderData(junctions);
 
 Detect the border style from a character.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectBorderStyle } from 'blecsd';
+import { detectBorderStyle } from 'blecsd/core';
 
 detectBorderStyle(0x2500); // 'single' (─)
 detectBorderStyle(0x2550); // 'double' (═)
@@ -306,9 +313,8 @@ detectBorderStyle(0x41);   // 'unknown' (A)
 
 Get the junction charset for a style.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getJunctionCharset } from 'blecsd';
+import { getJunctionCharset } from 'blecsd/core';
 
 const charset = getJunctionCharset('single');
 // Returns JUNCTION_SINGLE
@@ -320,9 +326,8 @@ const charset = getJunctionCharset('single');
 
 Check if a character is a border character.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isBorderChar } from 'blecsd';
+import { isBorderChar } from 'blecsd/core';
 
 isBorderChar(0x2500); // true (─)
 isBorderChar(0x41);   // false (A)
@@ -332,9 +337,8 @@ isBorderChar(0x41);   // false (A)
 
 Check if a character is a junction character.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isJunctionChar } from 'blecsd';
+import { isJunctionChar } from 'blecsd/core';
 
 isJunctionChar(0x253c); // true (┼)
 isJunctionChar(0x2500); // false (─)
@@ -344,10 +348,10 @@ isJunctionChar(0x2500); // false (─)
 
 Get the number of registered edge positions.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getEdgeCount } from 'blecsd';
+import { getEdgeCount, createBorderDockingContext } from 'blecsd/core';
 
+const ctx = createBorderDockingContext(80, 24);
 const count = getEdgeCount(ctx);
 ```
 
@@ -355,10 +359,10 @@ const count = getEdgeCount(ctx);
 
 Get all edges at a position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getEdgesAt } from 'blecsd';
+import { getEdgesAt, createBorderDockingContext } from 'blecsd/core';
 
+const ctx = createBorderDockingContext(80, 24);
 const edges = getEdgesAt(ctx, 10, 5);
 ```
 
@@ -434,14 +438,13 @@ type BorderStyleType = 'single' | 'double' | 'bold' | 'ascii' | 'unknown';
 
 ## Example: Multi-Panel Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createBorderDockingContext,
   registerRectBorder,
   detectJunctions,
   applyJunctions,
-} from 'blecsd';
+} from 'blecsd/core';
 
 // Create context
 const ctx = createBorderDockingContext(80, 24);
@@ -464,6 +467,12 @@ const junctions = detectJunctions(ctx);
 // - (29, 11) - three panels meet (┼)
 // - (29, 23) - bottom edge meets (┴)
 
+const buffer = {
+  width: 80,
+  height: 24,
+  getCell(_x: number, _y: number) { return undefined; },
+  setCell(_x: number, _y: number, _cell: { char: string; fg: number; bg: number }) {},
+};
 applyJunctions(buffer, junctions);
 ```
 

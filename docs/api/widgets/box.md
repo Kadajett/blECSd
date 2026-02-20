@@ -4,9 +4,8 @@ The Box widget is a basic container for building terminal UI elements. It provid
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -35,16 +34,15 @@ box.setContent('Updated content').focus().show();
 
 Creates a new Box widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
 
 // Basic box
-const box = createBox(world, eid);
+const basicBox = createBox(world, eid);
 
 // Full configuration
 const styledBox = createBox(world, eid, {
@@ -91,6 +89,10 @@ The box widget provides a chainable API for all operations.
 The underlying entity ID.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const eid = addEntity(world);
 const box = createBox(world, eid);
 console.log(box.eid); // Entity ID number
 ```
@@ -102,6 +104,10 @@ console.log(box.eid); // Entity ID number
 Shows the box.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 box.show();
 ```
 
@@ -112,6 +118,10 @@ box.show();
 Hides the box.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 box.hide();
 ```
 
@@ -126,6 +136,10 @@ box.hide();
 Sets the absolute position.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 box.setPosition(20, 15);
 ```
 
@@ -140,6 +154,10 @@ box.setPosition(20, 15);
 Moves the box by a relative amount.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 box.move(5, -3); // Move right 5, up 3
 ```
 
@@ -158,6 +176,10 @@ box.move(5, -3); // Move right 5, up 3
 Sets the text content of the box.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 box.setContent('New content');
 ```
 
@@ -171,7 +193,11 @@ box.setContent('New content');
 Gets the current text content.
 
 ```typescript
-const content = box.getContent(); // 'New content'
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
+const content = box.getContent(); // ''
 ```
 
 **Returns:** `string`
@@ -185,6 +211,10 @@ const content = box.getContent(); // 'New content'
 Focuses the box.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 box.focus();
 ```
 
@@ -195,6 +225,10 @@ box.focus();
 Removes focus from the box.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 box.blur();
 ```
 
@@ -205,6 +239,10 @@ box.blur();
 Checks if the box is currently focused.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 const focused = box.isFocused(); // boolean
 ```
 
@@ -219,6 +257,10 @@ const focused = box.isFocused(); // boolean
 Appends a child entity to this box.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 const childEid = addEntity(world);
 box.append(childEid);
 ```
@@ -233,6 +275,10 @@ box.append(childEid);
 Gets all direct children of this box.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 const children = box.getChildren(); // Entity[]
 ```
 
@@ -247,6 +293,10 @@ const children = box.getChildren(); // Entity[]
 Destroys the widget and removes it from the world.
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox } from 'blecsd/widgets';
+const world = createWorld();
+const box = createBox(world, addEntity(world));
 box.destroy();
 ```
 
@@ -258,10 +308,13 @@ box.destroy();
 
 Sets the content of a box entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBoxContent } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox, setBoxContent } from 'blecsd/widgets';
 
+const world = createWorld();
+const boxEntity = addEntity(world);
+createBox(world, boxEntity);
 setBoxContent(world, boxEntity, 'Updated content');
 ```
 
@@ -278,10 +331,13 @@ setBoxContent(world, boxEntity, 'Updated content');
 
 Gets the content of a box entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getBoxContent } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox, getBoxContent } from 'blecsd/widgets';
 
+const world = createWorld();
+const boxEntity = addEntity(world);
+createBox(world, boxEntity);
 const content = getBoxContent(world, boxEntity); // string
 ```
 
@@ -297,10 +353,13 @@ const content = getBoxContent(world, boxEntity); // string
 
 Checks if an entity is a box widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isBox } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createBox, isBox } from 'blecsd/widgets';
 
+const world = createWorld();
+const entity = addEntity(world);
+createBox(world, entity);
 if (isBox(world, entity)) {
   // Handle box-specific logic
 }
@@ -431,9 +490,8 @@ interface BoxWidget {
 
 Zod schemas are provided for runtime validation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BoxConfigSchema } from 'blecsd';
+import { BoxConfigSchema } from 'blecsd/core';
 
 // Validate configuration
 const result = BoxConfigSchema.safeParse({
@@ -456,15 +514,14 @@ if (result.success) {
 
 ### Basic Container
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
 
-const box = createBox(world, eid, {
+const mainBox = createBox(world, eid, {
   left: 0,
   top: 0,
   width: 80,
@@ -475,9 +532,8 @@ const box = createBox(world, eid, {
 
 ### Styled Box with Border
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -504,9 +560,8 @@ const dialog = createBox(world, eid, {
 
 ### Nested Boxes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -537,15 +592,14 @@ parent.append(childEid);
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
 
-const box = createBox(world, eid, { left: 0, top: 0 })
+const chainedBox = createBox(world, eid, { left: 0, top: 0 })
   .setPosition(10, 10)
   .move(5, 5)
   .setContent('Chained!')
@@ -559,9 +613,8 @@ const box = createBox(world, eid, { left: 0, top: 0 })
 
 ### Focus Management
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -583,10 +636,9 @@ console.log(box2.isFocused()); // true
 
 ### Dynamic Content Update
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setBoxContent, getBoxContent } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setBoxContent, getBoxContent } from 'blecsd/widgets';
 import { createBox } from 'blecsd/widgets';
 
 const world = createWorld();

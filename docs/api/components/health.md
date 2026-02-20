@@ -8,7 +8,6 @@ The Health component is a generic resource pool suitable for HP, mana, stamina, 
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Health,
@@ -27,7 +26,7 @@ import {
   setMaxHealth,
   setRegen,
   updateHealth,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Component Data Layout
@@ -48,9 +47,8 @@ const Health = {
 
 Sets health on an entity. Adds the component if not present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setHealth } from 'blecsd';
+import { setHealth } from 'blecsd/components';
 
 setHealth(world, entity, { max: 100 });                   // Full HP
 setHealth(world, entity, { max: 100, current: 75, regen: 2 }); // Damaged, regenerating
@@ -65,9 +63,8 @@ setHealth(world, entity, { max: 100, current: 75, regen: 2 }); // Damaged, regen
 
 Returns a snapshot of health state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getHealth } from 'blecsd';
+import { getHealth } from 'blecsd/components';
 
 const hp = getHealth(world, entity);
 if (hp) {
@@ -79,9 +76,8 @@ if (hp) {
 
 ### hasHealth / removeHealth
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasHealth, removeHealth } from 'blecsd';
+import { hasHealth, removeHealth } from 'blecsd/components';
 
 if (hasHealth(world, entity)) {
   removeHealth(world, entity);
@@ -94,9 +90,8 @@ if (hasHealth(world, entity)) {
 
 Applies damage. Respects invulnerability. Clamps to zero.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { damage } from 'blecsd';
+import { damage } from 'blecsd/components';
 
 const killed = damage(world, entity, 50);
 if (killed) {
@@ -110,9 +105,8 @@ if (killed) {
 
 Restores health, clamped to max.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { heal } from 'blecsd';
+import { heal } from 'blecsd/components';
 
 heal(world, entity, 25);
 ```
@@ -121,9 +115,8 @@ heal(world, entity, 25);
 
 ### setInvulnerable / clearInvulnerable / isInvulnerable
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setInvulnerable, clearInvulnerable, isInvulnerable } from 'blecsd';
+import { setInvulnerable, clearInvulnerable, isInvulnerable } from 'blecsd/components';
 
 setInvulnerable(world, entity, 2.0); // 2 seconds of invulnerability
 setInvulnerable(world, entity, 0);   // Permanent until cleared
@@ -138,9 +131,8 @@ if (isInvulnerable(world, entity)) {
 
 ### isDead
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isDead } from 'blecsd';
+import { isDead } from 'blecsd/components';
 
 if (isDead(world, entity)) {
   // current health <= 0
@@ -151,9 +143,8 @@ if (isDead(world, entity)) {
 
 Returns health as a 0-1 ratio.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getHealthPercent } from 'blecsd';
+import { getHealthPercent } from 'blecsd/components';
 
 const percent = getHealthPercent(world, entity);
 console.log(`HP: ${Math.round(percent * 100)}%`);
@@ -163,9 +154,8 @@ console.log(`HP: ${Math.round(percent * 100)}%`);
 
 Direct setters for individual fields.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setCurrentHealth, setMaxHealth, setRegen } from 'blecsd';
+import { setCurrentHealth, setMaxHealth, setRegen } from 'blecsd/components';
 
 setCurrentHealth(world, entity, 50); // Clamped to [0, max]
 setMaxHealth(world, entity, 200);    // Clamps current if over new max
@@ -178,9 +168,8 @@ setRegen(world, entity, 5);          // 5 HP per second
 
 Call each frame. Decrements invulnerability timer and applies regeneration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateHealth } from 'blecsd';
+import { updateHealth } from 'blecsd/components';
 
 // In your update loop
 updateHealth(world, entity, deltaTime);
@@ -188,10 +177,9 @@ updateHealth(world, entity, deltaTime);
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setHealth, damage, heal, isDead, setInvulnerable, updateHealth } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setHealth, damage, heal, isDead, setInvulnerable, updateHealth } from 'blecsd/components';
 
 const world = createWorld();
 const player = addEntity(world);

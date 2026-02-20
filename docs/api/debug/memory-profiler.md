@@ -4,9 +4,12 @@ Memory profiling and leak detection for development. Tracks entity and component
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMemoryProfiler } from 'blecsd';
+import { createMemoryProfiler } from 'blecsd/debug';
+import { createWorld } from 'blecsd/core';
+import { Position, Renderable } from 'blecsd/components';
+
+const world = createWorld();
 
 const profiler = createMemoryProfiler({
   trackedComponents: [
@@ -189,9 +192,9 @@ reset(): void;
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMemoryProfiler, createWorld, addEntity } from 'blecsd';
+import { createMemoryProfiler } from 'blecsd/debug';
+import { createWorld, addEntity } from 'blecsd/core';
 import { Position, Renderable } from 'blecsd/components';
 
 const profiler = createMemoryProfiler({
@@ -210,30 +213,14 @@ const world = createWorld();
 // Start automatic profiling
 profiler.startAutoSnapshot(world);
 
-// In your game loop, periodically check
-setInterval(() => {
-  const report = profiler.getReport(world);
-  console.log(report);
-  // Memory Profile Report
-  // ========================================
-  // Entities: 150
-  // Heap Used: 12.3MB
-  // ...
-  // Component Counts:
-  //   Position: 148
-  //   Renderable: 120
-  //
-  // Trends (over 30s):
-  //   Entity delta: +15
-  //   Heap delta: +256KB
-  //
-  // WARNINGS:
-  //   [entity] Entity count growing at 12.5/sec (100 -> 150)
-}, 10000);
+// Check periodically; example shows one immediate check
+const report = profiler.getReport(world);
+console.log(report);
 
 // Manual comparison
 const before = profiler.snapshot(world);
-spawnManyEntities(world, 1000);
+// spawn entities in the world
+for (let i = 0; i < 10; i++) addEntity(world);
 const after = profiler.snapshot(world);
 
 const diff = profiler.diff(before, after);

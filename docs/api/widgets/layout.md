@@ -4,10 +4,18 @@ The Layout widget is an auto-layout container that arranges children using diffe
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLayout, createBox } from 'blecsd/widgets';
+import { createWorld, addEntity } from 'blecsd/core';
+import {
+  createLayout,
+  createBox,
+  isLayout,
+  getLayoutMode,
+  calculateInlineLayout,
+  calculateGridLayout,
+  calculateFlexLayout,
+  LayoutConfigSchema,
+} from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -42,16 +50,9 @@ layout.recalculate();
 
 Creates a new Layout widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLayout } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
 // Basic inline layout (default)
-const layout = createLayout(world, eid);
+const layoutA = createLayout(world, addEntity(world));
 
 // Grid layout with 3 columns
 const gridLayout = createLayout(world, addEntity(world), {
@@ -71,6 +72,9 @@ const flexLayout = createLayout(world, addEntity(world), {
   width: 80,
   height: 24,
 });
+console.log(layoutA.eid);
+console.log(gridLayout.eid);
+console.log(flexLayout.eid);
 ```
 
 **Parameters:**
@@ -89,12 +93,13 @@ const flexLayout = createLayout(world, addEntity(world), {
 Children flow left-to-right, wrapping to the next line when they exceed the container width.
 
 ```typescript
-const layout = createLayout(world, eid, {
+const inlineLayout = createLayout(world, addEntity(world), {
   layout: 'inline',
   width: 80,
   gap: 1,
   wrap: true,  // Enable wrapping (default)
 });
+console.log(inlineLayout.eid);
 ```
 
 ### Grid
@@ -102,12 +107,13 @@ const layout = createLayout(world, eid, {
 Children are placed in a fixed-column grid.
 
 ```typescript
-const layout = createLayout(world, eid, {
+const gridLayout2 = createLayout(world, addEntity(world), {
   layout: 'grid',
   cols: 3,     // Number of columns
   gap: 2,      // Gap between cells
   width: 60,
 });
+console.log(gridLayout2.eid);
 ```
 
 ### Flex
@@ -115,14 +121,15 @@ const layout = createLayout(world, eid, {
 Children are arranged in a row or column with flexible alignment options.
 
 ```typescript
-const layout = createLayout(world, eid, {
+const flexLayout2 = createLayout(world, addEntity(world), {
   layout: 'flex',
-  direction: 'row',       // 'row' or 'column'
-  justify: 'space-between', // Main axis alignment
-  align: 'center',        // Cross axis alignment
+  direction: 'row',          // 'row' or 'column'
+  justify: 'space-between',  // Main axis alignment
+  align: 'center',           // Cross axis alignment
   gap: 2,
   width: 80,
 });
+console.log(flexLayout2.eid);
 ```
 
 ---
@@ -138,8 +145,9 @@ The layout widget provides a chainable API for all operations.
 The underlying entity ID.
 
 ```typescript
-const layout = createLayout(world, eid);
-console.log(layout.eid); // Entity ID number
+const layoutB = createLayout(world, addEntity(world));
+console.log(layoutB.eid); // Entity ID number
+layoutB.destroy();
 ```
 
 ### Visibility Methods
@@ -149,7 +157,9 @@ console.log(layout.eid); // Entity ID number
 Shows the layout.
 
 ```typescript
-layout.show();
+const layoutC = createLayout(world, addEntity(world));
+layoutC.show();
+layoutC.destroy();
 ```
 
 **Returns:** `LayoutWidget` for chaining
@@ -159,7 +169,9 @@ layout.show();
 Hides the layout.
 
 ```typescript
-layout.hide();
+const layoutD = createLayout(world, addEntity(world));
+layoutD.hide();
+layoutD.destroy();
 ```
 
 **Returns:** `LayoutWidget` for chaining
@@ -173,7 +185,9 @@ layout.hide();
 Sets the absolute position.
 
 ```typescript
-layout.setPosition(20, 15);
+const layoutE = createLayout(world, addEntity(world));
+layoutE.setPosition(20, 15);
+layoutE.destroy();
 ```
 
 **Returns:** `LayoutWidget` for chaining
@@ -183,7 +197,9 @@ layout.setPosition(20, 15);
 Moves the layout by a relative amount.
 
 ```typescript
-layout.move(5, -3);
+const layoutF = createLayout(world, addEntity(world));
+layoutF.move(5, -3);
+layoutF.destroy();
 ```
 
 **Returns:** `LayoutWidget` for chaining
@@ -197,7 +213,10 @@ layout.move(5, -3);
 Gets the current layout mode.
 
 ```typescript
-const mode = layout.getLayoutMode(); // 'inline' | 'grid' | 'flex'
+const layoutG = createLayout(world, addEntity(world));
+const mode = layoutG.getLayoutMode(); // 'inline' | 'grid' | 'flex'
+console.log(mode);
+layoutG.destroy();
 ```
 
 **Returns:** `LayoutMode`
@@ -207,7 +226,9 @@ const mode = layout.getLayoutMode(); // 'inline' | 'grid' | 'flex'
 Sets the gap between children.
 
 ```typescript
-layout.setGap(2);
+const layoutH = createLayout(world, addEntity(world));
+layoutH.setGap(2);
+layoutH.destroy();
 ```
 
 **Returns:** `LayoutWidget` for chaining
@@ -217,7 +238,10 @@ layout.setGap(2);
 Gets the current gap between children.
 
 ```typescript
-const gap = layout.getGap(); // number
+const layoutI = createLayout(world, addEntity(world));
+const gap = layoutI.getGap(); // number
+console.log(gap);
+layoutI.destroy();
 ```
 
 **Returns:** `number`
@@ -227,7 +251,9 @@ const gap = layout.getGap(); // number
 Recalculates and applies layout positions to all children.
 
 ```typescript
-layout.recalculate();
+const layoutJ = createLayout(world, addEntity(world));
+layoutJ.recalculate();
+layoutJ.destroy();
 ```
 
 **Returns:** `LayoutWidget` for chaining
@@ -241,7 +267,9 @@ layout.recalculate();
 Focuses the layout.
 
 ```typescript
-layout.focus();
+const layoutK = createLayout(world, addEntity(world));
+layoutK.focus();
+layoutK.destroy();
 ```
 
 **Returns:** `LayoutWidget` for chaining
@@ -251,7 +279,9 @@ layout.focus();
 Removes focus from the layout.
 
 ```typescript
-layout.blur();
+const layoutL = createLayout(world, addEntity(world));
+layoutL.blur();
+layoutL.destroy();
 ```
 
 **Returns:** `LayoutWidget` for chaining
@@ -261,7 +291,10 @@ layout.blur();
 Checks if the layout is currently focused.
 
 ```typescript
-const focused = layout.isFocused(); // boolean
+const layoutM = createLayout(world, addEntity(world));
+const focused = layoutM.isFocused(); // boolean
+console.log(focused);
+layoutM.destroy();
 ```
 
 **Returns:** `boolean`
@@ -275,8 +308,10 @@ const focused = layout.isFocused(); // boolean
 Appends a child entity.
 
 ```typescript
+const layoutN = createLayout(world, addEntity(world));
 const childEid = addEntity(world);
-layout.append(childEid);
+layoutN.append(childEid);
+layoutN.destroy();
 ```
 
 **Returns:** `LayoutWidget` for chaining
@@ -286,7 +321,10 @@ layout.append(childEid);
 Gets all direct children.
 
 ```typescript
-const children = layout.getChildren();
+const layoutO = createLayout(world, addEntity(world));
+const children = layoutO.getChildren();
+console.log(children.length);
+layoutO.destroy();
 ```
 
 **Returns:** `Entity[]`
@@ -300,7 +338,8 @@ const children = layout.getChildren();
 Destroys the widget.
 
 ```typescript
-layout.destroy();
+const layoutP = createLayout(world, addEntity(world));
+layoutP.destroy();
 ```
 
 ---
@@ -313,24 +352,22 @@ These functions can be used independently of the widget for custom layout calcul
 
 Calculates inline (flow) layout positions.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { calculateInlineLayout, type ChildLayoutData } from 'blecsd';
-
-const children: ChildLayoutData[] = [
+const childrenA: ChildLayoutData[] = [
   { eid: 1, width: 10, height: 5 },
   { eid: 2, width: 10, height: 5 },
   { eid: 3, width: 10, height: 5 },
 ];
 
 const positions = calculateInlineLayout(
-  children,
+  childrenA,
   80,    // container width
   1,     // gap
   true   // wrap
 );
 
 // positions is Map<Entity, { x: number, y: number }>
+console.log(positions.size);
 ```
 
 **Parameters:**
@@ -345,22 +382,20 @@ const positions = calculateInlineLayout(
 
 Calculates grid layout positions.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { calculateGridLayout, type ChildLayoutData } from 'blecsd';
-
-const children: ChildLayoutData[] = [
+const childrenB: ChildLayoutData[] = [
   { eid: 1, width: 10, height: 5 },
   { eid: 2, width: 10, height: 5 },
   { eid: 3, width: 10, height: 5 },
   { eid: 4, width: 10, height: 5 },
 ];
 
-const positions = calculateGridLayout(
-  children,
+const gridPositions = calculateGridLayout(
+  childrenB,
   2,  // columns
   1   // gap
 );
+console.log(gridPositions.size);
 ```
 
 **Parameters:**
@@ -374,23 +409,21 @@ const positions = calculateGridLayout(
 
 Calculates flex layout positions.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { calculateFlexLayout, type ChildLayoutData } from 'blecsd';
-
-const children: ChildLayoutData[] = [
+const childrenC: ChildLayoutData[] = [
   { eid: 1, width: 10, height: 5 },
   { eid: 2, width: 10, height: 5 },
 ];
 
-const positions = calculateFlexLayout(
-  children,
+const flexPositions = calculateFlexLayout(
+  childrenC,
   80,              // container size
   2,               // gap
   'row',           // direction
   'center',        // justify
   'center'         // align
 );
+console.log(flexPositions.size);
 ```
 
 **Parameters:**
@@ -411,13 +444,12 @@ const positions = calculateFlexLayout(
 
 Checks if an entity is a layout widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isLayout } from 'blecsd';
-
-if (isLayout(world, entity)) {
+const layoutQ = createLayout(world, addEntity(world));
+if (isLayout(world, layoutQ.eid)) {
   // Handle layout-specific logic
 }
+layoutQ.destroy();
 ```
 
 **Returns:** `boolean`
@@ -428,12 +460,11 @@ if (isLayout(world, entity)) {
 
 Gets the layout mode of a layout entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getLayoutMode } from 'blecsd';
-
-const mode = getLayoutMode(world, layoutEntity);
-// 'inline', 'grid', or 'flex'
+const layoutR = createLayout(world, addEntity(world), { layout: 'grid' });
+const layoutModeVal = getLayoutMode(world, layoutR.eid);
+console.log(layoutModeVal); // 'inline', 'grid', or 'flex'
+layoutR.destroy();
 ```
 
 **Returns:** `LayoutMode`
@@ -449,25 +480,25 @@ Configuration for creating a layout widget.
 ```typescript
 interface LayoutConfig {
   // Position
-  readonly left?: PositionValue;
-  readonly top?: PositionValue;
-  readonly width?: DimensionValue;
-  readonly height?: DimensionValue;
+  readonly left?: number;
+  readonly top?: number;
+  readonly width?: number;
+  readonly height?: number;
 
   // Layout mode
-  readonly layout?: LayoutMode;      // Default: 'inline'
+  readonly layout?: 'inline' | 'grid' | 'flex';  // Default: 'inline'
 
   // Layout options
-  readonly gap?: number;             // Default: 0
-  readonly wrap?: boolean;           // Default: true
-  readonly justify?: JustifyContent; // Default: 'start'
-  readonly align?: AlignItems;       // Default: 'start'
+  readonly gap?: number;              // Default: 0
+  readonly wrap?: boolean;            // Default: true
+  readonly justify?: 'start' | 'center' | 'end' | 'space-between';  // Default: 'start'
+  readonly align?: 'start' | 'center' | 'end';  // Default: 'start'
 
   // Grid-specific
-  readonly cols?: number;            // Default: 3
+  readonly cols?: number;             // Default: 3
 
   // Flex-specific
-  readonly direction?: FlexDirection; // Default: 'row'
+  readonly direction?: 'row' | 'column';  // Default: 'row'
 
   // Style
   readonly fg?: string | number;
@@ -513,7 +544,7 @@ Child layout data for calculations.
 
 ```typescript
 interface ChildLayoutData {
-  readonly eid: Entity;
+  readonly eid: number;
   readonly width: number;
   readonly height: number;
 }
@@ -536,7 +567,7 @@ The layout widget interface.
 
 ```typescript
 interface LayoutWidget {
-  readonly eid: Entity;
+  readonly eid: number;
 
   // Visibility
   show(): LayoutWidget;
@@ -547,7 +578,7 @@ interface LayoutWidget {
   setPosition(x: number, y: number): LayoutWidget;
 
   // Layout-specific
-  getLayoutMode(): LayoutMode;
+  getLayoutMode(): 'inline' | 'grid' | 'flex';
   setGap(gap: number): LayoutWidget;
   getGap(): number;
   recalculate(): LayoutWidget;
@@ -558,8 +589,8 @@ interface LayoutWidget {
   isFocused(): boolean;
 
   // Children
-  append(child: Entity): LayoutWidget;
-  getChildren(): Entity[];
+  append(child: number): LayoutWidget;
+  getChildren(): number[];
 
   // Lifecycle
   destroy(): void;
@@ -570,10 +601,7 @@ interface LayoutWidget {
 
 ## Zod Schemas
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { LayoutConfigSchema } from 'blecsd';
-
 // Validate configuration
 const result = LayoutConfigSchema.safeParse({
   layout: 'flex',
@@ -593,13 +621,7 @@ if (result.success) {
 
 ### Dashboard Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLayout, createBox } from 'blecsd/widgets';
-
-const world = createWorld();
-
 // Create a 3-column grid layout
 const dashboard = createLayout(world, addEntity(world), {
   left: 0,
@@ -613,12 +635,11 @@ const dashboard = createLayout(world, addEntity(world), {
 
 // Add dashboard panels
 for (let i = 0; i < 6; i++) {
-  const panel = createBox(world, addEntity(world), {
+  const boxPanel = createBox(world, addEntity(world), {
     width: 38,
     height: 18,
-    border: 'single',
   });
-  dashboard.append(panel.eid);
+  dashboard.append(boxPanel.eid);
 }
 
 dashboard.recalculate();
@@ -626,13 +647,7 @@ dashboard.recalculate();
 
 ### Toolbar Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLayout, createBox } from 'blecsd/widgets';
-
-const world = createWorld();
-
 // Create a horizontal toolbar with spaced buttons
 const toolbar = createLayout(world, addEntity(world), {
   left: 0,
@@ -660,13 +675,7 @@ toolbar.recalculate();
 
 ### Centered Content
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLayout, createBox } from 'blecsd/widgets';
-
-const world = createWorld();
-
 // Center content in the middle of the screen
 const container = createLayout(world, addEntity(world), {
   left: 0,
@@ -681,25 +690,18 @@ const container = createLayout(world, addEntity(world), {
 });
 
 // Add centered content
-const title = createBox(world, addEntity(world), { width: 40, height: 3 });
-const form = createBox(world, addEntity(world), { width: 40, height: 10 });
-const buttons = createBox(world, addEntity(world), { width: 40, height: 3 });
+const titleBox = createBox(world, addEntity(world), { width: 40, height: 3 });
+const formBox = createBox(world, addEntity(world), { width: 40, height: 10 });
+const buttonsBox = createBox(world, addEntity(world), { width: 40, height: 3 });
 
-container.append(title.eid).append(form.eid).append(buttons.eid);
+container.append(titleBox.eid).append(formBox.eid).append(buttonsBox.eid);
 container.recalculate();
 ```
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createLayout, createBox } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const layout = createLayout(world, eid, {
+const chainedLayout = createLayout(world, addEntity(world), {
   left: 0,
   top: 0,
   width: 80,
@@ -710,8 +712,8 @@ const layout = createLayout(world, eid, {
   .show();
 
 // Add children and recalculate
-const child = createBox(world, addEntity(world), { width: 10, height: 5 });
-layout.append(child.eid).recalculate();
+const childBox = createBox(world, addEntity(world), { width: 10, height: 5 });
+chainedLayout.append(childBox.eid).recalculate();
 ```
 
 ---

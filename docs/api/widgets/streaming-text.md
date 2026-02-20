@@ -4,9 +4,10 @@ Efficiently renders text that streams in character-by-character or chunk-by-chun
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createStreamingText, addEntity, createWorld } from 'blecsd';
+import { createStreamingText, StreamingTextConfigSchema } from 'blecsd/widgets';
+import { createStreamingState, appendToState, clearState, getStreamVisibleLines, scrollToLine, wrapLine, stripAnsiSequences } from 'blecsd/widgets';
+import { addEntity, createWorld } from 'blecsd/core';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -40,15 +41,13 @@ stream.endStream();
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { StreamingTextConfigSchema } from 'blecsd';
-
 const config = StreamingTextConfigSchema.parse({
   maxLines: 5000,
   wrapWidth: 120,
   autoScroll: true,
 });
+console.log(config.wrapWidth);
 ```
 
 ---
@@ -59,16 +58,14 @@ const config = StreamingTextConfigSchema.parse({
 
 Creates a streaming text widget attached to an existing entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createStreamingText, addEntity } from 'blecsd';
-
-const eid = addEntity(world);
-const stream = createStreamingText(world, eid, {
+const stEid = addEntity(world);
+const stWidget = createStreamingText(world, stEid, {
   wrapWidth: 80,
   maxLines: 5000,
   autoScroll: true,
 });
+console.log(stWidget.eid);
 ```
 
 **Parameters:**
@@ -84,94 +81,89 @@ const stream = createStreamingText(world, eid, {
 
 ### eid
 
-```typescript
-readonly eid: Entity
-```
-
 The underlying entity ID.
 
-### append
-
 ```typescript
-append(text: string): StreamingTextWidget
+const stA = createStreamingText(world, addEntity(world));
+console.log(stA.eid);
 ```
+
+### append
 
 Appends text to the buffer. Handles partial lines (text without a trailing newline is buffered until a newline arrives). Automatically wraps lines and evicts old content if `maxLines` is exceeded.
 
 ```typescript
-stream.append('Hello ');
-stream.append('world\n');
+const stB = createStreamingText(world, addEntity(world));
+stB.append('Hello ');
+stB.append('world\n');
 // Buffer now contains: "Hello world"
 ```
 
 ### appendLine
 
-```typescript
-appendLine(text: string): StreamingTextWidget
-```
-
 Appends a complete line (adds newline automatically).
 
 ```typescript
-stream.appendLine('This is a full line');
+const stC = createStreamingText(world, addEntity(world));
+stC.appendLine('This is a full line');
 ```
 
 ### clear
 
-```typescript
-clear(): StreamingTextWidget
-```
-
 Clears all content from the buffer.
+
+```typescript
+const stD = createStreamingText(world, addEntity(world));
+stD.clear();
+```
 
 ### getState
 
-```typescript
-getState(): StreamingTextState
-```
-
 Returns the full internal state, including lines, scroll position, and configuration.
+
+```typescript
+const stE = createStreamingText(world, addEntity(world));
+const stState = stE.getState();
+console.log(stState.totalBytes);
+```
 
 ### getVisibleLines
 
-```typescript
-getVisibleLines(): readonly string[]
-```
-
 Returns only the lines visible in the current viewport (based on scrollTop and viewportHeight).
 
-### getProgress
-
 ```typescript
-getProgress(): StreamProgress
+const stF = createStreamingText(world, addEntity(world));
+const visible = stF.getVisibleLines();
+console.log(visible.length);
 ```
+
+### getProgress
 
 Returns streaming progress information.
 
 ```typescript
-const progress = stream.getProgress();
-console.log(progress.totalBytes);      // Total bytes received
-console.log(progress.totalLines);      // Total lines in buffer
-console.log(progress.visibleLines);    // Lines in viewport
-console.log(progress.isAutoScrolling); // Auto-scroll enabled
-console.log(progress.isStreaming);     // Stream currently active
+const stG = createStreamingText(world, addEntity(world));
+const progress = stG.getProgress();
+console.log(progress.totalBytes);
+console.log(progress.totalLines);
+console.log(progress.visibleLines);
+console.log(progress.isAutoScrolling);
+console.log(progress.isStreaming);
 ```
 
 ### consumeDirty
 
-```typescript
-consumeDirty(): StreamDirtyRegion | null
-```
-
 Gets and clears the dirty region. Returns information about what changed since the last call, allowing incremental re-renders.
 
 ```typescript
-const dirty = stream.consumeDirty();
+const stH = createStreamingText(world, addEntity(world));
+const dirty = stH.consumeDirty();
 if (dirty) {
   if (dirty.fullRedraw) {
     // Re-render everything
   } else {
     // Only re-render from dirty.startLine for dirty.lineCount lines
+    console.log(`Re-render ${dirty.lineCount} lines from line ${dirty.startLine}`);
   }
 }
 ```
@@ -179,10 +171,11 @@ if (dirty) {
 ### scrollTo / scrollBy / scrollToBottom / scrollToTop
 
 ```typescript
-scrollTo(line: number): StreamingTextWidget
-scrollBy(delta: number): StreamingTextWidget
-scrollToBottom(): StreamingTextWidget
-scrollToTop(): StreamingTextWidget
+const stI = createStreamingText(world, addEntity(world));
+stI.scrollTo(10);
+stI.scrollBy(5);
+stI.scrollToBottom();
+stI.scrollToTop();
 ```
 
 Scroll control. `scrollBy` takes positive values to scroll down and negative to scroll up.
@@ -190,7 +183,8 @@ Scroll control. `scrollBy` takes positive values to scroll down and negative to 
 ### setViewportHeight
 
 ```typescript
-setViewportHeight(height: number): StreamingTextWidget
+const stJ = createStreamingText(world, addEntity(world));
+stJ.setViewportHeight(24);
 ```
 
 Sets the viewport height in lines.
@@ -198,7 +192,8 @@ Sets the viewport height in lines.
 ### setWrapWidth
 
 ```typescript
-setWrapWidth(width: number): StreamingTextWidget
+const stK = createStreamingText(world, addEntity(world));
+stK.setWrapWidth(120);
 ```
 
 Changes the wrap width. Re-wraps all existing content with the new width.
@@ -206,7 +201,8 @@ Changes the wrap width. Re-wraps all existing content with the new width.
 ### setAutoScroll
 
 ```typescript
-setAutoScroll(enabled: boolean): StreamingTextWidget
+const stL = createStreamingText(world, addEntity(world));
+stL.setAutoScroll(false);
 ```
 
 Enables or disables auto-scrolling on new content.
@@ -214,8 +210,10 @@ Enables or disables auto-scrolling on new content.
 ### startStream / endStream
 
 ```typescript
-startStream(): StreamingTextWidget
-endStream(): StreamingTextWidget
+const stM = createStreamingText(world, addEntity(world));
+stM.startStream();
+stM.appendLine('streaming...');
+stM.endStream();
 ```
 
 Marks the beginning and end of a streaming session. `endStream` flushes any remaining partial line in the buffer.
@@ -228,11 +226,9 @@ These functions operate on `StreamingTextState` objects and can be used independ
 
 ### createStreamingState
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createStreamingState } from 'blecsd';
-
 const state = createStreamingState({ wrapWidth: 120 }, 24);
+console.log(state.viewportHeight);
 ```
 
 **Parameters:**
@@ -243,42 +239,38 @@ const state = createStreamingState({ wrapWidth: 120 }, 24);
 
 ### appendToState
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { appendToState } from 'blecsd';
-
-let state = createStreamingState();
-state = appendToState(state, 'Hello world\n');
+let stateA = createStreamingState();
+stateA = appendToState(stateA, 'Hello world\n');
+console.log(stateA.lines.length);
 ```
 
 Appends text to a state object, handling wrapping, eviction, and auto-scroll.
 
 ### clearState
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearState } from 'blecsd';
-
-state = clearState(state);
+let stateB = createStreamingState();
+stateB = appendToState(stateB, 'some content\n');
+stateB = clearState(stateB);
+console.log(stateB.lines.length);
 ```
 
 ### getStreamVisibleLines
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getStreamVisibleLines } from 'blecsd';
-
-const visible = getStreamVisibleLines(state);
+const stateC = createStreamingState();
+const visibleLines = getStreamVisibleLines(stateC);
+console.log(visibleLines.length);
 ```
 
-### scrollToLine / scrollByLines
+### scrollToLine
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { scrollToLine, scrollByLines } from 'blecsd';
-
-state = scrollToLine(state, 100);
-state = scrollByLines(state, -5);
+let stateD = createStreamingState();
+stateD = appendToState(stateD, 'Line 1\nLine 2\nLine 3\n');
+stateD = scrollToLine(stateD, 1);
+console.log(stateD.scrollTop);
 ```
 
 ---
@@ -287,22 +279,18 @@ state = scrollByLines(state, -5);
 
 ### wrapLine
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { wrapLine } from 'blecsd';
-
-const lines = wrapLine('Hello World, this is a long line', 10);
+const wrappedLines = wrapLine('Hello World, this is a long line', 10);
 // ['Hello Worl', 'd, this is', ' a long li', 'ne']
+console.log(wrappedLines);
 ```
 
 ### stripAnsiSequences
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { stripAnsiSequences } from 'blecsd';
-
 const clean = stripAnsiSequences('\x1b[31mRed text\x1b[0m');
 // 'Red text'
+console.log(clean);
 ```
 
 ---
@@ -318,9 +306,9 @@ interface StreamingTextState {
   readonly viewportHeight: number;
   readonly totalBytes: number;
   readonly isStreaming: boolean;
-  readonly config: StreamingTextConfig;
+  readonly config: { maxLines: number; wrapWidth: number; autoScroll: boolean; stripAnsi: boolean };
   readonly partialLine: string;
-  readonly dirty: StreamDirtyRegion | null;
+  readonly dirty: { startLine: number; lineCount: number; fullRedraw: boolean } | null;
 }
 ```
 
@@ -350,55 +338,44 @@ interface StreamDirtyRegion {
 
 ## Examples
 
-### Streaming from an Async Source
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { createStreamingText, addEntity, createWorld } from 'blecsd';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const stream = createStreamingText(world, eid, {
-  wrapWidth: 80,
-  maxLines: 10000,
-  autoScroll: true,
-});
-
-stream.startStream();
-for await (const chunk of asyncSource) {
-  stream.append(chunk);
-}
-stream.endStream();
-```
-
 ### Manual Scroll with Progress
 
 ```typescript
-const stream = createStreamingText(world, eid, {
+const streamEx = createStreamingText(world, addEntity(world), {
   autoScroll: false,
 });
 
-// User scrolls manually
-stream.scrollBy(10);
+streamEx.startStream();
+streamEx.appendLine('Line 1');
+streamEx.appendLine('Line 2');
+streamEx.endStream();
 
-const progress = stream.getProgress();
+// User scrolls manually
+streamEx.scrollBy(1);
+
+const progress = streamEx.getProgress();
 console.log(`${progress.totalLines} total lines`);
 ```
 
 ### Incremental Rendering
 
 ```typescript
+const streamEx2 = createStreamingText(world, addEntity(world));
+streamEx2.appendLine('Updated content');
+
 function renderFrame() {
-  const dirty = stream.consumeDirty();
+  const dirty = streamEx2.consumeDirty();
   if (!dirty) return; // Nothing changed
 
   if (dirty.fullRedraw) {
-    renderAllLines(stream.getVisibleLines());
+    const lines = streamEx2.getVisibleLines();
+    console.log(`Full redraw: ${lines.length} lines`);
   } else {
-    renderPartialUpdate(dirty.startLine, dirty.lineCount);
+    // Only re-render from dirty.startLine for dirty.lineCount lines
+    console.log(`Partial redraw: ${dirty.lineCount} lines from ${dirty.startLine}`);
   }
 }
+renderFrame();
 ```
 
 ---

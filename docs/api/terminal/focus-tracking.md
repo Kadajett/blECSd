@@ -4,7 +4,6 @@ Provides focus/blur event handling that detects when the terminal window gains o
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createInputHandler,
@@ -12,7 +11,7 @@ import {
   enableFocusTracking,
   disableFocusTracking,
   getTerminalFocusEventBus,
-} from 'blecsd';
+} from 'blecsd/terminal';
 
 const inputHandler = createInputHandler(process.stdin);
 const tracker = createFocusTracker(inputHandler);
@@ -66,10 +65,9 @@ Creates a focus tracker for the given input handler. The tracker will listen for
 function createFocusTracker(inputHandler: InputHandler): FocusTrackerState
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFocusTracker } from 'blecsd';
-import { createInputHandler } from 'blecsd/core';
+import { createFocusTracker } from 'blecsd/terminal';
+import { createInputHandler } from 'blecsd/terminal';
 
 const inputHandler = createInputHandler(process.stdin);
 const tracker = createFocusTracker(inputHandler);
@@ -83,10 +81,11 @@ Enables focus tracking on an input handler. Sends the CSI ? 1004 h sequence to e
 function enableFocusTracking(state: FocusTrackerState): void
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableFocusTracking } from 'blecsd';
+import { createInputHandler, createFocusTracker, enableFocusTracking } from 'blecsd/terminal';
 
+const inputHandler = createInputHandler(process.stdin);
+const tracker = createFocusTracker(inputHandler);
 enableFocusTracking(tracker);
 ```
 
@@ -98,10 +97,11 @@ Disables focus tracking on an input handler. Sends the CSI ? 1004 l sequence to 
 function disableFocusTracking(state: FocusTrackerState): void
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { disableFocusTracking } from 'blecsd';
+import { createInputHandler, createFocusTracker, disableFocusTracking } from 'blecsd/terminal';
 
+const inputHandler = createInputHandler(process.stdin);
+const tracker = createFocusTracker(inputHandler);
 disableFocusTracking(tracker);
 ```
 
@@ -113,9 +113,8 @@ Gets the focus event bus, creating if needed. Returns the same event bus instanc
 function getTerminalFocusEventBus(): EventBus<FocusTrackingEventMap>
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getTerminalFocusEventBus } from 'blecsd';
+import { getTerminalFocusEventBus } from 'blecsd/terminal';
 
 const bus = getTerminalFocusEventBus();
 
@@ -146,10 +145,10 @@ Gets the current focus state for an input handler.
 function isTerminalFocused(inputHandler: InputHandler): boolean | undefined
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isTerminalFocused } from 'blecsd';
+import { createInputHandler, isTerminalFocused } from 'blecsd/terminal';
 
+const inputHandler = createInputHandler(process.stdin);
 const focused = isTerminalFocused(inputHandler);
 if (focused) {
   console.log('Terminal is focused');
@@ -166,9 +165,10 @@ Manually triggers a focus event. Useful for testing or when focus state is obtai
 function triggerFocusEvent(inputHandler: InputHandler, focused: boolean): void
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { triggerFocusEvent } from 'blecsd';
+import { createInputHandler, triggerFocusEvent } from 'blecsd/terminal';
+
+const inputHandler = createInputHandler(process.stdin);
 
 // Simulate focus gained
 triggerFocusEvent(inputHandler, true);
@@ -211,14 +211,13 @@ Focus tracking is useful for:
 
 ## Example: Pause Updates When Unfocused
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createInputHandler,
   createFocusTracker,
   enableFocusTracking,
   getTerminalFocusEventBus,
-} from 'blecsd';
+} from 'blecsd/terminal';
 
 const inputHandler = createInputHandler(process.stdin);
 const tracker = createFocusTracker(inputHandler);

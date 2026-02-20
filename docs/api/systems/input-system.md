@@ -13,16 +13,16 @@ The input system handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, createScheduler } from 'blecsd/core';
 import {
-  createScheduler,
   registerInputSystem,
   queueKeyEvent,
   queueMouseEvent,
-  getInputEventBus
-} from 'blecsd';
+  getInputEventBus,
+} from 'blecsd/systems';
 
+const world = createWorld();
 const scheduler = createScheduler();
 registerInputSystem(scheduler);
 
@@ -31,11 +31,12 @@ getInputEventBus().on('click', (e) => {
   console.log(`Clicked at ${e.x}, ${e.y}`);
 });
 
-// In your input handler (e.g., from InputHandler)
-inputHandler.onKey((event) => queueKeyEvent(event));
-inputHandler.onMouse((event) => queueMouseEvent(event));
+// In your input handler (e.g., from InputHandler):
+// inputHandler.onKey((event) => queueKeyEvent(event));
+// inputHandler.onMouse((event) => queueMouseEvent(event));
 
 // In game loop
+const deltaTime = 1 / 60;
 scheduler.run(world, deltaTime);
 ```
 
@@ -45,9 +46,8 @@ scheduler.run(world, deltaTime);
 
 Queue a keyboard event for processing on the next frame.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queueKeyEvent } from 'blecsd';
+import { queueKeyEvent } from 'blecsd/systems';
 
 queueKeyEvent({
   name: 'a',
@@ -62,9 +62,8 @@ queueKeyEvent({
 
 Queue a mouse event for processing on the next frame.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queueMouseEvent } from 'blecsd';
+import { queueMouseEvent } from 'blecsd/systems';
 
 queueMouseEvent({
   x: 10,
@@ -79,9 +78,8 @@ queueMouseEvent({
 
 Get the current event queue (for debugging).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getEventQueue } from 'blecsd';
+import { getEventQueue } from 'blecsd/systems';
 
 const queue = getEventQueue();
 console.log(`${queue.length} events pending`);
@@ -91,9 +89,8 @@ console.log(`${queue.length} events pending`);
 
 Clear all pending events.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearEventQueue } from 'blecsd';
+import { clearEventQueue } from 'blecsd/systems';
 
 clearEventQueue();
 ```
@@ -104,15 +101,19 @@ clearEventQueue();
 
 Find all entities at a screen position, sorted by z-index.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hitTest } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { hitTest } from 'blecsd/core';
 
+const world = createWorld();
+const mouseX = 10;
+const mouseY = 5;
 const hits = hitTest(world, mouseX, mouseY);
-if (hits.length > 0) {
+if (hits && hits.length > 0) {
   const topEntity = hits[0].entity;
   const localX = hits[0].localX;
   const localY = hits[0].localY;
+  console.log('hit entity:', topEntity, 'at local coords', localX, localY);
 }
 ```
 
@@ -126,10 +127,14 @@ if (hits.length > 0) {
 
 Test if a point is inside an entity's bounds.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { pointInEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { pointInEntity } from 'blecsd/systems';
 
+const world = createWorld();
+const entity = addEntity(world);
+const x = 5;
+const y = 3;
 if (pointInEntity(world, entity, x, y)) {
   console.log('Point is inside entity');
 }
@@ -139,10 +144,13 @@ if (pointInEntity(world, entity, x, y)) {
 
 Get the topmost interactive entity at a position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getInteractiveEntityAt } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { getInteractiveEntityAt } from 'blecsd/systems';
 
+const world = createWorld();
+const x = 5;
+const y = 3;
 const entity = getInteractiveEntityAt(world, x, y);
 if (entity !== null) {
   // Handle interaction with entity
@@ -157,9 +165,12 @@ Capture directs all mouse events to a specific entity (for drag operations).
 
 Start capturing mouse events to an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { captureMouseTo } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { captureMouseTo } from 'blecsd/systems';
+
+const world = createWorld();
+const entityId = addEntity(world);
 
 // On drag start
 captureMouseTo(entityId);
@@ -169,9 +180,8 @@ captureMouseTo(entityId);
 
 Stop capturing mouse events.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { releaseMouse } from 'blecsd';
+import { releaseMouse } from 'blecsd/systems';
 
 // On drag end
 releaseMouse();
@@ -181,9 +191,8 @@ releaseMouse();
 
 Check capture state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isMouseCaptured, getMouseCaptureEntity } from 'blecsd';
+import { isMouseCaptured, getMouseCaptureEntity } from 'blecsd/systems';
 
 if (isMouseCaptured()) {
   const entity = getMouseCaptureEntity();
@@ -198,9 +207,8 @@ The input system dispatches events to a global event bus.
 
 Get the event bus to subscribe to UI events.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getInputEventBus } from 'blecsd';
+import { getInputEventBus } from 'blecsd/systems';
 
 const bus = getInputEventBus();
 
@@ -235,9 +243,8 @@ bus.on('scroll', ({ direction, amount }) => {
 
 Register the input system with a scheduler.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerInputSystem } from 'blecsd';
+import { registerInputSystem } from 'blecsd/systems';
 import { createScheduler } from 'blecsd/core';
 
 const scheduler = createScheduler();
@@ -251,9 +258,8 @@ The input system is automatically registered in the protected INPUT phase, ensur
 
 The raw system function (for advanced use).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { inputSystem } from 'blecsd';
+import { inputSystem } from 'blecsd/systems';
 
 // Manual execution (rarely needed)
 inputSystem(world);
@@ -265,9 +271,12 @@ inputSystem(world);
 
 Clear input state for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearEntityInput } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { clearEntityInput } from 'blecsd/systems';
+
+const world = createWorld();
+const entity = addEntity(world);
 
 // Clear keyboard and mouse state
 clearEntityInput(world, entity);
@@ -277,21 +286,22 @@ clearEntityInput(world, entity);
 
 Get all entities that can receive input.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { queryInputReceivers } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { queryInputReceivers } from 'blecsd/systems';
 
+const world = createWorld();
 const receivers = queryInputReceivers(world);
 // Returns entities with Interactive or Focusable components
+console.log('input receivers:', receivers.length);
 ```
 
 ### resetInputState
 
 Reset all input system state (for testing).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetInputState } from 'blecsd';
+import { resetInputState } from 'blecsd/systems';
 
 resetInputState();
 ```
@@ -346,22 +356,21 @@ interface InputSystemState {
 
 Complete example integrating input stream with input system:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity, createScheduler } from 'blecsd/core';
+import { createInputHandler } from 'blecsd/terminal';
 import {
-  createWorld,
-  addEntity,
-  createScheduler,
-  createInputHandler,
   registerInputSystem,
   queueKeyEvent,
   queueMouseEvent,
   getInputEventBus,
+} from 'blecsd/systems';
+import {
   setPosition,
   setDimensions,
   setInteractive,
-  makeFocusable
-} from 'blecsd';
+  makeFocusable,
+} from 'blecsd/components';
 
 // Create world and scheduler
 const world = createWorld();
@@ -386,7 +395,7 @@ getInputEventBus().on('click', ({ x, y }) => {
 });
 
 // Start input and game loop
-inputHandler.start();
+// inputHandler.start();  // Would start listening for real input
 let lastTime = Date.now();
 
 setInterval(() => {

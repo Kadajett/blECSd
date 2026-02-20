@@ -4,15 +4,11 @@ Efficient, async clipboard operations that never block the UI. Supports large te
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createClipboardManager,
-  chunkText,
-  streamPaste,
-} from 'blecsd';
+import { createClipboardManager, chunkText, streamPaste } from 'blecsd/terminal';
 
 const cm = createClipboardManager();
+const largeText = 'A'.repeat(1000);
 
 // Copy small text (instant)
 await cm.copy('Hello World');
@@ -86,15 +82,15 @@ Creates a clipboard manager for efficient copy/paste operations.
 function createClipboardManager(config?: Partial<ClipboardManagerConfig>): ClipboardManager
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createClipboardManager } from 'blecsd';
+import { createClipboardManager } from 'blecsd/terminal';
 
 const cm = createClipboardManager({ chunkSize: 32 * 1024, maxSize: 5 * 1024 * 1024 });
+const largeText = 'A'.repeat(1000);
 
 // Copy with progress
 await cm.copy(largeText, (progress) => {
-  renderProgressBar(progress.percentage);
+  console.log('copy progress:', progress.percentage, '%');
 });
 ```
 
@@ -117,13 +113,13 @@ Splits text into chunks for streaming paste.
 function chunkText(text: string, chunkSize: number): readonly string[]
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { chunkText } from 'blecsd';
+import { chunkText } from 'blecsd/terminal';
 
+const largeText = 'A'.repeat(1000);
 const chunks = chunkText(largeText, 64 * 1024);
 for (const chunk of chunks) {
-  await processChunk(chunk);
+  console.log('chunk length:', chunk.length);
 }
 ```
 
@@ -139,13 +135,12 @@ function streamPaste(
 ): Promise<void>
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { streamPaste } from 'blecsd';
+import { streamPaste } from 'blecsd/terminal';
 
+const largeText = 'A'.repeat(1000);
 await streamPaste(largeText, (chunk, progress) => {
-  insertText(chunk);
-  updateProgressBar(progress);
+  console.log('stream chunk length:', chunk.length, 'progress:', progress.percentage, '%');
 });
 ```
 

@@ -15,17 +15,19 @@ The smooth scroll system handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createSmoothScrollSystem,
-  getScrollState,
-  applyScrollImpulse,
-  LoopPhase,
-} from 'blecsd';
+import { createWorld, addEntity, createScheduler, LoopPhase } from 'blecsd/core';
+import { createSmoothScrollSystem, getScrollState, applyScrollImpulse } from 'blecsd/systems';
+
+const world = createWorld();
+const entity = addEntity(world);
+const contentWidth = 200;
+const contentHeight = 400;
+const scheduler = createScheduler();
 
 // Initialize scroll state for an entity
 const state = getScrollState(entity, contentWidth, contentHeight, 80, 24);
+console.log('Scroll state initialized:', state.scrollX, state.scrollY);
 
 // Apply scroll impulse (e.g., from mouse wheel)
 applyScrollImpulse(entity, 0, -3);
@@ -111,10 +113,11 @@ function createSmoothScrollSystem(physics?: Partial<ScrollPhysicsConfig>): Syste
 
 **Returns:** A `System` function for the ANIMATION phase.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createSmoothScrollSystem } from 'blecsd';
-import { LoopPhase } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { createSmoothScrollSystem } from 'blecsd/systems';
+
+const scheduler = createScheduler();
 
 const scrollSystem = createSmoothScrollSystem({
   friction: 0.92,
@@ -160,9 +163,8 @@ function applyScrollImpulse(
 ): void
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { applyScrollImpulse } from 'blecsd';
+import { applyScrollImpulse } from 'blecsd/systems';
 
 // Mouse wheel scroll
 applyScrollImpulse(entity, 0, -3);
@@ -183,9 +185,8 @@ function smoothScrollTo(
 ): void
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { smoothScrollTo } from 'blecsd';
+import { smoothScrollTo } from 'blecsd/systems';
 
 // Scroll to top
 smoothScrollTo(entity, null, 0);
@@ -260,12 +261,14 @@ function clearAllScrollStates(): void
 
 Complete scrollable content area with momentum:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   createScheduler,
+  LoopPhase,
+} from 'blecsd/core';
+import {
   createSmoothScrollSystem,
   getScrollState,
   applyScrollImpulse,
@@ -274,8 +277,7 @@ import {
   endUserScroll,
   isScrolling,
   getScrollPosition,
-  LoopPhase,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 const world = createWorld();
 const scheduler = createScheduler();

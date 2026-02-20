@@ -6,9 +6,8 @@ Labels are text annotations attached to entities, typically displayed at a speci
 
 Defines where the label is positioned relative to the element.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { LabelPosition } from 'blecsd';
+import { LabelPosition } from 'blecsd/components';
 
 // Available positions
 LabelPosition.TopLeft      // 0 - Label at top-left corner
@@ -27,9 +26,8 @@ LabelPosition.Right        // 7 - Label at right side, vertically centered
 
 The Label component stores label metadata using bitecs SoA (Structure of Arrays) pattern.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Label } from 'blecsd';
+import { Label } from 'blecsd/components';
 
 // Component arrays
 Label.labelId   // Uint32Array - Reference to label text in the label store
@@ -46,9 +44,9 @@ Label.offsetY   // Int8Array   - Vertical offset from calculated position
 
 Checks if an entity has a Label component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, createWorld, hasLabel, setLabel } from 'blecsd';
+import { addEntity, createWorld } from 'blecsd/core';
+import { hasLabel, setLabel } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -65,9 +63,9 @@ hasLabel(world, eid); // true
 
 Sets or updates a label on an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, createWorld, setLabel, LabelPosition } from 'blecsd';
+import { addEntity, createWorld } from 'blecsd/core';
+import { setLabel, LabelPosition } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -103,9 +101,9 @@ setLabel(world, eid, 'New Label');
 
 Gets the label text for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, createWorld, setLabel, getLabelText } from 'blecsd';
+import { addEntity, createWorld } from 'blecsd/core';
+import { setLabel, getLabelText } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -122,9 +120,9 @@ getLabelText(world, eid); // 'Username'
 
 Gets full label data for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, createWorld, setLabel, getLabel, LabelPosition } from 'blecsd';
+import { addEntity, createWorld } from 'blecsd/core';
+import { setLabel, getLabel, LabelPosition } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -154,9 +152,9 @@ const label = getLabel(world, eid);
 
 Gets the label position for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, createWorld, setLabel, getLabelPosition, LabelPosition } from 'blecsd';
+import { addEntity, createWorld } from 'blecsd/core';
+import { setLabel, getLabelPosition, LabelPosition } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -173,9 +171,9 @@ getLabelPosition(world, eid); // LabelPosition.BottomCenter
 
 Sets the label position for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, createWorld, setLabel, setLabelPosition, LabelPosition } from 'blecsd';
+import { addEntity, createWorld } from 'blecsd/core';
+import { setLabel, setLabelPosition, LabelPosition } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -194,9 +192,9 @@ setLabelPosition(world, eid, LabelPosition.Right);
 
 Sets the label offset for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, createWorld, setLabel, setLabelOffset } from 'blecsd';
+import { addEntity, createWorld } from 'blecsd/core';
+import { setLabel, setLabelOffset } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -215,9 +213,9 @@ setLabelOffset(world, eid, 2, -1); // offsetX = 2, offsetY = -1
 
 Removes the label from an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, createWorld, setLabel, removeLabel, hasLabel } from 'blecsd';
+import { addEntity, createWorld } from 'blecsd/core';
+import { setLabel, removeLabel, hasLabel } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -237,9 +235,9 @@ hasLabel(world, eid); // false
 
 Checks if an entity has a non-empty label.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addEntity, createWorld, setLabel, hasLabelText } from 'blecsd';
+import { addEntity, createWorld } from 'blecsd/core';
+import { setLabel, hasLabelText } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -259,14 +257,11 @@ hasLabelText(world, eid); // false (empty label)
 
 Resets the label store. Primarily used for testing.
 
-
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetLabelStore } from 'blecsd';
+import { resetLabelStore } from 'blecsd/components';
 
-beforeEach(() => {
-  resetLabelStore();
-});
+// Call in test setup (e.g., beforeEach) to reset state between tests
+resetLabelStore();
 ```
 
 ---

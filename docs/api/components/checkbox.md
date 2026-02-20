@@ -4,7 +4,6 @@ The Checkbox component provides boolean toggle functionality with state machine 
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachCheckboxBehavior,
@@ -18,19 +17,14 @@ import {
   handleCheckboxKeyPress,
   getCheckboxChar,
   setCheckboxDisplay,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  attachCheckboxBehavior,
-  toggleCheckbox,
-  onCheckboxChange,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachCheckboxBehavior, toggleCheckbox, onCheckboxChange } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -77,9 +71,9 @@ Default characters:
 
 You can customize these:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, attachCheckboxBehavior, setCheckboxDisplay } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachCheckboxBehavior, setCheckboxDisplay } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -102,6 +96,12 @@ setCheckboxDisplay(world, eid, {
 ### Behavior Setup
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachCheckboxBehavior, isCheckbox } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+
 // Attach behavior (starts unchecked)
 attachCheckboxBehavior(world, eid);
 
@@ -117,6 +117,13 @@ if (isCheckbox(world, eid)) {
 ### State Operations
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachCheckboxBehavior, isChecked, isUnchecked, getCheckboxState } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachCheckboxBehavior(world, eid);
+
 // Check current state
 if (isChecked(world, eid)) {
   console.log('Checkbox is checked');
@@ -134,6 +141,13 @@ const state = getCheckboxState(world, eid);
 ### Toggle Operations
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachCheckboxBehavior, toggleCheckbox, checkCheckbox, uncheckCheckbox, setChecked } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachCheckboxBehavior(world, eid);
+
 // Toggle the checkbox
 toggleCheckbox(world, eid);
 
@@ -151,6 +165,13 @@ setChecked(world, eid, false);
 ### Enable/Disable
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachCheckboxBehavior, disableCheckbox, enableCheckbox, isCheckboxDisabled } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachCheckboxBehavior(world, eid);
+
 // Disable the checkbox
 disableCheckbox(world, eid);
 
@@ -165,9 +186,9 @@ if (isCheckboxDisabled(world, eid)) {
 
 ### Display
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, attachCheckboxBehavior, getCheckboxChar, getCheckboxDisplay, setCheckboxDisplay, clearCheckboxDisplay } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachCheckboxBehavior, getCheckboxChar, getCheckboxDisplay, setCheckboxDisplay, clearCheckboxDisplay } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -194,6 +215,13 @@ clearCheckboxDisplay(eid);
 ### Events
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachCheckboxBehavior, onCheckboxChange, clearCheckboxCallbacks } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachCheckboxBehavior(world, eid);
+
 // Listen for changes
 const unsubscribe = onCheckboxChange(eid, (checked) => {
   console.log(`Changed to: ${checked}`);
@@ -209,6 +237,14 @@ clearCheckboxCallbacks(eid);
 ### Key Handling
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachCheckboxBehavior, handleCheckboxKeyPress } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachCheckboxBehavior(world, eid);
+const key = 'space';
+
 // In your input loop
 const action = handleCheckboxKeyPress(world, eid, key);
 
@@ -221,6 +257,13 @@ if (action === 'toggle') {
 ### State Machine Events
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachCheckboxBehavior, sendCheckboxEvent, isCheckboxInState } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachCheckboxBehavior(world, eid);
+
 // Send raw events
 sendCheckboxEvent(world, eid, 'toggle');
 sendCheckboxEvent(world, eid, 'check');
@@ -236,15 +279,15 @@ if (isCheckboxInState(world, eid, 'checked')) {
 
 ## Example: Settings Panel
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachCheckboxBehavior,
   onCheckboxChange,
   setCheckboxDisplay,
+  checkCheckbox,
   isChecked,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const world = createWorld();
 
@@ -256,42 +299,43 @@ const settings = {
 };
 
 // Set up checkboxes
-Object.values(settings).forEach(eid => {
+for (const eid of Object.values(settings)) {
   attachCheckboxBehavior(world, eid);
-  setCheckboxDisplay(eid, {
+  setCheckboxDisplay(world, eid, {
     checkedChar: '[●]',
     uncheckedChar: '[ ]',
   });
-});
+}
 
 // Enable auto-save by default
 checkCheckbox(world, settings.autoSave);
 
 // Listen for changes
 onCheckboxChange(settings.darkMode, (checked) => {
-  applyTheme(checked ? 'dark' : 'light');
+  console.log(`Dark mode: ${checked ? 'on' : 'off'}`);
 });
 
 onCheckboxChange(settings.notifications, (checked) => {
-  setNotificationsEnabled(checked);
+  console.log(`Notifications: ${checked}`);
 });
 
 onCheckboxChange(settings.autoSave, (checked) => {
-  setAutoSaveEnabled(checked);
+  console.log(`Auto-save: ${checked}`);
 });
 ```
 
 ## Example: Form with Checkboxes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachFormBehavior,
   attachCheckboxBehavior,
   registerFormField,
   getFormValues,
-} from 'blecsd';
+} from 'blecsd/components';
 
+const world = createWorld();
 const form = addEntity(world);
 attachFormBehavior(world, form);
 

@@ -6,9 +6,8 @@ The Dimensions component defines entity sizing in the terminal grid, supporting 
 
 Special value indicating that a dimension should be calculated based on content.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { AUTO_DIMENSION } from 'blecsd';
+import { AUTO_DIMENSION } from 'blecsd/components';
 
 // AUTO_DIMENSION = -1
 // Used internally to represent 'auto' sizing
@@ -20,7 +19,6 @@ import { AUTO_DIMENSION } from 'blecsd';
 
 The Dimensions component store using bitecs SoA (Structure of Arrays) pattern.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Dimensions } from 'blecsd/components';
 
@@ -51,9 +49,8 @@ Use `encodePercentage()` and `decodePercentage()` for conversion.
 
 Encodes a percentage value for storage in typed arrays.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encodePercentage } from 'blecsd';
+import { encodePercentage } from 'blecsd/components';
 
 const encoded = encodePercentage(50);  // Returns -52
 const zero = encodePercentage(0);      // Returns -2
@@ -71,9 +68,8 @@ const full = encodePercentage(100);    // Returns -102
 
 Decodes a percentage value from typed array storage.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { decodePercentage } from 'blecsd';
+import { decodePercentage } from 'blecsd/components';
 
 const percent = decodePercentage(-52);   // Returns 50
 const zero = decodePercentage(-2);       // Returns 0
@@ -91,9 +87,8 @@ const notPercent = decodePercentage(100); // Returns null (not a percentage)
 
 Checks if a value represents an encoded percentage.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isPercentage, encodePercentage } from 'blecsd';
+import { isPercentage, encodePercentage } from 'blecsd/components';
 
 isPercentage(-52);  // true (encoded 50%)
 isPercentage(100);  // false (fixed value)
@@ -111,10 +106,9 @@ isPercentage(-1);   // false (AUTO_DIMENSION)
 
 Sets the dimensions of an entity. Adds the Dimensions component if not already present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -149,10 +143,9 @@ setDimensions(world, entity, 'auto', 'auto');
 
 Gets the dimensions data of an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions, getDimensions } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions, getDimensions } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -184,10 +177,9 @@ const dims = getDimensions(world, entity);
 
 Sets dimension constraints (min/max) for an entity. Adds the Dimensions component if not already present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions, setConstraints, getDimensions } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions, setConstraints, getDimensions } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -224,10 +216,9 @@ const dims = getDimensions(world, entity);
 
 Sets the shrink-to-content flag for an entity. When enabled, the entity will shrink to fit its content.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions, setShrink, shouldShrink } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions, setShrink, shouldShrink } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -256,10 +247,9 @@ shouldShrink(world, entity); // false
 
 Checks if an entity has shrink-to-content enabled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions, setShrink, shouldShrink } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions, setShrink, shouldShrink } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -285,10 +275,9 @@ shouldShrink(world, entity); // true
 
 Checks if an entity has a Dimensions component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions, hasDimensions } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions, hasDimensions } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -311,10 +300,9 @@ hasDimensions(world, entity); // true
 
 Gets the width of an entity, resolving percentages against a container width.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions, getResolvedWidth } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions, getResolvedWidth } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -348,10 +336,9 @@ getResolvedWidth(world, 999, 200); // undefined
 
 Gets the height of an entity, resolving percentages against a container height.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions, getResolvedHeight } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions, getResolvedHeight } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);
@@ -431,10 +418,9 @@ interface DimensionConstraints {
 
 ### Creating a Fixed-Size Box
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions, setConstraints } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions, setConstraints } from 'blecsd/components';
 
 const world = createWorld();
 const box = addEntity(world);
@@ -445,10 +431,9 @@ setDimensions(world, box, 40, 10);
 
 ### Creating a Responsive Element
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions, setConstraints, getResolvedWidth } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions, setConstraints, getResolvedWidth } from 'blecsd/components';
 
 const world = createWorld();
 const panel = addEntity(world);
@@ -467,10 +452,9 @@ const actualWidth = getResolvedWidth(world, panel, terminalWidth); // 80
 
 ### Creating a Content-Sized Element
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setDimensions, setShrink } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setDimensions, setShrink } from 'blecsd/components';
 
 const world = createWorld();
 const label = addEntity(world);

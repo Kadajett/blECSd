@@ -35,18 +35,15 @@ In this tutorial, you'll build a simple todo list application that demonstrates 
 
 Create a new file `todo.ts`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld, addEntity, removeEntity,
-  setPosition, setDimensions,
-  layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
-import { createScheduler, LoopPhase, createEventBus } from 'blecsd/core';
-import { createProgram, type KeyEvent } from 'blecsd/terminal';
-import { createPanel, createText, createTextboxEntity } from 'blecsd/widgets';
-import { setContent, setParent } from 'blecsd/components';
-import { focusEntity, blurAll } from 'blecsd/systems';
+  createScheduler, LoopPhase, createEventBus,
+  createBoxEntity, createTextEntity, createTextboxEntity,
+} from 'blecsd/core';
+import { setPosition, setDimensions, setParent, setText } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem, blurAll, focusEntity } from 'blecsd/systems';
+import { type KeyEvent, createProgram } from 'blecsd/terminal';
 
 // Create the ECS world
 const world = createWorld();
@@ -100,16 +97,13 @@ let nextId = 4;
 
 ## Step 3: Create the UI Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-// Create main panel
-const mainPanel = createPanel(world, {
-  title: 'Todo List',
+// Create main panel using entity factory (returns entity ID)
+const mainPanel = createBoxEntity(world, {
   x: 0,
   y: 0,
   width: 52,
   height: 16,
-  border: 'single',
 });
 
 // Create todo list container
@@ -118,13 +112,14 @@ setPosition(world, listContainer, 1, 1);
 setDimensions(world, listContainer, 50, 8);
 setParent(world, listContainer, mainPanel);
 
-// Create input section
-const inputLabel = createText(world, {
+// Create input section using text entity factory (returns entity ID)
+const inputLabel = createTextEntity(world, {
   x: 1,
   y: 10,
-  content: 'New task:',
+  text: 'New task:',
+  parent: mainPanel,
 });
-setParent(world, inputLabel, mainPanel);
+console.log('inputLabel entity:', inputLabel);
 
 const textInput = createTextboxEntity(world, {
   x: 11,
@@ -135,19 +130,21 @@ const textInput = createTextboxEntity(world, {
 setParent(world, textInput, mainPanel);
 
 // Create help text
-const helpText = createText(world, {
+const helpText = createTextEntity(world, {
   x: 1,
   y: 13,
-  content: '[j/k] Navigate  [Space] Toggle  [Enter] Add',
+  text: '[j/k] Navigate  [Space] Toggle  [Enter] Add',
+  parent: mainPanel,
 });
-setParent(world, helpText, mainPanel);
+console.log('helpText entity:', helpText);
 
-const helpText2 = createText(world, {
+const helpText2 = createTextEntity(world, {
   x: 1,
   y: 14,
-  content: '[d] Delete  [q] Quit',
+  text: '[d] Delete  [q] Quit',
+  parent: mainPanel,
 });
-setParent(world, helpText2, mainPanel);
+console.log('helpText2 entity:', helpText2);
 ```
 
 ## Step 4: Render Todo Items
@@ -170,13 +167,13 @@ function renderTodos(): void {
     const prefix = isSelected ? '> ' : '  ';
     const content = `${prefix}${checkbox} ${todo.text}`;
 
-    const todoEntity = createText(world, {
+    const todoEntity = createTextEntity(world, {
       x: 0,
       y: index,
-      content,
+      text: content,
       fg: isSelected ? 0x00ff00ff : (todo.completed ? 0x888888ff : 0xffffffff),
+      parent: listContainer,
     });
-    setParent(world, todoEntity, listContainer);
     todoEntities.push(todoEntity);
   });
 }
@@ -259,7 +256,7 @@ function handleInputMode(key: KeyEvent): void {
           completed: false,
         });
         state.inputText = '';
-        setContent(world, textInput, '');
+        setText(world, textInput, '');
         renderTodos();
       }
       state.inputMode = false;
@@ -270,7 +267,7 @@ function handleInputMode(key: KeyEvent): void {
       // Cancel input
       state.inputMode = false;
       state.inputText = '';
-      setContent(world, textInput, '');
+      setText(world, textInput, '');
       blurAll(world);
       break;
 
@@ -281,7 +278,7 @@ function handleInputMode(key: KeyEvent): void {
       } else if (key.sequence && key.sequence.length === 1) {
         state.inputText += key.sequence;
       }
-      setContent(world, textInput, state.inputText);
+      setText(world, textInput, state.inputText);
       break;
   }
 }

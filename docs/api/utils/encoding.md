@@ -4,15 +4,19 @@ Utilities for handling legacy character encodings, primarily CP437 (IBM PC / DOS
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encoding } from 'blecsd';
+import { encoding } from 'blecsd/utils';
+
+const buffer = Buffer.from([0x41, 0x42, 0x43]); // Example CP437 bytes
+const text = 'Hello World';
 
 // Convert CP437 buffer to UTF-8 string
 const content = encoding.bufferToString(buffer, 'cp437');
+console.log('decoded:', content);
 
 // Convert UTF-8 string to CP437 buffer
 const encoded = encoding.stringToBuffer(text, 'cp437');
+console.log('encoded bytes:', encoded.length);
 ```
 
 ## Why CP437?
@@ -48,19 +52,17 @@ function bufferToString(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encoding } from 'blecsd';
+import { encoding } from 'blecsd/utils';
 
-// Fetch ANSI art file
-const response = await fetch('https://example.com/art.ans');
-const buffer = Buffer.from(await response.arrayBuffer());
+// Read ANSI art file bytes (e.g., from fs.readFileSync)
+const buffer = Buffer.from([0xDA, 0xC4, 0xBF]); // Box-drawing chars in CP437
 
 // Convert CP437 to UTF-8
 const content = encoding.bufferToString(buffer, 'cp437');
 
 // Now safe to display in terminal
-terminal.write(content);
+process.stdout.write(content);
 ```
 
 ### stringToBuffer
@@ -82,9 +84,8 @@ function stringToBuffer(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encoding } from 'blecsd';
+import { encoding } from 'blecsd/utils';
 import { writeFileSync } from 'node:fs';
 
 // Create ANSI art with box-drawing characters
@@ -143,9 +144,8 @@ Mixed:   ╒ ╓ ╕ ╖ ╘ ╙ ╛ ╜ ╞ ╟ ╡ ╢ ╤ ╥ ╧ ╨
 
 ### ANSI Art Viewer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encoding } from 'blecsd';
+import { encoding } from 'blecsd/utils';
 import { createTerminal } from 'blecsd/widgets';
 
 async function displayAnsiArt(url: string): Promise<void> {
@@ -164,20 +164,18 @@ async function displayAnsiArt(url: string): Promise<void> {
 
 ### Legacy File Conversion
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { encoding } from 'blecsd';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { encoding } from 'blecsd/utils';
 
-// Convert CP437 file to UTF-8
-const cp437Buffer = readFileSync('legacy.ans');
+// Convert CP437 buffer to UTF-8
+const cp437Buffer = Buffer.from([0xDA, 0xC4, 0xBF]); // Box-drawing in CP437
 const utf8Content = encoding.bufferToString(cp437Buffer, 'cp437');
-writeFileSync('converted.txt', utf8Content, 'utf8');
+console.log('utf8 content:', utf8Content);
 
 // Convert UTF-8 back to CP437
-const utf8Buffer = readFileSync('modern.txt', 'utf8');
+const utf8Buffer = 'Hello World';
 const cp437Content = encoding.stringToBuffer(utf8Buffer, 'cp437');
-writeFileSync('output.ans', cp437Content);
+console.log('cp437 bytes:', cp437Content.length);
 ```
 
 ## Resources

@@ -4,17 +4,16 @@ Startup time optimization through lazy loading and deferred initialization. Subs
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { lazy, registerSubsystem, InitPriority, initSubsystemsUpTo } from 'blecsd';
+import { lazy, registerSubsystem, InitPriority, initSubsystemsUpTo } from 'blecsd/core';
 
 // Create a lazy value
-const config = lazy(() => parseTerminfo());
+const config = lazy(() => 'terminfo-data');
 const value = config.get(); // Only computed on first call
 
 // Register subsystems with priority
-registerSubsystem('input', InitPriority.CRITICAL, () => setupInput());
-registerSubsystem('debug', InitPriority.LOW, () => setupDebug());
+registerSubsystem('input', InitPriority.CRITICAL, () => { console.log('input ready'); });
+registerSubsystem('debug', InitPriority.LOW, () => { console.log('debug ready'); });
 
 // Initialize critical systems first for fast startup
 initSubsystemsUpTo(InitPriority.CRITICAL);
@@ -107,12 +106,11 @@ Creates a lazily initialized value that is computed on first access.
 function lazy<T>(factory: LazyInitFn<T>): LazyValue<T>;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { lazy } from 'blecsd';
+import { lazy } from 'blecsd/core';
 
 const expensiveConfig = lazy(() => {
-  return parseTerminfo(); // Only runs on first .get()
+  return 'terminfo-data'; // Only runs on first .get()
 });
 
 const config = expensiveConfig.get();
@@ -150,9 +148,8 @@ function initSubsystemsUpTo(maxPriority?: InitPriorityLevel): number;
 
 **Returns:** Total time taken in ms.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { initSubsystemsUpTo, InitPriority } from 'blecsd';
+import { initSubsystemsUpTo, InitPriority } from 'blecsd/core';
 
 // Fast startup: only critical systems
 initSubsystemsUpTo(InitPriority.CRITICAL);
@@ -177,9 +174,8 @@ Formats a startup report as a human-readable string.
 function formatStartupReport(report: StartupReport): string;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getStartupReport, formatStartupReport } from 'blecsd';
+import { getStartupReport, formatStartupReport } from 'blecsd/core';
 
 const report = getStartupReport();
 console.log(formatStartupReport(report));
@@ -214,13 +210,12 @@ function detectCapabilities(maxAge?: number): TerminalCapabilities;
 **Parameters:**
 - `maxAge` - Maximum cache age in ms (default: 60000)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectCapabilities } from 'blecsd';
+import { detectCapabilities } from 'blecsd/core';
 
 const caps = detectCapabilities();
 if (caps.trueColor) {
-  enableTrueColorMode();
+  console.log('true color mode enabled');
 }
 console.log(`Terminal: ${caps.width}x${caps.height}`);
 ```
@@ -235,7 +230,6 @@ function clearCapabilityCache(): void;
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   lazy,
@@ -245,33 +239,36 @@ import {
   getStartupReport,
   formatStartupReport,
   detectCapabilities,
-} from 'blecsd';
+  resetSubsystems,
+} from 'blecsd/core';
+
+resetSubsystems(); // Start fresh for this example
 
 // Lazy-load expensive resources
-const spriteSheet = lazy(() => loadSpriteSheet('assets/sprites.png'));
-const soundBank = lazy(() => loadSounds('assets/sounds/'));
+const spriteSheet = lazy(() => ({ tiles: [] }));
+const soundBank = lazy(() => ({ sounds: [] }));
 
 // Register subsystems
 registerSubsystem('terminal', InitPriority.CRITICAL, () => {
   const caps = detectCapabilities();
-  configureTerminal(caps);
+  console.log(`Terminal: ${caps.width}x${caps.height}, trueColor: ${caps.trueColor}`);
 });
 
 registerSubsystem('input', InitPriority.CRITICAL, () => {
-  setupInputHandling();
+  console.log('input handling ready');
 });
 
 registerSubsystem('renderer', InitPriority.HIGH, () => {
-  initializeRenderer();
+  console.log('renderer ready');
 });
 
 registerSubsystem('debug-overlay', InitPriority.LOW, () => {
-  setupDebugOverlay();
+  console.log('debug overlay ready');
 });
 
 // Staged initialization for fast startup
 initSubsystemsUpTo(InitPriority.CRITICAL); // Input ready immediately
-renderFirstFrame(); // Can render before everything is loaded
+console.log('first frame rendered'); // Can render before everything is loaded
 initSubsystemsUpTo(InitPriority.LOW); // Load the rest
 
 // Report

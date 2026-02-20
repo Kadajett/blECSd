@@ -4,7 +4,6 @@ The Slider component provides range value selection with customizable appearance
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachSliderBehavior,
@@ -18,19 +17,14 @@ import {
   handleSliderKeyPress,
   setSliderDisplay,
   SliderOrientation,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  attachSliderBehavior,
-  onSliderChange,
-  setSliderValue,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, onSliderChange, setSliderValue } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -89,9 +83,12 @@ Slider uses a state machine with these states:
 
 ## Orientation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { SliderOrientation, attachSliderBehavior } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { SliderOrientation, attachSliderBehavior } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
 
 // Horizontal slider (default)
 attachSliderBehavior(world, eid, {
@@ -115,9 +112,9 @@ Default appearance uses these characters:
 
 Customize with:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, attachSliderBehavior, setSliderDisplay } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, setSliderDisplay } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -139,6 +136,12 @@ setSliderDisplay(world, eid, {
 ### Behavior Setup
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, isSlider, SliderOrientation } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+
 // Attach with options
 attachSliderBehavior(world, eid, {
   min: 0,
@@ -158,8 +161,15 @@ if (isSlider(world, eid)) {
 ### Value Operations
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, getSliderValue, setSliderValue, incrementSlider, decrementSlider, setSliderToMin, setSliderToMax, setSliderFromPercentage } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 // Get current value
-const value = getSliderValue(eid);
+const value = getSliderValue(world, eid);
 
 // Set value
 setSliderValue(world, eid, 75);
@@ -181,15 +191,22 @@ setSliderFromPercentage(world, eid, 0.5);  // Sets to 50%
 ### Range Operations
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, getSliderMin, getSliderMax, getSliderStep, getSliderPercentage, setSliderRange, setSliderStep } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 // Get min/max
-const min = getSliderMin(eid);
-const max = getSliderMax(eid);
+const min = getSliderMin(world, eid);
+const max = getSliderMax(world, eid);
 
 // Get step
-const step = getSliderStep(eid);
+const step = getSliderStep(world, eid);
 
 // Get percentage (0-1)
-const pct = getSliderPercentage(eid);
+const pct = getSliderPercentage(world, eid);
 
 // Set range
 setSliderRange(world, eid, 0, 200);
@@ -201,6 +218,13 @@ setSliderStep(world, eid, 10);
 ### Focus Management
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, focusSlider, blurSlider, isSliderFocused } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 // Focus/blur
 focusSlider(world, eid);
 blurSlider(world, eid);
@@ -214,6 +238,13 @@ if (isSliderFocused(world, eid)) {
 ### Drag Operations
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, startDragging, stopDragging, isSliderDragging } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 // Start/stop dragging
 startDragging(world, eid);
 stopDragging(world, eid);
@@ -227,15 +258,22 @@ if (isSliderDragging(world, eid)) {
 ### Orientation
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, getSliderOrientation, setSliderOrientation, isSliderHorizontal, isSliderVertical, SliderOrientation } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 // Get/set orientation
-const orient = getSliderOrientation(eid);
+const orient = getSliderOrientation(world, eid);
 setSliderOrientation(world, eid, SliderOrientation.Vertical);
 
 // Check orientation
-if (isSliderHorizontal(eid)) {
+if (isSliderHorizontal(world, eid)) {
   // Horizontal layout
 }
-if (isSliderVertical(eid)) {
+if (isSliderVertical(world, eid)) {
   // Vertical layout
 }
 ```
@@ -243,33 +281,47 @@ if (isSliderVertical(eid)) {
 ### Display
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, setShowSliderValue, isShowingSliderValue, getSliderDisplay, setSliderDisplay, clearSliderDisplay, renderSliderString } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 // Show/hide value text
 setShowSliderValue(world, eid, true);
-if (isShowingSliderValue(eid)) {
+if (isShowingSliderValue(world, eid)) {
   // Include value in render
 }
 
 // Get display configuration
-const display = getSliderDisplay(eid);
+const display = getSliderDisplay(world, eid);
 
 // Set display configuration
-setSliderDisplay(eid, {
+setSliderDisplay(world, eid, {
   trackChar: '═',
   thumbChar: '█',
   trackFg: 0x888888ff,
 });
 
 // Clear display (revert to defaults)
-clearSliderDisplay(eid);
+clearSliderDisplay(world, eid);
 
 // Render to string
-const str = renderSliderString(eid, 20);
+const str = renderSliderString(world, eid, 20);
 // Returns: "────────●══════════"
 ```
 
 ### Enable/Disable
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, enableSlider, disableSlider, isSliderDisabled } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 enableSlider(world, eid);
 disableSlider(world, eid);
 
@@ -281,6 +333,13 @@ if (isSliderDisabled(world, eid)) {
 ### State
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, getSliderState, isSliderInState } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 // Get current state
 const state = getSliderState(world, eid);
 // Returns: 'idle' | 'focused' | 'dragging' | 'disabled'
@@ -294,18 +353,25 @@ if (isSliderInState(world, eid, 'focused')) {
 ### Events
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, onSliderChange, onSliderDragStart, onSliderDragEnd, clearSliderCallbacks } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+
 // Value changed
-const unsub1 = onSliderChange(eid, (value) => {
+const unsub1 = onSliderChange(world, eid, (value) => {
   console.log(`New value: ${value}`);
 });
 
 // Drag started
-const unsub2 = onSliderDragStart(eid, () => {
+const unsub2 = onSliderDragStart(world, eid, () => {
   console.log('Drag started');
 });
 
 // Drag ended
-const unsub3 = onSliderDragEnd(eid, () => {
+const unsub3 = onSliderDragEnd(world, eid, () => {
   console.log('Drag ended');
 });
 
@@ -315,12 +381,20 @@ unsub2();
 unsub3();
 
 // Clear all callbacks
-clearSliderCallbacks(eid);
+clearSliderCallbacks(world, eid);
 ```
 
 ### Key Handling
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, handleSliderKeyPress } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
+attachSliderBehavior(world, eid, { min: 0, max: 100, value: 50 });
+const key = 'right';
+
 // In your input loop
 const action = handleSliderKeyPress(world, eid, key);
 
@@ -335,14 +409,9 @@ const action = handleSliderKeyPress(world, eid, key);
 
 ## Example: Volume Control
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  attachSliderBehavior,
-  onSliderChange,
-  setSliderDisplay,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, onSliderChange, setSliderDisplay } from 'blecsd/components';
 
 const world = createWorld();
 const volumeSlider = addEntity(world);
@@ -362,20 +431,24 @@ setSliderDisplay(world, volumeSlider, {
 });
 
 onSliderChange(world, volumeSlider, (value) => {
-  setAudioVolume(value / 100);
+  console.log(`Volume: ${value / 100}`);
 });
 ```
 
 ## Example: RGB Color Picker
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachSliderBehavior, setSliderDisplay, getSliderValue, onSliderChange } from 'blecsd/components';
+
+const world = createWorld();
 const colorSliders = {
   red: addEntity(world),
   green: addEntity(world),
   blue: addEntity(world),
 };
 
-Object.entries(colorSliders).forEach(([name, eid]) => {
+Object.entries(colorSliders).forEach(([_name, eid]) => {
   attachSliderBehavior(world, eid, {
     min: 0,
     max: 255,
@@ -385,19 +458,19 @@ Object.entries(colorSliders).forEach(([name, eid]) => {
 });
 
 // Set colors for each slider
-setSliderDisplay(colorSliders.red, { fillFg: 0xff0000ff });
-setSliderDisplay(colorSliders.green, { fillFg: 0x00ff00ff });
-setSliderDisplay(colorSliders.blue, { fillFg: 0x0000ffff });
+setSliderDisplay(world, colorSliders.red, { fillFg: 0xff0000ff });
+setSliderDisplay(world, colorSliders.green, { fillFg: 0x00ff00ff });
+setSliderDisplay(world, colorSliders.blue, { fillFg: 0x0000ffff });
 
 function updateColor() {
-  const r = getSliderValue(colorSliders.red);
-  const g = getSliderValue(colorSliders.green);
-  const b = getSliderValue(colorSliders.blue);
-  setSelectedColor(r, g, b);
+  const r = getSliderValue(world, colorSliders.red);
+  const g = getSliderValue(world, colorSliders.green);
+  const b = getSliderValue(world, colorSliders.blue);
+  console.log(`Color: rgb(${r}, ${g}, ${b})`);
 }
 
 Object.values(colorSliders).forEach(eid => {
-  onSliderChange(eid, updateColor);
+  onSliderChange(world, eid, updateColor);
 });
 ```
 

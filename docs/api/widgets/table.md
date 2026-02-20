@@ -4,18 +4,9 @@ The Table widget provides a data grid with headers, cell borders, column configu
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isTableWidget } from 'blecsd';
-import { createTable } from 'blecsd/widgets';
-```
-
-## Basic Usage
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createTable } from 'blecsd/widgets';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createTable, isTableWidget, TableWidgetConfigSchema } from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -32,7 +23,11 @@ const table = createTable(world, eid, {
   headerRows: 1,
 });
 
+// Render table to inspect its output
 const lines = table.renderLines(80);
+for (const line of lines) {
+  console.log(line);
+}
 ```
 
 ## Configuration
@@ -85,142 +80,56 @@ type CellAlign = 'left' | 'center' | 'right';
 
 All methods return the widget for chaining (except getters).
 
-### Visibility
-
 ```typescript
-table.show();   // Show the table
-table.hide();   // Hide the table
-```
+// Visibility and position
+table.show();
+table.hide();
+table.setPosition(10, 5);
+table.move(2, 0);
 
-### Position
-
-```typescript
-table.setPosition(10, 5);  // Set absolute position
-table.move(2, 0);          // Move relative
-```
-
-### Data Management
-
-```typescript
-// Set all data at once
+// Data management
 table.setData([
   ['Name', 'Score'],
   ['Alice', '95'],
   ['Bob', '87'],
 ]);
+console.log(table.getData()[0]);              // ['Name', 'Score']
+console.log(table.getFullData().length);      // rows with metadata
+console.log(table.getCellValue(0, 0));        // 'Name'
+console.log(table.getRow(0));                 // cells in row 0
+console.log(table.getRowCount());             // total row count
 
-// Get data as string[][]
-const data = table.getData();
-
-// Get full data with cell metadata
-const fullData = table.getFullData();
-
-// Clear all data
-table.clearData();
-```
-
-### Cell Operations
-
-```typescript
-// Set a cell value (row, col)
-table.setCell(1, 0, 'Alice Smith');
-
-// Set a cell with metadata
-table.setCell(1, 1, { value: '95', align: 'right' });
-
-// Get a cell
-const cell = table.getCell(1, 0);
-// { value: 'Alice Smith', ... }
-
-// Get just the string value
-const value = table.getCellValue(1, 0);
-// 'Alice Smith'
-```
-
-### Row Operations
-
-```typescript
-// Get a row
-const row = table.getRow(1);
-
-// Append a row
+// Row operations
 table.appendRow(['Charlie', '92']);
-
-// Insert a row at index
 table.insertRow(1, ['Dave', '88']);
-
-// Remove a row
 table.removeRow(2);
 
-// Count rows
-const count = table.getRowCount();
-```
-
-### Column Operations
-
-```typescript
-// Set column configuration
+// Column configuration
 table.setColumns([
   { header: 'Name', minWidth: 10, align: 'left' },
   { header: 'Score', width: 8, align: 'right' },
 ]);
+console.log(table.getColumns().length);           // 2
+console.log(table.getColCount());                 // 2
+console.log(table.calculateColumnWidths(80));     // array of widths
 
-// Get columns
-const columns = table.getColumns();
+// Header rows
+table.setHeaderRowCount(1);
+console.log(table.getHeaderRowCount());       // 1
+console.log(table.getHeaderRows().length);    // 1
+console.log(table.getDataRows().length);      // data rows only
 
-// Get column count
-const colCount = table.getColCount();
-
-// Calculate optimal column widths
-const widths = table.calculateColumnWidths(80);
-```
-
-### Headers
-
-```typescript
-// Set number of header rows
-table.setHeaderRowCount(2);
-
-// Get header row count
-const headerCount = table.getHeaderRowCount();
-
-// Get just header rows
-const headers = table.getHeaderRows();
-
-// Get data rows (excluding headers)
-const dataRows = table.getDataRows();
-```
-
-### Display Options
-
-```typescript
-// Cell padding
+// Display options
 table.setCellPadding(2);
-const padding = table.getCellPadding();
-
-// Cell borders
+console.log(table.getCellPadding());          // 2
 table.setCellBorders(true);
-const hasBorders = table.hasCellBorders();
+console.log(table.hasCellBorders());          // true
+table.setStyle({ header: { fg: 0xffffffff, bg: 0x333333ff } });
+console.log(typeof table.getDisplay());       // 'object'
 
-// Style
-table.setStyle({
-  header: { fg: 0xffffffff, bg: 0x333333ff },
-  cell: { fg: 0xccccccff },
-  altRowBg: 0x1a1a1aff,
-});
-
-// Get current display config
-const display = table.getDisplay();
-```
-
-### Rendering
-
-```typescript
-// Render table as text lines for given width
-const lines = table.renderLines(80);
-for (const line of lines) {
-  console.log(line);
-}
+// Render as text for inspection
+const rendered = table.renderLines(80);
+console.log(rendered.length > 0);             // true
 ```
 
 ## Examples
@@ -228,7 +137,7 @@ for (const line of lines) {
 ### Styled Data Table
 
 ```typescript
-const table = createTable(world, eid, {
+const styledTable = createTable(world, addEntity(world), {
   data: [
     ['Product', 'Price', 'Stock'],
     ['Widget A', '$9.99', '142'],
@@ -244,30 +153,13 @@ const table = createTable(world, eid, {
     border: { fg: 0x666666ff },
   },
 });
-```
-
-### Dynamic Table Updates
-
-```typescript
-const table = createTable(world, eid, {
-  data: [['Time', 'CPU', 'Memory']],
-  headerRows: 1,
-});
-
-// Add rows periodically
-setInterval(() => {
-  table.appendRow([
-    new Date().toISOString(),
-    `${getCpuUsage()}%`,
-    `${getMemoryUsage()}MB`,
-  ]);
-}, 1000);
+styledTable.destroy();
 ```
 
 ### Borderless Table
 
 ```typescript
-const table = createTable(world, eid, {
+const borderlessTable = createTable(world, addEntity(world), {
   data: [
     ['Key', 'Value'],
     ['name', 'blecsd'],
@@ -278,12 +170,13 @@ const table = createTable(world, eid, {
   noCellBorders: true,
   pad: 1,
 });
+borderlessTable.destroy();
 ```
 
 ### Right-Aligned Columns
 
 ```typescript
-const table = createTable(world, eid, {
+const alignedTable = createTable(world, addEntity(world), {
   data: [
     ['Item', 'Qty', 'Total'],
     ['Apples', '5', '$4.95'],
@@ -296,17 +189,18 @@ const table = createTable(world, eid, {
     { header: 'Total', align: 'right', width: 10 },
   ],
 });
+alignedTable.destroy();
 ```
 
 ## Type Guard
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isTableWidget } from 'blecsd';
-
-if (isTableWidget(world, eid)) {
-  // Entity has table behavior attached
+const tableEid = addEntity(world);
+const tableWidget = createTable(world, tableEid, { data: [['Name'], ['Alice']], headerRows: 1 });
+if (isTableWidget(world, tableEid)) {
+  console.log('Entity', tableEid, 'is a table widget');
 }
+tableWidget.destroy();
 ```
 
 ## Lifecycle
@@ -322,11 +216,8 @@ Destroying a table removes the entity and detaches all table behavior.
 
 Configuration is validated using Zod:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { TableWidgetConfigSchema } from 'blecsd';
-
-const result = TableWidgetConfigSchema.safeParse(config);
+const result = TableWidgetConfigSchema.safeParse({ data: [['Name'], ['Alice']], headerRows: 1 });
 if (!result.success) {
   console.error(result.error);
 }

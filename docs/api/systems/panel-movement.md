@@ -14,15 +14,22 @@ The panel movement system handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   createPanelMoveState,
   createPanelConstraints,
   beginMove,
   updateMove,
   endMoveOrResize,
-} from 'blecsd';
+} from 'blecsd/systems';
+
+const world = createWorld();
+const entity = addEntity(world);
+const mouseX = 10;
+const mouseY = 5;
+const panelX = 5;
+const panelY = 2;
 
 let state = createPanelMoveState();
 const constraints = createPanelConstraints({ screenWidth: 80, screenHeight: 24 });
@@ -32,6 +39,7 @@ state = beginMove(state, entity, mouseX, mouseY, panelX, panelY, 30, 10);
 
 // On drag update
 const result = updateMove(state, mouseX, mouseY, constraints);
+console.log('move result:', result.x, result.y, 'clamped:', result.clamped);
 // Apply result.x, result.y to entity position
 
 // On drag end
@@ -273,14 +281,29 @@ function detectResizeHandle(
 ): ResizeHandle | undefined
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { detectResizeHandle, beginResize } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { detectResizeHandle, beginResize, createPanelMoveState } from 'blecsd/systems';
+
+const world = createWorld();
+const entity = addEntity(world);
+let state = createPanelMoveState();
+const localX = 0;
+const localY = 0;
+const panelWidth = 30;
+const panelHeight = 10;
+const mouseX = 10;
+const mouseY = 5;
+const px = 5;
+const py = 2;
+const pw = 30;
+const ph = 10;
 
 const handle = detectResizeHandle(localX, localY, panelWidth, panelHeight);
 if (handle) {
   state = beginResize(state, entity, handle, mouseX, mouseY, px, py, pw, ph);
 }
+console.log('is resizing:', state.isResizing, 'is moving:', state.isMoving);
 ```
 
 ### mergeDirtyRects
@@ -295,8 +318,8 @@ function mergeDirtyRects(rects: readonly DirtyRect[]): DirtyRect | undefined
 
 Complete drag-to-move and resize workflow:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   createPanelMoveState,
   createPanelConstraints,
@@ -309,9 +332,14 @@ import {
   detectResizeHandle,
   keyboardMove,
   mergeDirtyRects,
-  setPosition,
-  setDimensions,
-} from 'blecsd';
+} from 'blecsd/systems';
+import { setPosition, setDimensions } from 'blecsd/components';
+import type { Entity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
+const px = 5;
+const py = 2;
 
 let moveState = createPanelMoveState();
 const constraints = createPanelConstraints({

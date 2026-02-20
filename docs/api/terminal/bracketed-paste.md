@@ -4,7 +4,6 @@ Distinguishes pasted text from typed input by detecting ESC[200~ / ESC[201~ mark
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createPasteState,
@@ -14,7 +13,7 @@ import {
   sanitizePastedText,
   extractPasteContent,
   isPasteStart,
-} from 'blecsd';
+} from 'blecsd/terminal';
 
 // Enable bracketed paste mode in the terminal
 process.stdout.write(enableBracketedPaste());
@@ -23,6 +22,7 @@ process.stdout.write(enableBracketedPaste());
 let state = createPasteState({ sanitize: true, maxLength: 1024 });
 
 // Process incoming data through the paste state machine
+const inputBuffer = Buffer.from('hello');
 const result = processPasteBuffer(state, inputBuffer);
 state = result.state;
 
@@ -116,9 +116,8 @@ Strips ANSI escape sequences from pasted text, preventing escape sequence inject
 function sanitizePastedText(text: string): string
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sanitizePastedText } from 'blecsd';
+import { sanitizePastedText } from 'blecsd/terminal';
 
 const clean = sanitizePastedText('Hello\x1b[31mRed\x1b[0m World');
 // 'HelloRed World'
@@ -145,9 +144,8 @@ Checks if a buffer starts with the paste start marker (ESC[200~).
 function isPasteStart(buffer: Uint8Array): boolean
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isPasteStart } from 'blecsd';
+import { isPasteStart } from 'blecsd/terminal';
 
 const buf = Buffer.from('\x1b[200~Hello\x1b[201~');
 console.log(isPasteStart(buf)); // true
@@ -182,9 +180,8 @@ function extractPasteContent(
 ): PasteParseResult
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { extractPasteContent } from 'blecsd';
+import { extractPasteContent } from 'blecsd/terminal';
 
 const buf = Buffer.from('\x1b[200~Hello World\x1b[201~');
 const result = extractPasteContent(buf);
@@ -199,9 +196,8 @@ Creates initial paste state for the multi-chunk state machine.
 function createPasteState(config?: Partial<PasteConfig>): PasteState
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createPasteState } from 'blecsd';
+import { createPasteState } from 'blecsd/terminal';
 
 const state = createPasteState({ sanitize: true, maxLength: 1024 });
 ```
@@ -214,9 +210,8 @@ Processes a buffer chunk through the paste state machine. Handles multi-chunk pa
 function processPasteBuffer(state: PasteState, buffer: Uint8Array): PasteProcessResult
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createPasteState, processPasteBuffer } from 'blecsd';
+import { createPasteState, processPasteBuffer } from 'blecsd/terminal';
 
 let state = createPasteState();
 
@@ -239,9 +234,8 @@ Returns the escape sequence to enable bracketed paste mode.
 function enableBracketedPaste(): string
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableBracketedPaste } from 'blecsd';
+import { enableBracketedPaste } from 'blecsd/terminal';
 
 process.stdout.write(enableBracketedPaste());
 ```
@@ -258,11 +252,17 @@ function disableBracketedPaste(): string
 
 ### PasteEventSchema / PasteConfigSchema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { PasteEventSchema, PasteConfigSchema } from 'blecsd';
+import { PasteEventSchema, PasteConfigSchema } from 'blecsd/terminal';
 
-const result = PasteEventSchema.safeParse(event);
+const pasteEvent = {
+  type: 'paste' as const,
+  text: 'Hello World',
+  timestamp: Date.now(),
+  sanitized: false,
+  originalLength: 11,
+};
+const result = PasteEventSchema.safeParse(pasteEvent);
 if (result.success) {
   console.log('Valid paste event');
 }

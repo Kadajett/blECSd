@@ -38,11 +38,14 @@ Node.js 18+ is required. LTS versions are recommended.
 
 For basic usage, no. The widget API hides ECS details:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import { createPanel } from 'blecsd/widgets';
 
-const panel = createPanel(world, { title: 'Hello', x: 0, y: 0, width: 40, height: 10 });
+const world = createWorld();
+const eid = addEntity(world);
+const panel = createPanel(world, eid, { title: 'Hello', x: 0, y: 0, width: 40, height: 10 });
+console.log('Panel entity:', panel.eid);
 ```
 
 For advanced usage and custom systems, understanding ECS helps. See the [Architecture Guide](./contributing/ARCHITECTURE.md).
@@ -51,12 +54,23 @@ For advanced usage and custom systems, understanding ECS helps. See the [Archite
 
 **Components** are low-level data stores:
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
+
+const world = createWorld();
+const eid = addEntity(world);
 setPosition(world, eid, 10, 20);  // Sets raw data
 ```
 
 **Widgets** are factory functions that configure multiple components:
 ```typescript
-const panel = createPanel(world, entity, config);  // Sets up Position, Dimensions, Border, etc.
+import { createWorld, addEntity } from 'blecsd/core';
+import { createPanel } from 'blecsd/widgets';
+
+const world = createWorld();
+const eid = addEntity(world);
+const panel = createPanel(world, eid, { x: 0, y: 0, width: 40, height: 10 });  // Sets up Position, Dimensions, Border, etc.
+console.log('Panel entity:', panel.eid);
 ```
 
 ### Can I mix blECSd with other ECS libraries?
@@ -68,13 +82,20 @@ Yes, if they use bitECS. blECSd components are standard bitECS components. You c
 Use virtualization. Only create entities for visible items:
 
 ```typescript
-// Data: 10,000 items
-const items = loadItems();
+import { createWorld, addEntity } from 'blecsd/core';
+import { setContent } from 'blecsd/components';
+
+const world = createWorld();
+
+// Data: 10,000 items (simulated)
+const items = Array.from({ length: 10000 }, (_, i) => ({ name: `Item ${i}` }));
+const viewportStart = 0;
+const viewportSize = 20;
 
 // Only render visible portion
 const visible = items.slice(viewportStart, viewportStart + viewportSize);
-for (const [i, item] of visible.entries()) {
-  const eid = getOrCreateEntity(viewportStart + i);
+for (const item of visible) {
+  const eid = addEntity(world);
   setContent(world, eid, item.name);
 }
 ```
@@ -112,18 +133,14 @@ See the [VirtualizedList widget](./api/widgets/virtualizedList.md) for built-in 
 
 ### How do I check terminal capabilities?
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { capabilities, detection } from 'blecsd/terminal';
+import { detection } from 'blecsd/terminal';
 
-const term = detection.detectTerminal();
+const term = detection.getTerminalInfo();
 console.log(term.name);           // 'xterm-256color'
-console.log(term.trueColor);      // true/false
-console.log(term.unicode);        // true/false
-
-const caps = capabilities.getCapabilities();
-console.log(caps.colors);         // 256 or 16777216
-console.log(caps.mouse);          // true/false
+console.log(term.colorSupport);   // 256 or 'truecolor'
+console.log(term.unicodeSupport); // true/false
+console.log(term.mouseSupport);   // true/false
 ```
 
 ### Why don't colors look right?
@@ -176,9 +193,16 @@ node app.js
 
 **Solution**: Check hierarchy setup:
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setParent } from 'blecsd/components';
+
+const world = createWorld();
+const parent = addEntity(world);
+const child = addEntity(world);
+
 // Wrong: circular reference
-setParent(world, parent, child);
-setParent(world, child, parent);
+// setParent(world, parent, child);
+// setParent(world, child, parent);
 
 // Correct: proper tree
 setParent(world, child, parent);
@@ -190,6 +214,9 @@ setParent(world, child, parent);
 
 **Solution**: Check entity lifecycle:
 ```typescript
+import { createWorld, addEntity, removeEntity } from 'blecsd/core';
+
+const world = createWorld();
 const eid = addEntity(world);
 // ... use entity ...
 removeEntity(world, eid);
@@ -222,6 +249,7 @@ const { columns, rows } = process.stdout;
 
 Write to stderr (doesn't interfere with terminal UI):
 ```typescript
+const value = 'example';
 console.error('Debug:', value);
 ```
 
@@ -235,10 +263,10 @@ function log(msg: string) {
 
 ### How do I inspect ECS state?
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getPosition } from 'blecsd';
-import { getAllEntities } from 'blecsd/core';
+import { getPosition } from 'blecsd/components';
+import { createWorld, addEntity, getAllEntities } from 'blecsd/core';
+import type { World } from 'blecsd/core';
 
 function debugWorld(world: World): void {
   const entities = getAllEntities(world);
@@ -246,9 +274,15 @@ function debugWorld(world: World): void {
 
   for (const eid of entities) {
     const pos = getPosition(world, eid);
-    console.error(`${eid}: pos=(${pos.x}, ${pos.y})`);
+    if (pos) {
+      console.error(`${eid}: pos=(${pos.x}, ${pos.y})`);
+    }
   }
 }
+
+const world = createWorld();
+addEntity(world);
+debugWorld(world);
 ```
 
 ### How do I recover from a crash?
@@ -264,18 +298,17 @@ echo -e '\e[?1049l\e[?25h\e[0m'
 ```
 
 Add cleanup to your app:
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createProgram } from 'blecsd/terminal';
 
 const program = createProgram({ useAlternateScreen: true, hideCursor: true });
-program.init();
+// program.init();  // Call this in your app to initialize terminal
 
 process.on('SIGINT', () => {
   program.destroy();  // Restores cursor, normal buffer, raw mode
   process.exit(0);
 });
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', (err: Error) => {
   program.destroy();
   console.error(err);
   process.exit(1);

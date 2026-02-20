@@ -12,16 +12,10 @@ The output system:
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createScheduler,
-  LoopPhase,
-  outputSystem,
-  setOutputStream,
-  setOutputBuffer,
-  createDoubleBuffer,
-} from 'blecsd';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { outputSystem, setOutputStream, setOutputBuffer } from 'blecsd/systems';
+import { createDoubleBuffer } from 'blecsd/terminal';
 
 // Create double buffer for rendering
 const db = createDoubleBuffer(80, 24);
@@ -42,7 +36,6 @@ scheduler.run(world, deltaTime);
 
 Before the output system can work, you must configure both the output stream and buffer:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   setOutputStream,
@@ -51,7 +44,10 @@ import {
   setOutputBuffer,
   getOutputBuffer,
   clearOutputBuffer,
-} from 'blecsd';
+} from 'blecsd/systems';
+import { createDoubleBuffer } from 'blecsd/terminal';
+
+const db = createDoubleBuffer(80, 24);
 
 // Set output stream (typically process.stdout)
 setOutputStream(process.stdout);
@@ -62,6 +58,8 @@ setOutputBuffer(db);
 // Get current settings
 const stream = getOutputStream(); // Returns Writable or null
 const buffer = getOutputBuffer(); // Returns DoubleBufferData or null
+console.log('output stream:', stream);
+console.log('output buffer:', buffer);
 
 // Clear when done
 clearOutputStream();
@@ -72,10 +70,9 @@ clearOutputBuffer();
 
 The output system maintains state across frames for optimization:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { OutputState } from 'blecsd';
-import { createOutputState, getOutputState, resetOutputState } from 'blecsd';
+import type { OutputState } from 'blecsd/systems';
+import { createOutputState, getOutputState, resetOutputState } from 'blecsd/systems';
 
 // Create fresh state
 const state = createOutputState();
@@ -97,19 +94,20 @@ resetOutputState();
 
 The `generateOutput` function converts cell changes to ANSI sequences:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { generateOutput, createOutputState } from 'blecsd';
-import type { CellChange } from 'blecsd';
-import { createCell } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { generateOutput, createOutputState } from 'blecsd/systems';
+import type { CellChange } from 'blecsd/terminal';
+import { createCell } from 'blecsd/terminal';
 
+const world = createWorld();
 const state = createOutputState();
 const changes: CellChange[] = [
   { x: 10, y: 5, cell: createCell('H', 0xffffffff, 0xff000000) },
   { x: 11, y: 5, cell: createCell('i', 0xffffffff, 0xff000000) },
 ];
 
-const output = generateOutput(state, changes);
+const output = generateOutput(world, state, changes);
 process.stdout.write(output);
 ```
 
@@ -126,9 +124,8 @@ The system optimizes output in several ways:
 
 ### Cursor Control
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hideCursor, showCursor, cursorHome } from 'blecsd';
+import { hideCursor, showCursor, cursorHome } from 'blecsd/systems';
 
 // Hide cursor during rendering
 hideCursor();
@@ -144,9 +141,8 @@ cursorHome();
 
 Use alternate screen to preserve the terminal content:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enterAlternateScreen, leaveAlternateScreen } from 'blecsd';
+import { enterAlternateScreen, leaveAlternateScreen } from 'blecsd/systems';
 
 // Enter alternate screen (preserves main screen)
 enterAlternateScreen();
@@ -159,9 +155,8 @@ leaveAlternateScreen();
 
 ### Screen Clearing
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearScreen, resetAttributes } from 'blecsd';
+import { clearScreen, resetAttributes } from 'blecsd/systems';
 
 // Clear entire screen
 clearScreen();
@@ -174,9 +169,8 @@ resetAttributes();
 
 For custom ANSI sequences, use `writeRaw`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { writeRaw } from 'blecsd';
+import { writeRaw } from 'blecsd/systems';
 
 // Write custom escape sequence
 writeRaw('\x1b[2J'); // Clear screen
@@ -187,9 +181,8 @@ writeRaw('\x1b[?25l'); // Hide cursor
 
 Always clean up before exiting:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { cleanup } from 'blecsd';
+import { cleanup } from 'blecsd/systems';
 
 // Cleanup restores terminal state:
 // - Leaves alternate screen if active
@@ -201,25 +194,21 @@ cleanup();
 
 ## Complete Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions, setStyle } from 'blecsd/components';
 import {
-  createWorld,
-  addEntity,
-  setPosition,
-  setDimensions,
-  setStyle,
   layoutSystem,
   renderSystem,
   outputSystem,
   setRenderBuffer,
   setOutputStream,
   setOutputBuffer,
-  createDoubleBuffer,
   enterAlternateScreen,
   hideCursor,
   cleanup,
-} from 'blecsd';
+} from 'blecsd/systems';
+import { createDoubleBuffer } from 'blecsd/terminal';
 
 // Setup
 const world = createWorld();

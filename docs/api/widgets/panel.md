@@ -4,10 +4,22 @@ The Panel widget is a container with a title bar at the top. It supports optiona
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd/widgets';
+import { createWorld, addEntity } from 'blecsd/core';
+import {
+  createPanel,
+  isPanel,
+  getPanelTitle,
+  setPanelTitle,
+  isPanelCollapsed,
+  getPanelTitleAlign,
+  renderPanelTitleBar,
+  PanelConfigSchema,
+  COLLAPSE_CHAR,
+  EXPAND_CHAR,
+  DEFAULT_PANEL_TITLE,
+  CLOSE_BUTTON_CHAR,
+} from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -31,6 +43,9 @@ const toolWindow = createPanel(world, addEntity(world), {
   closable: true,
   collapsible: true,
 });
+
+console.log('panel entity:', panel.eid);
+console.log('tool window entity:', toolWindow.eid);
 ```
 
 ---
@@ -41,16 +56,9 @@ const toolWindow = createPanel(world, addEntity(world), {
 
 Creates a new Panel widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
 // Basic panel
-const panel = createPanel(world, eid, {
+const panelA = createPanel(world, addEntity(world), {
   title: 'Settings',
   width: 50,
   height: 20,
@@ -68,6 +76,8 @@ const styledPanel = createPanel(world, addEntity(world), {
     title: { fg: '#ffffff', bg: '#0000ff' },
   },
 });
+console.log('panelA entity:', panelA.eid);
+console.log('styledPanel entity:', styledPanel.eid);
 ```
 
 **Parameters:**
@@ -83,14 +93,11 @@ const styledPanel = createPanel(world, addEntity(world), {
 
 ### Button Characters
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  CLOSE_BUTTON_CHAR,  // '✕'
-  COLLAPSE_CHAR,      // '▼'
-  EXPAND_CHAR,        // '▶'
-  DEFAULT_PANEL_TITLE // ''
-} from 'blecsd';
+console.log('collapse char:', COLLAPSE_CHAR);    // '▼'
+console.log('expand char:', EXPAND_CHAR);      // '▶'
+console.log('default panel title:', DEFAULT_PANEL_TITLE);
+console.log('close button char:', CLOSE_BUTTON_CHAR); // '✕'
 ```
 
 ---
@@ -106,8 +113,9 @@ The panel widget provides a chainable API for all operations.
 The underlying entity ID.
 
 ```typescript
-const panel = createPanel(world, eid);
-console.log(panel.eid); // Entity ID number
+const panelB = createPanel(world, addEntity(world));
+console.log(panelB.eid); // Entity ID number
+panelB.destroy();
 ```
 
 ### Visibility Methods
@@ -117,7 +125,9 @@ console.log(panel.eid); // Entity ID number
 Shows the panel.
 
 ```typescript
-panel.show();
+const panelC = createPanel(world, addEntity(world));
+panelC.show();
+panelC.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -127,7 +137,9 @@ panel.show();
 Hides the panel.
 
 ```typescript
-panel.hide();
+const panelD = createPanel(world, addEntity(world));
+panelD.hide();
+panelD.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -141,7 +153,9 @@ panel.hide();
 Sets the absolute position.
 
 ```typescript
-panel.setPosition(20, 15);
+const panelE = createPanel(world, addEntity(world));
+panelE.setPosition(20, 15);
+panelE.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -151,7 +165,9 @@ panel.setPosition(20, 15);
 Moves the panel by a relative amount.
 
 ```typescript
-panel.move(5, -3);
+const panelF = createPanel(world, addEntity(world));
+panelF.move(5, -3);
+panelF.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -165,7 +181,9 @@ panel.move(5, -3);
 Sets the panel title.
 
 ```typescript
-panel.setTitle('New Title');
+const panelG = createPanel(world, addEntity(world));
+panelG.setTitle('New Title');
+panelG.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -175,7 +193,10 @@ panel.setTitle('New Title');
 Gets the current panel title.
 
 ```typescript
-const title = panel.getTitle(); // 'My Panel'
+const panelH = createPanel(world, addEntity(world), { title: 'My Panel' });
+const title = panelH.getTitle(); // 'My Panel'
+console.log('panel title:', title);
+panelH.destroy();
 ```
 
 **Returns:** `string`
@@ -189,7 +210,9 @@ const title = panel.getTitle(); // 'My Panel'
 Sets the content text of the panel.
 
 ```typescript
-panel.setContent('Panel content here');
+const panelI = createPanel(world, addEntity(world));
+panelI.setContent('Panel content here');
+panelI.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -199,7 +222,10 @@ panel.setContent('Panel content here');
 Gets the current content text.
 
 ```typescript
-const content = panel.getContent();
+const panelJ = createPanel(world, addEntity(world));
+const content = panelJ.getContent();
+console.log('panel content:', content);
+panelJ.destroy();
 ```
 
 **Returns:** `string`
@@ -213,7 +239,9 @@ const content = panel.getContent();
 Collapses the panel to show only the title bar.
 
 ```typescript
-panel.collapse();
+const panelK = createPanel(world, addEntity(world), { collapsible: true });
+panelK.collapse();
+panelK.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -223,7 +251,9 @@ panel.collapse();
 Expands the panel to show full content.
 
 ```typescript
-panel.expand();
+const panelL = createPanel(world, addEntity(world), { collapsible: true });
+panelL.expand();
+panelL.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -233,7 +263,9 @@ panel.expand();
 Toggles between collapsed and expanded states.
 
 ```typescript
-panel.toggle();
+const panelM = createPanel(world, addEntity(world), { collapsible: true });
+panelM.toggle();
+panelM.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -243,7 +275,10 @@ panel.toggle();
 Checks if the panel is collapsed.
 
 ```typescript
-const collapsed = panel.isCollapsed(); // boolean
+const panelN = createPanel(world, addEntity(world), { collapsible: true });
+const collapsed = panelN.isCollapsed(); // boolean
+console.log('panel collapsed:', collapsed);
+panelN.destroy();
 ```
 
 **Returns:** `boolean`
@@ -257,7 +292,10 @@ const collapsed = panel.isCollapsed(); // boolean
 Checks if the panel has a close button.
 
 ```typescript
-const closable = panel.isClosable(); // boolean
+const panelO = createPanel(world, addEntity(world), { closable: true });
+const closable = panelO.isClosable(); // boolean
+console.log('panel closable:', closable);
+panelO.destroy();
 ```
 
 **Returns:** `boolean`
@@ -267,7 +305,9 @@ const closable = panel.isClosable(); // boolean
 Closes the panel (hides it). Only works if the panel is closable.
 
 ```typescript
-panel.close();
+const panelP = createPanel(world, addEntity(world), { closable: true });
+panelP.close();
+panelP.destroy();
 ```
 
 ---
@@ -279,7 +319,9 @@ panel.close();
 Focuses the panel.
 
 ```typescript
-panel.focus();
+const panelQ = createPanel(world, addEntity(world));
+panelQ.focus();
+panelQ.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -289,7 +331,9 @@ panel.focus();
 Removes focus from the panel.
 
 ```typescript
-panel.blur();
+const panelR = createPanel(world, addEntity(world));
+panelR.blur();
+panelR.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -299,7 +343,10 @@ panel.blur();
 Checks if the panel is currently focused.
 
 ```typescript
-const focused = panel.isFocused(); // boolean
+const panelS = createPanel(world, addEntity(world));
+const focused = panelS.isFocused(); // boolean
+console.log('panel focused:', focused);
+panelS.destroy();
 ```
 
 **Returns:** `boolean`
@@ -313,8 +360,10 @@ const focused = panel.isFocused(); // boolean
 Appends a child entity to the content area.
 
 ```typescript
+const panelT = createPanel(world, addEntity(world));
 const childEid = addEntity(world);
-panel.append(childEid);
+panelT.append(childEid);
+panelT.destroy();
 ```
 
 **Returns:** `PanelWidget` for chaining
@@ -324,7 +373,10 @@ panel.append(childEid);
 Gets all direct children.
 
 ```typescript
-const children = panel.getChildren();
+const panelU = createPanel(world, addEntity(world));
+const children = panelU.getChildren();
+console.log('panel children:', children.length);
+panelU.destroy();
 ```
 
 **Returns:** `Entity[]`
@@ -338,7 +390,8 @@ const children = panel.getChildren();
 Destroys the widget.
 
 ```typescript
-panel.destroy();
+const panelV = createPanel(world, addEntity(world));
+panelV.destroy();
 ```
 
 ---
@@ -349,13 +402,12 @@ panel.destroy();
 
 Checks if an entity is a panel widget.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isPanel } from 'blecsd';
-
-if (isPanel(world, entity)) {
+const panelW = createPanel(world, addEntity(world));
+if (isPanel(world, panelW.eid)) {
   // Handle panel-specific logic
 }
+panelW.destroy();
 ```
 
 **Returns:** `boolean`
@@ -366,11 +418,11 @@ if (isPanel(world, entity)) {
 
 Gets the title of a panel entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getPanelTitle } from 'blecsd';
-
-const title = getPanelTitle(world, panelEntity);
+const panelX = createPanel(world, addEntity(world), { title: 'Test' });
+const panelTitle = getPanelTitle(world, panelX.eid);
+console.log('panel title from ECS:', panelTitle);
+panelX.destroy();
 ```
 
 **Returns:** `string`
@@ -381,11 +433,10 @@ const title = getPanelTitle(world, panelEntity);
 
 Sets the title of a panel entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPanelTitle } from 'blecsd/widgets';
-
-setPanelTitle(world, panelEntity, 'New Title');
+const panelY = createPanel(world, addEntity(world));
+setPanelTitle(world, panelY.eid, 'New Title');
+panelY.destroy();
 ```
 
 **Returns:** `Entity` - For chaining
@@ -396,11 +447,11 @@ setPanelTitle(world, panelEntity, 'New Title');
 
 Gets the collapsed state of a panel entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isPanelCollapsed } from 'blecsd';
-
-const collapsed = isPanelCollapsed(world, panelEntity);
+const panelZ = createPanel(world, addEntity(world), { collapsible: true });
+const panelCollapsed = isPanelCollapsed(world, panelZ.eid);
+console.log('panel collapsed from ECS:', panelCollapsed);
+panelZ.destroy();
 ```
 
 **Returns:** `boolean`
@@ -411,12 +462,12 @@ const collapsed = isPanelCollapsed(world, panelEntity);
 
 Gets the title alignment of a panel entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getPanelTitleAlign } from 'blecsd';
-
-const align = getPanelTitleAlign(world, panelEntity);
+const panelAA = createPanel(world, addEntity(world), { titleAlign: 'center' });
+const align = getPanelTitleAlign(world, panelAA.eid);
+console.log('panel title alignment:', align);
 // 'left', 'center', or 'right'
+panelAA.destroy();
 ```
 
 **Returns:** `TitleAlign`
@@ -427,12 +478,12 @@ const align = getPanelTitleAlign(world, panelEntity);
 
 Renders the panel title bar as a string.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { renderPanelTitleBar } from 'blecsd';
-
-const titleBar = renderPanelTitleBar(world, panelEntity, 40);
+const panelAB = createPanel(world, addEntity(world), { title: 'My Panel', width: 40 });
+const titleBar = renderPanelTitleBar(world, panelAB.eid, 40);
+console.log('rendered title bar:', titleBar);
 // Returns formatted title bar with buttons
+panelAB.destroy();
 ```
 
 **Parameters:**
@@ -453,14 +504,14 @@ Configuration for creating a panel widget.
 ```typescript
 interface PanelConfig {
   // Position
-  readonly left?: PositionValue;
-  readonly top?: PositionValue;
-  readonly width?: DimensionValue;
-  readonly height?: DimensionValue;
+  readonly left?: number;
+  readonly top?: number;
+  readonly width?: number;
+  readonly height?: number;
 
   // Title
   readonly title?: string;
-  readonly titleAlign?: TitleAlign;
+  readonly titleAlign?: 'left' | 'center' | 'right';
 
   // Features
   readonly closable?: boolean;
@@ -470,8 +521,12 @@ interface PanelConfig {
   // Style
   readonly fg?: string | number;
   readonly bg?: string | number;
-  readonly style?: PanelStyleConfig;
-  readonly padding?: PaddingConfig;
+  readonly style?: {
+    readonly title?: { readonly fg?: string | number; readonly bg?: string | number };
+    readonly content?: { readonly fg?: string | number; readonly bg?: string | number };
+    readonly border?: { readonly type?: string; readonly fg?: string | number };
+  };
+  readonly padding?: number;
 
   // Content
   readonly content?: string;
@@ -492,45 +547,9 @@ Panel style configuration.
 
 ```typescript
 interface PanelStyleConfig {
-  readonly title?: PanelTitleStyle;
-  readonly content?: PanelContentStyle;
-  readonly border?: PanelBorderConfig;
-}
-```
-
-### PanelTitleStyle
-
-Style configuration for the title bar.
-
-```typescript
-interface PanelTitleStyle {
-  readonly fg?: string | number;
-  readonly bg?: string | number;
-  readonly align?: TitleAlign;
-}
-```
-
-### PanelContentStyle
-
-Style configuration for the content area.
-
-```typescript
-interface PanelContentStyle {
-  readonly fg?: string | number;
-  readonly bg?: string | number;
-}
-```
-
-### PanelBorderConfig
-
-Border configuration for panels.
-
-```typescript
-interface PanelBorderConfig {
-  readonly type?: 'line' | 'bg' | 'none';
-  readonly fg?: string | number;
-  readonly bg?: string | number;
-  readonly ch?: 'single' | 'double' | 'rounded' | 'bold' | 'ascii' | BorderCharset;
+  readonly title?: { readonly fg?: string | number; readonly bg?: string | number };
+  readonly content?: { readonly fg?: string | number; readonly bg?: string | number };
+  readonly border?: { readonly type?: string; readonly fg?: string | number };
 }
 ```
 
@@ -548,7 +567,7 @@ The panel widget interface.
 
 ```typescript
 interface PanelWidget {
-  readonly eid: Entity;
+  readonly eid: number;
 
   // Visibility
   show(): PanelWidget;
@@ -582,8 +601,8 @@ interface PanelWidget {
   isFocused(): boolean;
 
   // Children
-  append(child: Entity): PanelWidget;
-  getChildren(): Entity[];
+  append(child: number): PanelWidget;
+  getChildren(): number[];
 
   // Lifecycle
   destroy(): void;
@@ -594,10 +613,7 @@ interface PanelWidget {
 
 ## Zod Schemas
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { PanelConfigSchema } from 'blecsd';
-
 // Validate configuration
 const result = PanelConfigSchema.safeParse({
   title: 'My Panel',
@@ -616,13 +632,7 @@ if (result.success) {
 
 ### Dialog Panel
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd/widgets';
-
-const world = createWorld();
-
 const dialog = createPanel(world, addEntity(world), {
   left: 20,
   top: 5,
@@ -638,17 +648,12 @@ const dialog = createPanel(world, addEntity(world), {
 if (dialog.isClosable()) {
   // User can close with the X button
 }
+dialog.destroy();
 ```
 
 ### Collapsible Section
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd/widgets';
-
-const world = createWorld();
-
 const section = createPanel(world, addEntity(world), {
   left: 0,
   top: 0,
@@ -666,18 +671,13 @@ section.toggle();
 if (section.isCollapsed()) {
   console.log('Section is collapsed');
 }
+section.destroy();
 ```
 
 ### Styled Tool Window
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd/widgets';
-
-const world = createWorld();
-
-const toolWindow = createPanel(world, addEntity(world), {
+const styledToolWindow = createPanel(world, addEntity(world), {
   left: 70,
   top: 2,
   width: 30,
@@ -694,24 +694,17 @@ const toolWindow = createPanel(world, addEntity(world), {
     border: {
       type: 'line',
       fg: '#336699',
-      ch: 'rounded',
     },
   },
   padding: 1,
 });
+styledToolWindow.destroy();
 ```
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createPanel } from 'blecsd/widgets';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const panel = createPanel(world, eid, {
+const chainedPanel = createPanel(world, addEntity(world), {
   left: 0,
   top: 0,
   width: 40,
@@ -724,9 +717,10 @@ const panel = createPanel(world, eid, {
   .show();
 
 // Later...
-panel
+chainedPanel
   .collapse()
   .move(5, 0);
+chainedPanel.destroy();
 ```
 
 ---

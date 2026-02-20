@@ -8,7 +8,6 @@ The Behavior module provides a lightweight behavior system for game entities. Ea
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Behavior,
@@ -39,7 +38,7 @@ import {
   computeFleeDirection,
   executeCustomBehavior,
   updateBehaviorTimer,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Component Data Layout
@@ -62,9 +61,8 @@ const Behavior = {
 
 ### BehaviorType
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BehaviorType } from 'blecsd';
+import { BehaviorType } from 'blecsd/components';
 
 BehaviorType.Idle    // 0
 BehaviorType.Patrol  // 1
@@ -75,9 +73,8 @@ BehaviorType.Custom  // 4
 
 ### BehaviorState
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BehaviorState } from 'blecsd';
+import { BehaviorState } from 'blecsd/components';
 
 BehaviorState.Inactive  // 0
 BehaviorState.Active    // 1
@@ -91,9 +88,13 @@ BehaviorState.Completed // 3
 
 Sets behavior on an entity. Adds the component if not present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setBehavior, BehaviorType } from 'blecsd';
+import { setBehavior, BehaviorType } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
+const player = addEntity(world);
 
 setBehavior(world, entity, {
   type: BehaviorType.Chase,
@@ -115,9 +116,8 @@ setBehavior(world, entity, {
 
 Returns a snapshot of the entity's behavior data.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getBehavior } from 'blecsd';
+import { getBehavior } from 'blecsd/components';
 
 const ai = getBehavior(world, entity);
 if (ai) {
@@ -129,9 +129,8 @@ if (ai) {
 
 ### hasBehavior / removeBehavior
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasBehavior, removeBehavior } from 'blecsd';
+import { hasBehavior, removeBehavior } from 'blecsd/components';
 
 if (hasBehavior(world, entity)) {
   removeBehavior(world, entity); // Also cleans up patrol routes and custom callbacks
@@ -142,9 +141,16 @@ if (hasBehavior(world, entity)) {
 
 ### setIdle / setPatrol / setChase / setFlee / setCustomBehavior
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPatrol, setChase, setFlee, setCustomBehavior } from 'blecsd';
+import { setPatrol, setChase, setFlee, setCustomBehavior } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const guard = addEntity(world);
+const player = addEntity(world);
+const enemy = addEntity(world);
+const civilian = addEntity(world);
+const boss = addEntity(world);
 
 // Patrol with waypoints
 setPatrol(world, guard, [
@@ -167,7 +173,6 @@ setCustomBehavior(world, boss, (world, eid, delta) => {
 
 ## Query Helpers
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   getBehaviorType,
@@ -178,7 +183,7 @@ import {
   isBehaviorCompleted,
   getPatrolRoute,
   getCurrentPatrolPoint,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const type = getBehaviorType(world, entity);    // BehaviorTypeValue | undefined
 const state = getBehaviorState(world, entity);  // BehaviorStateValue | undefined
@@ -194,10 +199,10 @@ These functions return movement direction vectors without modifying entity posit
 
 ### computePatrolDirection
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { computePatrolDirection } from 'blecsd';
+import { computePatrolDirection } from 'blecsd/components';
 
+const currentX = 0, currentY = 0;
 const dir = computePatrolDirection(world, entity, currentX, currentY, deltaTime);
 if (dir) {
   // Apply dir.dx, dir.dy to entity position
@@ -206,10 +211,10 @@ if (dir) {
 
 ### computeChaseDirection / computeFleeDirection
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { computeChaseDirection, computeFleeDirection } from 'blecsd';
+import { computeChaseDirection, computeFleeDirection } from 'blecsd/components';
 
+const myX = 0, myY = 0, targetX = 10, targetY = 10;
 const chase = computeChaseDirection(world, entity, myX, myY, targetX, targetY);
 const flee = computeFleeDirection(world, entity, myX, myY, targetX, targetY);
 ```
@@ -218,9 +223,8 @@ const flee = computeFleeDirection(world, entity, myX, myY, targetX, targetY);
 
 ### executeCustomBehavior / updateBehaviorTimer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { executeCustomBehavior, updateBehaviorTimer } from 'blecsd';
+import { executeCustomBehavior, updateBehaviorTimer } from 'blecsd/components';
 
 // In your update loop
 updateBehaviorTimer(world, entity, deltaTime);
@@ -229,10 +233,9 @@ executeCustomBehavior(world, entity, deltaTime);
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setBehavior, BehaviorType, setPatrol, computePatrolDirection } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setBehavior, BehaviorType, setPatrol, computePatrolDirection } from 'blecsd/components';
 
 const world = createWorld();
 const guard = addEntity(world);
@@ -246,6 +249,7 @@ setPatrol(world, guard, [
 ], { loop: true, waitTime: 1.0 });
 
 // In update loop
+let currentX = 5, currentY = 5;
 const dir = computePatrolDirection(world, guard, currentX, currentY, deltaTime);
 if (dir) {
   currentX += dir.dx * deltaTime;

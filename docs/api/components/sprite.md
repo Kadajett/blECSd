@@ -12,7 +12,6 @@ Each sprite frame is a 2D grid of cells, where each cell has a character and opt
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Sprite,
@@ -32,7 +31,7 @@ import {
   hasSprite,
   getEntitySpriteSheet,
   removeSprite,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Sprite Store
@@ -41,9 +40,8 @@ import {
 
 Registers a sprite sheet and returns its numeric ID.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerSprite } from 'blecsd';
+import { registerSprite } from 'blecsd/components';
 
 const playerId = registerSprite({
   name: 'player',
@@ -73,9 +71,10 @@ const tankId = registerSprite({
 
 ### getSpriteSheet / getSpriteSheetByName / getSpriteIdByName
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getSpriteSheet, getSpriteSheetByName, getSpriteIdByName } from 'blecsd';
+import { registerSprite, getSpriteSheet, getSpriteSheetByName, getSpriteIdByName } from 'blecsd/components';
+
+const playerId = registerSprite({ name: 'player', frames: [[[{ char: '@' }]]] });
 
 const sheet = getSpriteSheet(playerId);
 const same = getSpriteSheetByName('player');
@@ -88,10 +87,10 @@ if (sheet) {
 
 ### unregisterSprite
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { unregisterSprite } from 'blecsd';
+import { registerSprite, unregisterSprite } from 'blecsd/components';
 
+const playerId = registerSprite({ name: 'player', frames: [[[{ char: '@' }]]] });
 unregisterSprite(playerId); // returns true if found
 ```
 
@@ -113,9 +112,13 @@ const Sprite = {
 
 Assigns a sprite to an entity. Adds the component if not present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setSprite, setSpriteByName } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { registerSprite, setSprite, setSpriteByName } from 'blecsd/components';
+
+const world = createWorld();
+const entity = addEntity(world);
+const playerId = registerSprite({ name: 'player', frames: [[[{ char: '@' }]], [[{ char: 'O' }]]] });
 
 setSprite(world, entity, playerId);
 setSprite(world, entity, playerId, 1); // Start at frame 1
@@ -129,9 +132,8 @@ setSpriteByName(world, entity, 'player');
 
 Returns sprite state for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getSprite } from 'blecsd';
+import { getSprite } from 'blecsd/components';
 
 const sprite = getSprite(world, entity);
 if (sprite) {
@@ -145,9 +147,8 @@ if (sprite) {
 
 Returns the current frame's 2D cell data.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getCurrentFrame } from 'blecsd';
+import { getCurrentFrame } from 'blecsd/components';
 
 const frame = getCurrentFrame(world, entity);
 if (frame) {
@@ -165,9 +166,8 @@ if (frame) {
 
 Control frame index directly or step through frames.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setFrame, nextFrame, prevFrame } from 'blecsd';
+import { setFrame, nextFrame, prevFrame } from 'blecsd/components';
 
 setFrame(world, entity, 2);   // Jump to frame 2 (clamped to valid range)
 nextFrame(world, entity);      // Advance, wraps to 0 at end
@@ -176,9 +176,8 @@ prevFrame(world, entity);      // Go back, wraps to last at 0
 
 ### hasSprite / getEntitySpriteSheet / removeSprite
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasSprite, getEntitySpriteSheet, removeSprite } from 'blecsd';
+import { hasSprite, getEntitySpriteSheet, removeSprite } from 'blecsd/components';
 
 if (hasSprite(world, entity)) {
   const sheet = getEntitySpriteSheet(world, entity);
@@ -190,10 +189,9 @@ removeSprite(world, entity); // Does not affect the sheet in the store
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { registerSprite, setSprite, nextFrame, getCurrentFrame } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { registerSprite, setSprite, nextFrame, getCurrentFrame } from 'blecsd/components';
 
 const world = createWorld();
 const entity = addEntity(world);

@@ -57,9 +57,8 @@ function createCellBuffer(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCellBuffer, renderBox, BOX_SINGLE } from 'blecsd';
+import { createCellBuffer, renderBox, BOX_SINGLE } from 'blecsd/utils';
 
 const buffer = createCellBuffer(80, 24);
 renderBox(buffer, 5, 2, 20, 10, BOX_SINGLE);
@@ -94,9 +93,8 @@ interface RenderBoxOptions {
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCellBuffer, renderBox, BOX_ROUNDED, BOX_DOUBLE } from 'blecsd';
+import { createCellBuffer, renderBox, BOX_ROUNDED, BOX_DOUBLE } from 'blecsd/utils';
 
 const buffer = createCellBuffer(80, 24);
 
@@ -135,9 +133,8 @@ function renderHLine(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCellBuffer, renderHLine, BOX_DOUBLE } from 'blecsd';
+import { createCellBuffer, renderHLine, BOX_DOUBLE } from 'blecsd/utils';
 
 const buffer = createCellBuffer(80, 24);
 renderHLine(buffer, 5, 10, 20, BOX_DOUBLE.horizontal);
@@ -161,9 +158,8 @@ function renderVLine(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCellBuffer, renderVLine, BOX_BOLD } from 'blecsd';
+import { createCellBuffer, renderVLine, BOX_BOLD } from 'blecsd/utils';
 
 const buffer = createCellBuffer(80, 24);
 renderVLine(buffer, 10, 5, 15, BOX_BOLD.vertical);
@@ -188,9 +184,9 @@ function fillRect(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCellBuffer, fillRect } from 'blecsd';
+import { createCellBuffer } from 'blecsd/utils';
+import { fillRect } from 'blecsd/terminal';
 
 const buffer = createCellBuffer(80, 24);
 
@@ -218,9 +214,9 @@ function renderText(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCellBuffer, renderBox, renderText, BOX_ROUNDED } from 'blecsd';
+import { createCellBuffer, renderBox, BOX_ROUNDED } from 'blecsd/utils';
+import { renderText } from 'blecsd/systems';
 
 const buffer = createCellBuffer(80, 24);
 
@@ -241,9 +237,8 @@ function bufferToString(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCellBuffer, renderBox, BOX_SINGLE, bufferToString } from 'blecsd';
+import { createCellBuffer, renderBox, BOX_SINGLE, bufferToString } from 'blecsd/utils';
 
 const buffer = createCellBuffer(10, 5);
 renderBox(buffer, 0, 0, 10, 5, BOX_SINGLE);
@@ -267,9 +262,9 @@ function charsetToBoxChars(charset: BorderCharset): BoxChars
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { BORDER_ROUNDED, charsetToBoxChars } from 'blecsd';
+import { BORDER_ROUNDED } from 'blecsd/components';
+import { charsetToBoxChars } from 'blecsd/utils';
 
 const chars = charsetToBoxChars(BORDER_ROUNDED);
 console.log(chars.topLeft); // "╭"
@@ -279,9 +274,8 @@ console.log(chars.topLeft); // "╭"
 
 ### Nested Boxes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCellBuffer, renderBox, BOX_DOUBLE, BOX_SINGLE, bufferToString } from 'blecsd';
+import { createCellBuffer, renderBox, BOX_DOUBLE, BOX_SINGLE, bufferToString } from 'blecsd/utils';
 
 const buffer = createCellBuffer(20, 10);
 
@@ -296,9 +290,9 @@ console.log(bufferToString(buffer));
 
 ### Dialog Box with Title
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCellBuffer, renderBox, renderText, BOX_ROUNDED, bufferToString } from 'blecsd';
+import { createCellBuffer, renderBox, BOX_ROUNDED, bufferToString } from 'blecsd/utils';
+import { renderText } from 'blecsd/systems';
 
 const buffer = createCellBuffer(40, 12);
 

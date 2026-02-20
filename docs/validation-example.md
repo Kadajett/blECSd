@@ -4,9 +4,8 @@ This document shows how to use the `validateEntity` utility to provide clear err
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { validateEntity } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
 
@@ -25,7 +24,6 @@ try {
 
 ## In Widget Factories
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { validateEntity } from 'blecsd/core';
 import { Position, Dimensions, Renderable } from 'blecsd/components';
@@ -40,7 +38,6 @@ export function createBox(world: World, entity: Entity, config: BoxConfig) {
 
 ## In Systems
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { validateEntity, query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
@@ -63,26 +60,23 @@ export function movementSystem(world: World) {
 
 For better error messages, register component names during initialization:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { registerComponentName } from 'blecsd/core';
-import { registerBuiltinComponentNames } from 'blecsd/components';
+import { registerBuiltinComponentNames, Position } from 'blecsd/components';
 
 // Register all built-in components
 registerBuiltinComponentNames();
 
-// Or register custom components individually
-import { MyCustomComponent } from './components/myCustom';
-registerComponentName(MyCustomComponent, 'MyCustomComponent');
+// Or register individual components with custom names
+registerComponentName(Position, 'Position');
 ```
 
 ## Non-Throwing Validation
 
 Use `isEntityValid` for cases where you want to check without throwing:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 import { isEntityValid, query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
 

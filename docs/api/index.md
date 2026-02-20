@@ -102,13 +102,13 @@ See [World Adapter](./core/worldAdapter.md) for customizing renderable queries a
 
 Optional game loop with phase ordering.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, LoopPhase } from 'blecsd/core';
+import { createScheduler, LoopPhase, createWorld } from 'blecsd/core';
 
+const world = createWorld();
 const scheduler = createScheduler();
-scheduler.add(LoopPhase.UPDATE, (world, delta) => world);
-scheduler.start(world);
+scheduler.registerSystem(LoopPhase.UPDATE, (w, _delta) => w);
+scheduler.run(world, 16);
 ```
 
 Phases execute in order:
@@ -116,7 +116,7 @@ Phases execute in order:
 2. EARLY_UPDATE
 3. UPDATE
 4. LATE_UPDATE
-5. PHYSICS
+5. ANIMATION
 6. LAYOUT
 7. RENDER
 8. POST_RENDER
@@ -155,7 +155,7 @@ ECS systems process entities and update world state. Register with the scheduler
 | System | Phase | Purpose | Documentation |
 |--------|-------|---------|---------------|
 | Animation System | UPDATE | Update sprite animations | [Animation System](./systems/animationSystem.md) |
-| Movement System | PHYSICS | Apply velocity to position | [Movement System](./systems/movementSystem.md) |
+| Movement System | ANIMATION | Apply velocity to position | [Movement System](./systems/movementSystem.md) |
 | Collision System | UPDATE | Detect entity collisions | [Collision System](./systems/collisionSystem.md) |
 | Camera System | UPDATE | Camera following with smoothing | [Camera System](./systems/cameraSystem.md) |
 | State Machine System | UPDATE | Track state age for transitions | [State Machine System](./systems/stateMachineSystem.md) |
@@ -175,16 +175,18 @@ See [Input Stream](./terminal/key-parser.md) for wrapping NodeJS readable stream
 
 ### Input Parsing
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseMouseSequence } from 'blecsd';
+import { parseMouseSequence } from 'blecsd/terminal';
 import { parseKeyBuffer } from 'blecsd/terminal';
 
+const buffer = Buffer.from('a');
 const key = parseKeyBuffer(buffer);
 // { name: 'a', ctrl: false, meta: false, shift: false, sequence: 'a' }
 
 const mouse = parseMouseSequence('\x1b[<0;10;5M');
 // { action: 'mousedown', button: 0, x: 10, y: 5, ... }
+console.log('Parsed key:', key);
+console.log('Parsed mouse:', mouse);
 ```
 
 ## Terminal I/O
@@ -208,14 +210,9 @@ Low-level terminal control. Import from `blecsd/terminal`.
 
 Zod schemas for configuration validation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  ColorStringSchema,
-  DimensionSchema,
-  PositionValueSchema,
-  PositiveIntSchema,
-} from 'blecsd';
+import { ColorStringSchema, DimensionSchema, PositiveIntSchema } from 'blecsd/schemas';
+import { PositionValueSchema } from 'blecsd/core';
 
 ColorStringSchema.parse('#ff0000');
 DimensionSchema.parse('50%');
@@ -260,9 +257,8 @@ See [Text Wrapping](./utils/text-wrap.md) for the full API.
 
 ### World and Entity
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { World, Entity, System } from 'blecsd';
+import type { World, Entity, System } from 'blecsd/core';
 
 type World = ReturnType<typeof createWorld>;
 type Entity = number;
@@ -271,21 +267,18 @@ type System = (world: World, deltaTime: number) => World;
 
 ### Event Types
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { EventHandler, EventMap, Unsubscribe } from 'blecsd';
+import type { EventHandler, EventMap, Unsubscribe } from 'blecsd/core';
 ```
 
 ### Input Types
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { KeyEvent, MouseEvent, KeyName, MouseAction } from 'blecsd';
+import type { ParsedKeyEvent, ParsedMouseEvent, KeyName, MouseAction } from 'blecsd/terminal';
 ```
 
 ### Component Data Types
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type {
   PositionData,
@@ -300,5 +293,5 @@ import type {
   ContentData,
   PaddingData,
   LabelData,
-} from 'blecsd';
+} from 'blecsd/components';
 ```

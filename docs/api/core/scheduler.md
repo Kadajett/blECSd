@@ -4,23 +4,27 @@ The Scheduler manages the ordered execution of ECS systems across phases. It enf
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getDeltaTime } from 'blecsd';
+import { getDeltaTime } from 'blecsd/core';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createScheduler, LoopPhase } from 'blecsd/core';
+import { createScheduler, LoopPhase, createWorld } from 'blecsd/core';
 
+const world = createWorld();
 const scheduler = createScheduler();
+const movementSystem = (w: ReturnType<typeof createWorld>) => w;
+const collisionSystem = (w: ReturnType<typeof createWorld>) => w;
+const layoutSystem = (w: ReturnType<typeof createWorld>) => w;
+const renderSystem = (w: ReturnType<typeof createWorld>) => w;
+const deltaTime = 16;
 
 // Register systems to phases
 scheduler.registerSystem(LoopPhase.UPDATE, movementSystem);
-scheduler.registerSystem(LoopPhase.PHYSICS, collisionSystem);
+scheduler.registerSystem(LoopPhase.ANIMATION, collisionSystem);
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
 
@@ -38,7 +42,7 @@ Systems execute in strict phase order. Within each phase, systems run by priorit
 | `EARLY_UPDATE` | `1` | Pre-update logic | No |
 | `UPDATE` | `2` | Main game/application logic | No |
 | `LATE_UPDATE` | `3` | Post-update logic | No |
-| `PHYSICS` | `4` | Physics and animation calculations | No |
+| `ANIMATION` | `4` | Physics and animation calculations | No |
 | `LAYOUT` | `5` | UI layout calculation | No |
 | `RENDER` | `6` | Render to screen buffer | No |
 | `POST_RENDER` | `7` | Output to terminal, cleanup | No |
@@ -50,12 +54,19 @@ The `INPUT` phase is protected - attempting to register systems to it will throw
 ### System Registration
 
 ```typescript
+import { createScheduler, LoopPhase } from 'blecsd/core';
+
+const scheduler = createScheduler();
+const mySystem = (w: object) => w;
+const movementSystem2 = (w: object) => w;
+const collisionSystem2 = (w: object) => w;
+
 // Register a system to a phase
 scheduler.registerSystem(LoopPhase.UPDATE, mySystem);
 
 // Register with priority (lower = runs earlier)
-scheduler.registerSystem(LoopPhase.UPDATE, movementSystem, 0);
-scheduler.registerSystem(LoopPhase.UPDATE, collisionSystem, 10);
+scheduler.registerSystem(LoopPhase.UPDATE, movementSystem2, 0);
+scheduler.registerSystem(LoopPhase.UPDATE, collisionSystem2, 10);
 
 // Unregister from all phases
 scheduler.unregisterSystem(mySystem);
@@ -64,6 +75,11 @@ scheduler.unregisterSystem(mySystem);
 ### Execution
 
 ```typescript
+import { createScheduler, createWorld } from 'blecsd/core';
+
+const world = createWorld();
+const scheduler = createScheduler();
+const deltaTime = 16;
 // Run all phases in order
 scheduler.run(world, deltaTime);
 ```
@@ -71,6 +87,12 @@ scheduler.run(world, deltaTime);
 ### Querying
 
 ```typescript
+import { createScheduler, LoopPhase } from 'blecsd/core';
+
+const scheduler = createScheduler();
+const mySystem = (w: object) => w;
+scheduler.registerSystem(LoopPhase.UPDATE, mySystem);
+
 // Get systems for a phase
 const systems = scheduler.getSystemsForPhase(LoopPhase.UPDATE);
 
@@ -85,6 +107,9 @@ scheduler.hasSystem(mySystem);               // true/false
 ### Phase Management
 
 ```typescript
+import { createScheduler, LoopPhase } from 'blecsd/core';
+
+const scheduler = createScheduler();
 // Clear all systems from a phase
 scheduler.clearPhase(LoopPhase.UPDATE);
 
@@ -96,17 +121,13 @@ scheduler.clearAllSystems();
 
 Access the current frame's delta time from within a system:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getDeltaTime } from 'blecsd';
+import { getDeltaTime } from 'blecsd/core';
 
-const movementSystem = (world) => {
+const movementSystem = (world: object) => {
   const dt = getDeltaTime();
   // Move entities by velocity * dt for frame-rate independence
-  for (const eid of movingEntities(world)) {
-    Position.x[eid] += Velocity.x[eid] * dt;
-    Position.y[eid] += Velocity.y[eid] * dt;
-  }
+  console.log(`Moving entities with dt=${dt}`);
   return world;
 };
 ```
@@ -114,7 +135,12 @@ const movementSystem = (world) => {
 ## Example: Priority Ordering
 
 ```typescript
+import { createScheduler, LoopPhase } from 'blecsd/core';
+
 const scheduler = createScheduler();
+const inputValidation = (w: object) => w;
+const gameLogic = (w: object) => w;
+const aiSystem = (w: object) => w;
 
 // Lower priority number = runs first within the phase
 scheduler.registerSystem(LoopPhase.UPDATE, inputValidation, 0);
@@ -126,12 +152,14 @@ scheduler.registerSystem(LoopPhase.UPDATE, aiSystem, 20);
 
 ## Example: Custom Game Loop
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getDeltaTime } from 'blecsd';
-import { createScheduler, LoopPhase } from 'blecsd/core';
+import { getDeltaTime, createScheduler, LoopPhase, createWorld } from 'blecsd/core';
 
+const world = createWorld();
 const scheduler = createScheduler();
+const gameLogic = (w: object) => w;
+const layoutSystem = (w: object) => w;
+const renderSystem = (w: object) => w;
 
 scheduler.registerSystem(LoopPhase.UPDATE, gameLogic);
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
@@ -146,8 +174,7 @@ function tick() {
   lastTime = now;
 
   scheduler.run(world, dt);
-
-  setTimeout(tick, 16); // ~60fps
+  // In a real app, call setTimeout(tick, 16) for ~60fps
 }
 
 tick();

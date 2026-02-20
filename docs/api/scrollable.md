@@ -6,9 +6,8 @@ The Scrollable component adds scrolling support to entities, enabling content la
 
 Defines the visibility mode for scrollbars.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ScrollbarVisibility } from 'blecsd';
+import { ScrollbarVisibility } from 'blecsd/components';
 
 // Available visibility modes
 ScrollbarVisibility.Hidden  // 0 - Scrollbar always hidden
@@ -22,9 +21,8 @@ ScrollbarVisibility.Auto    // 2 - Scrollbar visible only when content overflows
 
 The Scrollable component stores scroll state using bitecs SoA (Structure of Arrays) pattern.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Scrollable } from 'blecsd';
+import { Scrollable } from 'blecsd/components';
 
 // Component arrays
 Scrollable.scrollX          // Float32Array - Horizontal scroll offset
@@ -44,9 +42,9 @@ Scrollable.alwaysScroll     // Uint8Array   - Always show scrollbar (0=no, 1=yes
 
 Checks if an entity has a Scrollable component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, hasScrollable, setScrollable } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { hasScrollable, setScrollable } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -63,9 +61,9 @@ hasScrollable(world, eid); // true
 
 Makes an entity scrollable with the given options. Adds the Scrollable component if not already present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScrollable, ScrollbarVisibility } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScrollable, ScrollbarVisibility } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -109,9 +107,9 @@ setScrollable(world, eid, {
 
 Sets the scroll position of an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScroll, getScroll } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScroll, getScroll } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -136,9 +134,9 @@ const scroll = getScroll(world, eid);
 
 Gets the scroll position of an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScroll, getScroll } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScroll, getScroll } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -158,9 +156,9 @@ const scroll = getScroll(world, eid);
 
 Scrolls an entity by the given delta values.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScroll, scrollBy, getScroll } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScroll, scrollBy, getScroll } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -190,9 +188,9 @@ getScroll(world, eid); // { x: 25, y: 150 }
 
 Scrolls an entity to the given position. Alias for `setScroll` for semantic clarity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, scrollTo } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { scrollTo } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -215,9 +213,9 @@ scrollTo(world, eid, 0, 500); // Scroll to specific position
 
 Gets the scroll percentage of an entity (0-100 for each axis).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScrollable, setScroll, getScrollPercentage } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScrollable, setScroll, getScrollPercentage } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -241,9 +239,9 @@ const percent = getScrollPercentage(world, eid);
 
 Gets the full scrollable data of an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScrollable, getScrollable, ScrollbarVisibility } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScrollable, getScrollable, ScrollbarVisibility } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -280,9 +278,9 @@ const data = getScrollable(world, eid);
 
 Sets the scrollable content size.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScrollSize, getScrollable } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScrollSize, getScrollable } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -308,9 +306,9 @@ const data = getScrollable(world, eid);
 
 Sets the scrollbar visibility mode.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScrollable, setScrollbarVisibility, ScrollbarVisibility } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScrollable, setScrollbarVisibility, ScrollbarVisibility } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -340,9 +338,9 @@ setScrollbarVisibility(world, eid, ScrollbarVisibility.Auto);
 
 Scrolls an entity to the top (sets scrollY to 0).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScroll, scrollToTop, getScroll } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScroll, scrollToTop, getScroll } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -362,9 +360,9 @@ const scroll = getScroll(world, eid);
 
 Scrolls an entity to the bottom (sets scrollY to scrollHeight).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScrollable, scrollToBottom, getScroll } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScrollable, scrollToBottom, getScroll } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -387,9 +385,9 @@ const scroll = getScroll(world, eid);
 
 Checks if an entity can scroll (has content larger than zero in either dimension).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScrollable, canScroll } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScrollable, canScroll } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -411,9 +409,9 @@ canScroll(world, eid); // true
 
 Checks if an entity is scrolled to the top.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScrollable, setScroll, isAtTop } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScrollable, setScroll, isAtTop } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -435,9 +433,9 @@ isAtTop(world, eid); // false
 
 Checks if an entity is scrolled to the bottom.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setScrollable, setScroll, scrollToBottom, isAtBottom } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setScrollable, setScroll, scrollToBottom, isAtBottom } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);

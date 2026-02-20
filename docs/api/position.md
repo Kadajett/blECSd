@@ -6,7 +6,6 @@ Position tracks where an entity appears in the terminal grid. Without position d
 
 The Position component uses bitecs SoA (Structure of Arrays) pattern for cache-friendly access:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { Position } from 'blecsd/components';
 
@@ -22,9 +21,9 @@ Position.absolute // Uint8Array   - 0 = relative to parent, 1 = absolute
 
 ### hasPosition
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, hasPosition, setPosition } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { hasPosition, setPosition } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -42,9 +41,9 @@ hasPosition(world, eid);        // true
 
 Sets the X, Y, and optional Z coordinates. Adds the Position component if not present.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, getPosition } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, getPosition } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -72,9 +71,9 @@ const pos = getPosition(world, eid);
 
 Returns position data or `undefined` if the entity has no Position component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, getPosition } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, getPosition } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -102,9 +101,9 @@ const pos = getPosition(world, eid);
 
 Absolute positioning places the entity relative to the screen origin (0, 0). Relative positioning (the default) places it relative to its parent entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, setAbsolute, isAbsolute } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setAbsolute, isAbsolute } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -125,9 +124,9 @@ isAbsolute(world, eid);  // false
 
 ### isAbsolute
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, setAbsolute, isAbsolute } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setAbsolute, isAbsolute } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -147,9 +146,9 @@ isAbsolute(world, eid);         // true
 
 Adds delta values to the current position.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, getPosition, moveBy } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, getPosition, moveBy } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -175,9 +174,9 @@ moveBy(world, eid, -1, -1);
 
 Higher z-index values render on top of lower values. Range is 0-65535.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, setPosition, setZIndex, getPosition } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setZIndex, getPosition } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);

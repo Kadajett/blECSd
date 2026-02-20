@@ -4,10 +4,17 @@ Non-blocking notification widget that auto-dismisses. Multiple toasts can be sta
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showSuccessToast, showErrorToast } from 'blecsd';
-import { createToast } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import {
+  createToast,
+  showInfoToast,
+  showSuccessToast,
+  showWarningToast,
+  showErrorToast,
+  isToast,
+  ToastConfigSchema,
+} from 'blecsd/widgets';
 
 const world = createWorld();
 
@@ -19,9 +26,13 @@ const toast = createToast(world, {
   timeout: 2000,
 }, 80, 24);
 
+toast.destroy();
+
 // Or use convenience functions
-const success = showSuccessToast(world, 'Operation completed', {}, 80, 24);
-const error = showErrorToast(world, 'Connection failed', {}, 80, 24);
+const success = showSuccessToast(world, 'Operation completed', { position: 'top-left' }, 80, 24);
+const error = showErrorToast(world, 'Connection failed', { position: 'bottom-right' }, 80, 24);
+success.destroy();
+error.destroy();
 ```
 
 ---
@@ -76,16 +87,14 @@ interface ToastStyleConfig {
 
 ### Zod Schema
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ToastConfigSchema } from 'blecsd';
-
 const validated = ToastConfigSchema.parse({
   content: 'Hello',
   type: 'info',
   position: 'top-right',
   timeout: 5000,
 });
+console.log('Validated toast config:', validated.content, validated.type);
 ```
 
 ---
@@ -107,16 +116,14 @@ const validated = ToastConfigSchema.parse({
 
 Creates a Toast widget with the given configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createToast } from 'blecsd/widgets';
-
-const toast = createToast(world, {
+const toastA = createToast(world, {
   content: 'Changes saved',
   type: 'success',
   position: 'top-right',
   timeout: 3000,
 }, 80, 24);
+toastA.destroy();
 ```
 
 **Parameters:**
@@ -210,11 +217,9 @@ Destroys the widget, clears timers, removes from position tracking, and removes 
 
 ### showInfoToast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showInfoToast } from 'blecsd';
-
-const toast = showInfoToast(world, 'Operation completed', {}, 80, 24);
+const infoToast = showInfoToast(world, 'Operation completed', {}, 80, 24);
+infoToast.destroy();
 ```
 
 **Parameters:**
@@ -228,29 +233,23 @@ const toast = showInfoToast(world, 'Operation completed', {}, 80, 24);
 
 ### showSuccessToast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showSuccessToast } from 'blecsd';
-
-const toast = showSuccessToast(world, 'File saved successfully', {}, 80, 24);
+const successToast = showSuccessToast(world, 'File saved successfully', {}, 80, 24);
+successToast.destroy();
 ```
 
 ### showWarningToast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showWarningToast } from 'blecsd';
-
-const toast = showWarningToast(world, 'Unsaved changes', {}, 80, 24);
+const warningToast = showWarningToast(world, 'Unsaved changes', {}, 80, 24);
+warningToast.destroy();
 ```
 
 ### showErrorToast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showErrorToast } from 'blecsd';
-
-const toast = showErrorToast(world, 'Connection lost', {}, 80, 24);
+const errorToast = showErrorToast(world, 'Connection lost', {}, 80, 24);
+errorToast.destroy();
 ```
 
 ---
@@ -259,13 +258,12 @@ const toast = showErrorToast(world, 'Connection lost', {}, 80, 24);
 
 ### isToast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isToast } from 'blecsd';
-
-if (isToast(world, entity)) {
+const entityForCheck = createToast(world, { content: 'check', timeout: 0 }, 80, 24);
+if (isToast(world, entityForCheck.eid)) {
   // Entity is a toast widget
 }
+entityForCheck.destroy();
 ```
 
 **Parameters:**
@@ -280,17 +278,17 @@ if (isToast(world, entity)) {
 
 Multiple toasts at the same position are automatically stacked:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showSuccessToast, showInfoToast } from 'blecsd';
-
 // These will stack vertically
 const toast1 = showSuccessToast(world, 'First notification', { position: 'top-right' }, 80, 24);
 const toast2 = showInfoToast(world, 'Second notification', { position: 'top-right' }, 80, 24);
 const toast3 = showSuccessToast(world, 'Third notification', { position: 'top-right' }, 80, 24);
 
-// When toast1 is dismissed, toast2 and toast3 automatically reposition
-toast1.dismiss();
+// When toast1 is dismissed, toast2 and toast3 automatically reposition.
+// Toasts auto-dismiss via their timeout parameter.
+toast1.destroy();
+toast2.destroy();
+toast3.destroy();
 ```
 
 Toasts are spaced by `TOAST_STACK_SPACING` (1 line) between each notification.
@@ -301,47 +299,41 @@ Toasts are spaced by `TOAST_STACK_SPACING` (1 line) between each notification.
 
 ### Notification with Callback
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createToast } from 'blecsd/widgets';
-
-const toast = createToast(world, {
+const callbackToast = createToast(world, {
   content: 'Download complete!',
   type: 'success',
   position: 'bottom-right',
   timeout: 3000,
 }, 80, 24);
 
-toast.onDismiss(() => {
+callbackToast.onDismiss(() => {
   console.log('Toast was dismissed');
-  showNextNotification();
 });
+callbackToast.destroy();
 ```
 
 ### Persistent Toast (Manual Dismiss)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createToast } from 'blecsd/widgets';
-
-const toast = createToast(world, {
+const persistentToast = createToast(world, {
   content: 'Critical: Server disconnected',
   type: 'error',
   position: 'top-center',
   timeout: 0, // Never auto-dismiss
 }, 80, 24);
 
-// Later, when reconnected:
-toast.dismiss();
+// Check dismissed state
+const dismissed = persistentToast.isDismissed();
+console.log('Toast dismissed:', dismissed);
+// Later, call persistentToast.dismiss() when the condition is resolved
+persistentToast.destroy();
 ```
 
 ### Custom Styled Toast
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createToast } from 'blecsd/widgets';
-
-const toast = createToast(world, {
+const customToast = createToast(world, {
   content: 'Custom notification',
   fg: '#000000',
   bg: '#e0e0e0',
@@ -350,21 +342,20 @@ const toast = createToast(world, {
   position: 'top-left',
   timeout: 5000,
 }, 80, 24);
+customToast.destroy();
 ```
 
 ### Multi-Stack Toasts
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { showSuccessToast, showErrorToast } from 'blecsd';
-
 // Top-right stack for success messages
-showSuccessToast(world, 'File 1 saved', { position: 'top-right' }, 80, 24);
-showSuccessToast(world, 'File 2 saved', { position: 'top-right' }, 80, 24);
+const s1 = showSuccessToast(world, 'File 1 saved', { position: 'top-right' }, 80, 24);
+const s2 = showSuccessToast(world, 'File 2 saved', { position: 'top-right' }, 80, 24);
 
 // Bottom-left stack for errors
-showErrorToast(world, 'Network error', { position: 'bottom-left' }, 80, 24);
-showErrorToast(world, 'Timeout', { position: 'bottom-left' }, 80, 24);
+const e1 = showErrorToast(world, 'Network error', { position: 'bottom-left' }, 80, 24);
+const e2 = showErrorToast(world, 'Timeout', { position: 'bottom-left' }, 80, 24);
+s1.destroy(); s2.destroy(); e1.destroy(); e2.destroy();
 ```
 
 ---

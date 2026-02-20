@@ -12,7 +12,6 @@ Emitters track which particles they have spawned via a side store. Particle colo
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   Particle,
@@ -40,7 +39,7 @@ import {
   setEmitterRate,
   setEmitterSpeed,
   setEmitterGravity,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Particle Component
@@ -63,9 +62,14 @@ const Particle = {
 
 Creates or updates a particle on an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setParticle } from 'blecsd';
+import { setParticle, setEmitter } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const entity = addEntity(world);
+const emitterEntity = addEntity(world);
+setEmitter(world, emitterEntity, { lifetime: 1.5, rate: 10, speed: 5 });
 
 setParticle(world, entity, {
   lifetime: 1.5,
@@ -87,9 +91,8 @@ setParticle(world, entity, {
 
 ### getParticle
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getParticle } from 'blecsd';
+import { getParticle } from 'blecsd/components';
 
 const p = getParticle(world, entity);
 if (p) {
@@ -99,9 +102,8 @@ if (p) {
 
 ### isParticleDead / getParticleProgress / getParticleColor
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isParticleDead, getParticleProgress, getParticleColor } from 'blecsd';
+import { isParticleDead, getParticleProgress, getParticleColor } from 'blecsd/components';
 
 if (isParticleDead(world, entity)) {
   // age >= lifetime, ready for removal
@@ -115,18 +117,16 @@ const color = getParticleColor(world, entity);        // Interpolated packed RGB
 
 Utility for interpolating between two packed RGBA colors.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { interpolateColor } from 'blecsd';
+import { interpolateColor } from 'blecsd/components';
 
 const mid = interpolateColor(0xffff0000, 0xff0000ff, 0.5); // Red to blue at 50%
 ```
 
 ### hasParticle / removeParticle
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasParticle, removeParticle } from 'blecsd';
+import { hasParticle, removeParticle } from 'blecsd/components';
 
 if (hasParticle(world, entity)) {
   removeParticle(world, entity); // Also untracks from emitter
@@ -155,9 +155,8 @@ const ParticleEmitter = {
 
 Creates or updates an emitter on an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setEmitter } from 'blecsd';
+import { setEmitter } from 'blecsd/components';
 
 setEmitter(world, entity, {
   rate: 20,
@@ -181,9 +180,8 @@ setEmitter(world, entity, {
 
 ### getEmitter
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getEmitter } from 'blecsd';
+import { getEmitter } from 'blecsd/components';
 
 const em = getEmitter(world, entity);
 if (em) {
@@ -193,10 +191,9 @@ if (em) {
 
 ### Emitter Controls
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { activateEmitter, pauseEmitter, isEmitterActive } from 'blecsd';
-import { setEmitterRate, setEmitterSpeed, setEmitterGravity } from 'blecsd';
+import { activateEmitter, pauseEmitter, isEmitterActive } from 'blecsd/components';
+import { setEmitterRate, setEmitterSpeed, setEmitterGravity } from 'blecsd/components';
 
 activateEmitter(world, entity);
 pauseEmitter(world, entity);
@@ -211,9 +208,8 @@ setEmitterGravity(world, entity, 20);
 
 Configure the visual appearance of spawned particles.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setEmitterAppearance, getEmitterAppearance } from 'blecsd';
+import { setEmitterAppearance, getEmitterAppearance } from 'blecsd/components';
 
 setEmitterAppearance(entity, {
   chars: ['*', '.', 'o'].map(c => c.codePointAt(0)!),
@@ -227,9 +223,14 @@ const appearance = getEmitterAppearance(entity);
 
 ### Particle Tracking
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { trackParticle, untrackParticle, getEmitterParticles } from 'blecsd';
+import { trackParticle, untrackParticle, getEmitterParticles, setEmitter } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+
+const world = createWorld();
+const emitterEntity = addEntity(world);
+const particleEntity = addEntity(world);
+setEmitter(world, emitterEntity, { lifetime: 1.0, rate: 10, speed: 5 });
 
 trackParticle(emitterEntity, particleEntity);
 untrackParticle(emitterEntity, particleEntity);
@@ -239,9 +240,8 @@ const particles = getEmitterParticles(emitterEntity); // ReadonlySet<number>
 
 ### hasEmitter / removeEmitter
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasEmitter, removeEmitter } from 'blecsd';
+import { hasEmitter, removeEmitter } from 'blecsd/components';
 
 if (hasEmitter(world, entity)) {
   removeEmitter(world, entity); // Cleans up appearance and particle tracking
@@ -250,10 +250,9 @@ if (hasEmitter(world, entity)) {
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { setEmitter, setEmitterAppearance, setParticle, isParticleDead } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setEmitter, setEmitterAppearance, setParticle, isParticleDead } from 'blecsd/components';
 
 const world = createWorld();
 const emitter = addEntity(world);

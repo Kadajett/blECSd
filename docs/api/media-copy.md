@@ -14,7 +14,6 @@ Media copy operations are legacy terminal features for controlling printers and 
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { mediaCopy } from 'blecsd/terminal';
 
@@ -91,7 +90,6 @@ mediaCopy.printerOn(): string
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Enable printer mode
 process.stdout.write(mediaCopy.printerOn());
@@ -183,7 +181,6 @@ mediaCopy.printCursorPosition(): string
 
 ### Print Current Screen
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { mediaCopy } from 'blecsd/terminal';
 
@@ -194,7 +191,6 @@ function printScreen() {
 
 ### Print Custom Content
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { mediaCopy } from 'blecsd/terminal';
 
@@ -213,7 +209,6 @@ function printDocument(content: string) {
 
 ### Print Fixed-Length Data
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { mediaCopy } from 'blecsd/terminal';
 

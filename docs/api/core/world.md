@@ -4,9 +4,8 @@ ECS World creation and management. Wraps bitecs world primitives.
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, resetWorld } from 'blecsd';
+import { createWorld, resetWorld } from 'blecsd/core';
 
 const world = createWorld();
 // ... use world for entities and components ...
@@ -25,9 +24,8 @@ function createWorld(): World;
 
 **Returns:** A new World instance.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 
 const world = createWorld();
 ```
@@ -43,9 +41,8 @@ function resetWorld(world: World): void;
 **Parameters:**
 - `world` - The world to reset
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, resetWorld } from 'blecsd';
+import { createWorld, resetWorld } from 'blecsd/core';
 
 const world = createWorld();
 // ... game runs ...
@@ -54,9 +51,8 @@ resetWorld(world); // Clear everything for new game
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, resetWorld, addEntity, addComponent } from 'blecsd';
+import { createWorld, resetWorld, addEntity, addComponent } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
 // Create a world for each game session

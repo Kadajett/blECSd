@@ -20,7 +20,6 @@ The system supports two error handling patterns:
 
 All blECSd errors share a common structure and are part of the `BlECSdError` discriminated union:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { BlECSdError } from 'blecsd/errors';
 
@@ -53,7 +52,6 @@ interface BlECSdErrorBase {
 
 Errors can include rich context for debugging:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import type { ErrorContext } from 'blecsd/errors';
 
@@ -72,7 +70,6 @@ interface ErrorContext {
 
 Use factory functions to create errors:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createValidationError,
@@ -116,10 +113,16 @@ function startGameLoop(world: World): Result<void> {
 
 For recoverable operations, use the `Result<T, E>` type instead of throwing exceptions:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Result, ok, err, isOk, isErr, unwrapOr } from 'blecsd/errors';
-import { createWorld, addEntity } from 'blecsd';
+import { Result } from 'blecsd/errors';
+import {
+  ok,
+  err,
+  isOk,
+  isErr,
+  unwrapOr,
+} from 'blecsd/errors';
+import { createWorld, addEntity } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
 // Function that might fail
@@ -158,9 +161,8 @@ const position = unwrapOr(result, { x: 0, y: 0 });
 
 ### Result Type Utilities
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { map, flatMap, mapError, unwrapOrElse, ok, err } from 'blecsd/errors';
+import { map, flatMap, mapError, unwrapOrElse, ok, err, createInternalError, InternalErrorCode } from 'blecsd/errors';
 
 // Transform success value
 const doubled = map(ok(42), (x) => x * 2); // ok(84)
@@ -179,8 +181,9 @@ const withError = mapError(
 );
 
 // Compute fallback value from error
+const errResult = err(createInternalError(InternalErrorCode.INTERNAL_ERROR, 'no position'));
 const value = unwrapOrElse(
-  result,
+  errResult,
   (error) => {
     console.warn(`Using default: ${error.message}`);
     return { x: 0, y: 0 };
@@ -192,7 +195,6 @@ const value = unwrapOrElse(
 
 For exceptional cases or compatibility with existing try/catch code, convert blECSd errors to native Error instances:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { toNativeError, fromNativeError, createValidationError } from 'blecsd/errors';
 
@@ -225,7 +227,6 @@ try {
 
 When catching errors from external code, wrap them as blECSd errors:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { wrapError, InternalErrorCode } from 'blecsd/errors';
 
@@ -249,7 +250,6 @@ function processExternalData(data: unknown): Result<ParsedData> {
 
 Use type guards to narrow error types for specific handling:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   isValidationError,
@@ -288,12 +288,12 @@ function handleError(error: BlECSdError): void {
 
 Systems should handle errors gracefully and avoid crashing the game loop:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasComponent } from 'blecsd';
+import { hasComponent } from 'blecsd/core';
 import { query } from 'blecsd/core';
-import type { World } from 'blecsd';
-import { Result, ok, err } from 'blecsd/errors';
+import type { World } from 'blecsd/core';
+import { Result } from 'blecsd/errors';
+import { ok, err } from 'blecsd/errors';
 
 // System that processes entities and collects errors
 function processEntitiesSystem(world: World) {
@@ -341,7 +341,6 @@ function updateEntityPosition(
 
 Input errors are often recoverable - log them and continue processing:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { parseKeyBuffer } from 'blecsd/terminal';
 import { isInputError, InputErrorCode } from 'blecsd/errors';
@@ -373,7 +372,6 @@ Different error types require different recovery strategies:
 
 ### Validation Errors (Recoverable)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isValidationError } from 'blecsd/errors';
 
@@ -389,7 +387,6 @@ function handleConfigError(error: BlECSdError, config: Config): Config {
 
 ### Terminal Errors (May require fallback)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTerminalError, TerminalErrorCode } from 'blecsd/errors';
 
@@ -413,7 +410,6 @@ function initializeTerminal(): Result<Terminal> {
 
 ### System Errors (Usually fatal)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isSystemError } from 'blecsd/errors';
 
@@ -436,7 +432,6 @@ function handleSystemError(error: BlECSdError): void {
 
 ### Internal Errors (Always report)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isInternalError } from 'blecsd/errors';
 
@@ -460,9 +455,8 @@ function handleError(error: BlECSdError): void {
 
 Create error boundaries to prevent one component's errors from crashing the entire UI:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import type { World, Entity } from 'blecsd';
+import type { World, Entity } from 'blecsd/core';
 import { BlECSdError } from 'blecsd/errors';
 
 interface ErrorBoundaryState {
@@ -517,8 +511,11 @@ function parseColor(input: string): Result<Color, BlECSdError> {
   }
   return ok(hexToColor(input));
 }
+```
 
-// BAD - exception for recoverable error
+<!-- blecsd-doccheck:ignore -->
+```typescript
+// BAD - exception for recoverable error (anti-pattern: avoid this)
 function parseColor(input: string): Color {
   if (!isValidHex(input)) {
     throw new Error('Invalid hex color');
@@ -530,46 +527,79 @@ function parseColor(input: string): Color {
 ### 2. Always Include Error Context
 
 ```typescript
-// GOOD - rich context for debugging
-return err(createRenderError(
-  RenderErrorCode.INVALID_COORDINATES,
-  'Cell coordinates out of bounds',
-  {
-    context: {
-      entityId: eid,
-      data: { x, y, screenWidth, screenHeight }
-    }
-  }
-));
+import { createRenderError, RenderErrorCode, err } from 'blecsd/errors';
+import type { Entity } from 'blecsd/core';
 
-// BAD - no context
-return err(createRenderError(
-  RenderErrorCode.INVALID_COORDINATES,
-  'Cell coordinates out of bounds'
-));
+// GOOD - include rich context so errors are debuggable
+function writeCell(eid: Entity, x: number, y: number, screenWidth: number, screenHeight: number) {
+  return err(createRenderError(
+    RenderErrorCode.INVALID_COORDINATES,
+    'Cell coordinates out of bounds',
+    {
+      context: {
+        entityId: eid,
+        data: { x, y, screenWidth, screenHeight }
+      }
+    }
+  ));
+}
+
+// BAD - no context makes debugging hard
+function writeCellNoContext(eid: Entity, x: number, y: number) {
+  return err(createRenderError(
+    RenderErrorCode.INVALID_COORDINATES,
+    'Cell coordinates out of bounds'
+  ));
+}
 ```
 
 ### 3. Use Specific Error Codes
 
 ```typescript
-// GOOD - specific code for programmatic handling
-if (hasErrorCode(error, ValidationErrorCode.INVALID_HEX_COLOR)) {
-  // Handle this specific case
-  useDefaultColor();
+import { hasErrorCode, ValidationErrorCode } from 'blecsd/errors';
+import type { BlECSdError } from 'blecsd/errors';
+
+function applyColor(color: string): string {
+  return color;
 }
 
-// BAD - checking message strings
-if (error.message.includes('hex color')) {
-  // Fragile and prone to breaking
+function getDefaultColor(): string {
+  return '#000000';
+}
+
+// GOOD - specific code for programmatic handling
+function handleColorError(error: BlECSdError): string {
+  if (hasErrorCode(error, ValidationErrorCode.INVALID_HEX_COLOR)) {
+    // Handle this specific case
+    return applyColor(getDefaultColor());
+  }
+  return getDefaultColor();
+}
+
+// BAD - checking message strings (anti-pattern, avoid this)
+function handleColorErrorBad(error: BlECSdError): string {
+  if (error.message.includes('hex color')) {
+    // Fragile and prone to breaking
+    return getDefaultColor();
+  }
+  return getDefaultColor();
 }
 ```
 
 ### 4. Validate at Boundaries
 
 ```typescript
+import { z } from 'zod';
+import { createValidationError, ValidationErrorCode, ok, err } from 'blecsd/errors';
+import type { Result } from 'blecsd/errors';
+import { readFileSync } from 'node:fs';
+
+const ConfigSchema = z.object({ width: z.number(), height: z.number() });
+type Config = z.infer<typeof ConfigSchema>;
+
 // Validate at system boundaries (user input, config files, etc.)
 function loadConfig(filePath: string): Result<Config> {
-  const rawData = readFile(filePath);
+  const rawData = JSON.parse(readFileSync(filePath, 'utf-8'));
 
   // Validate with Zod at the boundary
   const parseResult = ConfigSchema.safeParse(rawData);
@@ -614,13 +644,16 @@ function logError(error: BlECSdError): void {
 
 ### 6. Don't Swallow Errors Silently
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
-// BAD - silent failure
+// BAD - silent failure (anti-pattern: avoid this)
 function updateEntity(world: World, eid: Entity): void {
   const result = doSomething(world, eid);
   // Error is ignored!
 }
+```
 
+```typescript
 // GOOD - handle or propagate
 function updateEntity(world: World, eid: Entity): Result<void> {
   const result = doSomething(world, eid);
@@ -638,10 +671,9 @@ function updateEntity(world: World, eid: Entity): Result<void> {
 
 Test both success and error cases:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { isOk, isErr } from 'blecsd/errors';
 
 describe('getEntityPosition', () => {

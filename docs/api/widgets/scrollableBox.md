@@ -4,10 +4,15 @@ The ScrollableBox widget is a container that supports scrolling content. It comb
 
 ## Overview
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import {
+  createScrollableBox,
+  isScrollableBox,
+  isMouseScrollEnabled,
+  isKeysScrollEnabled,
+  ScrollableBoxConfigSchema,
+} from 'blecsd/widgets';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -41,19 +46,12 @@ scrollBox.scrollToBottom();
 
 Creates a new ScrollableBox widget with the specified configuration.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
-
-const world = createWorld();
-const eid = addEntity(world);
-
 // Basic scrollable box
-const scrollBox = createScrollableBox(world, eid);
+const scrollBoxA = createScrollableBox(world, addEntity(world));
 
 // Full configuration
-const styledScrollBox = createScrollableBox(world, eid, {
+const styledScrollBox = createScrollableBox(world, addEntity(world), {
   left: 5,
   top: 3,
   width: 60,
@@ -73,6 +71,8 @@ const styledScrollBox = createScrollableBox(world, eid, {
   mouse: true,
   keys: true,
 });
+console.log(scrollBoxA.eid);
+console.log(styledScrollBox.eid);
 ```
 
 **Parameters:**
@@ -95,8 +95,9 @@ The scrollable box widget provides a chainable API for all operations.
 The underlying entity ID.
 
 ```typescript
-const scrollBox = createScrollableBox(world, eid);
-console.log(scrollBox.eid); // Entity ID number
+const sbA = createScrollableBox(world, addEntity(world));
+console.log(sbA.eid); // Entity ID number
+sbA.destroy();
 ```
 
 ### Visibility Methods
@@ -106,7 +107,9 @@ console.log(scrollBox.eid); // Entity ID number
 Shows the scrollable box.
 
 ```typescript
-scrollBox.show();
+const sbB = createScrollableBox(world, addEntity(world));
+sbB.show();
+sbB.destroy();
 ```
 
 **Returns:** `ScrollableBoxWidget` for chaining
@@ -116,7 +119,9 @@ scrollBox.show();
 Hides the scrollable box.
 
 ```typescript
-scrollBox.hide();
+const sbC = createScrollableBox(world, addEntity(world));
+sbC.hide();
+sbC.destroy();
 ```
 
 **Returns:** `ScrollableBoxWidget` for chaining
@@ -130,7 +135,9 @@ scrollBox.hide();
 Sets the absolute position.
 
 ```typescript
-scrollBox.setPosition(20, 15);
+const sbD = createScrollableBox(world, addEntity(world));
+sbD.setPosition(20, 15);
+sbD.destroy();
 ```
 
 **Returns:** `ScrollableBoxWidget` for chaining
@@ -140,7 +147,9 @@ scrollBox.setPosition(20, 15);
 Moves the scrollable box by a relative amount.
 
 ```typescript
-scrollBox.move(5, -3); // Move right 5, up 3
+const sbE = createScrollableBox(world, addEntity(world));
+sbE.move(5, -3); // Move right 5, up 3
+sbE.destroy();
 ```
 
 **Returns:** `ScrollableBoxWidget` for chaining
@@ -154,7 +163,9 @@ scrollBox.move(5, -3); // Move right 5, up 3
 Sets the text content.
 
 ```typescript
-scrollBox.setContent('New content');
+const sbF = createScrollableBox(world, addEntity(world));
+sbF.setContent('New content');
+sbF.destroy();
 ```
 
 **Returns:** `ScrollableBoxWidget` for chaining
@@ -164,7 +175,10 @@ scrollBox.setContent('New content');
 Gets the current text content.
 
 ```typescript
-const content = scrollBox.getContent();
+const sbG = createScrollableBox(world, addEntity(world));
+const sbContent = sbG.getContent();
+console.log(sbContent);
+sbG.destroy();
 ```
 
 **Returns:** `string`
@@ -178,12 +192,10 @@ const content = scrollBox.getContent();
 Scrolls to an absolute position.
 
 ```typescript
-scrollBox.scrollTo(0, 100); // Scroll to Y=100
+const sbH = createScrollableBox(world, addEntity(world), { scrollHeight: 200 });
+sbH.scrollTo(0, 100); // Scroll to Y=100
+sbH.destroy();
 ```
-
-**Parameters:**
-- `x` - Target horizontal scroll position
-- `y` - Target vertical scroll position
 
 **Returns:** `ScrollableBoxWidget` for chaining
 
@@ -192,13 +204,11 @@ scrollBox.scrollTo(0, 100); // Scroll to Y=100
 Scrolls by a delta amount.
 
 ```typescript
-scrollBox.scrollBy(0, 10); // Scroll down 10 units
-scrollBox.scrollBy(0, -5); // Scroll up 5 units
+const sbI = createScrollableBox(world, addEntity(world), { scrollHeight: 200 });
+sbI.scrollBy(0, 10); // Scroll down 10 units
+sbI.scrollBy(0, -5); // Scroll up 5 units
+sbI.destroy();
 ```
-
-**Parameters:**
-- `dx` - Horizontal scroll delta
-- `dy` - Vertical scroll delta
 
 **Returns:** `ScrollableBoxWidget` for chaining
 
@@ -207,13 +217,11 @@ scrollBox.scrollBy(0, -5); // Scroll up 5 units
 Sets scroll position by percentage (0-100).
 
 ```typescript
-scrollBox.setScrollPerc(0, 50); // Scroll to 50% vertically
-scrollBox.setScrollPerc(0, 100); // Scroll to bottom
+const sbJ = createScrollableBox(world, addEntity(world), { scrollHeight: 200 });
+sbJ.setScrollPerc(0, 50);  // Scroll to 50% vertically
+sbJ.setScrollPerc(0, 100); // Scroll to bottom
+sbJ.destroy();
 ```
-
-**Parameters:**
-- `percX` - Horizontal scroll percentage (0-100)
-- `percY` - Vertical scroll percentage (0-100)
 
 **Returns:** `ScrollableBoxWidget` for chaining
 
@@ -222,34 +230,36 @@ scrollBox.setScrollPerc(0, 100); // Scroll to bottom
 Gets the current scroll percentage.
 
 ```typescript
-const perc = scrollBox.getScrollPerc();
-// perc = { x: 0, y: 50 }
+const sbK = createScrollableBox(world, addEntity(world), { scrollHeight: 200 });
+const perc = sbK.getScrollPerc();
+console.log(perc);
+sbK.destroy();
 ```
 
-**Returns:** `ScrollPercentage` - Object with `x` and `y` percentages (0-100)
+**Returns:** `ScrollPercentage`
 
 #### getScroll
 
 Gets the current scroll position.
 
 ```typescript
-const scroll = scrollBox.getScroll();
-// scroll = { x: 0, y: 100 }
+const sbL = createScrollableBox(world, addEntity(world), { scrollHeight: 200 });
+const scroll = sbL.getScroll();
+console.log(scroll);
+sbL.destroy();
 ```
 
-**Returns:** `ScrollPosition` - Object with `x` and `y` coordinates
+**Returns:** `ScrollPosition`
 
 #### setScrollSize
 
 Sets the total scrollable content size.
 
 ```typescript
-scrollBox.setScrollSize(200, 500); // Content is 200x500
+const sbM = createScrollableBox(world, addEntity(world));
+sbM.setScrollSize(200, 500);
+sbM.destroy();
 ```
-
-**Parameters:**
-- `width` - Total scrollable content width
-- `height` - Total scrollable content height
 
 **Returns:** `ScrollableBoxWidget` for chaining
 
@@ -258,12 +268,10 @@ scrollBox.setScrollSize(200, 500); // Content is 200x500
 Sets the viewport (visible area) size.
 
 ```typescript
-scrollBox.setViewport(80, 20); // Viewport is 80x20
+const sbN = createScrollableBox(world, addEntity(world));
+sbN.setViewport(80, 20);
+sbN.destroy();
 ```
-
-**Parameters:**
-- `width` - Viewport width
-- `height` - Viewport height
 
 **Returns:** `ScrollableBoxWidget` for chaining
 
@@ -272,8 +280,10 @@ scrollBox.setViewport(80, 20); // Viewport is 80x20
 Gets the full scrollable data.
 
 ```typescript
-const data = scrollBox.getScrollable();
-// data = { scrollX, scrollY, scrollWidth, scrollHeight, viewportWidth, viewportHeight, ... }
+const sbO = createScrollableBox(world, addEntity(world), { scrollHeight: 200 });
+const scrollable = sbO.getScrollable();
+console.log(scrollable);
+sbO.destroy();
 ```
 
 **Returns:** `ScrollableData | undefined`
@@ -282,184 +292,73 @@ const data = scrollBox.getScrollable();
 
 ### Quick Scroll Methods
 
-#### scrollToTop
-
-Scrolls to the top.
+#### scrollToTop / scrollToBottom / scrollToLeft / scrollToRight
 
 ```typescript
-scrollBox.scrollToTop();
+const sbP = createScrollableBox(world, addEntity(world), { scrollHeight: 200 });
+sbP.scrollToTop();
+sbP.scrollToBottom();
+sbP.scrollToLeft();
+sbP.scrollToRight();
+sbP.destroy();
 ```
-
-**Returns:** `ScrollableBoxWidget` for chaining
-
-#### scrollToBottom
-
-Scrolls to the bottom.
-
-```typescript
-scrollBox.scrollToBottom();
-```
-
-**Returns:** `ScrollableBoxWidget` for chaining
-
-#### scrollToLeft
-
-Scrolls to the left edge.
-
-```typescript
-scrollBox.scrollToLeft();
-```
-
-**Returns:** `ScrollableBoxWidget` for chaining
-
-#### scrollToRight
-
-Scrolls to the right edge.
-
-```typescript
-scrollBox.scrollToRight();
-```
-
-**Returns:** `ScrollableBoxWidget` for chaining
 
 ---
 
 ### Scroll Query Methods
 
-#### canScroll
-
-Checks if the content can scroll (content exceeds viewport).
+#### canScroll / canScrollX / canScrollY
 
 ```typescript
-if (scrollBox.canScroll()) {
-  // Content is larger than viewport
-}
+const sbQ = createScrollableBox(world, addEntity(world), { scrollHeight: 200, height: 20 });
+const canS = sbQ.canScroll();
+const canSX = sbQ.canScrollX();
+const canSY = sbQ.canScrollY();
+console.log(canS, canSX, canSY);
+sbQ.destroy();
 ```
 
-**Returns:** `boolean`
-
-#### canScrollX
-
-Checks if horizontal scrolling is possible.
+#### isAtTop / isAtBottom / isAtLeft / isAtRight
 
 ```typescript
-const canScrollHorizontally = scrollBox.canScrollX();
+const sbR = createScrollableBox(world, addEntity(world));
+const atTop = sbR.isAtTop();
+const atBottom = sbR.isAtBottom();
+const atLeft = sbR.isAtLeft();
+const atRight = sbR.isAtRight();
+console.log(atTop, atBottom, atLeft, atRight);
+sbR.destroy();
 ```
-
-**Returns:** `boolean`
-
-#### canScrollY
-
-Checks if vertical scrolling is possible.
-
-```typescript
-const canScrollVertically = scrollBox.canScrollY();
-```
-
-**Returns:** `boolean`
-
-#### isAtTop
-
-Checks if scrolled to the top.
-
-```typescript
-if (scrollBox.isAtTop()) {
-  // At the beginning
-}
-```
-
-**Returns:** `boolean`
-
-#### isAtBottom
-
-Checks if scrolled to the bottom.
-
-```typescript
-if (scrollBox.isAtBottom()) {
-  // At the end
-}
-```
-
-**Returns:** `boolean`
-
-#### isAtLeft
-
-Checks if scrolled to the left edge.
-
-```typescript
-const atLeft = scrollBox.isAtLeft();
-```
-
-**Returns:** `boolean`
-
-#### isAtRight
-
-Checks if scrolled to the right edge.
-
-```typescript
-const atRight = scrollBox.isAtRight();
-```
-
-**Returns:** `boolean`
 
 ---
 
 ### Focus Methods
 
-#### focus
-
-Focuses the scrollable box.
+#### focus / blur / isFocused
 
 ```typescript
-scrollBox.focus();
+const sbS = createScrollableBox(world, addEntity(world));
+sbS.focus();
+sbS.blur();
+const sbFocused = sbS.isFocused();
+console.log(sbFocused);
+sbS.destroy();
 ```
-
-**Returns:** `ScrollableBoxWidget` for chaining
-
-#### blur
-
-Removes focus.
-
-```typescript
-scrollBox.blur();
-```
-
-**Returns:** `ScrollableBoxWidget` for chaining
-
-#### isFocused
-
-Checks if currently focused.
-
-```typescript
-const focused = scrollBox.isFocused();
-```
-
-**Returns:** `boolean`
 
 ---
 
 ### Children Methods
 
-#### append
-
-Appends a child entity.
+#### append / getChildren
 
 ```typescript
+const sbT = createScrollableBox(world, addEntity(world));
 const childEid = addEntity(world);
-scrollBox.append(childEid);
+sbT.append(childEid);
+const sbChildren = sbT.getChildren();
+console.log(sbChildren.length);
+sbT.destroy();
 ```
-
-**Returns:** `ScrollableBoxWidget` for chaining
-
-#### getChildren
-
-Gets all direct children.
-
-```typescript
-const children = scrollBox.getChildren();
-```
-
-**Returns:** `Entity[]`
 
 ---
 
@@ -467,10 +366,9 @@ const children = scrollBox.getChildren();
 
 #### destroy
 
-Destroys the widget.
-
 ```typescript
-scrollBox.destroy();
+const sbU = createScrollableBox(world, addEntity(world));
+sbU.destroy();
 ```
 
 ---
@@ -479,52 +377,33 @@ scrollBox.destroy();
 
 ### isScrollableBox
 
-Checks if an entity is a scrollable box widget.
-
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isScrollableBox } from 'blecsd';
-
-if (isScrollableBox(world, entity)) {
+const sbV = createScrollableBox(world, addEntity(world));
+if (isScrollableBox(world, sbV.eid)) {
   // Handle scrollable-box-specific logic
 }
+sbV.destroy();
 ```
-
-**Returns:** `boolean`
-
----
 
 ### isMouseScrollEnabled
 
-Checks if mouse scrolling is enabled.
-
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isMouseScrollEnabled } from 'blecsd';
-
-if (isMouseScrollEnabled(world, entity)) {
+const sbW = createScrollableBox(world, addEntity(world), { mouse: true });
+if (isMouseScrollEnabled(world, sbW.eid)) {
   // Mouse scroll is enabled
 }
+sbW.destroy();
 ```
-
-**Returns:** `boolean`
-
----
 
 ### isKeysScrollEnabled
 
-Checks if keyboard scrolling is enabled.
-
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isKeysScrollEnabled } from 'blecsd';
-
-if (isKeysScrollEnabled(world, entity)) {
+const sbX = createScrollableBox(world, addEntity(world), { keys: true });
+if (isKeysScrollEnabled(world, sbX.eid)) {
   // Keyboard scroll is enabled
 }
+sbX.destroy();
 ```
-
-**Returns:** `boolean`
 
 ---
 
@@ -536,30 +415,19 @@ Configuration for creating a scrollable box widget.
 
 ```typescript
 interface ScrollableBoxConfig {
-  // Position
-  readonly left?: PositionValue;
-  readonly top?: PositionValue;
-  readonly right?: PositionValue;
-  readonly bottom?: PositionValue;
-  readonly width?: DimensionValue;
-  readonly height?: DimensionValue;
-
-  // Style
+  readonly left?: number;
+  readonly top?: number;
+  readonly width?: number;
+  readonly height?: number;
   readonly fg?: string | number;
   readonly bg?: string | number;
-  readonly border?: BorderConfig;
-  readonly padding?: PaddingConfig;
-
-  // Content
+  readonly border?: { type?: string; fg?: string | number };
+  readonly padding?: number;
   readonly content?: string;
-  readonly align?: Align;
-  readonly valign?: VAlign;
-
-  // Scrolling
-  readonly scrollbar?: boolean | ScrollbarConfig;
+  readonly scrollbar?: boolean | { mode?: string; fg?: string | number };
   readonly alwaysScroll?: boolean;
-  readonly mouse?: boolean;      // Default: true
-  readonly keys?: boolean;       // Default: true
+  readonly mouse?: boolean;
+  readonly keys?: boolean;
   readonly scrollWidth?: number;
   readonly scrollHeight?: number;
   readonly scrollX?: number;
@@ -567,92 +435,17 @@ interface ScrollableBoxConfig {
 }
 ```
 
-### ScrollbarConfig
-
-Scrollbar configuration.
-
-```typescript
-interface ScrollbarConfig {
-  readonly mode?: ScrollbarMode;  // 'auto' | 'visible' | 'hidden'
-  readonly fg?: string | number;
-  readonly bg?: string | number;
-  readonly trackChar?: string;
-  readonly thumbChar?: string;
-}
-```
-
 ### ScrollbarMode
-
-Scrollbar visibility mode.
 
 ```typescript
 type ScrollbarMode = 'auto' | 'visible' | 'hidden';
-```
-
-### ScrollableBoxWidget
-
-The scrollable box widget interface.
-
-```typescript
-interface ScrollableBoxWidget {
-  readonly eid: Entity;
-
-  // Visibility
-  show(): ScrollableBoxWidget;
-  hide(): ScrollableBoxWidget;
-
-  // Position
-  move(dx: number, dy: number): ScrollableBoxWidget;
-  setPosition(x: number, y: number): ScrollableBoxWidget;
-
-  // Content
-  setContent(text: string): ScrollableBoxWidget;
-  getContent(): string;
-
-  // Focus
-  focus(): ScrollableBoxWidget;
-  blur(): ScrollableBoxWidget;
-  isFocused(): boolean;
-
-  // Children
-  append(child: Entity): ScrollableBoxWidget;
-  getChildren(): Entity[];
-
-  // Scrolling
-  scrollTo(x: number, y: number): ScrollableBoxWidget;
-  scrollBy(dx: number, dy: number): ScrollableBoxWidget;
-  setScrollPerc(percX: number, percY: number): ScrollableBoxWidget;
-  getScrollPerc(): ScrollPercentage;
-  getScroll(): ScrollPosition;
-  setScrollSize(width: number, height: number): ScrollableBoxWidget;
-  setViewport(width: number, height: number): ScrollableBoxWidget;
-  getScrollable(): ScrollableData | undefined;
-  scrollToTop(): ScrollableBoxWidget;
-  scrollToBottom(): ScrollableBoxWidget;
-  scrollToLeft(): ScrollableBoxWidget;
-  scrollToRight(): ScrollableBoxWidget;
-  canScroll(): boolean;
-  canScrollX(): boolean;
-  canScrollY(): boolean;
-  isAtTop(): boolean;
-  isAtBottom(): boolean;
-  isAtLeft(): boolean;
-  isAtRight(): boolean;
-
-  // Lifecycle
-  destroy(): void;
-}
 ```
 
 ---
 
 ## Zod Schemas
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ScrollableBoxConfigSchema } from 'blecsd';
-
-// Validate configuration
 const result = ScrollableBoxConfigSchema.safeParse({
   width: 60,
   height: 20,
@@ -671,15 +464,8 @@ if (result.success) {
 
 ### Basic Scrollable Container
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const scrollBox = createScrollableBox(world, eid, {
+const basicScrollBox = createScrollableBox(world, addEntity(world), {
   left: 0,
   top: 0,
   width: 80,
@@ -687,19 +473,13 @@ const scrollBox = createScrollableBox(world, eid, {
   scrollHeight: 100,
   border: { type: 'line' },
 });
+console.log(basicScrollBox.eid);
 ```
 
 ### Log Viewer with Auto-Scroll
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const logViewer = createScrollableBox(world, eid, {
+const logViewer = createScrollableBox(world, addEntity(world), {
   left: 0,
   top: 0,
   width: 80,
@@ -708,101 +488,42 @@ const logViewer = createScrollableBox(world, eid, {
   alwaysScroll: true,
 });
 
-// Add log entries
 function addLog(message: string) {
   const currentContent = logViewer.getContent();
   const newContent = currentContent ? `${currentContent}\n${message}` : message;
   logViewer.setContent(newContent);
-
-  // Auto-scroll to bottom for new logs
   logViewer.scrollToBottom();
 }
-```
-
-### Scroll Position Indicator
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const content = createScrollableBox(world, eid, {
-  width: 60,
-  height: 20,
-  scrollHeight: 100,
-});
-
-// Display scroll percentage
-function updateStatusBar() {
-  const perc = content.getScrollPerc();
-  console.log(`Scroll position: ${perc.y.toFixed(0)}%`);
-
-  if (content.isAtTop()) {
-    console.log('At top');
-  } else if (content.isAtBottom()) {
-    console.log('At bottom');
-  }
-}
+addLog('Server started');
+addLog('Listening on port 3000');
 ```
 
 ### Keyboard Navigation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox, isKeysScrollEnabled } from 'blecsd';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const scrollBox = createScrollableBox(world, eid, {
+const navBox = createScrollableBox(world, addEntity(world), {
   width: 60,
   height: 20,
   scrollHeight: 200,
-  keys: true,  // Enable keyboard scrolling
+  keys: true,
 });
 
-// Handle keyboard input (in your input handler)
 function onKeyPress(key: string) {
-  if (!isKeysScrollEnabled(world, scrollBox.eid)) return;
-
+  if (!isKeysScrollEnabled(world, navBox.eid)) return;
   switch (key) {
-    case 'up':
-      scrollBox.scrollBy(0, -1);
-      break;
-    case 'down':
-      scrollBox.scrollBy(0, 1);
-      break;
-    case 'pageup':
-      scrollBox.scrollBy(0, -10);
-      break;
-    case 'pagedown':
-      scrollBox.scrollBy(0, 10);
-      break;
-    case 'home':
-      scrollBox.scrollToTop();
-      break;
-    case 'end':
-      scrollBox.scrollToBottom();
-      break;
+    case 'up': navBox.scrollBy(0, -1); break;
+    case 'down': navBox.scrollBy(0, 1); break;
+    case 'home': navBox.scrollToTop(); break;
+    case 'end': navBox.scrollToBottom(); break;
   }
 }
+onKeyPress('down');
 ```
 
 ### Method Chaining
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import { createScrollableBox } from 'blecsd';
-
-const world = createWorld();
-const eid = addEntity(world);
-
-const scrollBox = createScrollableBox(world, eid, { left: 0, top: 0 })
+const chainedScrollBox = createScrollableBox(world, addEntity(world), { left: 0, top: 0 })
   .setPosition(10, 10)
   .setScrollSize(100, 500)
   .setViewport(80, 20)
@@ -810,6 +531,7 @@ const scrollBox = createScrollableBox(world, eid, { left: 0, top: 0 })
   .scrollTo(0, 100)
   .focus()
   .show();
+console.log(chainedScrollBox.eid);
 ```
 
 ---

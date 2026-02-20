@@ -9,25 +9,26 @@ Strategy:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createThrottledResize,
-  throttleResize,
-  debounceResize,
-} from 'blecsd';
+import { createThrottledResize, throttleResize, debounceResize } from 'blecsd/terminal';
+import { createWorld } from 'blecsd/core';
+
+const world = createWorld();
 
 // Full throttled resize handler with ECS world integration
 const handler = createThrottledResize(world, (width, height, isFinal) => {
+  console.log(`Resize: ${width}x${height}, final: ${isFinal}`);
   if (isFinal) {
-    performFullLayout(world);
+    // performFullLayout(world);
   } else {
-    updateDimensions(width, height);
+    // updateDimensions(width, height);
   }
 }, { maxRate: 30, debounceMs: 150 });
 
 // Clean up
 handler.dispose();
+console.log('throttleResize available:', typeof throttleResize);
+console.log('debounceResize available:', typeof debounceResize);
 ```
 
 ## Types
@@ -81,15 +82,17 @@ function createThrottledResize(
 | `onResize` | `ResizeCallback` | Callback for resize events (intermediate and final) |
 | `config` | `Partial<ThrottledResizeConfig>` | Optional configuration |
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createThrottledResize } from 'blecsd';
+import { createThrottledResize } from 'blecsd/terminal';
+import { createWorld } from 'blecsd/core';
 
+const world = createWorld();
 const handler = createThrottledResize(world, (width, height, isFinal) => {
+  console.log(`Resize: ${width}x${height}, final: ${isFinal}`);
   if (isFinal) {
-    performFullLayout(world);
+    // performFullLayout(world);
   } else {
-    updateDimensions(width, height);
+    // updateDimensions(width, height);
   }
 }, { maxRate: 30, debounceMs: 150 });
 
@@ -105,10 +108,10 @@ Creates a simple throttle function for resize events. Useful when you need just 
 function throttleResize<T extends (...args: unknown[]) => void>(fn: T, maxRate: number): T
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { throttleResize } from 'blecsd';
+import { throttleResize } from 'blecsd/terminal';
 
+function render() { /* render logic */ }
 const throttledRender = throttleResize(render, 30);
 process.stdout.on('resize', throttledRender);
 ```
@@ -124,10 +127,10 @@ function debounceResize<T extends (...args: unknown[]) => void>(
 ): { fn: T; cancel: () => void }
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { debounceResize } from 'blecsd';
+import { debounceResize } from 'blecsd/terminal';
 
+function fullRelayout() { /* full relayout logic */ }
 const { fn: debouncedLayout, cancel } = debounceResize(fullRelayout, 150);
 process.stdout.on('resize', debouncedLayout);
 

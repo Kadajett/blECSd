@@ -8,16 +8,15 @@ ANSI escape codes control terminal behavior including cursor positioning, text s
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { cursor, style, screen, mouse } from 'blecsd/terminal';
+import { cursorSeq, style, screenSeq, mouse } from 'blecsd/terminal';
 
 // Move cursor and style text
-process.stdout.write(cursor.move(10, 5));
+process.stdout.write(cursorSeq.move(10, 5));
 process.stdout.write(style.bold() + 'Bold text' + style.reset());
 
 // Enter alternate screen
-process.stdout.write(screen.alternateOn());
+process.stdout.write(screenSeq.alternateOn());
 
 // Enable mouse tracking
 process.stdout.write(mouse.enableNormal());
@@ -38,7 +37,6 @@ process.stdout.write(mouse.enableNormal());
 
 ### SGR (Select Graphic Rendition) Codes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { SGR } from 'blecsd/terminal';
 
@@ -73,7 +71,6 @@ SGR.BG_256  // 48 - 256-color background
 
 Parse SGR escape sequences into attribute objects for rendering pipelines.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createAttribute, parseSgrString } from 'blecsd/terminal';
 
@@ -84,10 +81,10 @@ parseSgrString('\x1b[1;38;5;196m', attr);
 
 Useful helpers:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { applySgrCodes, extractSgrCodes } from 'blecsd/terminal';
+import { applySgrCodes, extractSgrCodes, createAttribute } from 'blecsd/terminal';
 
+const attr = createAttribute();
 const codes = extractSgrCodes('\x1b[1;31m');
 applySgrCodes(codes[0] ?? [], attr);
 ```
@@ -96,66 +93,72 @@ Notes:
 - `parseSgrString` applies codes in-place and is optimized for streaming input.
 - Empty parameters (CSI `m`) are treated as reset (`0`).
 
-## cursor Namespace
+## cursorSeq Namespace
 
-Functions for cursor positioning and visibility.
+Functions for cursor positioning and visibility (ANSI escape sequences). Exported as `cursorSeq` from `blecsd/terminal` to distinguish from the artificial cursor manager (`cursor`).
 
 ### Movement
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { cursor } from 'blecsd/terminal';
+import { cursorSeq } from 'blecsd/terminal';
 
-cursor.move(col, row)    // Move to absolute position (1-based)
-cursor.up(n)             // Move up n rows
-cursor.down(n)           // Move down n rows
-cursor.forward(n)        // Move right n columns
-cursor.back(n)           // Move left n columns
-cursor.nextLine(n)       // Move to beginning of line n down
-cursor.prevLine(n)       // Move to beginning of line n up
-cursor.column(n)         // Move to column n (1-based)
-cursor.home()            // Move to (1, 1)
+const col = 10;
+const row = 5;
+const n = 1;
+
+cursorSeq.move(col, row)    // Move to absolute position (1-based)
+cursorSeq.up(n)             // Move up n rows
+cursorSeq.down(n)           // Move down n rows
+cursorSeq.forward(n)        // Move right n columns
+cursorSeq.back(n)           // Move left n columns
+cursorSeq.nextLine(n)       // Move to beginning of line n down
+cursorSeq.prevLine(n)       // Move to beginning of line n up
+cursorSeq.column(n)         // Move to column n (1-based)
+cursorSeq.home()            // Move to (1, 1)
 ```
 
 ### Visibility
 
 ```typescript
-cursor.show()            // Make cursor visible
-cursor.hide()            // Make cursor invisible
-cursor.save()            // Save cursor position
-cursor.restore()         // Restore cursor position
+import { cursorSeq } from 'blecsd/terminal';
+
+cursorSeq.show()            // Make cursor visible
+cursorSeq.hide()            // Make cursor invisible
+cursorSeq.save()            // Save cursor position
+cursorSeq.restore()         // Restore cursor position
 ```
 
 ### Position Query
 
 ```typescript
-cursor.requestPosition() // Request cursor position (terminal responds with CSI row;col R)
+import { cursorSeq } from 'blecsd/terminal';
+
+cursorSeq.requestPosition() // Request cursor position (terminal responds with CSI row;col R)
 ```
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { cursor } from 'blecsd/terminal';
+import { cursorSeq } from 'blecsd/terminal';
 
 // Draw a box at position 10, 5
-process.stdout.write(cursor.move(10, 5) + '┌───┐');
-process.stdout.write(cursor.move(10, 6) + '│   │');
-process.stdout.write(cursor.move(10, 7) + '└───┘');
+process.stdout.write(cursorSeq.move(10, 5) + '┌───┐');
+process.stdout.write(cursorSeq.move(10, 6) + '│   │');
+process.stdout.write(cursorSeq.move(10, 7) + '└───┘');
 
 // Hide cursor during animation
-process.stdout.write(cursor.hide());
+process.stdout.write(cursorSeq.hide());
 // ... animation ...
-process.stdout.write(cursor.show());
+process.stdout.write(cursorSeq.show());
 ```
 
 ## CursorShape
 
 Constants for cursor shape styles.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { cursor, CursorShape } from 'blecsd/terminal';
+import { cursorSeq } from 'blecsd/terminal';
+import { CursorShape } from 'blecsd/components';
 
 CursorShape.DEFAULT         // 0 - Default cursor
 CursorShape.BLOCK_BLINK     // 1 - Blinking block
@@ -166,7 +169,7 @@ CursorShape.BAR_BLINK       // 5 - Blinking bar
 CursorShape.BAR             // 6 - Steady bar
 
 // Set cursor shape
-process.stdout.write(cursor.setShape(CursorShape.BAR));
+process.stdout.write(cursorSeq.setShape(CursorShape.BAR));
 ```
 
 ## style Namespace
@@ -175,7 +178,6 @@ Functions for text styling and colors.
 
 ### Text Attributes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { style } from 'blecsd/terminal';
 
@@ -193,27 +195,24 @@ style.strikethrough() // Strikethrough text
 ### Colors
 
 ```typescript
+import { style } from 'blecsd/terminal';
+
 // Basic colors (named)
 style.fg('red')
 style.bg('blue')
 style.fg('brightYellow')
 
-// 256-color palette (0-255)
-style.fg256(196)      // Bright red
-style.bg256(21)       // Blue
+// 256-color palette (0-255) - pass number directly to fg/bg
+style.fg(196)      // Bright red (256-color)
+style.bg(21)       // Blue (256-color)
 
-// True color (RGB)
-style.fgRgb(255, 128, 0)   // Orange foreground
-style.bgRgb(0, 0, 128)     // Navy background
-
-// Reset individual colors
-style.fgDefault()
-style.bgDefault()
+// True color (RGB) - pass object to fg/bg
+style.fg({ r: 255, g: 128, b: 0 })   // Orange foreground
+style.bg({ r: 0, g: 0, b: 128 })     // Navy background
 ```
 
 ### Combined Styling
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Chain multiple styles
 const styled = style.bold() + style.fg('red') + 'Error!' + style.reset();
@@ -222,7 +221,6 @@ process.stdout.write(styled);
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { style } from 'blecsd/terminal';
 
@@ -241,63 +239,68 @@ function logSuccess(msg: string) {
 }
 ```
 
-## screen Namespace
+## screenSeq Namespace
 
-Functions for screen management.
+Functions for screen management (ANSI escape sequences). Exported as `screenSeq` from `blecsd/terminal` to distinguish from the screen management namespace (`screen`).
 
 ### Clearing
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { screen } from 'blecsd/terminal';
+import { screenSeq } from 'blecsd/terminal';
 
-screen.clear()           // Clear entire screen
-screen.clearBelow()      // Clear from cursor to end
-screen.clearAbove()      // Clear from cursor to beginning
-screen.clearLine()       // Clear entire current line
-screen.clearLineEnd()    // Clear from cursor to end of line
-screen.clearLineStart()  // Clear from cursor to start of line
+screenSeq.clear()           // Clear entire screen
+screenSeq.clearDown()       // Clear from cursor to end of screen
+screenSeq.clearUp()         // Clear from cursor to beginning of screen
+screenSeq.clearLine()       // Clear entire current line
+screenSeq.clearLineRight()  // Clear from cursor to end of line
+screenSeq.clearLineLeft()   // Clear from cursor to start of line
 ```
 
 ### Alternate Screen Buffer
 
 ```typescript
-screen.alternateOn()     // Enter alternate screen buffer
-screen.alternateOff()    // Exit alternate screen buffer
+import { screenSeq } from 'blecsd/terminal';
+
+screenSeq.alternateOn()     // Enter alternate screen buffer
+screenSeq.alternateOff()    // Exit alternate screen buffer
 ```
 
 ### Scrolling
 
 ```typescript
-screen.scrollUp(n)       // Scroll up n lines
-screen.scrollDown(n)     // Scroll down n lines
-screen.setScrollRegion(top, bottom)  // Set scroll region
-screen.resetScrollRegion()           // Reset scroll region
+import { screenSeq } from 'blecsd/terminal';
+
+const n = 1;
+const top = 1;
+const bottom = 24;
+
+screenSeq.scrollUp(n)       // Scroll up n lines
+screenSeq.scrollDown(n)     // Scroll down n lines
+screenSeq.setScrollRegion(top, bottom)  // Set scroll region
+screenSeq.resetScrollRegion()           // Reset scroll region
 ```
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { screen, cursor } from 'blecsd/terminal';
+import { screenSeq, cursorSeq } from 'blecsd/terminal';
 
 // Full-screen application
-process.stdout.write(screen.alternateOn());  // Enter alternate buffer
-process.stdout.write(screen.clear());         // Clear screen
-process.stdout.write(cursor.hide());          // Hide cursor
+process.stdout.write(screenSeq.alternateOn());  // Enter alternate buffer
+process.stdout.write(screenSeq.clear());         // Clear screen
+process.stdout.write(cursorSeq.hide());          // Hide cursor
 
 // ... application runs ...
 
 // Cleanup
-process.stdout.write(cursor.show());
-process.stdout.write(screen.alternateOff()); // Exit alternate buffer
+process.stdout.write(cursorSeq.show());
+process.stdout.write(screenSeq.alternateOff()); // Exit alternate buffer
 ```
 
 ## title Namespace
 
 Functions for terminal title manipulation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { title } from 'blecsd/terminal';
 
@@ -308,7 +311,6 @@ title.setBoth('App', 'Icon')    // Set both title and icon
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { title } from 'blecsd/terminal';
 
@@ -328,7 +330,6 @@ Functions for mouse tracking.
 
 ### MouseMode Constants
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { MouseMode } from 'blecsd/terminal';
 
@@ -342,48 +343,45 @@ MouseMode.URXVT         // urxvt extended mode
 
 ### Enable/Disable
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { mouse } from 'blecsd/terminal';
 
-mouse.enableNormal()    // Enable X10 mouse mode
-mouse.enableButton()    // Enable button tracking
-mouse.enableAny()       // Enable any-event tracking
-mouse.enableSgr()       // Enable SGR extended mode
+mouse.enableNormal()       // Enable X10 mouse mode
+mouse.enableButtonEvent()  // Enable button tracking
+mouse.enableAnyEvent()     // Enable any-event tracking
+mouse.enableSGR()          // Enable SGR extended mode
 
-mouse.disableNormal()   // Disable X10 mode
-mouse.disableButton()   // Disable button tracking
-mouse.disableAny()      // Disable any-event tracking
-mouse.disableSgr()      // Disable SGR mode
+mouse.disableNormal()      // Disable X10 mode
+mouse.disableButtonEvent() // Disable button tracking
+mouse.disableAnyEvent()    // Disable any-event tracking
+mouse.disableSGR()         // Disable SGR mode
 
-mouse.disableAll()      // Disable all mouse modes
+mouse.disableAll()         // Disable all mouse modes
 ```
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { mouse, screen } from 'blecsd/terminal';
+import { mouse, screenSeq } from 'blecsd/terminal';
 
 // Interactive application with mouse
-process.stdout.write(screen.alternateOn());
-process.stdout.write(mouse.enableSgr());  // Best mouse mode
+process.stdout.write(screenSeq.alternateOn());
+process.stdout.write(mouse.enableSGR());  // Best mouse mode
 
-process.stdin.on('data', (data) => {
+process.stdin.on('data', (_data) => {
   // Parse mouse events from data
   // SGR format: CSI < button;col;row M/m
 });
 
 // Cleanup
 process.stdout.write(mouse.disableAll());
-process.stdout.write(screen.alternateOff());
+process.stdout.write(screenSeq.alternateOff());
 ```
 
 ## sync Namespace
 
 Synchronized output for flicker-free rendering.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { sync } from 'blecsd/terminal';
 
@@ -393,15 +391,14 @@ sync.end()     // End synchronized update (CSI ? 2026 l)
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { sync, cursor, style } from 'blecsd/terminal';
+import { sync, cursorSeq, style } from 'blecsd/terminal';
 
 function render() {
   let output = sync.begin();  // Start sync
 
   // Build entire frame
-  output += cursor.home();
+  output += cursorSeq.home();
   output += 'Frame content...';
 
   output += sync.end();       // End sync
@@ -409,16 +406,15 @@ function render() {
 }
 ```
 
-## bracketedPaste Namespace
+## bracketedPasteSeq Namespace
 
-Bracketed paste mode for safe paste handling.
+Bracketed paste mode ANSI sequences. Exported as `bracketedPasteSeq` from `blecsd/terminal` to distinguish from the paste event handler (`bracketedPaste`).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { bracketedPaste } from 'blecsd/terminal';
+import { bracketedPasteSeq } from 'blecsd/terminal';
 
-bracketedPaste.enable()   // Enable bracketed paste mode
-bracketedPaste.disable()  // Disable bracketed paste mode
+bracketedPasteSeq.enable()   // Enable bracketed paste mode
+bracketedPasteSeq.disable()  // Disable bracketed paste mode
 ```
 
 When enabled, pasted content is wrapped with special sequences:
@@ -427,13 +423,12 @@ When enabled, pasted content is wrapped with special sequences:
 
 This allows the application to distinguish typed input from pasted content.
 
-## clipboard Namespace
+## clipboardSeq Namespace
 
-Terminal clipboard operations (OSC 52).
+Terminal clipboard ANSI operations (OSC 52). Exported as `clipboardSeq` from `blecsd/terminal` to distinguish from the clipboard manager (`clipboard`).
 
 ### ClipboardSelection Constants
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { ClipboardSelection } from 'blecsd/terminal';
 
@@ -447,18 +442,17 @@ ClipboardSelection.CUT0       // '0' - Cut buffer 0
 
 ### Operations
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clipboard, ClipboardSelection } from 'blecsd/terminal';
+import { clipboardSeq, ClipboardSelection } from 'blecsd/terminal';
 
 // Write to clipboard
-clipboard.write('text to copy', ClipboardSelection.CLIPBOARD)
+clipboardSeq.write('text to copy', ClipboardSelection.CLIPBOARD)
 
 // Request clipboard contents (terminal responds with OSC 52)
-clipboard.request(ClipboardSelection.CLIPBOARD)
+clipboardSeq.requestRead(ClipboardSelection.CLIPBOARD)
 
 // Clear clipboard
-clipboard.clear(ClipboardSelection.CLIPBOARD)
+clipboardSeq.clear(ClipboardSelection.CLIPBOARD)
 ```
 
 **Note:** Clipboard operations require terminal support and may be disabled for security reasons.

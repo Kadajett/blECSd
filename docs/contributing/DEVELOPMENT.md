@@ -106,12 +106,11 @@ Edit source files in `src/`. The codebase follows these principles:
 
 Add tests in the corresponding location under `tests/` or as `.test.ts` files alongside the source:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // src/components/position.test.ts
 import { describe, it, expect } from 'vitest';
 import { setPosition, getPosition } from './position';
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 
 describe('Position component', () => {
   it('sets and gets position', () => {
@@ -158,10 +157,10 @@ Then open a pull request on GitHub.
 
 Components are data containers defined with bitecs:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // src/components/myComponent.ts
-import { defineComponent, Types } from 'blecsd';
+// Components in blECSd are plain objects with typed arrays - no defineComponent() needed
+// import { withStore } from 'blecsd/core'; // only if extending built-in component stores
 
 /** Default capacity for component stores */
 const DEFAULT_CAPACITY = 10000;
@@ -207,21 +206,17 @@ export function getMyComponent(
 
 Systems are functions that process entities:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // src/systems/mySystem.ts
-import { defineQuery, hasComponent } from 'blecsd';
+import { hasComponent, query } from 'blecsd/core';
 import { MyComponent } from '../components/myComponent';
 import { Position } from '../components/position';
-
-/** Query for entities with both components */
-const myQuery = defineQuery([MyComponent, Position]);
 
 /**
  * MySystem processes entities with MyComponent and Position.
  */
 export function mySystem(world: World): World {
-  const entities = myQuery(world);
+  const entities = query(world, [MyComponent, Position]);
 
   for (const eid of entities) {
     // Read component data
@@ -239,10 +234,9 @@ export function mySystem(world: World): World {
 
 Widgets are factory functions that create configured entities:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // src/widgets/myWidget.ts
-import { addEntity } from 'blecsd';
+import { addEntity } from 'blecsd/core';
 import { setPosition } from '../components/position';
 import { setDimensions } from '../components/dimensions';
 import { setBorder } from '../components/border';
@@ -313,19 +307,19 @@ For terminal output during development:
 
 ```typescript
 // Write to stderr to avoid interfering with terminal output
-console.error('Debug:', value);
+const debugValue = 'some value';
+console.error('Debug:', debugValue);
 
 // Or use a debug flag
 if (process.env.DEBUG) {
-  console.error('Debug:', value);
+  console.error('Debug:', debugValue);
 }
 ```
 
 ### Inspecting ECS State
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getAllEntities } from 'blecsd';
+import { getAllEntities } from 'blecsd/core';
 import { Position } from './components/position';
 
 function debugWorld(world: World): void {

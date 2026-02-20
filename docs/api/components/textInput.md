@@ -4,43 +4,49 @@ The TextInput component provides text entry fields with cursor management, selec
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachTextInputBehavior,
   isTextInput,
   getTextInputState,
   focusTextInput,
   blurTextInput,
+  startEditingTextInput,
+  endEditingTextInput,
+  enableTextInput,
+  disableTextInput,
+  setTextInputError,
+  clearTextInputError,
+  isTextInputError,
   handleTextInputKeyPress,
   onTextInputChange,
   onTextInputSubmit,
+  onTextInputCancel,
   getCursorPos,
   setCursorPos,
+  moveCursor,
+  getCursorMode,
+  setCursorMode,
+  toggleCursorMode,
+  isCursorVisible,
+  setCursorBlinkEnabled,
+  resetCursorBlink,
   getSelection,
   setSelection,
   clearSelection,
-  // Validation
-  validateTextInput,
-  getValidationError,
-  hasValidationError,
-  clearValidationError,
-  type ValidationFunction,
-  type ValidationTiming,
-} from 'blecsd';
-```
-
-## Basic Usage
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  attachTextInputBehavior,
-  focusTextInput,
-  handleTextInputKeyPress,
-  onTextInputChange,
-} from 'blecsd';
+  hasSelection,
+  getNormalizedSelection,
+  getTextInputConfig,
+  setTextInputConfig,
+  isSecretMode,
+  getCensorChar,
+  maskValue,
+  isMultiline,
+  getPlaceholder,
+  getMaxLength,
+  CursorMode,
+} from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
@@ -55,11 +61,6 @@ attachTextInputBehavior(world, eid, {
 onTextInputChange(eid, (value) => {
   console.log(`Value: ${value}`);
 });
-
-// In your input loop
-function handleKey(key: string) {
-  handleTextInputKeyPress(world, eid, key);
-}
 
 focusTextInput(world, eid);
 ```
@@ -105,15 +106,12 @@ TextInput uses a state machine with these states:
 
 ## Cursor Modes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { CursorMode } from 'blecsd';
-
 // Line cursor (insert mode)
-CursorMode.Line;  // 0
+console.log(CursorMode.Line);  // 0
 
 // Block cursor (overwrite mode)
-CursorMode.Block; // 1
+console.log(CursorMode.Block); // 1
 ```
 
 ## Functions
@@ -136,10 +134,10 @@ if (isTextInput(world, eid)) {
 ### Focus Management
 
 ```typescript
-focusTextInput(world, eid);    // Focus the input
-blurTextInput(world, eid);     // Remove focus
-startEditingTextInput(world, eid);  // Enter editing mode
-endEditingTextInput(world, eid);    // Exit editing mode
+focusTextInput(world, eid);          // Focus the input
+blurTextInput(world, eid);           // Remove focus
+startEditingTextInput(world, eid);   // Enter editing mode
+endEditingTextInput(world, eid);     // Exit editing mode
 ```
 
 ### State & Configuration
@@ -148,14 +146,17 @@ endEditingTextInput(world, eid);    // Exit editing mode
 // Get current state
 const state = getTextInputState(world, eid);
 // Returns: 'idle' | 'focused' | 'editing' | 'error' | 'disabled'
+console.log(state);
 
 // Get/set configuration
-const config = getTextInputConfig(eid);
-setTextInputConfig(eid, { maxLength: 100 });
+const config = getTextInputConfig(world, eid);
+setTextInputConfig(world, eid, { maxLength: 100 });
+console.log(config);
 
 // Enable/disable
 enableTextInput(world, eid);
 disableTextInput(world, eid);
+enableTextInput(world, eid); // re-enable for later use
 ```
 
 ### Cursor Operations
@@ -164,6 +165,7 @@ disableTextInput(world, eid);
 // Get/set cursor position
 const pos = getCursorPos(eid);
 setCursorPos(world, eid, 10);
+console.log(pos);
 
 // Move cursor
 moveCursor(world, eid, 5);   // Move forward 5
@@ -173,11 +175,13 @@ moveCursor(world, eid, -3);  // Move back 3
 const mode = getCursorMode(eid);
 setCursorMode(world, eid, CursorMode.Block);
 toggleCursorMode(world, eid);
+console.log(mode);
 
 // Cursor visibility and blink
-isCursorVisible(eid);
+const vis = isCursorVisible(eid);
 setCursorBlinkEnabled(eid, true);
 resetCursorBlink(eid);
+console.log(vis);
 ```
 
 ### Selection
@@ -186,6 +190,7 @@ resetCursorBlink(eid);
 // Get selection range
 const sel = getSelection(eid);
 // Returns: { start: number, end: number } or null
+console.log(sel);
 
 // Set selection
 setSelection(world, eid, 5, 15);
@@ -197,6 +202,7 @@ clearSelection(world, eid);
 if (hasSelection(eid)) {
   const normalized = getNormalizedSelection(eid);
   // { start: 5, end: 15 } (always start < end)
+  console.log(normalized);
 }
 ```
 
@@ -206,7 +212,8 @@ if (hasSelection(eid)) {
 // Password mode
 if (isSecretMode(eid)) {
   const char = getCensorChar(eid);
-  const masked = maskValue(value, char);
+  const masked = maskValue('secret', char);
+  console.log(char, masked);
 }
 
 // Multiline
@@ -216,9 +223,11 @@ if (isMultiline(eid)) {
 
 // Placeholder
 const placeholder = getPlaceholder(eid);
+console.log(placeholder);
 
 // Max length
 const max = getMaxLength(eid);
+console.log(max);
 ```
 
 ### Error Handling
@@ -264,39 +273,31 @@ unsub3();
 
 ```typescript
 // Basic key handling
-const action = handleTextInputKeyPress(world, eid, key);
-if (action) {
-  switch (action.type) {
+const action1 = handleTextInputKeyPress(world, eid, 'a');
+if (action1) {
+  switch (action1.type) {
     case 'insert':
-      // Character inserted
       break;
     case 'delete':
-      // Character deleted
       break;
     case 'submit':
-      // Enter pressed
       break;
     case 'cancel':
-      // Escape pressed
       break;
   }
 }
 
 // With Ctrl modifier for word navigation
-const action = handleTextInputKeyPress(world, eid, key, ctrl);
-if (action) {
-  switch (action.type) {
+const action2 = handleTextInputKeyPress(world, eid, 'left', '', true);
+if (action2) {
+  switch (action2.type) {
     case 'moveWordLeft':
-      // Ctrl+Left pressed
       break;
     case 'moveWordRight':
-      // Ctrl+Right pressed
       break;
     case 'deleteWordBackward':
-      // Ctrl+Backspace pressed
       break;
     case 'deleteWordForward':
-      // Ctrl+Delete pressed
       break;
   }
 }
@@ -315,26 +316,15 @@ Word-level cursor movement and deletion is supported via keyboard modifiers:
 
 ```typescript
 // Pass ctrl=true to enable word operations
-handleTextInputKeyPress(world, eid, 'left', value, true);
-handleTextInputKeyPress(world, eid, 'backspace', value, true);
+handleTextInputKeyPress(world, eid, 'left', '', true);
+handleTextInputKeyPress(world, eid, 'backspace', '', true);
 ```
 
 Word boundaries are detected using the built-in `isWordBoundary` function, which treats whitespace and punctuation as word separators.
 
 ## Example: Login Form
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  attachTextInputBehavior,
-  onTextInputSubmit,
-  setTextInputConfig,
-  focusTextInput,
-} from 'blecsd';
-
-const world = createWorld();
-
 // Username field
 const username = addEntity(world);
 attachTextInputBehavior(world, username, {
@@ -352,8 +342,7 @@ attachTextInputBehavior(world, password, {
 
 // Handle submit
 onTextInputSubmit(password, (value) => {
-  // Get username value and submit
-  console.log('Login submitted');
+  console.log(`Login submitted with password length: ${value.length}`);
 });
 
 focusTextInput(world, username);
@@ -370,10 +359,6 @@ A validation function receives the current value and returns:
 - `false` if invalid (shows "Invalid input" message)
 - A string error message if invalid
 
-```typescript
-type ValidationFunction = (value: string) => boolean | string;
-```
-
 ### Validation Timing
 
 Control when validation runs:
@@ -388,22 +373,10 @@ Control when validation runs:
 
 ```typescript
 // Set validator when creating input
-setTextInputConfig(eid, {
+setTextInputConfig(world, eid, {
   validator: (value) => value.length >= 8 || 'Must be at least 8 characters',
   validationTiming: 'onSubmit',
 });
-
-// Manually validate
-const isValid = validateTextInput(eid, currentValue);
-
-// Check for errors
-if (hasValidationError(eid)) {
-  const error = getValidationError(eid);
-  console.log(`Error: ${error}`);
-}
-
-// Clear error
-clearValidationError(eid);
 ```
 
 ### Validation Behavior
@@ -415,20 +388,12 @@ clearValidationError(eid);
 
 ## Example: Email Validation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  attachTextInputBehavior,
-  setTextInputConfig,
-  hasValidationError,
-  getValidationError,
-} from 'blecsd';
-
 const emailInput = addEntity(world);
 attachTextInputBehavior(world, emailInput);
 
 // Set up email validation
-setTextInputConfig(emailInput, {
+setTextInputConfig(world, emailInput, {
   placeholder: 'Email address',
   validator: (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -436,18 +401,12 @@ setTextInputConfig(emailInput, {
   },
   validationTiming: 'both',
 });
-
-// Check validation state
-if (hasValidationError(emailInput)) {
-  const error = getValidationError(emailInput);
-  // Display error: "Invalid email format"
-}
 ```
 
 ## Example: Number Range Validation
 
 ```typescript
-setTextInputConfig(eid, {
+setTextInputConfig(world, eid, {
   placeholder: 'Enter age (0-120)',
   validator: (value) => {
     const num = Number.parseFloat(value);
@@ -462,8 +421,9 @@ setTextInputConfig(eid, {
 ## Example: Password Strength
 
 ```typescript
-setTextInputConfig(passwordInput, {
-  secret: true,
+const passwordInput = addEntity(world);
+attachTextInputBehavior(world, passwordInput, { secret: true });
+setTextInputConfig(world, passwordInput, {
   validator: (value) => {
     if (value.length < 8) return 'At least 8 characters required';
     if (!/[A-Z]/.test(value)) return 'Must contain uppercase letter';

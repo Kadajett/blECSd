@@ -4,7 +4,6 @@ The Form component provides container functionality for managing multiple form f
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   attachFormBehavior,
@@ -21,14 +20,13 @@ import {
   focusNextField,
   focusPrevField,
   handleFormKeyPress,
-} from 'blecsd';
+} from 'blecsd/components';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachFormBehavior,
   attachTextInputBehavior,
@@ -36,7 +34,7 @@ import {
   registerFormField,
   onFormSubmit,
   submitForm,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const world = createWorld();
 
@@ -75,6 +73,13 @@ submitForm(world, form);
 ### Behavior Setup
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachFormBehavior, isForm, isFormKeysEnabled, isFormSubmitOnEnter } from 'blecsd/components';
+
+const world = createWorld();
+const formEntity = addEntity(world);
+const eid = formEntity;
+
 // Attach form behavior
 attachFormBehavior(world, formEntity, {
   keys: true,
@@ -98,6 +103,15 @@ if (isFormSubmitOnEnter(formEntity)) {
 ### Field Registration
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachFormBehavior, registerFormField, unregisterFormField, autoRegisterFields } from 'blecsd/components';
+
+const world = createWorld();
+const form = addEntity(world);
+const fieldEntity = addEntity(world);
+const initialValue = '';
+attachFormBehavior(world, form);
+
 // Register a field with the form
 registerFormField(world, form, fieldEntity, 'fieldName', initialValue);
 
@@ -111,6 +125,15 @@ autoRegisterFields(world, form);
 ### Field Management
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachFormBehavior, registerFormField, getFieldName, getFieldValue, setFieldValue, getFormFields, getFormTabOrder } from 'blecsd/components';
+
+const world = createWorld();
+const form = addEntity(world);
+const fieldEntity = addEntity(world);
+attachFormBehavior(world, form);
+registerFormField(world, form, fieldEntity, 'username', '');
+
 // Get field name
 const name = getFieldName(form, fieldEntity);
 // Returns: string | undefined
@@ -133,6 +156,13 @@ const tabOrder = getFormTabOrder(world, form);
 ### Form Values
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachFormBehavior, getFormValues } from 'blecsd/components';
+
+const world = createWorld();
+const form = addEntity(world);
+attachFormBehavior(world, form);
+
 // Get all form values
 const values = getFormValues(world, form);
 // Returns: { fieldName: value, ... }
@@ -148,6 +178,13 @@ const values = getFormValues(world, form);
 ### Form Actions
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachFormBehavior, submitForm, resetForm } from 'blecsd/components';
+
+const world = createWorld();
+const form = addEntity(world);
+attachFormBehavior(world, form);
+
 // Submit the form
 submitForm(world, form);
 
@@ -158,6 +195,13 @@ resetForm(world, form);
 ### Focus Navigation
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachFormBehavior, focusNextField, focusPrevField } from 'blecsd/components';
+
+const world = createWorld();
+const form = addEntity(world);
+attachFormBehavior(world, form);
+
 // Move focus to next field
 focusNextField(world, form);
 
@@ -168,10 +212,16 @@ focusPrevField(world, form);
 ### Events
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachFormBehavior, onFormSubmit, onFormReset, clearFormCallbacks } from 'blecsd/components';
+
+const world = createWorld();
+const form = addEntity(world);
+attachFormBehavior(world, form);
+
 // Form submitted
 const unsubSubmit = onFormSubmit(form, (values) => {
   console.log('Submitted:', values);
-  saveData(values);
 });
 
 // Form reset
@@ -190,6 +240,14 @@ clearFormCallbacks(form);
 ### Key Handling
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { attachFormBehavior, handleFormKeyPress } from 'blecsd/components';
+
+const world = createWorld();
+const form = addEntity(world);
+attachFormBehavior(world, form);
+const key = 'tab';
+
 // In your input loop
 const action = handleFormKeyPress(world, form, key);
 
@@ -201,9 +259,8 @@ const action = handleFormKeyPress(world, form, key);
 
 ## Example: Login Form
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachFormBehavior,
   attachTextInputBehavior,
@@ -211,7 +268,7 @@ import {
   registerFormField,
   onFormSubmit,
   getFormValues,
-} from 'blecsd';
+} from 'blecsd/components';
 
 const world = createWorld();
 
@@ -241,22 +298,16 @@ attachCheckboxBehavior(world, remember);
 registerFormField(world, loginForm, remember, 'rememberMe', false);
 
 // Handle submit
-onFormSubmit(loginForm, async (values) => {
+onFormSubmit(loginForm, (values) => {
   const { username, password, rememberMe } = values;
-
-  try {
-    await login(username, password, rememberMe);
-    showMessage('Login successful!');
-  } catch (error) {
-    showError('Invalid credentials');
-  }
+  console.log('Login attempt:', { username, password, rememberMe });
 });
 ```
 
 ## Example: Settings Form
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
 import {
   attachFormBehavior,
   attachCheckboxBehavior,
@@ -264,11 +315,13 @@ import {
   attachSliderBehavior,
   attachRadioSetBehavior,
   attachRadioButtonBehavior,
+  setRadioValue,
   registerFormField,
   onFormSubmit,
   onFormReset,
-} from 'blecsd';
+} from 'blecsd/components';
 
+const world = createWorld();
 const settingsForm = addEntity(world);
 attachFormBehavior(world, settingsForm);
 
@@ -311,18 +364,22 @@ registerFormField(world, settingsForm, languageSet, 'language', 'en');
 
 // Handle changes
 onFormSubmit(settingsForm, (values) => {
-  saveSettings(values);
-  showMessage('Settings saved!');
+  console.log('Settings saved:', values);
 });
 
 onFormReset(settingsForm, () => {
-  showMessage('Settings reset to defaults');
+  console.log('Settings reset to defaults');
 });
 ```
 
 ## Example: Dynamic Form
 
 ```typescript
+import { createWorld, addEntity, removeEntity } from 'blecsd/core';
+import { attachFormBehavior, attachTextInputBehavior, registerFormField, unregisterFormField } from 'blecsd/components';
+import type { Entity } from 'blecsd/core';
+
+const world = createWorld();
 const dynamicForm = addEntity(world);
 attachFormBehavior(world, dynamicForm);
 
@@ -341,7 +398,7 @@ function removeField(fieldEntity: Entity) {
 }
 
 // Create initial fields
-const fields = {
+const fields: Record<string, Entity> = {
   name: addTextField('name', 'Full Name'),
   email: addTextField('email', 'Email'),
 };

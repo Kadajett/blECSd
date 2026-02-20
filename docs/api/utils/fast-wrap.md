@@ -4,8 +4,8 @@ Efficient word wrapping with per-paragraph caching, dirty tracking, and progress
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { getCharWidth } from 'blecsd/utils';
 import {
   createWrapCache,
   clearWrapCache,
@@ -19,10 +19,9 @@ import {
   lineToPosition,
   positionToLine,
   getWrapCacheStats,
-  getWidth,
   MAX_PARAGRAPH_CHUNK,
   DEFAULT_BATCH_SIZE,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -126,9 +125,8 @@ function createWrapCache(width: number): WrapCache
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWrapCache } from 'blecsd';
+import { createWrapCache } from 'blecsd/utils';
 
 const cache = createWrapCache(80);
 ```
@@ -172,9 +170,8 @@ function wrapWithCache(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWrapCache, wrapWithCache } from 'blecsd';
+import { createWrapCache, wrapWithCache } from 'blecsd/utils';
 
 const cache = createWrapCache(40);
 const lines = wrapWithCache(cache, 'This is a long paragraph that will be wrapped at 40 characters.');
@@ -206,11 +203,11 @@ function wrapVisibleFirst(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWrapCache, wrapVisibleFirst, continueWrap } from 'blecsd';
+import { createWrapCache, wrapVisibleFirst, continueWrap } from 'blecsd/utils';
 
 const cache = createWrapCache(80);
+const longText = 'This is a very long text that needs to be wrapped across multiple lines in the terminal display.';
 
 // Wrap visible region first (fast)
 const result = wrapVisibleFirst(cache, longText, 0, 50);
@@ -218,6 +215,7 @@ const result = wrapVisibleFirst(cache, longText, 0, 50);
 // Continue wrapping the rest in the background
 if (result.hasMore) {
   const more = continueWrap(cache, longText, result.nextParagraph);
+  console.log('remaining lines:', more.lines.length, 'hasMore:', more.hasMore);
 }
 ```
 
@@ -277,9 +275,8 @@ function lineToPosition(cache: WrapCache, lineNumber: number): LinePosition | un
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWrapCache, wrapWithCache, lineToPosition } from 'blecsd';
+import { createWrapCache, wrapWithCache, lineToPosition } from 'blecsd/utils';
 
 const cache = createWrapCache(40);
 wrapWithCache(cache, 'First paragraph\nSecond paragraph that wraps');
@@ -322,7 +319,6 @@ function getWrapCacheStats(cache: WrapCache): WrapCacheStats
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWrapCache,
@@ -331,7 +327,7 @@ import {
   wrapVisibleFirst,
   continueWrap,
   lineToPosition,
-} from 'blecsd';
+} from 'blecsd/utils';
 
 const cache = createWrapCache(80);
 const text = 'Line one.\nA longer second paragraph that needs wrapping.\nThird line.';

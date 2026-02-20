@@ -4,9 +4,11 @@ Debug overlay widget for visual debugging. Displays real-time FPS, entity count,
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createDebugOverlay } from 'blecsd';
+import { createDebugOverlay } from 'blecsd/debug';
+import { createWorld } from 'blecsd/core';
+
+const world = createWorld();
 
 const overlay = createDebugOverlay(world, {
   toggleKey: 'F12',
@@ -14,7 +16,7 @@ const overlay = createDebugOverlay(world, {
 });
 
 // In game loop
-overlay.update(world, loop);
+overlay.update(world);
 
 // Toggle visibility
 overlay.toggle();
@@ -97,9 +99,11 @@ function createDebugOverlay(world: World, config?: DebugOverlayConfig): DebugOve
 
 **Returns:** Debug overlay controller.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createDebugOverlay } from 'blecsd';
+import { createDebugOverlay } from 'blecsd/debug';
+import { createWorld } from 'blecsd/core';
+
+const world = createWorld();
 
 const overlay = createDebugOverlay(world, {
   toggleKey: 'F12',
@@ -121,15 +125,14 @@ function createInputLogger(maxEntries?: number): InputLogger;
 
 **Returns:** Input logger instance with `log`, `clear`, and `getRecentEntries` methods.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputLogger } from 'blecsd';
+import { createInputLogger } from 'blecsd/debug';
 
 const logger = createInputLogger(10);
 
 // In input handler
-logger.log('key', `${event.name} ${event.ctrl ? '+Ctrl' : ''}`);
-logger.log('mouse', `${event.action} @ ${event.x},${event.y}`);
+logger.log('key', 'q');
+logger.log('mouse', 'click @ 10,20');
 
 // Get recent entries
 const recent = logger.getRecentEntries(5);
@@ -143,9 +146,8 @@ Creates a mini profiler for measuring code sections.
 function createMiniProfiler(): MiniProfiler;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createMiniProfiler } from 'blecsd';
+import { createMiniProfiler } from 'blecsd/debug';
 
 const profiler = createMiniProfiler();
 
@@ -173,11 +175,11 @@ function createFrameRateGraph(sampleCount?: number): FrameRateGraph;
 **Parameters:**
 - `sampleCount` - Number of samples to keep (default: 60)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createFrameRateGraph } from 'blecsd';
+import { createFrameRateGraph } from 'blecsd/debug';
 
 const graph = createFrameRateGraph(120); // 2 seconds at 60fps
+const deltaTime = 0.016; // 16ms frame time
 
 // In game loop
 graph.addSample(deltaTime * 1000);
@@ -191,19 +193,16 @@ console.log(`FPS range: ${min.toFixed(0)} - ${max.toFixed(0)}`);
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createDebugOverlay,
   createInputLogger,
   createMiniProfiler,
   createFrameRateGraph,
-  createGameLoop,
-  createWorld,
-} from 'blecsd';
+} from 'blecsd/debug';
+import { createWorld } from 'blecsd/core';
 
 const world = createWorld();
-const loop = createGameLoop(world, { targetFPS: 60 });
 
 // Debug overlay
 const overlay = createDebugOverlay(world, {
@@ -232,17 +231,20 @@ function onUpdate(deltaTime: number) {
   profiler.end('update');
 
   profiler.start('render');
-  overlay.update(world, loop);
+  overlay.update(world);
   profiler.end('render');
 }
 
 // Toggle with key
-function onKey(event: KeyEvent) {
-  inputLog.log('key', event.name);
-  if (event.name === 'F12') {
+function onKey(keyName: string) {
+  inputLog.log('key', keyName);
+  if (keyName === 'F12') {
     overlay.toggle();
   }
 }
+
+onUpdate(0.016);
+onKey('a');
 
 // Cleanup
 overlay.destroy();

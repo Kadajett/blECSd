@@ -12,17 +12,11 @@ The input control module provides:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createInputControl,
-  enableInput,
-  enableKeys,
-  enableMouse,
-  MouseTrackingMode,
-} from 'blecsd';
+import { createWorld, createScreenEntity } from 'blecsd/core';
+import { createProgram, createInputControl, enableInput, enableKeys, enableMouse, MouseTrackingMode } from 'blecsd/terminal';
 
-const program = new Program();
+const program = createProgram({ useBuffer: true });
 await program.init();
 
 const world = createWorld();
@@ -45,15 +39,12 @@ enableMouse(inputControl, MouseTrackingMode.ANY);
 
 Creates an input control for a world and program.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputControl } from 'blecsd';
-
-// Basic creation
-const inputControl = createInputControl(world, program);
+import { createProgram, createInputControl, MouseTrackingMode } from 'blecsd/terminal';
 
 // With initial options
-const inputControl = createInputControl(world, program, {
+const sgrProg = createProgram();
+const inputControlSgr = createInputControl(world, sgrProg, {
   keys: true,
   mouse: true,
   mouseMode: MouseTrackingMode.SGR,
@@ -71,12 +62,11 @@ const inputControl = createInputControl(world, program, {
 
 Gets the input control for a world.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getInputControl } from 'blecsd';
+import { getInputControl } from 'blecsd/terminal';
 
-const inputControl = getInputControl(world);
-if (inputControl) {
+const existingControl = getInputControl(world);
+if (existingControl) {
   // Input control exists
 }
 ```
@@ -85,10 +75,11 @@ if (inputControl) {
 
 Destroys an input control, disabling all input.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { destroyInputControl } from 'blecsd';
+import { createProgram, createInputControl, destroyInputControl } from 'blecsd/terminal';
 
+const destroyProg = createProgram();
+const inputControl = createInputControl(world, destroyProg);
 destroyInputControl(inputControl);
 ```
 
@@ -98,10 +89,11 @@ destroyInputControl(inputControl);
 
 Enables keyboard input handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableKeys } from 'blecsd';
+import { createProgram, createInputControl, enableKeys } from 'blecsd/terminal';
 
+const keysProg = createProgram();
+const inputControl = createInputControl(world, keysProg);
 enableKeys(inputControl);
 ```
 
@@ -109,10 +101,11 @@ enableKeys(inputControl);
 
 Disables keyboard input handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { disableKeys } from 'blecsd';
+import { createProgram, createInputControl, disableKeys } from 'blecsd/terminal';
 
+const disableKeysProg = createProgram();
+const inputControl = createInputControl(world, disableKeysProg);
 disableKeys(inputControl);
 ```
 
@@ -120,10 +113,11 @@ disableKeys(inputControl);
 
 Checks if keyboard input is enabled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { areKeysEnabled } from 'blecsd';
+import { createProgram, createInputControl, areKeysEnabled } from 'blecsd/terminal';
 
+const areKeysProg = createProgram();
+const inputControl = createInputControl(world, areKeysProg);
 if (areKeysEnabled(inputControl)) {
   // Keys are enabled
 }
@@ -135,9 +129,11 @@ if (areKeysEnabled(inputControl)) {
 
 Enables mouse input handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableMouse, MouseTrackingMode } from 'blecsd';
+import { createProgram, createInputControl, enableMouse, MouseTrackingMode } from 'blecsd/terminal';
+
+const enableMouseProg = createProgram();
+const inputControl = createInputControl(world, enableMouseProg);
 
 // Enable with default mode (NORMAL)
 enableMouse(inputControl);
@@ -150,10 +146,11 @@ enableMouse(inputControl, MouseTrackingMode.ANY);
 
 Disables mouse input handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { disableMouse } from 'blecsd';
+import { createProgram, createInputControl, disableMouse } from 'blecsd/terminal';
 
+const disableMouseProg = createProgram();
+const inputControl = createInputControl(world, disableMouseProg);
 disableMouse(inputControl);
 ```
 
@@ -161,10 +158,11 @@ disableMouse(inputControl);
 
 Checks if mouse input is enabled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isMouseEnabled } from 'blecsd';
+import { createProgram, createInputControl, isMouseEnabled } from 'blecsd/terminal';
 
+const isMouseProg = createProgram();
+const inputControl = createInputControl(world, isMouseProg);
 if (isMouseEnabled(inputControl)) {
   // Mouse is enabled
 }
@@ -174,10 +172,11 @@ if (isMouseEnabled(inputControl)) {
 
 Gets the current mouse tracking mode.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getMouseMode } from 'blecsd';
+import { createProgram, createInputControl, getMouseMode } from 'blecsd/terminal';
 
+const getMouseModeProg = createProgram();
+const inputControl = createInputControl(world, getMouseModeProg);
 const mode = getMouseMode(inputControl);
 ```
 
@@ -185,10 +184,11 @@ const mode = getMouseMode(inputControl);
 
 Sets the mouse tracking mode.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setMouseMode, MouseTrackingMode } from 'blecsd';
+import { createProgram, createInputControl, setMouseMode, MouseTrackingMode } from 'blecsd/terminal';
 
+const setMouseModeProg = createProgram();
+const inputControl = createInputControl(world, setMouseModeProg);
 setMouseMode(inputControl, MouseTrackingMode.SGR);
 ```
 
@@ -200,9 +200,11 @@ If mouse is currently enabled, it will be re-enabled with the new mode.
 
 Enables both keyboard and mouse input.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableInput, MouseTrackingMode } from 'blecsd';
+import { createProgram, createInputControl, enableInput, MouseTrackingMode } from 'blecsd/terminal';
+
+const enableInputProg = createProgram();
+const inputControl = createInputControl(world, enableInputProg);
 
 // Enable with default mouse mode
 enableInput(inputControl);
@@ -215,10 +217,11 @@ enableInput(inputControl, MouseTrackingMode.BUTTON);
 
 Disables both keyboard and mouse input.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { disableInput } from 'blecsd';
+import { createProgram, createInputControl, disableInput } from 'blecsd/terminal';
 
+const disableInputProg = createProgram();
+const inputControl = createInputControl(world, disableInputProg);
 disableInput(inputControl);
 ```
 
@@ -226,10 +229,11 @@ disableInput(inputControl);
 
 Checks if any input is enabled.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isInputEnabled } from 'blecsd';
+import { createProgram, createInputControl, isInputEnabled } from 'blecsd/terminal';
 
+const isInputProg = createProgram();
+const inputControl = createInputControl(world, isInputProg);
 if (isInputEnabled(inputControl)) {
   // Some input is enabled
 }
@@ -241,9 +245,8 @@ Convenience functions that operate on a world directly.
 
 ### enableWorldKeys / disableWorldKeys
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableWorldKeys, disableWorldKeys } from 'blecsd';
+import { enableWorldKeys, disableWorldKeys } from 'blecsd/terminal';
 
 // Returns true if successful
 enableWorldKeys(world);
@@ -252,9 +255,8 @@ disableWorldKeys(world);
 
 ### enableWorldMouse / disableWorldMouse
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableWorldMouse, disableWorldMouse, MouseTrackingMode } from 'blecsd';
+import { enableWorldMouse, disableWorldMouse, MouseTrackingMode } from 'blecsd/terminal';
 
 enableWorldMouse(world);
 enableWorldMouse(world, MouseTrackingMode.ANY);
@@ -263,9 +265,8 @@ disableWorldMouse(world);
 
 ### enableWorldInput / disableWorldInput
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { enableWorldInput, disableWorldInput } from 'blecsd';
+import { enableWorldInput, disableWorldInput, MouseTrackingMode } from 'blecsd/terminal';
 
 enableWorldInput(world);
 enableWorldInput(world, MouseTrackingMode.SGR);
@@ -276,9 +277,8 @@ disableWorldInput(world);
 
 ### MouseTrackingMode
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { MouseTrackingMode } from 'blecsd';
+import { MouseTrackingMode } from 'blecsd/terminal';
 
 MouseTrackingMode.OFF     // 0 - No mouse tracking
 MouseTrackingMode.NORMAL  // 1 - Click tracking only
@@ -303,9 +303,8 @@ MouseTrackingMode.SGR     // 4 - SGR extended mode (recommended)
 
 Gets the event bus for input control events.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getInputControlEventBus } from 'blecsd';
+import { getInputControlEventBus } from 'blecsd/terminal';
 
 const bus = getInputControlEventBus();
 
@@ -330,9 +329,8 @@ bus.on('mouseDisabled', () => console.log('Mouse disabled'));
 
 Resets the event bus (for testing).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resetInputControlEventBus } from 'blecsd';
+import { resetInputControlEventBus } from 'blecsd/terminal';
 
 resetInputControlEventBus();
 ```
@@ -386,13 +384,13 @@ type MouseModeValue = 0 | 1 | 2 | 3 | 4;
 
 Input control automatically integrates with the key lock system. Locked keys are filtered before being queued.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputControl, enableKeys } from 'blecsd';
-import { lockAllKeys, setIgnoredKeys } from 'blecsd';
+import { createProgram, createInputControl, enableKeys } from 'blecsd/terminal';
+import { lockAllKeys, setIgnoredKeys } from 'blecsd/core';
 
-const inputControl = createInputControl(world, program);
-enableKeys(inputControl);
+const lockProg = createProgram();
+const lockControl = createInputControl(world, lockProg);
+enableKeys(lockControl);
 
 // Lock all keys except escape
 lockAllKeys();
@@ -403,34 +401,32 @@ setIgnoredKeys(['escape']);
 
 ## Complete Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, createScreenEntity } from 'blecsd/core';
 import {
-  createWorld,
-  createScreenEntity,
+  createProgram,
   createInputControl,
-  enableInput,
-  disableInput,
   destroyInputControl,
   getInputControlEventBus,
+  enableInput,
+  disableInput,
   MouseTrackingMode,
-  Program,
-} from 'blecsd';
+} from 'blecsd/terminal';
 
 async function main(): Promise<void> {
   // Create program
-  const program = new Program();
-  await program.init();
+  const mainProg = createProgram({ useBuffer: true });
+  await mainProg.init();
 
   // Create world and screen
-  const world = createWorld();
-  const screen = createScreenEntity(world, {
-    width: program.cols,
-    height: program.rows,
+  const mainWorld = createWorld();
+  const screen = createScreenEntity(mainWorld, {
+    width: mainProg.cols,
+    height: mainProg.rows,
   });
 
   // Create input control with SGR mouse mode
-  const inputControl = createInputControl(world, program, {
+  const ctrl = createInputControl(mainWorld, mainProg, {
     mouseMode: MouseTrackingMode.SGR,
   });
 
@@ -449,13 +445,13 @@ async function main(): Promise<void> {
   });
 
   // Enable all input
-  enableInput(inputControl);
+  enableInput(ctrl);
 
   // Cleanup function
   function cleanup(): void {
-    disableInput(inputControl);
-    destroyInputControl(inputControl);
-    program.destroy();
+    disableInput(ctrl);
+    destroyInputControl(ctrl);
+    mainProg.destroy();
     process.exit(0);
   }
 

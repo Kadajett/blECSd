@@ -4,17 +4,19 @@ Vi-style navigation mode for scrollable elements. Provides vi key bindings for s
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createViState, createViConfig, processViKey } from 'blecsd';
+import { createViState, createViConfig, processViKey } from 'blecsd/input';
+import type { ParsedKeyEvent as KeyEvent } from 'blecsd/terminal';
 
 const state = createViState();
 const config = createViConfig({ enabled: true, viewportHeight: 40 });
 
 // Process a key press
+const keyEvent: KeyEvent = { sequence: 'j', name: 'j', ctrl: false, meta: false, shift: false, raw: new Uint8Array([106]) };
 const [action, newState] = processViKey(keyEvent, state, config);
+console.log('new vi state mode:', newState.mode);
 if (action.type === 'scroll') {
-  scrollBy(world, eid, 0, action.amount);
+  console.log('scroll by', action.amount);
 }
 ```
 
@@ -122,9 +124,8 @@ Resolves a vi page action to a concrete scroll amount.
 function resolvePageAmount(amount: 'half' | 'full', viewportHeight: number): number;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { resolvePageAmount } from 'blecsd';
+import { resolvePageAmount } from 'blecsd/input';
 
 const lines = resolvePageAmount('half', 40); // 20
 const fullPage = resolvePageAmount('full', 40); // 39
@@ -178,7 +179,6 @@ function resolveJumpTarget(
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createViState,
@@ -187,7 +187,8 @@ import {
   isViKey,
   resolvePageAmount,
   resolveJumpTarget,
-} from 'blecsd';
+} from 'blecsd/input';
+import type { ParsedKeyEvent as KeyEvent } from 'blecsd/terminal';
 
 let viState = createViState();
 const viConfig = createViConfig({
@@ -196,7 +197,19 @@ const viConfig = createViConfig({
   viewportHeight: 40,
 });
 
-function handleKey(keyEvent: KeyEvent) {
+const scrollTop = 0;
+const viewportHeight = 40;
+const totalLines = 200;
+
+const handleNormalKey = (_key: KeyEvent) => {};
+const scrollBy = (_dir: string, _amount: number) => {};
+const scrollToLine = (_line: number) => {};
+const performSearch = (_query: string, _dir: string) => {};
+const findNextMatch = (_dir: string) => {};
+const showSearchBar = () => {};
+const hideSearchBar = () => {};
+
+const handleKey = (keyEvent: KeyEvent) => {
   // Check if vi mode wants this key
   if (!isViKey(keyEvent, viState, viConfig)) {
     handleNormalKey(keyEvent);
@@ -235,5 +248,8 @@ function handleKey(keyEvent: KeyEvent) {
       hideSearchBar();
       break;
   }
-}
+};
+
+const testKey: KeyEvent = { sequence: 'j', name: 'j', ctrl: false, meta: false, shift: false, raw: new Uint8Array([106]) };
+handleKey(testKey);
 ```

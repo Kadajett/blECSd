@@ -4,9 +4,8 @@ The Interactive component tracks mouse interaction states: click, hover, drag.
 
 ## Component
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { Interactive } from 'blecsd';
+import { Interactive } from 'blecsd/components';
 
 // Component arrays (bitECS SoA pattern)
 Interactive.clickable     // Uint8Array  - Can be clicked
@@ -21,9 +20,8 @@ Interactive.hoverEffectBg // Uint32Array - Hover state background
 
 ## Constants
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { DEFAULT_HOVER_FG, DEFAULT_HOVER_BG } from 'blecsd';
+import { DEFAULT_HOVER_FG, DEFAULT_HOVER_BG } from 'blecsd/components';
 
 DEFAULT_HOVER_FG; // Default hover foreground color
 DEFAULT_HOVER_BG; // Default hover background color
@@ -35,9 +33,8 @@ DEFAULT_HOVER_BG; // Default hover background color
 
 Check if an entity has the Interactive component.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasInteractive } from 'blecsd';
+import { hasInteractive } from 'blecsd/components';
 
 hasInteractive(world, entity); // true or false
 ```
@@ -46,9 +43,8 @@ hasInteractive(world, entity); // true or false
 
 Set interaction options. Adds component if needed.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setInteractive } from 'blecsd';
+import { setInteractive } from 'blecsd/components';
 
 setInteractive(world, entity, {
   clickable: true,
@@ -64,9 +60,8 @@ setInteractive(world, entity, {
 
 Enable or disable click handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setClickable } from 'blecsd';
+import { setClickable } from 'blecsd/components';
 
 setClickable(world, entity, true);
 ```
@@ -75,9 +70,8 @@ setClickable(world, entity, true);
 
 Check if an entity is clickable.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isClickable } from 'blecsd';
+import { isClickable } from 'blecsd/components';
 
 isClickable(world, entity); // true or false
 ```
@@ -86,9 +80,8 @@ isClickable(world, entity); // true or false
 
 Enable or disable hover handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setHoverable } from 'blecsd';
+import { setHoverable } from 'blecsd/components';
 
 setHoverable(world, entity, true);
 ```
@@ -97,9 +90,8 @@ setHoverable(world, entity, true);
 
 Check if an entity responds to hover.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isHoverable } from 'blecsd';
+import { isHoverable } from 'blecsd/components';
 
 isHoverable(world, entity); // true or false
 ```
@@ -108,9 +100,8 @@ isHoverable(world, entity); // true or false
 
 Enable or disable drag handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setDraggable } from 'blecsd';
+import { setDraggable } from 'blecsd/components';
 
 setDraggable(world, entity, true);
 ```
@@ -119,9 +110,8 @@ setDraggable(world, entity, true);
 
 Check if an entity is draggable.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isDraggable } from 'blecsd';
+import { isDraggable } from 'blecsd/components';
 
 isDraggable(world, entity); // true or false
 ```
@@ -130,9 +120,8 @@ isDraggable(world, entity); // true or false
 
 Enable or disable keyboard handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setKeyable } from 'blecsd';
+import { setKeyable } from 'blecsd/components';
 
 setKeyable(world, entity, true);
 ```
@@ -141,9 +130,8 @@ setKeyable(world, entity, true);
 
 Check if an entity responds to keyboard input.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isKeyable } from 'blecsd';
+import { isKeyable } from 'blecsd/components';
 
 isKeyable(world, entity); // true or false
 ```
@@ -152,9 +140,8 @@ isKeyable(world, entity); // true or false
 
 Set hover state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setHovered } from 'blecsd';
+import { setHovered } from 'blecsd/components';
 
 setHovered(world, entity, true);  // Mouse entered
 setHovered(world, entity, false); // Mouse left
@@ -164,9 +151,8 @@ setHovered(world, entity, false); // Mouse left
 
 Check if an entity is currently hovered.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isHovered } from 'blecsd';
+import { isHovered } from 'blecsd/components';
 
 isHovered(world, entity); // true or false
 ```
@@ -175,9 +161,8 @@ isHovered(world, entity); // true or false
 
 Set pressed state.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setPressed } from 'blecsd';
+import { setPressed } from 'blecsd/components';
 
 setPressed(world, entity, true);  // Mouse down
 setPressed(world, entity, false); // Mouse up
@@ -187,9 +172,8 @@ setPressed(world, entity, false); // Mouse up
 
 Check if an entity is currently pressed.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isPressed } from 'blecsd';
+import { isPressed } from 'blecsd/components';
 
 isPressed(world, entity); // true or false
 ```
@@ -198,9 +182,8 @@ isPressed(world, entity); // true or false
 
 Clear hover and pressed states (useful on mouse leave).
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { clearInteractionState } from 'blecsd';
+import { clearInteractionState } from 'blecsd/components';
 
 clearInteractionState(world, entity);
 ```
@@ -209,9 +192,8 @@ clearInteractionState(world, entity);
 
 Get all interaction data for an entity.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getInteractive } from 'blecsd';
+import { getInteractive } from 'blecsd/components';
 
 const data = getInteractive(world, entity);
 // {
@@ -260,8 +242,9 @@ interface InteractiveOptions {
 
 ### Mouse Events
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { queryInteractive } from 'blecsd/core';
 import {
   setInteractive,
   setHovered,
@@ -271,7 +254,10 @@ import {
   isPressed,
   getPosition,
   getDimensions,
-} from 'blecsd';
+} from 'blecsd/components';
+
+const world = createWorld();
+const button = addEntity(world);
 
 // Make entity interactive
 setInteractive(world, button, {
@@ -280,49 +266,53 @@ setInteractive(world, button, {
 });
 
 // Handle mouse move
-function onMouseMove(world, x, y) {
-  const entities = queryInteractive(world);
+function onMouseMove(w: typeof world, x: number, y: number) {
+  const entities = queryInteractive(w);
 
   for (const eid of entities) {
-    const pos = getPosition(world, eid);
-    const dims = getDimensions(world, eid);
+    const pos = getPosition(w, eid);
+    const dims = getDimensions(w, eid);
 
     if (pos && dims) {
       const inside = x >= pos.x && x < pos.x + dims.width &&
                      y >= pos.y && y < pos.y + dims.height;
-      setHovered(world, eid, inside);
+      setHovered(w, eid, inside);
     }
   }
 }
 
 // Handle mouse down
-function onMouseDown(world, x, y) {
-  const hovered = findHoveredEntity(world);
-  if (hovered && isClickable(world, hovered)) {
-    setPressed(world, hovered, true);
+function onMouseDown(w: typeof world, x: number, y: number) {
+  const entities = queryInteractive(w);
+  const hovered = entities.find(eid => isHovered(w, eid));
+  if (hovered && isClickable(w, hovered)) {
+    setPressed(w, hovered, true);
   }
 }
 
 // Handle mouse up
-function onMouseUp(world) {
-  const entities = queryInteractive(world);
+function onMouseUp(w: typeof world) {
+  const entities = queryInteractive(w);
   for (const eid of entities) {
-    if (isPressed(world, eid)) {
-      setPressed(world, eid, false);
-      // Trigger click event
-      if (isHovered(world, eid)) {
-        handleClick(world, eid);
-      }
+    if (isPressed(w, eid)) {
+      setPressed(w, eid, false);
     }
   }
 }
+
+onMouseMove(world, 0, 0);
+onMouseDown(world, 0, 0);
+onMouseUp(world);
 ```
 
 ### Hover Styling
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { setInteractive, isHovered, getStyle, getInteractive } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setInteractive, isHovered, getStyle, getInteractive } from 'blecsd/components';
+
+const world = createWorld();
+const button = addEntity(world);
 
 // Set hover colors
 setInteractive(world, button, {
@@ -332,9 +322,9 @@ setInteractive(world, button, {
 });
 
 // In render, use hover colors when hovered
-function getEffectiveStyle(world, entity) {
-  const style = getStyle(world, entity);
-  const interactive = getInteractive(world, entity);
+function getEffectiveStyle(w: typeof world, entity: number) {
+  const style = getStyle(w, entity);
+  const interactive = getInteractive(w, entity);
 
   if (interactive?.hovered) {
     return {
@@ -346,4 +336,6 @@ function getEffectiveStyle(world, entity) {
 
   return style;
 }
+
+getEffectiveStyle(world, button);
 ```

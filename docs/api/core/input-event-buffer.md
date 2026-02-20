@@ -4,11 +4,13 @@ Frame-independent input event buffering. Buffers keyboard and mouse events betwe
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createInputEventBuffer, pushKeyEvent, drainKeys, drainMouse } from 'blecsd';
+import { createInputEventBuffer, pushKeyEvent, pushMouseEvent, drainKeys, drainMouse } from 'blecsd/core';
 
 const buffer = createInputEventBuffer({ maxBufferSize: 500 });
+
+const keyEvent = { key: 'a', ctrl: false, meta: false, shift: false, type: 'key' as const };
+const mouseEvent = { type: 'mouse' as const, button: 0, x: 10, y: 10, action: 'click' as const };
 
 // Push events from stdin handler
 pushKeyEvent(buffer, keyEvent);
@@ -270,17 +272,16 @@ function isProcessingTimeAcceptable(buffer: InputEventBufferData, maxProcessingT
 
 Global shared input buffer for simple use cases.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { globalInputBuffer, pushKeyEvent, drainAllEvents } from 'blecsd';
+import { globalInputBuffer, pushKeyEvent, drainAllEvents } from 'blecsd/core';
 
+const event = { key: 'a', ctrl: false, meta: false, shift: false, type: 'key' as const };
 pushKeyEvent(globalInputBuffer, event);
 const events = drainAllEvents(globalInputBuffer);
 ```
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createInputEventBuffer,
@@ -291,26 +292,27 @@ import {
   beginFrame,
   endFrame,
   getLatencyStats,
-} from 'blecsd';
+  recordLatency,
+} from 'blecsd/core';
 
 const buffer = createInputEventBuffer({
   maxBufferSize: 500,
   warnOnOverflow: true,
 });
 
-// Async: push events from stdin
-stdinHandler.onKey((event) => pushKeyEvent(buffer, event));
-stdinHandler.onMouse((event) => pushMouseEvent(buffer, event));
+// Push events directly (in real apps, these come from stdin handlers)
+const keyEvent = { key: 'a', ctrl: false, meta: false, shift: false, type: 'key' as const };
+pushKeyEvent(buffer, keyEvent);
 
 // Game loop
-function update(deltaTime: number) {
+function update(_deltaTime: number) {
   beginFrame(buffer);
 
   const keys = drainKeys(buffer);
   const mouse = drainMouse(buffer);
 
   for (const { event, timestamp } of keys) {
-    handleKey(event);
+    console.log('key:', event.key);
     const latency = performance.now() - timestamp;
     recordLatency(buffer, latency);
   }
@@ -323,4 +325,6 @@ function update(deltaTime: number) {
     console.warn(`Input latency: ${stats.p95.toFixed(2)}ms p95`);
   }
 }
+
+update(16);
 ```

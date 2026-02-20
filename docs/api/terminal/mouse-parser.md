@@ -4,12 +4,8 @@ Parses terminal mouse protocol escape sequences into structured events. Supports
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  parseMouseSequence,
-  isMouseBuffer,
-} from 'blecsd';
+import { parseMouseSequence, isMouseBuffer } from 'blecsd/terminal';
 
 // Parse an SGR mouse event
 const result = parseMouseSequence(Buffer.from('\x1b[<0;10;20M'));
@@ -97,9 +93,8 @@ Parses a mouse or focus sequence from a buffer. Tries protocols in order: focus,
 function parseMouseSequence(buffer: Uint8Array): ParseMouseResult
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { parseMouseSequence } from 'blecsd';
+import { parseMouseSequence } from 'blecsd/terminal';
 
 // SGR mouse press
 const result = parseMouseSequence(Buffer.from('\x1b[<0;10;20M'));
@@ -123,9 +118,8 @@ Checks if a buffer contains a mouse sequence.
 function isMouseBuffer(buffer: Uint8Array): boolean
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isMouseBuffer } from 'blecsd';
+import { isMouseBuffer } from 'blecsd/terminal';
 
 const buffer = Buffer.from('\x1b[<0;10;20M');
 console.log(isMouseBuffer(buffer)); // true
@@ -182,14 +176,16 @@ Mouse modifier bits follow the X10 convention:
 
 ## Zod Schemas
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { MouseEventSchema, FocusEventSchema } from 'blecsd';
+import { MouseEventSchema, FocusEventSchema, parseMouseSequence } from 'blecsd/terminal';
 
+const parsed = parseMouseSequence(Buffer.from('\x1b[<0;10;20M'));
+const event = parsed?.type === 'mouse' ? parsed.event : null;
 const result = MouseEventSchema.safeParse(event);
 if (result.success) {
   console.log('Valid mouse event');
 }
+console.log('FocusEventSchema available:', typeof FocusEventSchema);
 ```
 
 ## See Also

@@ -4,11 +4,10 @@ Fast diff computation and rendering for large changesets, with unified and side-
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { computeDiffCached } from 'blecsd/utils';
 import {
   computeDiff,
-  computeDiffLazy,
   computeDiffCached,
   createDiffCache,
   clearDiffCache,
@@ -25,7 +24,7 @@ import {
   getDiffStats,
   DEFAULT_CONTEXT,
   DEFAULT_COLLAPSE_THRESHOLD,
-} from 'blecsd';
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -158,9 +157,8 @@ function computeDiff(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { computeDiff } from 'blecsd';
+import { computeDiff } from 'blecsd/utils';
 
 const result = computeDiff(
   'line 1\nline 2\nline 3',
@@ -295,14 +293,13 @@ function getDiffStats(result: DiffResult): {
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   computeDiffCached,
   createDiffCache,
   getVisibleDiffLines,
   toUnifiedDiff,
-} from 'blecsd';
+} from 'blecsd/utils';
 
 const cache = createDiffCache();
 

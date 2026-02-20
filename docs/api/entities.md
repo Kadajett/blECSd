@@ -17,9 +17,9 @@ Entity factories are the low-level API for creating UI elements in blECSd. Each 
 
 Creates a box entity, a basic container with position, dimensions, optional border, and padding.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createBoxEntity, BorderType } from 'blecsd';
+import { createWorld, createBoxEntity } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -78,9 +78,9 @@ const childBox = createBoxEntity(world, {
 
 Creates a text entity that displays content with optional styling, alignment, and text wrapping.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createTextEntity, TextAlign, TextVAlign } from 'blecsd';
+import { createWorld, createTextEntity } from 'blecsd/core';
+import { TextAlign, TextVAlign } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -127,10 +127,10 @@ const paragraph = createTextEntity(world, {
 
 Creates a button entity, an interactive element with focus support and click handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, BorderType } from 'blecsd';
-import { createButtonEntity } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
+import { createButtonEntity } from 'blecsd/core';
 
 const world = createWorld();
 
@@ -193,20 +193,19 @@ const tabButton = createButtonEntity(world, {
 
 Creates a screen entity, the root container for all other entities.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createScreenEntity } from 'blecsd';
-
-const world = createWorld();
+import { createWorld, createScreenEntity } from 'blecsd/core';
 
 // Basic screen
-const screen = createScreenEntity(world, {
+const world1 = createWorld();
+const screen = createScreenEntity(world1, {
   width: 80,
   height: 24,
 });
 
-// Screen with title
-const namedScreen = createScreenEntity(world, {
+// Screen with title (uses its own world - only one screen per world)
+const world2 = createWorld();
+const namedScreen = createScreenEntity(world2, {
   width: 120,
   height: 40,
   title: 'File Manager',
@@ -234,9 +233,9 @@ const namedScreen = createScreenEntity(world, {
 
 Creates an input entity, a text input field with focus and key handling.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createInputEntity, BorderType } from 'blecsd';
+import { createWorld, createInputEntity } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -295,9 +294,9 @@ const styledInput = createInputEntity(world, {
 
 Creates a list entity that displays a scrollable list of items with selection support.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createListEntity, BorderType } from 'blecsd';
+import { createWorld, createListEntity } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -360,9 +359,9 @@ const styledList = createListEntity(world, {
 
 Creates a checkbox entity, an interactive toggle element with label support.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createCheckboxEntity, BorderType } from 'blecsd';
+import { createWorld, createCheckboxEntity } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -417,10 +416,10 @@ const customCheckbox = createCheckboxEntity(world, {
 
 Creates a textbox entity, a single-line text input field with cursor support, password masking, and keyboard navigation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, BorderType } from 'blecsd';
-import { createTextboxEntity } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
+import { createTextboxEntity } from 'blecsd/core';
 
 const world = createWorld();
 
@@ -492,9 +491,9 @@ const styledTextbox = createTextboxEntity(world, {
 
 Creates a textarea entity, a multi-line text input field with scrolling support and keyboard navigation.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createTextareaEntity, BorderType } from 'blecsd';
+import { createWorld, createTextareaEntity } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -556,9 +555,9 @@ const styledTextarea = createTextareaEntity(world, {
 
 Creates a select entity, a dropdown menu for choosing from a list of options.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createSelectEntity, BorderType } from 'blecsd';
+import { createWorld, createSelectEntity } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -620,9 +619,9 @@ const styledSelect = createSelectEntity(world, {
 
 Creates a slider entity, an interactive element for selecting a numeric value within a range.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createSliderEntity, BorderType } from 'blecsd';
+import { createWorld, createSliderEntity } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -691,10 +690,10 @@ const styledSlider = createSliderEntity(world, {
 
 Creates a form entity, a container for grouping form inputs with validation and submission support.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, BorderType } from 'blecsd';
-import { createFormEntity, createTextboxEntity, createButtonEntity } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
+import { createFormEntity, createTextboxEntity, createButtonEntity } from 'blecsd/core';
 
 const world = createWorld();
 
@@ -769,10 +768,10 @@ const styledForm = createFormEntity(world, {
 
 Creates a progress bar entity, a visual indicator of task completion or loading status.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, BorderType } from 'blecsd';
-import { createProgressBarEntity } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
+import { createProgressBarEntity } from 'blecsd/core';
 
 const world = createWorld();
 
@@ -836,9 +835,9 @@ const styledProgress = createProgressBarEntity(world, {
 
 Creates a radio set entity, a container for grouping radio buttons with mutual exclusion.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createRadioSetEntity, createRadioButtonEntity, BorderType } from 'blecsd';
+import { createWorld, createRadioSetEntity, createRadioButtonEntity } from 'blecsd/core';
+import { BorderType } from 'blecsd/components';
 
 const world = createWorld();
 
@@ -917,9 +916,8 @@ const styledRadioSet = createRadioSetEntity(world, {
 
 Creates a radio button entity, a selectable option within a radio set.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createRadioSetEntity, createRadioButtonEntity } from 'blecsd';
+import { createWorld, createRadioSetEntity, createRadioButtonEntity } from 'blecsd/core';
 
 const world = createWorld();
 

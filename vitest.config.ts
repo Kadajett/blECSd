@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
 	test: {
 		// Test file patterns
-		include: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
+		include: ['src/**/*.test.ts', 'src/**/*.spec.ts', 'scripts/**/*.test.ts'],
 
 		// Enable globals (describe, it, expect)
 		globals: true,

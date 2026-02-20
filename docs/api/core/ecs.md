@@ -4,9 +4,8 @@ ECS primitives wrapper module. This is the only file in the codebase that import
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, addComponent, hasComponent } from 'blecsd';
+import { createWorld, addEntity, addComponent, hasComponent } from 'blecsd/core';
 import { query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
 
@@ -29,9 +28,8 @@ Creates a new entity in the world.
 function addEntity(world: World): Entity;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 
 const world = createWorld();
 const player = addEntity(world);
@@ -54,9 +52,8 @@ Checks if an entity exists in the world.
 function entityExists(world: World, eid: Entity): boolean;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { entityExists, addEntity, removeEntity } from 'blecsd';
+import { entityExists, addEntity, removeEntity } from 'blecsd/core';
 
 console.log(entityExists(world, entity)); // true
 removeEntity(world, entity);
@@ -81,9 +78,8 @@ Adds a component to an entity.
 function addComponent(world: World, eid: Entity, component: ComponentRef): void;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { addComponent } from 'blecsd';
+import { addComponent } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
 addComponent(world, entity, Position);
@@ -117,7 +113,6 @@ Queries the world for entities that have all specified components.
 function query(world: World, components: QueryTerm[]): QueryResult;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { query } from 'blecsd/core';
 import { Position, Velocity } from 'blecsd/components';
@@ -147,7 +142,6 @@ Creates a component with a custom backing store.
 const withStore: (store: Record<string, TypedArray>) => ComponentRef;
 ```
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { withStore } from 'blecsd/core';
 
@@ -166,7 +160,6 @@ This module re-exports for convenience:
 
 ## Usage Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
@@ -178,7 +171,7 @@ import {
   query,
   entityExists,
   getAllEntities,
-} from 'blecsd';
+} from 'blecsd/core';
 
 const world = createWorld();
 

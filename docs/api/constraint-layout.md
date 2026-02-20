@@ -4,10 +4,9 @@ Flexible constraint-based layout system inspired by Ratatui. Calculate UI layout
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld } from 'blecsd/core';
 import {
-  createWorld,
   layoutHorizontal,
   layoutVertical,
   fixed,
@@ -15,7 +14,7 @@ import {
   min,
   max,
   ratio,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 const world = createWorld();
 const area = { x: 0, y: 0, width: 100, height: 24 };
@@ -70,9 +69,8 @@ Creates a fixed-size constraint.
 **Returns:** `Constraint`
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { fixed, layoutHorizontal } from 'blecsd';
+import { fixed, layoutHorizontal } from 'blecsd/systems';
 
 const area = { x: 0, y: 0, width: 100, height: 20 };
 const rects = layoutHorizontal(world, area, [
@@ -92,9 +90,8 @@ Creates a percentage-based constraint.
 **Returns:** `Constraint`
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { percentage, layoutVertical } from 'blecsd';
+import { percentage, layoutVertical } from 'blecsd/systems';
 
 const area = { x: 0, y: 0, width: 80, height: 24 };
 const rects = layoutVertical(world, area, [
@@ -114,9 +111,8 @@ Creates a minimum-size constraint. The section will get at least this much space
 **Returns:** `Constraint`
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { min, percentage, layoutHorizontal } from 'blecsd';
+import { min, percentage, layoutHorizontal } from 'blecsd/systems';
 
 const area = { x: 0, y: 0, width: 100, height: 20 };
 const rects = layoutHorizontal(world, area, [
@@ -135,9 +131,8 @@ Creates a maximum-size constraint. The section will get at most this much space.
 **Returns:** `Constraint`
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { max, percentage, layoutVertical } from 'blecsd';
+import { max, percentage, layoutVertical } from 'blecsd/systems';
 
 const area = { x: 0, y: 0, width: 80, height: 40 };
 const rects = layoutVertical(world, area, [
@@ -157,9 +152,8 @@ Creates a ratio-based constraint.
 **Returns:** `Constraint`
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ratio, layoutHorizontal } from 'blecsd';
+import { ratio, layoutHorizontal } from 'blecsd/systems';
 
 const area = { x: 0, y: 0, width: 120, height: 20 };
 const rects = layoutHorizontal(world, area, [
@@ -182,9 +176,9 @@ Lays out rectangles horizontally within an area. Pure function that takes availa
 **Returns:** `Rect[]` - Array of rectangles representing the layout
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, layoutHorizontal, fixed, percentage } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { layoutHorizontal, fixed, percentage } from 'blecsd/systems';
 
 const world = createWorld();
 const area = { x: 0, y: 0, width: 100, height: 20 };
@@ -213,9 +207,9 @@ Lays out rectangles vertically within an area. Pure function that takes availabl
 **Returns:** `Rect[]` - Array of rectangles representing the layout
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, layoutVertical, fixed, percentage } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { layoutVertical, fixed, percentage } from 'blecsd/systems';
 
 const world = createWorld();
 const area = { x: 0, y: 0, width: 80, height: 24 };
@@ -238,9 +232,8 @@ console.log(rects);
 
 ### Three-Column Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { layoutHorizontal, fixed, percentage } from 'blecsd';
+import { layoutHorizontal, fixed, percentage } from 'blecsd/systems';
 
 const area = { x: 0, y: 0, width: 120, height: 30 };
 
@@ -253,9 +246,8 @@ const columns = layoutHorizontal(world, area, [
 
 ### Header-Content-Footer
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { layoutVertical, fixed, percentage } from 'blecsd';
+import { layoutVertical, fixed, percentage } from 'blecsd/systems';
 
 const area = { x: 0, y: 0, width: 80, height: 24 };
 
@@ -268,9 +260,8 @@ const rows = layoutVertical(world, area, [
 
 ### Nested Layouts
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { layoutHorizontal, layoutVertical, fixed, percentage } from 'blecsd';
+import { layoutHorizontal, layoutVertical, fixed, percentage } from 'blecsd/systems';
 
 const screen = { x: 0, y: 0, width: 100, height: 30 };
 
@@ -296,9 +287,8 @@ const contentColumns = layoutHorizontal(world, mainRows[1]!, [
 
 ### Responsive Sidebar
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { layoutHorizontal, min, max, percentage } from 'blecsd';
+import { layoutHorizontal, min, max, percentage } from 'blecsd/systems';
 
 const area = { x: 0, y: 0, width: 100, height: 24 };
 
@@ -310,9 +300,8 @@ const columns = layoutHorizontal(world, area, [
 
 ### Equal Distribution with Ratio
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { layoutHorizontal, ratio } from 'blecsd';
+import { layoutHorizontal, ratio } from 'blecsd/systems';
 
 const area = { x: 0, y: 0, width: 120, height: 20 };
 
@@ -327,9 +316,8 @@ const columns = layoutHorizontal(world, area, [
 
 ### Dashboard Grid
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { layoutHorizontal, layoutVertical, percentage } from 'blecsd';
+import { layoutHorizontal, layoutVertical, percentage } from 'blecsd/systems';
 
 const screen = { x: 0, y: 0, width: 120, height: 40 };
 
@@ -355,9 +343,8 @@ const bottomColumns = layoutHorizontal(world, rows[1]!, [
 
 ### Mixed Constraints
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { layoutVertical, fixed, min, max, percentage } from 'blecsd';
+import { layoutVertical, fixed, min, max, percentage } from 'blecsd/systems';
 
 const area = { x: 0, y: 0, width: 80, height: 50 };
 

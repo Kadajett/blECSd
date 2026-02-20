@@ -24,9 +24,8 @@ blECSd provides **two different APIs** for building terminal applications. This 
 
 **Best for**: Rapid application development, complex UI patterns, prototyping
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
 import { createList, createModal } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -65,15 +64,9 @@ modal.show();
 
 **Best for**: Custom frameworks, tools, complex TUIs, maximum control, performance-critical code
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  addComponent,
-  setPosition,
-  setDimensions,
-} from 'blecsd';
+import { createWorld, addEntity, addComponent } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
 import { Position, Dimensions } from 'blecsd/components';
 
 const world = createWorld();
@@ -87,7 +80,7 @@ setPosition(world, entity, 10, 5);
 setDimensions(world, entity, 40, 10);
 
 // Or use entity factories for convenience
-import { createBoxEntity } from 'blecsd';
+import { createBoxEntity } from 'blecsd/core';
 const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 ```
 
@@ -157,9 +150,8 @@ const box = createBoxEntity(world, { x: 10, y: 5, width: 40, height: 10 });
 
 **Yes!** Widgets are built on components and entity factories, so you can mix freely:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity, addComponent } from 'blecsd';
+import { createWorld, addEntity, addComponent } from 'blecsd/core';
 import { createList } from 'blecsd/widgets';
 import { Velocity, Position } from 'blecsd/components';
 
@@ -189,9 +181,8 @@ This gives you the **convenience of widgets** with the **power of the ECS API** 
 
 Widgets can wrap entities created by factories:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createListEntity } from 'blecsd';
+import { createWorld, createListEntity } from 'blecsd/core';
 import { createList } from 'blecsd/widgets';
 import { Position } from 'blecsd/components';
 
@@ -212,9 +203,8 @@ listWidget.selectNext();   // Use as widget
 
 You can use factories without ever touching widgets:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, createBoxEntity, createTextEntity } from 'blecsd';
+import { createWorld, createBoxEntity, createTextEntity } from 'blecsd/core';
 import { Position } from 'blecsd/components';
 
 const world = createWorld();
@@ -233,9 +223,8 @@ Position.x[box] = 15;
 
 ### Widget API Example: File Browser
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 import { createFileManager } from 'blecsd/widgets';
 
 const world = createWorld();
@@ -254,14 +243,8 @@ fileManager.refresh();
 
 ### ECS API Example: Custom File Manager
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  createBoxEntity,
-  createListEntity,
-  addComponent,
-} from 'blecsd';
+import { createWorld, createBoxEntity, createListEntity, addComponent } from 'blecsd/core';
 import { Position, Dimensions } from 'blecsd/components';
 
 const world = createWorld();
@@ -308,15 +291,9 @@ blECSd provides a three-tier export system:
 
 The main `'blecsd'` package exports approximately 120 curated functions covering the most common use cases:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  setPosition,
-  setDimensions,
-  createBoxEntity,
-} from 'blecsd';
+import { createWorld, addEntity, createBoxEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
 ```
 
 This is the simplest approach and works well for small to medium applications.
@@ -325,16 +302,16 @@ This is the simplest approach and works well for small to medium applications.
 
 For more complex applications, use namespace imports from subpaths:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { position, dimensions, content } from 'blecsd/components';
-import { animation, layout, render } from 'blecsd/systems';
+import { layout, render } from 'blecsd/systems';
+import { animation } from 'blecsd/components';
 import { createProgram, ansiCodes } from 'blecsd/terminal';
 import { rope, textWrap, unicode } from 'blecsd/utils';
 
 // Organized by domain
 position.set(world, eid, 10, 5);
-dimensions.set(world, eid, { width: 40, height: 10 });
+dimensions.set(world, eid, 40, 10);
 content.setText(world, eid, 'Hello!');
 ```
 
@@ -348,7 +325,6 @@ Namespace imports provide:
 
 Deep imports from specific files are reserved for internal library use and advanced scenarios:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Not recommended for most users
 import { someInternalFunction } from 'blecsd/components/position';

@@ -39,14 +39,13 @@ In this tutorial, you'll build a system monitoring dashboard that displays CPU, 
 
 Create `dashboard.ts`:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld, addEntity, setPosition, setDimensions,
-  layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
-import { createProgram, type KeyEvent } from 'blecsd/terminal';
+import { type KeyEvent } from 'blecsd/terminal';
+import { createProgram } from 'blecsd/terminal';
 import {
   createPanel, createText, createProgressBar, createLayout,
 } from 'blecsd/widgets';
@@ -67,7 +66,8 @@ const program = createProgram({
 });
 program.init();
 
-const { columns, rows } = process.stdout;
+const columns = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
 ```
 
 ## Step 2: System Stats Functions
@@ -158,40 +158,38 @@ function formatTime(seconds: number): string {
 
 ## Step 3: Create Main Layout
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Main container panel
-const mainPanel = createPanel(world, {
+const mainPanel = createPanel(world, addEntity(world), {
   title: 'System Dashboard',
   x: 0,
   y: 0,
   width: columns,
   height: rows,
-  border: 'single',
-});
+  border: { type: 'line', ch: 'single' },
+}).eid;
 
 // Create a horizontal layout for CPU and Memory panels
-const topLayout = createLayout(world, {
+const topLayout = createLayout(world, addEntity(world), {
   x: 1,
   y: 1,
   width: columns - 2,
   height: 8,
-  direction: 'horizontal',
+  direction: 'row',
   gap: 2,
-});
+}).eid;
 setParent(world, topLayout, mainPanel);
 ```
 
 ## Step 4: CPU Panel
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-const cpuPanel = createPanel(world, {
+const cpuPanel = createPanel(world, addEntity(world), {
   title: 'CPU',
   width: Math.floor((columns - 4) / 2),
   height: 8,
-  border: 'single',
-});
+  border: { type: 'line', ch: 'single' },
+}).eid;
 setParent(world, cpuPanel, topLayout);
 
 // Create progress bars for each core
@@ -200,11 +198,11 @@ const cpuLabels: number[] = [];
 const cpuCount = Math.min(os.cpus().length, 8); // Max 8 cores displayed
 
 for (let i = 0; i < cpuCount; i++) {
-  const label = createText(world, {
+  const label = createText(world, addEntity(world), {
     x: 1,
     y: i + 1,
     content: `Core ${i}`,
-  });
+  }).eid;
   setParent(world, label, cpuPanel);
   cpuLabels.push(label);
 
@@ -216,7 +214,7 @@ for (let i = 0; i < cpuCount; i++) {
     max: 100,
     value: 0,
     showPercentage: true,
-  });
+  }).eid;
   setParent(world, bar, cpuPanel);
   cpuBars.push(bar);
 }
@@ -224,22 +222,21 @@ for (let i = 0; i < cpuCount; i++) {
 
 ## Step 5: Memory Panel
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-const memPanel = createPanel(world, {
+const memPanel = createPanel(world, addEntity(world), {
   title: 'Memory',
   width: Math.floor((columns - 4) / 2),
   height: 8,
-  border: 'single',
-});
+  border: { type: 'line', ch: 'single' },
+}).eid;
 setParent(world, memPanel, topLayout);
 
 // Memory used bar
-const memUsedLabel = createText(world, {
+const memUsedLabel = createText(world, addEntity(world), {
   x: 1,
   y: 1,
   content: 'Used',
-});
+}).eid;
 setParent(world, memUsedLabel, memPanel);
 
 const memUsedBar = createProgressBar(world, {
@@ -250,15 +247,15 @@ const memUsedBar = createProgressBar(world, {
   max: 100,
   value: 0,
   showPercentage: true,
-});
+}).eid;
 setParent(world, memUsedBar, memPanel);
 
 // Swap bar
-const swapLabel = createText(world, {
+const swapLabel = createText(world, addEntity(world), {
   x: 1,
   y: 2,
   content: 'Swap',
-});
+}).eid;
 setParent(world, swapLabel, memPanel);
 
 const swapBar = createProgressBar(world, {
@@ -269,51 +266,50 @@ const swapBar = createProgressBar(world, {
   max: 100,
   value: 0,
   showPercentage: true,
-});
+}).eid;
 setParent(world, swapBar, memPanel);
 
 // Memory info text
-const memInfoText = createText(world, {
+const memInfoText = createText(world, addEntity(world), {
   x: 1,
   y: 4,
   content: '',
-});
+}).eid;
 setParent(world, memInfoText, memPanel);
 ```
 
 ## Step 6: Process List Panel
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-const processPanel = createPanel(world, {
+const processPanel = createPanel(world, addEntity(world), {
   title: 'Top Processes',
   x: 1,
   y: 10,
   width: columns - 2,
   height: rows - 13,
-  border: 'single',
-});
+  border: { type: 'line', ch: 'single' },
+}).eid;
 setParent(world, processPanel, mainPanel);
 
 // Process list header
-const processHeader = createText(world, {
+const processHeader = createText(world, addEntity(world), {
   x: 1,
   y: 1,
   content: 'PID'.padEnd(8) + 'NAME'.padEnd(20) + 'CPU%'.padEnd(8) + 'MEM%'.padEnd(8) + 'TIME',
   fg: 0xffff00ff,
-});
+}).eid;
 setParent(world, processHeader, processPanel);
 
 // Process list items
 const processItems: number[] = [];
 const maxProcesses = rows - 16;
 
-for (let i = 0; i < maxProcesses; i++) {
-  const item = createText(world, {
+for (let j = 0; j < maxProcesses; j++) {
+  const item = createText(world, addEntity(world), {
     x: 1,
-    y: i + 2,
+    y: j + 2,
     content: '',
-  });
+  }).eid;
   setParent(world, item, processPanel);
   processItems.push(item);
 }
@@ -322,13 +318,13 @@ for (let i = 0; i < maxProcesses; i++) {
 ## Step 7: Status Bar
 
 ```typescript
-const statusBar = createText(world, {
+const statusBar = createText(world, addEntity(world), {
   x: 0,
   y: rows - 1,
   content: '',
   fg: 0x000000ff,
   bg: 0xccccccff,
-});
+}).eid;
 setDimensions(world, statusBar, columns, 1);
 
 function updateStatusBar(): void {
@@ -343,9 +339,9 @@ function updateStatusBar(): void {
 
 ```typescript
 function updateCpuPanel(): void {
-  const cores = getCpuUsage();
+  const cpuData = getCpuUsage() ?? [];
 
-  cores.slice(0, cpuCount).forEach((core, index) => {
+  cpuData.slice(0, cpuCount).forEach((core, index) => {
     setProgress(world, cpuBars[index], core.usage);
 
     // Color based on usage
@@ -357,7 +353,7 @@ function updateCpuPanel(): void {
 }
 
 function updateMemoryPanel(): void {
-  const mem = getMemoryInfo();
+  const mem = getMemoryInfo() ?? { total: 1, used: 0, free: 1, usedPercent: 0, swapTotal: 0, swapUsed: 0, swapPercent: 0 };
 
   setProgress(world, memUsedBar, mem.usedPercent);
   setProgress(world, swapBar, mem.swapPercent);

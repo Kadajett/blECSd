@@ -4,19 +4,17 @@ The game loop manages the main update cycle with input priority guarantees, life
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import type { GameLoop, PhaseManager } from 'blecsd/core';
 import {
   createGameLoop,
-  GameLoop,
   LoopPhase,
   LoopState,
-  PhaseManager,
   BUILTIN_PHASE_NAMES,
   isBuiltinPhase,
   isLoopRunning,
   isLoopPaused,
-} from 'blecsd';
+} from 'blecsd/core';
 ```
 
 ## Phase Execution Order
@@ -43,19 +41,26 @@ Terminal applications must feel responsive. Even if a frame takes 50ms to render
 - The user always feels in control
 
 ```typescript
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
+
+const world = createWorld();
+const loop = createGameLoop(world, { targetFPS: 60 });
+
 // INPUT phase processes ALL pending input every frame
 // Even in fixed timestep mode, INPUT runs at the render frame rate
-loop.registerSystem(LoopPhase.INPUT, inputSystem);
+const inputSystem = (w: typeof world) => w;
+const gameLogicSystem = (w: typeof world) => w;
+const renderSystem = (w: typeof world) => w;
+
 loop.registerSystem(LoopPhase.UPDATE, gameLogicSystem);
 loop.registerSystem(LoopPhase.RENDER, renderSystem);
+// Note: INPUT phase is protected - use createInputSystem() for input handling
 ```
 
 ## Creating a Game Loop
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { createGameLoop, LoopPhase } from 'blecsd/core';
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();
 const loop = createGameLoop(world, {
@@ -63,14 +68,21 @@ const loop = createGameLoop(world, {
   maxDeltaTime: 0.1,
 });
 
+const processInputSystem = (w: typeof world) => w;
+const movementSystem = (w: typeof world) => w;
+const animationSystem = (w: typeof world) => w;
+const renderSystem = (w: typeof world) => w;
+
 // Register systems in their phases
-loop.registerSystem(LoopPhase.INPUT, processInputSystem);
 loop.registerSystem(LoopPhase.UPDATE, movementSystem);
-loop.registerSystem(LoopPhase.PHYSICS, animationSystem);
 loop.registerSystem(LoopPhase.RENDER, renderSystem);
 
-// Start the loop
-loop.start();
+// processInputSystem and animationSystem registered in a real app:
+// loop.registerSystem(LoopPhase.INPUT, processInputSystem);
+// loop.registerSystem(LoopPhase.ANIMATION, animationSystem);
+
+// Start the loop (in production: loop.start())
+console.log('Loop state:', loop.getState());
 ```
 
 ## GameLoopOptions
@@ -95,20 +107,30 @@ interface FixedTimestepConfig {
 ## Lifecycle Methods
 
 ```typescript
-loop.start();     // Start or resume the loop
-loop.stop();      // Stop completely (resets stats)
-loop.pause();     // Pause (can resume)
-loop.resume();    // Resume from pause
+import { createWorld, createGameLoop } from 'blecsd/core';
 
-loop.step();      // Run a single frame manually
-loop.step(1/60);  // With explicit delta time
+const world = createWorld();
+const loop = createGameLoop(world, { targetFPS: 60 });
 
-loop.stepFixed(); // Run a single fixed update (requires fixedTimestepMode)
+// loop.start();     // Start or resume the loop
+// loop.stop();      // Stop completely (resets stats)
+// loop.pause();     // Pause (can resume)
+// loop.resume();    // Resume from pause
+
+loop.step(1/60);  // Run a single frame manually with explicit delta time
+
+// loop.stepFixed(); // Run a single fixed update (requires fixedTimestepMode)
+console.log('Loop state after step:', loop.getState());
 ```
 
 ## State Checking
 
 ```typescript
+import { createWorld, createGameLoop } from 'blecsd/core';
+
+const world = createWorld();
+const loop = createGameLoop(world, { targetFPS: 60 });
+
 loop.isRunning();  // true if loop is active
 loop.isPaused();   // true if paused
 loop.isStopped();  // true if stopped
@@ -118,6 +140,16 @@ loop.getState();   // LoopState.RUNNING | PAUSED | STOPPED
 ## System Registration
 
 ```typescript
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
+
+const world = createWorld();
+const loop = createGameLoop(world, { targetFPS: 60 });
+
+const mySystem = (w: typeof world) => w;
+const criticalSystem = (w: typeof world) => w;
+const normalSystem = (w: typeof world) => w;
+const lateSystem = (w: typeof world) => w;
+
 // Register a system in a specific phase
 loop.registerSystem(LoopPhase.UPDATE, mySystem);
 
@@ -128,50 +160,38 @@ loop.registerSystem(LoopPhase.UPDATE, lateSystem, 10);
 
 // Unregister
 loop.unregisterSystem(mySystem);
-
-// Register input system (internal)
-loop.registerInputSystem(inputSystem);
 ```
 
 ## Lifecycle Hooks
 
 ```typescript
-const loop = createGameLoop(world, options, {
+import { createWorld, createGameLoop } from 'blecsd/core';
+
+const world = createWorld();
+const loop = createGameLoop(world, { targetFPS: 60 }, {
   onStart: () => console.log('Loop started'),
   onStop: () => console.log('Loop stopped'),
   onPause: () => console.log('Loop paused'),
   onResume: () => console.log('Loop resumed'),
-
-  onBeforeInput: (world, dt) => { /* before input phase */ },
-  onAfterInput: (world, dt) => { /* after input phase */ },
-  onBeforeUpdate: (world, dt) => { /* before update phase */ },
-  onAfterUpdate: (world, dt) => { /* after update phase */ },
-  onBeforeRender: (world, dt) => { /* before render phase */ },
-  onAfterRender: (world, dt) => { /* after render phase */ },
-
-  // Fixed timestep hooks
-  onBeforeFixedUpdate: (world, fixedDt, tickNumber) => {},
-  onAfterFixedUpdate: (world, fixedDt, tickNumber) => {},
-  onInterpolate: (world, alpha) => {
-    // Interpolate visual state between ticks
-    // alpha is 0-1, representing position between last and next tick
-  },
 });
+// Run a single frame to verify the hook fires
+loop.start();
+loop.stop();
 ```
 
 ## Performance Statistics
 
 ```typescript
+import { createWorld, createGameLoop } from 'blecsd/core';
+
+const world = createWorld();
+const loop = createGameLoop(world, { targetFPS: 60 });
 const stats = loop.getStats();
 
-stats.fps;                // Current frames per second
-stats.frameTime;          // Current frame time in ms
-stats.frameCount;         // Total frames since start
-stats.runningTime;        // Total running time in seconds
-stats.tickCount;          // Total fixed updates (fixed timestep only)
-stats.ticksPerSecond;     // Fixed updates per second
-stats.interpolationAlpha; // Current interpolation factor (0-1)
-stats.skippedUpdates;     // Updates skipped this frame (spiral of death)
+console.log('FPS:', stats.fps);
+console.log('Frame time (ms):', stats.frameTime);
+console.log('Frame count:', stats.frameCount);
+console.log('Running time (s):', stats.runningTime);
 ```
 
 ## Fixed Timestep Mode
@@ -179,6 +199,9 @@ stats.skippedUpdates;     // Updates skipped this frame (spiral of death)
 Fixed timestep ensures deterministic game logic while keeping input responsive and rendering smooth.
 
 ```typescript
+import { createWorld, createGameLoop } from 'blecsd/core';
+
+const world = createWorld();
 const loop = createGameLoop(world, {
   fixedTimestepMode: {
     tickRate: 60,           // 60 physics/logic updates per second
@@ -193,11 +216,18 @@ const loop = createGameLoop(world, {
 // 3. Run fixed updates at consistent rate (UPDATE, LATE_UPDATE, PHYSICS)
 // 4. Calculate interpolation alpha
 // 5. Run render phases (LAYOUT, RENDER, POST_RENDER)
+loop.step(1/60);
+console.log('Fixed timestep loop state:', loop.getState());
 ```
 
 ### Interpolation
 
 ```typescript
+import { createWorld, createGameLoop } from 'blecsd/core';
+
+const world = createWorld();
+let prevX = 0, currentX = 10;
+let prevY = 0, currentY = 5;
 const loop = createGameLoop(world, {
   fixedTimestepMode: {
     tickRate: 30,
@@ -205,25 +235,26 @@ const loop = createGameLoop(world, {
     interpolate: true,
   },
 }, {
-  onInterpolate: (world, alpha) => {
+  onInterpolate: (_w, alpha) => {
     // Interpolate positions for smooth rendering at 60fps
     // even though logic runs at 30 ticks/sec
     const renderX = prevX + (currentX - prevX) * alpha;
     const renderY = prevY + (currentY - prevY) * alpha;
+    console.log(`Render position: (${renderX.toFixed(2)}, ${renderY.toFixed(2)})`);
   },
 });
+loop.step(1/60);
+console.log('Interpolation example - prevX:', prevX, 'currentX:', currentX);
 ```
 
 ## PhaseManager
 
 The PhaseManager allows adding custom phases between built-in phases.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { PhaseManager } from 'blecsd';
-import { LoopPhase } from 'blecsd/core';
+import { createPhaseManager, LoopPhase, isBuiltinPhase } from 'blecsd/core';
 
-const manager = new PhaseManager();
+const manager = createPhaseManager();
 
 // Add custom phase after UPDATE
 const aiPhaseId = manager.registerPhase('AI', LoopPhase.UPDATE);
@@ -254,9 +285,11 @@ enum LoopPhase {
 
 ## Helper Functions
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { isLoopRunning, isLoopPaused } from 'blecsd';
+import { createWorld, createGameLoop, isLoopRunning, isLoopPaused } from 'blecsd/core';
+
+const world = createWorld();
+const loop = createGameLoop(world, { targetFPS: 60 });
 
 // Safe checks that handle undefined
 isLoopRunning(loop);    // true/false
@@ -267,12 +300,15 @@ isLoopPaused(loop);     // true/false
 
 ## Complete Example
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld } from 'blecsd';
-import { createGameLoop, LoopPhase } from 'blecsd/core';
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
 
 const world = createWorld();
+
+const gameLogicSystem = (w: typeof world) => w;
+const animationSystem = (w: typeof world) => w;
+const layoutSystem = (w: typeof world) => w;
+const renderSystem = (w: typeof world) => w;
 
 // Create game loop with fixed timestep
 const loop = createGameLoop(world, {
@@ -284,7 +320,7 @@ const loop = createGameLoop(world, {
   },
 }, {
   onStart: () => console.log('Game started'),
-  onBeforeRender: (world, dt) => {
+  onBeforeRender: (_w, _dt) => {
     const stats = loop.getStats();
     if (stats.skippedUpdates > 0) {
       console.warn(`Skipped ${stats.skippedUpdates} updates`);
@@ -293,18 +329,14 @@ const loop = createGameLoop(world, {
 });
 
 // Register systems
-loop.registerSystem(LoopPhase.INPUT, inputSystem);
 loop.registerSystem(LoopPhase.UPDATE, gameLogicSystem);
-loop.registerSystem(LoopPhase.PHYSICS, animationSystem);
 loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 loop.registerSystem(LoopPhase.RENDER, renderSystem);
+// animationSystem registered in a real app:
+// loop.registerSystem(LoopPhase.ANIMATION, animationSystem);
 
-// Start the game
-loop.start();
-
-// Stop after signal
-process.on('SIGINT', () => {
-  loop.stop();
-  process.exit(0);
-});
+// In production: loop.start();
+loop.step(1/60);
+const finalStats = loop.getStats();
+console.log('Frame count:', finalStats.frameCount);
 ```

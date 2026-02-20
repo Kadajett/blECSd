@@ -14,13 +14,16 @@ The behavior system handles:
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBehaviorSystem } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createBehaviorSystem } from 'blecsd/systems';
+
+const world = createWorld();
+const behaviorEntities: number[] = [];
 
 const behaviorSystem = createBehaviorSystem(
   { getDelta: () => 1 / 60 },
-  (world) => behaviorEntities,
+  () => behaviorEntities,
 );
 
 // In your update loop
@@ -88,14 +91,17 @@ function createBehaviorSystem(
 
 **Returns:** A `System` function that processes behaviors when called with a world.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBehaviorSystem } from 'blecsd';
+import { createBehaviorSystem } from 'blecsd/systems';
+
+const myBehaviorEntities: number[] = [];
+const deltaTime = 1 / 60;
+const myPositions = { x: new Float32Array(1000), y: new Float32Array(1000) };
 
 // Basic setup with default position/movement handling
-const behaviorSystem = createBehaviorSystem(
+const behaviorSystem2 = createBehaviorSystem(
   { getDelta: () => 1 / 60 },
-  (world) => myBehaviorEntities,
+  () => myBehaviorEntities,
 );
 
 // Custom position resolver and movement applier
@@ -110,8 +116,10 @@ const customBehaviorSystem = createBehaviorSystem(
       myPositions.y[eid] += dy * delta;
     },
   },
-  (world) => myBehaviorEntities,
+  () => myBehaviorEntities,
 );
+console.log('behaviorSystem2:', typeof behaviorSystem2);
+console.log('customBehaviorSystem:', typeof customBehaviorSystem);
 ```
 
 ## Behavior Types
@@ -130,18 +138,15 @@ The system processes entities based on their `BehaviorType`:
 
 Complete example showing an enemy with patrol and chase behaviors:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   createScheduler,
-  createBehaviorSystem,
-  setBehavior,
-  BehaviorType,
-  setPosition,
   LoopPhase,
-} from 'blecsd';
+} from 'blecsd/core';
+import { createBehaviorSystem } from 'blecsd/systems';
+import { setBehavior, BehaviorType, setPosition } from 'blecsd/components';
 
 const world = createWorld();
 const scheduler = createScheduler();

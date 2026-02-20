@@ -91,20 +91,19 @@ Working applications demonstrating blECSd patterns:
 
 blECSd uses a tiered export system. The main `blecsd` package exports ~120 commonly used functions. Subpath exports provide access to specialized modules.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Tier 1: Main package (most common)
-import {
-  createWorld, addEntity, setPosition, setDimensions,
-  layoutSystem, renderSystem, outputSystem,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 
 // Tier 2: Subpath exports (specialized)
 import { createScheduler, LoopPhase, createEventBus } from 'blecsd/core';
 import { createProgram } from 'blecsd/terminal';
 import { createPanel, createText, createList } from 'blecsd/widgets';
 import { setContent, setParent, setStyle } from 'blecsd/components';
-import { focusEntity, blurAll } from 'blecsd/systems';
+import { blurAll } from 'blecsd/systems';
+import { focusEntity } from 'blecsd/components';
 ```
 
 See the [Export Patterns Guide](./guides/export-patterns.md) for the full list.

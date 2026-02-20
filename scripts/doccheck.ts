@@ -4,7 +4,11 @@ import { parseArgs } from "node:util";
 import { extractBlocks } from "./doccheck/extract.ts";
 import { executeBlocks } from "./doccheck/execute.ts";
 import { buildReport, formatReport, hasFailures } from "./doccheck/report.ts";
-import { transformBlock } from "./doccheck/transform.ts";
+import {
+  extractFactorySignatures,
+  validateCallSites,
+} from "./doccheck/signatures.ts";
+import { transformPages } from "./doccheck/transform.ts";
 import type { CliOptions } from "./doccheck/types.ts";
 
 function parseCli(): CliOptions {
@@ -16,6 +20,7 @@ function parseCli(): CliOptions {
       timeout: { type: "string", default: "10000" },
       file: { type: "string", default: "docs/**/*.md" },
       "no-cleanup": { type: "boolean", default: false },
+      "strict-signatures": { type: "boolean", default: false },
     },
     strict: true,
   });
@@ -27,6 +32,7 @@ function parseCli(): CliOptions {
     timeout: Number.parseInt(values.timeout ?? "10000", 10),
     file: values.file ?? "docs/**/*.md",
     noCleanup: values["no-cleanup"] ?? false,
+    strictSignatures: values["strict-signatures"] ?? false,
   };
 }
 
@@ -54,10 +60,14 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  // 2. Transform
-  const transforms = blocks.map(transformBlock);
+  // 2. Signature validation (runs on ALL blocks, including ignored)
+  const signatures = await extractFactorySignatures(rootDir);
+  const signatureWarnings = validateCallSites(blocks, signatures);
 
-  // 3. Execute
+  // 3. Transform (per-page: combines all blocks from each doc page)
+  const transforms = transformPages(blocks);
+
+  // 4. Execute
   const results = await executeBlocks(
     transforms,
     rootDir,
@@ -66,14 +76,24 @@ async function main(): Promise<void> {
     !options.noCleanup
   );
 
-  // 4. Report
-  const report = buildReport(results, blocks.length, uniqueFiles);
+  // 5. Report
+  const report = buildReport(
+    results,
+    blocks.length,
+    uniqueFiles,
+    signatureWarnings,
+    blocks
+  );
   const durationMs = Math.round(performance.now() - startTime);
   const output = formatReport(report, options, rootDir, durationMs);
 
   console.log(output);
 
   if (hasFailures(report)) {
+    process.exit(1);
+  }
+
+  if (options.strictSignatures && signatureWarnings.length > 0) {
     process.exit(1);
   }
 }

@@ -8,7 +8,6 @@ When a terminal application exits unexpectedly (Ctrl+C, uncaught exception, etc.
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { CleanupManager, registerForCleanup, onExit } from 'blecsd/terminal';
 
@@ -30,7 +29,6 @@ onExit((info) => {
 
 Singleton that coordinates terminal cleanup across multiple Program instances.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 class CleanupManager {
   static get instance(): CleanupManager;
@@ -111,13 +109,12 @@ function registerForCleanup(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { registerForCleanup, screen, cursor } from 'blecsd/terminal';
+import { registerForCleanup, screenSeq, cursorSeq } from 'blecsd/terminal';
 
 // Enter alternate screen
-process.stdout.write(screen.alternateOn());
-process.stdout.write(cursor.hide());
+process.stdout.write(screenSeq.alternateOn());
+process.stdout.write(cursorSeq.hide());
 
 // Register cleanup
 registerForCleanup('my-app', process.stdout, () => {
@@ -146,7 +143,6 @@ function onExit(handler: ExitHandler): () => void
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { onExit } from 'blecsd/terminal';
 
@@ -222,46 +218,40 @@ The CleanupManager installs handlers for:
 
 ### Game Application
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   registerForCleanup,
   unregisterFromCleanup,
-  screen,
-  cursor,
+  screenSeq,
+  cursorSeq,
   mouse,
 } from 'blecsd/terminal';
 
-class Game {
-  start() {
-    // Setup terminal
-    process.stdout.write(screen.alternateOn());
-    process.stdout.write(cursor.hide());
-    process.stdout.write(mouse.enableSgr());
+function startGame() {
+  // Setup terminal
+  process.stdout.write(screenSeq.alternateOn());
+  process.stdout.write(cursorSeq.hide());
+  process.stdout.write(mouse.enableSGR());
 
-    // Register for cleanup
-    registerForCleanup('game', process.stdout, () => {
-      this.saveState();  // Save game state
-    });
+  // Register for cleanup
+  registerForCleanup('game', process.stdout, () => {
+    // Save game state on forced exit
+  });
+}
 
-    this.run();
-  }
+function quitGame() {
+  // Manual cleanup
+  process.stdout.write(mouse.disableAll());
+  process.stdout.write(cursorSeq.show());
+  process.stdout.write(screenSeq.alternateOff());
 
-  quit() {
-    // Manual cleanup
-    process.stdout.write(mouse.disableAll());
-    process.stdout.write(cursor.show());
-    process.stdout.write(screen.alternateOff());
-
-    unregisterFromCleanup('game');
-    process.exit(0);
-  }
+  unregisterFromCleanup('game');
+  process.exit(0);
 }
 ```
 
 ### Error Logging
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { onExit } from 'blecsd/terminal';
 import fs from 'fs';

@@ -4,7 +4,6 @@ The movement system updates entity positions based on velocity. It handles accel
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   movementSystem,
@@ -13,21 +12,16 @@ import {
   queryMovement,
   hasMovementSystem,
   updateMovements,
-} from 'blecsd';
+} from 'blecsd/systems';
 ```
 
 ## Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createScheduler,
-  LoopPhase,
-  registerMovementSystem,
-  setPosition,
-  setVelocity,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { registerMovementSystem } from 'blecsd/systems';
+import { setPosition, setVelocity } from 'blecsd/components';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -49,10 +43,14 @@ function gameLoop(deltaTime: number) {
 
 ## Recommended Phase
 
-Register in the **PHYSICS** phase:
+Register in the **UPDATE** phase:
 
 ```typescript
-scheduler.registerSystem(LoopPhase.PHYSICS, movementSystem);
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { movementSystem } from 'blecsd/systems';
+
+const scheduler = createScheduler();
+scheduler.registerSystem(LoopPhase.UPDATE, movementSystem);
 ```
 
 ## System Behavior
@@ -72,12 +70,23 @@ Each frame, the movement system:
 ### System Registration
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import {
+  movementSystem,
+  createMovementSystem,
+  registerMovementSystem,
+} from 'blecsd/systems';
+
+const world = createWorld();
+const scheduler = createScheduler();
+
 // Register with scheduler (convenience function)
-registerMovementSystem(scheduler, priority?);
+registerMovementSystem(scheduler);
 
 // Or create and register manually
 const system = createMovementSystem();
-scheduler.registerSystem(LoopPhase.PHYSICS, system);
+scheduler.registerSystem(LoopPhase.UPDATE, system);
 
 // Or use the system directly
 movementSystem(world);
@@ -86,8 +95,15 @@ movementSystem(world);
 ### Query Functions
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { queryMovement, hasMovementSystem } from 'blecsd/systems';
+
+const world = createWorld();
+const eid = addEntity(world);
+
 // Query all moving entities
 const moving = queryMovement(world);
+console.log('moving entities count:', moving.length);
 // Returns: number[] (entity IDs)
 
 // Check if entity has Velocity component
@@ -99,6 +115,11 @@ if (hasMovementSystem(world, eid)) {
 ### Manual Updates
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { queryMovement, updateMovements } from 'blecsd/systems';
+
+const world = createWorld();
+
 // Update specific entities outside the system
 const entities = queryMovement(world);
 updateMovements(world, entities, 0.016);
@@ -128,6 +149,10 @@ Acceleration → Velocity → Friction → Clamp → Position
 If an entity has an Acceleration component, it's applied first:
 
 ```typescript
+// Internal system logic (conceptual)
+const velocity = { x: 0, y: 0 };
+const acceleration = { x: 5, y: 0 };
+const deltaTime = 1 / 60;
 velocity.x += acceleration.x * deltaTime;
 velocity.y += acceleration.y * deltaTime;
 ```
@@ -137,8 +162,11 @@ velocity.y += acceleration.y * deltaTime;
 Friction slows the entity over time:
 
 ```typescript
-velocity.x *= friction; // Per frame, scaled by deltaTime
-velocity.y *= friction;
+// Internal system logic (conceptual)
+const velocity2 = { x: 10, y: 0 };
+const friction = 0.9;
+velocity2.x *= friction; // Per frame, scaled by deltaTime
+velocity2.y *= friction;
 ```
 
 ### Speed Clamping
@@ -146,10 +174,15 @@ velocity.y *= friction;
 Velocity magnitude is clamped to maxSpeed:
 
 ```typescript
+// Internal system logic (conceptual)
+const velocity3 = { x: 20, y: 0 };
+const vx = velocity3.x;
+const vy = velocity3.y;
+const maxSpeed = 10;
 const speed = Math.sqrt(vx * vx + vy * vy);
 if (speed > maxSpeed) {
-  velocity.x = (vx / speed) * maxSpeed;
-  velocity.y = (vy / speed) * maxSpeed;
+  velocity3.x = (vx / speed) * maxSpeed;
+  velocity3.y = (vy / speed) * maxSpeed;
 }
 ```
 
@@ -158,23 +191,21 @@ if (speed > maxSpeed) {
 Finally, velocity is applied to position:
 
 ```typescript
-position.x += velocity.x * deltaTime;
-position.y += velocity.y * deltaTime;
+// Internal system logic (conceptual)
+const position = { x: 0, y: 0 };
+const velocity4 = { x: 5, y: 0 };
+const deltaTime2 = 1 / 60;
+position.x += velocity4.x * deltaTime2;
+position.y += velocity4.y * deltaTime2;
 ```
 
 ## Example: Player Movement
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd';
-import {
-  createScheduler,
-  LoopPhase,
-  registerMovementSystem,
-  setPosition,
-  setVelocity,
-  setAcceleration,
-} from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createScheduler, LoopPhase } from 'blecsd/core';
+import { registerMovementSystem } from 'blecsd/systems';
+import { setPosition, setVelocity, setAcceleration } from 'blecsd/components';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -216,6 +247,11 @@ function onKeyRelease() {
 ## Example: Projectiles
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setVelocity, setAcceleration } from 'blecsd/components';
+
+const world = createWorld();
+
 // Create bullet that moves right at constant speed
 function createBullet(startX: number, startY: number) {
   const bullet = addEntity(world);
@@ -242,11 +278,21 @@ function createParticle(startX: number, startY: number) {
   setAcceleration(world, particle, 0, 30); // Gravity
   return particle;
 }
+
+const bullet = createBullet(0, 0);
+console.log('bullet entity:', bullet);
+const particle = createParticle(0, 0);
+console.log('particle entity:', particle);
 ```
 
 ## Example: Smooth Scrolling
 
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setVelocity, getVelocity } from 'blecsd/components';
+
+const world = createWorld();
+
 // Smooth scroll container
 const scrollContainer = addEntity(world);
 setPosition(world, scrollContainer, 0, 0);
@@ -259,12 +305,16 @@ setVelocity(world, scrollContainer, {
 
 // Apply scroll impulse on wheel
 function onScroll(deltaY: number) {
-  const vy = getVelocity(world, scrollContainer).y;
+  const vel = getVelocity(world, scrollContainer);
+  const vy = vel ? vel.y : 0;
   setVelocity(world, scrollContainer, {
-    ...getVelocity(world, scrollContainer),
+    x: 0,
     y: vy + deltaY * 5,
+    maxSpeed: 100,
+    friction: 0.9,
   });
 }
+console.log('onScroll ready:', typeof onScroll === 'function');
 ```
 
 ## Performance Considerations

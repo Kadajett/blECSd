@@ -8,14 +8,17 @@ The hit test system provides efficient point-in-entity testing with z-index awar
 
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld } from 'blecsd/core';
 import {
   createClickableCache,
   hitTest,
   hitTestAll,
   invalidateClickableCache,
-} from 'blecsd';
+} from 'blecsd/core';
+
+const world = createWorld();
+const mouseX = 10; const mouseY = 10;
 
 // Create cache for efficient hit testing
 const cache = createClickableCache();
@@ -36,9 +39,8 @@ invalidateClickableCache(cache);
 
 Creates a new cache for clickable element sorting.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createClickableCache } from 'blecsd';
+import { createClickableCache } from 'blecsd/core';
 
 const cache = createClickableCache();
 ```
@@ -50,10 +52,10 @@ Marks the cache as needing rebuild. Call when:
 - Z-index values change
 - Interactive state changes
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { invalidateClickableCache } from 'blecsd';
+import { createClickableCache, invalidateClickableCache } from 'blecsd/core';
 
+const cache = createClickableCache();
 // After adding a new clickable entity
 invalidateClickableCache(cache);
 ```
@@ -62,10 +64,12 @@ invalidateClickableCache(cache);
 
 Rebuilds the cache if dirty.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { updateClickableCache } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createClickableCache, updateClickableCache } from 'blecsd/core';
 
+const world = createWorld();
+const cache = createClickableCache();
 updateClickableCache(world, cache);
 ```
 
@@ -73,10 +77,12 @@ updateClickableCache(world, cache);
 
 Gets all clickable/hoverable entities sorted by z-index.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getClickableEntities } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createClickableCache, getClickableEntities } from 'blecsd/core';
 
+const world = createWorld();
+const cache = createClickableCache();
 const entities = getClickableEntities(world, cache);
 // Returns entities sorted by z-index (highest first)
 ```
@@ -87,10 +93,12 @@ const entities = getClickableEntities(world, cache);
 
 Returns the topmost entity at a point.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hitTest, createClickableCache } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { hitTest, createClickableCache } from 'blecsd/core';
 
+const world = createWorld();
+const mouseX = 10; const mouseY = 10;
 const cache = createClickableCache();
 
 // Find topmost clickable entity under mouse
@@ -104,6 +112,12 @@ if (entity !== null) {
 **Options:**
 
 ```typescript
+import { createWorld } from 'blecsd/core';
+import { hitTest, createClickableCache } from 'blecsd/core';
+
+const world = createWorld();
+const x = 10; const y = 10;
+const cache = createClickableCache();
 hitTest(world, x, y, cache, {
   useCachedPositions: true,  // Use position cache (default)
   clickableOnly: true,        // Only test clickables (default)
@@ -116,10 +130,12 @@ hitTest(world, x, y, cache, {
 
 Returns all entities at a point, sorted by z-index.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hitTestAll, createClickableCache } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { hitTestAll, createClickableCache } from 'blecsd/core';
 
+const world = createWorld();
+const mouseX = 10; const mouseY = 10;
 const cache = createClickableCache();
 
 const entities = hitTestAll(world, mouseX, mouseY, cache);
@@ -133,10 +149,12 @@ for (const eid of entities) {
 
 Returns detailed results including z-index values.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hitTestDetailed, createClickableCache } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { hitTestDetailed, createClickableCache } from 'blecsd/core';
 
+const world = createWorld();
+const mouseX = 10; const mouseY = 10;
 const cache = createClickableCache();
 
 const results = hitTestDetailed(world, mouseX, mouseY, cache);
@@ -152,10 +170,13 @@ for (const { entity, zIndex } of results) {
 
 Check if any clickable/hoverable entity is at a point.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { hasClickableAt, hasHoverableAt } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createClickableCache, hasClickableAt, hasHoverableAt } from 'blecsd/core';
 
+const world = createWorld();
+const x = 10; const y = 10;
+const cache = createClickableCache();
 if (hasClickableAt(world, x, y, cache)) {
   // Show pointer cursor
 }
@@ -169,10 +190,13 @@ if (hasHoverableAt(world, x, y, cache)) {
 
 Get the topmost clickable/hoverable at a point.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getClickableAt, getHoverableAt } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createClickableCache, getClickableAt, getHoverableAt } from 'blecsd/core';
 
+const world = createWorld();
+const mouseX = 10; const mouseY = 10;
+const cache = createClickableCache();
 const clickable = getClickableAt(world, mouseX, mouseY, cache);
 const hoverable = getHoverableAt(world, mouseX, mouseY, cache);
 ```
@@ -181,10 +205,13 @@ const hoverable = getHoverableAt(world, mouseX, mouseY, cache);
 
 Get all clickables/hoverables at a point.
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getAllClickablesAt, getAllHoverablesAt } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createClickableCache, getAllClickablesAt, getAllHoverablesAt } from 'blecsd/core';
 
+const world = createWorld();
+const x = 10; const y = 10;
+const cache = createClickableCache();
 const clickables = getAllClickablesAt(world, x, y, cache);
 const hoverables = getAllHoverablesAt(world, x, y, cache);
 ```
@@ -223,31 +250,27 @@ interface HitTestOptions {
 
 ## Integration with Input System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createClickableCache,
-  hitTest,
-  invalidateClickableCache,
-  setHovered,
-  setPressed,
-} from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import { createClickableCache, hitTest, invalidateClickableCache } from 'blecsd/core';
+import { setPressed } from 'blecsd/components';
 
+const world = createWorld();
 // Create cache once
 const clickableCache = createClickableCache();
 
 // In input system
-function handleMouseMove(world: World, x: number, y: number): void {
+function handleMouseMove(x: number, y: number): void {
   // Find hoverable entity under cursor
   const entity = hitTest(world, x, y, clickableCache, {
     hoverableOnly: true,
     clickableOnly: false,
   });
-
   // Update hover states...
+  if (entity !== null) console.log('hovering entity', entity);
 }
 
-function handleMouseDown(world: World, x: number, y: number): void {
+function handleMouseDown(x: number, y: number): void {
   const entity = hitTest(world, x, y, clickableCache);
 
   if (entity !== null) {
@@ -259,6 +282,10 @@ function handleMouseDown(world: World, x: number, y: number): void {
 function onEntityAdded(): void {
   invalidateClickableCache(clickableCache);
 }
+
+handleMouseMove(10, 10);
+handleMouseDown(10, 10);
+onEntityAdded();
 ```
 
 ## Z-Order Priority
@@ -266,25 +293,21 @@ function onEntityAdded(): void {
 Higher z-index entities always receive events first:
 
 ```typescript
-// Background at z=0
-const background = createBox(world, { zIndex: 0 });
+import { createWorld } from 'blecsd/core';
+import { createClickableCache, hitTest, updateClickableCache } from 'blecsd/core';
 
-// Dialog at z=100
-const dialog = createBox(world, { zIndex: 100 });
-
-// Button in dialog at z=101
-const button = createBox(world, { zIndex: 101 });
-
+const world = createWorld();
 const cache = createClickableCache();
 
-// Click on button area returns button (highest z)
-hitTest(world, 50, 50, cache); // Returns button
+// After entities are set up with z-index values via setZOrder/setClickable...
+// (entities with higher z-index are returned first in hit tests)
+updateClickableCache(world, cache);
 
-// Click on dialog returns dialog
-hitTest(world, 30, 30, cache); // Returns dialog
-
-// Click on background returns background
-hitTest(world, 5, 5, cache);   // Returns background
+// Click at various positions returns topmost entity at that point
+const top1 = hitTest(world, 50, 50, cache);
+const top2 = hitTest(world, 30, 30, cache);
+const top3 = hitTest(world, 5, 5, cache);
+console.log(top1, top2, top3);
 ```
 
 ## Best Practices

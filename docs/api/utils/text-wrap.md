@@ -33,9 +33,8 @@ function wrapText(text: string, options: WrapOptions): string[]
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { wrapText } from 'blecsd';
+import { wrapText } from 'blecsd/utils';
 
 const lines = wrapText('Hello world, this is a test', {
   width: 15,
@@ -55,9 +54,8 @@ function wordWrap(text: string, width: number): string[]
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { wordWrap } from 'blecsd';
+import { wordWrap } from 'blecsd/utils';
 
 const lines = wordWrap('The quick brown fox jumps over the lazy dog', 20);
 // ["The quick brown fox", "jumps over the lazy", "dog"]
@@ -73,9 +71,8 @@ function alignLine(line: string, width: number, align: TextAlign): string
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { alignLine } from 'blecsd';
+import { alignLine } from 'blecsd/utils';
 
 console.log(alignLine('Hello', 10, 'left'));   // "Hello     "
 console.log(alignLine('Hello', 10, 'center')); // "  Hello   "
@@ -96,9 +93,8 @@ function truncate(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { truncate } from 'blecsd';
+import { truncate } from 'blecsd/utils';
 
 console.log(truncate('Hello World', 8));        // "Hello W…"
 console.log(truncate('Hello World', 8, '...'));  // "Hello..."
@@ -119,9 +115,8 @@ function padHeight(
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { padHeight } from 'blecsd';
+import { padHeight } from 'blecsd/utils';
 
 const lines = padHeight(['Hello'], 3, 10, 'middle');
 // ["          ", "Hello     ", "          "]
@@ -137,9 +132,8 @@ function getVisibleWidth(text: string): number
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { getVisibleWidth } from 'blecsd';
+import { getVisibleWidth } from 'blecsd/utils';
 
 console.log(getVisibleWidth('Hello'));              // 5
 console.log(getVisibleWidth('\x1b[31mHello\x1b[0m')); // 5 (ANSI not counted)
@@ -155,9 +149,8 @@ function stripAnsi(text: string): string
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { stripAnsi } from 'blecsd';
+import { stripAnsi } from 'blecsd/terminal';
 
 const plain = stripAnsi('\x1b[31mRed\x1b[0m Text');
 console.log(plain); // "Red Text"
@@ -167,9 +160,9 @@ console.log(plain); // "Red Text"
 
 ### Text Box with Wrapping
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createCellBuffer, renderBox, renderText, wrapText, BOX_ROUNDED } from 'blecsd';
+import { createCellBuffer, renderBox, wrapText, BOX_ROUNDED } from 'blecsd/utils';
+import { renderText } from 'blecsd/systems';
 
 const buffer = createCellBuffer(40, 10);
 const text = 'This is a long paragraph that needs to be wrapped to fit inside the box.';
@@ -186,9 +179,8 @@ for (let i = 0; i < lines.length && i < 8; i++) {
 
 ### Centered Multi-line Text
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { wrapText, padHeight } from 'blecsd';
+import { wrapText, padHeight } from 'blecsd/utils';
 
 const text = 'Welcome to the game!';
 const lines = wrapText(text, { width: 30, align: 'center' });
@@ -199,9 +191,8 @@ const padded = padHeight(lines, 5, 30, 'middle');
 
 ### Handling Colored Text
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { wrapText, getVisibleWidth } from 'blecsd';
+import { wrapText, getVisibleWidth } from 'blecsd/utils';
 
 const coloredText = '\x1b[1m\x1b[31mWarning:\x1b[0m This is important!';
 
@@ -215,9 +206,8 @@ const lines = wrapText(coloredText, { width: 15, align: 'left' });
 
 ### No-wrap Mode with Truncation
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { wrapText } from 'blecsd';
+import { wrapText } from 'blecsd/utils';
 
 const lines = wrapText('This is a very long line that should be truncated', {
   width: 20,

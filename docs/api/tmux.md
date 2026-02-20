@@ -31,7 +31,6 @@ function wrap(sequence: string): string
 **Returns:** The wrapped sequence for tmux pass-through
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title } from 'blecsd/terminal';
 
@@ -57,7 +56,6 @@ function unwrap(wrapped: string): string | null
 **Returns:** The original sequence, or `null` if not a valid tmux pass-through
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -76,10 +74,10 @@ function isWrapped(sequence: string): boolean
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { tmux } from 'blecsd/terminal';
+import { tmux, title } from 'blecsd/terminal';
 
+const sequence = title.set('My App');
 if (tmux.isWrapped(sequence)) {
   // Already wrapped, use as-is
   process.stdout.write(sequence);
@@ -104,7 +102,6 @@ function wrapIf(sequence: string, inTmux: boolean): string
 **Returns:** The sequence, wrapped if in tmux and not already wrapped
 
 **Example:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title, isTmux } from 'blecsd/terminal';
 
@@ -124,7 +121,6 @@ function end(): string    // Returns '\x1b\\'
 
 **Example:**
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -132,6 +128,7 @@ import { tmux } from 'blecsd/terminal';
 process.stdout.write(tmux.begin());
 
 // Write content with doubled ESCs
+const mySequence = '\x1b]0;Title\x07';
 const content = mySequence.replace(/\x1b/g, '\x1b\x1b');
 process.stdout.write(content);
 
@@ -152,15 +149,14 @@ const PT_START = '\x1bPtmux;'
 
 ### Basic Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { tmux, title, cursor, isTmux } from 'blecsd/terminal';
+import { tmux, title, cursorSeq, isTmux } from 'blecsd/terminal';
 
 // Check if running in tmux
 const inTmux = isTmux();
 
 // Build the sequence
-const seq = cursor.hide() + title.set('My App');
+const seq = cursorSeq.hide() + title.set('My App');
 
 // Wrap if necessary
 const output = inTmux ? tmux.wrap(seq) : seq;
@@ -170,7 +166,6 @@ process.stdout.write(output);
 
 ### With wrapIf Helper
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux, title, isTmux } from 'blecsd/terminal';
 
@@ -181,14 +176,13 @@ process.stdout.write(seq);
 
 ### Combining Multiple Sequences
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { tmux, title, cursor, screen, isTmux } from 'blecsd/terminal';
+import { tmux, title, cursorSeq, screenSeq, isTmux } from 'blecsd/terminal';
 
 // Combine all sequences first, then wrap once
 const sequences = [
-  cursor.hide(),
-  screen.alternateBuffer.enter(),
+  cursorSeq.hide(),
+  screenSeq.alternateOn(),
   title.set('My App'),
 ].join('');
 
@@ -198,7 +192,6 @@ process.stdout.write(output);
 
 ### Round-Trip Verification
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { tmux } from 'blecsd/terminal';
 
@@ -224,7 +217,6 @@ Use tmux pass-through for sequences that:
 
 Use `isTmux()` from the detection module to check if running inside tmux:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { isTmux } from 'blecsd/terminal';
 

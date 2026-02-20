@@ -42,6 +42,7 @@ This guide helps you transition from the original blessed.js library to blECSd's
 
 ### blessed.js: Object-Oriented
 
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 // OLD: blessed.js (OOP)
 const blessed = require('blessed');
@@ -79,23 +80,23 @@ screen.render();
 
 ### blECSd: Entity Component System
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // NEW: blECSd (ECS)
 import {
   createWorld,
   addEntity,
   addComponent,
-  setPosition,
-  setDimensions,
-  setContent,
-  setBorder,
-  Renderable,
   createGameLoop,
   LoopPhase,
-  renderSystem,
-  outputSystem,
-} from 'blecsd';
+} from 'blecsd/core';
+import {
+  setPosition,
+  setDimensions,
+  setBorder,
+  Renderable,
+} from 'blecsd/components';
+import { setText } from 'blecsd';
+import { renderSystem, outputSystem } from 'blecsd/systems';
 
 // YOU create the world (no global singleton)
 const world = createWorld();
@@ -107,7 +108,7 @@ const box = addEntity(world);
 setPosition(world, box, 40, 12);  // Absolute position
 setDimensions(world, box, 40, 12);
 setText(world, box, 'Hello world!');
-setBorder(world, box, { style: 'line', color: 0xf0f0f0 });
+setBorder(world, box, { style: 'single', color: 0xf0f0f0 });
 addComponent(world, box, Renderable);
 Renderable.fg[box] = 0xffffff;
 Renderable.bg[box] = 0x0000ff;
@@ -117,6 +118,7 @@ const loop = createGameLoop(world, { targetFPS: 60 });
 loop.registerSystem(LoopPhase.RENDER, renderSystem);
 loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 loop.start();
+loop.stop();
 ```
 
 ### Core Concept Mappings
@@ -265,6 +267,7 @@ Start with the simplest screen, then move to complex ones.
 ### Pattern 1: Simple Box
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const box = blessed.box({
   parent: screen,
@@ -286,17 +289,10 @@ screen.render();
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import {
-  createWorld,
-  addEntity,
-  addComponent,
-  setPosition,
-  setDimensions,
-  renderSystem,
-  outputSystem,
-} from 'blecsd';
+import { createWorld, addEntity, addComponent } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+import { renderSystem, outputSystem } from 'blecsd/systems';
 import { setText, setBorder } from 'blecsd/components';
 import { createGameLoop, LoopPhase } from 'blecsd/core';
 
@@ -317,6 +313,7 @@ loop.start();
 ### Pattern 2: Interactive List
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const list = blessed.list({
   parent: screen,
@@ -343,61 +340,59 @@ screen.render();
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
-  addEntity,
-  setPosition,
-  createList,
   createGameLoop,
   LoopPhase,
+} from 'blecsd/core';
+import { createListEntity } from 'blecsd';
+import {
   inputSystem,
   focusSystem,
   renderSystem,
   outputSystem,
-  parseKeySequence,
   queueKeyEvent,
-} from 'blecsd';
+  getInputEventBus,
+} from 'blecsd/systems';
 
 const world = createWorld();
-const listEntity = addEntity(world);
 
-setPosition(world, listEntity, 2, 2);
-
-const list = createList(world, listEntity, {
+const listEntity = createListEntity(world, {
+  x: 2,
+  y: 2,
   width: 30,
   height: 10,
   items: ['Item 1', 'Item 2', 'Item 3'],
 });
+console.log('List entity ID:', listEntity);
 
-// Listen for selection events
-list.on('select', (event) => {
-  console.log(`Selected: ${event.item} (${event.index})`);
-});
-
-// Setup input
-process.stdin.setRawMode(true);
-process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeySequence(buffer);
-  if (keyEvent) {
-    queueKeyEvent(keyEvent);
+// Listen for selection via event bus
+const inputBus = getInputEventBus();
+inputBus.on('select', (event: { entity: number; index: number; item: string }) => {
+  if (event.entity === listEntity) {
+    console.log(`Selected: ${event.item} (${event.index})`);
   }
 });
 
-// Setup game loop
-const loop = createGameLoop(world, { targetFPS: 60 });
-loop.registerSystem(LoopPhase.INPUT, inputSystem);
-loop.registerSystem(LoopPhase.UPDATE, focusSystem);
-loop.registerSystem(LoopPhase.RENDER, renderSystem);
-loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
+// Queue key events (in a real app, read from process.stdin)
+queueKeyEvent({ name: 'j', sequence: 'j', ctrl: false, meta: false, shift: false, full: 'j' });
 
-loop.start();
+// Setup game loop
+const loop2 = createGameLoop(world, { targetFPS: 60 });
+loop2.registerInputSystem(inputSystem);
+loop2.registerSystem(LoopPhase.UPDATE, focusSystem);
+loop2.registerSystem(LoopPhase.RENDER, renderSystem);
+loop2.registerSystem(LoopPhase.POST_RENDER, outputSystem);
+
+loop2.start();
+loop2.stop();
 ```
 
 ### Pattern 3: Form with Input
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const form = blessed.form({
   parent: screen,
@@ -439,68 +434,64 @@ screen.render();
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
-  addEntity,
-  setPosition,
-  createTextareaEntity,
-  createButton,
-  createBox,
   createGameLoop,
   LoopPhase,
+} from 'blecsd/core';
+import { createBoxEntity, createButtonEntity } from 'blecsd';
+import {
   inputSystem,
   focusSystem,
   renderSystem,
   outputSystem,
-} from 'blecsd';
+  getInputEventBus,
+} from 'blecsd/systems';
 
 const world = createWorld();
 
 // Container
-const formContainer = addEntity(world);
-setPosition(world, formContainer, 2, 2);
-createBox(world, formContainer, {
+const formContainer = createBoxEntity(world, {
+  x: 2,
+  y: 2,
   width: 40,
   height: 12,
-  border: { style: 'single' },
 });
-
-// Name input
-const nameInputEntity = createTextareaEntity(world, {
-  width: 30,
-  placeholder: 'Enter name...',
-});
-setPosition(world, nameInputEntity, 3, 3);
+console.log('Form container entity:', formContainer);
 
 // Submit button
-const submitButtonEntity = addEntity(world);
-setPosition(world, submitButtonEntity, 3, 6);
-const submitButton = createButton(world, submitButtonEntity, {
+const submitButtonEntity = createButtonEntity(world, {
   label: 'Submit',
+  x: 3,
+  y: 6,
   width: 10,
   height: 3,
 });
 
-// Handle submit
-submitButton.onClick(() => {
-  console.log('Form submitted');
+// Handle submit via event bus
+const inputBus2 = getInputEventBus();
+inputBus2.on('activate', (event: { entity: number }) => {
+  if (event.entity === submitButtonEntity) {
+    console.log('Form submitted');
+  }
 });
 
 // Setup game loop
-const loop = createGameLoop(world, { targetFPS: 60 });
-loop.registerSystem(LoopPhase.INPUT, inputSystem);
-loop.registerSystem(LoopPhase.UPDATE, focusSystem);
-loop.registerSystem(LoopPhase.RENDER, renderSystem);
-loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
+const loop3 = createGameLoop(world, { targetFPS: 60 });
+loop3.registerInputSystem(inputSystem);
+loop3.registerSystem(LoopPhase.UPDATE, focusSystem);
+loop3.registerSystem(LoopPhase.RENDER, renderSystem);
+loop3.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
-loop.start();
+loop3.start();
+loop3.stop();
 ```
 
 ### Pattern 4: Updating Content
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 // Mutate directly
 box.setContent('New content');
@@ -509,16 +500,17 @@ screen.render();  // Manual render required
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Update component data
-import { createWorld, addEntity } from 'blecsd';
-import { setText } from 'blecsd/components';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setText } from 'blecsd';
+import { markDirty } from 'blecsd/components';
 
 const world = createWorld();
 const box = addEntity(world);
 
 setText(world, box, 'New content');
+markDirty(world, box);
 // Scheduler automatically re-renders dirty entities
 ```
 
@@ -535,10 +527,10 @@ MyWidget.prototype._render = function() {
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Create custom render system (clean)
-import { createWorld, type World } from 'blecsd';
+import { createWorld } from 'blecsd/core';
+import type { World } from 'blecsd/core';
 import { query, createGameLoop, LoopPhase } from 'blecsd/core';
 import { Position, Renderable } from 'blecsd/components';
 
@@ -550,6 +542,7 @@ function customRenderSystem(world: World): World {
     const x = Position.x[eid];
     const y = Position.y[eid];
     // ... render at (x, y)
+    console.log(`Render entity ${eid} at (${x}, ${y})`);
   }
 
   return world;
@@ -557,9 +550,10 @@ function customRenderSystem(world: World): World {
 
 // Register it
 const world = createWorld();
-const loop = createGameLoop(world, { targetFPS: 60 });
-loop.registerSystem(LoopPhase.RENDER, customRenderSystem);
-loop.start();
+const loop4 = createGameLoop(world, { targetFPS: 60 });
+loop4.registerSystem(LoopPhase.RENDER, customRenderSystem);
+loop4.start();
+loop4.stop();
 ```
 
 ## Widget Migration
@@ -567,6 +561,7 @@ loop.start();
 ### Box → createBox
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const box = blessed.box({
   parent: screen,
@@ -584,25 +579,26 @@ const box = blessed.box({
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createBox } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createBoxEntity } from 'blecsd';
+import { setText } from 'blecsd';
 
-const boxEntity = addEntity(world);
-setPosition(world, boxEntity, 10, 5);
-
-createBox(world, boxEntity, {
+const world = createWorld();
+const boxEntity = createBoxEntity(world, {
+  x: 10,
+  y: 5,
   width: 20,
   height: 5,
-  content: 'Box content',
-  border: { style: 'single', color: 0x00ffff },
   fg: 0xffffff,
 });
+setText(world, boxEntity, 'Box content');
 ```
 
 ### List → createList
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const list = blessed.list({
   parent: screen,
@@ -621,28 +617,33 @@ list.on('select', (item, index) => {
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createList } from 'blecsd/widgets';
+import { createWorld } from 'blecsd/core';
+import { createListEntity } from 'blecsd';
+import { getInputEventBus } from 'blecsd/systems';
 
-const listEntity = addEntity(world);
-setPosition(world, listEntity, 2, 2);
-
-const list = createList(world, listEntity, {
+const world = createWorld();
+const listEid = createListEntity(world, {
+  x: 2,
+  y: 2,
   width: 30,
   height: 10,
   items: ['One', 'Two', 'Three'],
-  selectedBg: 0x0000ff,
 });
 
-list.on('select', (event) => {
-  console.log('Selected:', event.index);
+// Listen for selection via event bus
+const selBus = getInputEventBus();
+selBus.on('select', (event: { entity: number; index: number }) => {
+  if (event.entity === listEid) {
+    console.log('Selected:', event.index);
+  }
 });
 ```
 
 ### TextBox → createTextareaEntity
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const input = blessed.textbox({
   parent: screen,
@@ -659,18 +660,21 @@ input.on('submit', (value) => {
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-const inputEntity = createTextareaEntity(world, {
-  width: 20,
-  placeholder: 'Type here...',
-});
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+
+const world = createWorld();
+// Text input entity - configure with position and dimensions components
+const inputEntity = addEntity(world);
 setPosition(world, inputEntity, 2, 5);
+setDimensions(world, inputEntity, 20, 1);
 ```
 
 ### Table → createTable
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const table = blessed.table({
   parent: screen,
@@ -683,22 +687,16 @@ const table = blessed.table({
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createTable } from 'blecsd/widgets';
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
 
+const world = createWorld();
+// Table entity - data is managed via components
 const tableEntity = addEntity(world);
 setPosition(world, tableEntity, 2, 2);
-
-const table = createTable(world, tableEntity, {
-  width: 40,
-  height: 10,
-  headers: ['Name', 'Age'],
-  data: [
-    ['Alice', '30'],
-    ['Bob', '25']
-  ],
-});
+setDimensions(world, tableEntity, 40, 10);
+// Data rows are entities; headers and cell values are configured per component
 ```
 
 ## Event System Migration
@@ -706,6 +704,7 @@ const table = createTable(world, tableEntity, {
 ### Event Listeners
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 // String-based events (no type safety)
 element.on('focus', () => {
@@ -724,24 +723,23 @@ element.on('click', (data) => {
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Typed event buses
-import { getFocusEventBus, getInputEventBus } from 'blecsd';
+import { getFocusEventBus, getInputEventBus } from 'blecsd/systems';
 
 const focusBus = getFocusEventBus();
-focusBus.on('focus', (event) => {
+focusBus.on('focus', (event: { entity: number }) => {
   console.log('Focused entity:', event.entity);
 });
 
-const inputBus = getInputEventBus();
-inputBus.on('keypress', (event) => {
+const inputBus3 = getInputEventBus();
+inputBus3.on('keypress', (event: { name: string; ctrl: boolean }) => {
   if (event.name === 'enter') {
     console.log('Enter pressed');
   }
 });
 
-inputBus.on('click', (event) => {
+inputBus3.on('click', (event: { entity: number; x: number; y: number }) => {
   console.log('Clicked entity:', event.entity);
   console.log('Position:', event.x, event.y);
 });
@@ -750,6 +748,7 @@ inputBus.on('click', (event) => {
 ### Custom Events
 
 **blessed.js:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 // Custom events on elements
 element.on('myCustomEvent', (data) => {
@@ -761,7 +760,6 @@ element.emit('myCustomEvent', { value: 42 });
 ```
 
 **blECSd:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 // Create typed event bus
 import { createEventBus } from 'blecsd/core';
@@ -786,6 +784,7 @@ myBus.emit('customEvent', { value: 42 });
 ### No Global Screen
 
 **blessed.js had a global screen:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const screen = blessed.screen();  // Global singleton
 // All widgets implicitly know about screen
@@ -793,7 +792,11 @@ const screen = blessed.screen();  // Global singleton
 
 **blECSd requires explicit world:**
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition } from 'blecsd/components';
+
 const world = createWorld();  // NOT global
+const entity = addEntity(world);
 // Must pass world to every function
 setPosition(world, entity, 10, 5);
 ```
@@ -803,13 +806,19 @@ setPosition(world, entity, 10, 5);
 ### No Automatic Rendering
 
 **blessed.js auto-renders on mutations:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 box.setContent('New');  // Implicitly calls screen.render()
 ```
 
 **blECSd requires explicit dirty tracking:**
-<!-- blecsd-doccheck:ignore -->
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setText } from 'blecsd';
+import { markDirty } from 'blecsd/components';
+
+const world = createWorld();
+const box = addEntity(world);
 setText(world, box, 'New');
 markDirty(world, box);  // Must mark dirty
 // Scheduler auto-renders dirty entities
@@ -820,6 +829,7 @@ markDirty(world, box);  // Must mark dirty
 ### No String-Based Positioning
 
 **blessed.js supports string positions:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const box = blessed.box({
   top: 'center',      // String
@@ -830,12 +840,22 @@ const box = blessed.box({
 
 **blECSd uses absolute numbers:**
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+
+const world = createWorld();
+const box = addEntity(world);
+const terminalWidth = process.stdout.columns ?? 80;
+const terminalHeight = process.stdout.rows ?? 24;
+const boxWidth = 40;
+const boxHeight = 10;
+
 // Calculate explicitly
 const x = Math.floor(terminalWidth * 0.5);
 const y = Math.floor((terminalHeight - boxHeight) / 2);
 
 setPosition(world, box, x, y);
-setDimensions(world, box, width, height);
+setDimensions(world, box, boxWidth, boxHeight);
 ```
 
 **Migration:** Calculate positions manually or create helper functions.
@@ -843,6 +863,7 @@ setDimensions(world, box, width, height);
 ### No Tags/Markup
 
 **blessed.js supports markup:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 box.setContent('Hello {bold}world{/bold}!');
 element.tags = true;
@@ -850,6 +871,11 @@ element.tags = true;
 
 **blECSd does NOT support markup:**
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setText } from 'blecsd';
+
+const world = createWorld();
+const box = addEntity(world);
 // Use explicit styling instead
 setText(world, box, 'Hello world!');
 // Apply styles via components, not markup
@@ -860,6 +886,7 @@ setText(world, box, 'Hello world!');
 ### No Method Chaining
 
 **blessed.js supports chaining:**
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 box.setContent('Hello')
    .show()
@@ -868,6 +895,12 @@ box.setContent('Hello')
 
 **blECSd uses separate calls:**
 ```typescript
+import { createWorld, addEntity } from 'blecsd/core';
+import { setText } from 'blecsd';
+import { Renderable, focusEntity } from 'blecsd/components';
+
+const world = createWorld();
+const box = addEntity(world);
 setText(world, box, 'Hello');
 Renderable.visible[box] = 1;  // show
 focusEntity(world, box);
@@ -891,18 +924,19 @@ npm install blecsd
 
 Create initial structure:
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-// src/world.ts
-import { createWorld } from 'blecsd';
+// In your app setup (e.g., src/app.ts)
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
 
-export const world = createWorld();
+// Create the shared world (export this to other modules)
+const world = createWorld();
 
-// src/loop.ts
-import { createGameLoop, LoopPhase } from 'blecsd/core';
-import { world } from './world';
+// Create the game loop
+const loop = createGameLoop(world, { targetFPS: 60 });
 
-export const loop = createGameLoop(world, { targetFPS: 60 });
+// Register systems by phase before calling loop.start()
+// loop.registerSystem(LoopPhase.UPDATE, mySystem);
+console.log('World and loop ready. Phase count:', Object.keys(LoopPhase).length / 2);
 ```
 
 ### Phase 3: Port Simple Screens
@@ -970,6 +1004,7 @@ A: No. Port them to blECSd patterns or create custom widgets.
 
 ### Before (blessed.js)
 
+<!-- blecsd-doccheck:ignore -->
 ```javascript
 const blessed = require('blessed');
 
@@ -1035,29 +1070,31 @@ screen.render();
 
 ### After (blECSd)
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   createWorld,
   addEntity,
   addComponent,
-  setPosition,
-  setDimensions,
-  setContent,
-  Renderable,
-  setBorder,
-  createList,
   createGameLoop,
   LoopPhase,
+} from 'blecsd/core';
+import {
+  setPosition,
+  setDimensions,
+  setBorder,
+  Renderable,
+} from 'blecsd/components';
+import { createListEntity } from 'blecsd';
+import { setText } from 'blecsd';
+import {
   inputSystem,
   focusSystem,
   layoutSystem,
   renderSystem,
   outputSystem,
-  parseKeySequence,
   queueKeyEvent,
   getInputEventBus,
-} from 'blecsd';
+} from 'blecsd/systems';
 
 const world = createWorld();
 
@@ -1075,14 +1112,12 @@ Renderable.fg[header] = 0xffffff;
 Renderable.bg[header] = 0x0000ff;
 
 // List
-const listEntity = addEntity(world);
-setPosition(world, listEntity, 0, 3);
-
-const list = createList(world, listEntity, {
+const listEid2 = createListEntity(world, {
+  x: 0,
+  y: 3,
   width: Math.floor(termWidth / 2),
   height: termHeight - 3,
   items: ['Item 1', 'Item 2', 'Item 3'],
-  selectedBg: 0x00ff00,
 });
 
 // Detail pane
@@ -1092,41 +1127,38 @@ setDimensions(world, detail, Math.floor(termWidth / 2), termHeight - 3);
 setText(world, detail, 'Select an item...');
 setBorder(world, detail, { style: 'single' });
 
-// Handle selection
-list.on('select', (event) => {
-  setText(world, detail, `Selected: ${event.item}`);
-});
-
-// Setup input
-process.stdin.setRawMode(true);
-process.stdin.on('data', (buffer) => {
-  const keyEvent = parseKeySequence(buffer);
-  if (keyEvent) {
-    queueKeyEvent(keyEvent);
+// Handle selection via event bus
+const selectionBus = getInputEventBus();
+selectionBus.on('select', (event: { entity: number; item: string }) => {
+  if (event.entity === listEid2) {
+    setText(world, detail, `Selected: ${event.item}`);
   }
 });
 
 // Handle quit keys
-const inputBus = getInputEventBus();
-inputBus.on('keypress', (event) => {
+selectionBus.on('keypress', (event: { name: string; ctrl: boolean }) => {
   if (
     event.name === 'escape' ||
     event.name === 'q' ||
     (event.name === 'c' && event.ctrl)
   ) {
-    process.exit(0);
+    // process.exit(0) in real app
   }
 });
 
-// Setup game loop
-const loop = createGameLoop(world, { targetFPS: 60 });
-loop.registerSystem(LoopPhase.INPUT, inputSystem);
-loop.registerSystem(LoopPhase.UPDATE, focusSystem);
-loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
-loop.registerSystem(LoopPhase.RENDER, renderSystem);
-loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
+// Queue key events (in real app, read from process.stdin via parseKeyBuffer)
+queueKeyEvent({ name: 'j', sequence: 'j', ctrl: false, meta: false, shift: false, full: 'j' });
 
-loop.start();
+// Setup game loop
+const loop5 = createGameLoop(world, { targetFPS: 60 });
+loop5.registerInputSystem(inputSystem);
+loop5.registerSystem(LoopPhase.UPDATE, focusSystem);
+loop5.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+loop5.registerSystem(LoopPhase.RENDER, renderSystem);
+loop5.registerSystem(LoopPhase.POST_RENDER, outputSystem);
+
+loop5.start();
+loop5.stop();
 ```
 
 ## Summary

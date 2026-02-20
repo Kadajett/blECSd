@@ -4,7 +4,6 @@ Cursor/caret navigation for large documents with O(log n) line lookup via binary
 
 ## Import
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
   buildLineIndex,
@@ -14,7 +13,6 @@ import {
   createCursor,
   createViewport,
   createNavConfig,
-  ensureCursorVisible,
   clampCursor,
   moveCursorUp,
   moveCursorDown,
@@ -25,7 +23,8 @@ import {
   pageDown,
   goToStart,
   goToEnd,
-} from 'blecsd';
+  ensureCursorVisible,
+} from 'blecsd/utils';
 ```
 
 ## Types
@@ -248,12 +247,15 @@ function goToEnd(viewport: ViewportState, totalLines: number, config?: Partial<C
 
 ## Usage
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
 import {
-  buildLineIndex, lineForOffset, createCursor, createViewport,
-  ensureCursorVisible, goToLine,
-} from 'blecsd';
+  buildLineIndex,
+  lineForOffset,
+  createCursor,
+  createViewport,
+  goToLine,
+  ensureCursorVisible,
+} from 'blecsd/utils';
 
 // Build a line index for fast offset-to-line lookups
 const index = buildLineIndex('hello\nworld\nfoo');

@@ -64,6 +64,10 @@
     "./text": {
       "import": "./dist/text/index.js",
       "types": "./dist/text/index.d.ts"
+    },
+    "./testing": {
+      "import": "./dist/testing/index.js",
+      "types": "./dist/testing/index.d.ts"
     }
   },
   "typesVersions": {
@@ -106,6 +110,9 @@
       ],
       "text": [
         "dist/text/index.d.ts"
+      ],
+      "testing": [
+        "dist/testing/index.d.ts"
       ]
     }
   },

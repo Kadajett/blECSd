@@ -1,34 +1,34 @@
 # Screen Buffer
 
-The ScreenBuffer class manages alternate screen buffer state and ensures proper cleanup on exit.
+The `createScreenBuffer` factory manages alternate screen buffer state and ensures proper cleanup on exit.
 
 ## Overview
 
 ScreenBuffer handles the alternate screen buffer mode used by full-screen terminal applications. It automatically installs signal handlers to ensure the terminal is properly restored when the program exits, even on crashes or interrupts.
 
-**Note:** This module is internal and not exported from the main package. It is used internally by the Program class.
-
 ## Quick Start
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ScreenBuffer } from 'blecsd/terminal';
+import { createScreenBuffer } from 'blecsd/terminal';
 
-const buffer = new ScreenBuffer(process.stdout);
+// createScreenBuffer requires a writable TTY stream
+if (process.stdout.isTTY) {
+  const buffer = createScreenBuffer(process.stdout);
 
-// Enter alternate screen (saves current screen content)
-buffer.enterAlternateScreen();
+  // Enter alternate screen (saves current screen content)
+  buffer.enterAlternateScreen();
 
-// ... do work in alternate screen ...
+  // ... do work in alternate screen ...
 
-// Exit alternate screen (restores original content)
-buffer.exitAlternateScreen();
+  // Exit alternate screen (restores original content)
+  buffer.exitAlternateScreen();
+}
 ```
 
-## Constructor
+## Factory Function
 
 ```typescript
-new ScreenBuffer(output: Writable)
+// function createScreenBuffer(output: Writable): ScreenBuffer
 ```
 
 **Parameters:**
@@ -47,7 +47,7 @@ new ScreenBuffer(output: Writable)
 Enter alternate screen buffer. Installs cleanup handlers to ensure restoration on exit.
 
 ```typescript
-enterAlternateScreen(): void
+// enterAlternateScreen(): void
 ```
 
 When called:
@@ -55,27 +55,12 @@ When called:
 - Switches to an empty alternate buffer
 - Installs signal handlers for cleanup
 
-**Example:**
-
-```typescript
-buffer.enterAlternateScreen();
-// Screen content is saved, now using alternate buffer
-// Original content is preserved and will be restored on exit
-```
-
 ### exitAlternateScreen()
 
 Exit alternate screen buffer and restore the original screen content.
 
 ```typescript
-exitAlternateScreen(): void
-```
-
-**Example:**
-
-```typescript
-buffer.exitAlternateScreen();
-// Original screen content is restored
+// exitAlternateScreen(): void
 ```
 
 ### onCleanup()
@@ -83,7 +68,7 @@ buffer.exitAlternateScreen();
 Register a cleanup callback to run when exiting alternate screen.
 
 ```typescript
-onCleanup(callback: CleanupCallback): () => void
+// onCleanup(callback: CleanupCallback): () => void
 ```
 
 **Parameters:**
@@ -91,27 +76,12 @@ onCleanup(callback: CleanupCallback): () => void
 
 **Returns:** Unsubscribe function
 
-**Example:**
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-const unsubscribe = buffer.onCleanup(() => {
-  // Restore cursor visibility
-  process.stdout.write(cursor.show());
-  // Reset colors
-  process.stdout.write(style.reset());
-});
-
-// Later, to remove the handler
-unsubscribe();
-```
-
 ### cleanup()
 
 Perform cleanup and exit alternate screen. Called automatically on signals and process exit.
 
 ```typescript
-cleanup(): void
+// cleanup(): void
 ```
 
 This method:
@@ -123,17 +93,10 @@ This method:
 Destroy the screen buffer and remove signal handlers.
 
 ```typescript
-destroy(): void
+// destroy(): void
 ```
 
 Call this when done with the buffer to clean up resources.
-
-**Example:**
-
-```typescript
-// When application exits normally
-buffer.destroy();
-```
 
 ## Types
 
@@ -141,6 +104,19 @@ buffer.destroy();
 
 ```typescript
 type CleanupCallback = () => void;
+```
+
+### ScreenBuffer
+
+```typescript
+interface ScreenBuffer {
+  readonly isAlternate: boolean;
+  enterAlternateScreen(): void;
+  exitAlternateScreen(): void;
+  onCleanup(callback: CleanupCallback): () => void;
+  cleanup(): void;
+  destroy(): void;
+}
 ```
 
 ## Signal Handling
@@ -159,98 +135,44 @@ ScreenBuffer automatically handles these signals:
 
 ### Full-Screen Application
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-import { ScreenBuffer, cursor, screen } from 'blecsd/terminal';
+import { createScreenBuffer, cursor } from 'blecsd/terminal';
 
-class Application {
-  private screenBuffer: ScreenBuffer;
+// createScreenBuffer requires a real TTY
+// function startApplication() {
+//   const screenBuffer = createScreenBuffer(process.stdout);
+//   screenBuffer.enterAlternateScreen();
+//   screenBuffer.onCleanup(() => {
+//     process.stdout.write(cursor.show());
+//   });
+//   process.stdout.write(cursor.hide());
+//   return screenBuffer;
+// }
 
-  constructor() {
-    this.screenBuffer = new ScreenBuffer(process.stdout);
-  }
+// function quitApplication(screenBuffer) {
+//   screenBuffer.destroy();
+//   process.exit(0);
+// }
 
-  start() {
-    // Enter alternate screen
-    this.screenBuffer.enterAlternateScreen();
-
-    // Register cleanup for cursor
-    this.screenBuffer.onCleanup(() => {
-      process.stdout.write(cursor.show());
-    });
-
-    // Hide cursor for cleaner display
-    process.stdout.write(cursor.hide());
-
-    // Clear and start rendering
-    process.stdout.write(screen.clear());
-    this.render();
-  }
-
-  quit() {
-    // Destroy handles cleanup automatically
-    this.screenBuffer.destroy();
-    process.exit(0);
-  }
-}
-```
-
-### Game with State Save on Exit
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-import { ScreenBuffer } from 'blecsd/terminal';
-
-class Game {
-  private screenBuffer: ScreenBuffer;
-  private gameState: GameState;
-
-  start() {
-    this.screenBuffer = new ScreenBuffer(process.stdout);
-
-    // Save game state on any exit
-    this.screenBuffer.onCleanup(() => {
-      this.saveGame();
-    });
-
-    this.screenBuffer.enterAlternateScreen();
-    this.gameLoop();
-  }
-
-  private saveGame() {
-    // This runs even on Ctrl+C or crashes
-    fs.writeFileSync('save.json', JSON.stringify(this.gameState));
-  }
-}
+console.log('createScreenBuffer available:', typeof createScreenBuffer);
+console.log('cursor available:', typeof cursor);
 ```
 
 ### Multiple Cleanup Handlers
 
-<!-- blecsd-doccheck:ignore -->
 ```typescript
-const buffer = new ScreenBuffer(process.stdout);
+import { createScreenBuffer, cursor, mouse } from 'blecsd/terminal';
 
-// Restore cursor
-buffer.onCleanup(() => {
-  process.stdout.write(cursor.show());
-});
+// When running in a real terminal:
+// const buffer = createScreenBuffer(process.stdout);
+// buffer.onCleanup(() => { process.stdout.write(cursor.show()); });
+// buffer.onCleanup(() => { process.stdout.write(mouse.disableAll()); });
+// buffer.onCleanup(() => { console.log('Application exiting...'); });
+// buffer.enterAlternateScreen();
 
-// Reset colors
-buffer.onCleanup(() => {
-  process.stdout.write(style.reset());
-});
-
-// Disable mouse
-buffer.onCleanup(() => {
-  process.stdout.write(mouse.disableAll());
-});
-
-// Log exit
-buffer.onCleanup(() => {
-  console.log('Application exiting...');
-});
-
-buffer.enterAlternateScreen();
+console.log('createScreenBuffer available:', typeof createScreenBuffer);
+console.log('cursor available:', typeof cursor);
+console.log('mouse available:', typeof mouse);
 ```
 
 ## Alternate Screen Buffer
@@ -262,22 +184,6 @@ The alternate screen buffer is a standard terminal feature that:
 3. **Automatic restoration**: When the app exits, original content reappears
 
 This is why `vim`, `less`, and other TUI applications don't leave their content on screen after quitting.
-
-## Error Handling
-
-ScreenBuffer catches errors in cleanup handlers to ensure all handlers run:
-
-<!-- blecsd-doccheck:ignore -->
-```typescript
-buffer.onCleanup(() => {
-  throw new Error('Cleanup error');
-});
-
-buffer.onCleanup(() => {
-  // This still runs even if the previous handler threw
-  process.stdout.write(cursor.show());
-});
-```
 
 ## Related
 
