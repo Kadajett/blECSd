@@ -9,6 +9,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Pre-1.0**: Minor version bumps for breaking changes, patch for fixes and features
 - **Post-1.0**: Standard [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## [0.6.1] - 2026-02-21
+
+### Fixed
+
+#### Main Entry (`'blecsd'`) Export Gaps
+- Add 15+ missing exports to `src/index.ts` that examples and users need:
+  - **Systems**: `cursorHome`, `writeRaw`, `enterAlternateScreen`, `leaveAlternateScreen`, `hideCursor`, `showCursor`, `setOutputStream`, `setOutputBuffer`
+  - **Components**: `Position`, `Velocity`, `getVelocity`, `setVelocity`
+  - **Terminal**: `isMouseBuffer`, `parseMouseSequence`, `parseKeyBuffer`, `KeyEvent` type, `LogLevel`
+  - **Rendering**: `setRenderBuffer`, `getBackBuffer`, `createDirtyTracker`
+  - **Utils**: `createCellBuffer`, `CellBuffer` type
+- Fix import sorting in package barrel files (`packages/3d`, `packages/game`, `packages/media`) to satisfy biome linting
+
+### Changed
+
+#### Documentation Overhaul (210 pages)
+- **README Quick Start rewritten**: Now includes `createProgram()` for terminal management, full render pipeline buffer initialization (`setOutputStream`, `createDoubleBuffer`, `setOutputBuffer`, `setRenderBuffer`), keyboard input handling, and proper cleanup. Previously the example would render nothing due to missing buffer setup.
+- **Subpath imports recommended as primary pattern**: Import Tiers updated across README and choosing-an-api.md to recommend `blecsd/core`, `blecsd/components`, `blecsd/systems`, `blecsd/terminal`, `blecsd/utils` as the default approach. Main `'blecsd'` entry demoted to convenience/small-script use.
+- **All 210 doc pages pass doccheck with real imports**: Replaced fabricated function names, wrong import paths, and mock-dependent code blocks with real blecsd API calls. No mocks or stubs used in the transform.
+- **94 broken internal links fixed** across 60 files
+- **Buffer initialization added to all tutorial and guide code examples**: hello-world, concepts, ecs-api, simple-game, todo-list, dashboard, file-browser, cheat-sheet
+- **13 internal/redundant doc files deleted** (exploration brainstorming, old roadmaps, agent prompts, duplicate API docs)
+- **3 speculative protocol proposals deleted** (1,716 lines of aspirational specs with no implementation)
+
+### Removed
+- 18 documentation files that were internal-only, redundant, or aspirational (see Changed section)
+
 ## [0.5.0] - 2026-02-13
 
 ### Added
