@@ -30,11 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **All 210 doc pages pass doccheck with real imports**: Replaced fabricated function names, wrong import paths, and mock-dependent code blocks with real blecsd API calls. No mocks or stubs used in the transform.
 - **94 broken internal links fixed** across 60 files
 - **Buffer initialization added to all tutorial and guide code examples**: hello-world, concepts, ecs-api, simple-game, todo-list, dashboard, file-browser, cheat-sheet
-- **13 internal/redundant doc files deleted** (exploration brainstorming, old roadmaps, agent prompts, duplicate API docs)
-- **3 speculative protocol proposals deleted** (1,716 lines of aspirational specs with no implementation)
-
-### Removed
-- 18 documentation files that were internal-only, redundant, or aspirational (see Changed section)
+- **22 internal/redundant doc files deleted**: 9 exploration files (brainstorming, old roadmaps, agent prompts), 5 duplicate/aspirational API docs, 3 speculative protocol proposals (1,716 lines), 2 redundant example docs, 1 internal terminal attributes doc, 1 duplicate state machine doc, 1 duplicate game loop doc
 
 ## [0.5.0] - 2026-02-13
 
