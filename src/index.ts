@@ -70,14 +70,14 @@ export {
 	setPosition,
 	setZIndex,
 } from './components/position';
+// Visibility
+export { toggle } from './components/renderable';
 // Velocity
 export {
 	getVelocity,
 	setVelocity,
 	Velocity,
 } from './components/velocity';
-// Visibility
-export { toggle } from './components/renderable';
 // Scroll
 export {
 	ensureCursorVisible,
@@ -103,14 +103,14 @@ export {
 	enableKeys,
 	enableMouse,
 } from './systems/interactiveSystem';
-// Input parsing
-export { isMouseBuffer, parseMouseSequence } from './terminal/mouseParser';
-export { parseKeyBuffer } from './terminal/keyParser';
-export type { KeyEvent } from './terminal/keyParser';
-// Debug / logging
-export { LogLevel } from './terminal/debug';
 // ANSI utilities
 export { stripAnsi } from './terminal/ansi/parser';
+// Debug / logging
+export { LogLevel } from './terminal/debug';
+export type { KeyEvent } from './terminal/keyParser';
+export { parseKeyBuffer } from './terminal/keyParser';
+// Input parsing
+export { isMouseBuffer, parseMouseSequence } from './terminal/mouseParser';
 export { clearBuffer, fillRect, getCell, setCell } from './terminal/screen/cell';
 // Screen buffer operations
 export { createDoubleBuffer, getBackBuffer } from './terminal/screen/doubleBuffer';

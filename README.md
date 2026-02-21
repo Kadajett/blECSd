@@ -30,47 +30,59 @@ npm install blecsd
 Create a terminal app with a bordered panel, text, and keyboard input:
 
 ```typescript
+import { createWorld, createScreenEntity, createBoxEntity, createTextEntity } from 'blecsd/core';
+import { createDirtyTracker } from 'blecsd/core';
 import {
-  createWorld, createScreenEntity, createBoxEntity,
-  createTextEntity, createListEntity, setText,
-  inputSystem, layoutSystem, renderSystem, outputSystem, cleanup,
-  enableInput, enableKeys,
-} from 'blecsd';
+  layoutSystem, renderSystem, outputSystem, cleanup,
+  setOutputStream, setOutputBuffer, setRenderBuffer,
+} from 'blecsd/systems';
+import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
 
-// Set up the world and screen
+const cols = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
+
+// 1. Initialize the terminal (alternate screen, hidden cursor, raw mode)
+const program = createProgram();
+await program.init();
+
+// 2. Create the ECS world and screen entity
 const world = createWorld();
-const screen = createScreenEntity(world, { width: 80, height: 24 });
+createScreenEntity(world, { width: cols, height: rows });
 
-// A bordered panel
+// 3. Wire up the render pipeline buffers
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(cols, rows);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+
+// 4. Build your UI
 const panel = createBoxEntity(world, {
   x: 2, y: 1, width: 40, height: 12,
-  parent: screen,
   border: { type: 1, top: true, bottom: true, left: true, right: true },
 });
 
-// Title text
 createTextEntity(world, {
-  x: 4, y: 2, text: 'My Dashboard', parent: screen,
+  x: 4, y: 2, text: 'My Dashboard', parent: panel,
 });
 
-// A selectable list
-const list = createListEntity(world, {
-  x: 4, y: 4, width: 36, height: 6, parent: screen,
-});
-
-// Enable keyboard input and run the update loop
-enableInput(world, screen);
-enableKeys(world, screen);
-
-function tick(): void {
-  inputSystem(world);
+// 5. Render
+function render(): void {
   layoutSystem(world);
   renderSystem(world);
   outputSystem(world);
 }
 
-const interval = setInterval(tick, 16);
-process.on('SIGINT', () => { clearInterval(interval); cleanup(world); });
+render();
+
+// 6. Handle keyboard input
+program.on('key', (event) => {
+  if (event.name === 'q' || (event.ctrl && event.name === 'c')) {
+    cleanup(world);
+    program.destroy();
+    process.exit(0);
+  }
+  render();
+});
 ```
 
 ## Namespace Imports
@@ -105,11 +117,11 @@ const parsed = colors.parseColor('#ff6400');
 
 | Tier | Import Path | Use Case |
 |------|-------------|----------|
-| **Tier 1** | `'blecsd'` | ~80 curated essentials (factories, systems, core helpers) |
-| **Tier 2** | `'blecsd/components'`, `'blecsd/utils'`, etc. | Full module access via namespaces |
+| **Tier 2 (Recommended)** | `'blecsd/core'`, `'blecsd/components'`, `'blecsd/systems'`, etc. | Full module access via subpaths |
+| **Tier 1** | `'blecsd'` | Curated subset for small scripts |
 | **Tier 3** | Deep imports | Internal only |
 
-Start with Tier 1 for prototyping, then use Tier 2 namespaces as your app grows. See the [Export Patterns Guide](./docs/guides/export-patterns.md) for details.
+**Use subpath imports (Tier 2)** for all applications. They provide full API access, clear organization by domain, and reduced naming conflicts. The main `'blecsd'` entry re-exports a curated subset for convenience. See the [Export Patterns Guide](./docs/guides/export-patterns.md) for details.
 
 ## Addon Packages
 
@@ -264,7 +276,10 @@ blECSd is a library, not a framework:
 4. **You own the world**: Functions take `world` as a parameter; we never hold global state
 
 ```typescript
-import { createWorld, addEntity, layoutSystem, renderSystem } from 'blecsd';
+import { createWorld, addEntity } from 'blecsd/core';
+import { createDirtyTracker } from 'blecsd/core';
+import { layoutSystem, renderSystem, outputSystem, setOutputStream, setOutputBuffer, setRenderBuffer } from 'blecsd/systems';
+import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
 import { position, renderable } from 'blecsd/components';
 
 const world = createWorld();
@@ -274,9 +289,16 @@ const eid = addEntity(world);
 position.set(world, eid, 10, 5);
 renderable.show(world, eid);
 
+// Initialize buffers (required for render/output systems)
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(80, 24);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(80, 24), getBackBuffer(db));
+
 // Call systems when you want
 layoutSystem(world);
 renderSystem(world);
+outputSystem(world);
 ```
 
 ## Use Cases
