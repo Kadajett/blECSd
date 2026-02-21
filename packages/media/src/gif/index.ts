@@ -22,7 +22,6 @@ export type {
 	GIFParseOutput,
 	GIFVersion,
 } from './parser';
-export type { GIFParseResult } from './types';
 export {
 	DisposalMethod,
 	deinterlace,
@@ -35,4 +34,5 @@ export {
 	readSubBlocks,
 	validateGIFSignature,
 } from './parser';
+export type { GIFParseResult } from './types';
 export { GIFHeaderSchema } from './types';

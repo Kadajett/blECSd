@@ -35,8 +35,8 @@
  */
 
 export { createGame } from './createGame';
-export { GameConfigSchema } from './schema';
 export type { GameConfig, ResolvedGameConfig } from './schema';
+export { GameConfigSchema } from './schema';
 export type {
 	FixedUpdateCallback,
 	Game,
