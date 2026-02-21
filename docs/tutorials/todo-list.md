@@ -40,10 +40,14 @@ import {
   createWorld, addEntity, removeEntity,
   createScheduler, LoopPhase, createEventBus,
   createBoxEntity, createTextEntity, createTextboxEntity,
+  createScreenEntity, createDirtyTracker,
 } from 'blecsd/core';
 import { setPosition, setDimensions, setParent, setText } from 'blecsd/components';
-import { layoutSystem, renderSystem, outputSystem, blurAll, focusEntity } from 'blecsd/systems';
-import { type KeyEvent, createProgram } from 'blecsd/terminal';
+import {
+  layoutSystem, renderSystem, outputSystem, blurAll, focusEntity,
+  setOutputStream, setOutputBuffer, setRenderBuffer,
+} from 'blecsd/systems';
+import { type KeyEvent, createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
 
 // Create the ECS world
 const world = createWorld();
@@ -60,6 +64,15 @@ const program = createProgram({
   hideCursor: true,
 });
 program.init();
+
+// Initialize render pipeline
+const cols = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
+createScreenEntity(world, { width: cols, height: rows });
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(cols, rows);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
 ```
 
 ## Step 2: Define Todo State

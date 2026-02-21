@@ -195,6 +195,18 @@ const loop = createGameLoop(world, { targetFPS: 30 });
 
 loop.registerSystem(LoopPhase.UPDATE, movementSystem);
 
+// To see output, register render systems and initialize the render pipeline:
+// import { layoutSystem, renderSystem, outputSystem, setOutputStream, setOutputBuffer, setRenderBuffer } from 'blecsd/systems';
+// import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+// import { createDirtyTracker } from 'blecsd/core';
+// setOutputStream(process.stdout);
+// const db = createDoubleBuffer(80, 24);
+// setOutputBuffer(db);
+// setRenderBuffer(createDirtyTracker(80, 24), getBackBuffer(db));
+// loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+// loop.registerSystem(LoopPhase.RENDER, renderSystem);
+// loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
+
 loop.start();
 loop.stop();
 ```

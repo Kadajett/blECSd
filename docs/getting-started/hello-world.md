@@ -146,22 +146,39 @@ const text = createTextEntity(world, {
 
 ## Rendering
 
-blECSd includes a built-in two-phase rendering pipeline. The `renderSystem` draws entities into an internal buffer, and the `outputSystem` flushes that buffer to the terminal:
+blECSd includes a built-in two-phase rendering pipeline. The `renderSystem` draws entities into a screen buffer, and the `outputSystem` diffs that buffer against the previous frame and flushes changes to the terminal.
+
+Before the pipeline can render, you must initialize the buffers:
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
+import { createWorld, addEntity, createScreenEntity } from 'blecsd/core';
 import { setPosition, setDimensions } from 'blecsd/components';
-import { layoutSystem, renderSystem, outputSystem, cleanup } from 'blecsd/systems';
+import {
+  layoutSystem, renderSystem, outputSystem, cleanup,
+  setOutputStream, setOutputBuffer, setRenderBuffer,
+} from 'blecsd/systems';
 import { setContent, setStyle } from 'blecsd/components';
+import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createDirtyTracker } from 'blecsd/core';
+
+const cols = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
 
 const world = createWorld();
+createScreenEntity(world, { width: cols, height: rows });
+
+// Initialize the render pipeline buffers
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(cols, rows);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
 
 // ... create entities with position, dimensions, content, style ...
 
 // Run the rendering pipeline
 layoutSystem(world);   // Compute positions and sizes
-renderSystem(world);   // Render entities to internal buffer
-outputSystem(world);   // Flush buffer to terminal
+renderSystem(world);   // Render entities to screen buffer
+outputSystem(world);   // Diff and flush changes to terminal
 
 // When done, clean up terminal state
 cleanup(world);
@@ -178,40 +195,49 @@ import { cursor, style, screen } from 'blecsd/terminal';
 
 ## A Simple Render Loop
 
-Combining ECS data with the built-in systems:
+Combining `createProgram()` for terminal management with the ECS render pipeline:
 
 ```typescript
 import { createWorld, addEntity, createScreenEntity } from 'blecsd/core';
 import { setPosition, setDimensions } from 'blecsd/components';
-import { layoutSystem, renderSystem, outputSystem, cleanup } from 'blecsd/systems';
+import {
+  layoutSystem, renderSystem, outputSystem, cleanup,
+  setOutputStream, setOutputBuffer, setRenderBuffer,
+} from 'blecsd/systems';
 import { setContent, setStyle } from 'blecsd/components';
-import { createProgram } from 'blecsd/terminal';
+import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createDirtyTracker } from 'blecsd/core';
 
+const cols = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
+
+// 1. Initialize the terminal (alternate screen, cursor, raw mode)
+const program = createProgram();
+await program.init();
+
+// 2. Create the ECS world and screen entity
 const world = createWorld();
+createScreenEntity(world, { width: cols, height: rows });
 
-// Create a screen entity (required for the rendering pipeline)
-createScreenEntity(world, {
-  width: process.stdout.columns ?? 80,
-  height: process.stdout.rows ?? 24,
-});
+// 3. Wire up the render pipeline buffers
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(cols, rows);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
 
-// Create a status indicator entity
+// 4. Create entities
 const statusIndicator = addEntity(world);
 setPosition(world, statusIndicator, 10, 5);
 setDimensions(world, statusIndicator, 10, 1);
 setStyle(world, statusIndicator, { fg: '#00ff00' });
 setContent(world, statusIndicator, '● Online');
 
-// Run the render pipeline
+// 5. Render
 function render(): void {
   layoutSystem(world);
   renderSystem(world);
   outputSystem(world);
 }
-
-// Initialize the terminal
-const program = createProgram();
-await program.init();
 
 render();
 

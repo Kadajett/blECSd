@@ -40,10 +40,14 @@ Create `snake.ts`:
 import {
   createWorld, addEntity, removeEntity, hasComponent, addComponent,
   createBoxEntity, createTextEntity, createScheduler, LoopPhase,
+  createScreenEntity, createDirtyTracker,
 } from 'blecsd/core';
 import { setPosition, getPosition, setText, setContent, setStyle, setVisible } from 'blecsd/components';
-import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
-import { type KeyEvent, createProgram } from 'blecsd/terminal';
+import {
+  layoutSystem, renderSystem, outputSystem,
+  setOutputStream, setOutputBuffer, setRenderBuffer,
+} from 'blecsd/systems';
+import { type KeyEvent, createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -59,6 +63,15 @@ const program = createProgram({
   hideCursor: true,
 });
 program.init();
+
+// Initialize render pipeline
+const cols = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
+createScreenEntity(world, { width: cols, height: rows });
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(cols, rows);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
 ```
 
 ## Step 2: Game Constants and State

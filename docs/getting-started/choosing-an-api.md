@@ -285,58 +285,60 @@ Position.y[fileList] = 2;
 
 ## Import Patterns
 
-blECSd provides a three-tier export system:
+blECSd provides two main import styles. **Subpath imports are recommended** for all applications.
 
-### Tier 1: Curated Essentials from `'blecsd'`
+### Recommended: Subpath Imports
 
-The main `'blecsd'` package exports approximately 120 curated functions covering the most common use cases:
-
-```typescript
-import { createWorld, addEntity, createBoxEntity } from 'blecsd/core';
-import { setPosition, setDimensions } from 'blecsd/components';
-```
-
-This is the simplest approach and works well for small to medium applications.
-
-### Tier 2: Namespace Imports (Recommended for Larger Apps)
-
-For more complex applications, use namespace imports from subpaths:
+Import from domain-specific subpaths for the best developer experience:
 
 ```typescript
-import { position, dimensions, content } from 'blecsd/components';
-import { layout, render } from 'blecsd/systems';
-import { animation } from 'blecsd/components';
-import { createProgram, ansiCodes } from 'blecsd/terminal';
-import { rope, textWrap, unicode } from 'blecsd/utils';
+// Core ECS functions
+import { createWorld, addEntity } from 'blecsd/core';
 
-// Organized by domain
-position.set(world, eid, 10, 5);
-dimensions.set(world, eid, 40, 10);
-content.setText(world, eid, 'Hello!');
+// Components (position, velocity, dimensions, etc.)
+import { setPosition, getPosition, setVelocity } from 'blecsd/components';
+
+// Systems (output, render, input, etc.)
+import { writeRaw, cursorHome, enterAlternateScreen, setOutputStream } from 'blecsd/systems';
+
+// Terminal I/O (input parsing, program management)
+import { parseKeyBuffer, createProgram } from 'blecsd/terminal';
+
+// Utilities (cell buffers, text wrapping, colors)
+import { createCellBuffer, renderText, packColor } from 'blecsd/utils';
+
+// Widgets (high-level UI components)
+import { createList, createModal } from 'blecsd/widgets';
 ```
 
-Namespace imports provide:
+Subpath imports provide:
 - Clear organization by domain (components, systems, terminal, utils)
+- Full access to every exported function
 - Reduced naming conflicts
 - Better code navigation and searchability
-- Full access to all module functions
 
-### Tier 3: Deep Imports (Internal Only)
+### Alternative: Main Entry (`'blecsd'`)
 
-Deep imports from specific files are reserved for internal library use and advanced scenarios:
+The main `'blecsd'` entry re-exports a curated subset of common functions:
 
 ```typescript
-// Not recommended for most users
-import { someInternalFunction } from 'blecsd/components/position';
+import { createWorld, addEntity, setPosition, clearScreen, writeRaw } from 'blecsd';
 ```
 
-### Recommendation
+This is convenient for small scripts, but the subpath imports give you access to the full API surface. If an import fails from `'blecsd'`, check the subpath modules.
 
-- **Small apps**: Use Tier 1 flat imports from `'blecsd'`
-- **Medium to large apps**: Use Tier 2 namespace imports for organization
-- **Advanced/internal**: Use Tier 3 only when necessary
+### Available Subpaths
 
-See the [Export Patterns Guide](../guides/export-patterns.md) for complete details on the export system.
+| Subpath | Contents |
+|---------|----------|
+| `blecsd/core` | World, entities, ECS primitives, signals |
+| `blecsd/components` | Position, velocity, dimensions, content, style |
+| `blecsd/systems` | Output, render, input, layout, animation, focus |
+| `blecsd/terminal` | Input parsing, program management, ANSI codes |
+| `blecsd/utils` | Cell buffers, text wrapping, rope, colors |
+| `blecsd/widgets` | High-level widgets (list, modal, table, etc.) |
+
+See the [Export Patterns Guide](../guides/export-patterns.md) for complete details.
 
 ---
 

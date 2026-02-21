@@ -796,7 +796,7 @@ export {
 } from './screen';
 // Double buffer (from screen/doubleBuffer, not included in ./screen cherry-picks above)
 export type { DoubleBufferData } from './screen/doubleBuffer';
-export { clearDirtyRegions, createDoubleBuffer } from './screen/doubleBuffer';
+export { clearDirtyRegions, createDoubleBuffer, getBackBuffer } from './screen/doubleBuffer';
 // Screen buffer management (internal)
 export type { CleanupCallback, ScreenBuffer } from './screenBuffer';
 // Input sanitization

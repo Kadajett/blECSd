@@ -40,18 +40,24 @@ In this tutorial, you'll build a system monitoring dashboard that displays CPU, 
 Create `dashboard.ts`:
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
+import { createWorld, addEntity, createScreenEntity, createDirtyTracker } from 'blecsd/core';
 import { setPosition, setDimensions } from 'blecsd/components';
-import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+import {
+  layoutSystem, renderSystem, outputSystem,
+  setOutputStream, setOutputBuffer, setRenderBuffer,
+} from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 import { type KeyEvent } from 'blecsd/terminal';
-import { createProgram } from 'blecsd/terminal';
+import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
 import {
   createPanel, createText, createProgressBar, createLayout,
 } from 'blecsd/widgets';
 import { setContent, setParent, setStyle } from 'blecsd/components';
 import { setProgress } from 'blecsd/components';
 import * as os from 'os';
+
+const columns = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -66,8 +72,12 @@ const program = createProgram({
 });
 program.init();
 
-const columns = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
+// Initialize render pipeline
+createScreenEntity(world, { width: columns, height: rows });
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(columns, rows);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(columns, rows), getBackBuffer(db));
 ```
 
 ## Step 2: System Stats Functions

@@ -36,12 +36,15 @@ In this tutorial, you'll build a dual-pane file browser similar to Midnight Comm
 Create `file-browser.ts`:
 
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
+import { createWorld, addEntity, createScreenEntity, createDirtyTracker } from 'blecsd/core';
 import { setPosition, setDimensions } from 'blecsd/components';
-import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+import {
+  layoutSystem, renderSystem, outputSystem,
+  setOutputStream, setOutputBuffer, setRenderBuffer,
+} from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 import { type KeyEvent } from 'blecsd/terminal';
-import { createProgram } from 'blecsd/terminal';
+import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
 import {
   createVirtualizedList, createPanel, createText, createScrollableText,
   setPanelTitle,
@@ -49,6 +52,9 @@ import {
 import { setContent, setParent } from 'blecsd/components';
 import * as fs from 'fs';
 import * as path from 'path';
+
+const cols = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -63,6 +69,13 @@ const program = createProgram({
   hideCursor: true,
 });
 program.init();
+
+// Initialize render pipeline
+createScreenEntity(world, { width: cols, height: rows });
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(cols, rows);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
 ```
 
 ## Step 2: File Entry Interface

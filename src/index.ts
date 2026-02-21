@@ -37,8 +37,20 @@ export { animationSystem } from './systems/animationSystem';
 export { focusSystem } from './systems/focusSystem';
 export { inputSystem } from './systems/inputSystem';
 export { layoutSystem } from './systems/layoutSystem';
-export { cleanup, clearScreen, outputSystem } from './systems/outputSystem';
-export { renderSystem } from './systems/renderSystem';
+export {
+	cleanup,
+	clearScreen,
+	cursorHome,
+	enterAlternateScreen,
+	hideCursor,
+	leaveAlternateScreen,
+	outputSystem,
+	setOutputBuffer,
+	setOutputStream,
+	showCursor,
+	writeRaw,
+} from './systems/outputSystem';
+export { renderSystem, setRenderBuffer } from './systems/renderSystem';
 
 // ─── Component Helpers ───────────────────────────────────────────────────────
 
@@ -54,9 +66,16 @@ export {
 	getPosition,
 	getZIndex,
 	normalizeZIndices,
+	Position,
 	setPosition,
 	setZIndex,
 } from './components/position';
+// Velocity
+export {
+	getVelocity,
+	setVelocity,
+	Velocity,
+} from './components/velocity';
 // Visibility
 export { toggle } from './components/renderable';
 // Scroll
@@ -73,6 +92,8 @@ export { hitTest } from './core/hitTest';
 
 // ─── Terminal I/O ────────────────────────────────────────────────────────────
 
+// Dirty tracking (required for render pipeline)
+export { createDirtyTracker } from './core/dirtyTracking';
 // Input control (ECS-aware)
 export {
 	disableInput,
@@ -82,11 +103,17 @@ export {
 	enableKeys,
 	enableMouse,
 } from './systems/interactiveSystem';
+// Input parsing
+export { isMouseBuffer, parseMouseSequence } from './terminal/mouseParser';
+export { parseKeyBuffer } from './terminal/keyParser';
+export type { KeyEvent } from './terminal/keyParser';
+// Debug / logging
+export { LogLevel } from './terminal/debug';
 // ANSI utilities
 export { stripAnsi } from './terminal/ansi/parser';
 export { clearBuffer, fillRect, getCell, setCell } from './terminal/screen/cell';
 // Screen buffer operations
-export { createDoubleBuffer } from './terminal/screen/doubleBuffer';
+export { createDoubleBuffer, getBackBuffer } from './terminal/screen/doubleBuffer';
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -94,7 +121,8 @@ export { BoxConfigSchema, PositionValueSchema, TextConfigSchema } from './core';
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 
-export { renderText } from './utils/box';
+export type { CellBuffer } from './utils/box';
+export { createCellBuffer, renderText } from './utils/box';
 export { getLine, getLines, getStats } from './utils/rope';
 export { wrapText } from './utils/textWrap';
 
