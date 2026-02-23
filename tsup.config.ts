@@ -15,6 +15,7 @@ export default defineConfig({
 		'src/widgets/fonts/index.ts',
 		'src/terminal/index.ts',
 		'src/schemas/index.ts',
+		'src/style/index.ts',
 		'src/utils/index.ts',
 		'src/text/index.ts',
 		'src/cli/init.ts',

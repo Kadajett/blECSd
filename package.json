@@ -41,6 +41,10 @@
       "import": "./dist/schemas/index.js",
       "types": "./dist/schemas/index.d.ts"
     },
+    "./style": {
+      "import": "./dist/style/index.js",
+      "types": "./dist/style/index.d.ts"
+    },
     "./utils": {
       "import": "./dist/utils/index.js",
       "types": "./dist/utils/index.d.ts"
@@ -89,6 +93,9 @@
       ],
       "schemas": [
         "dist/schemas/index.d.ts"
+      ],
+      "style": [
+        "dist/style/index.d.ts"
       ],
       "systems": [
         "dist/systems/index.d.ts"
