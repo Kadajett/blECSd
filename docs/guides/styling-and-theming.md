@@ -111,7 +111,7 @@ const withAlpha = hexToColor('#ff7f5080');
 The terminal color module provides named color lookups that resolve to 256-color palette indices:
 
 ```typescript
-import { nameToColor, cssNameToColor } from 'blecsd';
+import { nameToColor, cssNameToColor } from 'blecsd/style';
 
 nameToColor('red');         // 1 (ANSI red)
 nameToColor('brightcyan');  // 14
@@ -156,7 +156,7 @@ The palette has three regions:
 | 232–255 | 24 | Grayscale ramp (8 to 238 in steps of 10) |
 
 ```typescript
-import { colorCubeIndex, grayscaleIndex, COLORS, ANSI } from 'blecsd';
+import { colorCubeIndex, grayscaleIndex, COLORS, ANSI } from 'blecsd/terminal';
 
 // Named constants for standard colors
 const fg = COLORS.RED;           // 9
@@ -176,7 +176,7 @@ const lightGray = grayscaleIndex(18); // Index 250
 For terminals that support it, truecolor provides 16.7 million colors with automatic downgrading:
 
 ```typescript
-import { createTruecolorSupport, rgb, hex, fg, bg } from 'blecsd';
+import { createTruecolorSupport, rgb, hex, fg, bg } from 'blecsd/terminal';
 
 // Convenience functions (use default singleton)
 const red = rgb(255, 0, 0);
@@ -217,7 +217,7 @@ The `fg()` and `bg()` functions select the right SGR escape format based on dete
 Detection uses `COLORTERM` and `TERM` environment variables. Override with `setDepth()`:
 
 ```typescript
-import { getDefaultTruecolor, ColorDepthLevel } from 'blecsd';
+import { getDefaultTruecolor, ColorDepthLevel } from 'blecsd/terminal';
 
 const tc = getDefaultTruecolor();
 tc.setDepth(ColorDepthLevel.PALETTE_256); // Force 256-color mode
@@ -229,7 +229,7 @@ tc.resetDepth();                          // Back to auto-detection
 The `blend` module provides color math operations that work on RGB values:
 
 ```typescript
-import { mix, lighten, darken, saturate, desaturate, grayscale } from 'blecsd';
+import { mix, lighten, darken, saturate, desaturate, grayscale } from 'blecsd/style';
 
 // Mix two colors (0 = all first, 1 = all second, 0.5 = equal)
 const purple = mix({ r: 255, g: 0, b: 0 }, { r: 0, g: 0, b: 255 }, 0.5);
@@ -247,7 +247,8 @@ const gray = grayscale({ r: 255, g: 0, b: 0 }); // Perceptual luminance weights
 For 256-color palette operations:
 
 ```typescript
-import { blend, lighten256, darken256, gradient256, COLORS } from 'blecsd';
+import { blend, lighten256, darken256, gradient256 } from 'blecsd/style';
+import { COLORS } from 'blecsd/terminal';
 
 const mixed = blend(COLORS.RED, COLORS.BLUE, 0.5);
 const lighter = lighten256(COLORS.GREEN, 0.3);
@@ -257,7 +258,7 @@ const steps = gradient256(COLORS.RED, COLORS.BLUE, 5); // 5-color gradient
 #### Hue operations
 
 ```typescript
-import { rotateHue, complement, invert } from 'blecsd';
+import { rotateHue, complement, invert } from 'blecsd/style';
 
 const green = rotateHue({ r: 255, g: 0, b: 0 }, 120);  // Red → Green
 const cyan = complement({ r: 255, g: 0, b: 0 });        // Red → Cyan
@@ -267,7 +268,7 @@ const inverted = invert({ r: 255, g: 0, b: 0 });        // → { r: 0, g: 255, b
 #### Contrast and accessibility
 
 ```typescript
-import { contrastRatio, isReadable, luminance } from 'blecsd';
+import { contrastRatio, isReadable, luminance } from 'blecsd/style';
 
 const ratio = contrastRatio(
   { r: 0, g: 0, b: 0 },
@@ -319,7 +320,7 @@ All color values are packed RGBA integers.
 
 ### Built-in themes
 
-blECSd ships with 8 themes:
+blECSd ships with 9 themes:
 
 | Factory Function | Name | Description |
 |-----------------|------|-------------|
@@ -365,7 +366,7 @@ console.log(theme.colors.primary);
 The simplest way: start from defaults and override what you need.
 
 ```typescript
-import { createTheme, packColor, registerTheme } from 'blecsd';
+import { createTheme, packColor, registerTheme } from 'blecsd/style';
 
 const custom = createTheme('corporate', {
   colors: {
@@ -384,7 +385,7 @@ registerTheme(custom);
 To base a theme on a registered non-default theme:
 
 ```typescript
-import { registerTheme, extendTheme, createNordTheme, packColor } from 'blecsd';
+import { registerTheme, extendTheme, createNordTheme, packColor } from 'blecsd/style';
 
 registerTheme(createNordTheme());
 
@@ -409,7 +410,7 @@ registerTheme(warmNord);
 Themes can be saved and loaded as JSON:
 
 ```typescript
-import { serializeTheme, deserializeTheme, createDarkTheme } from 'blecsd';
+import { serializeTheme, deserializeTheme, createDarkTheme } from 'blecsd/style';
 
 const json = serializeTheme(createDarkTheme());
 // Store somewhere...
@@ -586,14 +587,14 @@ appendChild(world, parent, child);
 ### Computing inherited styles
 
 ```typescript
-import { computeInheritedStyle, resolveStyle } from 'blecsd';
+import { computeInheritedStyle, resolveStyle } from 'blecsd/style';
 
 // These are identical — resolveStyle is an alias
 const style = computeInheritedStyle(world, entity);
 const same = resolveStyle(world, entity);
 
 // Check where a property comes from
-import { findPropertySource } from 'blecsd';
+import { findPropertySource } from 'blecsd/style';
 const source = findPropertySource(world, entity, 'fg');
 // Returns the entity ID that provides the fg value (could be self or ancestor)
 ```
@@ -608,7 +609,8 @@ Computed styles are cached per-entity with a generation counter. The cache is in
 The rendering system should call `precomputeStyles()` before drawing to batch-warm the cache:
 
 ```typescript
-import { precomputeStyles, getAllEntities } from 'blecsd';
+import { precomputeStyles } from 'blecsd/style';
+import { getAllEntities } from 'blecsd/core';
 
 precomputeStyles(world, getAllEntities(world));
 ```
@@ -636,7 +638,8 @@ ComputedLayout.valid   // Uint8Array   — 0 = needs recompute, 1 = valid
 #### Registering the system
 
 ```typescript
-import { layoutSystem, createScheduler, LoopPhase } from 'blecsd';
+import { layoutSystem } from 'blecsd/systems';
+import { createScheduler, LoopPhase } from 'blecsd/core';
 
 const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
@@ -677,7 +680,7 @@ setPosition(world, entity, 10, 0);
 #### Reading computed layout
 
 ```typescript
-import { getComputedLayout, getComputedBounds } from 'blecsd';
+import { getComputedLayout, getComputedBounds } from 'blecsd/systems';
 
 const layout = getComputedLayout(world, entity);
 // { x: 15, y: 8, width: 40, height: 10 }
@@ -689,7 +692,7 @@ const bounds = getComputedBounds(world, entity);
 #### On-demand computation
 
 ```typescript
-import { computeLayoutNow } from 'blecsd';
+import { computeLayoutNow } from 'blecsd/systems';
 
 // Compute layout for a single entity outside the system loop
 const layout = computeLayoutNow(world, entity);
@@ -844,7 +847,7 @@ When `flex` values are set, free space is distributed proportionally. A child wi
 Inspired by Ratatui's layout system. Pure functions that split a rectangular area into sub-rectangles using constraints. No entities or components involved — just geometry.
 
 ```typescript
-import { layoutHorizontal, layoutVertical, fixed, percentage, ratio, min, max } from 'blecsd';
+import { layoutHorizontal, layoutVertical, fixed, percentage, ratio, min, max } from 'blecsd/systems';
 
 const screen = { x: 0, y: 0, width: 120, height: 40 };
 
@@ -1113,7 +1116,7 @@ const panel = createPanel(world, addEntity(world), {
 ### Sidebar + main content with constraint layout
 
 ```typescript
-import { layoutHorizontal, layoutVertical, fixed, min, percentage } from 'blecsd';
+import { layoutHorizontal, layoutVertical, fixed, min, percentage } from 'blecsd/systems';
 
 function buildAppLayout(screenWidth: number, screenHeight: number) {
   const screen = { x: 0, y: 0, width: screenWidth, height: screenHeight };
@@ -1136,7 +1139,7 @@ function buildAppLayout(screenWidth: number, screenHeight: number) {
 ### Gradient text effect
 
 ```typescript
-import { gradient, mix } from 'blecsd';
+import { gradient, mix } from 'blecsd/style';
 import { packColor } from 'blecsd/components';
 
 const from = { r: 255, g: 0, b: 0 };
@@ -1160,7 +1163,7 @@ import {
   createDarkTheme,
   createLightTheme,
   invalidateAllStyleCaches,
-} from 'blecsd';
+} from 'blecsd/style';
 
 registerTheme(createDarkTheme());
 registerTheme(createLightTheme());
