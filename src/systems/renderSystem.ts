@@ -654,6 +654,12 @@ let renderScreenBuffer: ScreenBufferData | null = null;
 let occlusionCullingEnabled = false;
 
 /**
+ * Flag to emit the uninitialised-buffer warning only once per process so we
+ * don't flood the terminal on every frame.
+ */
+let _renderBufferWarnEmitted = false;
+
+/**
  * Sets the dirty tracker and screen buffer for the render system.
  * Must be called before running the render system.
  *
@@ -690,6 +696,7 @@ export function getRenderBuffer(): DirtyTracker | null {
 export function clearRenderBuffer(): void {
 	renderDirtyTracker = null;
 	renderScreenBuffer = null;
+	_renderBufferWarnEmitted = false;
 }
 
 /**
@@ -762,6 +769,14 @@ export function isOcclusionCullingEnabled(): boolean {
  */
 export const renderSystem: System = (world: World): World => {
 	if (!renderDirtyTracker || !renderScreenBuffer) {
+		if (!_renderBufferWarnEmitted) {
+			_renderBufferWarnEmitted = true;
+			console.warn(
+				'[blECSd] renderSystem called before render buffers are initialized. ' +
+					'Call setRenderBuffer() (or createRenderPipeline()) before running the render loop. ' +
+					'See: https://blecsd.dev/docs/getting-started/hello-world#rendering',
+			);
+		}
 		return world;
 	}
 
