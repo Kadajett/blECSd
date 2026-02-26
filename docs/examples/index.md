@@ -1,6 +1,31 @@
 # Examples
 
-All blECSd examples are maintained in a separate repository for easier setup and independent versioning.
+blECSd includes a minimal local example for quickly validating the ECS + render + input pipeline end-to-end.
+
+## Local Quick Demo (in this repo)
+
+Run this from the repository root:
+
+```bash
+pnpm install
+pnpm exec tsx examples/counter-demo.ts
+```
+
+Controls:
+
+- Arrow keys: move panel
+- `+` / `-`: increment/decrement counter
+- `r`: reset counter
+- `q` (or `Ctrl+C`): quit
+
+This demo is intentionally small and shows the full happy-path wiring developers usually need first:
+
+1. Create world + screen entity
+2. Initialize render/output buffers
+3. Create entities with components
+4. Run layout → render → output pipeline
+5. Handle keyboard input and update ECS state
+6. Cleanup terminal state on exit
 
 ## Examples Repository
 
