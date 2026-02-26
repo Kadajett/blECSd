@@ -312,6 +312,9 @@ export {
 } from './particleSystem';
 // Reactive system
 export { createReactiveSystem, createReactiveSystemsForAllPhases } from './reactiveSystem';
+// Render pipeline convenience helper
+export type { RenderPipeline, RenderPipelineConfig } from './renderPipeline';
+export { createRenderPipeline } from './renderPipeline';
 // Render system
 export type { RenderContext } from './renderSystem';
 export {

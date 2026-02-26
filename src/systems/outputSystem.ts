@@ -448,6 +448,12 @@ let outputStream: Writable | null = null;
 let outputDoubleBuffer: DoubleBufferData | null = null;
 
 /**
+ * Flag to emit the uninitialised-buffer warning only once per process so we
+ * don't flood the terminal on every frame.
+ */
+let _outputBufferWarnEmitted = false;
+
+/**
  * Sets the output stream for the output system.
  *
  * @param stream - Writable stream (typically process.stdout)
@@ -477,6 +483,7 @@ export function getOutputStream(): Writable | null {
  */
 export function clearOutputStream(): void {
 	outputStream = null;
+	_outputBufferWarnEmitted = false;
 }
 
 /**
@@ -510,6 +517,7 @@ export function getOutputBuffer(): DoubleBufferData | null {
  */
 export function clearOutputBuffer(): void {
 	outputDoubleBuffer = null;
+	_outputBufferWarnEmitted = false;
 }
 
 /**
@@ -564,6 +572,14 @@ export function resetOutputState(): void {
  */
 export const outputSystem: System = (world: World): World => {
 	if (!outputStream || !outputDoubleBuffer) {
+		if (!_outputBufferWarnEmitted) {
+			_outputBufferWarnEmitted = true;
+			console.warn(
+				'[blECSd] outputSystem called before output buffers are initialized. ' +
+					'Call setOutputStream() and setOutputBuffer() (or createRenderPipeline()) before running the render loop. ' +
+					'See: https://blecsd.dev/docs/getting-started/hello-world#rendering',
+			);
+		}
 		return world;
 	}
 

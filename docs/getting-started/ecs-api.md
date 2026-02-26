@@ -147,6 +147,7 @@ See [System Execution Order](../guides/system-execution-order.md) for phase deta
 import { createWorld, createScreenEntity, createBoxEntity, addComponent } from 'blecsd/core';
 import { createGameLoop, LoopPhase, query } from 'blecsd/core';
 import { Position, Velocity, BorderType } from 'blecsd/components';
+import { layoutSystem, renderSystem, outputSystem, createRenderPipeline } from 'blecsd/systems';
 import type { World } from 'blecsd/core';
 
 // Create world and screen
@@ -195,19 +196,24 @@ const loop = createGameLoop(world, { targetFPS: 30 });
 
 loop.registerSystem(LoopPhase.UPDATE, movementSystem);
 
-// To see output, register render systems and initialize the render pipeline:
-// import { layoutSystem, renderSystem, outputSystem, setOutputStream, setOutputBuffer, setRenderBuffer } from 'blecsd/systems';
-// import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
-// import { createDirtyTracker } from 'blecsd/core';
-// setOutputStream(process.stdout);
-// const db = createDoubleBuffer(80, 24);
-// setOutputBuffer(db);
-// setRenderBuffer(createDirtyTracker(80, 24), getBackBuffer(db));
-// loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
-// loop.registerSystem(LoopPhase.RENDER, renderSystem);
-// loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
+// Wire up the render pipeline and register render systems.
+// createRenderPipeline handles setOutputStream + setOutputBuffer + setRenderBuffer in one call.
+const cols = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
+
+const pipeline = createRenderPipeline({ output: process.stdout, width: cols, height: rows });
+
+loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+loop.registerSystem(LoopPhase.RENDER, renderSystem);
+loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 
 loop.start();
+
+// Tear down on exit
+process.on('exit', () => {
+  pipeline.destroy();
+});
+
 loop.stop();
 ```
 
