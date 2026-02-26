@@ -296,4 +296,118 @@ describe('Box widget snapshots', () => {
 			cleanupTestBuffer();
 		});
 	});
+
+	describe('title rendering', () => {
+		it('renders box with left-aligned title in border', () => {
+			const { world, buffer } = createTestBuffer(24, 8);
+			const entity = addEntity(world);
+
+			createBox(world, entity, {
+				top: 1,
+				left: 1,
+				width: 20,
+				height: 5,
+				border: { type: 'line' },
+				title: 'My Box',
+			});
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const output = renderToString(buffer);
+			expect(output).toMatchSnapshot();
+
+			cleanupTestBuffer();
+		});
+
+		it('renders box with center-aligned title in border', () => {
+			const { world, buffer } = createTestBuffer(24, 8);
+			const entity = addEntity(world);
+
+			createBox(world, entity, {
+				top: 1,
+				left: 1,
+				width: 20,
+				height: 5,
+				border: { type: 'line' },
+				title: 'Centered',
+				titleAlign: 'center',
+			});
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const output = renderToString(buffer);
+			expect(output).toMatchSnapshot();
+
+			cleanupTestBuffer();
+		});
+
+		it('renders box with right-aligned title in border', () => {
+			const { world, buffer } = createTestBuffer(24, 8);
+			const entity = addEntity(world);
+
+			createBox(world, entity, {
+				top: 1,
+				left: 1,
+				width: 20,
+				height: 5,
+				border: { type: 'line' },
+				title: 'Right',
+				titleAlign: 'right',
+			});
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const output = renderToString(buffer);
+			expect(output).toMatchSnapshot();
+
+			cleanupTestBuffer();
+		});
+
+		it('renders box with title set dynamically via setTitle', () => {
+			const { world, buffer } = createTestBuffer(24, 8);
+			const entity = addEntity(world);
+
+			const box = createBox(world, entity, {
+				top: 1,
+				left: 1,
+				width: 20,
+				height: 5,
+				border: { type: 'line' },
+			});
+			box.setTitle('Dynamic', 'center');
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const output = renderToString(buffer);
+			expect(output).toMatchSnapshot();
+
+			cleanupTestBuffer();
+		});
+
+		it('renders box with long title truncated', () => {
+			const { world, buffer } = createTestBuffer(18, 7);
+			const entity = addEntity(world);
+
+			createBox(world, entity, {
+				top: 0,
+				left: 0,
+				width: 16,
+				height: 5,
+				border: { type: 'line' },
+				title: 'This Title Is Too Long To Fit',
+			});
+
+			layoutSystem(world);
+			renderSystem(world);
+
+			const output = renderToString(buffer);
+			expect(output).toMatchSnapshot();
+
+			cleanupTestBuffer();
+		});
+	});
 });

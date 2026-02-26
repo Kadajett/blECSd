@@ -11,6 +11,7 @@
  * const buffer = render.getBuffer(world);
  * ```
  */
+import type { BorderTitleOptions } from '../renderSystem';
 import {
 	clearRenderBuffer,
 	createRenderSystem,
@@ -54,3 +55,4 @@ export const render = Object.freeze({
 });
 
 export type RenderSystemModule = typeof render;
+export type { BorderTitleOptions };

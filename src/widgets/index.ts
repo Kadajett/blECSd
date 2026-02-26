@@ -217,9 +217,12 @@ export {
 	BoxConfigSchema,
 	createBox,
 	getBoxContent,
+	getBoxTitle,
+	getBoxTitleAlign,
 	isBox,
 	resetBoxStore,
 	setBoxContent,
+	setBoxTitle,
 } from './box';
 // Button widget
 export type { ButtonConfig as ButtonWidgetConfig, ButtonWidget } from './button';

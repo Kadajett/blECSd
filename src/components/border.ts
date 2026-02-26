@@ -133,6 +133,95 @@ export const DEFAULT_BORDER_FG = 0xffffffff;
 export const DEFAULT_BORDER_BG = 0x00000000;
 
 /**
+ * Horizontal alignment values for border titles.
+ */
+export type BorderTitleAlign = 'left' | 'center' | 'right';
+
+/**
+ * Per-entity title text stored for border rendering.
+ * Maps entity ID → title string.
+ * Used by widgets such as Box to embed a title in the top border line.
+ */
+export const borderTitleStore = new Map<number, string>();
+
+/**
+ * Per-entity title alignment for border rendering.
+ * Maps entity ID → alignment.
+ */
+export const borderTitleAlignStore = new Map<number, BorderTitleAlign>();
+
+/**
+ * Sets the title displayed in an entity's top border line.
+ *
+ * @param eid - The entity ID
+ * @param title - Title text (pass empty string or undefined to remove)
+ * @param align - Horizontal alignment of the title (default: 'left')
+ *
+ * @example
+ * ```typescript
+ * import { setBorderTitle } from 'blecsd';
+ *
+ * setBorderTitle(entity, 'CPU Usage', 'center');
+ * ```
+ */
+export function setBorderTitle(
+	eid: number,
+	title: string | undefined,
+	align?: BorderTitleAlign,
+): void {
+	if (title === undefined || title === '') {
+		borderTitleStore.delete(eid);
+		borderTitleAlignStore.delete(eid);
+	} else {
+		borderTitleStore.set(eid, title);
+		if (align) {
+			borderTitleAlignStore.set(eid, align);
+		} else {
+			borderTitleAlignStore.delete(eid);
+		}
+	}
+}
+
+/**
+ * Gets the title text for an entity's border.
+ *
+ * @param eid - The entity ID
+ * @returns The title string, or undefined if not set
+ */
+export function getBorderTitle(eid: number): string | undefined {
+	return borderTitleStore.get(eid);
+}
+
+/**
+ * Gets the title alignment for an entity's border.
+ *
+ * @param eid - The entity ID
+ * @returns The alignment, defaulting to 'left'
+ */
+export function getBorderTitleAlign(eid: number): BorderTitleAlign {
+	return borderTitleAlignStore.get(eid) ?? 'left';
+}
+
+/**
+ * Removes the border title for an entity (e.g., on destroy).
+ *
+ * @param eid - The entity ID
+ */
+export function clearBorderTitle(eid: number): void {
+	borderTitleStore.delete(eid);
+	borderTitleAlignStore.delete(eid);
+}
+
+/**
+ * Clears all border title stores. Useful for testing.
+ * @internal
+ */
+export function resetBorderTitleStores(): void {
+	borderTitleStore.clear();
+	borderTitleAlignStore.clear();
+}
+
+/**
  * Border component store using SoA (Structure of Arrays) for performance.
  *
  * - `type`: Border type (0=none, 1=line, 2=bg, 3=custom)

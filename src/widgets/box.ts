@@ -15,9 +15,15 @@ import {
 	BORDER_ROUNDED,
 	BORDER_SINGLE,
 	type BorderCharset,
+	type BorderTitleAlign,
 	BorderType,
+	clearBorderTitle,
+	getBorderTitle,
+	getBorderTitleAlign,
+	resetBorderTitleStores,
 	setBorder,
 	setBorderChars,
+	setBorderTitle,
 } from '../components/border';
 import { getContent, setContent, TextAlign, TextVAlign } from '../components/content';
 import { setDimensions } from '../components/dimensions';
@@ -254,6 +260,19 @@ export interface BoxConfig {
 	 * @default 'top'
 	 */
 	readonly valign?: VAlign;
+
+	// Title
+	/**
+	 * Optional title text to display in the top border line.
+	 * Requires a border with a top side to be visible.
+	 * @default undefined (no title)
+	 */
+	readonly title?: string;
+	/**
+	 * Horizontal alignment of the title within the top border.
+	 * @default 'left'
+	 */
+	readonly titleAlign?: 'left' | 'center' | 'right';
 }
 
 /**
@@ -280,6 +299,14 @@ export interface BoxWidget {
 	setContent(text: string): BoxWidget;
 	/** Gets the text content of the box */
 	getContent(): string;
+
+	// Title
+	/** Sets the title displayed in the top border line */
+	setTitle(title: string, align?: 'left' | 'center' | 'right'): BoxWidget;
+	/** Gets the title text (empty string if none) */
+	getTitle(): string;
+	/** Gets the title alignment */
+	getTitleAlign(): 'left' | 'center' | 'right';
 
 	// Focus
 	/** Focuses the box */
@@ -387,6 +414,10 @@ export const BoxConfigSchema = z.object({
 	content: z.string().optional(),
 	align: z.enum(['left', 'center', 'right']).optional(),
 	valign: z.enum(['top', 'middle', 'bottom']).optional(),
+
+	// Title (displayed in the top border line)
+	title: z.string().optional(),
+	titleAlign: z.enum(['left', 'center', 'right']).optional(),
 });
 
 // =============================================================================
@@ -522,6 +553,8 @@ interface ValidatedBoxConfig {
 	content?: string;
 	align?: 'left' | 'center' | 'right';
 	valign?: 'top' | 'middle' | 'bottom';
+	title?: string;
+	titleAlign?: 'left' | 'center' | 'right';
 }
 
 /**
@@ -666,6 +699,11 @@ export function createBox(world: World, entity: Entity, config: BoxConfig = {}):
 	if (validated.padding !== undefined) setupPadding(world, eid, validated.padding);
 	setupContent(world, eid, validated);
 
+	// Store title in border title store for rendering
+	if (validated.title) {
+		setBorderTitle(eid, validated.title, validated.titleAlign as BorderTitleAlign | undefined);
+	}
+
 	// Make focusable
 	setFocusable(world, eid, { focusable: true });
 
@@ -708,6 +746,21 @@ export function createBox(world: World, entity: Entity, config: BoxConfig = {}):
 			return getContent(world, eid);
 		},
 
+		// Title
+		setTitle(title: string, align?: 'left' | 'center' | 'right'): BoxWidget {
+			setBorderTitle(eid, title, align as BorderTitleAlign | undefined);
+			markDirty(world, eid);
+			return widget;
+		},
+
+		getTitle(): string {
+			return getBorderTitle(eid) ?? '';
+		},
+
+		getTitleAlign(): 'left' | 'center' | 'right' {
+			return getBorderTitleAlign(eid);
+		},
+
 		// Focus
 		focus(): BoxWidget {
 			focus(world, eid);
@@ -736,6 +789,7 @@ export function createBox(world: World, entity: Entity, config: BoxConfig = {}):
 		// Lifecycle
 		destroy(): void {
 			Box.isBox[eid] = 0;
+			clearBorderTitle(eid);
 			removeEntity(world, eid);
 		},
 	};
@@ -808,9 +862,63 @@ export function isBox(_world: World, eid: Entity): boolean {
 }
 
 /**
+ * Sets the title of a box entity.
+ *
+ * @param eid - The entity ID
+ * @param title - Title text to display in the top border line
+ * @param align - Horizontal alignment of the title (default: 'left')
+ *
+ * @example
+ * ```typescript
+ * import { setBoxTitle } from 'blecsd/widgets';
+ *
+ * setBoxTitle(boxEntity, 'CPU Usage', 'center');
+ * ```
+ */
+export function setBoxTitle(eid: Entity, title: string, align?: 'left' | 'center' | 'right'): void {
+	setBorderTitle(eid, title, align as BorderTitleAlign | undefined);
+}
+
+/**
+ * Gets the title of a box entity.
+ *
+ * @param eid - The entity ID
+ * @returns The title text, or empty string if not set
+ *
+ * @example
+ * ```typescript
+ * import { getBoxTitle } from 'blecsd/widgets';
+ *
+ * const title = getBoxTitle(boxEntity);
+ * console.log(title); // e.g., 'CPU Usage'
+ * ```
+ */
+export function getBoxTitle(eid: Entity): string {
+	return getBorderTitle(eid) ?? '';
+}
+
+/**
+ * Gets the title alignment of a box entity.
+ *
+ * @param eid - The entity ID
+ * @returns The title alignment, defaulting to 'left'
+ *
+ * @example
+ * ```typescript
+ * import { getBoxTitleAlign } from 'blecsd/widgets';
+ *
+ * const align = getBoxTitleAlign(boxEntity); // 'left' | 'center' | 'right'
+ * ```
+ */
+export function getBoxTitleAlign(eid: Entity): 'left' | 'center' | 'right' {
+	return getBorderTitleAlign(eid);
+}
+
+/**
  * Resets the Box component store. Useful for testing.
  * @internal
  */
 export function resetBoxStore(): void {
 	Box.isBox.fill(0);
+	resetBorderTitleStores();
 }
