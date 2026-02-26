@@ -1,30 +1,26 @@
+import { addEntity, createScreenEntity, createWorld } from '../src/core/index';
 import {
-  addEntity,
-  createScreenEntity,
-  createWorld,
-} from '../src/core/index';
-import {
-  getPosition,
-  moveBy,
-  setContent,
-  setDimensions,
-  setPosition,
-  setStyle,
+	getPosition,
+	moveBy,
+	setContent,
+	setDimensions,
+	setPosition,
+	setStyle,
 } from '../src/components/index';
 import {
-  cleanup,
-  layoutSystem,
-  outputSystem,
-  renderSystem,
-  setOutputBuffer,
-  setOutputStream,
-  setRenderBuffer,
+	cleanup,
+	layoutSystem,
+	outputSystem,
+	renderSystem,
+	setOutputBuffer,
+	setOutputStream,
+	setRenderBuffer,
 } from '../src/systems/index';
-import { createDirtyTracker } from '../src/core/dirty';
+import { createDirtyTracker } from '../src/core/dirtyTracking';
 import { createDoubleBuffer, createProgram, getBackBuffer } from '../src/terminal/index';
 
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
+const cols = process.stdout.columns ?? Number(process.env.COLUMNS ?? 80);
+const rows = process.stdout.rows ?? Number(process.env.LINES ?? 24);
 
 const world = createWorld();
 createScreenEntity(world, { width: cols, height: rows });
@@ -40,72 +36,102 @@ setDimensions(world, panel, 54, 5);
 setStyle(world, panel, { fg: '#ffffff', bg: '#1f2937' });
 
 let count = 0;
+let isShuttingDown = false;
+const emitState = process.env.BLECSD_EXAMPLE_EMIT_STATE === '1';
 
 function updatePanel(): void {
-  const pos = getPosition(world, panel);
-  const coords = pos ? `${pos.x},${pos.y}` : 'unknown';
-  setContent(
-    world,
-    panel,
-    `blECSd Counter Demo\nCount: ${count}\nPosition: ${coords}\n↑↓←→ move  +/- count  r reset  q quit`,
-  );
+	const pos = getPosition(world, panel);
+	const coords = pos ? `${pos.x},${pos.y}` : 'unknown';
+	const content = `blECSd Counter Demo\nCount: ${count}\nPosition: ${coords}\n↑↓←→ move  +/- count  r reset  q quit`;
+	setContent(world, panel, content);
+	if (emitState) {
+		process.stdout.write(`\n[STATE]\n${content}\n[/STATE]\n`);
+	}
 }
 
 function render(): void {
-  layoutSystem(world);
-  renderSystem(world);
-  outputSystem(world);
+	layoutSystem(world);
+	renderSystem(world);
+	outputSystem(world);
+}
+
+function shutdown(code = 0, destroyProgram = true): void {
+	if (isShuttingDown) return;
+	isShuttingDown = true;
+	cleanup(world);
+	if (destroyProgram && program) {
+		program.destroy();
+	}
+	process.exit(code);
+}
+
+function handleKey(name: string, ctrl = false): void {
+	switch (name) {
+		case 'q':
+			shutdown(0, !isScriptedMode);
+			return;
+		case 'c':
+			if (ctrl) shutdown(0, !isScriptedMode);
+			return;
+		case 'up':
+			moveBy(world, panel, 0, -1);
+			break;
+		case 'down':
+			moveBy(world, panel, 0, 1);
+			break;
+		case 'left':
+			moveBy(world, panel, -1, 0);
+			break;
+		case 'right':
+			moveBy(world, panel, 1, 0);
+			break;
+		case '+':
+		case 'equals':
+			count += 1;
+			break;
+		case '-':
+			count -= 1;
+			break;
+		case 'r':
+			count = 0;
+			break;
+		default:
+			return;
+	}
+
+	updatePanel();
+	render();
 }
 
 updatePanel();
 render();
 
-const program = createProgram();
-await program.init();
+const scriptTokens = (process.env.BLECSD_EXAMPLE_SCRIPT ?? '')
+	.split(',')
+	.map((token) => token.trim())
+	.filter(Boolean);
+const isScriptedMode = scriptTokens.length > 0;
 
-function shutdown(code = 0): void {
-  cleanup(world);
-  program.destroy();
-  process.exit(code);
+let program: ReturnType<typeof createProgram> | null = null;
+
+if (isScriptedMode) {
+	for (const token of scriptTokens) {
+		handleKey(token);
+		if (isShuttingDown) {
+			break;
+		}
+	}
+	if (!isShuttingDown) {
+		shutdown(0, false);
+	}
+} else {
+	program = createProgram();
+	await program.init();
+
+	program.on('key', (event) => {
+		handleKey(event.name, event.ctrl);
+	});
+
+	process.on('SIGINT', () => shutdown(0));
+	process.on('SIGTERM', () => shutdown(0));
 }
-
-program.on('key', (event) => {
-  switch (event.name) {
-    case 'q':
-      shutdown(0);
-      return;
-    case 'c':
-      if (event.ctrl) shutdown(0);
-      return;
-    case 'up':
-      moveBy(world, panel, 0, -1);
-      break;
-    case 'down':
-      moveBy(world, panel, 0, 1);
-      break;
-    case 'left':
-      moveBy(world, panel, -1, 0);
-      break;
-    case 'right':
-      moveBy(world, panel, 1, 0);
-      break;
-    case '+':
-    case 'equals':
-      count += 1;
-      break;
-    case '-':
-      count -= 1;
-      break;
-    case 'r':
-      count = 0;
-      break;
-    default:
-      return;
-  }
-
-  updatePanel();
-  render();
-});
-
-process.on('SIGINT', () => shutdown(0));
-process.on('SIGTERM', () => shutdown(0));

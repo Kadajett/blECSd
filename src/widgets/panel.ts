@@ -22,7 +22,7 @@ import { appendChild, getChildren } from '../components/hierarchy';
 import { setPadding } from '../components/padding';
 import { moveBy, setPosition } from '../components/position';
 import { markDirty, setStyle, setVisible } from '../components/renderable';
-import { removeEntity } from '../core/ecs';
+import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { parseColor } from '../utils/color';
 
@@ -690,9 +690,17 @@ function applyPanelBorder(world: World, eid: Entity, validated: ValidatedPanelCo
  * });
  * ```
  */
-export function createPanel(world: World, entity: Entity, config: PanelConfig = {}): PanelWidget {
+export function createPanel(world: World, config: PanelConfig): PanelWidget;
+export function createPanel(world: World, entity: Entity, config?: PanelConfig): PanelWidget;
+export function createPanel(
+	world: World,
+	entityOrConfig: Entity | PanelConfig,
+	maybeConfig: PanelConfig = {},
+): PanelWidget {
+	const hasEntityArg = typeof entityOrConfig === 'number';
+	const eid = hasEntityArg ? entityOrConfig : (addEntity(world) as Entity);
+	const config = hasEntityArg ? maybeConfig : entityOrConfig;
 	const validated = PanelConfigSchema.parse(config) as ValidatedPanelConfig;
-	const eid = entity;
 
 	// Mark as panel
 	Panel.isPanel[eid] = 1;
