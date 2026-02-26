@@ -38,7 +38,7 @@ import {
 	type ScrollPercentage,
 	type ScrollPosition,
 } from '../components/scrollable';
-import { removeEntity } from '../core/ecs';
+import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import {
 	canScroll,
@@ -759,9 +759,17 @@ function setupScrollable(world: World, eid: Entity, config: ValidatedLogConfig):
  * logView.log({ user: 'alice', action: 'login' });
  * ```
  */
-export function createLog(world: World, entity: Entity, config: LogConfig = {}): LogWidget {
+export function createLog(world: World, config: LogConfig): LogWidget;
+export function createLog(world: World, entity: Entity, config?: LogConfig): LogWidget;
+export function createLog(
+	world: World,
+	entityOrConfig: Entity | LogConfig,
+	maybeConfig: LogConfig = {},
+): LogWidget {
+	const hasEntityArg = typeof entityOrConfig === 'number';
+	const eid = hasEntityArg ? entityOrConfig : (addEntity(world) as Entity);
+	const config = hasEntityArg ? maybeConfig : entityOrConfig;
 	const validated = LogConfigSchema.parse(config) as ValidatedLogConfig;
-	const eid = entity;
 
 	// Set up components using helper functions
 	setupLogOptions(eid, validated);

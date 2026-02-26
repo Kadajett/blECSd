@@ -162,6 +162,14 @@ describe('Panel widget', () => {
 			expect(isPanel(world, eid)).toBe(true);
 		});
 
+		it('creates a panel when called as (world, config)', () => {
+			const panel = createPanel(world, { title: 'From Config' });
+
+			expect(typeof panel.eid).toBe('number');
+			expect(isPanel(world, panel.eid)).toBe(true);
+			expect(panel.getTitle()).toBe('From Config');
+		});
+
 		it('defaults to empty title', () => {
 			const eid = addEntity(world);
 			const panel = createPanel(world, eid);

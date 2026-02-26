@@ -27,6 +27,15 @@ describe('Log Widget', () => {
 			expect(Log.timestamps[eid]).toBe(0); // default false
 		});
 
+		it('creates a log widget when called as (world, config)', () => {
+			world = createWorld();
+			const log = createLog(world, { scrollback: 321 });
+
+			expect(typeof log.eid).toBe('number');
+			expect(isLog(world, log.eid)).toBe(true);
+			expect(Log.scrollback[log.eid]).toBe(321);
+		});
+
 		it('creates a log widget with custom scrollback', () => {
 			world = createWorld();
 			const eid = addEntity(world);
