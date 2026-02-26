@@ -6,7 +6,7 @@ blECSd uses a three-tier export system. Each tier provides a different level of 
 
 ### Tier 1: Curated Essentials (`'blecsd'`)
 
-The top-level import provides ~80 curated exports (64 values + 15 types): the most commonly used functions, types, and schemas. This is the default choice for most applications.
+The top-level import provides ~101 curated exports (84 values + 17 types): the most commonly used functions, types, and schemas. This is the default choice for most applications.
 
 ```typescript
 import { createWorld, addEntity, createBoxEntity } from 'blecsd/core';
@@ -15,14 +15,13 @@ import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 ```
 
 **Included in Tier 1:**
-- ECS core: `createWorld`, `destroyWorld`, `addEntity`, `removeEntity`, `addComponent`, `hasComponent`
-- Entity factories: `createBoxEntity`, `createTextEntity`, `createButtonEntity`, `createScreenEntity`, `createInputEntity`, `createListEntity`, `createCheckboxEntity`, `createSelectEntity`
-- Systems: `layoutSystem`, `renderSystem`, `outputSystem`, `inputSystem`, `focusSystem`, `animationSystem`, `cleanup`, `clearScreen`
-- Component helpers: `setPosition`, `getPosition`, `setDimensions`, `getDimensions`, `setText`, `getText`, `setZIndex`, `getZIndex`, `normalizeZIndices`, `scrollToTop`, `scrollToBottom`, `scrollToLine`, `scrollByLines`, `ensureCursorVisible`, `focusNext`, `focusPrev`, `prepend`, `toggle`, `hitTest`, `TextAlign`
-- Terminal I/O: `enableInput`, `disableInput`, `enableMouse`, `disableMouse`, `enableKeys`, `disableKeys`, `createDoubleBuffer`, `fillRect`, `setCell`, `getCell`, `clearBuffer`, `stripAnsi`, `CursorShape`
-- Schemas: `BoxConfigSchema`, `TextConfigSchema`, `PositionValueSchema`
-- Utilities: `renderText`, `wrapText`, `getLine`, `getLines`, `getStats`
-- Types: `World`, `Entity`, `System`, `BoxConfig`, `TextConfig`, `PositionValue`, `DimensionValue`, `HitTestResult`, `CleanupCallback`, `Unsubscribe`, `Cell`, `TerminalCapabilities`, `KeyHandler`, `MouseHandler`, `DirtyRect`
+- ECS core (6 values + 3 types): `createWorld`, `destroyWorld`, `addEntity`, `removeEntity`, `addComponent`, `hasComponent`; types: `World`, `Entity`, `System`
+- Entity factories (8 values): `createBoxEntity`, `createTextEntity`, `createButtonEntity`, `createScreenEntity`, `createInputEntity`, `createListEntity`, `createCheckboxEntity`, `createSelectEntity`
+- Systems (17 values + 1 type): `layoutSystem`, `renderSystem`, `setRenderBuffer`, `outputSystem`, `inputSystem`, `focusSystem`, `animationSystem`, `cleanup`, `clearScreen`, `cursorHome`, `enterAlternateScreen`, `leaveAlternateScreen`, `hideCursor`, `showCursor`, `setOutputBuffer`, `setOutputStream`, `writeRaw`; type: `DirtyRect`
+- Component helpers (24 values + 1 type): `setPosition`, `getPosition`, `Position`, `setZIndex`, `getZIndex`, `normalizeZIndices`, `setDimensions`, `getDimensions`, `setText`, `getText`, `TextAlign`, `setVelocity`, `getVelocity`, `Velocity`, `scrollToTop`, `scrollToBottom`, `scrollToLine`, `scrollByLines`, `ensureCursorVisible`, `focusNext`, `focusPrev`, `prepend`, `toggle`, `hitTest`; type: `DimensionValue`
+- Terminal I/O (19 values + 5 types): `enableInput`, `disableInput`, `enableMouse`, `disableMouse`, `enableKeys`, `disableKeys`, `createDoubleBuffer`, `getBackBuffer`, `fillRect`, `setCell`, `getCell`, `clearBuffer`, `createDirtyTracker`, `stripAnsi`, `LogLevel`, `parseKeyBuffer`, `isMouseBuffer`, `parseMouseSequence`, `CursorShape`; types: `KeyEvent`, `Cell`, `KeyHandler`, `MouseHandler`, `TerminalCapabilities`
+- Schemas (3 values): `BoxConfigSchema`, `TextConfigSchema`, `PositionValueSchema`
+- Utilities (7 values + 7 types): `createCellBuffer`, `renderText`, `wrapText`, `getLine`, `getLines`, `getStats`, `VERSION`; types: `CellBuffer`, `BoxConfig`, `TextConfig`, `PositionValue`, `HitTestResult`, `CleanupCallback`, `Unsubscribe`
 
 ### Tier 2: Full Module Access (subpath imports)
 
@@ -101,7 +100,7 @@ list.selection.first(world, listEid);
 
 | Path | Description |
 |------|-------------|
-| `blecsd` | Curated Tier 1 essentials (~80 exports) |
+| `blecsd` | Curated Tier 1 essentials (~101 exports) |
 | `blecsd/core` | ECS primitives, world management, entity factories, schemas |
 | `blecsd/components` | All component definitions, typed getters/setters, and namespaces |
 | `blecsd/systems` | All system functions and namespaces |
@@ -287,7 +286,7 @@ import { rope } from 'blecsd/utils';
 
 ### Q: What changed from the old `export *` approach?
 
-The top-level `'blecsd'` import used to re-export everything (~4,500 symbols). Now it exports ~80 curated symbols (64 values + 15 types). Everything else is still accessible via subpath imports (`blecsd/components`, `blecsd/terminal`, etc.).
+The top-level `'blecsd'` import used to re-export everything (~4,500 symbols). Now it exports ~101 curated symbols (84 values + 17 types). Everything else is still accessible via subpath imports (`blecsd/components`, `blecsd/terminal`, etc.).
 
 ### Q: I was importing X from 'blecsd' and now it's gone. Where did it move?
 
