@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { colorToHex, hexToColor, packColor, unpackColor } from './color';
+import { colorToHex, hexToColor, packColor, parseColor, unpackColor } from './color';
 
 describe('packColor', () => {
 	it('packs RGBA components into 32-bit integer', () => {
@@ -274,5 +274,70 @@ describe('colorToHex', () => {
 		const hex = colorToHex(white);
 
 		expect(hex.toLowerCase()).toBe('#ffffff');
+	});
+});
+
+describe('parseColor', () => {
+	it('passes through packed integers unchanged', () => {
+		const packed = packColor(255, 0, 0, 255);
+		expect(parseColor(packed)).toBe(packed);
+	});
+
+	it('converts hex strings to packed color', () => {
+		const packed = parseColor('#ff0000');
+		const { r, g, b, a } = unpackColor(packed);
+
+		expect(r).toBe(255);
+		expect(g).toBe(0);
+		expect(b).toBe(0);
+		expect(a).toBe(255);
+	});
+
+	it('produces same result for hex string and packed integer representations of the same color', () => {
+		const fromHex = parseColor('#0066cc');
+		const fromPacked = parseColor(packColor(0, 102, 204, 255));
+
+		expect(fromHex).toBe(fromPacked);
+	});
+
+	it('handles hex string without # prefix', () => {
+		const withHash = parseColor('#ffffff');
+		const withoutHash = parseColor('ffffff');
+
+		expect(withHash).toBe(withoutHash);
+	});
+
+	it('handles 3-digit shorthand hex strings', () => {
+		const short = parseColor('#f00');
+		const full = parseColor('#ff0000');
+
+		expect(short).toBe(full);
+	});
+
+	it('handles 8-digit hex string with alpha', () => {
+		const color = parseColor('#ff000080');
+		const { r, g, b, a } = unpackColor(color);
+
+		expect(r).toBe(255);
+		expect(g).toBe(0);
+		expect(b).toBe(0);
+		expect(a).toBe(128);
+	});
+
+	it('handles zero (transparent black)', () => {
+		expect(parseColor(0)).toBe(0);
+	});
+
+	it('handles common color constants', () => {
+		const white = parseColor('#ffffff');
+		const black = parseColor('#000000');
+
+		expect(unpackColor(white)).toEqual({ r: 255, g: 255, b: 255, a: 255 });
+		expect(unpackColor(black)).toEqual({ r: 0, g: 0, b: 0, a: 255 });
+	});
+
+	it('round-trips: packColor → parseColor produces same value', () => {
+		const original = packColor(123, 45, 67, 200);
+		expect(parseColor(original)).toBe(original);
 	});
 });

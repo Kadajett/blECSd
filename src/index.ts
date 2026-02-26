@@ -123,6 +123,8 @@ export { BoxConfigSchema, PositionValueSchema, TextConfigSchema } from './core';
 
 export type { CellBuffer } from './utils/box';
 export { createCellBuffer, renderText } from './utils/box';
+// Color — unified helper + low-level primitives
+export { colorToHex, hexToColor, packColor, parseColor, unpackColor } from './utils/color';
 export { getLine, getLines, getStats } from './utils/rope';
 export { wrapText } from './utils/textWrap';
 

@@ -10,7 +10,7 @@ import { resetScreenSingleton } from '../components/screen';
 import { addEntity, createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { World } from '../core/types';
-import { setInteractive } from '../systems/interactiveSystem';
+import { disable, enable, setInteractive } from '../systems/interactiveSystem';
 import {
 	blurAll,
 	clearFocusStack,
@@ -116,6 +116,29 @@ describe('focusSystem', () => {
 			expect(focusable[2]).toBe(entity4); // tabIndex 0, y=15, x=5
 			expect(focusable[3]).toBe(entity3); // tabIndex 0, y=15, x=20
 		});
+
+		it('excludes disabled entities', () => {
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 5);
+			setStyle(world, entity, {});
+			setInteractive(world, entity, { focusable: true });
+			disable(world, entity);
+
+			const focusable = getFocusableEntities(world);
+			expect(focusable).not.toContain(entity);
+		});
+
+		it('includes re-enabled entities after disable', () => {
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 5);
+			setStyle(world, entity, {});
+			setInteractive(world, entity, { focusable: true });
+			disable(world, entity);
+			enable(world, entity);
+
+			const focusable = getFocusableEntities(world);
+			expect(focusable).toContain(entity);
+		});
 	});
 
 	describe('getFocused', () => {
@@ -169,6 +192,33 @@ describe('focusSystem', () => {
 			const result = focusEntity(world, entity);
 
 			expect(result).toBe(false);
+		});
+
+		it('returns false for disabled entity', () => {
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 5);
+			setStyle(world, entity, {});
+			setInteractive(world, entity, { focusable: true });
+			disable(world, entity);
+
+			const result = focusEntity(world, entity);
+
+			expect(result).toBe(false);
+			expect(isFocused(world, entity)).toBe(false);
+		});
+
+		it('can focus entity after re-enabling', () => {
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 5);
+			setStyle(world, entity, {});
+			setInteractive(world, entity, { focusable: true });
+			disable(world, entity);
+			enable(world, entity);
+
+			const result = focusEntity(world, entity);
+
+			expect(result).toBe(true);
+			expect(isFocused(world, entity)).toBe(true);
 		});
 
 		it('blurs previous entity when focusing new one', () => {
@@ -289,6 +339,32 @@ describe('focusSystem', () => {
 		it('returns null when no focusable entities', () => {
 			const result = focusNext(world);
 			expect(result).toBeNull();
+		});
+
+		it('skips disabled entities during Tab navigation', () => {
+			const entity1 = addEntity(world);
+			setPosition(world, entity1, 10, 5);
+			setStyle(world, entity1, {});
+			setInteractive(world, entity1, { focusable: true, tabIndex: 1 });
+
+			const entity2 = addEntity(world);
+			setPosition(world, entity2, 20, 5);
+			setStyle(world, entity2, {});
+			setInteractive(world, entity2, { focusable: true, tabIndex: 2 });
+			disable(world, entity2);
+
+			const entity3 = addEntity(world);
+			setPosition(world, entity3, 30, 5);
+			setStyle(world, entity3, {});
+			setInteractive(world, entity3, { focusable: true, tabIndex: 3 });
+
+			focusEntity(world, entity1);
+			const result = focusNext(world);
+
+			// Should skip entity2 (disabled) and go to entity3
+			expect(result).toBe(entity3);
+			expect(isFocused(world, entity3)).toBe(true);
+			expect(isFocused(world, entity2)).toBe(false);
 		});
 	});
 
@@ -416,6 +492,23 @@ describe('focusSystem', () => {
 			setVisible(world, entity, false);
 
 			// System should blur it
+			focusSystem(world);
+			expect(getFocused(world)).toBeNull();
+		});
+
+		it('blurs entity that becomes disabled', () => {
+			const entity = addEntity(world);
+			setPosition(world, entity, 10, 5);
+			setStyle(world, entity, {});
+			setInteractive(world, entity, { focusable: true });
+
+			focusEntity(world, entity);
+			expect(getFocused(world)).toBe(entity);
+
+			// Disable entity
+			disable(world, entity);
+
+			// System should blur it on next tick
 			focusSystem(world);
 			expect(getFocused(world)).toBeNull();
 		});
