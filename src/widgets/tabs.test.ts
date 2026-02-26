@@ -817,4 +817,35 @@ describe('Tabs widget', () => {
 			expect(tabs.getActiveTab()).toBe(2);
 		});
 	});
+
+	describe('factory signature overloads', () => {
+		it('createTabs(world, config) auto-creates entity', () => {
+			const tabs = createTabs(world, {
+				tabs: [{ label: 'Tab 1' }, { label: 'Tab 2' }],
+				left: 5,
+				top: 10,
+			});
+
+			expect(typeof tabs.eid).toBe('number');
+			expect(isTabs(world, tabs.eid)).toBe(true);
+			const pos = getPosition(world, tabs.eid);
+			expect(pos?.x).toBe(5);
+			expect(pos?.y).toBe(10);
+		});
+
+		it('createTabs(world, entity, config) wraps existing entity', () => {
+			const eid = addEntity(world);
+			const tabs = createTabs(world, eid, { tabs: [{ label: 'A' }] });
+
+			expect(tabs.eid).toBe(eid);
+			expect(isTabs(world, eid)).toBe(true);
+		});
+
+		it('createTabs(world, config) produces independent entities', () => {
+			const tabs1 = createTabs(world, { tabs: [{ label: 'X' }] });
+			const tabs2 = createTabs(world, { tabs: [{ label: 'Y' }] });
+
+			expect(tabs1.eid).not.toBe(tabs2.eid);
+		});
+	});
 });

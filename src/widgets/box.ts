@@ -26,7 +26,7 @@ import { appendChild, getChildren } from '../components/hierarchy';
 import { setPadding } from '../components/padding';
 import { moveBy, setPosition } from '../components/position';
 import { markDirty, setStyle, setVisible } from '../components/renderable';
-import { removeEntity } from '../core/ecs';
+import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { parseColor } from '../utils/color';
 
@@ -652,9 +652,17 @@ function setupContent(world: World, eid: Entity, config: ValidatedBoxConfig): vo
  * box.destroy();
  * ```
  */
-export function createBox(world: World, entity: Entity, config: BoxConfig = {}): BoxWidget {
+export function createBox(world: World, config: BoxConfig): BoxWidget;
+export function createBox(world: World, entity: Entity, config?: BoxConfig): BoxWidget;
+export function createBox(
+	world: World,
+	entityOrConfig: Entity | BoxConfig,
+	maybeConfig: BoxConfig = {},
+): BoxWidget {
+	const hasEntityArg = typeof entityOrConfig === 'number';
+	const eid = hasEntityArg ? entityOrConfig : (addEntity(world) as Entity);
+	const config = hasEntityArg ? maybeConfig : entityOrConfig;
 	const validated = BoxConfigSchema.parse(config) as ValidatedBoxConfig;
-	const eid = entity;
 
 	// Mark as box
 	Box.isBox[eid] = 1;

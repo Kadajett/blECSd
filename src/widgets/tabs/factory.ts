@@ -11,7 +11,7 @@ import { blur, focus, isFocused, setFocusable } from '../../components/focusable
 import { getChildren } from '../../components/hierarchy';
 import { moveBy, setPosition } from '../../components/position';
 import { markDirty, setVisible } from '../../components/renderable';
-import { removeEntity } from '../../core/ecs';
+import { addEntity, removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { TabsConfigSchema, type ValidatedTabsConfig } from './config';
 import {
@@ -68,9 +68,17 @@ import type { TabConfig, TabData, TabsAction, TabsConfig, TabsWidget } from './t
  * tabs.setActiveTab(2);
  * ```
  */
-export function createTabs(world: World, entity: Entity, config: TabsConfig = {}): TabsWidget {
+export function createTabs(world: World, config: TabsConfig): TabsWidget;
+export function createTabs(world: World, entity: Entity, config?: TabsConfig): TabsWidget;
+export function createTabs(
+	world: World,
+	entityOrConfig: Entity | TabsConfig,
+	maybeConfig: TabsConfig = {},
+): TabsWidget {
+	const hasEntityArg = typeof entityOrConfig === 'number';
+	const eid = hasEntityArg ? entityOrConfig : (addEntity(world) as Entity);
+	const config = hasEntityArg ? maybeConfig : entityOrConfig;
 	const validated = TabsConfigSchema.parse(config) as ValidatedTabsConfig;
-	const eid = entity;
 
 	// Mark as tabs and initialize data
 	Tabs.isTabs[eid] = 1;

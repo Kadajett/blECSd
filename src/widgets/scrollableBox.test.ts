@@ -647,4 +647,31 @@ describe('ScrollableBox widget', () => {
 			expect(scrollBox.isFocused()).toBe(true);
 		});
 	});
+
+	describe('factory signature overloads', () => {
+		it('createScrollableBox(world, config) auto-creates entity', () => {
+			const box = createScrollableBox(world, { left: 5, top: 10, width: 30, height: 10 });
+
+			expect(typeof box.eid).toBe('number');
+			expect(isScrollableBox(world, box.eid)).toBe(true);
+			const pos = getPosition(world, box.eid);
+			expect(pos?.x).toBe(5);
+			expect(pos?.y).toBe(10);
+		});
+
+		it('createScrollableBox(world, entity, config) wraps existing entity', () => {
+			const eid = addEntity(world);
+			const box = createScrollableBox(world, eid, { left: 3, top: 7 });
+
+			expect(box.eid).toBe(eid);
+			expect(isScrollableBox(world, eid)).toBe(true);
+		});
+
+		it('createScrollableBox(world, config) produces independent entities', () => {
+			const box1 = createScrollableBox(world, { width: 10, height: 5 });
+			const box2 = createScrollableBox(world, { width: 20, height: 8 });
+
+			expect(box1.eid).not.toBe(box2.eid);
+		});
+	});
 });

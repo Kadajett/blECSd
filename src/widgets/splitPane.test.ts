@@ -892,4 +892,32 @@ describe('SplitPane', () => {
 			expect(rects[0]?.width).toBe(vp0?.width);
 		});
 	});
+
+	describe('factory signature overloads', () => {
+		it('createSplitPane(world, config) auto-creates entity', () => {
+			const split = createSplitPane(world, {
+				direction: 'horizontal',
+				width: 80,
+				height: 24,
+			});
+
+			expect(typeof split.eid).toBe('number');
+			expect(isSplitPane(world, split.eid)).toBe(true);
+		});
+
+		it('createSplitPane(world, entity, config) wraps existing entity', () => {
+			const eid = addEntity(world);
+			const split = createSplitPane(world, eid, { width: 80, height: 24 });
+
+			expect(split.eid).toBe(eid);
+			expect(isSplitPane(world, eid)).toBe(true);
+		});
+
+		it('createSplitPane(world, config) produces independent entities', () => {
+			const split1 = createSplitPane(world, { width: 40, height: 24 });
+			const split2 = createSplitPane(world, { width: 40, height: 24 });
+
+			expect(split1.eid).not.toBe(split2.eid);
+		});
+	});
 });
