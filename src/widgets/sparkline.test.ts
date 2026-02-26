@@ -49,6 +49,13 @@ describe('Sparkline widget', () => {
 			expect(result.success).toBe(true);
 		});
 
+		it('validates height', () => {
+			const result = SparklineConfigSchema.safeParse({
+				height: 3,
+			});
+			expect(result.success).toBe(true);
+		});
+
 		it('rejects negative width', () => {
 			const result = SparklineConfigSchema.safeParse({
 				width: -1,
@@ -106,7 +113,14 @@ describe('Sparkline widget', () => {
 			const widget = createSparkline(world, { width: 40 });
 			const dims = getDimensions(world, widget.eid);
 			expect(dims?.width).toBe(40);
-			expect(dims?.height).toBe(1); // Sparkline is always 1 line high
+			expect(dims?.height).toBe(1);
+		});
+
+		it('sets height correctly', () => {
+			const widget = createSparkline(world, { width: 40, height: 3 });
+			const dims = getDimensions(world, widget.eid);
+			expect(dims?.width).toBe(40);
+			expect(dims?.height).toBe(3);
 		});
 
 		it('sets data correctly', () => {
