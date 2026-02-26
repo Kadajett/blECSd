@@ -4,7 +4,14 @@
  * @module systems/renderSystem
  */
 
-import { Border, BorderType, getBorder, hasBorderVisible } from '../components/border';
+import {
+	Border,
+	BorderType,
+	borderTitleAlignStore,
+	borderTitleStore,
+	getBorder,
+	hasBorderVisible,
+} from '../components/border';
 // getChildren reserved for future tree-based rendering mode
 // import { getChildren } from '../components/hierarchy';
 import { Position } from '../components/position';
@@ -302,20 +309,101 @@ function renderVerticalEdges(
 }
 
 /**
+ * Options for rendering a title inside the top border line.
+ */
+export interface BorderTitleOptions {
+	/** Title text to embed in the top border */
+	readonly title: string;
+	/** Horizontal alignment of the title within the top border */
+	readonly titleAlign?: 'left' | 'center' | 'right';
+}
+
+/**
+ * Overlays a title string onto an already-rendered top border row.
+ *
+ * The title is written directly into the buffer cells for the top
+ * horizontal edge, replacing the horizontal border characters with
+ * the title text (space-padded per alignment). Corners are preserved.
+ *
+ * @param buffer - The screen buffer
+ * @param bounds - Entity bounds
+ * @param title - Title text to render
+ * @param titleAlign - Horizontal alignment ('left' | 'center' | 'right')
+ * @param fg - Foreground color
+ * @param bg - Background color
+ * @param hasLeft - Whether the left border side is present
+ * @param hasRight - Whether the right border side is present
+ */
+function overlayTitleOnBorder(
+	buffer: ScreenBufferData,
+	bounds: EntityBounds,
+	title: string,
+	titleAlign: 'left' | 'center' | 'right',
+	fg: number,
+	bg: number,
+	hasLeft: boolean,
+	hasRight: boolean,
+): void {
+	const innerStart = bounds.x + (hasLeft ? 1 : 0);
+	const innerEnd = bounds.x + bounds.width - (hasRight ? 1 : 0);
+	const innerWidth = innerEnd - innerStart;
+	if (innerWidth <= 0) return;
+
+	// Truncate title if it exceeds available width
+	const chars = [...title];
+	let displayTitle = title;
+	if (chars.length > innerWidth) {
+		displayTitle = `${chars.slice(0, innerWidth - 1).join('')}…`;
+	}
+	const displayChars = [...displayTitle];
+	const titleLen = displayChars.length;
+	const totalPadding = Math.max(0, innerWidth - titleLen);
+
+	let leftPad: number;
+	switch (titleAlign) {
+		case 'center':
+			leftPad = Math.floor(totalPadding / 2);
+			break;
+		case 'right':
+			leftPad = totalPadding;
+			break;
+		default: // 'left'
+			leftPad = 0;
+			break;
+	}
+
+	const titleX = innerStart + leftPad;
+	const y = bounds.y;
+
+	for (let i = 0; i < titleLen; i++) {
+		setCell(buffer, titleX + i, y, createCell(displayChars[i] as string, fg, bg));
+	}
+}
+
+/**
  * Renders the border for an entity.
  *
  * @param ctx - Render context
  * @param eid - Entity ID
  * @param bounds - Entity bounds
+ * @param titleOptions - Optional title to embed in the top border line
  *
  * @example
  * ```typescript
  * import { renderBorder } from 'blecsd';
  *
  * renderBorder(ctx, entity, bounds);
+ *
+ * // With a title embedded in the top border
+ * renderBorder(ctx, entity, bounds, { title: 'CPU Usage', titleAlign: 'center' });
  * ```
  */
-export function renderBorder(ctx: RenderContext, eid: Entity, bounds: EntityBounds): void {
+export function renderBorder(
+	ctx: RenderContext,
+	eid: Entity,
+	bounds: EntityBounds,
+	titleOptions?: BorderTitleOptions,
+): void {
 	const { world, buffer } = ctx;
 
 	if (!hasBorderVisible(world, eid)) return;
@@ -335,6 +423,24 @@ export function renderBorder(ctx: RenderContext, eid: Entity, bounds: EntityBoun
 	renderBorderCorners(buffer, border, bounds, sides, fg, bg);
 	renderHorizontalEdges(buffer, border.charHorizontal, bounds, sides, fg, bg);
 	renderVerticalEdges(buffer, border.charVertical, bounds, sides, fg, bg);
+
+	// Determine effective title: explicit titleOptions take precedence, then entity's stored title
+	const effectiveTitle = titleOptions?.title ?? borderTitleStore.get(eid);
+	const effectiveAlign = titleOptions?.titleAlign ?? borderTitleAlignStore.get(eid) ?? 'left';
+
+	// Overlay title on top border if present
+	if (effectiveTitle && sides.top && bounds.height >= 1) {
+		overlayTitleOnBorder(
+			buffer,
+			bounds,
+			effectiveTitle,
+			effectiveAlign,
+			fg,
+			bg,
+			sides.left,
+			sides.right,
+		);
+	}
 }
 
 /**

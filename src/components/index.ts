@@ -369,7 +369,7 @@ export {
 	updateBehaviorTimer,
 } from './behavior';
 // Border component
-export type { BorderCharset, BorderData, BorderOptions } from './border';
+export type { BorderCharset, BorderData, BorderOptions, BorderTitleAlign } from './border';
 export {
 	BORDER_ASCII,
 	BORDER_BOLD,
@@ -380,16 +380,23 @@ export {
 	BORDER_SINGLE,
 	Border,
 	BorderType,
+	borderTitleAlignStore,
+	borderTitleStore,
+	clearBorderTitle,
 	DEFAULT_BORDER_BG,
 	DEFAULT_BORDER_FG,
 	disableAllBorders,
 	enableAllBorders,
 	getBorder,
 	getBorderChar,
+	getBorderTitle,
+	getBorderTitleAlign,
 	hasBorder,
 	hasBorderVisible,
+	resetBorderTitleStores,
 	setBorder,
 	setBorderChars,
+	setBorderTitle,
 } from './border';
 // Button component
 export type { ButtonEvent, ButtonState, ButtonStore } from './button';

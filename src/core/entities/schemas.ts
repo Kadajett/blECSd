@@ -151,6 +151,10 @@ export const BoxConfigSchema = z
 		parent: z.number().optional(),
 		border: BorderConfigSchema.optional(),
 		padding: PaddingConfigSchema.optional(),
+		/** Optional title text displayed in the top border line */
+		title: z.string().optional(),
+		/** Horizontal alignment of the title within the top border */
+		titleAlign: z.enum(['left', 'center', 'right']).optional(),
 	})
 	.merge(PositionConfigSchema)
 	.merge(DimensionConfigSchema)

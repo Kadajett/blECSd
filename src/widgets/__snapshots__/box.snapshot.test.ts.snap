@@ -32,3 +32,20 @@ exports[`Box widget snapshots > edge cases > renders minimal 1x1 box 1`] = `""`;
 exports[`Box widget snapshots > padding > renders box with asymmetric padding 1`] = `""`;
 
 exports[`Box widget snapshots > padding > renders box with symmetric padding 1`] = `""`;
+
+exports[`Box widget snapshots > title rendering > renders box with center-aligned title in border 1`] = `""`;
+
+exports[`Box widget snapshots > title rendering > renders box with left-aligned title in border 1`] = `""`;
+
+exports[`Box widget snapshots > title rendering > renders box with long title truncated 1`] = `""`;
+
+exports[`Box widget snapshots > title rendering > renders box with right-aligned title in border 1`] = `""`;
+
+exports[`Box widget snapshots > title rendering > renders box with title set dynamically via setTitle 1`] = `
+"
+ ┌─────Dynamic──────┐
+ │                  │
+ │                  │
+ │                  │
+ └──────────────────┘"
+`;

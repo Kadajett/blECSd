@@ -3,7 +3,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { BorderType, getBorder } from '../components/border';
+import { BorderType, getBorder, getBorderTitle, getBorderTitleAlign } from '../components/border';
 import { getContent, getContentData, TextAlign, TextVAlign } from '../components/content';
 import { getDimensions } from '../components/dimensions';
 import { Focusable, isFocused, resetFocusState } from '../components/focusable';
@@ -17,9 +17,12 @@ import {
 	BoxConfigSchema,
 	createBox,
 	getBoxContent,
+	getBoxTitle,
+	getBoxTitleAlign,
 	isBox,
 	resetBoxStore,
 	setBoxContent,
+	setBoxTitle,
 } from './box';
 
 describe('Box widget', () => {
@@ -506,6 +509,131 @@ describe('Box widget', () => {
 			expect(pos?.y).toBe(15);
 			expect(box.getContent()).toBe('Chained!');
 			expect(box.isFocused()).toBe(true);
+		});
+	});
+
+	describe('title support', () => {
+		it('accepts title in config', () => {
+			const eid = addEntity(world);
+			createBox(world, eid, {
+				left: 0,
+				top: 0,
+				width: 20,
+				height: 5,
+				border: { type: 'line' },
+				title: 'My Box',
+			});
+
+			expect(getBorderTitle(eid)).toBe('My Box');
+		});
+
+		it('accepts titleAlign in config', () => {
+			const eid = addEntity(world);
+			createBox(world, eid, {
+				left: 0,
+				top: 0,
+				border: { type: 'line' },
+				title: 'Centered',
+				titleAlign: 'center',
+			});
+
+			expect(getBorderTitle(eid)).toBe('Centered');
+			expect(getBorderTitleAlign(eid)).toBe('center');
+		});
+
+		it('defaults titleAlign to left when not specified', () => {
+			const eid = addEntity(world);
+			createBox(world, eid, {
+				border: { type: 'line' },
+				title: 'Left Aligned',
+			});
+
+			expect(getBorderTitleAlign(eid)).toBe('left');
+		});
+
+		it('has no title by default', () => {
+			const eid = addEntity(world);
+			createBox(world, eid, { border: { type: 'line' } });
+
+			expect(getBorderTitle(eid)).toBeUndefined();
+		});
+
+		it('sets title via widget method', () => {
+			const eid = addEntity(world);
+			const box = createBox(world, eid, { border: { type: 'line' } });
+
+			box.setTitle('Dynamic Title', 'right');
+
+			expect(box.getTitle()).toBe('Dynamic Title');
+			expect(box.getTitleAlign()).toBe('right');
+		});
+
+		it('getTitle returns empty string when no title set', () => {
+			const eid = addEntity(world);
+			const box = createBox(world, eid, {});
+
+			expect(box.getTitle()).toBe('');
+		});
+
+		it('supports setTitle method chaining', () => {
+			const eid = addEntity(world);
+			const box = createBox(world, eid, { border: { type: 'line' } });
+
+			const result = box.setTitle('Chained Title');
+			expect(result).toBe(box);
+			expect(box.getTitle()).toBe('Chained Title');
+		});
+
+		it('clears title on destroy', () => {
+			const eid = addEntity(world);
+			const box = createBox(world, eid, {
+				border: { type: 'line' },
+				title: 'To Be Destroyed',
+			});
+
+			expect(getBorderTitle(eid)).toBe('To Be Destroyed');
+			box.destroy();
+			expect(getBorderTitle(eid)).toBeUndefined();
+		});
+
+		describe('setBoxTitle / getBoxTitle / getBoxTitleAlign utilities', () => {
+			it('setBoxTitle stores title', () => {
+				const eid = addEntity(world);
+				createBox(world, eid, {});
+				setBoxTitle(eid, 'Utility Title', 'center');
+
+				expect(getBoxTitle(eid)).toBe('Utility Title');
+				expect(getBoxTitleAlign(eid)).toBe('center');
+			});
+
+			it('getBoxTitle returns empty string when not set', () => {
+				const eid = addEntity(world);
+				expect(getBoxTitle(eid)).toBe('');
+			});
+		});
+
+		describe('BoxConfigSchema title validation', () => {
+			it('accepts title string', () => {
+				const result = BoxConfigSchema.safeParse({ title: 'Valid Title' });
+				expect(result.success).toBe(true);
+			});
+
+			it('accepts titleAlign values', () => {
+				for (const align of ['left', 'center', 'right'] as const) {
+					const result = BoxConfigSchema.safeParse({ titleAlign: align });
+					expect(result.success).toBe(true);
+				}
+			});
+
+			it('rejects invalid titleAlign', () => {
+				const result = BoxConfigSchema.safeParse({ titleAlign: 'top' });
+				expect(result.success).toBe(false);
+			});
+
+			it('title is optional', () => {
+				const result = BoxConfigSchema.safeParse({});
+				expect(result.success).toBe(true);
+			});
 		});
 	});
 });

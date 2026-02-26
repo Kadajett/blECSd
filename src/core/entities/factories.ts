@@ -4,6 +4,7 @@
  * @module core/entities/factories
  */
 
+import { type BorderTitleAlign, setBorderTitle } from '../../components/border';
 import {
 	attachCheckboxBehavior,
 	DEFAULT_CHECKED_CHAR,
@@ -117,6 +118,14 @@ export function createBoxEntity(world: World, config: BoxConfig = {}): Entity {
 	applyStyleConfig(world, eid, validated);
 	applyBorderConfig(world, eid, validated.border);
 	applyPaddingConfig(world, eid, validated.padding);
+
+	if (validated.title) {
+		setBorderTitle(
+			eid,
+			validated.title,
+			(validated.titleAlign as BorderTitleAlign | undefined) ?? 'left',
+		);
+	}
 
 	if (validated.parent !== undefined) {
 		setParent(world, eid, validated.parent as Entity);
