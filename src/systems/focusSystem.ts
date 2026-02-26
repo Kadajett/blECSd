@@ -46,7 +46,7 @@ import { getScreen, Screen, setScreenFocus } from '../components/screen';
 import { query } from '../core/ecs';
 import { createEventBus, type EventBus } from '../core/events';
 import type { Entity, System, World } from '../core/types';
-import { setFocusedState } from '../systems/interactiveSystem';
+import { isEnabled, setFocusedState } from '../systems/interactiveSystem';
 
 // =============================================================================
 // TYPES
@@ -166,6 +166,11 @@ export function getFocusableEntities(world: World): Entity[] {
 	for (const eid of entities) {
 		// Must be focusable
 		if (!isFocusable(world, eid as Entity)) {
+			continue;
+		}
+
+		// Must be enabled (disabled entities are skipped in focus traversal)
+		if (!isEnabled(world, eid as Entity)) {
 			continue;
 		}
 
@@ -301,8 +306,8 @@ export function focusEntity(world: World, eid: Entity): boolean {
 		return false;
 	}
 
-	// Verify entity is focusable and visible
-	if (!isFocusable(world, eid) || !isEffectivelyVisible(world, eid)) {
+	// Verify entity is focusable, enabled, and visible
+	if (!isFocusable(world, eid) || !isEnabled(world, eid) || !isEffectivelyVisible(world, eid)) {
 		return false;
 	}
 
@@ -546,7 +551,11 @@ export function focusPop(world: World): Entity | null {
 	const previousEntity = stack.pop() as Entity;
 
 	// Try to focus the previous entity
-	if (isFocusable(world, previousEntity) && isEffectivelyVisible(world, previousEntity)) {
+	if (
+		isFocusable(world, previousEntity) &&
+		isEnabled(world, previousEntity) &&
+		isEffectivelyVisible(world, previousEntity)
+	) {
 		focusEntity(world, previousEntity);
 		return previousEntity;
 	}
@@ -603,7 +612,11 @@ export function restoreFocus(world: World): Entity | null {
 	}
 
 	// Try to focus the saved entity
-	if (isFocusable(world, savedFocus) && isEffectivelyVisible(world, savedFocus)) {
+	if (
+		isFocusable(world, savedFocus) &&
+		isEnabled(world, savedFocus) &&
+		isEffectivelyVisible(world, savedFocus)
+	) {
 		focusEntity(world, savedFocus);
 		return savedFocus;
 	}
@@ -635,7 +648,11 @@ export function rewindFocus(world: World): Entity | null {
 	// Search backwards for a valid focusable entity
 	while (stack.length > 0) {
 		const candidate = stack.pop() as Entity;
-		if (isFocusable(world, candidate) && isEffectivelyVisible(world, candidate)) {
+		if (
+			isFocusable(world, candidate) &&
+			isEnabled(world, candidate) &&
+			isEffectivelyVisible(world, candidate)
+		) {
 			focusEntity(world, candidate);
 			return candidate;
 		}
@@ -781,8 +798,12 @@ export const focusSystem: System = (world: World): World => {
 	if (currentFocus !== 0) {
 		const focusedEntity = currentFocus as Entity;
 
-		// Check if still focusable and visible
-		if (!isFocusable(world, focusedEntity) || !isEffectivelyVisible(world, focusedEntity)) {
+		// Check if still focusable, enabled, and visible
+		if (
+			!isFocusable(world, focusedEntity) ||
+			!isEnabled(world, focusedEntity) ||
+			!isEffectivelyVisible(world, focusedEntity)
+		) {
 			// Lost focus, blur and try to focus next
 			setFocusInternal(world, screen, null, focusedEntity);
 		}
