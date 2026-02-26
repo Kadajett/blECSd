@@ -9,7 +9,7 @@ import { blur, focus, isFocused, setFocusable } from '../../components/focusable
 import { appendChild, getChildren } from '../../components/hierarchy';
 import { moveBy, setPosition } from '../../components/position';
 import { markDirty, setStyle, setVisible } from '../../components/renderable';
-import { removeEntity } from '../../core/ecs';
+import { addEntity, removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { SplitPaneConfigSchema } from './config';
 import {
@@ -127,13 +127,21 @@ function initSplitPaneComponents(
  * split.scrollPane(1, 0, 20);
  * ```
  */
+export function createSplitPane(world: World, config: SplitPaneConfig): SplitPaneWidget;
 export function createSplitPane(
 	world: World,
 	entity: Entity,
-	config: SplitPaneConfig = {},
+	config?: SplitPaneConfig,
+): SplitPaneWidget;
+export function createSplitPane(
+	world: World,
+	entityOrConfig: Entity | SplitPaneConfig,
+	maybeConfig: SplitPaneConfig = {},
 ): SplitPaneWidget {
+	const hasEntityArg = typeof entityOrConfig === 'number';
+	const eid = hasEntityArg ? entityOrConfig : (addEntity(world) as Entity);
+	const config = hasEntityArg ? maybeConfig : entityOrConfig;
 	const validated = SplitPaneConfigSchema.parse(config) as ValidatedSplitPaneConfig;
-	const eid = entity;
 
 	const direction: SplitDirection = validated.direction ?? 'horizontal';
 	const minPaneSize = validated.minPaneSize ?? 3;

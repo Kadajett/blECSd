@@ -11,6 +11,7 @@ import {
 	addFlexChild,
 	createFlexContainer,
 	type FlexContainerConfig,
+	isFlexContainer,
 	resetFlexContainerStore,
 } from './flexbox';
 
@@ -568,6 +569,44 @@ describe('Flexbox widget', () => {
 				.hide();
 
 			expect(result).toBe(flex);
+		});
+	});
+
+	describe('factory signature overloads', () => {
+		it('createFlexContainer(world, config) auto-creates entity', () => {
+			resetFlexContainerStore();
+			world = createWorld();
+			const flex = createFlexContainer(world, {
+				left: 5,
+				top: 10,
+				width: 80,
+				height: 24,
+			});
+
+			expect(typeof flex.eid).toBe('number');
+			expect(isFlexContainer(world, flex.eid)).toBe(true);
+			const pos = getPosition(world, flex.eid);
+			expect(pos?.x).toBe(5);
+			expect(pos?.y).toBe(10);
+		});
+
+		it('createFlexContainer(world, entity, config) wraps existing entity', () => {
+			resetFlexContainerStore();
+			world = createWorld();
+			const eid = addEntity(world);
+			const flex = createFlexContainer(world, eid, { width: 40, height: 20 });
+
+			expect(flex.eid).toBe(eid);
+			expect(isFlexContainer(world, eid)).toBe(true);
+		});
+
+		it('createFlexContainer(world, config) produces independent entities', () => {
+			resetFlexContainerStore();
+			world = createWorld();
+			const flex1 = createFlexContainer(world, { width: 40, height: 20 });
+			const flex2 = createFlexContainer(world, { width: 60, height: 20 });
+
+			expect(flex1.eid).not.toBe(flex2.eid);
 		});
 	});
 });

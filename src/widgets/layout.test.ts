@@ -825,4 +825,37 @@ describe('Layout widget', () => {
 			expect(layout.getGap()).toBe(2);
 		});
 	});
+
+	describe('factory signature overloads', () => {
+		it('createLayout(world, config) auto-creates entity', () => {
+			const layout = createLayout(world, {
+				layout: 'grid',
+				left: 5,
+				top: 10,
+				width: 80,
+				height: 24,
+			});
+
+			expect(typeof layout.eid).toBe('number');
+			expect(isLayout(world, layout.eid)).toBe(true);
+			const pos = getPosition(world, layout.eid);
+			expect(pos?.x).toBe(5);
+			expect(pos?.y).toBe(10);
+		});
+
+		it('createLayout(world, entity, config) wraps existing entity', () => {
+			const eid = addEntity(world);
+			const layout = createLayout(world, eid, { layout: 'flex' });
+
+			expect(layout.eid).toBe(eid);
+			expect(isLayout(world, eid)).toBe(true);
+		});
+
+		it('createLayout(world, config) produces independent entities', () => {
+			const layout1 = createLayout(world, { layout: 'grid' });
+			const layout2 = createLayout(world, { layout: 'inline' });
+
+			expect(layout1.eid).not.toBe(layout2.eid);
+		});
+	});
 });

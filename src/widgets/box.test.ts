@@ -508,4 +508,31 @@ describe('Box widget', () => {
 			expect(box.isFocused()).toBe(true);
 		});
 	});
+
+	describe('factory signature overloads', () => {
+		it('createBox(world, config) auto-creates entity', () => {
+			const box = createBox(world, { left: 5, top: 10, width: 20, height: 5 });
+
+			expect(typeof box.eid).toBe('number');
+			expect(isBox(world, box.eid)).toBe(true);
+			const pos = getPosition(world, box.eid);
+			expect(pos?.x).toBe(5);
+			expect(pos?.y).toBe(10);
+		});
+
+		it('createBox(world, entity, config) wraps existing entity', () => {
+			const eid = addEntity(world);
+			const box = createBox(world, eid, { left: 3, top: 7 });
+
+			expect(box.eid).toBe(eid);
+			expect(isBox(world, eid)).toBe(true);
+		});
+
+		it('createBox(world, config) and createBox(world, entity) produce independent entities', () => {
+			const box1 = createBox(world, { width: 10, height: 5 });
+			const box2 = createBox(world, { width: 20, height: 8 });
+
+			expect(box1.eid).not.toBe(box2.eid);
+		});
+	});
 });
