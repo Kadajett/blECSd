@@ -109,25 +109,20 @@ function createPackageJson(name: string, description: string): string {
 function getBuiltinTemplates(): readonly Template[] {
 	return [
 		{
-			name: 'basic',
-			description: 'Minimal blECSd app with a single box',
+			name: 'hello-world',
+			description: 'Minimal blECSd app using createApp() — hello world in 7 lines',
 			category: 'Getting Started',
 			files: [
 				{
 					path: 'src/index.ts',
-					content: `import { createWorld, addEntity } from 'blecsd';
-import { setPosition } from 'blecsd';
-import { setDimensions } from 'blecsd';
+					content: `import { createApp, createTextEntity } from 'blecsd';
 
-const world = createWorld();
-const eid = addEntity(world);
+const app = await createApp({ fullscreen: true, fps: 30 });
 
-setPosition(world, eid, 0, 0);
-setDimensions(world, eid, 40, 10);
+createTextEntity(app.world, { x: 5, y: 3, text: 'Hello, blECSd!' });
 
-console.log('blECSd app initialized!');
-console.log('Entity:', eid);
-console.log('World created with ECS architecture.');
+app.program.on('key', (e) => { if (e.name === 'q') app.shutdown(); });
+app.start();
 `,
 				},
 				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
@@ -135,41 +130,90 @@ console.log('World created with ECS architecture.');
 		},
 		{
 			name: 'form',
-			description: 'Interactive form with text inputs and buttons',
+			description: 'Interactive form with text inputs and buttons using createApp()',
 			category: 'Widgets',
 			files: [
 				{
 					path: 'src/index.ts',
-					content: `import { createWorld, addEntity } from 'blecsd';
-import { setPosition } from 'blecsd';
-import { setDimensions } from 'blecsd';
+					content: `import { createApp, createBoxEntity, createTextEntity } from 'blecsd';
+import { BorderType } from 'blecsd/components';
 
-// Create world and form entities
-const world = createWorld();
+const app = await createApp({ fullscreen: true, fps: 30 });
+const { world } = app;
 
-// Create a form container
-const formEid = addEntity(world);
-setPosition(world, formEid, 2, 2);
-setDimensions(world, formEid, 60, 20);
+// Form container
+createBoxEntity(world, {
+  x: 2,
+  y: 2,
+  width: 60,
+  height: 20,
+  bg: 0x1e293bff,
+  border: { type: BorderType.Line, top: true, bottom: true, left: true, right: true },
+});
 
-// Create input fields
-const nameInput = addEntity(world);
-setPosition(world, nameInput, 4, 4);
-setDimensions(world, nameInput, 40, 1);
+// Title
+createTextEntity(world, { x: 4, y: 3, text: 'User Registration Form', fg: 0xffffffff });
 
-const emailInput = addEntity(world);
-setPosition(world, emailInput, 4, 7);
-setDimensions(world, emailInput, 40, 1);
+// Name field
+createTextEntity(world, { x: 4, y: 5, text: 'Name:', fg: 0x94a3b8ff });
+createBoxEntity(world, {
+  x: 4,
+  y: 6,
+  width: 40,
+  height: 1,
+  bg: 0x0f172aff,
+  border: { type: BorderType.Line, top: true, bottom: true, left: true, right: true },
+});
 
-// Create submit button
-const submitBtn = addEntity(world);
-setPosition(world, submitBtn, 4, 10);
-setDimensions(world, submitBtn, 12, 3);
+// Email field
+createTextEntity(world, { x: 4, y: 8, text: 'Email:', fg: 0x94a3b8ff });
+createBoxEntity(world, {
+  x: 4,
+  y: 9,
+  width: 40,
+  height: 1,
+  bg: 0x0f172aff,
+  border: { type: BorderType.Line, top: true, bottom: true, left: true, right: true },
+});
 
-console.log('Form app initialized!');
-console.log('Form entity:', formEid);
-console.log('Inputs:', nameInput, emailInput);
-console.log('Submit button:', submitBtn);
+// Password field
+createTextEntity(world, { x: 4, y: 11, text: 'Password:', fg: 0x94a3b8ff });
+createBoxEntity(world, {
+  x: 4,
+  y: 12,
+  width: 40,
+  height: 1,
+  bg: 0x0f172aff,
+  border: { type: BorderType.Line, top: true, bottom: true, left: true, right: true },
+});
+
+// Submit button
+createBoxEntity(world, {
+  x: 4,
+  y: 14,
+  width: 14,
+  height: 3,
+  bg: 0x2563ebff,
+  border: { type: BorderType.Line, top: true, bottom: true, left: true, right: true },
+});
+createTextEntity(world, { x: 7, y: 15, text: 'Submit', fg: 0xffffffff });
+
+// Cancel button
+createBoxEntity(world, {
+  x: 20,
+  y: 14,
+  width: 14,
+  height: 3,
+  bg: 0x475569ff,
+  border: { type: BorderType.Line, top: true, bottom: true, left: true, right: true },
+});
+createTextEntity(world, { x: 23, y: 15, text: 'Cancel', fg: 0xffffffff });
+
+// Help text
+createTextEntity(world, { x: 4, y: 18, text: 'Press q to quit', fg: 0x64748bff });
+
+app.program.on('key', (e) => { if (e.name === 'q') app.shutdown(); });
+app.start();
 `,
 				},
 				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
@@ -177,39 +221,71 @@ console.log('Submit button:', submitBtn);
 		},
 		{
 			name: 'dashboard',
-			description: 'Multi-panel dashboard with layout system',
+			description: 'Multi-panel dashboard with layout system using createApp()',
 			category: 'Widgets',
 			files: [
 				{
 					path: 'src/index.ts',
-					content: `import { createWorld, addEntity } from 'blecsd';
-import { setPosition } from 'blecsd';
-import { setDimensions } from 'blecsd';
+					content: `import { createApp, createBoxEntity, createTextEntity } from 'blecsd';
+import { BorderType } from 'blecsd/components';
 
-const world = createWorld();
+const app = await createApp({ fullscreen: true, fps: 30 });
+const { world } = app;
 
 // Header panel
-const header = addEntity(world);
-setPosition(world, header, 0, 0);
-setDimensions(world, header, 80, 3);
+createBoxEntity(world, {
+  x: 0,
+  y: 0,
+  width: app.cols,
+  height: 3,
+  bg: 0x2563ebff,
+  border: { type: BorderType.Line, bottom: true },
+});
+createTextEntity(world, { x: 2, y: 1, text: 'blECSd Dashboard', fg: 0xffffffff });
 
 // Left sidebar
-const sidebar = addEntity(world);
-setPosition(world, sidebar, 0, 3);
-setDimensions(world, sidebar, 20, 21);
+createBoxEntity(world, {
+  x: 0,
+  y: 3,
+  width: 20,
+  height: app.rows - 4,
+  bg: 0x1e293bff,
+  border: { type: BorderType.Line, right: true },
+});
+createTextEntity(world, { x: 2, y: 5, text: 'Menu', fg: 0x94a3b8ff });
+createTextEntity(world, { x: 2, y: 7, text: '> Dashboard', fg: 0xffffffff });
+createTextEntity(world, { x: 2, y: 8, text: '  Settings', fg: 0x94a3b8ff });
+createTextEntity(world, { x: 2, y: 9, text: '  Help', fg: 0x94a3b8ff });
 
 // Main content area
-const main = addEntity(world);
-setPosition(world, main, 20, 3);
-setDimensions(world, main, 60, 21);
+createBoxEntity(world, {
+  x: 20,
+  y: 3,
+  width: app.cols - 20,
+  height: app.rows - 4,
+  bg: 0x0f172aff,
+});
+createTextEntity(world, { x: 22, y: 5, text: 'Welcome to your dashboard!', fg: 0xffffffff });
+createTextEntity(world, { x: 22, y: 7, text: 'This is a multi-panel layout.', fg: 0x94a3b8ff });
 
 // Status bar
-const statusBar = addEntity(world);
-setPosition(world, statusBar, 0, 24);
-setDimensions(world, statusBar, 80, 1);
+createBoxEntity(world, {
+  x: 0,
+  y: app.rows - 1,
+  width: app.cols,
+  height: 1,
+  bg: 0x475569ff,
+  border: { type: BorderType.Line, top: true },
+});
+createTextEntity(world, {
+  x: 2,
+  y: app.rows - 1,
+  text: 'Press q to quit',
+  fg: 0xffffffff,
+});
 
-console.log('Dashboard initialized!');
-console.log('Panels: header, sidebar, main, statusBar');
+app.program.on('key', (e) => { if (e.name === 'q') app.shutdown(); });
+app.start();
 `,
 				},
 				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
@@ -217,53 +293,70 @@ console.log('Panels: header, sidebar, main, statusBar');
 		},
 		{
 			name: 'game',
-			description: 'Game template with game loop, input handling, and ECS',
+			description: 'Game template with arrow key movement using createApp()',
 			category: 'Games',
 			files: [
 				{
 					path: 'src/index.ts',
-					content: `import { createWorld, addEntity } from 'blecsd';
-import { createGameLoop, LoopPhase } from 'blecsd';
-import { setPosition } from 'blecsd';
+					content: `import { createApp, createBoxEntity, createTextEntity } from 'blecsd';
+import { moveBy, getPosition } from 'blecsd/components';
+import { BorderType } from 'blecsd/components';
 
-const world = createWorld();
+const app = await createApp({ fullscreen: true, fps: 60 });
+const { world, program } = app;
 
-// Create player entity
-const player = addEntity(world);
-setPosition(world, player, 40, 12);
-
-// Create game loop
-const loop = createGameLoop(world, { targetFPS: 60 });
-
-// Input system
-loop.registerSystem(LoopPhase.INPUT, (w) => {
-  // Process input here
-  return w;
+// Game arena
+createBoxEntity(world, {
+  x: 0,
+  y: 0,
+  width: app.cols,
+  height: app.rows - 2,
+  bg: 0x0f172aff,
+  border: { type: BorderType.Line, bottom: true },
 });
 
-// Update system
-loop.registerSystem(LoopPhase.UPDATE, (w) => {
-  // Game logic here
-  return w;
+// Player character
+const player = createTextEntity(world, {
+  x: Math.floor(app.cols / 2),
+  y: Math.floor((app.rows - 2) / 2),
+  text: '@',
+  fg: 0x22c55eff,
 });
 
-// Render system
-loop.registerSystem(LoopPhase.RENDER, (w) => {
-  // Render here
-  return w;
+// Enemy
+const enemy = createTextEntity(world, {
+  x: 10,
+  y: 5,
+  text: 'E',
+  fg: 0xef4444ff,
 });
 
-console.log('Game initialized!');
-console.log('Player entity:', player);
-console.log('Game loop created at 60 FPS');
-console.log('Press Ctrl+C to exit');
+// Instructions
+createTextEntity(world, { x: 2, y: app.rows - 1, text: 'Arrow keys to move | Q to quit', fg: 0x94a3b8ff });
 
-loop.start();
-
-process.on('SIGINT', () => {
-  loop.stop();
-  process.exit(0);
+// Score display
+let score = 0;
+const scoreText = createTextEntity(world, {
+  x: app.cols - 15,
+  y: app.rows - 1,
+  text: \`Score: \${score}\`,
+  fg: 0xffffffff,
 });
+
+// Input handling
+program.on('key', (e) => {
+  if (e.name === 'q') app.shutdown();
+  
+  const pos = getPosition(world, player);
+  if (!pos) return;
+  
+  if (e.name === 'up' && pos.y > 0) moveBy(world, player, 0, -1);
+  if (e.name === 'down' && pos.y < app.rows - 3) moveBy(world, player, 0, 1);
+  if (e.name === 'left' && pos.x > 0) moveBy(world, player, -1, 0);
+  if (e.name === 'right' && pos.x < app.cols - 1) moveBy(world, player, 1, 0);
+});
+
+app.start();
 `,
 				},
 				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
@@ -271,43 +364,87 @@ process.on('SIGINT', () => {
 		},
 		{
 			name: 'list',
-			description: 'Selectable list with keyboard navigation',
+			description: 'Selectable list with keyboard navigation using createApp()',
 			category: 'Widgets',
 			files: [
 				{
 					path: 'src/index.ts',
-					content: `import { createWorld, addEntity } from 'blecsd';
-import { createList } from 'blecsd';
+					content: `import { createApp, createBoxEntity, createTextEntity } from 'blecsd';
+import { setContent } from 'blecsd/components';
+import { BorderType } from 'blecsd/components';
 
-const world = createWorld();
-const eid = addEntity(world);
+const app = await createApp({ fullscreen: true, fps: 30 });
+const { world, program } = app;
 
-const list = createList(world, eid, {
+// List container
+createBoxEntity(world, {
   x: 5,
-  y: 5,
-  width: 30,
-  height: 10,
-  items: [
-    'Option 1: Hello World',
-    'Option 2: Dashboard',
-    'Option 3: Settings',
-    'Option 4: Help',
-    'Option 5: Quit',
-  ],
+  y: 3,
+  width: 40,
+  height: 12,
+  bg: 0x1e293bff,
+  border: { type: BorderType.Line, top: true, bottom: true, left: true, right: true },
 });
 
-list.focus();
+// Title
+createTextEntity(world, { x: 7, y: 4, text: 'Select an Option', fg: 0xffffffff });
 
-list.onSelect((index, item) => {
-  console.log(\`Selected: \${item.text} at index \${index}\`);
+// List items
+const items = [
+  'Option 1: Hello World',
+  'Option 2: Dashboard',
+  'Option 3: Settings',
+  'Option 4: Help',
+  'Option 5: Quit',
+];
+
+let selectedIndex = 0;
+const itemEntities = items.map((text, index) => {
+  return createTextEntity(world, {
+    x: 7,
+    y: 6 + index,
+    text: index === selectedIndex ? \`> \${text}\` : \`  \${text}\`,
+    fg: index === selectedIndex ? 0x22c55eff : 0x94a3b8ff,
+  });
 });
 
-list.onActivate((index, item) => {
-  console.log(\`Activated: \${item.text}\`);
+// Instructions
+createTextEntity(world, {
+  x: 7,
+  y: 14,
+  text: '↑/↓ to navigate | Enter to select | Q to quit',
+  fg: 0x64748bff,
 });
 
-console.log('List widget initialized!');
-console.log('Use arrow keys to navigate, Enter to select.');
+// Update selection visual
+function updateSelection() {
+  itemEntities.forEach((eid, index) => {
+    const isSelected = index === selectedIndex;
+    setContent(world, eid, isSelected ? \`> \${items[index]}\` : \`  \${items[index]}\`);
+  });
+}
+
+// Input handling
+program.on('key', (e) => {
+  if (e.name === 'q') app.shutdown();
+  
+  if (e.name === 'up' && selectedIndex > 0) {
+    selectedIndex--;
+    updateSelection();
+  }
+  
+  if (e.name === 'down' && selectedIndex < items.length - 1) {
+    selectedIndex++;
+    updateSelection();
+  }
+  
+  if (e.name === 'enter' || e.name === 'return') {
+    console.log(\`Selected: \${items[selectedIndex]} at index \${selectedIndex}\`);
+    if (selectedIndex === items.length - 1) app.shutdown();
+  }
+});
+
+app.start();
 `,
 				},
 				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
