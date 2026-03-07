@@ -29,8 +29,6 @@ import {
 	registerScreenSingleton,
 	resetScreenSingleton,
 	resizeScreen,
-	screenExec,
-	screenSpawn,
 	setAutoPadding,
 	setFullUnicode,
 	setScreenAlternateBuffer,
