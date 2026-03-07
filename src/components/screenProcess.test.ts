@@ -32,7 +32,7 @@ describe('Screen Process Management', () => {
 			expect(Renderable.visible[screen]).toBe(1);
 
 			const exitPromise = new Promise<number | null>((resolve) => {
-				const child = spawnScreenProcess(world, 'echo', ['hello'], {
+				const _child = spawnScreenProcess(world, 'echo', ['hello'], {
 					onExit: (code) => {
 						resolve(code);
 					},

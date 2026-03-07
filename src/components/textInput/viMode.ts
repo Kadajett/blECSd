@@ -7,10 +7,9 @@
 import type { Entity, World } from '../../core/types';
 import { markDirty } from '../renderable';
 import { isTextInput } from './behavior';
-import { getCursorPos, setCursorPos, setSelection, clearSelection } from './cursor';
-import { setCursorMode } from './cursor';
-import { CursorMode } from './types';
+import { clearSelection, getCursorPos, setCursorMode, setCursorPos, setSelection } from './cursor';
 import type { TextInputAction } from './types';
+import { CursorMode } from './types';
 
 // =============================================================================
 // Types
@@ -252,14 +251,14 @@ function findNextWordStart(text: string, pos: number): number {
 
 	let i = pos;
 	// Skip current word chars
-	if (/\w/.test(text[i]!)) {
-		while (i < len && /\w/.test(text[i]!)) i++;
-	} else if (!/\s/.test(text[i]!)) {
+	if (/\w/.test(text.charAt(i))) {
+		while (i < len && /\w/.test(text.charAt(i))) i++;
+	} else if (!/\s/.test(text.charAt(i))) {
 		// Punctuation
-		while (i < len && !/\w/.test(text[i]!) && !/\s/.test(text[i]!)) i++;
+		while (i < len && !/\w/.test(text.charAt(i)) && !/\s/.test(text.charAt(i))) i++;
 	}
 	// Skip whitespace
-	while (i < len && /\s/.test(text[i]!)) i++;
+	while (i < len && /\s/.test(text.charAt(i))) i++;
 	return i;
 }
 
@@ -269,12 +268,12 @@ function findPrevWordStart(text: string, pos: number): number {
 
 	let i = pos - 1;
 	// Skip whitespace
-	while (i > 0 && /\s/.test(text[i]!)) i--;
+	while (i > 0 && /\s/.test(text.charAt(i))) i--;
 	// Skip word chars or punctuation
-	if (i >= 0 && /\w/.test(text[i]!)) {
-		while (i > 0 && /\w/.test(text[i - 1]!)) i--;
-	} else if (i >= 0 && !/\s/.test(text[i]!)) {
-		while (i > 0 && !/\w/.test(text[i - 1]!) && !/\s/.test(text[i - 1]!)) i--;
+	if (i >= 0 && /\w/.test(text.charAt(i))) {
+		while (i > 0 && /\w/.test(text.charAt(i - 1))) i--;
+	} else if (i >= 0 && !/\s/.test(text.charAt(i))) {
+		while (i > 0 && !/\w/.test(text.charAt(i - 1)) && !/\s/.test(text.charAt(i - 1))) i--;
 	}
 	return i;
 }
@@ -286,12 +285,12 @@ function findWordEnd(text: string, pos: number): number {
 
 	let i = pos + 1;
 	// Skip whitespace
-	while (i < len && /\s/.test(text[i]!)) i++;
+	while (i < len && /\s/.test(text.charAt(i))) i++;
 	// Advance through word chars or punctuation
-	if (i < len && /\w/.test(text[i]!)) {
-		while (i < len - 1 && /\w/.test(text[i + 1]!)) i++;
-	} else if (i < len && !/\s/.test(text[i]!)) {
-		while (i < len - 1 && !/\w/.test(text[i + 1]!) && !/\s/.test(text[i + 1]!)) i++;
+	if (i < len && /\w/.test(text.charAt(i))) {
+		while (i < len - 1 && /\w/.test(text.charAt(i + 1))) i++;
+	} else if (i < len && !/\s/.test(text.charAt(i))) {
+		while (i < len - 1 && !/\w/.test(text.charAt(i + 1)) && !/\s/.test(text.charAt(i + 1))) i++;
 	}
 	return i;
 }
@@ -314,7 +313,7 @@ function findLineEnd(text: string, pos: number): number {
 function findFirstNonWhitespace(text: string, pos: number): number {
 	const lineStart = findLineStart(text, pos);
 	let i = lineStart;
-	while (i < text.length && text[i] !== '\n' && /\s/.test(text[i]!)) i++;
+	while (i < text.length && text[i] !== '\n' && /\s/.test(text.charAt(i))) i++;
 	return i;
 }
 
@@ -564,7 +563,7 @@ function handleOperatorMotion(
 	text: string,
 ): ViKeyResult {
 	const pos = getCursorPos(world, eid);
-	const op = ctx.pendingOperator!;
+	const op = ctx.pendingOperator as string;
 	const len = text.length;
 
 	// Handle doubled operator (dd, cc, yy) - operates on whole line

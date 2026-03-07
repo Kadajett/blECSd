@@ -12,7 +12,8 @@ function createMockStream(opts: { columns?: number; rows?: number } = {}): MockS
 	return {
 		...opts,
 		write: vi.fn(() => true),
-	} as unknown as MockStream;
+		// biome-ignore lint/suspicious/noExplicitAny: test mock factory
+	} as any as MockStream;
 }
 
 describe('createRenderPipeline', () => {
@@ -86,7 +87,9 @@ describe('createApp', () => {
 			rows: 20,
 			fullscreen: false,
 			programOptions: {
+				// biome-ignore lint/suspicious/noExplicitAny: test mock needs type coercion
 				input: mockStdin as any,
+				// biome-ignore lint/suspicious/noExplicitAny: test mock needs type coercion
 				output: mockStdout as any,
 			},
 		});
@@ -125,7 +128,9 @@ describe('createApp', () => {
 			rows: 10,
 			fullscreen: false,
 			programOptions: {
+				// biome-ignore lint/suspicious/noExplicitAny: test mock needs type coercion
 				input: mockStdin as any,
+				// biome-ignore lint/suspicious/noExplicitAny: test mock needs type coercion
 				output: mockStdout as any,
 			},
 		});
@@ -159,7 +164,9 @@ describe('createApp', () => {
 			fps: 10,
 			fullscreen: false,
 			programOptions: {
+				// biome-ignore lint/suspicious/noExplicitAny: test mock needs type coercion
 				input: mockStdin as any,
+				// biome-ignore lint/suspicious/noExplicitAny: test mock needs type coercion
 				output: mockStdout as any,
 			},
 		});

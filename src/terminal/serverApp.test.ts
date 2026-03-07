@@ -34,7 +34,6 @@ describe('createServerApp', () => {
 	});
 
 	it('throws on unknown mode', () => {
-		// biome-ignore lint/suspicious/noExplicitAny: testing invalid input
 		expect(() => createServerApp({ mode: 'ftp' as never, port: 24003 })).toThrow(
 			'Unknown server mode',
 		);

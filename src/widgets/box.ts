@@ -19,6 +19,7 @@ import {
 	setBorder,
 	setBorderChars,
 } from '../components/border';
+import { BoxTitle, boxTitleStore, clearBoxTitle, resetBoxTitleStore } from '../components/boxTitle';
 import { getContent, setContent, TextAlign, TextVAlign } from '../components/content';
 import { setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
@@ -28,7 +29,6 @@ import { moveBy, setPosition } from '../components/position';
 import { markDirty, setStyle, setVisible } from '../components/renderable';
 import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
-import { BoxTitle, boxTitleStore, clearBoxTitle, resetBoxTitleStore } from '../components/boxTitle';
 import { parseColor } from '../utils/color';
 
 // =============================================================================
