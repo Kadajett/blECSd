@@ -28,6 +28,7 @@
  * ```
  */
 
+import { unpackColor } from '../../utils/color';
 import { CSI, SGR } from '../ansi';
 import type { Cell, ScreenBufferData } from './cell';
 import { Attr, cloneCell, createCell, getCell } from './cell';
@@ -253,17 +254,7 @@ export function createEmptyScreenshot(width: number, height: number): Screenshot
 // OUTPUT FUNCTIONS
 // =============================================================================
 
-/**
- * Unpacks a 32-bit RGBA color into components.
- */
-function unpackColor(packed: number): { r: number; g: number; b: number; a: number } {
-	return {
-		r: (packed >>> 24) & 0xff,
-		g: (packed >>> 16) & 0xff,
-		b: (packed >>> 8) & 0xff,
-		a: packed & 0xff,
-	};
-}
+// unpackColor imported from canonical location
 
 /**
  * Generates ANSI SGR sequence for foreground color.
