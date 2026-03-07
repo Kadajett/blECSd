@@ -4,18 +4,9 @@
  * @module widgets/splitPane/utils
  */
 
-import { hexToColor } from '../../components/renderable';
 import type { DirtyRect, PaneScrollState, PaneViewport, SplitDirection } from './types';
 
-/**
- * Parses a color value to a number.
- */
-export function parseColor(color: string | number): number {
-	if (typeof color === 'string') {
-		return hexToColor(color);
-	}
-	return color;
-}
+export { parseColor } from '../../utils/color';
 
 /**
  * Parses position values to numbers.

@@ -11,6 +11,7 @@ import type { Cell, CellChange } from '../terminal/screen/cell';
 import { Attr } from '../terminal/screen/cell';
 import type { DoubleBufferData } from '../terminal/screen/doubleBuffer';
 import { clearDirtyRegions, getMinimalUpdates, swapBuffers } from '../terminal/screen/doubleBuffer';
+import { unpackColor } from '../utils/color';
 
 // =============================================================================
 // CONSTANTS
@@ -150,18 +151,6 @@ function moveColumn(x: number): string {
 function cursorForward(n: number): string {
 	if (n === 1) return `${CSI}C`;
 	return `${CSI}${n}C`;
-}
-
-/**
- * Extracts RGB components from packed ARGB color.
- */
-function unpackColor(color: number): { r: number; g: number; b: number; a: number } {
-	return {
-		a: (color >>> 24) & 0xff,
-		r: (color >>> 16) & 0xff,
-		g: (color >>> 8) & 0xff,
-		b: color & 0xff,
-	};
 }
 
 /**

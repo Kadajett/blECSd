@@ -14,9 +14,10 @@ import { getDimensions, setDimensions } from '../components/dimensions';
 import { blur, focus, isFocused, setFocusable } from '../components/focusable';
 import { appendChild, getChildren } from '../components/hierarchy';
 import { moveBy, setPosition } from '../components/position';
-import { hexToColor, markDirty, setStyle, setVisible } from '../components/renderable';
+import { markDirty, setStyle, setVisible } from '../components/renderable';
 import { removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { parseColor } from '../utils/color';
 
 // =============================================================================
 // TYPES
@@ -336,13 +337,6 @@ const dirtyRectStore = new Map<Entity, DirtyRect[]>();
 // =============================================================================
 // INTERNAL HELPERS
 // =============================================================================
-
-function parseColor(color: string | number): number {
-	if (typeof color === 'string') {
-		return hexToColor(color);
-	}
-	return color;
-}
 
 function parsePositionToNumber(value: string | number | undefined): number {
 	if (value === undefined) return 0;

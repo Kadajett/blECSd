@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { Renderable } from '../components/renderable';
 import { addEntity, createWorld, hasComponent } from '../core/ecs';
 import type { World } from '../core/types';
-import { packColor } from '../utils/color';
+import { packColor, unpackColor } from '../utils/color';
 import {
 	applyTheme,
 	applyThemeToAll,
@@ -553,13 +553,3 @@ describe('Theme System', () => {
 		});
 	});
 });
-
-// Helper to unpack color for testing
-function unpackColor(color: number): { r: number; g: number; b: number; a: number } {
-	return {
-		r: (color >> 16) & 0xff,
-		g: (color >> 8) & 0xff,
-		b: color & 0xff,
-		a: (color >> 24) & 0xff,
-	};
-}
