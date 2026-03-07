@@ -782,9 +782,5 @@ export function resetSelectStore(world: World): void {
 	selectStore.optionCount.fill(0);
 	getOptionsStore(world).clear();
 	getDisplayStore(world).clear();
-	clearAllCallbacks(
-		getChangeCallbacks(world),
-		getOpenCallbacks(world),
-		getCloseCallbacks(world),
-	);
+	clearAllCallbacks(getChangeCallbacks(world), getOpenCallbacks(world), getCloseCallbacks(world));
 }

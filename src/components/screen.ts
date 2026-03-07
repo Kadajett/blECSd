@@ -34,8 +34,8 @@
 
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
-import { exec, readEditor, spawn } from '../terminal/process';
 import type { EditorOptions } from '../terminal/process';
+import { exec, readEditor, spawn } from '../terminal/process';
 import { getDimensions, setDimensions } from './dimensions';
 import { NULL_ENTITY } from './hierarchy';
 import { Renderable } from './renderable';

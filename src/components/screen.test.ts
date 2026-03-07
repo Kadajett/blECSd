@@ -21,6 +21,7 @@ import {
 	isAutoPadding,
 	isFullUnicode,
 	isScreen,
+	readEditorScreenProcess,
 	resetScreenSingleton,
 	resizeScreen,
 	setAutoPadding,
@@ -33,7 +34,6 @@ import {
 	setScreenHover,
 	setScreenMouseTracking,
 	spawnScreenProcess,
-	readEditorScreenProcess,
 } from './screen';
 
 describe('Screen Component', () => {
@@ -596,7 +596,7 @@ describe('Screen Component', () => {
 					if (originalEditor !== undefined) {
 						process.env.EDITOR = originalEditor;
 					} else {
-						delete process.env.EDITOR;
+						process.env.EDITOR = undefined;
 					}
 				}
 			});

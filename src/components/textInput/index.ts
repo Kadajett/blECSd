@@ -102,6 +102,7 @@ export {
 	hasValidationError,
 	validateTextInput,
 } from './validation';
+export type { ViModeConfig, ViModeState } from './viMode';
 // Re-export vi mode functions
 export {
 	getViMode,
@@ -112,4 +113,3 @@ export {
 	resetViModeStores,
 	setViMode,
 } from './viMode';
-export type { ViModeConfig, ViModeState } from './viMode';

@@ -147,7 +147,7 @@ function processTelnetData(
 	const cleanData: number[] = [];
 
 	for (let i = 0; i < buffer.length; i++) {
-		const byte = buffer[i]!;
+		const byte = buffer[i] as number;
 
 		if (state.inSub) {
 			if (byte === TELNET.IAC) {
@@ -229,8 +229,8 @@ function handleSubnegotiation(
 	onTTYPE: (termType: string) => void,
 ): void {
 	if (option === TELNET_OPT.NAWS && data.length >= 4) {
-		const width = (data[0]! << 8) | data[1]!;
-		const height = (data[2]! << 8) | data[3]!;
+		const width = ((data[0] as number) << 8) | (data[1] as number);
+		const height = ((data[2] as number) << 8) | (data[3] as number);
 		if (width > 0 && height > 0 && width <= 500 && height <= 500) {
 			onNAWS(width, height);
 		}

@@ -22,9 +22,7 @@ import { getWorldStore } from '../core/worldStore';
  * const callbacks = getChangeCallbacks(world).get(eid);
  * ```
  */
-export function createCallbackStore<T>(
-	storeKey: string,
-): (world: World) => Map<Entity, T[]> {
+export function createCallbackStore<T>(storeKey: string): (world: World) => Map<Entity, T[]> {
 	return (world: World) => getWorldStore<Entity, T[]>(world, storeKey);
 }
 
@@ -34,10 +32,7 @@ export function createCallbackStore<T>(
  * @param eid - The entity ID
  * @param callbackMap - Map of entity to callbacks
  */
-export function fireCallbacks(
-	eid: Entity,
-	callbackMap: Map<Entity, Array<() => void>>,
-): void {
+export function fireCallbacks(eid: Entity, callbackMap: Map<Entity, Array<() => void>>): void {
 	const callbacks = callbackMap.get(eid);
 	if (!callbacks) return;
 	for (const cb of callbacks) {
@@ -60,11 +55,7 @@ export function fireCallbacks(
  * unsub(); // removes the callback
  * ```
  */
-export function registerCallback<T>(
-	store: Map<Entity, T[]>,
-	eid: Entity,
-	callback: T,
-): () => void {
+export function registerCallback<T>(store: Map<Entity, T[]>, eid: Entity, callback: T): () => void {
 	const callbacks = store.get(eid) ?? [];
 	callbacks.push(callback);
 	store.set(eid, callbacks);
@@ -86,10 +77,7 @@ export function registerCallback<T>(
  * @param eid - The entity ID
  * @param stores - The callback store maps to clear
  */
-export function clearEntityCallbacks(
-	eid: Entity,
-	...stores: Map<Entity, unknown[]>[]
-): void {
+export function clearEntityCallbacks(eid: Entity, ...stores: Map<Entity, unknown[]>[]): void {
 	for (const store of stores) {
 		store.delete(eid);
 	}
@@ -100,9 +88,7 @@ export function clearEntityCallbacks(
  *
  * @param stores - The callback store maps to clear
  */
-export function clearAllCallbacks(
-	...stores: Map<Entity, unknown[]>[]
-): void {
+export function clearAllCallbacks(...stores: Map<Entity, unknown[]>[]): void {
 	for (const store of stores) {
 		store.clear();
 	}

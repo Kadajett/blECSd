@@ -478,8 +478,13 @@ export {
 } from './gpmClient';
 // Graphics protocol backends
 export type {
+	// Cell renderer types (used by @blecsd/media)
+	AnsiRenderOptions,
 	BackendName,
+	Bitmap,
 	BrailleCanvas,
+	Cell,
+	CellMap,
 	EnvChecker,
 	GraphicsBackend,
 	GraphicsCapabilities,
@@ -488,14 +493,9 @@ export type {
 	GraphicsManagerState,
 	ImageData as GraphicsImageData,
 	RenderedCell,
+	RenderMode,
 	RenderOptions as GraphicsRenderOptions,
 	VectorRenderOptions,
-	// Cell renderer types (used by @blecsd/media)
-	AnsiRenderOptions,
-	Bitmap,
-	Cell,
-	CellMap,
-	RenderMode,
 } from './graphics';
 export {
 	// Backend name constants
@@ -503,11 +503,14 @@ export {
 	// Kitty protocol constants
 	APC_PREFIX,
 	BRAILLE_BACKEND_NAME,
+	// Cell renderer helpers (used by @blecsd/media)
+	blendWithBackground,
 	buildPalette,
 	canvasToCells as brailleCanvasToCells,
 	// Vector-to-pixel bridge
 	canvasToPixelBitmap,
 	canvasToString as brailleCanvasToString,
+	cellMapToString,
 	cellToDot,
 	clearBrailleCanvas,
 	clearDot,
@@ -555,28 +558,25 @@ export {
 	ITERM2_BACKEND_NAME,
 	KITTY_BACKEND_NAME,
 	KITTY_ST,
+	luminanceToChar,
 	// iTerm2 protocol constants (ST aliased to avoid collision with ansi ST)
 	OSC_1337_PREFIX,
 	RenderOptionsSchema as GraphicsRenderOptionsSchema,
 	refreshBackend,
 	registerBackend,
 	renderImage,
+	renderToAnsi,
 	renderVector,
+	rgbLuminance,
+	rgbTo256Color,
 	SIXEL_BACKEND_NAME,
 	SIXEL_ST,
 	ST as ITERM2_ST,
 	ST_ALT as ITERM2_ST_ALT,
+	scaleBitmap,
 	selectBackend,
 	setCellColor,
 	setDot,
-	// Cell renderer helpers (used by @blecsd/media)
-	blendWithBackground,
-	cellMapToString,
-	luminanceToChar,
-	renderToAnsi,
-	rgbLuminance,
-	rgbTo256Color,
-	scaleBitmap,
 } from './graphics';
 // Input control
 export type {
@@ -798,7 +798,7 @@ export {
 	ResponseType,
 } from './responseParser';
 // Screen buffer and cell management
-export type { AttrFlags, Cell, CellChange, ScreenBufferData } from './screen';
+export type { AttrFlags, CellChange, ScreenBufferData } from './screen';
 export {
 	Attr,
 	cellIndex,
