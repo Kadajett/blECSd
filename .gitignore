@@ -13,3 +13,4 @@ references/
 
 # doccheck temp files
 .doccheck-tmp/
+package-lock.json
