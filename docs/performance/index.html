@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>blECSd Performance Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 24px; margin-bottom: 8px; }
+  .subtitle { color: var(--text-muted); margin-bottom: 24px; font-size: 14px; }
+  .meta { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+  .meta-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    min-width: 150px;
+  }
+  .meta-label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+  .meta-value { font-size: 18px; font-weight: 600; margin-top: 4px; }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .tab {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--text); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .group-header {
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .group-header:hover { background: rgba(88, 166, 255, 0.05); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: rgba(88, 166, 255, 0.03); }
+  .hz { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .change { font-weight: 500; font-size: 12px; }
+  .change.faster { color: var(--green); }
+  .change.slower { color: var(--red); }
+  .change.stable { color: var(--text-muted); }
+  .change.new { color: var(--yellow); }
+  .chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  canvas { width: 100% !important; height: 200px !important; }
+  .no-data {
+    text-align: center;
+    padding: 48px;
+    color: var(--text-muted);
+  }
+  .no-data code {
+    background: var(--surface);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  .bench-select { margin-bottom: 16px; }
+  select {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  select:focus { outline: 1px solid var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>⚡ blECSd Performance Dashboard</h1>
+<p class="subtitle">ECS-powered terminal UI library &mdash; benchmark results over time</p>
+
+<div class="meta" id="meta"></div>
+
+<div class="tabs">
+  <button class="tab active" data-panel="latest">Latest Results</button>
+  <button class="tab" data-panel="trends">Trends</button>
+  <button class="tab" data-panel="comparison">Comparison</button>
+</div>
+
+<div id="latest" class="panel active"></div>
+<div id="trends" class="panel"></div>
+<div id="comparison" class="panel"></div>
+
+<script>
+// ── Data loading ─────────────────────────────────────────────────────────────
+
+const DATA_BASE = window.location.pathname.includes('/performance/')
+  ? 'benchmark-data'
+  : 'docs/performance/benchmark-data';
+
+let latestData = null;
+let historyData = null;
+
+async function loadData() {
+  try {
+    const [latestRes, historyRes] = await Promise.all([
+      fetch(`${DATA_BASE}/latest.json`),
+      fetch(`${DATA_BASE}/history.json`),
+    ]);
+    if (latestRes.ok) latestData = await latestRes.json();
+    if (historyRes.ok) historyData = await historyRes.json();
+  } catch {
+    // Try relative paths for local file:// usage
+    try {
+      const [latestRes, historyRes] = await Promise.all([
+        fetch('benchmark-data/latest.json'),
+        fetch('benchmark-data/history.json'),
+      ]);
+      if (latestRes.ok) latestData = await latestRes.json();
+      if (historyRes.ok) historyData = await historyRes.json();
+    } catch { /* no data yet */ }
+  }
+  render();
+}
+
+// ── Formatting ───────────────────────────────────────────────────────────────
+
+function fmtHz(hz) {
+  if (hz >= 1e6) return (hz / 1e6).toFixed(2) + 'M';
+  if (hz >= 1e3) return (hz / 1e3).toFixed(2) + 'K';
+  return hz.toFixed(2);
+}
+
+function fmtTime(ms) {
+  if (ms < 0.001) return (ms * 1e6).toFixed(0) + 'ns';
+  if (ms < 1) return (ms * 1e3).toFixed(1) + 'µs';
+  return ms.toFixed(2) + 'ms';
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+
+function render() {
+  if (!latestData) {
+    document.getElementById('latest').innerHTML =
+      '<div class="no-data">No benchmark data yet.<br><br>Run <code>pnpm bench:report</code> to generate results.</div>';
+    return;
+  }
+
+  renderMeta();
+  renderLatest();
+  renderTrends();
+  renderComparison();
+}
+
+function renderMeta() {
+  const el = document.getElementById('meta');
+  const d = latestData;
+  const benchCount = d.results.length;
+  const avgHz = d.results.reduce((s, r) => s + r.hz, 0) / benchCount;
+
+  el.innerHTML = `
+    <div class="meta-item">
+      <div class="meta-label">Last Run</div>
+      <div class="meta-value">${fmtDate(d.timestamp)}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Commit</div>
+      <div class="meta-value" style="font-family: monospace; font-size: 14px;">${d.commit}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Benchmarks</div>
+      <div class="meta-value">${benchCount}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">History</div>
+      <div class="meta-value">${historyData ? historyData.runs.length : 0} runs</div>
+    </div>
+  `;
+}
+
+function renderLatest() {
+  const el = document.getElementById('latest');
+  const groups = groupBy(latestData.results, r => r.group);
+  const prevRun = historyData && historyData.runs.length > 1
+    ? historyData.runs[historyData.runs.length - 2]
+    : null;
+  const prevMap = prevRun
+    ? new Map(prevRun.results.map(r => [`${r.group}::${r.name}`, r.hz]))
+    : new Map();
+
+  let html = '';
+  for (const [group, items] of Object.entries(groups)) {
+    html += `<div class="group">
+      <div class="group-header">${group} <span style="color:var(--text-muted);font-weight:400;font-size:12px">${items.length} benchmarks</span></div>
+      <table>
+        <tr><th>Benchmark</th><th>ops/sec</th><th>mean</th><th>p99</th><th>samples</th><th>vs prev</th></tr>`;
+    for (const r of items) {
+      const prev = prevMap.get(`${r.group}::${r.name}`);
+      let changeHtml = '<span class="change new">new</span>';
+      if (prev != null) {
+        const pct = ((r.hz - prev) / prev) * 100;
+        const cls = pct > 5 ? 'faster' : pct < -5 ? 'slower' : 'stable';
+        const arrow = pct > 5 ? '↑' : pct < -5 ? '↓' : '=';
+        changeHtml = `<span class="change ${cls}">${arrow} ${Math.abs(pct).toFixed(1)}%</span>`;
+      }
+      html += `<tr>
+        <td>${r.name}</td>
+        <td class="hz">${fmtHz(r.hz)}</td>
+        <td>${fmtTime(r.mean)}</td>
+        <td>${fmtTime(r.p99)}</td>
+        <td>${r.samples.toLocaleString()}</td>
+        <td>${changeHtml}</td>
+      </tr>`;
+    }
+    html += '</table></div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderTrends() {
+  const el = document.getElementById('trends');
+  if (!historyData || historyData.runs.length < 2) {
+    el.innerHTML = '<div class="no-data">Need at least 2 runs for trends.<br><br>Run <code>pnpm bench:report</code> again after making changes.</div>';
+    return;
+  }
+
+  // Collect all unique benchmark names
+  const allBenchmarks = new Set();
+  for (const run of historyData.runs) {
+    for (const r of run.results) {
+      allBenchmarks.add(`${r.group} > ${r.name}`);
+    }
+  }
+
+  // Build selector
+  const benchList = [...allBenchmarks].sort();
+  let html = '<div class="bench-select"><select id="trend-select">';
+  for (const b of benchList) {
+    html += `<option value="${b}">${b}</option>`;
+  }
+  html += '</select></div>';
+  html += '<div class="chart-container"><canvas id="trend-chart"></canvas></div>';
+  el.innerHTML = html;
+
+  const select = document.getElementById('trend-select');
+  select.addEventListener('change', () => drawTrendChart(select.value));
+  drawTrendChart(benchList[0]);
+}
+
+function drawTrendChart(benchKey) {
+  const canvas = document.getElementById('trend-chart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 200 * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width;
+  const H = 200;
+  const pad = { top: 20, right: 20, bottom: 30, left: 70 };
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Extract data points
+  const points = [];
+  for (const run of historyData.runs) {
+    for (const r of run.results) {
+      if (`${r.group} > ${r.name}` === benchKey) {
+        points.push({ x: new Date(run.timestamp), y: r.hz, commit: run.commit });
+        break;
+      }
+    }
+  }
+
+  if (points.length < 2) {
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Not enough data points', W / 2, H / 2);
+    return;
+  }
+
+  const xMin = points[0].x.getTime();
+  const xMax = points[points.length - 1].x.getTime();
+  const yVals = points.map(p => p.y);
+  const yMin = Math.min(...yVals) * 0.9;
+  const yMax = Math.max(...yVals) * 1.1;
+
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+  const toX = t => pad.left + ((t - xMin) / (xMax - xMin || 1)) * plotW;
+  const toY = v => pad.top + plotH - ((v - yMin) / (yMax - yMin || 1)) * plotH;
+
+  // Grid
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (plotH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    const val = yMax - (yMax - yMin) * (i / 4);
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '11px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(fmtHz(val), pad.left - 8, y + 4);
+  }
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = '#58a6ff';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < points.length; i++) {
+    const x = toX(points[i].x.getTime());
+    const y = toY(points[i].y);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Points
+  for (const p of points) {
+    ctx.beginPath();
+    ctx.arc(toX(p.x.getTime()), toY(p.y), 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#58a6ff';
+    ctx.fill();
+  }
+
+  // X labels
+  ctx.fillStyle = '#8b949e';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  const step = Math.max(1, Math.floor(points.length / 5));
+  for (let i = 0; i < points.length; i += step) {
+    ctx.fillText(points[i].commit, toX(points[i].x.getTime()), H - 5);
+  }
+}
+
+function renderComparison() {
+  const el = document.getElementById('comparison');
+  if (!historyData || historyData.runs.length < 2) {
+    el.innerHTML = '<div class="no-data">Need at least 2 runs for comparison.</div>';
+    return;
+  }
+
+  const curr = historyData.runs[historyData.runs.length - 1];
+  const prev = historyData.runs[historyData.runs.length - 2];
+
+  const prevMap = new Map(prev.results.map(r => [`${r.group}::${r.name}`, r]));
+
+  let faster = 0, slower = 0, stable = 0;
+  const rows = [];
+
+  for (const r of curr.results) {
+    const key = `${r.group}::${r.name}`;
+    const p = prevMap.get(key);
+    if (!p) { rows.push({ ...r, change: null, status: 'new' }); continue; }
+    const pct = ((r.hz - p.hz) / p.hz) * 100;
+    const status = pct > 5 ? 'faster' : pct < -5 ? 'slower' : 'stable';
+    if (status === 'faster') faster++;
+    else if (status === 'slower') slower++;
+    else stable++;
+    rows.push({ ...r, prevHz: p.hz, change: pct, status });
+  }
+
+  let html = `<div class="meta" style="margin-bottom:16px">
+    <div class="meta-item"><div class="meta-label">Faster</div><div class="meta-value" style="color:var(--green)">${faster}</div></div>
+    <div class="meta-item"><div class="meta-label">Slower</div><div class="meta-value" style="color:var(--red)">${slower}</div></div>
+    <div class="meta-item"><div class="meta-label">Stable</div><div class="meta-value">${stable}</div></div>
+    <div class="meta-item"><div class="meta-label">Comparing</div><div class="meta-value" style="font-size:13px;font-family:monospace">${prev.commit} → ${curr.commit}</div></div>
+  </div>`;
+
+  // Sort: regressions first
+  rows.sort((a, b) => (a.change ?? 0) - (b.change ?? 0));
+
+  html += `<div class="group"><table>
+    <tr><th>Benchmark</th><th>Group</th><th>Previous</th><th>Current</th><th>Change</th></tr>`;
+  for (const r of rows) {
+    const cls = r.status;
+    const arrow = r.status === 'faster' ? '↑' : r.status === 'slower' ? '↓' : r.status === 'stable' ? '=' : '🆕';
+    const changeText = r.change != null ? `${arrow} ${Math.abs(r.change).toFixed(1)}%` : 'new';
+    html += `<tr>
+      <td>${r.name}</td>
+      <td style="color:var(--text-muted)">${r.group}</td>
+      <td class="hz">${r.prevHz ? fmtHz(r.prevHz) : '—'}</td>
+      <td class="hz">${fmtHz(r.hz)}</td>
+      <td><span class="change ${cls}">${changeText}</span></td>
+    </tr>`;
+  }
+  html += '</table></div>';
+  el.innerHTML = html;
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function groupBy(arr, fn) {
+  const out = {};
+  for (const item of arr) {
+    const key = fn(item);
+    (out[key] ||= []).push(item);
+  }
+  return out;
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.panel).classList.add('active');
+  });
+});
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+
+loadData();
+</script>
+</body>
+</html>
