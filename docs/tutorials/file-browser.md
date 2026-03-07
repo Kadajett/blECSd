@@ -31,14 +31,14 @@ In this tutorial, you'll build a dual-pane file browser similar to Midnight Comm
 - Understanding of async/await
 - Basic file system concepts
 
-## Step 1: Project Setup
+## Complete Implementation
 
-Create `file-browser.ts`:
+Create `file-browser.ts` with the following code:
 
 ```typescript
 import { createWorld, addEntity, createScreenEntity } from 'blecsd/core';
 import { createRenderPipeline, onShutdown } from 'blecsd';
-import { setPosition, setDimensions } from 'blecsd/components';
+import { setDimensions } from 'blecsd/components';
 import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
 import { type KeyEvent, createProgram } from 'blecsd/terminal';
@@ -50,29 +50,10 @@ import { setContent, setParent } from 'blecsd/components';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const world = createWorld();
-const scheduler = createScheduler();
+// =============================================================================
+// Types and State
+// =============================================================================
 
-// Register systems
-scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
-scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
-scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
-
-const program = createProgram({
-  useAlternateScreen: true,
-  hideCursor: true,
-});
-program.init();
-
-// Initialize render pipeline
-const { cols, rows } = createRenderPipeline(process.stdout);
-createScreenEntity(world, { width: cols, height: rows });
-const shutdown = onShutdown(world, { program });
-```
-
-## Step 2: File Entry Interface
-
-```typescript
 interface FileEntry {
   name: string;
   path: string;
@@ -94,11 +75,11 @@ const state: AppState = {
   selectedIndex: 0,
   previewContent: '',
 };
-```
 
-## Step 3: File System Functions
+// =============================================================================
+// File System Functions
+// =============================================================================
 
-```typescript
 async function loadDirectory(dirPath: string): Promise<FileEntry[]> {
   const entries: FileEntry[] = [];
 
@@ -183,18 +164,41 @@ function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
-```
 
-## Step 4: Create UI Layout
+// =============================================================================
+// ECS Setup
+// =============================================================================
 
-```typescript
+const world = createWorld();
+const scheduler = createScheduler();
+
+// Register systems
+scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
+scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
+scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
+
+const program = createProgram({
+  useAlternateScreen: true,
+  hideCursor: true,
+});
+program.init();
+
+// Initialize render pipeline
+const { cols, rows } = createRenderPipeline(process.stdout);
+createScreenEntity(world, { width: cols, height: rows });
+const shutdown = onShutdown(world, { program });
+
+// =============================================================================
+// UI Layout
+// =============================================================================
+
 const columns = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
+const screenRows = process.stdout.rows ?? 24;
 
 // Calculate layout
 const leftWidth = Math.floor(columns * 0.4);
 const rightWidth = columns - leftWidth;
-const contentHeight = rows - 3; // Leave room for status bar
+const contentHeight = screenRows - 3; // Leave room for status bar
 
 // Left panel - file list
 const fileListPanel = createPanel(world, addEntity(world), {
@@ -212,8 +216,7 @@ const fileList = createVirtualizedList(world, {
   y: 1,
   width: leftWidth - 2,
   height: contentHeight - 2,
-  items: [],
-  selectedIndex: 0,
+  lines: [], // Start with empty list
 });
 setParent(world, fileList.eid, fileListPanel);
 
@@ -240,17 +243,17 @@ setParent(world, previewText.eid, previewPanel);
 // Status bar
 const statusBar = createText(world, addEntity(world), {
   x: 0,
-  y: rows - 1,
+  y: screenRows - 1,
   content: '',
   fg: 0x000000ff,
   bg: 0xccccccff,
 }).eid;
 setDimensions(world, statusBar, columns, 1);
-```
 
-## Step 5: Format File List Items
+// =============================================================================
+// UI Update Functions
+// =============================================================================
 
-```typescript
 function formatFileEntry(entry: FileEntry, width: number): string {
   const icon = entry.isDirectory ? '📁' : '📄';
   const name = entry.name;
@@ -270,13 +273,18 @@ function formatFileEntry(entry: FileEntry, width: number): string {
 }
 
 function updateFileList(): void {
-  const items = state.entries.map((entry, index) => ({
-    content: formatFileEntry(entry, leftWidth - 2),
-    selected: index === state.selectedIndex,
-  }));
+  // Format entries as strings for the virtualized list
+  const lines = (state.entries || []).map((entry) =>
+    formatFileEntry(entry, leftWidth - 2)
+  );
 
-  // Update the virtualized list via the widget's API
-  setContent(world, fileList.eid, JSON.stringify(items));
+  // Update the virtualized list via its API
+  fileList.setLines(lines);
+
+  // Set the selected line
+  if (state.entries && state.entries.length > 0) {
+    fileList.select(state.selectedIndex);
+  }
 }
 
 function updateStatusBar(): void {
@@ -291,11 +299,30 @@ function updateStatusBar(): void {
 function updateTitle(): void {
   setPanelTitle(world, fileListPanel, state.currentPath);
 }
-```
 
-## Step 6: Handle Navigation
+async function navigateTo(newPath: string): Promise<void> {
+  state.currentPath = newPath;
+  state.entries = (await loadDirectory(newPath)) || [];
+  state.selectedIndex = 0;
 
-```typescript
+  updateTitle();
+  updateFileList();
+  updateStatusBar();
+  await updatePreview();
+}
+
+async function updatePreview(): Promise<void> {
+  const previewEntry = state.entries[state.selectedIndex];
+  if (previewEntry) {
+    state.previewContent = await loadPreview(previewEntry);
+    setContent(world, previewText.eid, state.previewContent);
+  }
+}
+
+// =============================================================================
+// Keyboard Navigation
+// =============================================================================
+
 async function handleKey(key: KeyEvent): Promise<void> {
   switch (key.name) {
     case 'j':
@@ -383,29 +410,10 @@ async function handleKey(key: KeyEvent): Promise<void> {
   }
 }
 
-async function navigateTo(newPath: string): Promise<void> {
-  state.currentPath = newPath;
-  state.entries = await loadDirectory(newPath) ?? [];
-  state.selectedIndex = 0;
+// =============================================================================
+// Main Loop
+// =============================================================================
 
-  updateTitle();
-  updateFileList();
-  updateStatusBar();
-  await updatePreview();
-}
-
-async function updatePreview(): Promise<void> {
-  const previewEntry = state.entries[state.selectedIndex];
-  if (previewEntry) {
-    state.previewContent = await loadPreview(previewEntry) ?? '';
-    setContent(world, previewText.eid, state.previewContent);
-  }
-}
-```
-
-## Step 7: Main Loop
-
-```typescript
 // Input handling via createProgram
 program.on('key', async (key: KeyEvent) => {
   await handleKey(key);
@@ -419,7 +427,7 @@ program.on('resize', () => {
 
 // Initial load
 (async () => {
-  state.entries = await loadDirectory(state.currentPath) ?? [];
+  state.entries = (await loadDirectory(state.currentPath)) || [];
   updateFileList();
   updateStatusBar();
   await updatePreview();
@@ -427,7 +435,7 @@ program.on('resize', () => {
 })();
 ```
 
-## Step 8: Run the App
+## Running the App
 
 ```bash
 npx tsx file-browser.ts
@@ -445,6 +453,72 @@ npx tsx file-browser.ts
 | `G` | Go to bottom |
 | `PageUp` / `PageDown` | Page navigation |
 | `q` | Quit |
+
+## Key Concepts Explained
+
+### Virtualized List
+
+The `createVirtualizedList` widget efficiently renders large file lists by only rendering visible lines:
+
+<!-- blecsd-doccheck:ignore -->
+```typescript
+const fileList = createVirtualizedList(world, {
+  x: 1,
+  y: 1,
+  width: 40,
+  height: 20,
+  lines: [], // Initial empty list
+});
+
+// Update content via widget API
+fileList.setLines(['Item 1', 'Item 2', 'Item 3']);
+
+// Set selected line
+fileList.select(0);
+```
+
+### Async File Operations
+
+The browser loads directories and previews asynchronously to avoid blocking the UI:
+
+<!-- blecsd-doccheck:ignore -->
+```typescript
+async function loadDirectory(dirPath: string): Promise<FileEntry[]> {
+  const entries: FileEntry[] = [];
+  const dirItems = await fs.promises.readdir(dirPath, { withFileTypes: true });
+  // ... process items
+  return entries;
+}
+
+// Usage
+const entries = await loadDirectory('/home/user');
+```
+
+### Panel Layout
+
+The dual-pane layout uses calculated widths to split the screen:
+
+<!-- blecsd-doccheck:ignore -->
+```typescript
+const leftWidth = Math.floor(columns * 0.4);  // 40% for file list
+const rightWidth = columns - leftWidth;        // 60% for preview
+
+const fileListPanel = createPanel(world, addEntity(world), {
+  x: 0,
+  y: 0,
+  width: leftWidth,
+  height: contentHeight,
+  border: { type: 'line', ch: 'single' },
+});
+
+const previewPanel = createPanel(world, addEntity(world), {
+  x: leftWidth,  // Starts where file list ends
+  y: 0,
+  width: rightWidth,
+  height: contentHeight,
+  border: { type: 'line', ch: 'single' },
+});
+```
 
 ## Exercises
 
