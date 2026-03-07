@@ -52,7 +52,7 @@ Creates a new Layout widget with the specified configuration.
 
 ```typescript
 // Basic inline layout (default)
-const layoutA = createLayout(world, addEntity(world));
+const layoutA = createLayout(world, addEntity(world), {});
 
 // Grid layout with 3 columns
 const gridLayout = createLayout(world, addEntity(world), {
@@ -145,7 +145,7 @@ The layout widget provides a chainable API for all operations.
 The underlying entity ID.
 
 ```typescript
-const layoutB = createLayout(world, addEntity(world));
+const layoutB = createLayout(world, addEntity(world), {});
 console.log(layoutB.eid); // Entity ID number
 layoutB.destroy();
 ```
@@ -157,7 +157,7 @@ layoutB.destroy();
 Shows the layout.
 
 ```typescript
-const layoutC = createLayout(world, addEntity(world));
+const layoutC = createLayout(world, addEntity(world), {});
 layoutC.show();
 layoutC.destroy();
 ```
@@ -169,7 +169,7 @@ layoutC.destroy();
 Hides the layout.
 
 ```typescript
-const layoutD = createLayout(world, addEntity(world));
+const layoutD = createLayout(world, addEntity(world), {});
 layoutD.hide();
 layoutD.destroy();
 ```
@@ -185,7 +185,7 @@ layoutD.destroy();
 Sets the absolute position.
 
 ```typescript
-const layoutE = createLayout(world, addEntity(world));
+const layoutE = createLayout(world, addEntity(world), {});
 layoutE.setPosition(20, 15);
 layoutE.destroy();
 ```
@@ -197,7 +197,7 @@ layoutE.destroy();
 Moves the layout by a relative amount.
 
 ```typescript
-const layoutF = createLayout(world, addEntity(world));
+const layoutF = createLayout(world, addEntity(world), {});
 layoutF.move(5, -3);
 layoutF.destroy();
 ```
@@ -213,7 +213,7 @@ layoutF.destroy();
 Gets the current layout mode.
 
 ```typescript
-const layoutG = createLayout(world, addEntity(world));
+const layoutG = createLayout(world, addEntity(world), {});
 const mode = layoutG.getLayoutMode(); // 'inline' | 'grid' | 'flex'
 console.log(mode);
 layoutG.destroy();
@@ -226,7 +226,7 @@ layoutG.destroy();
 Sets the gap between children.
 
 ```typescript
-const layoutH = createLayout(world, addEntity(world));
+const layoutH = createLayout(world, addEntity(world), {});
 layoutH.setGap(2);
 layoutH.destroy();
 ```
@@ -238,7 +238,7 @@ layoutH.destroy();
 Gets the current gap between children.
 
 ```typescript
-const layoutI = createLayout(world, addEntity(world));
+const layoutI = createLayout(world, addEntity(world), {});
 const gap = layoutI.getGap(); // number
 console.log(gap);
 layoutI.destroy();
@@ -251,7 +251,7 @@ layoutI.destroy();
 Recalculates and applies layout positions to all children.
 
 ```typescript
-const layoutJ = createLayout(world, addEntity(world));
+const layoutJ = createLayout(world, addEntity(world), {});
 layoutJ.recalculate();
 layoutJ.destroy();
 ```
@@ -267,7 +267,7 @@ layoutJ.destroy();
 Focuses the layout.
 
 ```typescript
-const layoutK = createLayout(world, addEntity(world));
+const layoutK = createLayout(world, addEntity(world), {});
 layoutK.focus();
 layoutK.destroy();
 ```
@@ -279,7 +279,7 @@ layoutK.destroy();
 Removes focus from the layout.
 
 ```typescript
-const layoutL = createLayout(world, addEntity(world));
+const layoutL = createLayout(world, addEntity(world), {});
 layoutL.blur();
 layoutL.destroy();
 ```
@@ -291,7 +291,7 @@ layoutL.destroy();
 Checks if the layout is currently focused.
 
 ```typescript
-const layoutM = createLayout(world, addEntity(world));
+const layoutM = createLayout(world, addEntity(world), {});
 const focused = layoutM.isFocused(); // boolean
 console.log(focused);
 layoutM.destroy();
@@ -308,7 +308,7 @@ layoutM.destroy();
 Appends a child entity.
 
 ```typescript
-const layoutN = createLayout(world, addEntity(world));
+const layoutN = createLayout(world, addEntity(world), {});
 const childEid = addEntity(world);
 layoutN.append(childEid);
 layoutN.destroy();
@@ -321,7 +321,7 @@ layoutN.destroy();
 Gets all direct children.
 
 ```typescript
-const layoutO = createLayout(world, addEntity(world));
+const layoutO = createLayout(world, addEntity(world), {});
 const children = layoutO.getChildren();
 console.log(children.length);
 layoutO.destroy();
@@ -338,7 +338,7 @@ layoutO.destroy();
 Destroys the widget.
 
 ```typescript
-const layoutP = createLayout(world, addEntity(world));
+const layoutP = createLayout(world, addEntity(world), {});
 layoutP.destroy();
 ```
 
@@ -445,7 +445,7 @@ console.log(flexPositions.size);
 Checks if an entity is a layout widget.
 
 ```typescript
-const layoutQ = createLayout(world, addEntity(world));
+const layoutQ = createLayout(world, addEntity(world), {});
 if (isLayout(world, layoutQ.eid)) {
   // Handle layout-specific logic
 }
