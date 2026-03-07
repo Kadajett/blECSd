@@ -7,6 +7,7 @@
  * @module terminal/backends/helpers
  */
 
+import { unpackColor } from '../../utils/color';
 import { Attr } from '../screen/cell';
 
 // =============================================================================
@@ -113,28 +114,7 @@ export function cursorForward(n: number): string {
 	return `${CSI}${n}C`;
 }
 
-/**
- * Unpacks a packed RGBA color into components.
- *
- * Color format: 0xAARRGGBB (alpha, red, green, blue)
- *
- * @param color - Packed 32-bit RGBA color
- * @returns Object with r, g, b, a components (0-255)
- *
- * @example
- * ```typescript
- * unpackColor(0xFFFF0000); // { r: 255, g: 0, b: 0, a: 255 }
- * unpackColor(0x80FF8080); // { r: 255, g: 128, b: 128, a: 128 }
- * ```
- */
-export function unpackColor(color: number): { r: number; g: number; b: number; a: number } {
-	return {
-		a: (color >>> 24) & 0xff,
-		r: (color >>> 16) & 0xff,
-		g: (color >>> 8) & 0xff,
-		b: color & 0xff,
-	};
-}
+export { unpackColor };
 
 /**
  * Generates a foreground color escape sequence.
