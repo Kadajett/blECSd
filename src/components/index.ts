@@ -1021,7 +1021,9 @@ export type {
 	CursorShapeValue,
 	ScreenCursor,
 	ScreenData,
+	ScreenExecOptions,
 	ScreenOptions,
+	ScreenSpawnOptions,
 } from './screen';
 export {
 	CursorShape,
@@ -1042,6 +1044,8 @@ export {
 	resetScreenSingleton,
 	resizeScreen,
 	Screen,
+	screenExec,
+	screenSpawn,
 	setAutoPadding,
 	setFullUnicode,
 	setScreenCursor,
