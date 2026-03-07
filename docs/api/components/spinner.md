@@ -458,3 +458,15 @@ function updateAllSpinners(deltaMs: number) {
 - [Loading Widget](../widgets/loading.md) - Higher-level loading indicator
 - [Animation Component](./animation.md) - Sprite-based animation
 - [Content Component](../content.md) - Text content display
+
+## Namespace API
+
+The `spinner` namespace groups all related functions into a single import:
+
+```typescript
+import { spinner } from 'blecsd/components';
+
+// Available methods: add,has,remove,getData,getChar,advance,update,reset, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

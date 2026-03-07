@@ -221,3 +221,15 @@ console.log(isInState(world, entity, 'open')); // true
 // Each frame
 updateStateAge(world, [entity], deltaTime);
 ```
+
+## Namespace API
+
+The `stateMachine` namespace groups all related functions into a single import:
+
+```typescript
+import { stateMachine } from 'blecsd/components';
+
+// Available methods: attach,detach,has, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

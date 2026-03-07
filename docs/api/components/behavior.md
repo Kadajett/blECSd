@@ -302,3 +302,15 @@ interface BehaviorDirection {
   readonly dy: number;
 }
 ```
+
+## Namespace API
+
+The `behavior` namespace groups all related functions into a single import:
+
+```typescript
+import { behavior } from 'blecsd/components';
+
+// Available methods: get,has,set,remove,getType,getState,getTarget,setTarget, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

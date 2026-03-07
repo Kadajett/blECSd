@@ -2,6 +2,8 @@
 
 ECS system for processing AI behaviors each frame, including patrol, chase, flee, and custom behaviors.
 
+> **Tip:** For standard applications, [`createApp()`](../core/gameLoop.md#quick-start-with-createapp) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
+
 ## Overview
 
 The behavior system handles:

@@ -2,6 +2,8 @@
 
 Core type definitions for blECSd. Defines the fundamental types used throughout the library.
 
+> **Tip:** For standard applications, [`createApp()`](./gameLoop.md#quick-start-with-createapp) handles phase management automatically.
+
 ## Quick Start
 
 ```typescript

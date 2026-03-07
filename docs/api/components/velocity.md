@@ -257,8 +257,8 @@ import { Velocity } from 'blecsd/components';
 
 const world = createWorld();
 const eid = addEntity(world);
-setVelocity(world, eid, { x: 5, y: 0 });
-setAcceleration(world, eid, { x: 0, y: 9.8 });
+setVelocity(world, eid, 5, 0);
+setAcceleration(world, eid, 0, 9.8);
 const entities = [eid];
 
 for (const eid of entities) {
@@ -301,3 +301,15 @@ interface AccelerationData {
   readonly y: number;
 }
 ```
+
+## Namespace API
+
+The `velocity` namespace groups all related functions into a single import:
+
+```typescript
+import { velocity } from 'blecsd/components';
+
+// Available methods: get,has,set,add,remove,setOptions,stop,applyToEntity, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

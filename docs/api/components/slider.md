@@ -479,3 +479,15 @@ Object.values(colorSliders).forEach(eid => {
 - [Form Component](./form.md) - Form container
 - [ProgressBar Component](./progressBar.md) - Non-interactive progress display
 - [Select Component](./select.md) - Discrete value selection
+
+## Namespace API
+
+The `slider` namespace groups all related functions into a single import:
+
+```typescript
+import { slider } from 'blecsd/components';
+
+// Available methods: attach,is,getState,isInState,sendEvent,handleKeyPress,render,focus, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

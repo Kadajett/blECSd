@@ -2,6 +2,8 @@
 
 The camera system updates camera positions to follow target entities. It supports smooth following with configurable smoothing and dead zones.
 
+> **Tip:** For standard applications, [`createApp()`](../core/gameLoop.md#quick-start-with-createapp) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
+
 ## Import
 
 ```typescript

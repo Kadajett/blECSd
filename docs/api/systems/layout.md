@@ -2,7 +2,7 @@
 
 The layout system computes absolute positions and dimensions for all entities in tree order. It runs in the LAYOUT phase before rendering to pre-compute positions based on hierarchy, relative positioning, and percentage dimensions.
 
-> **Note**: For most applications, use [`createApp()`](../app.md) which automatically registers the layout system in the correct phase. The APIs below are for advanced use cases.
+> **Tip:** For most applications, [`createApp()`](../app.md) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
 
 ## Overview
 

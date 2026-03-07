@@ -231,3 +231,15 @@ The ECS approach provides:
 
 - Components - Understanding ECS components
 - [Entity Data](../core/entity-data.md) - Alternative typed storage
+
+## Namespace API
+
+The `userData` namespace groups all related functions into a single import:
+
+```typescript
+import { userData } from 'blecsd/components';
+
+// Available methods: get,has,set,remove,getOrCreate,getCount,clearAll, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

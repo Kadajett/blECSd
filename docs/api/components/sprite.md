@@ -258,3 +258,15 @@ interface SpriteData {
   readonly spriteSheetId: number;
 }
 ```
+
+## Namespace API
+
+The `sprite` namespace groups all related functions into a single import:
+
+```typescript
+import { sprite } from 'blecsd/components';
+
+// Available methods: get,has,set,setByName,remove,register,unregister,getIdByName, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

@@ -2,6 +2,8 @@
 
 ECS system for spawning, updating, and removing particles with rate-based and burst-based emitters.
 
+> **Tip:** For standard applications, [`createApp()`](../core/gameLoop.md#quick-start-with-createapp) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
+
 ## Overview
 
 The particle system handles:

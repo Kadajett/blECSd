@@ -2,6 +2,8 @@
 
 Configurable game loop execution order. Allows users to add custom phases between the default phases while ensuring INPUT always runs first.
 
+> **Tip:** For standard applications, [`createApp()`](./gameLoop.md#quick-start-with-createapp) handles phase management automatically.
+
 ## Quick Start
 
 ```typescript

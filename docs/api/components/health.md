@@ -226,3 +226,15 @@ interface HealthOptions {
   regen?: number;
 }
 ```
+
+## Namespace API
+
+The `health` namespace groups all related functions into a single import:
+
+```typescript
+import { health } from 'blecsd/components';
+
+// Available methods: get,has,set,remove,getPercent,setCurrent,setMax,update, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

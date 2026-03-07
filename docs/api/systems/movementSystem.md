@@ -2,6 +2,8 @@
 
 The movement system updates entity positions based on velocity. It handles acceleration, friction, speed clamping, and applies the final velocity to position.
 
+> **Tip:** For standard applications, [`createApp()`](../core/gameLoop.md#quick-start-with-createapp) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
+
 ## Import
 
 ```typescript

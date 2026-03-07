@@ -426,3 +426,15 @@ The form automatically extracts values based on field type:
 - RadioButton Component - Single selection
 - [Select Component](./select.md) - Dropdown selection
 - [Slider Component](./slider.md) - Range selection
+
+## Namespace API
+
+The `form` namespace groups all related functions into a single import:
+
+```typescript
+import { form } from 'blecsd/components';
+
+// Available methods: attach,is,handleKeyPress,registerField,unregisterField,getFields,getTabOrder,getValues, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

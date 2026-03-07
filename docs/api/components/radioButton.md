@@ -442,3 +442,15 @@ const values = getFormValues(world, form);
 - [Form Component](./form.md) - Form container for field management
 - Checkbox Component - Boolean toggle (non-exclusive)
 - [Select Component](./select.md) - Dropdown selection
+
+## Namespace API
+
+The `radio` namespace groups all related functions into a single import:
+
+```typescript
+import { radio } from 'blecsd/components';
+
+// Available methods: attach,is,getState,isInState,sendEvent,handleKeyPress,select,deselect, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

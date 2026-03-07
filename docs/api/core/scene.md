@@ -2,6 +2,8 @@
 
 Scene management for game screens. Provides a scene stack with lifecycle callbacks, scene transitions, and per-scene system registration. Scenes can be pushed/popped for overlays or switched directly.
 
+> **Tip:** For standard applications, [`createApp()`](./gameLoop.md#quick-start-with-createapp) handles phase management automatically.
+
 ## Quick Start
 
 ```typescript
