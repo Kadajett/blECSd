@@ -220,6 +220,8 @@ export interface TextInputConfigOptions {
 	validator?: ValidationFunction;
 	/** When to run validation (default: 'both') */
 	validationTiming?: ValidationTiming;
+	/** Enable vi/vim modal editing mode */
+	viMode?: boolean;
 }
 
 /**

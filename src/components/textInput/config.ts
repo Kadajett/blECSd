@@ -12,6 +12,7 @@ import {
 	type TextInputConfigOptions,
 	type ValidationTiming,
 } from './types';
+import { setViMode } from './viMode';
 
 /**
  * Sets the text input configuration.
@@ -55,6 +56,11 @@ export function setTextInputConfig(
 		validator: options.validator ?? current.validator,
 		validationTiming: options.validationTiming ?? current.validationTiming,
 	});
+
+	// Wire viMode config option to the vi mode system
+	if (options.viMode !== undefined) {
+		setViMode(_world, eid, options.viMode);
+	}
 }
 
 /**
