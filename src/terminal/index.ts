@@ -490,6 +490,12 @@ export type {
 	RenderedCell,
 	RenderOptions as GraphicsRenderOptions,
 	VectorRenderOptions,
+	// Cell renderer types (used by @blecsd/media)
+	AnsiRenderOptions,
+	Bitmap,
+	Cell,
+	CellMap,
+	RenderMode,
 } from './graphics';
 export {
 	// Backend name constants
@@ -563,6 +569,14 @@ export {
 	selectBackend,
 	setCellColor,
 	setDot,
+	// Cell renderer helpers (used by @blecsd/media)
+	blendWithBackground,
+	cellMapToString,
+	luminanceToChar,
+	renderToAnsi,
+	rgbLuminance,
+	rgbTo256Color,
+	scaleBitmap,
 } from './graphics';
 // Input control
 export type {
