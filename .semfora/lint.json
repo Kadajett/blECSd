@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-03-06T22:01:47.591637563+00:00",
+  "detected_linters": [
+    {
+      "linter": "biome",
+      "config_path": "/home/kadajett/dev/blECSd/biome.json",
+      "version": "2.3.13",
+      "available": true,
+      "run_command": {
+        "program": "npx",
+        "args": [
+          "biome",
+          "check",
+          "."
+        ],
+        "fix_args": [
+          "biome",
+          "check",
+          "--write",
+          "."
+        ],
+        "cwd": null
+      },
+      "capabilities": {
+        "can_fix": true,
+        "can_format": true,
+        "can_typecheck": false
+      }
+    },
+    {
+      "linter": "tsc",
+      "config_path": "/home/kadajett/dev/blECSd/tsconfig.json",
+      "version": "5.9.3",
+      "available": true,
+      "run_command": {
+        "program": "npx",
+        "args": [
+          "tsc",
+          "--noEmit"
+        ],
+        "fix_args": null,
+        "cwd": null
+      },
+      "capabilities": {
+        "can_fix": false,
+        "can_format": false,
+        "can_typecheck": true
+      }
+    }
+  ],
+  "custom_commands": {},
+  "config_hashes": [
+    {
+      "path": "package.json",
+      "mtime": 1772834454,
+      "size": 7804
+    },
+    {
+      "path": "biome.json",
+      "mtime": 1770343926,
+      "size": 1542
+    },
+    {
+      "path": "tsconfig.json",
+      "mtime": 1772834454,
+      "size": 294
+    }
+  ]
+}

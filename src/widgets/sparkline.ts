@@ -31,6 +31,8 @@ export interface SparklineConfig {
 	readonly y?: number;
 	/** Width in characters (default: 20) */
 	readonly width?: number;
+	/** Height in characters (default: 1) */
+	readonly height?: number;
 	/** Data values to display */
 	readonly data?: readonly number[];
 	/** Foreground color (hex string or packed number) */
@@ -86,6 +88,7 @@ export const SparklineConfigSchema = z.object({
 	x: z.number().int().default(0),
 	y: z.number().int().default(0),
 	width: z.number().int().positive().default(20),
+	height: z.number().int().positive().default(1),
 	data: z.array(z.number()).default([]),
 	fg: z.union([z.string(), z.number()]).optional(),
 	bg: z.union([z.string(), z.number()]).optional(),
@@ -297,7 +300,7 @@ export function createSparkline(world: World, config: SparklineConfig = {}): Spa
 	setPosition(world, eid, validated.x, validated.y);
 
 	// Set dimensions (height is always 1 for sparkline)
-	setDimensions(world, eid, validated.width, 1);
+	setDimensions(world, eid, validated.width, validated.height ?? 1);
 
 	// Set component flags
 	Sparkline.isSparkline[eid] = 1;
