@@ -8,6 +8,8 @@ The Collision module provides a `Collider` component that supports axis-aligned 
 
 ## Import
 
+### Named Imports (Traditional)
+
 ```typescript
 import {
   Collider,
@@ -32,6 +34,21 @@ import {
   DEFAULT_MASK,
 } from 'blecsd/components';
 ```
+
+### Namespace Pattern (Recommended)
+
+```typescript
+import { collision } from 'blecsd/components';
+import type { CollisionModule } from 'blecsd/components';
+
+// All collision functions grouped in one object:
+collision.set(world, entity, { type: 'box', width: 32, height: 32 });
+collision.setLayer(world, entity, 0b0001);
+collision.setMask(world, entity, 0b0010);
+const canCollide = collision.canLayersCollide(layer1, mask2);
+```
+
+**Both patterns are fully supported.** See [Components README](./README.md) for more details.
 
 ## Component Data Layout
 

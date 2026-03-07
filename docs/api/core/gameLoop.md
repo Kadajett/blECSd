@@ -2,6 +2,8 @@
 
 The game loop manages the main update cycle with input priority guarantees, lifecycle hooks, fixed timestep support, and performance statistics.
 
+> **Note**: For most applications, use [`createApp()`](../app.md) which handles world, loop, and render pipeline setup automatically. The APIs below are for advanced use cases requiring custom loop configuration.
+
 ## Import
 
 ```typescript

@@ -12,6 +12,8 @@ Animation definitions are stored in a global registry. Each entity references a 
 
 ## Import
 
+### Named Imports (Traditional)
+
 ```typescript
 import {
   Animation,
@@ -34,6 +36,21 @@ import {
   AnimationDirection,
 } from 'blecsd/components';
 ```
+
+### Namespace Pattern (Recommended)
+
+```typescript
+import { animation } from 'blecsd/components';
+import type { AnimationModule } from 'blecsd/components';
+
+// All animation functions grouped in one object:
+animation.register({ name: 'walk', frames: [...] });
+animation.playByName(world, entity, 'walk');
+animation.pause(world, entity);
+animation.setSpeed(world, entity, 2.0);
+```
+
+**Both patterns are fully supported.** The namespace pattern provides better discoverability through autocomplete. See [Components README](./README.md) for more details.
 
 ## Animation Store
 
