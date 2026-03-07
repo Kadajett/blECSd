@@ -26,7 +26,7 @@ import { appendChild, getChildren } from '../components/hierarchy';
 import { setPadding } from '../components/padding';
 import { moveBy, setPosition } from '../components/position';
 import { markDirty, setStyle, setVisible } from '../components/renderable';
-import { removeEntity } from '../core/ecs';
+import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { parseColor } from '../utils/color';
 
@@ -630,9 +630,9 @@ function setupContent(world: World, eid: Entity, config: ValidatedBoxConfig): vo
  * import { createBox } from 'blecsd/widgets';
  *
  * const world = createWorld();
- * const eid = addEntity(world);
  *
- * const box = createBox(world, eid, {
+ * // Pattern A: Self-creates entity
+ * const box1 = createBox(world, {
  *   left: 5,
  *   top: 5,
  *   width: 30,
@@ -642,19 +642,39 @@ function setupContent(world: World, eid: Entity, config: ValidatedBoxConfig): vo
  *   padding: 1,
  * });
  *
+ * // Pattern B: Use existing entity
+ * const eid = addEntity(world);
+ * const box2 = createBox(world, eid, {
+ *   left: 5,
+ *   top: 15,
+ *   width: 30,
+ *   height: 10,
+ *   content: 'Hello, World!',
+ *   border: { type: 'line' },
+ *   padding: 1,
+ * });
+ *
  * // Chain methods
- * box
+ * box1
  *   .setContent('Updated content')
  *   .focus()
  *   .show();
  *
  * // Clean up when done
- * box.destroy();
+ * box1.destroy();
  * ```
  */
-export function createBox(world: World, entity: Entity, config: BoxConfig = {}): BoxWidget {
+export function createBox(world: World, config: BoxConfig): BoxWidget;
+export function createBox(world: World, entity: Entity, config?: BoxConfig): BoxWidget;
+export function createBox(
+	world: World,
+	entityOrConfig: Entity | BoxConfig,
+	maybeConfig?: BoxConfig,
+): BoxWidget {
+	const isEntity = typeof entityOrConfig === 'number';
+	const eid = isEntity ? entityOrConfig : (addEntity(world) as Entity);
+	const config = isEntity ? (maybeConfig ?? {}) : entityOrConfig;
 	const validated = BoxConfigSchema.parse(config) as ValidatedBoxConfig;
-	const eid = entity;
 
 	// Mark as box
 	Box.isBox[eid] = 1;
