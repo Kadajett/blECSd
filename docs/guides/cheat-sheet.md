@@ -357,22 +357,15 @@ enableMouse(world, eid);
 ## Rendering
 
 ```typescript
-import { createWorld, createScreenEntity, createDirtyTracker } from 'blecsd/core';
-import {
-  renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createRenderPipeline } from 'blecsd';
+import { createWorld, createScreenEntity } from 'blecsd/core';
+import { renderSystem, outputSystem } from 'blecsd/systems';
 
 const world = createWorld();
-const cols = 80, rows = 24;
-createScreenEntity(world, { width: cols, height: rows });
 
-// Initialize render pipeline (required before first render)
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+// Initialize render pipeline in one call
+const { cols, rows } = createRenderPipeline(process.stdout);
+createScreenEntity(world, { width: cols, height: rows });
 
 // Render
 renderSystem(world);                       // Render to screen buffer
@@ -384,45 +377,27 @@ outputSystem(world);                       // Flush buffer to terminal
 ## Game Loop
 
 ```typescript
-import { createWorld, createGameLoop, LoopPhase, createDirtyTracker } from 'blecsd/core';
-import {
-  inputSystem, layoutSystem, renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createApp } from 'blecsd';
+import { createGameLoop, LoopPhase } from 'blecsd/core';
+import { inputSystem, layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+
+// Option 1: Use createApp() for full bootstrap
+const app = await createApp({ fps: 60 });
+app.start(); // starts the render loop
+
+// Option 2: Manual game loop with createRenderPipeline()
+import { createRenderPipeline } from 'blecsd';
+import { createWorld } from 'blecsd/core';
 
 const world = createWorld();
+createRenderPipeline(process.stdout);
 
-// Initialize render pipeline (see Rendering section above)
-const cols = 80, rows = 24;
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
-
-// Game loop with registered systems
 const loop = createGameLoop(world, { targetFPS: 60 });
 loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 loop.registerSystem(LoopPhase.RENDER, renderSystem);
 loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
 loop.start();
 
-// Or: custom game loop
-let running = true;
-function customLoop() {
-  inputSystem(world);
-  layoutSystem(world);
-  renderSystem(world);
-  outputSystem(world);
-
-  if (running) {
-    setTimeout(customLoop, 16);  // ~60 FPS
-  }
-}
-customLoop();
-
-// Stop
-running = false;
 loop.stop();
 ```
 

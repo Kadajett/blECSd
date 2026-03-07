@@ -36,43 +36,25 @@ In this tutorial, you'll build a simple todo list application that demonstrates 
 Create a new file `todo.ts`:
 
 ```typescript
+import { createApp } from 'blecsd';
 import {
-  createWorld, addEntity, removeEntity,
+  addEntity, removeEntity,
   createScheduler, LoopPhase, createEventBus,
   createBoxEntity, createTextEntity, createTextboxEntity,
-  createScreenEntity, createDirtyTracker,
 } from 'blecsd/core';
 import { setPosition, setDimensions, setParent, setText } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem, blurAll, focusEntity,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { type KeyEvent, createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { layoutSystem, renderSystem, outputSystem, blurAll, focusEntity } from 'blecsd/systems';
+import type { KeyEvent } from 'blecsd/terminal';
 
-// Create the ECS world
-const world = createWorld();
+// Bootstrap the app (world, render pipeline, program, shutdown handlers)
+const app = await createApp({ fullscreen: true });
+const { world, program, cols, rows } = app;
 
 // Create the scheduler and register systems
 const scheduler = createScheduler();
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
 scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
-
-// Create terminal program
-const program = createProgram({
-  useAlternateScreen: true,
-  hideCursor: true,
-});
-program.init();
-
-// Initialize render pipeline
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
-createScreenEntity(world, { width: cols, height: rows });
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
 ```
 
 ## Step 2: Define Todo State
@@ -252,8 +234,7 @@ function handleKey(key: KeyEvent): void {
 
     case 'q':
       // Quit
-      program.destroy();
-      process.exit(0);
+      app.shutdown();
       break;
   }
 }
@@ -317,11 +298,7 @@ program.on('key', (key: KeyEvent) => {
   scheduler.run(world, 0);
 });
 
-// Handle exit signals
-process.on('SIGINT', () => {
-  program.destroy();
-  process.exit(0);
-});
+// Shutdown signals are handled automatically by createApp()
 
 // Initial render
 scheduler.run(world, 0);

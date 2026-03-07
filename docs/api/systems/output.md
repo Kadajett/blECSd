@@ -1,5 +1,7 @@
 # Output System
 
+> **Tip:** For most applications, use [`createRenderPipeline()`](../../getting-started/hello-world.md) or [`createApp()`](../../getting-started/hello-world.md) to wire up the output pipeline automatically. The low-level APIs below are for advanced use cases.
+
 The output system writes rendered content to the terminal. It runs in the POST_RENDER phase after all rendering is complete and generates optimized ANSI escape sequences for efficient terminal output.
 
 ## Overview

@@ -37,41 +37,24 @@ In this tutorial, you'll build a simple snake-like game that demonstrates blECSd
 Create `snake.ts`:
 
 ```typescript
+import { createApp, onShutdown } from 'blecsd';
 import {
-  createWorld, addEntity, removeEntity, hasComponent, addComponent,
+  addEntity, removeEntity, hasComponent, addComponent,
   createBoxEntity, createTextEntity, createScheduler, LoopPhase,
-  createScreenEntity, createDirtyTracker,
 } from 'blecsd/core';
 import { setPosition, getPosition, setText, setContent, setStyle, setVisible } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { type KeyEvent, createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+import type { KeyEvent } from 'blecsd/terminal';
 
-const world = createWorld();
+const app = await createApp({ fullscreen: true });
+const { world, program, cols, rows } = app;
+
 const scheduler = createScheduler();
 
 // Register built-in systems
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
 scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
-
-// Create terminal program (handles alternate screen and cursor automatically)
-const program = createProgram({
-  useAlternateScreen: true,
-  hideCursor: true,
-});
-program.init();
-
-// Initialize render pipeline
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
-createScreenEntity(world, { width: cols, height: rows });
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
 ```
 
 ## Step 2: Game Constants and State
@@ -447,8 +430,7 @@ function handleKey(key: KeyEvent): void {
       break;
 
     case 'q':
-      program.destroy();
-      process.exit(0);
+      app.shutdown();
       break;
   }
 }
@@ -480,10 +462,7 @@ function gameLoop(): void {
   scheduler.run(world, deltaTime);
 }
 
-process.on('SIGINT', () => {
-  program.destroy();
-  process.exit(0);
-});
+// Shutdown signals are handled automatically by createApp()
 
 // Initialize game
 initializeSnake();

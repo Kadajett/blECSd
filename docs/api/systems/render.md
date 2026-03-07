@@ -1,5 +1,7 @@
 # Render System
 
+> **Tip:** For most applications, use [`createRenderPipeline()`](../../getting-started/hello-world.md) or [`createApp()`](../../getting-started/hello-world.md) to wire up the render pipeline automatically. The low-level APIs below are for advanced use cases.
+
 The render system draws entities to the screen buffer. It runs in the RENDER phase after layout computation and handles background fills, borders, and content rendering.
 
 ## Overview

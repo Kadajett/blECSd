@@ -40,15 +40,11 @@ In this tutorial, you'll build a system monitoring dashboard that displays CPU, 
 Create `dashboard.ts`:
 
 ```typescript
-import { createWorld, addEntity, createScreenEntity, createDirtyTracker } from 'blecsd/core';
+import { createApp } from 'blecsd';
+import { addEntity, createScheduler, LoopPhase } from 'blecsd/core';
 import { setPosition, setDimensions } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createScheduler, LoopPhase } from 'blecsd/core';
-import { type KeyEvent } from 'blecsd/terminal';
-import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+import type { KeyEvent } from 'blecsd/terminal';
 import {
   createPanel, createText, createProgressBar, createLayout,
 } from 'blecsd/widgets';
@@ -56,28 +52,15 @@ import { setContent, setParent, setStyle } from 'blecsd/components';
 import { setProgress } from 'blecsd/components';
 import * as os from 'os';
 
-const columns = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
+// Bootstrap the app
+const app = await createApp({ fullscreen: true });
+const { world, program, cols: columns, rows } = app;
 
-const world = createWorld();
 const scheduler = createScheduler();
 
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
 scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
-
-const program = createProgram({
-  useAlternateScreen: true,
-  hideCursor: true,
-});
-program.init();
-
-// Initialize render pipeline
-createScreenEntity(world, { width: columns, height: rows });
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(columns, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(columns, rows), getBackBuffer(db));
 ```
 
 ## Step 2: System Stats Functions
@@ -452,8 +435,7 @@ function handleKey(key: KeyEvent): void {
 
     case 'q':
       stopAutoRefresh();
-      program.destroy();
-      process.exit(0);
+      app.shutdown();
       break;
   }
 }
@@ -465,11 +447,8 @@ program.on('key', handleKey);
 ## Step 10: Main Loop
 
 ```typescript
-process.on('SIGINT', () => {
-  stopAutoRefresh();
-  program.destroy();
-  process.exit(0);
-});
+// Shutdown signals are handled automatically by createApp()
+// (stopAutoRefresh can be registered via onShutdown's onBeforeExit callback)
 
 // Handle resize
 program.on('resize', () => {

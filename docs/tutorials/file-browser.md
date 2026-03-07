@@ -36,15 +36,11 @@ In this tutorial, you'll build a dual-pane file browser similar to Midnight Comm
 Create `file-browser.ts`:
 
 ```typescript
-import { createWorld, addEntity, createScreenEntity, createDirtyTracker } from 'blecsd/core';
+import { createApp } from 'blecsd';
+import { addEntity, createScheduler, LoopPhase } from 'blecsd/core';
 import { setPosition, setDimensions } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createScheduler, LoopPhase } from 'blecsd/core';
-import { type KeyEvent } from 'blecsd/terminal';
-import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+import type { KeyEvent } from 'blecsd/terminal';
 import {
   createVirtualizedList, createPanel, createText, createScrollableText,
   setPanelTitle,
@@ -53,29 +49,16 @@ import { setContent, setParent } from 'blecsd/components';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
+// Bootstrap the app
+const app = await createApp({ fullscreen: true });
+const { world, program, cols, rows } = app;
 
-const world = createWorld();
 const scheduler = createScheduler();
 
 // Register systems
 scheduler.registerSystem(LoopPhase.LAYOUT, layoutSystem);
 scheduler.registerSystem(LoopPhase.RENDER, renderSystem);
 scheduler.registerSystem(LoopPhase.POST_RENDER, outputSystem);
-
-const program = createProgram({
-  useAlternateScreen: true,
-  hideCursor: true,
-});
-program.init();
-
-// Initialize render pipeline
-createScreenEntity(world, { width: cols, height: rows });
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
 ```
 
 ## Step 2: File Entry Interface
@@ -386,8 +369,7 @@ async function handleKey(key: KeyEvent): Promise<void> {
       break;
 
     case 'q':
-      program.destroy();
-      process.exit(0);
+      app.shutdown();
       break;
   }
 }
@@ -426,10 +408,7 @@ program.on('resize', () => {
   scheduler.run(world, 0);
 });
 
-process.on('SIGINT', () => {
-  program.destroy();
-  process.exit(0);
-});
+// Shutdown signals are handled automatically by createApp()
 
 // Initial load
 (async () => {
