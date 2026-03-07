@@ -620,6 +620,22 @@ export async function main(argv: readonly string[] = process.argv.slice(2)): Pro
 	}
 }
 
+/**
+ * Top-level CLI dispatcher. Routes subcommands to their handlers.
+ */
+async function dispatch(argv: readonly string[]): Promise<void> {
+	const subcommand = argv[0];
+
+	if (subcommand === 'serve') {
+		const { serveMain } = await import('./serve');
+		return serveMain(argv.slice(1));
+	}
+
+	// Default: init subcommand (or no subcommand)
+	const initArgs = subcommand === 'init' ? argv.slice(1) : argv;
+	return main(initArgs);
+}
+
 // Run if invoked directly
 const isDirectRun =
 	process.argv[1]?.endsWith('init.js') ||
@@ -627,7 +643,7 @@ const isDirectRun =
 	process.argv[1]?.endsWith('cli.js');
 
 if (isDirectRun) {
-	main().catch((err: unknown) => {
+	dispatch(process.argv.slice(2)).catch((err: unknown) => {
 		console.error('CLI error:', err);
 		process.exitCode = 1;
 	});

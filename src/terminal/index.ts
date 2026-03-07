@@ -827,6 +827,12 @@ export {
 	SanitizeOptionsSchema,
 	sanitizeForTerminal,
 } from './security/sanitize';
+// Serve web (high-level API)
+export type {
+	ServeWebConfig,
+	ServeWebResult,
+} from './serveWeb';
+export { serveWeb } from './serveWeb';
 // Suspend/resume handling (internal)
 export type { SuspendManager, SuspendManagerOptions, SuspendState } from './suspend';
 export {
@@ -875,3 +881,17 @@ export {
 	debounceResize,
 	throttleResize,
 } from './throttledResize';
+// WebSocket server
+export type {
+	WebServerConfig,
+	WebServerState,
+} from './webSocket';
+export {
+	createWebServer,
+	getWebClientCount,
+	startWebServer,
+	stopWebServer,
+	WebServer,
+	webBroadcast,
+	webSendTo,
+} from './webSocket';
