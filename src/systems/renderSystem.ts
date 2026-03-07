@@ -5,6 +5,7 @@
  */
 
 import { Border, BorderType, getBorder, hasBorderVisible } from '../components/border';
+import { BoxTitle, boxTitleStore } from '../components/boxTitle';
 // getChildren reserved for future tree-based rendering mode
 // import { getChildren } from '../components/hierarchy';
 import { Position } from '../components/position';
@@ -302,6 +303,59 @@ function renderVerticalEdges(
 }
 
 /**
+ * Renders a box title over the top border edge.
+ * @internal
+ */
+function renderBoxBorderTitle(
+	buffer: ScreenBufferData,
+	eid: Entity,
+	bounds: EntityBounds,
+	sides: BorderSides,
+	fg: number,
+	bg: number,
+): void {
+	const title = boxTitleStore.get(eid);
+	if (!title) return;
+
+	const hEdgeStart = sides.left ? 1 : 0;
+	const hEdgeWidth = bounds.width - hEdgeStart - (sides.right ? 1 : 0);
+	if (hEdgeWidth <= 0) return;
+
+	const align = BoxTitle.titleAlign[eid] as number;
+
+	// Wrap title with spaces for visual separation
+	let displayTitle = ` ${title} `;
+	if (displayTitle.length > hEdgeWidth) {
+		displayTitle = ` ${title.slice(0, hEdgeWidth - 3)}… `;
+		if (displayTitle.length > hEdgeWidth) return;
+	}
+
+	// Calculate offset based on alignment
+	const remaining = hEdgeWidth - displayTitle.length;
+	let offset: number;
+	switch (align) {
+		case 1: // center
+			offset = Math.floor(remaining / 2);
+			break;
+		case 2: // right
+			offset = remaining;
+			break;
+		default: // left (0)
+			offset = 0;
+			break;
+	}
+
+	// Write title characters over the top border
+	const startX = bounds.x + hEdgeStart + offset;
+	for (let i = 0; i < displayTitle.length; i++) {
+		const ch = displayTitle[i];
+		if (ch !== undefined) {
+			setCell(buffer, startX + i, bounds.y, createCell(ch, fg, bg));
+		}
+	}
+}
+
+/**
  * Renders the border for an entity.
  *
  * @param ctx - Render context
@@ -335,6 +389,11 @@ export function renderBorder(ctx: RenderContext, eid: Entity, bounds: EntityBoun
 	renderBorderCorners(buffer, border, bounds, sides, fg, bg);
 	renderHorizontalEdges(buffer, border.charHorizontal, bounds, sides, fg, bg);
 	renderVerticalEdges(buffer, border.charVertical, bounds, sides, fg, bg);
+
+	// Render box title on top border if present
+	if (sides.top) {
+		renderBoxBorderTitle(buffer, eid, bounds, sides, fg, bg);
+	}
 }
 
 /**
