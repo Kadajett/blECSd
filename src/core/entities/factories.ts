@@ -4,6 +4,7 @@
  * @module core/entities/factories
  */
 
+import { setBoxTitleAlign, setBoxTitleValue } from '../../components/boxTitle';
 import {
 	attachCheckboxBehavior,
 	DEFAULT_CHECKED_CHAR,
@@ -117,6 +118,14 @@ export function createBoxEntity(world: World, config: BoxConfig = {}): Entity {
 	applyStyleConfig(world, eid, validated);
 	applyBorderConfig(world, eid, validated.border);
 	applyPaddingConfig(world, eid, validated.padding);
+
+	// Wire title support
+	if (validated.title !== undefined) {
+		setBoxTitleValue(eid, validated.title);
+	}
+	if (validated.titleAlign !== undefined) {
+		setBoxTitleAlign(eid, validated.titleAlign);
+	}
 
 	if (validated.parent !== undefined) {
 		setParent(world, eid, validated.parent as Entity);
