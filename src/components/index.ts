@@ -1022,12 +1022,14 @@ export type {
 	ScreenCursor,
 	ScreenData,
 	ScreenExecOptions,
+	ScreenExecResult,
 	ScreenOptions,
 	ScreenSpawnOptions,
 } from './screen';
 export {
 	CursorShape,
 	destroyScreen,
+	execScreenProcess,
 	getScreen,
 	getScreenCursor,
 	getScreenData,
@@ -1048,11 +1050,14 @@ export {
 	screenSpawn,
 	setAutoPadding,
 	setFullUnicode,
+	setScreenAlternateBuffer,
 	setScreenCursor,
 	setScreenCursorShape,
 	setScreenCursorVisible,
 	setScreenFocus,
 	setScreenHover,
+	setScreenMouseTracking,
+	spawnScreenProcess,
 } from './screen';
 // Scrollable component
 export type {

@@ -35,11 +35,7 @@
 import type { ChildProcess } from 'node:child_process';
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
-import {
-	exec as processExec,
-	spawn as processSpawn,
-} from '../terminal/process';
-import type { ExecOptions, ExecResult, SpawnOptions } from '../terminal/process';
+import { exec, spawn } from '../terminal/process';
 import { getDimensions, setDimensions } from './dimensions';
 import { NULL_ENTITY } from './hierarchy';
 import { Renderable } from './renderable';
@@ -583,145 +579,224 @@ export function resetScreenSingleton(world: World): void {
 	screenEntityMap.delete(world);
 }
 
-// ===== Process Management =====
+// =============================================================================
+// PROCESS MANAGEMENT
+// =============================================================================
 
 /**
- * Options for screen-level spawn/exec that extend base process options
- * with world-aware rendering pause/resume.
+ * Options for screen.spawn()
  */
-export interface ScreenSpawnOptions extends SpawnOptions {
-	/** If true, mark the screen dirty on restore so a full redraw occurs (default: true) */
-	redrawOnRestore?: boolean;
+export interface ScreenSpawnOptions {
+	/** Working directory for the process */
+	cwd?: string;
+	/** Environment variables */
+	env?: NodeJS.ProcessEnv;
+	/** Output stream (default: process.stdout) */
+	output?: NodeJS.WriteStream;
+	/** Input stream (default: process.stdin) */
+	input?: NodeJS.ReadStream;
+	/** Callback when process exits */
+	onExit?: (code: number | null, signal: NodeJS.Signals | null) => void;
 }
 
 /**
- * Options for screen-level exec.
+ * Options for screen.exec()
  */
-export interface ScreenExecOptions extends ExecOptions {
-	/** If true, mark the screen dirty on restore so a full redraw occurs (default: true) */
-	redrawOnRestore?: boolean;
+export interface ScreenExecOptions extends ScreenSpawnOptions {
+	/** Timeout in milliseconds */
+	timeout?: number;
+	/** Maximum buffer size for output (default: 10MB) */
+	maxBuffer?: number;
+	/** Encoding for output (default: 'utf8') */
+	encoding?: BufferEncoding;
 }
 
 /**
- * Pause rendering on the screen entity.
- * Sets the Renderable visible flag to 0 so render systems skip it.
- *
- * @internal
+ * Result of screen.exec()
  */
-function pauseScreenRendering(world: World, eid: Entity): void {
-	if (hasComponent(world, eid, Renderable)) {
-		Renderable.visible[eid] = 0;
+export interface ScreenExecResult {
+	/** Standard output */
+	stdout: string;
+	/** Standard error */
+	stderr: string;
+	/** Exit code (null if killed by signal) */
+	exitCode: number | null;
+	/** Signal that killed the process (null if exited normally) */
+	signal: NodeJS.Signals | null;
+}
+
+/**
+ * State tracking for process spawn operations.
+ * Tracks whether alternate buffer and mouse tracking are active.
+ */
+interface ScreenProcessState {
+	isAlternateBuffer: boolean;
+	isMouseEnabled: boolean;
+}
+
+// Track process state per screen entity
+const screenProcessState = new WeakMap<World, ScreenProcessState>();
+
+/**
+ * Initialize process state tracking for a screen.
+ * Called internally when spawning processes.
+ */
+function initScreenProcessState(world: World): ScreenProcessState {
+	let state = screenProcessState.get(world);
+	if (!state) {
+		state = {
+			isAlternateBuffer: false,
+			isMouseEnabled: false,
+		};
+		screenProcessState.set(world, state);
 	}
+	return state;
 }
 
 /**
- * Resume rendering on the screen entity and mark dirty for a full redraw.
- *
- * @internal
+ * Get the process state for a screen.
+ * Returns default state if not initialized.
  */
-function resumeScreenRendering(world: World, eid: Entity, markDirty: boolean): void {
-	if (hasComponent(world, eid, Renderable)) {
-		Renderable.visible[eid] = 1;
-		if (markDirty) {
-			Renderable.dirty[eid] = 1;
-		}
-	}
+function getScreenProcessState(world: World): ScreenProcessState {
+	return screenProcessState.get(world) ?? { isAlternateBuffer: false, isMouseEnabled: false };
 }
 
 /**
- * Spawn a child process with screen lifecycle integration.
+ * Set whether the screen is using alternate buffer mode.
+ * This should be called by the rendering system when entering/exiting alternate buffer.
  *
- * This pauses screen rendering, delegates to the terminal-level spawn
- * (which handles alternate buffer, cursor, mouse, raw mode), and resumes
- * rendering when the process exits. A full redraw is triggered by default.
+ * @param world - The ECS world
+ * @param useAlternateBuffer - Whether alternate buffer is active
+ *
+ * @example
+ * ```typescript
+ * // When entering alternate buffer
+ * setScreenAlternateBuffer(world, true);
+ *
+ * // When exiting alternate buffer
+ * setScreenAlternateBuffer(world, false);
+ * ```
+ */
+export function setScreenAlternateBuffer(world: World, useAlternateBuffer: boolean): void {
+	const state = initScreenProcessState(world);
+	state.isAlternateBuffer = useAlternateBuffer;
+}
+
+/**
+ * Set whether the screen has mouse tracking enabled.
+ * This should be called by the input system when enabling/disabling mouse tracking.
+ *
+ * @param world - The ECS world
+ * @param enabled - Whether mouse tracking is active
+ *
+ * @example
+ * ```typescript
+ * // When enabling mouse tracking
+ * setScreenMouseTracking(world, true);
+ *
+ * // When disabling mouse tracking
+ * setScreenMouseTracking(world, false);
+ * ```
+ */
+export function setScreenMouseTracking(world: World, enabled: boolean): void {
+	const state = initScreenProcessState(world);
+	state.isMouseEnabled = enabled;
+}
+
+/**
+ * Spawn a child process with automatic terminal state management.
+ *
+ * This function:
+ * 1. Pauses screen rendering
+ * 2. Exits alternate buffer (if active)
+ * 3. Disables mouse tracking (if active)
+ * 4. Spawns the process
+ * 5. Restores terminal state when process exits
+ * 6. Resumes screen rendering
  *
  * @param world - The ECS world
  * @param command - Command to spawn
  * @param args - Arguments for the command
  * @param options - Spawn options
  * @returns The spawned child process
- * @throws {Error} If no screen entity exists in the world
  *
  * @example
  * ```typescript
- * import { screenSpawn } from 'blecsd';
+ * import { spawnScreenProcess } from 'blecsd';
  *
- * const child = screenSpawn(world, 'vim', ['file.txt'], {
- *   isAlternateBuffer: true,
- *   isMouseEnabled: true,
+ * // Spawn a shell command
+ * const child = spawnScreenProcess(world, 'vim', ['README.md'], {
+ *   onExit: (code) => {
+ *     console.log('Editor exited with code:', code);
+ *   },
  * });
  * ```
  */
-export function screenSpawn(
+export function spawnScreenProcess(
 	world: World,
 	command: string,
 	args: string[] = [],
 	options: ScreenSpawnOptions = {},
-): ChildProcess {
-	const eid = getScreen(world);
-	if (eid === null) {
-		throw new Error('No screen entity exists in this world. Create one with createScreenEntity first.');
-	}
+): ReturnType<typeof spawn> {
+	const state = getScreenProcessState(world);
+	const output = options.output ?? process.stdout;
+	const input = options.input ?? process.stdin;
 
-	const { redrawOnRestore = true, onExit, ...spawnOpts } = options;
+	// Prepare spawn options with terminal state
+	const spawnOptions = {
+		...options,
+		output,
+		input,
+		isAlternateBuffer: state.isAlternateBuffer,
+		isMouseEnabled: state.isMouseEnabled,
+	};
 
-	// Pause rendering before spawning
-	pauseScreenRendering(world, eid);
-
-	return processSpawn(command, args, {
-		...spawnOpts,
-		onExit: (code, signal) => {
-			// Resume rendering after process exits
-			resumeScreenRendering(world, eid, redrawOnRestore);
-			// Forward to user callback
-			onExit?.(code, signal);
-		},
-	});
+	// Spawn with terminal state management
+	return spawn(command, args, spawnOptions);
 }
 
 /**
- * Execute a command with screen lifecycle integration, returning stdout/stderr.
+ * Execute a command and capture its output with automatic terminal state management.
  *
- * This pauses screen rendering, delegates to the terminal-level exec
- * (which handles alternate buffer, cursor, mouse, raw mode), and resumes
- * rendering when the process completes. A full redraw is triggered by default.
+ * This is a Promise-based wrapper that:
+ * 1. Pauses screen rendering
+ * 2. Saves and restores terminal state
+ * 3. Runs the command
+ * 4. Returns stdout/stderr/exit code
  *
  * @param world - The ECS world
  * @param command - Command to execute
  * @param args - Arguments for the command
  * @param options - Exec options
- * @returns Promise resolving to the exec result with stdout/stderr
- * @throws {Error} If no screen entity exists in the world
+ * @returns Promise resolving to the exec result
  *
  * @example
  * ```typescript
- * import { screenExec } from 'blecsd';
+ * import { execScreenProcess } from 'blecsd';
  *
- * const result = await screenExec(world, 'git', ['status']);
+ * const result = await execScreenProcess(world, 'git', ['status']);
  * console.log(result.stdout);
  * ```
  */
-export async function screenExec(
+export async function execScreenProcess(
 	world: World,
 	command: string,
 	args: string[] = [],
 	options: ScreenExecOptions = {},
-): Promise<ExecResult> {
-	const eid = getScreen(world);
-	if (eid === null) {
-		throw new Error('No screen entity exists in this world. Create one with createScreenEntity first.');
-	}
+): Promise<ScreenExecResult> {
+	const state = getScreenProcessState(world);
+	const output = options.output ?? process.stdout;
+	const input = options.input ?? process.stdin;
 
-	const { redrawOnRestore = true, ...execOpts } = options;
+	// Prepare exec options with terminal state
+	const execOptions = {
+		...options,
+		output,
+		input,
+		isAlternateBuffer: state.isAlternateBuffer,
+		isMouseEnabled: state.isMouseEnabled,
+	};
 
-	// Pause rendering before executing
-	pauseScreenRendering(world, eid);
-
-	try {
-		const result = await processExec(command, args, execOpts);
-		return result;
-	} finally {
-		// Always resume rendering, even on error
-		resumeScreenRendering(world, eid, redrawOnRestore);
-	}
+	// Execute with terminal state management
+	return exec(command, args, execOptions);
 }

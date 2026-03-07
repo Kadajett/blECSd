@@ -12,6 +12,7 @@
  */
 import {
 	destroyScreen,
+	execScreenProcess,
 	getScreen,
 	getScreenCursor,
 	getScreenData,
@@ -31,11 +32,14 @@ import {
 	screenSpawn,
 	setAutoPadding,
 	setFullUnicode,
+	setScreenAlternateBuffer,
 	setScreenCursor,
 	setScreenCursorShape,
 	setScreenCursorVisible,
 	setScreenFocus,
 	setScreenHover,
+	setScreenMouseTracking,
+	spawnScreenProcess,
 } from '../screen';
 
 export const screenComponent = Object.freeze({
@@ -69,8 +73,11 @@ export const screenComponent = Object.freeze({
 		setVisible: setScreenCursorVisible,
 	}),
 
-	spawn: screenSpawn,
-	exec: screenExec,
+	// Process management
+	spawn: spawnScreenProcess,
+	exec: execScreenProcess,
+	setAlternateBuffer: setScreenAlternateBuffer,
+	setMouseTracking: setScreenMouseTracking,
 });
 
 export type ScreenComponentModule = typeof screenComponent;
