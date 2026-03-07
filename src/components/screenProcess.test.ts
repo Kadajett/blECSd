@@ -7,7 +7,7 @@ import { createWorld } from '../core/ecs';
 import { createScreenEntity } from '../core/entities';
 import type { World } from '../core/types';
 import { Renderable } from './renderable';
-import { resetScreenSingleton, screenExec, screenSpawn } from './screen';
+import { execScreenProcess, resetScreenSingleton, spawnScreenProcess } from './screen';
 
 describe('Screen Process Management', () => {
 	let world: World;
@@ -21,9 +21,7 @@ describe('Screen Process Management', () => {
 	describe('screenSpawn', () => {
 		it('throws if no screen entity exists', () => {
 			world = createWorld();
-			expect(() => screenSpawn(world, 'echo', ['hello'])).toThrow(
-				'No screen entity exists',
-			);
+			expect(() => spawnScreenProcess(world, 'echo', ['hello'])).toThrow('No screen entity exists');
 		});
 
 		it('pauses rendering during spawn and resumes on exit', async () => {
@@ -34,7 +32,7 @@ describe('Screen Process Management', () => {
 			expect(Renderable.visible[screen]).toBe(1);
 
 			const exitPromise = new Promise<number | null>((resolve) => {
-				const child = screenSpawn(world, 'echo', ['hello'], {
+				const child = spawnScreenProcess(world, 'echo', ['hello'], {
 					onExit: (code) => {
 						resolve(code);
 					},
@@ -61,7 +59,7 @@ describe('Screen Process Management', () => {
 			Renderable.dirty[screen] = 0;
 
 			const exitPromise = new Promise<void>((resolve) => {
-				screenSpawn(world, 'echo', ['hello'], {
+				spawnScreenProcess(world, 'echo', ['hello'], {
 					redrawOnRestore: false,
 					onExit: () => resolve(),
 				});
@@ -78,7 +76,7 @@ describe('Screen Process Management', () => {
 
 			const onExit = vi.fn();
 			const exitPromise = new Promise<void>((resolve) => {
-				screenSpawn(world, 'echo', ['hello'], {
+				spawnScreenProcess(world, 'echo', ['hello'], {
 					onExit: (code, signal) => {
 						onExit(code, signal);
 						resolve();
@@ -94,7 +92,7 @@ describe('Screen Process Management', () => {
 	describe('screenExec', () => {
 		it('throws if no screen entity exists', async () => {
 			world = createWorld();
-			await expect(screenExec(world, 'echo', ['hello'])).rejects.toThrow(
+			await expect(execScreenProcess(world, 'echo', ['hello'])).rejects.toThrow(
 				'No screen entity exists',
 			);
 		});
@@ -103,7 +101,7 @@ describe('Screen Process Management', () => {
 			world = createWorld();
 			createScreenEntity(world, { width: 80, height: 24 });
 
-			const result = await screenExec(world, 'echo', ['hello']);
+			const result = await execScreenProcess(world, 'echo', ['hello']);
 			expect(result.stdout.trim()).toBe('hello');
 			expect(result.exitCode).toBe(0);
 		});
@@ -114,7 +112,7 @@ describe('Screen Process Management', () => {
 
 			expect(Renderable.visible[screen]).toBe(1);
 
-			const result = await screenExec(world, 'echo', ['test']);
+			const result = await execScreenProcess(world, 'echo', ['test']);
 
 			// After completion, rendering should be resumed
 			expect(Renderable.visible[screen]).toBe(1);
@@ -126,7 +124,7 @@ describe('Screen Process Management', () => {
 			world = createWorld();
 			const screen = createScreenEntity(world, { width: 80, height: 24 });
 
-			const result = await screenExec(world, 'ls', ['nonexistent-path-12345']);
+			const result = await execScreenProcess(world, 'ls', ['nonexistent-path-12345']);
 
 			// Rendering should still be resumed
 			expect(Renderable.visible[screen]).toBe(1);
@@ -137,9 +135,7 @@ describe('Screen Process Management', () => {
 			world = createWorld();
 			const screen = createScreenEntity(world, { width: 80, height: 24 });
 
-			await expect(
-				screenExec(world, 'nonexistent-command-xyz-12345'),
-			).rejects.toThrow();
+			await expect(execScreenProcess(world, 'nonexistent-command-xyz-12345')).rejects.toThrow();
 
 			// Rendering should still be resumed
 			expect(Renderable.visible[screen]).toBe(1);
@@ -149,7 +145,7 @@ describe('Screen Process Management', () => {
 			world = createWorld();
 			createScreenEntity(world, { width: 80, height: 24 });
 
-			const result = await screenExec(world, 'sh', ['-c', 'echo err >&2']);
+			const result = await execScreenProcess(world, 'sh', ['-c', 'echo err >&2']);
 			expect(result.stderr.trim()).toBe('err');
 		});
 	});

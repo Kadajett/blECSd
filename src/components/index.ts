@@ -1046,8 +1046,6 @@ export {
 	resetScreenSingleton,
 	resizeScreen,
 	Screen,
-	screenExec,
-	screenSpawn,
 	setAutoPadding,
 	setFullUnicode,
 	setScreenAlternateBuffer,
