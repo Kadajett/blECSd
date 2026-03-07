@@ -526,4 +526,5 @@ See the full example in the [blECSd-Examples repository](https://github.com/Kada
 
 - [Animation System Reference](../api/systems/animationSystem.md)
 - [State Machine Reference](../api/systems/stateMachineSystem.md)
+- [Addon Packages Guide](../guides/addon-packages.md) - Explore @blecsd/game, @blecsd/3d, @blecsd/media, and other addon packages
 - [@blecsd/game](https://github.com/Kadajett/blECSd-Examples) - Full game framework with ECS-based collision, physics, and input actions

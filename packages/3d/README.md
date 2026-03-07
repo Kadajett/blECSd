@@ -58,7 +58,8 @@ viewport.render();
 The @blecsd/3d package provides namespace objects that group related functions for API discoverability. These frozen objects make it easy to explore available functions via IDE autocomplete:
 
 ```typescript
-import { vec3, mat4, projection } from '@blecsd/3d';
+import { mat4, projection } from '@blecsd/3d';
+import { vec3 } from '@blecsd/3d/namespaces';
 
 // Vector operations
 const v1 = vec3.create(1, 0, 0);
@@ -75,6 +76,8 @@ const rotated = mat4.rotateY(translated, Math.PI / 4);
 const proj = projection.perspective({ fov: Math.PI / 3, aspect: 16/9, near: 0.1, far: 100 });
 const view = projection.lookAt(vec3.create(0, 0, 5), vec3.create(0, 0, 0), vec3.create(0, 1, 0));
 ```
+
+> **Note:** The `vec3` namespace must be imported from `@blecsd/3d/namespaces` rather than the main entry point because the main package exports a `vec3()` function that would conflict with the namespace object.
 
 ### Available Namespaces
 
@@ -111,6 +114,7 @@ import { loadObjFile } from '@blecsd/3d/loaders';
 
 Available subpath exports:
 - `@blecsd/3d/math` - Math utilities and primitives
+- `@blecsd/3d/namespaces` - Namespace objects for API discoverability
 - `@blecsd/3d/backends` - Rendering backends
 - `@blecsd/3d/components` - ECS components
 - `@blecsd/3d/loaders` - Model loaders
