@@ -75,7 +75,7 @@ describe('CLI init', () => {
 			expect(templates.length).toBeGreaterThanOrEqual(4);
 
 			const names = templates.map((t) => t.name);
-			expect(names).toContain('basic');
+			expect(names).toContain('hello-world');
 			expect(names).toContain('form');
 			expect(names).toContain('dashboard');
 			expect(names).toContain('game');
@@ -122,19 +122,19 @@ describe('CLI init', () => {
 
 		it('creates directory if it does not exist', async () => {
 			const templates = await fetchManifest();
-			const basic = templates.find((t) => t.name === 'basic');
-			expect(basic).toBeDefined();
+			const helloWorld = templates.find((t) => t.name === 'hello-world');
+			expect(helloWorld).toBeDefined();
 
-			scaffoldTemplate(basic!, testDir);
+			scaffoldTemplate(helloWorld!, testDir);
 			expect(existsSync(testDir)).toBe(true);
 		});
 
 		it('writes template files', async () => {
 			const templates = await fetchManifest();
-			const basic = templates.find((t) => t.name === 'basic');
-			expect(basic).toBeDefined();
+			const helloWorld = templates.find((t) => t.name === 'hello-world');
+			expect(helloWorld).toBeDefined();
 
-			scaffoldTemplate(basic!, testDir);
+			scaffoldTemplate(helloWorld!, testDir);
 
 			expect(existsSync(join(testDir, 'src/index.ts'))).toBe(true);
 			expect(existsSync(join(testDir, 'tsconfig.json'))).toBe(true);
@@ -142,10 +142,10 @@ describe('CLI init', () => {
 
 		it('generates package.json with project name', async () => {
 			const templates = await fetchManifest();
-			const basic = templates.find((t) => t.name === 'basic');
-			expect(basic).toBeDefined();
+			const helloWorld = templates.find((t) => t.name === 'hello-world');
+			expect(helloWorld).toBeDefined();
 
-			scaffoldTemplate(basic!, testDir);
+			scaffoldTemplate(helloWorld!, testDir);
 
 			const pkgPath = join(testDir, 'package.json');
 			expect(existsSync(pkgPath)).toBe(true);
@@ -156,10 +156,10 @@ describe('CLI init', () => {
 
 		it('creates nested directories for file paths', async () => {
 			const templates = await fetchManifest();
-			const basic = templates.find((t) => t.name === 'basic');
-			expect(basic).toBeDefined();
+			const helloWorld = templates.find((t) => t.name === 'hello-world');
+			expect(helloWorld).toBeDefined();
 
-			scaffoldTemplate(basic!, testDir);
+			scaffoldTemplate(helloWorld!, testDir);
 
 			// src/index.ts requires src/ directory
 			expect(existsSync(join(testDir, 'src'))).toBe(true);
