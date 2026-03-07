@@ -42,6 +42,13 @@ import {
 import type { Entity, World } from '../core/types';
 import { getWorldStore } from '../core/worldStore';
 import { SliderRangeSchema, SliderStepSchema } from '../schemas/components';
+import {
+	clearAllCallbacks,
+	clearEntityCallbacks,
+	createCallbackStore,
+	fireCallbacks,
+	registerCallback,
+} from './callbackHelpers';
 
 // =============================================================================
 // WORLD-SCOPED STORES (REPLACED MODULE-LEVEL SINGLETONS)
@@ -53,19 +60,13 @@ function getDisplayStore(world: World): Map<Entity, SliderDisplay> {
 }
 
 /** Get world-scoped store for slider change callbacks */
-function getChangeCallbacks(world: World): Map<Entity, SliderChangeCallback[]> {
-	return getWorldStore<Entity, SliderChangeCallback[]>(world, 'slider:changeCallbacks');
-}
+const getChangeCallbacks = createCallbackStore<SliderChangeCallback>('slider:changeCallbacks');
 
 /** Get world-scoped store for drag start callbacks */
-function getDragStartCallbacks(world: World): Map<Entity, (() => void)[]> {
-	return getWorldStore<Entity, (() => void)[]>(world, 'slider:dragStartCallbacks');
-}
+const getDragStartCallbacks = createCallbackStore<() => void>('slider:dragStartCallbacks');
 
 /** Get world-scoped store for drag end callbacks */
-function getDragEndCallbacks(world: World): Map<Entity, (() => void)[]> {
-	return getWorldStore<Entity, (() => void)[]>(world, 'slider:dragEndCallbacks');
-}
+const getDragEndCallbacks = createCallbackStore<() => void>('slider:dragEndCallbacks');
 
 // =============================================================================
 // INTERNAL HELPERS
@@ -89,17 +90,6 @@ function roundToStep(value: number, step: number, min: number): number {
 }
 
 /**
- * Fire callbacks from a callback map.
- */
-function fireSliderCallbacks(eid: Entity, callbackMap: Map<Entity, Array<() => void>>): void {
-	const callbacks = callbackMap.get(eid);
-	if (!callbacks) return;
-	for (const cb of callbacks) {
-		cb();
-	}
-}
-
-/**
  * Handle slider state change callbacks.
  */
 function handleSliderStateChange(
@@ -109,9 +99,9 @@ function handleSliderStateChange(
 	newState: SliderState,
 ): void {
 	if (previousState !== 'dragging' && newState === 'dragging') {
-		fireSliderCallbacks(eid, getDragStartCallbacks(world));
+		fireCallbacks(eid, getDragStartCallbacks(world));
 	} else if (previousState === 'dragging' && newState !== 'dragging') {
-		fireSliderCallbacks(eid, getDragEndCallbacks(world));
+		fireCallbacks(eid, getDragEndCallbacks(world));
 	}
 }
 
@@ -691,19 +681,7 @@ export function onSliderChange(
 	eid: Entity,
 	callback: SliderChangeCallback,
 ): () => void {
-	const callbacks = getChangeCallbacks(world).get(eid) ?? [];
-	callbacks.push(callback);
-	getChangeCallbacks(world).set(eid, callbacks);
-
-	return () => {
-		const cbs = getChangeCallbacks(world).get(eid);
-		if (cbs) {
-			const idx = cbs.indexOf(callback);
-			if (idx !== -1) {
-				cbs.splice(idx, 1);
-			}
-		}
-	};
+	return registerCallback(getChangeCallbacks(world), eid, callback);
 }
 
 /**
@@ -715,19 +693,7 @@ export function onSliderChange(
  * @returns Unsubscribe function
  */
 export function onSliderDragStart(world: World, eid: Entity, callback: () => void): () => void {
-	const callbacks = getDragStartCallbacks(world).get(eid) ?? [];
-	callbacks.push(callback);
-	getDragStartCallbacks(world).set(eid, callbacks);
-
-	return () => {
-		const cbs = getDragStartCallbacks(world).get(eid);
-		if (cbs) {
-			const idx = cbs.indexOf(callback);
-			if (idx !== -1) {
-				cbs.splice(idx, 1);
-			}
-		}
-	};
+	return registerCallback(getDragStartCallbacks(world), eid, callback);
 }
 
 /**
@@ -739,19 +705,7 @@ export function onSliderDragStart(world: World, eid: Entity, callback: () => voi
  * @returns Unsubscribe function
  */
 export function onSliderDragEnd(world: World, eid: Entity, callback: () => void): () => void {
-	const callbacks = getDragEndCallbacks(world).get(eid) ?? [];
-	callbacks.push(callback);
-	getDragEndCallbacks(world).set(eid, callbacks);
-
-	return () => {
-		const cbs = getDragEndCallbacks(world).get(eid);
-		if (cbs) {
-			const idx = cbs.indexOf(callback);
-			if (idx !== -1) {
-				cbs.splice(idx, 1);
-			}
-		}
-	};
+	return registerCallback(getDragEndCallbacks(world), eid, callback);
 }
 
 /**
@@ -761,9 +715,12 @@ export function onSliderDragEnd(world: World, eid: Entity, callback: () => void)
  * @param eid - The entity ID
  */
 export function clearSliderCallbacks(world: World, eid: Entity): void {
-	getChangeCallbacks(world).delete(eid);
-	getDragStartCallbacks(world).delete(eid);
-	getDragEndCallbacks(world).delete(eid);
+	clearEntityCallbacks(
+		eid,
+		getChangeCallbacks(world),
+		getDragStartCallbacks(world),
+		getDragEndCallbacks(world),
+	);
 }
 
 // =============================================================================
@@ -914,7 +871,9 @@ export function resetSliderStore(world: World): void {
 	sliderStore.orientation.fill(0);
 	sliderStore.showValue.fill(0);
 	getDisplayStore(world).clear();
-	getChangeCallbacks(world).clear();
-	getDragStartCallbacks(world).clear();
-	getDragEndCallbacks(world).clear();
+	clearAllCallbacks(
+		getChangeCallbacks(world),
+		getDragStartCallbacks(world),
+		getDragEndCallbacks(world),
+	);
 }
