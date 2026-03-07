@@ -263,6 +263,177 @@ const SUPPORTED_LANGUAGES = new Set(['javascript', 'typescript', 'json', 'bash',
 // =============================================================================
 
 /**
+ * Helper: Parses a code block starting from the current index.
+ */
+function parseCodeBlock(
+	lines: readonly string[],
+	startIndex: number,
+): { block: StreamingBlock; nextIndex: number } {
+	const codeMatch = /^```(\w*)/.exec(lines[startIndex] ?? '');
+	const lang = codeMatch?.[1] ?? '';
+	const codeLines: string[] = [];
+	let i = startIndex + 1;
+	let closed = false;
+
+	while (i < lines.length) {
+		const codeLine = lines[i];
+		if (codeLine === undefined) {
+			i++;
+			continue;
+		}
+		if (/^```\s*$/.test(codeLine)) {
+			closed = true;
+			i++;
+			break;
+		}
+		codeLines.push(codeLine);
+		i++;
+	}
+
+	const codeBlock: StreamingBlock = {
+		type: 'code',
+		content: codeLines.join('\n'),
+		complete: closed,
+	};
+
+	return {
+		block: lang ? { ...codeBlock, language: lang } : codeBlock,
+		nextIndex: i,
+	};
+}
+
+/**
+ * Helper: Parses a blockquote starting from the current index.
+ */
+function parseBlockquote(
+	lines: readonly string[],
+	startIndex: number,
+): { block: StreamingBlock; nextIndex: number } {
+	const quoteLines: string[] = [];
+	let i = startIndex;
+
+	while (i < lines.length) {
+		const qLine = lines[i];
+		if (qLine === undefined || (!qLine.startsWith('>') && qLine.trim() === '')) break;
+		if (qLine.startsWith('>')) {
+			quoteLines.push(qLine.slice(1).trimStart());
+		} else {
+			quoteLines.push(qLine);
+		}
+		i++;
+	}
+
+	return {
+		block: {
+			type: 'blockquote',
+			content: quoteLines.join('\n'),
+			complete: true,
+		},
+		nextIndex: i,
+	};
+}
+
+/**
+ * Helper: Parses a list (ordered or unordered) starting from the current index.
+ */
+function parseList(
+	lines: readonly string[],
+	startIndex: number,
+): { block: StreamingBlock; nextIndex: number } {
+	const listMatch = /^(\s*)([-*+]|\d+\.)\s+(.*)$/.exec(lines[startIndex] ?? '');
+	const isOrdered = /^\d+\./.test(listMatch?.[2] ?? '');
+	const listLines: string[] = [];
+	let i = startIndex;
+
+	while (i < lines.length) {
+		const lLine = lines[i];
+		if (lLine === undefined) break;
+		if (/^(\s*)([-*+]|\d+\.)\s+/.test(lLine)) {
+			const lm = /^(\s*)([-*+]|\d+\.)\s+(.*)$/.exec(lLine);
+			listLines.push(lm?.[3] ?? lLine);
+			i++;
+		} else if (lLine.trim() === '' || /^\s+/.test(lLine)) {
+			if (lLine.trim() === '') {
+				i++;
+				break;
+			}
+			listLines.push(lLine.trim());
+			i++;
+		} else {
+			break;
+		}
+	}
+
+	return {
+		block: {
+			type: 'list',
+			content: listLines.join('\n'),
+			listOrdered: isOrdered,
+			complete: true,
+		},
+		nextIndex: i,
+	};
+}
+
+/**
+ * Helper: Parses a paragraph starting from the current index.
+ */
+function parseParagraph(
+	lines: readonly string[],
+	startIndex: number,
+): { block: StreamingBlock; nextIndex: number } {
+	const paraLines: string[] = [lines[startIndex] ?? ''];
+	let i = startIndex + 1;
+
+	while (i < lines.length) {
+		const pLine = lines[i];
+		if (pLine === undefined || pLine.trim() === '') break;
+		if (/^(#{1,6}\s|```|>|(-{3,}|\*{3,}|_{3,})\s*$)/.test(pLine)) break;
+		if (/^(\s*)([-*+]|\d+\.)\s+/.test(pLine)) break;
+		paraLines.push(pLine);
+		i++;
+	}
+
+	return {
+		block: {
+			type: 'paragraph',
+			content: paraLines.join(' '),
+			complete: true,
+		},
+		nextIndex: i,
+	};
+}
+
+/**
+ * Helper: Tries to parse simple single-line blocks (empty, hr, heading).
+ * Returns null if the line doesn't match any simple block type.
+ */
+function parseSimpleBlock(line: string): StreamingBlock | null {
+	// Empty line
+	if (line.trim() === '') {
+		return null; // Skip, don't create a block
+	}
+
+	// Horizontal rule
+	if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+		return { type: 'hr', content: '', complete: true };
+	}
+
+	// Heading
+	const headingMatch = /^(#{1,6})\s+(.*)$/.exec(line);
+	if (headingMatch) {
+		return {
+			type: 'heading',
+			content: headingMatch[2] ?? '',
+			headingLevel: (headingMatch[1] ?? '').length,
+			complete: true,
+		};
+	}
+
+	return null;
+}
+
+/**
  * Parses raw markdown source into blocks, handling incomplete/streaming content.
  *
  * @param source - The raw markdown source
@@ -289,132 +460,48 @@ export function parseStreamingBlocks(source: string): readonly StreamingBlock[] 
 			continue;
 		}
 
-		// Empty line
+		// Try simple blocks first (empty, hr, heading)
+		const simpleBlock = parseSimpleBlock(line);
+		if (simpleBlock !== null) {
+			blocks.push(simpleBlock);
+			i++;
+			continue;
+		}
+
+		// Empty line (handled by parseSimpleBlock returning null)
 		if (line.trim() === '') {
 			i++;
 			continue;
 		}
 
-		// Horizontal rule
-		if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
-			blocks.push({ type: 'hr', content: '', complete: true });
-			i++;
-			continue;
-		}
-
-		// Heading
-		const headingMatch = /^(#{1,6})\s+(.*)$/.exec(line);
-		if (headingMatch) {
-			blocks.push({
-				type: 'heading',
-				content: headingMatch[2] ?? '',
-				headingLevel: (headingMatch[1] ?? '').length,
-				complete: true,
-			});
-			i++;
-			continue;
-		}
-
 		// Code block
-		const codeMatch = /^```(\w*)/.exec(line);
-		if (codeMatch) {
-			const lang = codeMatch[1] ?? '';
-			const codeLines: string[] = [];
-			i++;
-			let closed = false;
-			while (i < lines.length) {
-				const codeLine = lines[i];
-				if (codeLine === undefined) {
-					i++;
-					continue;
-				}
-				if (/^```\s*$/.test(codeLine)) {
-					closed = true;
-					i++;
-					break;
-				}
-				codeLines.push(codeLine);
-				i++;
-			}
-			const codeBlock: StreamingBlock = {
-				type: 'code',
-				content: codeLines.join('\n'),
-				complete: closed,
-			};
-			blocks.push(lang ? { ...codeBlock, language: lang } : codeBlock);
+		if (/^```(\w*)/.test(line)) {
+			const { block, nextIndex } = parseCodeBlock(lines, i);
+			blocks.push(block);
+			i = nextIndex;
 			continue;
 		}
 
 		// Blockquote
 		if (line.startsWith('>')) {
-			const quoteLines: string[] = [];
-			while (i < lines.length) {
-				const qLine = lines[i];
-				if (qLine === undefined || (!qLine.startsWith('>') && qLine.trim() === '')) break;
-				if (qLine.startsWith('>')) {
-					quoteLines.push(qLine.slice(1).trimStart());
-				} else {
-					quoteLines.push(qLine);
-				}
-				i++;
-			}
-			blocks.push({
-				type: 'blockquote',
-				content: quoteLines.join('\n'),
-				complete: true,
-			});
+			const { block, nextIndex } = parseBlockquote(lines, i);
+			blocks.push(block);
+			i = nextIndex;
 			continue;
 		}
 
 		// List (ordered or unordered)
-		const listMatch = /^(\s*)([-*+]|\d+\.)\s+(.*)$/.exec(line);
-		if (listMatch) {
-			const isOrdered = /^\d+\./.test(listMatch[2] ?? '');
-			const listLines: string[] = [];
-			while (i < lines.length) {
-				const lLine = lines[i];
-				if (lLine === undefined) break;
-				if (/^(\s*)([-*+]|\d+\.)\s+/.test(lLine)) {
-					const lm = /^(\s*)([-*+]|\d+\.)\s+(.*)$/.exec(lLine);
-					listLines.push(lm?.[3] ?? lLine);
-					i++;
-				} else if (lLine.trim() === '' || /^\s+/.test(lLine)) {
-					// Continuation or blank line within list
-					if (lLine.trim() === '') {
-						i++;
-						break;
-					}
-					listLines.push(lLine.trim());
-					i++;
-				} else {
-					break;
-				}
-			}
-			blocks.push({
-				type: 'list',
-				content: listLines.join('\n'),
-				listOrdered: isOrdered,
-				complete: true,
-			});
+		if (/^(\s*)([-*+]|\d+\.)\s+(.*)$/.test(line)) {
+			const { block, nextIndex } = parseList(lines, i);
+			blocks.push(block);
+			i = nextIndex;
 			continue;
 		}
 
 		// Paragraph (default)
-		const paraLines: string[] = [line];
-		i++;
-		while (i < lines.length) {
-			const pLine = lines[i];
-			if (pLine === undefined || pLine.trim() === '') break;
-			if (/^(#{1,6}\s|```|>|(-{3,}|\*{3,}|_{3,})\s*$)/.test(pLine)) break;
-			if (/^(\s*)([-*+]|\d+\.)\s+/.test(pLine)) break;
-			paraLines.push(pLine);
-			i++;
-		}
-		blocks.push({
-			type: 'paragraph',
-			content: paraLines.join(' '),
-			complete: true,
-		});
+		const { block, nextIndex } = parseParagraph(lines, i);
+		blocks.push(block);
+		i = nextIndex;
 	}
 
 	return blocks;
@@ -503,6 +590,116 @@ export function wrapText(text: string, width: number): readonly string[] {
 }
 
 /**
+ * Helper: Renders a heading block.
+ */
+function renderHeading(block: StreamingBlock, theme: StreamingMarkdownTheme): readonly string[] {
+	const level = block.headingLevel ?? 1;
+	const prefix = '#'.repeat(level);
+	const formatted = formatInline(block.content, theme);
+	return [`${theme.heading}${prefix} ${formatted}${theme.reset}`];
+}
+
+/**
+ * Helper: Renders a code block.
+ */
+function renderCodeBlock(
+	block: StreamingBlock,
+	config: StreamingMarkdownConfig,
+): readonly string[] {
+	const { theme, wrapWidth } = config;
+	const lines: string[] = [];
+	const lang = block.language ?? '';
+	const langLabel = lang ? ` ${lang}` : '';
+	const borderChar = '\u2500';
+	const topBorder = `${theme.codeBlock}\u250c${borderChar.repeat(Math.max(0, wrapWidth - 2 - langLabel.length))}${langLabel}${theme.reset}`;
+	lines.push(topBorder);
+
+	const codeLines = block.content.split('\n');
+	const shouldHighlight = config.syntaxHighlight && lang && SUPPORTED_LANGUAGES.has(lang);
+
+	for (const codeLine of codeLines) {
+		let formatted = codeLine;
+		if (shouldHighlight) {
+			formatted = highlightCode(codeLine, lang as SupportedLanguage);
+		}
+		lines.push(`${theme.codeBlock}\u2502${theme.reset} ${formatted}`);
+	}
+
+	if (!block.complete) {
+		lines.push(`${theme.codeBlock}\u2502 ${theme.thinking}...${theme.reset}`);
+	}
+
+	const bottomBorder = `${theme.codeBlock}\u2514${borderChar.repeat(Math.max(0, wrapWidth - 2))}${theme.reset}`;
+	lines.push(bottomBorder);
+	return lines;
+}
+
+/**
+ * Helper: Renders a blockquote.
+ */
+function renderBlockquoteBlock(
+	block: StreamingBlock,
+	theme: StreamingMarkdownTheme,
+	wrapWidth: number,
+): readonly string[] {
+	const quoteLines = block.content.split('\n');
+	return quoteLines.map((line) => {
+		const wrapped = wrapText(line, wrapWidth - 4);
+		return wrapped
+			.map((w) => `${theme.quote}\u2502 ${formatInline(w, theme)}${theme.reset}`)
+			.join('\n');
+	});
+}
+
+/**
+ * Helper: Renders a single list item with wrapping.
+ */
+function renderListItem(
+	item: string,
+	bullet: string,
+	indent: number,
+	theme: StreamingMarkdownTheme,
+	wrapWidth: number,
+): readonly string[] {
+	const wrapped = wrapText(item, wrapWidth - indent);
+	const lines: string[] = [];
+	for (let j = 0; j < wrapped.length; j++) {
+		const w = wrapped[j];
+		if (w === undefined) continue;
+		if (j === 0) {
+			lines.push(`  ${bullet} ${formatInline(w, theme)}`);
+		} else {
+			lines.push(`${' '.repeat(indent + 1)}${formatInline(w, theme)}`);
+		}
+	}
+	return lines;
+}
+
+/**
+ * Helper: Renders a list block.
+ */
+function renderListBlock(
+	block: StreamingBlock,
+	theme: StreamingMarkdownTheme,
+	wrapWidth: number,
+): readonly string[] {
+	const items = block.content.split('\n');
+	const lines: string[] = [];
+	const indent = block.listOrdered ? 4 : 3;
+
+	for (let idx = 0; idx < items.length; idx++) {
+		const item = items[idx];
+		if (item === undefined) continue;
+		const bullet = block.listOrdered
+			? `${theme.bullet}${idx + 1}.${theme.reset}`
+			: `${theme.bullet}\u2022${theme.reset}`;
+		const itemLines = renderListItem(item, bullet, indent, theme, wrapWidth);
+		lines.push(...itemLines);
+	}
+	return lines;
+}
+
+/**
  * Renders a single block to output lines.
  *
  * @param block - The parsed block
@@ -516,74 +713,17 @@ export function renderBlock(
 	const { theme, wrapWidth } = config;
 
 	switch (block.type) {
-		case 'heading': {
-			const level = block.headingLevel ?? 1;
-			const prefix = '#'.repeat(level);
-			const formatted = formatInline(block.content, theme);
-			return [`${theme.heading}${prefix} ${formatted}${theme.reset}`];
-		}
+		case 'heading':
+			return renderHeading(block, theme);
 
-		case 'code': {
-			const lines: string[] = [];
-			const lang = block.language ?? '';
-			const langLabel = lang ? ` ${lang}` : '';
-			const borderChar = '\u2500';
-			const topBorder = `${theme.codeBlock}\u250c${borderChar.repeat(Math.max(0, wrapWidth - 2 - langLabel.length))}${langLabel}${theme.reset}`;
-			lines.push(topBorder);
+		case 'code':
+			return renderCodeBlock(block, config);
 
-			const codeLines = block.content.split('\n');
-			const shouldHighlight = config.syntaxHighlight && lang && SUPPORTED_LANGUAGES.has(lang);
+		case 'blockquote':
+			return renderBlockquoteBlock(block, theme, wrapWidth);
 
-			for (const codeLine of codeLines) {
-				let formatted = codeLine;
-				if (shouldHighlight) {
-					formatted = highlightCode(codeLine, lang as SupportedLanguage);
-				}
-				lines.push(`${theme.codeBlock}\u2502${theme.reset} ${formatted}`);
-			}
-
-			if (!block.complete) {
-				lines.push(`${theme.codeBlock}\u2502 ${theme.thinking}...${theme.reset}`);
-			}
-
-			const bottomBorder = `${theme.codeBlock}\u2514${borderChar.repeat(Math.max(0, wrapWidth - 2))}${theme.reset}`;
-			lines.push(bottomBorder);
-			return lines;
-		}
-
-		case 'blockquote': {
-			const quoteLines = block.content.split('\n');
-			return quoteLines.map((line) => {
-				const wrapped = wrapText(line, wrapWidth - 4);
-				return wrapped
-					.map((w) => `${theme.quote}\u2502 ${formatInline(w, theme)}${theme.reset}`)
-					.join('\n');
-			});
-		}
-
-		case 'list': {
-			const items = block.content.split('\n');
-			const lines: string[] = [];
-			for (let idx = 0; idx < items.length; idx++) {
-				const item = items[idx];
-				if (item === undefined) continue;
-				const bullet = block.listOrdered
-					? `${theme.bullet}${idx + 1}.${theme.reset}`
-					: `${theme.bullet}\u2022${theme.reset}`;
-				const indent = block.listOrdered ? 4 : 3;
-				const wrapped = wrapText(item, wrapWidth - indent);
-				for (let j = 0; j < wrapped.length; j++) {
-					const w = wrapped[j];
-					if (w === undefined) continue;
-					if (j === 0) {
-						lines.push(`  ${bullet} ${formatInline(w, theme)}`);
-					} else {
-						lines.push(`${' '.repeat(indent + 1)}${formatInline(w, theme)}`);
-					}
-				}
-			}
-			return lines;
-		}
+		case 'list':
+			return renderListBlock(block, theme, wrapWidth);
 
 		case 'hr': {
 			const hrChar = '\u2500';
