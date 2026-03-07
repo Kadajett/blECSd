@@ -4,7 +4,7 @@
  * @module systems/renderSystem
  */
 
-import { Border, BorderType, getBorder, hasBorderVisible } from '../components/border';
+import { BorderType, getBorder, hasBorderVisible } from '../components/border';
 import { BoxTitle, boxTitleStore } from '../components/boxTitle';
 // getChildren reserved for future tree-based rendering mode
 // import { getChildren } from '../components/hierarchy';
@@ -18,12 +18,17 @@ import {
 } from '../components/renderable';
 import type { DirtyTracker } from '../core/dirtyTracking';
 import { markEntityDirty } from '../core/dirtyTracking';
-import { hasComponent } from '../core/ecs';
 import type { Entity, System, World } from '../core/types';
 import { getWorldAdapter } from '../core/worldAdapter';
 import type { Cell, ScreenBufferData } from '../terminal/screen/cell';
 import { Attr, createCell, fillRect, setCell, writeString } from '../terminal/screen/cell';
-import { ComputedLayout, hasComputedLayout } from './layoutSystem';
+import type { EntityBounds } from './renderHelpers';
+import {
+	getBorderThickness,
+	getContentBounds,
+	getEntityBounds,
+	styleToAttrs,
+} from './renderHelpers';
 
 // =============================================================================
 // TYPES
@@ -44,88 +49,10 @@ export interface RenderContext {
 /**
  * Computed bounds for an entity.
  */
-interface EntityBounds {
-	readonly x: number;
-	readonly y: number;
-	readonly width: number;
-	readonly height: number;
-}
-
 /** Reusable scratch array for frame-local render sorting. */
 const renderSortScratch: Entity[] = [];
 /** Reusable scratch array for frame-local occlusion tracking. */
 const occlusionScratch: OcclusionRect[] = [];
-
-// =============================================================================
-// RENDER HELPER FUNCTIONS
-// =============================================================================
-
-/**
- * Converts Renderable style to Cell attributes.
- */
-function styleToAttrs(world: World, eid: Entity): number {
-	if (!hasComponent(world, eid, Renderable)) {
-		return Attr.NONE;
-	}
-
-	let attrs = Attr.NONE;
-	if (Renderable.bold[eid] === 1) attrs |= Attr.BOLD;
-	if (Renderable.underline[eid] === 1) attrs |= Attr.UNDERLINE;
-	if (Renderable.blink[eid] === 1) attrs |= Attr.BLINK;
-	if (Renderable.inverse[eid] === 1) attrs |= Attr.INVERSE;
-
-	return attrs;
-}
-
-/**
- * Gets entity bounds from ComputedLayout.
- */
-function getEntityBounds(world: World, eid: Entity): EntityBounds | undefined {
-	if (!hasComputedLayout(world, eid)) {
-		return undefined;
-	}
-
-	return {
-		x: ComputedLayout.x[eid] as number,
-		y: ComputedLayout.y[eid] as number,
-		width: ComputedLayout.width[eid] as number,
-		height: ComputedLayout.height[eid] as number,
-	};
-}
-
-/**
- * Gets border thickness for each side.
- */
-function getBorderThickness(
-	world: World,
-	eid: Entity,
-): { top: number; right: number; bottom: number; left: number } {
-	if (!hasBorderVisible(world, eid)) {
-		return { top: 0, right: 0, bottom: 0, left: 0 };
-	}
-
-	return {
-		top: Border.top[eid] === 1 ? 1 : 0,
-		right: Border.right[eid] === 1 ? 1 : 0,
-		bottom: Border.bottom[eid] === 1 ? 1 : 0,
-		left: Border.left[eid] === 1 ? 1 : 0,
-	};
-}
-
-/**
- * Gets the content area (bounds minus border).
- */
-function getContentBounds(
-	bounds: EntityBounds,
-	borderThickness: { top: number; right: number; bottom: number; left: number },
-): EntityBounds {
-	return {
-		x: bounds.x + borderThickness.left,
-		y: bounds.y + borderThickness.top,
-		width: Math.max(0, bounds.width - borderThickness.left - borderThickness.right),
-		height: Math.max(0, bounds.height - borderThickness.top - borderThickness.bottom),
-	};
-}
 
 // =============================================================================
 // RENDER FUNCTIONS

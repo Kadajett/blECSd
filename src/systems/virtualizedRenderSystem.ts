@@ -26,7 +26,7 @@
  */
 
 import { z } from 'zod';
-import { Border, hasBorderVisible } from '../components/border';
+
 import { Position } from '../components/position';
 import { getStyle, isEffectivelyVisible, markClean, Renderable } from '../components/renderable';
 import {
@@ -36,7 +36,7 @@ import {
 	VirtualViewport,
 	type VisibleRange,
 } from '../components/virtualViewport';
-import { hasComponent, query } from '../core/ecs';
+import { query } from '../core/ecs';
 import type { Entity, System, World } from '../core/types';
 import { getWorldStore } from '../core/worldStore';
 import type { ScreenBufferData } from '../terminal/screen/cell';
@@ -45,7 +45,13 @@ import type { DoubleBufferData } from '../terminal/screen/doubleBuffer';
 import { getBackBuffer, markDirtyRegion } from '../terminal/screen/doubleBuffer';
 import type { VirtualizedLineStore } from '../utils/virtualizedLineStore';
 import { getLineRange } from '../utils/virtualizedLineStore';
-import { ComputedLayout, hasComputedLayout } from './layoutSystem';
+import type { EntityBounds } from './renderHelpers';
+import {
+	getBorderThickness,
+	getContentBounds,
+	getEntityBounds,
+	styleToAttrs,
+} from './renderHelpers';
 
 // =============================================================================
 // ZOD SCHEMAS
@@ -135,16 +141,6 @@ export interface VirtualizedRenderContext {
 	readonly buffer: ScreenBufferData;
 	/** The double buffer for dirty tracking */
 	readonly doubleBuffer: DoubleBufferData;
-}
-
-/**
- * Computed bounds for an entity.
- */
-interface EntityBounds {
-	readonly x: number;
-	readonly y: number;
-	readonly width: number;
-	readonly height: number;
 }
 
 /**
@@ -369,73 +365,6 @@ export function clearLineRenderConfig(world: World, eid: Entity): void {
 // =============================================================================
 // INTERNAL HELPERS
 // =============================================================================
-
-/**
- * Converts Renderable style to Cell attributes.
- */
-function styleToAttrs(world: World, eid: Entity): number {
-	if (!hasComponent(world, eid, Renderable)) {
-		return Attr.NONE;
-	}
-
-	let attrs = Attr.NONE;
-	if (Renderable.bold[eid] === 1) attrs |= Attr.BOLD;
-	if (Renderable.underline[eid] === 1) attrs |= Attr.UNDERLINE;
-	if (Renderable.blink[eid] === 1) attrs |= Attr.BLINK;
-	if (Renderable.inverse[eid] === 1) attrs |= Attr.INVERSE;
-
-	return attrs;
-}
-
-/**
- * Gets entity bounds from ComputedLayout.
- */
-function getEntityBounds(world: World, eid: Entity): EntityBounds | undefined {
-	if (!hasComputedLayout(world, eid)) {
-		return undefined;
-	}
-
-	return {
-		x: ComputedLayout.x[eid] as number,
-		y: ComputedLayout.y[eid] as number,
-		width: ComputedLayout.width[eid] as number,
-		height: ComputedLayout.height[eid] as number,
-	};
-}
-
-/**
- * Gets border thickness for each side.
- */
-function getBorderThickness(
-	world: World,
-	eid: Entity,
-): { top: number; right: number; bottom: number; left: number } {
-	if (!hasBorderVisible(world, eid)) {
-		return { top: 0, right: 0, bottom: 0, left: 0 };
-	}
-
-	return {
-		top: Border.top[eid] === 1 ? 1 : 0,
-		right: Border.right[eid] === 1 ? 1 : 0,
-		bottom: Border.bottom[eid] === 1 ? 1 : 0,
-		left: Border.left[eid] === 1 ? 1 : 0,
-	};
-}
-
-/**
- * Gets the content area (bounds minus border).
- */
-function getContentBounds(
-	bounds: EntityBounds,
-	borderThickness: { top: number; right: number; bottom: number; left: number },
-): EntityBounds {
-	return {
-		x: bounds.x + borderThickness.left,
-		y: bounds.y + borderThickness.top,
-		width: Math.max(0, bounds.width - borderThickness.left - borderThickness.right),
-		height: Math.max(0, bounds.height - borderThickness.top - borderThickness.bottom),
-	};
-}
 
 /**
  * Renders a single line to the buffer.
