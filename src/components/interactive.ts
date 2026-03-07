@@ -12,14 +12,12 @@ export const DEFAULT_HOVER_FG = 0xffffffff;
 /** Default hover effect background color (transparent) */
 export const DEFAULT_HOVER_BG = 0x00000000;
 
-/** Default focus effect foreground color (cyan) */
-export const DEFAULT_FOCUS_FG = 0xff00ffff;
-
-/** Default focus effect background color (transparent) */
-export const DEFAULT_FOCUS_BG = 0x00000000;
-
 /**
  * Interactive component store using SoA (Structure of Arrays) for performance.
+ *
+ * Focus state (focusable, focused, tabIndex, focusEffectFg, focusEffectBg) is
+ * managed by the Focusable component. Interactive delegates to Focusable for
+ * all focus-related operations.
  *
  * - `clickable`: Whether entity responds to clicks (0=no, 1=yes)
  * - `draggable`: Whether entity can be dragged (0=no, 1=yes)
@@ -53,22 +51,12 @@ export const Interactive = {
 	pressed: new Uint8Array(DEFAULT_CAPACITY),
 	/** Whether entity receives key events (0=no, 1=yes) */
 	keyable: new Uint8Array(DEFAULT_CAPACITY),
-	/** Whether entity can receive focus (0=no, 1=yes) */
-	focusable: new Uint8Array(DEFAULT_CAPACITY),
-	/** Current focus state (0=no, 1=yes) */
-	focused: new Uint8Array(DEFAULT_CAPACITY),
-	/** Tab index for focus order (-1=skip, 0+=order) */
-	tabIndex: new Int16Array(DEFAULT_CAPACITY),
 	/** Whether entity is enabled (0=disabled, 1=enabled) */
 	enabled: new Uint8Array(DEFAULT_CAPACITY),
 	/** Hover effect foreground color */
 	hoverEffectFg: new Uint32Array(DEFAULT_CAPACITY),
 	/** Hover effect background color */
 	hoverEffectBg: new Uint32Array(DEFAULT_CAPACITY),
-	/** Focus effect foreground color */
-	focusEffectFg: new Uint32Array(DEFAULT_CAPACITY),
-	/** Focus effect background color */
-	focusEffectBg: new Uint32Array(DEFAULT_CAPACITY),
 };
 
 /**

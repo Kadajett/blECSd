@@ -3,10 +3,16 @@
  * @module systems/interactiveSystem
  */
 
-import { makeFocusable } from '../components/focusable';
 import {
-	DEFAULT_FOCUS_BG,
-	DEFAULT_FOCUS_FG,
+	Focusable,
+	getFocusable,
+	isFocusable as isFocusableComponent,
+	isFocused as isFocusedComponent,
+	makeFocusable,
+	setFocusable as setFocusableComponent,
+	setTabIndex as setTabIndexComponent,
+} from '../components/focusable';
+import {
 	DEFAULT_HOVER_BG,
 	DEFAULT_HOVER_FG,
 	Interactive,
@@ -27,14 +33,9 @@ function initInteractive(eid: Entity): void {
 	Interactive.hovered[eid] = 0;
 	Interactive.pressed[eid] = 0;
 	Interactive.keyable[eid] = 0;
-	Interactive.focusable[eid] = 0;
-	Interactive.focused[eid] = 0;
-	Interactive.tabIndex[eid] = 0;
 	Interactive.enabled[eid] = 1; // Enabled by default
 	Interactive.hoverEffectFg[eid] = DEFAULT_HOVER_FG;
 	Interactive.hoverEffectBg[eid] = DEFAULT_HOVER_BG;
-	Interactive.focusEffectFg[eid] = DEFAULT_FOCUS_FG;
-	Interactive.focusEffectBg[eid] = DEFAULT_FOCUS_BG;
 }
 
 /**
@@ -93,17 +94,22 @@ export function setInteractive(world: World, eid: Entity, options: InteractiveOp
 	setBoolOption(eid, Interactive.draggable, options.draggable);
 	setBoolOption(eid, Interactive.hoverable, options.hoverable);
 	setBoolOption(eid, Interactive.keyable, options.keyable);
-	setBoolOption(eid, Interactive.focusable, options.focusable);
 	setBoolOption(eid, Interactive.enabled, options.enabled);
-	setNumOption(eid, Interactive.tabIndex, options.tabIndex);
 	setNumOption(eid, Interactive.hoverEffectFg, options.hoverEffectFg);
 	setNumOption(eid, Interactive.hoverEffectBg, options.hoverEffectBg);
-	setNumOption(eid, Interactive.focusEffectFg, options.focusEffectFg);
-	setNumOption(eid, Interactive.focusEffectBg, options.focusEffectBg);
 
-	// Keep Focusable component in sync when focusable option is set
+	// Delegate all focus-related options to the Focusable component (single source of truth)
 	if (options.focusable !== undefined) {
 		makeFocusable(world, eid, options.focusable);
+	}
+	if (options.tabIndex !== undefined) {
+		setTabIndexComponent(world, eid, options.tabIndex);
+	}
+	if (options.focusEffectFg !== undefined) {
+		Focusable.focusEffectFg[eid] = options.focusEffectFg;
+	}
+	if (options.focusEffectBg !== undefined) {
+		Focusable.focusEffectBg[eid] = options.focusEffectBg;
 	}
 
 	return eid;
@@ -297,6 +303,7 @@ export function setPressed(world: World, eid: Entity, pressed: boolean): Entity 
 
 /**
  * Checks if an entity can receive focus.
+ * Delegates to the Focusable component (single source of truth for focus state).
  *
  * @param world - The ECS world
  * @param eid - The entity ID
@@ -312,14 +319,12 @@ export function setPressed(world: World, eid: Entity, pressed: boolean): Entity 
  * ```
  */
 export function isFocusable(world: World, eid: Entity): boolean {
-	if (!hasComponent(world, eid, Interactive)) {
-		return false;
-	}
-	return Interactive.focusable[eid] === 1;
+	return isFocusableComponent(world, eid);
 }
 
 /**
  * Checks if an entity is currently focused.
+ * Delegates to the Focusable component (single source of truth for focus state).
  *
  * @param world - The ECS world
  * @param eid - The entity ID
@@ -335,14 +340,12 @@ export function isFocusable(world: World, eid: Entity): boolean {
  * ```
  */
 export function isFocused(world: World, eid: Entity): boolean {
-	if (!hasComponent(world, eid, Interactive)) {
-		return false;
-	}
-	return Interactive.focused[eid] === 1;
+	return isFocusedComponent(world, eid);
 }
 
 /**
  * Sets whether an entity can receive focus.
+ * Delegates to the Focusable component (single source of truth for focus state).
  *
  * @param world - The ECS world
  * @param eid - The entity ID
@@ -350,8 +353,7 @@ export function isFocused(world: World, eid: Entity): boolean {
  * @returns The entity ID for chaining
  */
 export function setFocusable(world: World, eid: Entity, focusable: boolean): Entity {
-	ensureInteractive(world, eid);
-	Interactive.focusable[eid] = focusable ? 1 : 0;
+	setFocusableComponent(world, eid, { focusable });
 	return eid;
 }
 
@@ -359,6 +361,7 @@ export function setFocusable(world: World, eid: Entity, focusable: boolean): Ent
  * Sets the focus state of an entity.
  * Note: This only sets the component state. Use the focus system for
  * proper focus management with events.
+ * Delegates to the Focusable component (single source of truth for focus state).
  *
  * @param world - The ECS world
  * @param eid - The entity ID
@@ -366,27 +369,31 @@ export function setFocusable(world: World, eid: Entity, focusable: boolean): Ent
  * @returns The entity ID for chaining
  */
 export function setFocusedState(world: World, eid: Entity, focused: boolean): Entity {
-	ensureInteractive(world, eid);
-	Interactive.focused[eid] = focused ? 1 : 0;
+	if (!hasComponent(world, eid, Focusable)) {
+		addComponent(world, eid, Focusable);
+	}
+	Focusable.focused[eid] = focused ? 1 : 0;
 	return eid;
 }
 
 /**
  * Gets the tab index of an entity.
+ * Delegates to the Focusable component (single source of truth for focus state).
  *
  * @param world - The ECS world
  * @param eid - The entity ID
  * @returns Tab index (-1 if not focusable via tab, 0+ for order)
  */
 export function getTabIndex(world: World, eid: Entity): number {
-	if (!hasComponent(world, eid, Interactive)) {
+	if (!hasComponent(world, eid, Focusable)) {
 		return -1;
 	}
-	return Interactive.tabIndex[eid] as number;
+	return Focusable.tabIndex[eid] as number;
 }
 
 /**
  * Sets the tab index of an entity.
+ * Delegates to the Focusable component (single source of truth for focus state).
  *
  * @param world - The ECS world
  * @param eid - The entity ID
@@ -394,30 +401,31 @@ export function getTabIndex(world: World, eid: Entity): number {
  * @returns The entity ID for chaining
  */
 export function setTabIndex(world: World, eid: Entity, tabIndex: number): Entity {
-	ensureInteractive(world, eid);
-	Interactive.tabIndex[eid] = tabIndex;
+	setTabIndexComponent(world, eid, tabIndex);
 	return eid;
 }
 
 /**
  * Gets the focus effect colors.
+ * Delegates to the Focusable component (single source of truth for focus state).
  *
  * @param world - The ECS world
  * @param eid - The entity ID
  * @returns Focus effect colors or undefined
  */
 export function getFocusEffect(world: World, eid: Entity): { fg: number; bg: number } | undefined {
-	if (!hasComponent(world, eid, Interactive)) {
+	if (!hasComponent(world, eid, Focusable)) {
 		return undefined;
 	}
 	return {
-		fg: Interactive.focusEffectFg[eid] as number,
-		bg: Interactive.focusEffectBg[eid] as number,
+		fg: Focusable.focusEffectFg[eid] as number,
+		bg: Focusable.focusEffectBg[eid] as number,
 	};
 }
 
 /**
  * Sets the focus effect colors.
+ * Delegates to the Focusable component (single source of truth for focus state).
  *
  * @param world - The ECS world
  * @param eid - The entity ID
@@ -426,9 +434,11 @@ export function getFocusEffect(world: World, eid: Entity): { fg: number; bg: num
  * @returns The entity ID for chaining
  */
 export function setFocusEffect(world: World, eid: Entity, fg: number, bg: number): Entity {
-	ensureInteractive(world, eid);
-	Interactive.focusEffectFg[eid] = fg;
-	Interactive.focusEffectBg[eid] = bg;
+	if (!hasComponent(world, eid, Focusable)) {
+		addComponent(world, eid, Focusable);
+	}
+	Focusable.focusEffectFg[eid] = fg;
+	Focusable.focusEffectBg[eid] = bg;
 	return eid;
 }
 
@@ -444,6 +454,7 @@ export function getInteractive(world: World, eid: Entity): InteractiveData | und
 	if (!hasComponent(world, eid, Interactive)) {
 		return undefined;
 	}
+	const focusData = getFocusable(world, eid);
 	return {
 		clickable: Interactive.clickable[eid] === 1,
 		draggable: Interactive.draggable[eid] === 1,
@@ -451,14 +462,14 @@ export function getInteractive(world: World, eid: Entity): InteractiveData | und
 		hovered: Interactive.hovered[eid] === 1,
 		pressed: Interactive.pressed[eid] === 1,
 		keyable: Interactive.keyable[eid] === 1,
-		focusable: Interactive.focusable[eid] === 1,
-		focused: Interactive.focused[eid] === 1,
-		tabIndex: Interactive.tabIndex[eid] as number,
+		focusable: focusData?.focusable ?? false,
+		focused: focusData?.focused ?? false,
+		tabIndex: focusData?.tabIndex ?? 0,
 		enabled: Interactive.enabled[eid] === 1,
 		hoverEffectFg: Interactive.hoverEffectFg[eid] as number,
 		hoverEffectBg: Interactive.hoverEffectBg[eid] as number,
-		focusEffectFg: Interactive.focusEffectFg[eid] as number,
-		focusEffectBg: Interactive.focusEffectBg[eid] as number,
+		focusEffectFg: focusData?.focusEffectFg ?? 0,
+		focusEffectBg: focusData?.focusEffectBg ?? 0,
 	};
 }
 
@@ -486,7 +497,9 @@ export function clearInteractionState(world: World, eid: Entity): Entity {
 	}
 	Interactive.hovered[eid] = 0;
 	Interactive.pressed[eid] = 0;
-	Interactive.focused[eid] = 0;
+	if (hasComponent(world, eid, Focusable)) {
+		Focusable.focused[eid] = 0;
+	}
 	return eid;
 }
 
@@ -751,7 +764,9 @@ export function disable(world: World, eid: Entity): Entity {
 	// Clear interaction state when disabled
 	Interactive.hovered[eid] = 0;
 	Interactive.pressed[eid] = 0;
-	Interactive.focused[eid] = 0;
+	if (hasComponent(world, eid, Focusable)) {
+		Focusable.focused[eid] = 0;
+	}
 	return eid;
 }
 

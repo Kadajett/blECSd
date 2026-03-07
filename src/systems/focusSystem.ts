@@ -35,6 +35,7 @@
 
 import {
 	blur as blurFocusable,
+	Focusable,
 	focus as focusFocusable,
 	isFocusable,
 } from '../components/focusable';
@@ -175,7 +176,7 @@ export function getFocusableEntities(world: World): Entity[] {
 		}
 
 		// Must have non-negative tab index (negative = skip)
-		const tabIndex = Interactive.tabIndex[eid] as number;
+		const tabIndex = Focusable.tabIndex[eid] as number;
 		if (tabIndex < 0) {
 			continue;
 		}

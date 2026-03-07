@@ -30,6 +30,7 @@ import {
 	setKeyable,
 	setPressed,
 } from '../systems/interactiveSystem';
+import { Focusable } from './focusable';
 import { Interactive } from './interactive';
 
 describe('Interactive component', () => {
@@ -725,13 +726,14 @@ describe('Interactive component', () => {
 				setInteractive(world, entity, { clickable: true, hoverable: true });
 				setHovered(world, entity, true);
 				setPressed(world, entity, true);
-				Interactive.focused[entity] = 1;
+				setInteractive(world, entity, { focusable: true });
+				Focusable.focused[entity] = 1;
 
 				disable(world, entity);
 
 				expect(Interactive.hovered[entity]).toBe(0);
 				expect(Interactive.pressed[entity]).toBe(0);
-				expect(Interactive.focused[entity]).toBe(0);
+				expect(Focusable.focused[entity]).toBe(0);
 			});
 
 			it('returns the entity for chaining', () => {
