@@ -394,6 +394,20 @@ export {
 	updateCursorBlink,
 	updateCursorInManager,
 } from './cursor';
+// Custom stream sessions
+export type {
+	StreamCloseHandler,
+	StreamDataHandler,
+	StreamResizeHandler,
+	StreamSession,
+	StreamSessionConfig,
+} from './customStream';
+export {
+	createStreamSession,
+	endSession,
+	StreamSessionConfigSchema,
+	writeToSession,
+} from './customStream';
 // Debug logging (internal)
 export type {
 	DebugLogger,
@@ -827,12 +841,35 @@ export {
 	SanitizeOptionsSchema,
 	sanitizeForTerminal,
 } from './security/sanitize';
+// Server app factory
+export type {
+	ServerApp,
+	ServerAppConfig,
+	ServerMode,
+	SSHServerAppConfig,
+	TCPServerAppConfig,
+	TelnetServerAppConfig,
+} from './serverApp';
+export { createServerApp } from './serverApp';
 // Serve web (high-level API)
 export type {
 	ServeWebConfig,
 	ServeWebResult,
 } from './serveWeb';
 export { serveWeb } from './serveWeb';
+// SSH server
+export type {
+	SSHAuthorizedKey,
+	SSHServerConfig,
+	SSHServerState,
+} from './sshServer';
+export {
+	createSSHServer,
+	getSSHClientCount,
+	SSHServerConfigSchema,
+	startSSHServer,
+	stopSSHServer,
+} from './sshServer';
 // Suspend/resume handling (internal)
 export type { SuspendManager, SuspendManagerOptions, SuspendState } from './suspend';
 export {
@@ -843,6 +880,20 @@ export {
 // Synchronized output (internal)
 export type { SynchronizedOutput, SyncOutputOptions } from './syncOutput';
 export { createSynchronizedOutput, isSyncOutputSupported } from './syncOutput';
+// Telnet server
+export type {
+	TelnetServerConfig,
+	TelnetServerState,
+} from './telnetServer';
+export {
+	createTelnetServer,
+	getTelnetClientCount,
+	startTelnetServer,
+	stopTelnetServer,
+	TELNET,
+	TELNET_OPT,
+	TelnetServerConfigSchema,
+} from './telnetServer';
 // Terminfo
 export type {
 	BooleanCapability,
