@@ -12,23 +12,14 @@ import {
 	layoutSystem,
 	outputSystem,
 	renderSystem,
-	setOutputBuffer,
-	setOutputStream,
-	setRenderBuffer,
 } from '../src/systems/index';
-import { createDirtyTracker } from '../src/core/dirtyTracking';
-import { createDoubleBuffer, createProgram, getBackBuffer } from '../src/terminal/index';
+import { createRenderPipeline, onShutdown } from '../src/app';
+import { createProgram } from '../src/terminal/index';
 
-const cols = process.stdout.columns ?? Number(process.env.COLUMNS ?? 80);
-const rows = process.stdout.rows ?? Number(process.env.LINES ?? 24);
+const { cols, rows } = createRenderPipeline(process.stdout);
 
 const world = createWorld();
 createScreenEntity(world, { width: cols, height: rows });
-
-setOutputStream(process.stdout);
-const doubleBuffer = createDoubleBuffer(cols, rows);
-setOutputBuffer(doubleBuffer);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(doubleBuffer));
 
 const panel = addEntity(world);
 setPosition(world, panel, 2, 2);

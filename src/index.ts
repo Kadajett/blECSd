@@ -145,3 +145,14 @@ export type {
 	TerminalCapabilities,
 } from './terminal';
 export { CursorShape } from './terminal';
+
+// ─── App Helpers (DX) ────────────────────────────────────────────────────────
+
+export type {
+	App,
+	AppOptions,
+	RenderPipeline,
+	RenderPipelineOptions,
+	ShutdownOptions,
+} from './app';
+export { createApp, createRenderPipeline, onShutdown, renderToString } from './app';
