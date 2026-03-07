@@ -17,6 +17,17 @@ Every visual element in blECSd is an entity with data stored in typed arrays. St
 
 ---
 
+**Setup Note:** Examples below use manual component manipulation for clarity. For new projects, use `createApp()` for streamlined setup:
+
+```typescript
+import { createApp } from 'blecsd';
+const { world, run, stop } = createApp();
+// ... style your entities ...
+await run();
+```
+
+---
+
 ## How does the style system work?
 
 The `Renderable` component is the single source of truth for visual appearance. It stores style data in SoA (Structure of Arrays) typed arrays:

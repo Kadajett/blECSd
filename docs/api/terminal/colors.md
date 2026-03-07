@@ -205,8 +205,7 @@ truecolorToHex(0xff0000);   // '#ff0000'
 ### Unified Parsing
 
 ```typescript
-import { parseColor } from 'blecsd/utils';
-import { toColor256, toTruecolor, toHex } from 'blecsd/terminal';
+import { parseColor, toColor256, toTruecolor, toHex } from 'blecsd/terminal';
 
 // Parse any color format to RGB
 parseColor('#ff0000');              // { r: 255, g: 0, b: 0 }

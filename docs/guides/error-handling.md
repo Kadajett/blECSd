@@ -2,6 +2,14 @@
 
 This guide explains how blECSd handles errors, how to work with the error system in your applications, and best practices for building robust terminal UIs.
 
+**Setup Note:** Examples show error handling patterns. For new projects, use `createApp()` for streamlined setup:
+
+```typescript
+import { createApp } from 'blecsd';
+const { world, run, stop } = createApp();
+// ... handle errors as shown below ...
+```
+
 ## Overview
 
 blECSd uses a typed error system built on functional programming principles. All errors are:

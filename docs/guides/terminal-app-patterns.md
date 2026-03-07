@@ -2,6 +2,17 @@
 
 Practical patterns for building terminal applications with blECSd. Each section shows how to combine existing widgets, systems, and APIs to implement common application features.
 
+**Setup Note:** Examples below use manual `createWorld()` for clarity. For new projects, consider using `createApp()` for streamlined setup:
+
+```typescript
+import { createApp } from 'blecsd';
+const { world, run, stop } = createApp();
+// ... add your components ...
+await run();
+```
+
+See the [How-To Guide](./how-to.md) for more on `createApp()`.
+
 ## Command Palette
 
 blECSd ships with a `createCommandPalette` widget that provides VS Code-style quick command search.

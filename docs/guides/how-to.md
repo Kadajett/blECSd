@@ -2,6 +2,18 @@
 
 Practical, task-oriented guides for common blECSd operations.
 
+**Recommended Setup:** For new projects, use `createApp()` to streamline initialization:
+
+```typescript
+import { createApp } from 'blecsd';
+
+const { world, run, stop } = createApp();
+// ... build your UI ...
+await run();
+```
+
+`createApp()` handles world creation, system registration, and terminal program lifecycle automatically. Examples below show manual setup for educational purposes — feel free to use `createApp()` instead.
+
 ## Table of Contents
 
 ### Basic Tasks
