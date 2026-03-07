@@ -30,60 +30,27 @@ npm install blecsd
 Create a terminal app with a bordered panel, text, and keyboard input:
 
 ```typescript
-import { createWorld, createScreenEntity, createBoxEntity, createTextEntity } from 'blecsd/core';
-import { createDirtyTracker } from 'blecsd/core';
-import {
-  layoutSystem, renderSystem, outputSystem, cleanup,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createApp } from 'blecsd';
+import { createBoxEntity, createTextEntity } from 'blecsd/core';
 
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
+const app = await createApp({ fullscreen: true, fps: 30 });
 
-// 1. Initialize the terminal (alternate screen, hidden cursor, raw mode)
-const program = createProgram();
-await program.init();
-
-// 2. Create the ECS world and screen entity
-const world = createWorld();
-createScreenEntity(world, { width: cols, height: rows });
-
-// 3. Wire up the render pipeline buffers
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
-
-// 4. Build your UI
-const panel = createBoxEntity(world, {
+const panel = createBoxEntity(app.world, {
   x: 2, y: 1, width: 40, height: 12,
   border: { type: 1, top: true, bottom: true, left: true, right: true },
 });
 
-createTextEntity(world, {
+createTextEntity(app.world, {
   x: 4, y: 2, text: 'My Dashboard', parent: panel,
 });
 
-// 5. Render
-function render(): void {
-  layoutSystem(world);
-  renderSystem(world);
-  outputSystem(world);
-}
-
-render();
-
-// 6. Handle keyboard input
-program.on('key', (event) => {
-  if (event.name === 'q' || (event.ctrl && event.name === 'c')) {
-    cleanup(world);
-    program.destroy();
-    process.exit(0);
-  }
-  render();
-});
+app.program.on('key', (e) => { if (e.name === 'q') app.shutdown(); });
+app.start();
 ```
+
+`createApp()` handles world creation, screen entity, render pipeline wiring, alternate screen mode, and SIGINT/SIGTERM shutdown — so you can focus on building your UI.
+
+> **Need more control?** See the [Hello World guide](./docs/getting-started/hello-world.md) for `createRenderPipeline()`, `onShutdown()`, and the full low-level API.
 
 ## Namespace Imports
 
@@ -277,9 +244,8 @@ blECSd is a library, not a framework:
 
 ```typescript
 import { createWorld, addEntity } from 'blecsd/core';
-import { createDirtyTracker } from 'blecsd/core';
-import { layoutSystem, renderSystem, outputSystem, setOutputStream, setOutputBuffer, setRenderBuffer } from 'blecsd/systems';
-import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createRenderPipeline } from 'blecsd';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 import { position, renderable } from 'blecsd/components';
 
 const world = createWorld();
@@ -289,11 +255,8 @@ const eid = addEntity(world);
 position.set(world, eid, 10, 5);
 renderable.show(world, eid);
 
-// Initialize buffers (required for render/output systems)
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(80, 24);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(80, 24), getBackBuffer(db));
+// Wire up the render pipeline in one call
+createRenderPipeline(process.stdout);
 
 // Call systems when you want
 layoutSystem(world);

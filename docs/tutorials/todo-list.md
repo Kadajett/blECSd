@@ -40,14 +40,12 @@ import {
   createWorld, addEntity, removeEntity,
   createScheduler, LoopPhase, createEventBus,
   createBoxEntity, createTextEntity, createTextboxEntity,
-  createScreenEntity, createDirtyTracker,
+  createScreenEntity,
 } from 'blecsd/core';
+import { createRenderPipeline, onShutdown } from 'blecsd';
 import { setPosition, setDimensions, setParent, setText } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem, blurAll, focusEntity,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { type KeyEvent, createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { layoutSystem, renderSystem, outputSystem, blurAll, focusEntity } from 'blecsd/systems';
+import { type KeyEvent, createProgram } from 'blecsd/terminal';
 
 // Create the ECS world
 const world = createWorld();
@@ -65,14 +63,10 @@ const program = createProgram({
 });
 program.init();
 
-// Initialize render pipeline
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
+// Initialize render pipeline and register clean shutdown
+const { cols, rows } = createRenderPipeline(process.stdout);
 createScreenEntity(world, { width: cols, height: rows });
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+const shutdown = onShutdown(world, { program });
 ```
 
 ## Step 2: Define Todo State
@@ -252,8 +246,7 @@ function handleKey(key: KeyEvent): void {
 
     case 'q':
       // Quit
-      program.destroy();
-      process.exit(0);
+      shutdown();
       break;
   }
 }
@@ -315,12 +308,6 @@ program.on('key', (key: KeyEvent) => {
 
   // Run the scheduler to update the UI
   scheduler.run(world, 0);
-});
-
-// Handle exit signals
-process.on('SIGINT', () => {
-  program.destroy();
-  process.exit(0);
 });
 
 // Initial render

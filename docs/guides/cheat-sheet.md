@@ -356,6 +356,24 @@ enableMouse(world, eid);
 
 ## Rendering
 
+### Using `createRenderPipeline()` (recommended)
+
+```typescript
+import { createWorld, createScreenEntity } from 'blecsd/core';
+import { createRenderPipeline } from 'blecsd';
+import { renderSystem, outputSystem } from 'blecsd/systems';
+
+const world = createWorld();
+const { cols, rows } = createRenderPipeline(process.stdout);
+createScreenEntity(world, { width: cols, height: rows });
+
+// Render
+renderSystem(world);                       // Render to screen buffer
+outputSystem(world);                       // Flush buffer to terminal
+```
+
+### Manual pipeline setup
+
 ```typescript
 import { createWorld, createScreenEntity, createDirtyTracker } from 'blecsd/core';
 import {
@@ -383,22 +401,29 @@ outputSystem(world);                       // Flush buffer to terminal
 
 ## Game Loop
 
+### Using `createApp()` (recommended)
+
 ```typescript
-import { createWorld, createGameLoop, LoopPhase, createDirtyTracker } from 'blecsd/core';
-import {
-  inputSystem, layoutSystem, renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createApp } from 'blecsd';
+
+// createApp() handles world, render pipeline, program, and shutdown
+const app = await createApp({ fps: 60 });
+
+// ... add entities to app.world ...
+
+const stop = app.start();   // Start the render loop
+// stop();                   // Stop the loop when done
+```
+
+### Using `createGameLoop()` (advanced)
+
+```typescript
+import { createWorld, createGameLoop, LoopPhase } from 'blecsd/core';
+import { createRenderPipeline } from 'blecsd';
+import { inputSystem, layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 
 const world = createWorld();
-
-// Initialize render pipeline (see Rendering section above)
-const cols = 80, rows = 24;
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+createRenderPipeline(process.stdout);
 
 // Game loop with registered systems
 const loop = createGameLoop(world, { targetFPS: 60 });

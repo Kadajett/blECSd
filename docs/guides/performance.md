@@ -708,21 +708,13 @@ for (let i = 0; i < 10000; i++) {
 
 ### Double Buffering
 
-blECSd automatically uses double buffering to avoid tearing:
+blECSd automatically uses double buffering to avoid tearing. `createRenderPipeline()` (or `createApp()`) sets this up for you. Under the hood it creates a double buffer and dirty tracker:
 
 ```typescript
-import { createDoubleBuffer } from 'blecsd/terminal';
-import { outputSystem } from 'blecsd/systems';
-import { createWorld } from 'blecsd/core';
+import { createRenderPipeline } from 'blecsd';
 
-const dbWorld = createWorld();
-// Double buffer - render to back buffer, swap to front on flush
-const db = createDoubleBuffer(80, 24);
-
-// ... render to back buffer ...
-
-// Flush output (swap buffers and write to terminal)
-outputSystem(dbWorld);
+// One call wires up double buffering + dirty tracking
+createRenderPipeline(process.stdout);
 ```
 
 ### Dirty Rectangle Tracking

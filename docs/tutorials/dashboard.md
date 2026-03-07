@@ -40,24 +40,18 @@ In this tutorial, you'll build a system monitoring dashboard that displays CPU, 
 Create `dashboard.ts`:
 
 ```typescript
-import { createWorld, addEntity, createScreenEntity, createDirtyTracker } from 'blecsd/core';
+import { createWorld, addEntity, createScreenEntity } from 'blecsd/core';
+import { createRenderPipeline, onShutdown } from 'blecsd';
 import { setPosition, setDimensions } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 import { createScheduler, LoopPhase } from 'blecsd/core';
-import { type KeyEvent } from 'blecsd/terminal';
-import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { type KeyEvent, createProgram } from 'blecsd/terminal';
 import {
   createPanel, createText, createProgressBar, createLayout,
 } from 'blecsd/widgets';
 import { setContent, setParent, setStyle } from 'blecsd/components';
 import { setProgress } from 'blecsd/components';
 import * as os from 'os';
-
-const columns = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -73,11 +67,9 @@ const program = createProgram({
 program.init();
 
 // Initialize render pipeline
+const { cols: columns, rows } = createRenderPipeline(process.stdout);
 createScreenEntity(world, { width: columns, height: rows });
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(columns, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(columns, rows), getBackBuffer(db));
+const shutdown = onShutdown(world, { program });
 ```
 
 ## Step 2: System Stats Functions
@@ -452,8 +444,7 @@ function handleKey(key: KeyEvent): void {
 
     case 'q':
       stopAutoRefresh();
-      program.destroy();
-      process.exit(0);
+      shutdown();
       break;
   }
 }
@@ -465,12 +456,6 @@ program.on('key', handleKey);
 ## Step 10: Main Loop
 
 ```typescript
-process.on('SIGINT', () => {
-  stopAutoRefresh();
-  program.destroy();
-  process.exit(0);
-});
-
 // Handle resize
 program.on('resize', () => {
   refreshDashboard();

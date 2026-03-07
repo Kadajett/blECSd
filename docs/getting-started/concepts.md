@@ -83,21 +83,13 @@ Systems are functions that process entities with specific components. blECSd pro
 
 ```typescript
 import { createWorld } from 'blecsd/core';
-import {
-  layoutSystem, renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
-import { createDirtyTracker } from 'blecsd/core';
+import { createRenderPipeline } from 'blecsd';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
 
 const world = createWorld();
 
 // Initialize render pipeline (required before renderSystem/outputSystem)
-const cols = 80, rows = 24;
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+createRenderPipeline(process.stdout);
 
 // Run the render pipeline
 layoutSystem(world);   // Compute layout
