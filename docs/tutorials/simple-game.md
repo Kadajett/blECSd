@@ -40,14 +40,12 @@ Create `snake.ts`:
 import {
   createWorld, addEntity, removeEntity, hasComponent, addComponent,
   createBoxEntity, createTextEntity, createScheduler, LoopPhase,
-  createScreenEntity, createDirtyTracker,
+  createScreenEntity,
 } from 'blecsd/core';
+import { createRenderPipeline, onShutdown } from 'blecsd';
 import { setPosition, getPosition, setText, setContent, setStyle, setVisible } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { type KeyEvent, createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+import { type KeyEvent, createProgram } from 'blecsd/terminal';
 
 const world = createWorld();
 const scheduler = createScheduler();
@@ -65,13 +63,11 @@ const program = createProgram({
 program.init();
 
 // Initialize render pipeline
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
+const { cols, rows } = createRenderPipeline(process.stdout);
 createScreenEntity(world, { width: cols, height: rows });
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+
+// Register clean shutdown on SIGINT/SIGTERM (returns a function you can call manually)
+const shutdown = onShutdown(world, { program });
 ```
 
 ## Step 2: Game Constants and State
@@ -447,8 +443,7 @@ function handleKey(key: KeyEvent): void {
       break;
 
     case 'q':
-      program.destroy();
-      process.exit(0);
+      shutdown();
       break;
   }
 }
@@ -479,11 +474,6 @@ function gameLoop(): void {
   // Run ECS systems (layout, render, output)
   scheduler.run(world, deltaTime);
 }
-
-process.on('SIGINT', () => {
-  program.destroy();
-  process.exit(0);
-});
 
 // Initialize game
 initializeSnake();

@@ -13,7 +13,7 @@ import {
 	outputSystem,
 	renderSystem,
 } from '../src/systems/index';
-import { createRenderPipeline, onShutdown } from '../src/app';
+import { createRenderPipeline } from '../src/app';
 import { createProgram } from '../src/terminal/index';
 
 const { cols, rows } = createRenderPipeline(process.stdout);
