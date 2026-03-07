@@ -32,8 +32,14 @@
  * ```
  */
 
+import type { ChildProcess } from 'node:child_process';
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import {
+	exec as processExec,
+	spawn as processSpawn,
+} from '../terminal/process';
+import type { ExecOptions, ExecResult, SpawnOptions } from '../terminal/process';
 import { getDimensions, setDimensions } from './dimensions';
 import { NULL_ENTITY } from './hierarchy';
 import { Renderable } from './renderable';
@@ -575,4 +581,147 @@ export function destroyScreen(world: World): boolean {
  */
 export function resetScreenSingleton(world: World): void {
 	screenEntityMap.delete(world);
+}
+
+// ===== Process Management =====
+
+/**
+ * Options for screen-level spawn/exec that extend base process options
+ * with world-aware rendering pause/resume.
+ */
+export interface ScreenSpawnOptions extends SpawnOptions {
+	/** If true, mark the screen dirty on restore so a full redraw occurs (default: true) */
+	redrawOnRestore?: boolean;
+}
+
+/**
+ * Options for screen-level exec.
+ */
+export interface ScreenExecOptions extends ExecOptions {
+	/** If true, mark the screen dirty on restore so a full redraw occurs (default: true) */
+	redrawOnRestore?: boolean;
+}
+
+/**
+ * Pause rendering on the screen entity.
+ * Sets the Renderable visible flag to 0 so render systems skip it.
+ *
+ * @internal
+ */
+function pauseScreenRendering(world: World, eid: Entity): void {
+	if (hasComponent(world, eid, Renderable)) {
+		Renderable.visible[eid] = 0;
+	}
+}
+
+/**
+ * Resume rendering on the screen entity and mark dirty for a full redraw.
+ *
+ * @internal
+ */
+function resumeScreenRendering(world: World, eid: Entity, markDirty: boolean): void {
+	if (hasComponent(world, eid, Renderable)) {
+		Renderable.visible[eid] = 1;
+		if (markDirty) {
+			Renderable.dirty[eid] = 1;
+		}
+	}
+}
+
+/**
+ * Spawn a child process with screen lifecycle integration.
+ *
+ * This pauses screen rendering, delegates to the terminal-level spawn
+ * (which handles alternate buffer, cursor, mouse, raw mode), and resumes
+ * rendering when the process exits. A full redraw is triggered by default.
+ *
+ * @param world - The ECS world
+ * @param command - Command to spawn
+ * @param args - Arguments for the command
+ * @param options - Spawn options
+ * @returns The spawned child process
+ * @throws {Error} If no screen entity exists in the world
+ *
+ * @example
+ * ```typescript
+ * import { screenSpawn } from 'blecsd';
+ *
+ * const child = screenSpawn(world, 'vim', ['file.txt'], {
+ *   isAlternateBuffer: true,
+ *   isMouseEnabled: true,
+ * });
+ * ```
+ */
+export function screenSpawn(
+	world: World,
+	command: string,
+	args: string[] = [],
+	options: ScreenSpawnOptions = {},
+): ChildProcess {
+	const eid = getScreen(world);
+	if (eid === null) {
+		throw new Error('No screen entity exists in this world. Create one with createScreenEntity first.');
+	}
+
+	const { redrawOnRestore = true, onExit, ...spawnOpts } = options;
+
+	// Pause rendering before spawning
+	pauseScreenRendering(world, eid);
+
+	return processSpawn(command, args, {
+		...spawnOpts,
+		onExit: (code, signal) => {
+			// Resume rendering after process exits
+			resumeScreenRendering(world, eid, redrawOnRestore);
+			// Forward to user callback
+			onExit?.(code, signal);
+		},
+	});
+}
+
+/**
+ * Execute a command with screen lifecycle integration, returning stdout/stderr.
+ *
+ * This pauses screen rendering, delegates to the terminal-level exec
+ * (which handles alternate buffer, cursor, mouse, raw mode), and resumes
+ * rendering when the process completes. A full redraw is triggered by default.
+ *
+ * @param world - The ECS world
+ * @param command - Command to execute
+ * @param args - Arguments for the command
+ * @param options - Exec options
+ * @returns Promise resolving to the exec result with stdout/stderr
+ * @throws {Error} If no screen entity exists in the world
+ *
+ * @example
+ * ```typescript
+ * import { screenExec } from 'blecsd';
+ *
+ * const result = await screenExec(world, 'git', ['status']);
+ * console.log(result.stdout);
+ * ```
+ */
+export async function screenExec(
+	world: World,
+	command: string,
+	args: string[] = [],
+	options: ScreenExecOptions = {},
+): Promise<ExecResult> {
+	const eid = getScreen(world);
+	if (eid === null) {
+		throw new Error('No screen entity exists in this world. Create one with createScreenEntity first.');
+	}
+
+	const { redrawOnRestore = true, ...execOpts } = options;
+
+	// Pause rendering before executing
+	pauseScreenRendering(world, eid);
+
+	try {
+		const result = await processExec(command, args, execOpts);
+		return result;
+	} finally {
+		// Always resume rendering, even on error
+		resumeScreenRendering(world, eid, redrawOnRestore);
+	}
 }

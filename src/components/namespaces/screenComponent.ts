@@ -27,6 +27,8 @@ import {
 	registerScreenSingleton,
 	resetScreenSingleton,
 	resizeScreen,
+	screenExec,
+	screenSpawn,
 	setAutoPadding,
 	setFullUnicode,
 	setScreenCursor,
@@ -66,6 +68,9 @@ export const screenComponent = Object.freeze({
 		setShape: setScreenCursorShape,
 		setVisible: setScreenCursorVisible,
 	}),
+
+	spawn: screenSpawn,
+	exec: screenExec,
 });
 
 export type ScreenComponentModule = typeof screenComponent;
