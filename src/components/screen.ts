@@ -32,7 +32,6 @@
  * ```
  */
 
-import type { ChildProcess } from 'node:child_process';
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
 import { exec, readEditor, spawn } from '../terminal/process';
