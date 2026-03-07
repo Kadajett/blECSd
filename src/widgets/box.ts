@@ -28,6 +28,7 @@ import { moveBy, setPosition } from '../components/position';
 import { markDirty, setStyle, setVisible } from '../components/renderable';
 import { addEntity, removeEntity } from '../core/ecs';
 import type { Entity, World } from '../core/types';
+import { BoxTitle, boxTitleStore, clearBoxTitle, resetBoxTitleStore } from '../components/boxTitle';
 import { parseColor } from '../utils/color';
 
 // =============================================================================
@@ -254,6 +255,18 @@ export interface BoxConfig {
 	 * @default 'top'
 	 */
 	readonly valign?: VAlign;
+
+	// Title
+	/**
+	 * Title text displayed in the top border line (requires border)
+	 * @default undefined (no title)
+	 */
+	readonly title?: string;
+	/**
+	 * Horizontal alignment of the title text
+	 * @default 'left'
+	 */
+	readonly titleAlign?: Align;
 }
 
 /**
@@ -280,6 +293,12 @@ export interface BoxWidget {
 	setContent(text: string): BoxWidget;
 	/** Gets the text content of the box */
 	getContent(): string;
+
+	// Title
+	/** Sets the title displayed in the top border */
+	setTitle(title: string): BoxWidget;
+	/** Gets the title */
+	getTitle(): string;
 
 	// Focus
 	/** Focuses the box */
@@ -387,6 +406,10 @@ export const BoxConfigSchema = z.object({
 	content: z.string().optional(),
 	align: z.enum(['left', 'center', 'right']).optional(),
 	valign: z.enum(['top', 'middle', 'bottom']).optional(),
+
+	// Title
+	title: z.string().optional(),
+	titleAlign: z.enum(['left', 'center', 'right']).optional(),
 });
 
 // =============================================================================
@@ -407,6 +430,20 @@ export const Box = {
 // =============================================================================
 // INTERNAL HELPERS
 // =============================================================================
+
+/**
+ * Converts title align string to number (0=left, 1=center, 2=right).
+ */
+function titleAlignToNumber(align: Align): number {
+	switch (align) {
+		case 'left':
+			return 0;
+		case 'center':
+			return 1;
+		case 'right':
+			return 2;
+	}
+}
 
 /**
  * Converts align string to TextAlign enum.
@@ -522,6 +559,8 @@ interface ValidatedBoxConfig {
 	content?: string;
 	align?: 'left' | 'center' | 'right';
 	valign?: 'top' | 'middle' | 'bottom';
+	title?: string;
+	titleAlign?: 'left' | 'center' | 'right';
 }
 
 /**
@@ -686,6 +725,12 @@ export function createBox(
 	if (validated.padding !== undefined) setupPadding(world, eid, validated.padding);
 	setupContent(world, eid, validated);
 
+	// Set up title
+	if (validated.title !== undefined) {
+		boxTitleStore.set(eid, validated.title);
+	}
+	BoxTitle.titleAlign[eid] = titleAlignToNumber(validated.titleAlign ?? 'left');
+
 	// Make focusable
 	setFocusable(world, eid, { focusable: true });
 
@@ -728,6 +773,17 @@ export function createBox(
 			return getContent(world, eid);
 		},
 
+		// Title
+		setTitle(title: string): BoxWidget {
+			boxTitleStore.set(eid, title);
+			markDirty(world, eid);
+			return widget;
+		},
+
+		getTitle(): string {
+			return boxTitleStore.get(eid) ?? '';
+		},
+
 		// Focus
 		focus(): BoxWidget {
 			focus(world, eid);
@@ -756,6 +812,7 @@ export function createBox(
 		// Lifecycle
 		destroy(): void {
 			Box.isBox[eid] = 0;
+			clearBoxTitle(eid);
 			removeEntity(world, eid);
 		},
 	};
@@ -808,6 +865,81 @@ export function getBoxContent(world: World, eid: Entity): string {
 }
 
 /**
+ * Gets the title of a box entity.
+ */
+export function getBoxTitle(_world: World, eid: Entity): string {
+	return boxTitleStore.get(eid) ?? '';
+}
+
+/**
+ * Sets the title of a box entity.
+ */
+export function setBoxTitle(world: World, eid: Entity, title: string): Entity {
+	boxTitleStore.set(eid, title);
+	markDirty(world, eid);
+	return eid;
+}
+
+/**
+ * Gets the title alignment of a box entity (0=left, 1=center, 2=right).
+ */
+export function getBoxTitleAlign(_world: World, eid: Entity): number {
+	return BoxTitle.titleAlign[eid] ?? 0;
+}
+
+/**
+ * Renders a box title string embedded in the top border line.
+ *
+ * @param _world - The ECS world
+ * @param eid - The entity ID
+ * @param width - Available width for the top border (excluding corners)
+ * @param borderChar - The horizontal border character (e.g. '─')
+ * @returns The rendered top border line with title, or empty string if no title
+ */
+export function renderBoxTitle(
+	_world: World,
+	eid: Entity,
+	width: number,
+	borderChar = '─',
+): string {
+	const title = boxTitleStore.get(eid);
+	if (!title || width <= 0) return '';
+
+	const align = BoxTitle.titleAlign[eid] as number;
+
+	// Wrap title with spaces for visual separation
+	const wrappedTitle = ` ${title} `;
+
+	// Truncate if needed
+	let displayTitle = wrappedTitle;
+	if (displayTitle.length > width) {
+		displayTitle = ` ${title.slice(0, width - 3)}… `;
+		if (displayTitle.length > width) {
+			return borderChar.repeat(width);
+		}
+	}
+
+	const remaining = width - displayTitle.length;
+
+	switch (align) {
+		case 1: {
+			// center
+			const leftCount = Math.floor(remaining / 2);
+			const rightCount = remaining - leftCount;
+			return `${borderChar.repeat(leftCount)}${displayTitle}${borderChar.repeat(rightCount)}`;
+		}
+		case 2: {
+			// right
+			return `${borderChar.repeat(remaining)}${displayTitle}`;
+		}
+		default: {
+			// left (0)
+			return `${displayTitle}${borderChar.repeat(remaining)}`;
+		}
+	}
+}
+
+/**
  * Checks if an entity is a box widget.
  *
  * @param world - The ECS world
@@ -833,4 +965,5 @@ export function isBox(_world: World, eid: Entity): boolean {
  */
 export function resetBoxStore(): void {
 	Box.isBox.fill(0);
+	resetBoxTitleStore();
 }

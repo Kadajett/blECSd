@@ -149,6 +149,10 @@ const ScrollableConfigSchema = z.object({
 export const BoxConfigSchema = z
 	.object({
 		parent: z.number().optional(),
+		/** Title text displayed in the top border line */
+		title: z.string().optional(),
+		/** Horizontal alignment of the title text (default: 'left') */
+		titleAlign: z.enum(['left', 'center', 'right']).optional(),
 		border: BorderConfigSchema.optional(),
 		padding: PaddingConfigSchema.optional(),
 	})
