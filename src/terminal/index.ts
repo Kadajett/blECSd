@@ -827,6 +827,37 @@ export {
 	SanitizeOptionsSchema,
 	sanitizeForTerminal,
 } from './security/sanitize';
+// TCP Server
+export type {
+	ClientMode,
+	ClientSession,
+	ServerEvent,
+	ServerEventHandler,
+	TerminalServerConfig,
+	TerminalServerState,
+} from './server';
+export {
+	addClient,
+	authenticateClient,
+	broadcastOutput,
+	createTerminalServer,
+	getClient,
+	getConnectedClients,
+	getServerState,
+	handleClientInput,
+	isServerRunning,
+	markServerStarted,
+	markServerStopped,
+	onServerEvent,
+	pruneIdleClients,
+	removeClient,
+	resetServerState,
+	Server,
+	sendToClient,
+	setClientMode,
+	TerminalServerConfigSchema,
+	updateClientSize,
+} from './server';
 // Suspend/resume handling (internal)
 export type { SuspendManager, SuspendManagerOptions, SuspendState } from './suspend';
 export {
@@ -875,3 +906,6 @@ export {
 	debounceResize,
 	throttleResize,
 } from './throttledResize';
+// WebSocket server
+export type { WebServerConfig, WebServerHandle } from './webServer';
+export { serveWeb, WebServerConfigSchema } from './webServer';

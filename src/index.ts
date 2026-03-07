@@ -145,3 +145,7 @@ export type {
 	TerminalCapabilities,
 } from './terminal';
 export { CursorShape } from './terminal';
+export { generateWebClientHtml } from './terminal/webClient';
+// WebSocket server
+export type { WebServerConfig, WebServerHandle } from './terminal/webServer';
+export { serveWeb, WebServerConfigSchema } from './terminal/webServer';
