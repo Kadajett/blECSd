@@ -48,7 +48,7 @@ Creates a new ScrollableBox widget with the specified configuration.
 
 ```typescript
 // Basic scrollable box
-const scrollBoxA = createScrollableBox(world, addEntity(world));
+const scrollBoxA = createScrollableBox(world, addEntity(world), {});
 
 // Full configuration
 const styledScrollBox = createScrollableBox(world, addEntity(world), {
@@ -95,7 +95,7 @@ The scrollable box widget provides a chainable API for all operations.
 The underlying entity ID.
 
 ```typescript
-const sbA = createScrollableBox(world, addEntity(world));
+const sbA = createScrollableBox(world, addEntity(world), {});
 console.log(sbA.eid); // Entity ID number
 sbA.destroy();
 ```
@@ -107,7 +107,7 @@ sbA.destroy();
 Shows the scrollable box.
 
 ```typescript
-const sbB = createScrollableBox(world, addEntity(world));
+const sbB = createScrollableBox(world, addEntity(world), {});
 sbB.show();
 sbB.destroy();
 ```
@@ -119,7 +119,7 @@ sbB.destroy();
 Hides the scrollable box.
 
 ```typescript
-const sbC = createScrollableBox(world, addEntity(world));
+const sbC = createScrollableBox(world, addEntity(world), {});
 sbC.hide();
 sbC.destroy();
 ```
@@ -135,7 +135,7 @@ sbC.destroy();
 Sets the absolute position.
 
 ```typescript
-const sbD = createScrollableBox(world, addEntity(world));
+const sbD = createScrollableBox(world, addEntity(world), {});
 sbD.setPosition(20, 15);
 sbD.destroy();
 ```
@@ -147,7 +147,7 @@ sbD.destroy();
 Moves the scrollable box by a relative amount.
 
 ```typescript
-const sbE = createScrollableBox(world, addEntity(world));
+const sbE = createScrollableBox(world, addEntity(world), {});
 sbE.move(5, -3); // Move right 5, up 3
 sbE.destroy();
 ```
@@ -163,7 +163,7 @@ sbE.destroy();
 Sets the text content.
 
 ```typescript
-const sbF = createScrollableBox(world, addEntity(world));
+const sbF = createScrollableBox(world, addEntity(world), {});
 sbF.setContent('New content');
 sbF.destroy();
 ```
@@ -175,7 +175,7 @@ sbF.destroy();
 Gets the current text content.
 
 ```typescript
-const sbG = createScrollableBox(world, addEntity(world));
+const sbG = createScrollableBox(world, addEntity(world), {});
 const sbContent = sbG.getContent();
 console.log(sbContent);
 sbG.destroy();
@@ -256,7 +256,7 @@ sbL.destroy();
 Sets the total scrollable content size.
 
 ```typescript
-const sbM = createScrollableBox(world, addEntity(world));
+const sbM = createScrollableBox(world, addEntity(world), {});
 sbM.setScrollSize(200, 500);
 sbM.destroy();
 ```
@@ -268,7 +268,7 @@ sbM.destroy();
 Sets the viewport (visible area) size.
 
 ```typescript
-const sbN = createScrollableBox(world, addEntity(world));
+const sbN = createScrollableBox(world, addEntity(world), {});
 sbN.setViewport(80, 20);
 sbN.destroy();
 ```
@@ -321,7 +321,7 @@ sbQ.destroy();
 #### isAtTop / isAtBottom / isAtLeft / isAtRight
 
 ```typescript
-const sbR = createScrollableBox(world, addEntity(world));
+const sbR = createScrollableBox(world, addEntity(world), {});
 const atTop = sbR.isAtTop();
 const atBottom = sbR.isAtBottom();
 const atLeft = sbR.isAtLeft();
@@ -337,7 +337,7 @@ sbR.destroy();
 #### focus / blur / isFocused
 
 ```typescript
-const sbS = createScrollableBox(world, addEntity(world));
+const sbS = createScrollableBox(world, addEntity(world), {});
 sbS.focus();
 sbS.blur();
 const sbFocused = sbS.isFocused();
@@ -352,7 +352,7 @@ sbS.destroy();
 #### append / getChildren
 
 ```typescript
-const sbT = createScrollableBox(world, addEntity(world));
+const sbT = createScrollableBox(world, addEntity(world), {});
 const childEid = addEntity(world);
 sbT.append(childEid);
 const sbChildren = sbT.getChildren();
@@ -367,7 +367,7 @@ sbT.destroy();
 #### destroy
 
 ```typescript
-const sbU = createScrollableBox(world, addEntity(world));
+const sbU = createScrollableBox(world, addEntity(world), {});
 sbU.destroy();
 ```
 
@@ -378,7 +378,7 @@ sbU.destroy();
 ### isScrollableBox
 
 ```typescript
-const sbV = createScrollableBox(world, addEntity(world));
+const sbV = createScrollableBox(world, addEntity(world), {});
 if (isScrollableBox(world, sbV.eid)) {
   // Handle scrollable-box-specific logic
 }
