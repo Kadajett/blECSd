@@ -17,6 +17,7 @@
  * @module 3d/backends/sixel
  */
 
+import { buildPalette } from 'blecsd/terminal';
 import type { PixelFramebuffer } from '../rasterizer/pixelBuffer';
 import type { BackendCapabilities, EncodedOutput } from '../schemas/backends';
 import { type SixelConfig, SixelConfigSchema } from '../schemas/backends';
@@ -42,35 +43,6 @@ function countColors(buf: Uint8ClampedArray, pixelCount: number): Map<number, nu
 		colorCounts.set(key, (colorCounts.get(key) ?? 0) + 1);
 	}
 	return colorCounts;
-}
-
-/**
- * Build palette from color counts, sorted by popularity.
- */
-function buildPalette(
-	colorCounts: Map<number, number>,
-	maxColors: number,
-): { paletteFlat: Uint8Array; paletteCount: number } {
-	const entries: Array<[number, number]> = [];
-	for (const entry of colorCounts) {
-		entries.push(entry);
-	}
-	entries.sort((a, b) => b[1] - a[1]);
-
-	const paletteCount = Math.min(entries.length, maxColors) || 1;
-	const paletteFlat = new Uint8Array(paletteCount * 3);
-
-	for (let i = 0; i < paletteCount; i++) {
-		const entry = entries[i];
-		if (entry) {
-			const key = entry[0];
-			paletteFlat[i * 3] = (key >> 16) & 0xff;
-			paletteFlat[i * 3 + 1] = (key >> 8) & 0xff;
-			paletteFlat[i * 3 + 2] = key & 0xff;
-		}
-	}
-
-	return { paletteFlat, paletteCount };
 }
 
 /**
