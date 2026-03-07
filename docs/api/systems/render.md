@@ -2,6 +2,8 @@
 
 The render system draws entities to the screen buffer. It runs in the RENDER phase after layout computation and handles background fills, borders, and content rendering.
 
+> **Note**: For most applications, use [`createApp()`](../app.md) or [`createRenderPipeline()`](../app.md#createrenderpipeline) to handle render pipeline setup automatically. The APIs below are for advanced use cases.
+
 ## Overview
 
 The render system:

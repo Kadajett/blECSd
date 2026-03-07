@@ -2,6 +2,8 @@
 
 The collision system detects collisions between entities with Collider and Position components. It emits events for collision start/end and trigger enter/exit, supporting both solid colliders and trigger zones.
 
+> **Note**: For most applications, use [`createApp()`](../app.md) for application setup. You'll need to manually register the collision system if you're using it.
+
 ## Import
 
 ```typescript

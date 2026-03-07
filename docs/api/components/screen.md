@@ -11,6 +11,8 @@ Every blECSd application has exactly one Screen entity, which serves as the root
 - Unicode and padding settings
 - Terminal size management
 
+> **Note**: [`createApp()`](../app.md) automatically creates the screen entity. Manual screen creation is only needed for advanced use cases.
+
 ## Creating a Screen
 
 Screens are created using `createScreenEntity` from the entities module. Only one screen can exist per world.

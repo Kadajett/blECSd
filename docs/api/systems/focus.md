@@ -2,6 +2,8 @@
 
 ECS system for managing keyboard focus and tab navigation between interactive entities.
 
+> **Note**: For most applications, use [`createApp()`](../app.md) for setup. You'll need to manually register the focus system with your scheduler if you're managing the game loop yourself.
+
 ## Overview
 
 The focus system handles:

@@ -2,6 +2,8 @@
 
 The output system writes rendered content to the terminal. It runs in the POST_RENDER phase after all rendering is complete and generates optimized ANSI escape sequences for efficient terminal output.
 
+> **Note**: For most applications, use [`createApp()`](../app.md) which handles output setup and cleanup automatically. The APIs below are for advanced scenarios requiring custom output management.
+
 ## Overview
 
 The output system:
