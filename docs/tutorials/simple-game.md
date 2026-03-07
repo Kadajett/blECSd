@@ -121,11 +121,8 @@ const state: GameState = {
 ## Step 3: Create UI
 
 ```typescript
-const columns = process.stdout.columns || 80;
-const rows = process.stdout.rows || 24;
-
-// Calculate centered game area
-const gameX = Math.floor((columns - GRID_WIDTH - 2) / 2);
+// Calculate centered game area (using cols and rows from Step 1)
+const gameX = Math.floor((cols - GRID_WIDTH - 2) / 2);
 const gameY = Math.floor((rows - GRID_HEIGHT - 4) / 2);
 
 // Game panel (createBoxEntity returns an entity ID)
