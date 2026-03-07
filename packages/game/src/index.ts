@@ -8,7 +8,7 @@
  *
  * @example
  * ```typescript
- * import { createGame } from 'blecsd';
+ * import { createGame } from '@blecsd/game';
  *
  * const game = createGame({
  *   title: 'My Game',

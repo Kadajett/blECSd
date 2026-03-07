@@ -26,6 +26,10 @@
       "import": "./dist/math/index.js",
       "types": "./dist/math/index.d.ts"
     },
+    "./namespaces": {
+      "import": "./dist/namespaces/index.js",
+      "types": "./dist/namespaces/index.d.ts"
+    },
     "./rasterizer": {
       "import": "./dist/rasterizer/index.js",
       "types": "./dist/rasterizer/index.d.ts"
