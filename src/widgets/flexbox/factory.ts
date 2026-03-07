@@ -11,7 +11,7 @@ import { blur, focus, isFocused, setFocusable } from '../../components/focusable
 import { appendChild, getParent, NULL_ENTITY } from '../../components/hierarchy';
 import { moveBy, setPosition } from '../../components/position';
 import { markDirty, setStyle, setVisible } from '../../components/renderable';
-import { removeEntity } from '../../core/ecs';
+import { addEntity, removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { parseColor } from '../../utils/color';
 import {
@@ -73,13 +73,21 @@ import type {
  * flex.layout();
  * ```
  */
+export function createFlexContainer(world: World, config: FlexContainerConfig): FlexContainerWidget;
 export function createFlexContainer(
 	world: World,
 	entity: Entity,
-	config: FlexContainerConfig = {},
+	config?: FlexContainerConfig,
+): FlexContainerWidget;
+export function createFlexContainer(
+	world: World,
+	entityOrConfig: Entity | FlexContainerConfig,
+	maybeConfig?: FlexContainerConfig,
 ): FlexContainerWidget {
+	const hasEntityArg = typeof entityOrConfig === 'number';
+	const eid = hasEntityArg ? entityOrConfig : (addEntity(world) as Entity);
+	const config = hasEntityArg ? (maybeConfig ?? {}) : entityOrConfig;
 	const validated = FlexContainerConfigSchema.parse(config) as ValidatedFlexContainerConfig;
-	const eid = entity;
 
 	// Mark as flex container
 	FlexContainer.isFlexContainer[eid] = 1;

@@ -9,7 +9,7 @@ import { blur, focus, isFocused, setFocusable } from '../../components/focusable
 import { appendChild, getChildren } from '../../components/hierarchy';
 import { getPosition, moveBy, setPosition } from '../../components/position';
 import { markDirty, setStyle, setVisible } from '../../components/renderable';
-import { removeEntity } from '../../core/ecs';
+import { addEntity, removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { parseColor } from '../../utils/color';
 import { Layout } from './state';
@@ -396,15 +396,7 @@ export function calculateFlexLayout(
  * layout.recalculate();
  * ```
  */
-export function createLayout(
-	world: World,
-	entity: Entity,
-	config: LayoutConfig = {},
-): LayoutWidget {
-	const validated = LayoutConfigSchema.parse(config) as ValidatedLayoutConfig;
-	const eid = entity;
-
-	// Set layout properties
+function initLayoutEntity(world: World, eid: Entity, validated: ValidatedLayoutConfig): void {
 	const layoutMode = validated.layout ?? 'inline';
 	Layout.isLayout[eid] = 1;
 	Layout.mode[eid] = layoutModeToNumber(layoutMode);
@@ -415,17 +407,14 @@ export function createLayout(
 	Layout.cols[eid] = validated.cols ?? 3;
 	Layout.direction[eid] = validated.direction === 'column' ? 1 : 0;
 
-	// Set up position
 	const x = parsePositionToNumber(validated.left);
 	const y = parsePositionToNumber(validated.top);
 	setPosition(world, eid, x, y);
 
-	// Set up dimensions
 	const width = parseDimension(validated.width);
 	const height = parseDimension(validated.height);
 	setDimensions(world, eid, width, height);
 
-	// Set up style
 	if (validated.fg !== undefined || validated.bg !== undefined) {
 		setStyle(world, eid, {
 			fg: validated.fg !== undefined ? parseColor(validated.fg) : undefined,
@@ -433,8 +422,22 @@ export function createLayout(
 		});
 	}
 
-	// Make focusable
 	setFocusable(world, eid, { focusable: true });
+}
+
+export function createLayout(world: World, config: LayoutConfig): LayoutWidget;
+export function createLayout(world: World, entity: Entity, config?: LayoutConfig): LayoutWidget;
+export function createLayout(
+	world: World,
+	entityOrConfig: Entity | LayoutConfig,
+	maybeConfig?: LayoutConfig,
+): LayoutWidget {
+	const hasEntityArg = typeof entityOrConfig === 'number';
+	const eid = hasEntityArg ? entityOrConfig : (addEntity(world) as Entity);
+	const config = hasEntityArg ? (maybeConfig ?? {}) : entityOrConfig;
+	const validated = LayoutConfigSchema.parse(config) as ValidatedLayoutConfig;
+
+	initLayoutEntity(world, eid, validated);
 
 	/**
 	 * Recalculates layout positions for all children.

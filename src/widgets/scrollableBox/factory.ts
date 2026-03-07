@@ -12,7 +12,7 @@ import { appendChild, getChildren } from '../../components/hierarchy';
 import { moveBy, setPosition } from '../../components/position';
 import { markDirty, setVisible } from '../../components/renderable';
 import type { ScrollableData, ScrollPercentage, ScrollPosition } from '../../components/scrollable';
-import { removeEntity } from '../../core/ecs';
+import { addEntity, removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import {
 	canScroll,
@@ -91,13 +91,21 @@ import type { ScrollableBoxConfig, ScrollableBoxWidget } from './types';
  * scrollBox.scrollToBottom();
  * ```
  */
+export function createScrollableBox(world: World, config: ScrollableBoxConfig): ScrollableBoxWidget;
 export function createScrollableBox(
 	world: World,
 	entity: Entity,
-	config: ScrollableBoxConfig = {},
+	config?: ScrollableBoxConfig,
+): ScrollableBoxWidget;
+export function createScrollableBox(
+	world: World,
+	entityOrConfig: Entity | ScrollableBoxConfig,
+	maybeConfig?: ScrollableBoxConfig,
 ): ScrollableBoxWidget {
+	const hasEntityArg = typeof entityOrConfig === 'number';
+	const eid = hasEntityArg ? entityOrConfig : (addEntity(world) as Entity);
+	const config = hasEntityArg ? (maybeConfig ?? {}) : entityOrConfig;
 	const validated = ScrollableBoxConfigSchema.parse(config) as ValidatedScrollableBoxConfig;
-	const eid = entity;
 
 	// Mark as scrollable box
 	ScrollableBox.isScrollableBox[eid] = 1;
