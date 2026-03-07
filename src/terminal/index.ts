@@ -483,6 +483,7 @@ export {
 	// Kitty protocol constants
 	APC_PREFIX,
 	BRAILLE_BACKEND_NAME,
+	buildPalette,
 	canvasToCells as brailleCanvasToCells,
 	// Vector-to-pixel bridge
 	canvasToPixelBitmap,
