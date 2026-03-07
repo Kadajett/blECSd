@@ -4,7 +4,8 @@
  * blECSd CLI scaffolding tool.
  *
  * Usage:
- *   npx blecsd init                    # Interactive: prompts for template selection
+ *   npx blecsd init                    # Interactive: prompts for everything
+ *   npx blecsd init my-app             # Interactive with project name preset
  *   npx blecsd init --template form    # Direct: scaffold specific template
  *   npx blecsd init --list             # List available templates
  *   npx blecsd init --dir ./my-app     # Scaffold into a specific directory
@@ -47,6 +48,11 @@ export interface TemplateFile {
 }
 
 /**
+ * Supported package managers.
+ */
+export type PackageManager = 'pnpm' | 'yarn' | 'npm';
+
+/**
  * CLI configuration.
  */
 export interface CliConfig {
@@ -54,10 +60,14 @@ export interface CliConfig {
 	readonly template?: string | undefined;
 	/** Target directory */
 	readonly dir: string;
+	/** Project name (positional arg or derived from dir) */
+	readonly name?: string | undefined;
 	/** List available templates */
 	readonly list: boolean;
 	/** Skip npm install */
 	readonly skipInstall: boolean;
+	/** Preferred package manager */
+	readonly packageManager?: PackageManager | undefined;
 }
 
 // =============================================================================
@@ -109,25 +119,154 @@ function createPackageJson(name: string, description: string): string {
 function getBuiltinTemplates(): readonly Template[] {
 	return [
 		{
-			name: 'basic',
-			description: 'Minimal blECSd app with a single box',
+			name: 'hello-world',
+			description: 'Minimal blECSd app using createApp() with a greeting box',
 			category: 'Getting Started',
 			files: [
 				{
 					path: 'src/index.ts',
-					content: `import { createWorld, addEntity } from 'blecsd';
-import { setPosition } from 'blecsd';
-import { setDimensions } from 'blecsd';
+					content: `import { createApp, createBoxEntity, createTextEntity, setText, addEntity } from 'blecsd';
 
-const world = createWorld();
-const eid = addEntity(world);
+async function main() {
+  const app = await createApp({ fullscreen: true, fps: 30 });
+  const { world, program, cols, rows } = app;
 
-setPosition(world, eid, 0, 0);
-setDimensions(world, eid, 40, 10);
+  // Create a centered box
+  const box = createBoxEntity(world, {
+    x: Math.floor(cols / 2) - 20,
+    y: Math.floor(rows / 2) - 3,
+    width: 40,
+    height: 6,
+  });
 
-console.log('blECSd app initialized!');
-console.log('Entity:', eid);
-console.log('World created with ECS architecture.');
+  // Add a greeting
+  const text = createTextEntity(world, {
+    x: Math.floor(cols / 2) - 10,
+    y: Math.floor(rows / 2),
+    width: 20,
+    height: 1,
+  });
+  setText(world, text, 'Hello from blECSd!');
+
+  // Handle 'q' to quit
+  program.onKey((key) => {
+    if (key.name === 'q' || (key.ctrl && key.name === 'c')) {
+      app.shutdown();
+    }
+  });
+
+  app.start();
+}
+
+main().catch(console.error);
+`,
+				},
+				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
+			],
+		},
+		{
+			name: 'dashboard',
+			description: 'Multi-panel dashboard with header, sidebar, and content area',
+			category: 'Getting Started',
+			files: [
+				{
+					path: 'src/index.ts',
+					content: `import {
+  createApp,
+  createBoxEntity,
+  createTextEntity,
+  setText,
+} from 'blecsd';
+
+async function main() {
+  const app = await createApp({ fullscreen: true, fps: 30 });
+  const { world, program, cols, rows } = app;
+
+  // Header
+  createBoxEntity(world, { x: 0, y: 0, width: cols, height: 3 });
+  const title = createTextEntity(world, { x: 2, y: 1, width: cols - 4, height: 1 });
+  setText(world, title, 'blECSd Dashboard');
+
+  // Sidebar
+  const sidebarWidth = 20;
+  createBoxEntity(world, { x: 0, y: 3, width: sidebarWidth, height: rows - 4 });
+  const menuItems = ['Overview', 'Stats', 'Settings', 'Help'];
+  for (let i = 0; i < menuItems.length; i++) {
+    const item = createTextEntity(world, {
+      x: 2,
+      y: 5 + i * 2,
+      width: sidebarWidth - 4,
+      height: 1,
+    });
+    setText(world, item, menuItems[i]!);
+  }
+
+  // Main content area
+  createBoxEntity(world, {
+    x: sidebarWidth,
+    y: 3,
+    width: cols - sidebarWidth,
+    height: rows - 4,
+  });
+  const content = createTextEntity(world, {
+    x: sidebarWidth + 2,
+    y: 5,
+    width: cols - sidebarWidth - 4,
+    height: 1,
+  });
+  setText(world, content, 'Welcome to blECSd! Press q to quit.');
+
+  // Status bar
+  createBoxEntity(world, { x: 0, y: rows - 1, width: cols, height: 1 });
+  const status = createTextEntity(world, { x: 2, y: rows - 1, width: cols - 4, height: 1 });
+  setText(world, status, \`\${cols}x\${rows} | FPS: 30 | Press q to quit\`);
+
+  program.onKey((key) => {
+    if (key.name === 'q' || (key.ctrl && key.name === 'c')) {
+      app.shutdown();
+    }
+  });
+
+  app.start();
+}
+
+main().catch(console.error);
+`,
+				},
+				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
+			],
+		},
+		{
+			name: 'basic',
+			description: 'Bare-bones blECSd app with a single box',
+			category: 'Getting Started',
+			files: [
+				{
+					path: 'src/index.ts',
+					content: `import { createApp, createBoxEntity } from 'blecsd';
+
+async function main() {
+  const app = await createApp({ fullscreen: true, fps: 30 });
+  const { world, program, cols, rows } = app;
+
+  // Create a box in the center
+  createBoxEntity(world, {
+    x: Math.floor(cols / 2) - 15,
+    y: Math.floor(rows / 2) - 4,
+    width: 30,
+    height: 8,
+  });
+
+  program.onKey((key) => {
+    if (key.name === 'q' || (key.ctrl && key.name === 'c')) {
+      app.shutdown();
+    }
+  });
+
+  app.start();
+}
+
+main().catch(console.error);
 `,
 				},
 				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
@@ -140,76 +279,60 @@ console.log('World created with ECS architecture.');
 			files: [
 				{
 					path: 'src/index.ts',
-					content: `import { createWorld, addEntity } from 'blecsd';
-import { setPosition } from 'blecsd';
-import { setDimensions } from 'blecsd';
+					content: `import {
+  createApp,
+  createBoxEntity,
+  createTextEntity,
+  setText,
+} from 'blecsd';
 
-// Create world and form entities
-const world = createWorld();
+async function main() {
+  const app = await createApp({ fullscreen: true, fps: 30 });
+  const { world, program, cols, rows } = app;
 
-// Create a form container
-const formEid = addEntity(world);
-setPosition(world, formEid, 2, 2);
-setDimensions(world, formEid, 60, 20);
+  const formX = Math.floor(cols / 2) - 30;
+  const formY = Math.floor(rows / 2) - 8;
 
-// Create input fields
-const nameInput = addEntity(world);
-setPosition(world, nameInput, 4, 4);
-setDimensions(world, nameInput, 40, 1);
+  // Form container
+  createBoxEntity(world, { x: formX, y: formY, width: 60, height: 16 });
 
-const emailInput = addEntity(world);
-setPosition(world, emailInput, 4, 7);
-setDimensions(world, emailInput, 40, 1);
+  // Title
+  const title = createTextEntity(world, {
+    x: formX + 2, y: formY + 1, width: 56, height: 1,
+  });
+  setText(world, title, 'Registration Form');
 
-// Create submit button
-const submitBtn = addEntity(world);
-setPosition(world, submitBtn, 4, 10);
-setDimensions(world, submitBtn, 12, 3);
+  // Name label + field
+  const nameLabel = createTextEntity(world, {
+    x: formX + 2, y: formY + 4, width: 10, height: 1,
+  });
+  setText(world, nameLabel, 'Name:');
+  createBoxEntity(world, { x: formX + 14, y: formY + 3, width: 40, height: 3 });
 
-console.log('Form app initialized!');
-console.log('Form entity:', formEid);
-console.log('Inputs:', nameInput, emailInput);
-console.log('Submit button:', submitBtn);
-`,
-				},
-				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
-			],
-		},
-		{
-			name: 'dashboard',
-			description: 'Multi-panel dashboard with layout system',
-			category: 'Widgets',
-			files: [
-				{
-					path: 'src/index.ts',
-					content: `import { createWorld, addEntity } from 'blecsd';
-import { setPosition } from 'blecsd';
-import { setDimensions } from 'blecsd';
+  // Email label + field
+  const emailLabel = createTextEntity(world, {
+    x: formX + 2, y: formY + 8, width: 10, height: 1,
+  });
+  setText(world, emailLabel, 'Email:');
+  createBoxEntity(world, { x: formX + 14, y: formY + 7, width: 40, height: 3 });
 
-const world = createWorld();
+  // Submit button
+  createBoxEntity(world, { x: formX + 22, y: formY + 12, width: 16, height: 3 });
+  const btnText = createTextEntity(world, {
+    x: formX + 26, y: formY + 13, width: 8, height: 1,
+  });
+  setText(world, btnText, 'Submit');
 
-// Header panel
-const header = addEntity(world);
-setPosition(world, header, 0, 0);
-setDimensions(world, header, 80, 3);
+  program.onKey((key) => {
+    if (key.name === 'q' || (key.ctrl && key.name === 'c')) {
+      app.shutdown();
+    }
+  });
 
-// Left sidebar
-const sidebar = addEntity(world);
-setPosition(world, sidebar, 0, 3);
-setDimensions(world, sidebar, 20, 21);
+  app.start();
+}
 
-// Main content area
-const main = addEntity(world);
-setPosition(world, main, 20, 3);
-setDimensions(world, main, 60, 21);
-
-// Status bar
-const statusBar = addEntity(world);
-setPosition(world, statusBar, 0, 24);
-setDimensions(world, statusBar, 80, 1);
-
-console.log('Dashboard initialized!');
-console.log('Panels: header, sidebar, main, statusBar');
+main().catch(console.error);
 `,
 				},
 				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
@@ -217,53 +340,60 @@ console.log('Panels: header, sidebar, main, statusBar');
 		},
 		{
 			name: 'game',
-			description: 'Game template with game loop, input handling, and ECS',
+			description: 'Game-style app with a movable player entity',
 			category: 'Games',
 			files: [
 				{
 					path: 'src/index.ts',
-					content: `import { createWorld, addEntity } from 'blecsd';
-import { createGameLoop, LoopPhase } from 'blecsd';
-import { setPosition } from 'blecsd';
+					content: `import {
+  createApp,
+  createBoxEntity,
+  createTextEntity,
+  setText,
+  setPosition,
+  getPosition,
+} from 'blecsd';
 
-const world = createWorld();
+async function main() {
+  const app = await createApp({ fullscreen: true, fps: 30 });
+  const { world, program, cols, rows } = app;
 
-// Create player entity
-const player = addEntity(world);
-setPosition(world, player, 40, 12);
+  // Boundary box
+  createBoxEntity(world, { x: 0, y: 0, width: cols, height: rows });
 
-// Create game loop
-const loop = createGameLoop(world, { targetFPS: 60 });
+  // Player entity
+  let playerX = Math.floor(cols / 2);
+  let playerY = Math.floor(rows / 2);
+  const player = createTextEntity(world, {
+    x: playerX, y: playerY, width: 1, height: 1,
+  });
+  setText(world, player, '@');
 
-// Input system
-loop.registerSystem(LoopPhase.INPUT, (w) => {
-  // Process input here
-  return w;
-});
+  // Status text
+  const status = createTextEntity(world, {
+    x: 2, y: rows - 2, width: cols - 4, height: 1,
+  });
+  setText(world, status, 'Arrow keys to move, q to quit');
 
-// Update system
-loop.registerSystem(LoopPhase.UPDATE, (w) => {
-  // Game logic here
-  return w;
-});
+  program.onKey((key) => {
+    if (key.name === 'q' || (key.ctrl && key.name === 'c')) {
+      app.shutdown();
+      return;
+    }
 
-// Render system
-loop.registerSystem(LoopPhase.RENDER, (w) => {
-  // Render here
-  return w;
-});
+    if (key.name === 'up' && playerY > 1) playerY--;
+    if (key.name === 'down' && playerY < rows - 3) playerY++;
+    if (key.name === 'left' && playerX > 1) playerX--;
+    if (key.name === 'right' && playerX < cols - 2) playerX++;
 
-console.log('Game initialized!');
-console.log('Player entity:', player);
-console.log('Game loop created at 60 FPS');
-console.log('Press Ctrl+C to exit');
+    setPosition(world, player, playerX, playerY);
+    setText(world, status, \`Position: (\${playerX}, \${playerY})\`);
+  });
 
-loop.start();
+  app.start();
+}
 
-process.on('SIGINT', () => {
-  loop.stop();
-  process.exit(0);
-});
+main().catch(console.error);
 `,
 				},
 				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
@@ -276,38 +406,76 @@ process.on('SIGINT', () => {
 			files: [
 				{
 					path: 'src/index.ts',
-					content: `import { createWorld, addEntity } from 'blecsd';
-import { createList } from 'blecsd';
+					content: `import {
+  createApp,
+  createBoxEntity,
+  createTextEntity,
+  setText,
+} from 'blecsd';
 
-const world = createWorld();
-const eid = addEntity(world);
+async function main() {
+  const app = await createApp({ fullscreen: true, fps: 30 });
+  const { world, program, cols, rows } = app;
 
-const list = createList(world, eid, {
-  x: 5,
-  y: 5,
-  width: 30,
-  height: 10,
-  items: [
-    'Option 1: Hello World',
-    'Option 2: Dashboard',
-    'Option 3: Settings',
-    'Option 4: Help',
-    'Option 5: Quit',
-  ],
-});
+  const items = [
+    'Hello World',
+    'Dashboard',
+    'Settings',
+    'Help',
+    'Quit',
+  ];
 
-list.focus();
+  let selectedIndex = 0;
 
-list.onSelect((index, item) => {
-  console.log(\`Selected: \${item.text} at index \${index}\`);
-});
+  // Container
+  const listX = Math.floor(cols / 2) - 20;
+  const listY = Math.floor(rows / 2) - Math.floor(items.length / 2) - 2;
+  createBoxEntity(world, { x: listX, y: listY, width: 40, height: items.length + 4 });
 
-list.onActivate((index, item) => {
-  console.log(\`Activated: \${item.text}\`);
-});
+  // Title
+  const title = createTextEntity(world, {
+    x: listX + 2, y: listY + 1, width: 36, height: 1,
+  });
+  setText(world, title, 'Select an option:');
 
-console.log('List widget initialized!');
-console.log('Use arrow keys to navigate, Enter to select.');
+  // List items
+  const itemEntities = items.map((item, i) => {
+    const eid = createTextEntity(world, {
+      x: listX + 4, y: listY + 3 + i, width: 34, height: 1,
+    });
+    setText(world, eid, \`\${i === selectedIndex ? '> ' : '  '}\${item}\`);
+    return eid;
+  });
+
+  function updateList() {
+    items.forEach((item, i) => {
+      setText(world, itemEntities[i]!, \`\${i === selectedIndex ? '> ' : '  '}\${item}\`);
+    });
+  }
+
+  program.onKey((key) => {
+    if (key.name === 'q' || (key.ctrl && key.name === 'c')) {
+      app.shutdown();
+      return;
+    }
+
+    if (key.name === 'up') {
+      selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+      updateList();
+    } else if (key.name === 'down') {
+      selectedIndex = (selectedIndex + 1) % items.length;
+      updateList();
+    } else if (key.name === 'return') {
+      if (items[selectedIndex] === 'Quit') {
+        app.shutdown();
+      }
+    }
+  });
+
+  app.start();
+}
+
+main().catch(console.error);
 `,
 				},
 				{ path: 'tsconfig.json', content: TSCONFIG_CONTENT },
@@ -374,33 +542,68 @@ export function fetchManifest(): Promise<readonly Template[]> {
 // ARGUMENT PARSING
 // =============================================================================
 
+const VALUE_FLAGS: Record<string, string> = {
+	'--template': 'template',
+	'-t': 'template',
+	'--dir': 'dir',
+	'-d': 'dir',
+	'--pm': 'pm',
+};
+
+const BOOL_FLAGS: Record<string, string> = {
+	'--list': 'list',
+	'-l': 'list',
+	'--skip-install': 'skipInstall',
+};
+
+const VALID_PMS = new Set<string>(['pnpm', 'yarn', 'npm']);
+
+function isValidPm(val: string | undefined): val is PackageManager {
+	return val !== undefined && VALID_PMS.has(val);
+}
+
+function classifyArg(
+	arg: string,
+):
+	| { type: 'value'; key: string }
+	| { type: 'bool'; key: string }
+	| { type: 'skip' }
+	| { type: 'positional' } {
+	if (VALUE_FLAGS[arg]) return { type: 'value', key: VALUE_FLAGS[arg] };
+	if (BOOL_FLAGS[arg]) return { type: 'bool', key: BOOL_FLAGS[arg] };
+	if (arg === 'init' || arg.startsWith('-')) return { type: 'skip' };
+	return { type: 'positional' };
+}
+
 /**
  * Parses CLI arguments into a config object.
  */
 export function parseArgs(argv: readonly string[]): CliConfig {
-	let template: string | undefined;
-	let dir = '.';
-	let list = false;
-	let skipInstall = false;
+	const values: Record<string, string | undefined> = {};
+	const bools: Record<string, boolean> = {};
+	let name: string | undefined;
 
 	for (let i = 0; i < argv.length; i++) {
-		const arg = argv[i];
-		if (arg === '--template' || arg === '-t') {
-			template = argv[i + 1];
+		const classified = classifyArg(argv[i] ?? '');
+		if (classified.type === 'value') {
+			values[classified.key] = argv[i + 1];
 			i++;
-		} else if (arg === '--dir' || arg === '-d') {
-			dir = argv[i + 1] ?? '.';
-			i++;
-		} else if (arg === '--list' || arg === '-l') {
-			list = true;
-		} else if (arg === '--skip-install') {
-			skipInstall = true;
-		} else if (arg === 'init') {
-			// Skip the 'init' subcommand itself
+		} else if (classified.type === 'bool') {
+			bools[classified.key] = true;
+		} else if (classified.type === 'positional' && !name) {
+			name = argv[i];
 		}
 	}
 
-	return { template, dir, list, skipInstall };
+	const hasExplicitDir = 'dir' in values;
+	return {
+		template: values.template,
+		dir: values.dir ?? (name && !hasExplicitDir ? name : '.'),
+		name,
+		list: bools.list ?? false,
+		skipInstall: bools.skipInstall ?? false,
+		packageManager: isValidPm(values.pm) ? values.pm : undefined,
+	};
 }
 
 // =============================================================================
@@ -410,7 +613,7 @@ export function parseArgs(argv: readonly string[]): CliConfig {
 /**
  * Detects which package manager is available.
  */
-export function detectPackageManager(): 'pnpm' | 'yarn' | 'npm' {
+export function detectPackageManager(): PackageManager {
 	try {
 		execSync('pnpm --version', { stdio: 'ignore' });
 		return 'pnpm';
@@ -427,6 +630,62 @@ export function detectPackageManager(): 'pnpm' | 'yarn' | 'npm' {
 }
 
 // =============================================================================
+// INTERACTIVE PROMPTS
+// =============================================================================
+
+/**
+ * Prompts user for a line of text.
+ */
+export function prompt(question: string, defaultValue?: string): Promise<string> {
+	return new Promise((resolve) => {
+		const rl = createInterface({
+			input: process.stdin,
+			output: process.stdout,
+		});
+
+		const suffix = defaultValue ? ` (${defaultValue})` : '';
+		rl.question(`  ${question}${suffix}: `, (answer) => {
+			rl.close();
+			resolve(answer.trim() || defaultValue || '');
+		});
+	});
+}
+
+/**
+ * Prompts user to select from a numbered list.
+ */
+export function promptSelect<T>(
+	question: string,
+	options: readonly { label: string; value: T }[],
+	defaultIndex = 0,
+): Promise<T> {
+	return new Promise((resolve) => {
+		const rl = createInterface({
+			input: process.stdin,
+			output: process.stdout,
+		});
+
+		console.log('');
+		for (let i = 0; i < options.length; i++) {
+			const marker = i === defaultIndex ? '●' : '○';
+			console.log(`  ${marker} ${i + 1}. ${options[i]?.label}`);
+		}
+
+		rl.question(`\n  ${question} (${defaultIndex + 1}): `, (answer) => {
+			rl.close();
+			const num = Number.parseInt(answer, 10);
+			if (!Number.isNaN(num) && num >= 1 && num <= options.length) {
+				const opt = options[num - 1];
+				if (opt) resolve(opt.value);
+				else resolve(options[defaultIndex]?.value as T);
+			} else {
+				resolve(options[defaultIndex]?.value as T);
+			}
+		});
+	});
+}
+
+// =============================================================================
 // INTERACTIVE TEMPLATE PICKER
 // =============================================================================
 
@@ -440,8 +699,7 @@ export function pickTemplate(templates: readonly Template[]): Promise<Template |
 			output: process.stdout,
 		});
 
-		console.log('\n  blECSd - Terminal UI Library\n');
-		console.log('  Available templates:\n');
+		console.log('\n  Available templates:\n');
 
 		// Group by category
 		const categories = new Map<string, Template[]>();
@@ -487,7 +745,11 @@ export function pickTemplate(templates: readonly Template[]): Promise<Template |
 /**
  * Writes template files to the target directory.
  */
-export function scaffoldTemplate(template: Template, targetDir: string): void {
+export function scaffoldTemplate(
+	template: Template,
+	targetDir: string,
+	projectName?: string,
+): void {
 	const absDir = resolve(targetDir);
 
 	if (!existsSync(absDir)) {
@@ -505,17 +767,17 @@ export function scaffoldTemplate(template: Template, targetDir: string): void {
 	}
 
 	// Write package.json with directory name
-	const projectName = basename(absDir) === '.' ? 'my-blecsd-app' : basename(absDir);
+	const name = projectName || (basename(absDir) === '.' ? 'my-blecsd-app' : basename(absDir));
 	const pkgJsonPath = join(absDir, 'package.json');
 	if (!existsSync(pkgJsonPath)) {
-		writeFileSync(pkgJsonPath, createPackageJson(projectName, template.description), 'utf-8');
+		writeFileSync(pkgJsonPath, createPackageJson(name, template.description), 'utf-8');
 	}
 }
 
 /**
  * Runs package manager install in the target directory.
  */
-export function runInstall(targetDir: string, pm: 'pnpm' | 'yarn' | 'npm'): boolean {
+export function runInstall(targetDir: string, pm: PackageManager): boolean {
 	const absDir = resolve(targetDir);
 	try {
 		console.log(`\n  Running ${pm} install...`);
@@ -532,7 +794,7 @@ export function runInstall(targetDir: string, pm: 'pnpm' | 'yarn' | 'npm'): bool
  */
 export function printInstructions(template: Template, targetDir: string, pm: string): void {
 	const dir = targetDir === '.' ? '' : `  cd ${targetDir}\n`;
-	console.log('\n  Done! Your blECSd project is ready.\n');
+	console.log('\n  ✨ Done! Your blECSd project is ready.\n');
 	if (dir) {
 		console.log(dir);
 	}
@@ -572,52 +834,74 @@ export function listTemplates(templates: readonly Template[]): void {
 // =============================================================================
 
 /**
+ * Resolves the template from config or interactive picker.
+ */
+async function resolveTemplate(
+	config: CliConfig,
+	templates: readonly Template[],
+): Promise<Template | null> {
+	if (config.template) {
+		const found = templates.find((t) => t.name === config.template) ?? null;
+		if (!found) {
+			console.error(`\n  Error: Template "${config.template}" not found.`);
+			console.error('  Use --list to see available templates.\n');
+		}
+		return found;
+	}
+	return pickTemplate(templates);
+}
+
+const PM_OPTIONS: readonly { label: string; value: PackageManager }[] = [
+	{ label: 'pnpm', value: 'pnpm' },
+	{ label: 'npm', value: 'npm' },
+	{ label: 'yarn', value: 'yarn' },
+];
+
+/**
+ * Resolves package manager from config, detection, or interactive prompt.
+ */
+async function resolvePackageManager(config: CliConfig): Promise<PackageManager> {
+	if (config.packageManager) return config.packageManager;
+	const detected = detectPackageManager();
+	if (config.skipInstall) return detected;
+	const defaultIdx = detected === 'pnpm' ? 0 : detected === 'npm' ? 1 : 2;
+	return promptSelect<PackageManager>('Package manager', PM_OPTIONS, defaultIdx);
+}
+
+/**
  * Main CLI entry point.
  */
 export async function main(argv: readonly string[] = process.argv.slice(2)): Promise<void> {
 	const config = parseArgs(argv);
 	const templates = await fetchManifest();
 
-	// --list flag
 	if (config.list) {
 		listTemplates(templates);
 		return;
 	}
 
-	let selected: Template | null = null;
+	console.log('\n  🧱 blECSd — Terminal UI Framework\n');
 
-	if (config.template) {
-		// Direct template selection
-		selected = templates.find((t) => t.name === config.template) ?? null;
-		if (!selected) {
-			console.error(`\n  Error: Template "${config.template}" not found.`);
-			console.error('  Use --list to see available templates.\n');
-			process.exitCode = 1;
-			return;
-		}
-	} else {
-		// Interactive picker
-		selected = await pickTemplate(templates);
-		if (!selected) {
-			console.error('\n  No template selected.\n');
-			process.exitCode = 1;
-			return;
-		}
+	const projectName = config.name || (await prompt('Project name', 'my-blecsd-app'));
+	const targetDir = config.dir !== '.' ? config.dir : projectName;
+
+	const selected = await resolveTemplate(config, templates);
+	if (!selected) {
+		console.error('\n  No template selected.\n');
+		process.exitCode = 1;
+		return;
 	}
 
-	// Scaffold
-	console.log(`\n  Scaffolding "${selected.name}" into ${resolve(config.dir)}...`);
-	scaffoldTemplate(selected, config.dir);
+	const pm = await resolvePackageManager(config);
 
-	// Install dependencies
+	console.log(`\n  Scaffolding "${selected.name}" into ${resolve(targetDir)}...`);
+	scaffoldTemplate(selected, targetDir, projectName);
+
 	if (!config.skipInstall) {
-		const pm = detectPackageManager();
-		runInstall(config.dir, pm);
-		printInstructions(selected, config.dir, pm);
-	} else {
-		const pm = detectPackageManager();
-		printInstructions(selected, config.dir, pm);
+		runInstall(targetDir, pm);
 	}
+
+	printInstructions(selected, targetDir, pm);
 }
 
 /**
