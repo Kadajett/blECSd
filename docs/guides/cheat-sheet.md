@@ -356,25 +356,37 @@ enableMouse(world, eid);
 
 ## Rendering
 
+### Quick Start with createApp()
+
 ```typescript
-import { createWorld, createScreenEntity, createDirtyTracker } from 'blecsd/core';
-import {
-  renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createApp } from 'blecsd';
 
-const world = createWorld();
-const cols = 80, rows = 24;
-createScreenEntity(world, { width: cols, height: rows });
+const app = await createApp({ fullscreen: true });
 
-// Initialize render pipeline (required before first render)
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+// Build your UI using app.world...
 
 // Render
+app.render();
+
+// Clean shutdown
+app.program.on('key', (e) => {
+  if (e.name === 'q') app.shutdown();
+});
+```
+
+### Manual Pipeline Setup (Advanced)
+
+```typescript
+import { createWorld, createScreenEntity } from 'blecsd/core';
+import { createRenderPipeline } from 'blecsd';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+
+const world = createWorld();
+const { cols, rows } = createRenderPipeline(process.stdout);
+createScreenEntity(world, { width: cols, height: rows });
+
+// Render
+layoutSystem(world);                       // Compute positions and sizes
 renderSystem(world);                       // Render to screen buffer
 outputSystem(world);                       // Flush buffer to terminal
 ```
@@ -383,47 +395,44 @@ outputSystem(world);                       // Flush buffer to terminal
 
 ## Game Loop
 
+### Automatic Loop with createApp()
+
 ```typescript
-import { createWorld, createGameLoop, LoopPhase, createDirtyTracker } from 'blecsd/core';
-import {
-  inputSystem, layoutSystem, renderSystem, outputSystem,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createApp } from 'blecsd';
 
-const world = createWorld();
+const app = await createApp({ fullscreen: true, fps: 30 });
 
-// Initialize render pipeline (see Rendering section above)
-const cols = 80, rows = 24;
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+// ... build your UI ...
 
-// Game loop with registered systems
-const loop = createGameLoop(world, { targetFPS: 60 });
-loop.registerSystem(LoopPhase.LAYOUT, layoutSystem);
-loop.registerSystem(LoopPhase.RENDER, renderSystem);
-loop.registerSystem(LoopPhase.POST_RENDER, outputSystem);
-loop.start();
+// Start the render loop (30 FPS)
+const stop = app.start();
 
-// Or: custom game loop
+// Later: stop the loop
+stop();
+```
+
+### Manual Loop
+
+```typescript
+import { createApp } from 'blecsd';
+import { inputSystem } from 'blecsd/systems';
+
+const app = await createApp({ fullscreen: true });
+
 let running = true;
-function customLoop() {
-  inputSystem(world);
-  layoutSystem(world);
-  renderSystem(world);
-  outputSystem(world);
+function gameLoop() {
+  inputSystem(app.world);
+  app.render();
 
   if (running) {
-    setTimeout(customLoop, 16);  // ~60 FPS
+    setTimeout(gameLoop, 16);  // ~60 FPS
   }
 }
-customLoop();
+
+gameLoop();
 
 // Stop
 running = false;
-loop.stop();
 ```
 
 ---

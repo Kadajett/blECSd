@@ -1,93 +1,8 @@
 # Hello World
 
-The fastest way to get something on screen with blECSd.
+A minimal example using blECSd components.
 
-## Quick Start with `createApp()`
-
-```typescript
-import { createApp, createTextEntity } from 'blecsd';
-import { setStyle } from 'blecsd/components';
-
-const app = await createApp({ fullscreen: true, fps: 30 });
-
-createTextEntity(app.world, { x: 5, y: 3, text: 'Hello, Terminal!' });
-
-app.program.on('key', (e) => { if (e.name === 'q') app.shutdown(); });
-app.start();
-```
-
-That's it — 7 lines of real code. `createApp()` handles:
-
-- Creating the ECS world and screen entity
-- Wiring the full render pipeline (output stream, double buffer, dirty tracker)
-- Entering alternate screen mode with cursor hidden
-- Registering SIGINT/SIGTERM shutdown handlers
-
-## What `createApp()` Returns
-
-```typescript
-interface App {
-  world: World;           // The ECS world
-  program: Program;       // Terminal input (key/mouse events)
-  cols: number;           // Terminal width
-  rows: number;           // Terminal height
-  render(): void;         // Manual render (layout → render → output)
-  shutdown(): void;       // Clean exit
-  start(): () => void;    // Start render loop (returns stop function)
-}
-```
-
-## Individual Helpers
-
-If you need more control, use the building blocks directly.
-
-### `createRenderPipeline(stream)`
-
-Replaces the 5-line buffer setup:
-
-```typescript
-import { createRenderPipeline } from 'blecsd';
-
-// Before (5 lines):
-// setOutputStream(process.stdout);
-// const db = createDoubleBuffer(cols, rows);
-// setOutputBuffer(db);
-// setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
-
-// After (1 line):
-const { cols, rows } = createRenderPipeline(process.stdout);
-```
-
-### `onShutdown(world)`
-
-Registers signal handlers for clean exit:
-
-```typescript
-import { onShutdown } from 'blecsd';
-
-const shutdown = onShutdown(world, { program });
-// Handles SIGINT, SIGTERM, cursor restore, alternate screen exit
-// Call shutdown() manually or let signals trigger it
-```
-
-### `renderToString(world)`
-
-Headless rendering for tests and CI:
-
-```typescript
-import { renderToString } from 'blecsd';
-
-const frame = renderToString(world, 80, 24);
-expect(frame).toContain('Hello');
-```
-
----
-
-## Low-Level API
-
-For full control over every step, you can use the ECS primitives directly.
-
-### Components Only (No Rendering)
+## The Code
 
 ```typescript
 import { createWorld, addEntity } from 'blecsd/core';
@@ -136,7 +51,7 @@ console.log(`Box at ${pos?.x}, ${pos?.y}`);
 console.log(`Content: ${content}`);
 ```
 
-### Alternative: Namespace Imports
+## Alternative: Namespace Imports
 
 For larger applications, you can use namespace imports from `blecsd/components` to organize your code:
 
@@ -183,103 +98,15 @@ console.log(`Content: ${text}`);
 
 Namespace imports help organize related functions and reduce naming conflicts as your application grows.
 
-### Manual Render Pipeline
+## What Happened
 
-```typescript
-import { createWorld, addEntity, createScreenEntity } from 'blecsd/core';
-import { setPosition, setDimensions } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem, cleanup,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { setContent, setStyle } from 'blecsd/components';
-import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
-import { createDirtyTracker } from 'blecsd/core';
-
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
-
-const world = createWorld();
-createScreenEntity(world, { width: cols, height: rows });
-
-// Initialize the render pipeline buffers
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
-
-// ... create entities with position, dimensions, content, style ...
-
-// Run the rendering pipeline
-layoutSystem(world);   // Compute positions and sizes
-renderSystem(world);   // Render entities to screen buffer
-outputSystem(world);   // Diff and flush changes to terminal
-
-// When done, clean up terminal state
-cleanup(world);
-```
-
-### Manual Render Loop with Input
-
-```typescript
-import { createApp, createScreenEntity, addEntity } from 'blecsd';
-import { setPosition, setDimensions, setContent, setStyle, moveBy } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem, cleanup,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
-import { createDirtyTracker } from 'blecsd/core';
-
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
-
-// 1. Initialize the terminal
-const program = createProgram();
-await program.init();
-
-// 2. Create the ECS world and screen entity
-const world = createWorld();
-createScreenEntity(world, { width: cols, height: rows });
-
-// 3. Wire up the render pipeline
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
-
-// 4. Create entities
-const statusIndicator = addEntity(world);
-setPosition(world, statusIndicator, 10, 5);
-setDimensions(world, statusIndicator, 10, 1);
-setStyle(world, statusIndicator, { fg: '#00ff00' });
-setContent(world, statusIndicator, '● Online');
-
-// 5. Render
-function render(): void {
-  layoutSystem(world);
-  renderSystem(world);
-  outputSystem(world);
-}
-
-render();
-
-// 6. Input handling
-program.on('key', (event) => {
-  if (event.name === 'q' || (event.ctrl && event.name === 'c')) {
-    cleanup(world);
-    program.destroy();
-    process.exit(0);
-  }
-
-  if (event.name === 'up') moveBy(world, statusIndicator, 0, -1);
-  if (event.name === 'down') moveBy(world, statusIndicator, 0, 1);
-  if (event.name === 'left') moveBy(world, statusIndicator, -1, 0);
-  if (event.name === 'right') moveBy(world, statusIndicator, 1, 0);
-
-  render();
-});
-```
+1. **createWorld()** initializes a bitECS world
+2. **addEntity()** creates an entity (returns an integer ID)
+3. **setPosition()** adds the Position component with coordinates
+4. **setDimensions()** adds the Dimensions component with size
+5. **setStyle()** adds the Renderable component with colors
+6. **setBorder()** adds the Border component
+7. **setContent()** adds the Content component with text
 
 ## Using Entity Factories
 
@@ -317,40 +144,103 @@ const text = createTextEntity(world, {
 });
 ```
 
-## What Happened
+## Hello World with createApp()
 
-1. **createWorld()** initializes a bitECS world
-2. **addEntity()** creates an entity (returns an integer ID)
-3. **setPosition()** adds the Position component with coordinates
-4. **setDimensions()** adds the Dimensions component with size
-5. **setStyle()** adds the Renderable component with colors
-6. **setBorder()** adds the Border component
-7. **setContent()** adds the Content component with text
+The simplest way to start a blECSd app is with `createApp()`:
+
+```typescript
+import { createApp } from 'blecsd';
+import { addEntity } from 'blecsd/core';
+import { setPosition, setDimensions, setContent, setStyle } from 'blecsd/components';
+
+const app = await createApp({ fullscreen: true });
+
+const statusIndicator = addEntity(app.world);
+setPosition(app.world, statusIndicator, 10, 5);
+setDimensions(app.world, statusIndicator, 10, 1);
+setStyle(app.world, statusIndicator, { fg: '#00ff00' });
+setContent(app.world, statusIndicator, '● Online');
+
+app.program.on('key', (event) => {
+  if (event.name === 'q' || (event.ctrl && event.name === 'c')) {
+    app.shutdown();
+  }
+  app.render();
+});
+
+app.render();
+```
+
+That's it! `createApp()` handles:
+- World creation
+- Screen entity setup
+- Render pipeline wiring (double-buffer + dirty tracking)
+- Terminal initialization (alternate screen, cursor, raw mode)
+- Signal-safe shutdown handlers (SIGINT/SIGTERM)
 
 ## Input Handling
 
-Add keyboard input using `createProgram` from `blecsd/terminal`:
+Add keyboard input using the `program` property from the app:
 
 ```typescript
-import { createProgram } from 'blecsd/terminal';
-import { moveBy, getPosition } from 'blecsd/components';
+import { moveBy } from 'blecsd/components';
 
-const program = createProgram();
-await program.init();
-
-program.on('key', (event) => {
+app.program.on('key', (event) => {
   if (event.name === 'q' || (event.ctrl && event.name === 'c')) {
-    cleanup(world);
-    program.destroy();
-    process.exit(0);
+    app.shutdown();
   }
 
   // Arrow keys move the selected element
-  if (event.name === 'up') moveBy(world, statusIndicator, 0, -1);
-  if (event.name === 'down') moveBy(world, statusIndicator, 0, 1);
-  if (event.name === 'left') moveBy(world, statusIndicator, -1, 0);
-  if (event.name === 'right') moveBy(world, statusIndicator, 1, 0);
+  if (event.name === 'up') moveBy(app.world, statusIndicator, 0, -1);
+  if (event.name === 'down') moveBy(app.world, statusIndicator, 0, 1);
+  if (event.name === 'left') moveBy(app.world, statusIndicator, -1, 0);
+  if (event.name === 'right') moveBy(app.world, statusIndicator, 1, 0);
 
-  render();
+  app.render();
 });
+```
+
+## Advanced: Manual Pipeline Setup
+
+For more control, you can wire the pipeline manually using `createRenderPipeline()`:
+
+```typescript
+import { createWorld, createScreenEntity } from 'blecsd/core';
+import { createRenderPipeline, onShutdown } from 'blecsd';
+import { layoutSystem, renderSystem, outputSystem } from 'blecsd/systems';
+import { createProgram } from 'blecsd/terminal';
+
+const { cols, rows } = createRenderPipeline(process.stdout);
+const world = createWorld();
+createScreenEntity(world, { width: cols, height: rows });
+
+const program = createProgram({ useAlternateScreen: true });
+await program.init();
+
+const shutdown = onShutdown(world, { program });
+
+function render(): void {
+  layoutSystem(world);
+  renderSystem(world);
+  outputSystem(world);
+}
+
+// ... add entities ...
+
+render();
+```
+
+For complete low-level control, see the terminal module:
+
+```typescript
+import { cursor, style, screen } from 'blecsd/terminal';
+import { setOutputStream, setOutputBuffer, setRenderBuffer } from 'blecsd/systems';
+import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createDirtyTracker } from 'blecsd/core';
+
+// Manual buffer setup
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(80, 24);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(80, 24), getBackBuffer(db));
 ```

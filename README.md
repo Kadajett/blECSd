@@ -30,59 +30,28 @@ npm install blecsd
 Create a terminal app with a bordered panel, text, and keyboard input:
 
 ```typescript
-import { createWorld, createScreenEntity, createBoxEntity, createTextEntity } from 'blecsd/core';
-import { createDirtyTracker } from 'blecsd/core';
-import {
-  layoutSystem, renderSystem, outputSystem, cleanup,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createApp } from 'blecsd';
+import { createBoxEntity, createTextEntity } from 'blecsd/core';
 
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
+const app = await createApp({ fullscreen: true });
 
-// 1. Initialize the terminal (alternate screen, hidden cursor, raw mode)
-const program = createProgram();
-await program.init();
-
-// 2. Create the ECS world and screen entity
-const world = createWorld();
-createScreenEntity(world, { width: cols, height: rows });
-
-// 3. Wire up the render pipeline buffers
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
-
-// 4. Build your UI
-const panel = createBoxEntity(world, {
+const panel = createBoxEntity(app.world, {
   x: 2, y: 1, width: 40, height: 12,
   border: { type: 1, top: true, bottom: true, left: true, right: true },
 });
 
-createTextEntity(world, {
+createTextEntity(app.world, {
   x: 4, y: 2, text: 'My Dashboard', parent: panel,
 });
 
-// 5. Render
-function render(): void {
-  layoutSystem(world);
-  renderSystem(world);
-  outputSystem(world);
-}
-
-render();
-
-// 6. Handle keyboard input
-program.on('key', (event) => {
+app.program.on('key', (event) => {
   if (event.name === 'q' || (event.ctrl && event.name === 'c')) {
-    cleanup(world);
-    program.destroy();
-    process.exit(0);
+    app.shutdown();
   }
-  render();
+  app.render();
 });
+
+app.render();
 ```
 
 ## Namespace Imports
