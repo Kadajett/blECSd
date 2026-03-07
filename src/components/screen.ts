@@ -35,7 +35,8 @@
 import type { ChildProcess } from 'node:child_process';
 import { addComponent, hasComponent } from '../core/ecs';
 import type { Entity, World } from '../core/types';
-import { exec, spawn } from '../terminal/process';
+import { exec, readEditor, spawn } from '../terminal/process';
+import type { EditorOptions } from '../terminal/process';
 import { getDimensions, setDimensions } from './dimensions';
 import { NULL_ENTITY } from './hierarchy';
 import { Renderable } from './renderable';
@@ -799,4 +800,76 @@ export async function execScreenProcess(
 
 	// Execute with terminal state management
 	return exec(command, args, execOptions);
+}
+
+/**
+ * Options for screen.readEditor()
+ */
+export interface ScreenEditorOptions {
+	/** Initial content to edit */
+	content?: string;
+	/** File extension for temp file (default: '.txt') */
+	extension?: string;
+	/** Editor command (default: EDITOR or VISUAL env var, then 'vi') */
+	editor?: string;
+	/** Output stream (default: process.stdout) */
+	output?: NodeJS.WriteStream;
+	/** Input stream (default: process.stdin) */
+	input?: NodeJS.ReadStream;
+}
+
+/**
+ * Open an external editor and return the edited content with automatic terminal state management.
+ *
+ * This function:
+ * 1. Pauses screen rendering
+ * 2. Saves terminal state (alternate buffer, mouse tracking)
+ * 3. Creates a temporary file with optional initial content
+ * 4. Opens the editor (uses $EDITOR, $VISUAL, or 'vi')
+ * 5. Waits for the editor to close
+ * 6. Reads the edited content
+ * 7. Restores terminal state
+ * 8. Returns the edited content
+ *
+ * @param world - The ECS world
+ * @param options - Editor options
+ * @returns Promise resolving to the edited content
+ *
+ * @example
+ * ```typescript
+ * import { readEditorScreenProcess } from 'blecsd';
+ *
+ * // Open editor with initial content
+ * const edited = await readEditorScreenProcess(world, {
+ *   content: 'Initial content to edit',
+ *   extension: '.md',
+ * });
+ * console.log('Edited content:', edited);
+ *
+ * // Use a specific editor
+ * const edited2 = await readEditorScreenProcess(world, {
+ *   editor: 'nano',
+ *   content: 'Edit me!',
+ * });
+ * ```
+ */
+export async function readEditorScreenProcess(
+	world: World,
+	options: ScreenEditorOptions = {},
+): Promise<string> {
+	const state = getScreenProcessState(world);
+	const output = options.output ?? process.stdout;
+	const input = options.input ?? process.stdin;
+
+	// Prepare editor options with terminal state
+	const editorOptions: EditorOptions = {
+		...options,
+		output,
+		input,
+		isAlternateBuffer: state.isAlternateBuffer,
+		isMouseEnabled: state.isMouseEnabled,
+	};
+
+	// Open editor with terminal state management
+	return readEditor(editorOptions);
 }

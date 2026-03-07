@@ -25,6 +25,7 @@ import {
 	isAutoPadding,
 	isFullUnicode,
 	isScreen,
+	readEditorScreenProcess,
 	registerScreenSingleton,
 	resetScreenSingleton,
 	resizeScreen,
@@ -76,6 +77,7 @@ export const screenComponent = Object.freeze({
 	// Process management
 	spawn: spawnScreenProcess,
 	exec: execScreenProcess,
+	readEditor: readEditorScreenProcess,
 	setAlternateBuffer: setScreenAlternateBuffer,
 	setMouseTracking: setScreenMouseTracking,
 });

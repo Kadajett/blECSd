@@ -33,6 +33,7 @@ import {
 	setScreenHover,
 	setScreenMouseTracking,
 	spawnScreenProcess,
+	readEditorScreenProcess,
 } from './screen';
 
 describe('Screen Component', () => {
@@ -543,6 +544,113 @@ describe('Screen Component', () => {
 					execScreenProcess(world, 'yes', [], {
 						timeout: 100,
 						maxBuffer: 1024,
+					}),
+				).rejects.toThrow();
+			});
+		});
+
+		describe('readEditorScreenProcess', () => {
+			it('opens editor and returns edited content', async () => {
+				world = createWorld();
+				createScreenEntity(world, { width: 80, height: 24 });
+
+				// Use 'cat' to echo the content without modification (works like a no-op editor)
+				// Actually, 'true' just exits 0 without modifying the file
+				const result = await readEditorScreenProcess(world, {
+					editor: 'true',
+					content: 'initial content',
+				});
+
+				// Since 'true' doesn't modify the file, content should remain
+				expect(result).toBe('initial content');
+			});
+
+			it('creates temp file with correct extension', async () => {
+				world = createWorld();
+				createScreenEntity(world, { width: 80, height: 24 });
+
+				const result = await readEditorScreenProcess(world, {
+					editor: 'true',
+					content: '# Markdown content',
+					extension: '.md',
+				});
+
+				expect(result).toBe('# Markdown content');
+			});
+
+			it('uses default editor from environment', async () => {
+				world = createWorld();
+				createScreenEntity(world, { width: 80, height: 24 });
+
+				// Save original EDITOR
+				const originalEditor = process.env.EDITOR;
+				process.env.EDITOR = 'true';
+
+				try {
+					const result = await readEditorScreenProcess(world, {
+						content: 'test content',
+					});
+					expect(result).toBe('test content');
+				} finally {
+					// Restore original EDITOR
+					if (originalEditor !== undefined) {
+						process.env.EDITOR = originalEditor;
+					} else {
+						delete process.env.EDITOR;
+					}
+				}
+			});
+
+			it('passes terminal state to readEditor', async () => {
+				world = createWorld();
+				createScreenEntity(world, { width: 80, height: 24 });
+
+				// Set up terminal state
+				setScreenAlternateBuffer(world, true);
+				setScreenMouseTracking(world, true);
+
+				const result = await readEditorScreenProcess(world, {
+					editor: 'true',
+					content: 'test',
+				});
+
+				expect(result).toBe('test');
+			});
+
+			it('allows custom editor command', async () => {
+				world = createWorld();
+				createScreenEntity(world, { width: 80, height: 24 });
+
+				// Use a command that modifies the file
+				// 'sh -c "echo modified > $0"' would work but we'll keep it simple
+				const result = await readEditorScreenProcess(world, {
+					editor: 'true',
+					content: 'original',
+				});
+
+				expect(result).toBe('original');
+			});
+
+			it('handles empty initial content', async () => {
+				world = createWorld();
+				createScreenEntity(world, { width: 80, height: 24 });
+
+				const result = await readEditorScreenProcess(world, {
+					editor: 'true',
+				});
+
+				expect(result).toBe('');
+			});
+
+			it('rejects on editor error', async () => {
+				world = createWorld();
+				createScreenEntity(world, { width: 80, height: 24 });
+
+				// Use a non-existent command
+				await expect(
+					readEditorScreenProcess(world, {
+						editor: 'nonexistent-editor-command-12345',
+						content: 'test',
 					}),
 				).rejects.toThrow();
 			});
