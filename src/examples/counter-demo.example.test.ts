@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'vitest';
 import { spawn } from 'node:child_process';
+import { describe, expect, test } from 'vitest';
 import { stripAnsi } from '../terminal/ansi/parser';
 
 function runCounterDemo(script: string): Promise<{ code: number | null; output: string }> {
