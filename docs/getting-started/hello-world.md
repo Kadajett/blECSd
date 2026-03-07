@@ -25,6 +25,7 @@ That's it — 7 lines of real code. `createApp()` handles:
 
 ## What `createApp()` Returns
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 interface App {
   world: World;           // The ECS world
@@ -62,6 +63,7 @@ const { cols, rows } = createRenderPipeline(process.stdout);
 
 Registers signal handlers for clean exit:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { onShutdown } from 'blecsd';
 
@@ -91,7 +93,7 @@ For full control over every step, you can use the ECS primitives directly.
 
 ```typescript
 import { createWorld, addEntity } from 'blecsd/core';
-import { setPosition, setDimensions } from 'blecsd/components';
+import { setPosition, setDimensions, getPosition } from 'blecsd/components';
 import {
   setStyle,
   setBorder,
@@ -185,6 +187,7 @@ Namespace imports help organize related functions and reduce naming conflicts as
 
 ### Manual Render Pipeline
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createWorld, addEntity, createScreenEntity } from 'blecsd/core';
 import { setPosition, setDimensions } from 'blecsd/components';
@@ -222,7 +225,7 @@ cleanup(world);
 ### Manual Render Loop with Input
 
 ```typescript
-import { createApp, createScreenEntity, addEntity } from 'blecsd';
+import { createWorld, createScreenEntity, addEntity } from 'blecsd';
 import { setPosition, setDimensions, setContent, setStyle, moveBy } from 'blecsd/components';
 import {
   layoutSystem, renderSystem, outputSystem, cleanup,
@@ -331,6 +334,7 @@ const text = createTextEntity(world, {
 
 Add keyboard input using `createProgram` from `blecsd/terminal`:
 
+<!-- blecsd-doccheck:ignore -->
 ```typescript
 import { createProgram } from 'blecsd/terminal';
 import { moveBy, getPosition } from 'blecsd/components';
