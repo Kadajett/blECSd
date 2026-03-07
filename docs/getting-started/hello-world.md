@@ -1,8 +1,93 @@
 # Hello World
 
-A minimal example using blECSd components.
+The fastest way to get something on screen with blECSd.
 
-## The Code
+## Quick Start with `createApp()`
+
+```typescript
+import { createApp, createTextEntity } from 'blecsd';
+import { setStyle } from 'blecsd/components';
+
+const app = await createApp({ fullscreen: true, fps: 30 });
+
+createTextEntity(app.world, { x: 5, y: 3, text: 'Hello, Terminal!' });
+
+app.program.on('key', (e) => { if (e.name === 'q') app.shutdown(); });
+app.start();
+```
+
+That's it — 7 lines of real code. `createApp()` handles:
+
+- Creating the ECS world and screen entity
+- Wiring the full render pipeline (output stream, double buffer, dirty tracker)
+- Entering alternate screen mode with cursor hidden
+- Registering SIGINT/SIGTERM shutdown handlers
+
+## What `createApp()` Returns
+
+```typescript
+interface App {
+  world: World;           // The ECS world
+  program: Program;       // Terminal input (key/mouse events)
+  cols: number;           // Terminal width
+  rows: number;           // Terminal height
+  render(): void;         // Manual render (layout → render → output)
+  shutdown(): void;       // Clean exit
+  start(): () => void;    // Start render loop (returns stop function)
+}
+```
+
+## Individual Helpers
+
+If you need more control, use the building blocks directly.
+
+### `createRenderPipeline(stream)`
+
+Replaces the 5-line buffer setup:
+
+```typescript
+import { createRenderPipeline } from 'blecsd';
+
+// Before (5 lines):
+// setOutputStream(process.stdout);
+// const db = createDoubleBuffer(cols, rows);
+// setOutputBuffer(db);
+// setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+
+// After (1 line):
+const { cols, rows } = createRenderPipeline(process.stdout);
+```
+
+### `onShutdown(world)`
+
+Registers signal handlers for clean exit:
+
+```typescript
+import { onShutdown } from 'blecsd';
+
+const shutdown = onShutdown(world, { program });
+// Handles SIGINT, SIGTERM, cursor restore, alternate screen exit
+// Call shutdown() manually or let signals trigger it
+```
+
+### `renderToString(world)`
+
+Headless rendering for tests and CI:
+
+```typescript
+import { renderToString } from 'blecsd';
+
+const frame = renderToString(world, 80, 24);
+expect(frame).toContain('Hello');
+```
+
+---
+
+## Low-Level API
+
+For full control over every step, you can use the ECS primitives directly.
+
+### Components Only (No Rendering)
 
 ```typescript
 import { createWorld, addEntity } from 'blecsd/core';
@@ -51,7 +136,7 @@ console.log(`Box at ${pos?.x}, ${pos?.y}`);
 console.log(`Content: ${content}`);
 ```
 
-## Alternative: Namespace Imports
+### Alternative: Namespace Imports
 
 For larger applications, you can use namespace imports from `blecsd/components` to organize your code:
 
@@ -98,15 +183,103 @@ console.log(`Content: ${text}`);
 
 Namespace imports help organize related functions and reduce naming conflicts as your application grows.
 
-## What Happened
+### Manual Render Pipeline
 
-1. **createWorld()** initializes a bitECS world
-2. **addEntity()** creates an entity (returns an integer ID)
-3. **setPosition()** adds the Position component with coordinates
-4. **setDimensions()** adds the Dimensions component with size
-5. **setStyle()** adds the Renderable component with colors
-6. **setBorder()** adds the Border component
-7. **setContent()** adds the Content component with text
+```typescript
+import { createWorld, addEntity, createScreenEntity } from 'blecsd/core';
+import { setPosition, setDimensions } from 'blecsd/components';
+import {
+  layoutSystem, renderSystem, outputSystem, cleanup,
+  setOutputStream, setOutputBuffer, setRenderBuffer,
+} from 'blecsd/systems';
+import { setContent, setStyle } from 'blecsd/components';
+import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createDirtyTracker } from 'blecsd/core';
+
+const cols = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
+
+const world = createWorld();
+createScreenEntity(world, { width: cols, height: rows });
+
+// Initialize the render pipeline buffers
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(cols, rows);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+
+// ... create entities with position, dimensions, content, style ...
+
+// Run the rendering pipeline
+layoutSystem(world);   // Compute positions and sizes
+renderSystem(world);   // Render entities to screen buffer
+outputSystem(world);   // Diff and flush changes to terminal
+
+// When done, clean up terminal state
+cleanup(world);
+```
+
+### Manual Render Loop with Input
+
+```typescript
+import { createApp, createScreenEntity, addEntity } from 'blecsd';
+import { setPosition, setDimensions, setContent, setStyle, moveBy } from 'blecsd/components';
+import {
+  layoutSystem, renderSystem, outputSystem, cleanup,
+  setOutputStream, setOutputBuffer, setRenderBuffer,
+} from 'blecsd/systems';
+import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
+import { createDirtyTracker } from 'blecsd/core';
+
+const cols = process.stdout.columns ?? 80;
+const rows = process.stdout.rows ?? 24;
+
+// 1. Initialize the terminal
+const program = createProgram();
+await program.init();
+
+// 2. Create the ECS world and screen entity
+const world = createWorld();
+createScreenEntity(world, { width: cols, height: rows });
+
+// 3. Wire up the render pipeline
+setOutputStream(process.stdout);
+const db = createDoubleBuffer(cols, rows);
+setOutputBuffer(db);
+setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
+
+// 4. Create entities
+const statusIndicator = addEntity(world);
+setPosition(world, statusIndicator, 10, 5);
+setDimensions(world, statusIndicator, 10, 1);
+setStyle(world, statusIndicator, { fg: '#00ff00' });
+setContent(world, statusIndicator, '● Online');
+
+// 5. Render
+function render(): void {
+  layoutSystem(world);
+  renderSystem(world);
+  outputSystem(world);
+}
+
+render();
+
+// 6. Input handling
+program.on('key', (event) => {
+  if (event.name === 'q' || (event.ctrl && event.name === 'c')) {
+    cleanup(world);
+    program.destroy();
+    process.exit(0);
+  }
+
+  if (event.name === 'up') moveBy(world, statusIndicator, 0, -1);
+  if (event.name === 'down') moveBy(world, statusIndicator, 0, 1);
+  if (event.name === 'left') moveBy(world, statusIndicator, -1, 0);
+  if (event.name === 'right') moveBy(world, statusIndicator, 1, 0);
+
+  render();
+});
+```
 
 ## Using Entity Factories
 
@@ -144,109 +317,15 @@ const text = createTextEntity(world, {
 });
 ```
 
-## Rendering
+## What Happened
 
-blECSd includes a built-in two-phase rendering pipeline. The `renderSystem` draws entities into a screen buffer, and the `outputSystem` diffs that buffer against the previous frame and flushes changes to the terminal.
-
-Before the pipeline can render, you must initialize the buffers:
-
-```typescript
-import { createWorld, addEntity, createScreenEntity } from 'blecsd/core';
-import { setPosition, setDimensions } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem, cleanup,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { setContent, setStyle } from 'blecsd/components';
-import { createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
-import { createDirtyTracker } from 'blecsd/core';
-
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
-
-const world = createWorld();
-createScreenEntity(world, { width: cols, height: rows });
-
-// Initialize the render pipeline buffers
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
-
-// ... create entities with position, dimensions, content, style ...
-
-// Run the rendering pipeline
-layoutSystem(world);   // Compute positions and sizes
-renderSystem(world);   // Render entities to screen buffer
-outputSystem(world);   // Diff and flush changes to terminal
-
-// When done, clean up terminal state
-cleanup(world);
-```
-
-For low-level terminal control, you can use the terminal module directly:
-
-```typescript
-import { cursor, style, screen } from 'blecsd/terminal';
-
-// These namespaces provide ANSI escape sequence generators
-// cursor.move(), style.fgRgb(), screen.alternateOn(), etc.
-```
-
-## A Simple Render Loop
-
-Combining `createProgram()` for terminal management with the ECS render pipeline:
-
-```typescript
-import { createWorld, addEntity, createScreenEntity } from 'blecsd/core';
-import { setPosition, setDimensions } from 'blecsd/components';
-import {
-  layoutSystem, renderSystem, outputSystem, cleanup,
-  setOutputStream, setOutputBuffer, setRenderBuffer,
-} from 'blecsd/systems';
-import { setContent, setStyle } from 'blecsd/components';
-import { createProgram, createDoubleBuffer, getBackBuffer } from 'blecsd/terminal';
-import { createDirtyTracker } from 'blecsd/core';
-
-const cols = process.stdout.columns ?? 80;
-const rows = process.stdout.rows ?? 24;
-
-// 1. Initialize the terminal (alternate screen, cursor, raw mode)
-const program = createProgram();
-await program.init();
-
-// 2. Create the ECS world and screen entity
-const world = createWorld();
-createScreenEntity(world, { width: cols, height: rows });
-
-// 3. Wire up the render pipeline buffers
-setOutputStream(process.stdout);
-const db = createDoubleBuffer(cols, rows);
-setOutputBuffer(db);
-setRenderBuffer(createDirtyTracker(cols, rows), getBackBuffer(db));
-
-// 4. Create entities
-const statusIndicator = addEntity(world);
-setPosition(world, statusIndicator, 10, 5);
-setDimensions(world, statusIndicator, 10, 1);
-setStyle(world, statusIndicator, { fg: '#00ff00' });
-setContent(world, statusIndicator, '● Online');
-
-// 5. Render
-function render(): void {
-  layoutSystem(world);
-  renderSystem(world);
-  outputSystem(world);
-}
-
-render();
-
-// Clean up on exit
-process.on('exit', () => {
-  cleanup(world);
-  program.destroy();
-});
-```
+1. **createWorld()** initializes a bitECS world
+2. **addEntity()** creates an entity (returns an integer ID)
+3. **setPosition()** adds the Position component with coordinates
+4. **setDimensions()** adds the Dimensions component with size
+5. **setStyle()** adds the Renderable component with colors
+6. **setBorder()** adds the Border component
+7. **setContent()** adds the Content component with text
 
 ## Input Handling
 
