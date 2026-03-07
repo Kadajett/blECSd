@@ -6,6 +6,8 @@
 
 export type { AccordionModule, CollapsibleModule } from './accordion';
 export { accordion, collapsible } from './accordion';
+export type { ANSIImageModule } from './ansiImage';
+export { ansiImage } from './ansiImage';
 export type { AutocompleteModule } from './autocomplete';
 export { autocomplete } from './autocomplete';
 export type { BarChartModule } from './barChart';
@@ -74,6 +76,8 @@ export type { ModalModule } from './modal';
 export { modal } from './modal';
 export type { MultiSelectModule } from './multiSelect';
 export { multiSelect } from './multiSelect';
+export type { OverlayImageModule } from './overlayImage';
+export { overlayImage } from './overlayImage';
 export type { PanelModule } from './panel';
 export { panel } from './panel';
 export type { ProgressBarWidgetModule } from './progressBar';

@@ -20,6 +20,7 @@ export {
 // ─── Namespace exports (new API) ──────────────────────────────────────────────
 export type {
 	AccordionModule,
+	ANSIImageModule,
 	AutocompleteModule,
 	BarChartModule,
 	BigTextModule,
@@ -55,6 +56,7 @@ export type {
 	MessageModule,
 	ModalModule,
 	MultiSelectModule,
+	OverlayImageModule,
 	PanelModule,
 	ProgressBarWidgetModule,
 	PromptWidgetModule,
@@ -80,6 +82,7 @@ export type {
 } from './namespaces';
 export {
 	accordion,
+	ansiImage,
 	autocomplete,
 	barChart,
 	bigText,
@@ -115,6 +118,7 @@ export {
 	message,
 	modal,
 	multiSelect,
+	overlayImage,
 	panel,
 	progressBarWidget,
 	promptWidget,
