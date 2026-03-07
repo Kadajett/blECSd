@@ -2,7 +2,25 @@
 
 The game loop manages the main update cycle with input priority guarantees, lifecycle hooks, fixed timestep support, and performance statistics.
 
-> **Note**: For most applications, use [`createApp()`](../app.md) which handles world, loop, and render pipeline setup automatically. The APIs below are for advanced use cases requiring custom loop configuration.
+## Quick Start with createApp
+
+For most applications, [`createApp()`](../app.md) handles world creation, screen setup, render pipeline, and shutdown — no manual game loop needed:
+
+```typescript
+import { createApp } from 'blecsd';
+
+const app = await createApp({ fps: 30, fullscreen: true });
+
+// app.world   — the ECS world
+// app.program — terminal program (input handling)
+// app.render()   — manual render (layout → render → output)
+// app.start()    — start the FPS-based render loop
+// app.shutdown() — clean up terminal and exit
+
+app.start();
+```
+
+Use the lower-level `createGameLoop` API below when you need custom phase ordering, fixed timestep, or per-phase system registration.
 
 ## Import
 
@@ -29,7 +47,7 @@ blECSd uses a fixed phase ordering where **INPUT always runs first**. This is a 
 | `EARLY_UPDATE` | 1 | Pre-update logic (AI decisions, state machine transitions) |
 | `UPDATE` | 2 | Main game logic (movement, gameplay mechanics) |
 | `LATE_UPDATE` | 3 | Post-update corrections (camera follow, constraint solving) |
-| `PHYSICS` | 4 | Physics-based animations, springs, momentum, transitions |
+| `ANIMATION` | 4 | Animation, physics, tweens, springs, and transitions |
 | `LAYOUT` | 5 | UI layout calculation (flex, grid, constraints) |
 | `RENDER` | 6 | Screen rendering (draw calls, buffer writes) |
 | `POST_RENDER` | 7 | Cleanup after render (debug overlays, stat collection) |
@@ -215,7 +233,7 @@ const loop = createGameLoop(world, {
 // Frame execution order in fixed timestep:
 // 1. Process INPUT (every frame, at render rate)
 // 2. Accumulate real time
-// 3. Run fixed updates at consistent rate (UPDATE, LATE_UPDATE, PHYSICS)
+// 3. Run fixed updates at consistent rate (UPDATE, LATE_UPDATE, ANIMATION)
 // 4. Calculate interpolation alpha
 // 5. Run render phases (LAYOUT, RENDER, POST_RENDER)
 loop.step(1/60);
@@ -263,7 +281,7 @@ const aiPhaseId = manager.registerPhase('AI', LoopPhase.UPDATE);
 
 // Get all phases in order
 const phases = manager.getPhaseOrder();
-// [INPUT, EARLY_UPDATE, UPDATE, 'AI', LATE_UPDATE, PHYSICS, LAYOUT, RENDER, POST_RENDER]
+// [INPUT, EARLY_UPDATE, UPDATE, 'AI', LATE_UPDATE, ANIMATION, LAYOUT, RENDER, POST_RENDER]
 
 // Check if a phase is built-in
 isBuiltinPhase(LoopPhase.INPUT);  // true
@@ -278,7 +296,7 @@ enum LoopPhase {
   EARLY_UPDATE = 1,
   UPDATE = 2,
   LATE_UPDATE = 3,
-  PHYSICS = 4,
+  ANIMATION = 4,
   LAYOUT = 5,
   RENDER = 6,
   POST_RENDER = 7,

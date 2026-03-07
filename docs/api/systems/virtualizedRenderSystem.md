@@ -2,6 +2,8 @@
 
 The virtualized render system efficiently renders large content by only drawing visible lines. It achieves 60fps scroll performance with 10M+ lines by skipping off-screen content.
 
+> **Tip:** For standard applications, [`createApp()`](../core/gameLoop.md#quick-start-with-createapp) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
+
 ## Import
 
 ```typescript

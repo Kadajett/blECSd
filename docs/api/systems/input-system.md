@@ -2,6 +2,8 @@
 
 ECS system for processing keyboard and mouse events with hit testing and focus management.
 
+> **Tip:** For standard applications, [`createApp()`](../core/gameLoop.md#quick-start-with-createapp) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
+
 ## Overview
 
 The input system handles:

@@ -216,6 +216,28 @@ interface PositionData {
 
 ---
 
+## Namespace API
+
+The `position` namespace groups all position-related functions into a single import:
+
+```typescript
+import { position } from 'blecsd/components';
+
+position.set(world, eid, 10, 5);
+position.get(world, eid);
+position.has(world, eid);
+position.moveBy(world, eid, 1, 0);
+position.setKeyword(world, eid, 'center');
+position.setPercent(world, eid, 50, 50);
+
+// Z-index sub-namespace
+position.zIndex.set(world, eid, 10);
+position.zIndex.bringToFront(world, eid, siblings);
+position.zIndex.sendToBack(world, eid, siblings);
+```
+
+See the [namespace pattern](./index.md#namespace-pattern) for details.
+
 ## See Also
 
 - [Dimensions Component](./dimensions.md) - Entity width and height

@@ -376,3 +376,15 @@ function takeDamage(amount: number) {
 - [Slider Component](./slider.md) - Interactive range selection
 - [Loading Widget](../widgets/loading.md) - Indeterminate progress
 - [Form Component](./form.md) - Form container
+
+## Namespace API
+
+The `progressBar` namespace groups all related functions into a single import:
+
+```typescript
+import { progressBar } from 'blecsd/components';
+
+// Available methods: attach,is,render,get,set,reset,complete,increment, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

@@ -2,6 +2,8 @@
 
 The state machine system updates the `stateAge` for all entities with a StateMachine component. This enables time-based state transitions and animations by tracking how long an entity has been in its current state.
 
+> **Tip:** For standard applications, [`createApp()`](../core/gameLoop.md#quick-start-with-createapp) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
+
 ## Import
 
 ```typescript

@@ -2,6 +2,8 @@
 
 Performance profiling and frame budget enforcement system with rolling statistics and per-phase budget tracking.
 
+> **Tip:** For standard applications, [`createApp()`](../core/gameLoop.md#quick-start-with-createapp) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
+
 ## Overview
 
 The frame budget manager handles:

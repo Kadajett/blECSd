@@ -2,6 +2,8 @@
 
 ECS system for rendering tile maps to a 2D character buffer with camera support and layer compositing.
 
+> **Tip:** For standard applications, [`createApp()`](../core/gameLoop.md#quick-start-with-createapp) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
+
 ## Overview
 
 The tilemap renderer handles:

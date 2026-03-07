@@ -330,3 +330,15 @@ interface PlayAnimationOptions {
   startFrame?: number;
 }
 ```
+
+## Namespace API
+
+The `animation` namespace groups all related functions into a single import:
+
+```typescript
+import { animation } from 'blecsd/components';
+
+// Available methods: get,has,getByName,getIdByName,getData,getEntity,register,unregister, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

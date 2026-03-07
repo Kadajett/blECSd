@@ -2,7 +2,7 @@
 
 The Scheduler manages the ordered execution of ECS systems across phases. It enforces input priority by protecting the INPUT phase and provides methods for registering, unregistering, and querying systems.
 
-> **Note**: For most applications, use [`createApp()`](../app.md) which automatically wires the scheduler and registers core systems. This API is for advanced scenarios requiring custom system scheduling.
+> **Tip:** For most applications, [`createApp()`](../app.md) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
 
 ## Import
 

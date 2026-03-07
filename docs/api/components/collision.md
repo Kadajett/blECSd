@@ -319,3 +319,15 @@ interface CollisionPair {
   readonly isTrigger: boolean;
 }
 ```
+
+## Namespace API
+
+The `collision` namespace groups all related functions into a single import:
+
+```typescript
+import { collision } from 'blecsd/components';
+
+// Available methods: get,has,set,remove,getAABB,test,testAABB,testCircle, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

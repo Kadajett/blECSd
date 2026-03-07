@@ -1,5 +1,47 @@
 # API Reference
 
+## Import Convention
+
+blECSd uses **subpath imports** to organize its API into logical modules:
+
+```typescript
+import { createWorld, addEntity } from 'blecsd/core';        // ECS foundation
+import { position, content, setPosition } from 'blecsd/components'; // Component data & helpers
+import { layoutSystem, renderSystem } from 'blecsd/systems';  // ECS systems
+import { createProgram } from 'blecsd/terminal';              // Terminal I/O
+```
+
+The top-level `'blecsd'` export provides a curated subset for quick starts (including `createApp`), but subpath imports are recommended for clarity and tree-shaking.
+
+### Namespace Pattern
+
+Many components export **namespace objects** — frozen plain objects that group related functions:
+
+```typescript
+import { position, content, scroll } from 'blecsd/components';
+
+position.set(world, eid, 10, 5);
+content.setText(world, eid, 'Hello');
+scroll.toTop(world, eid);
+```
+
+These are purely functional (no `this`, no state). Individual functions like `setPosition` are also available as direct imports.
+
+### Quick Start with createApp
+
+For most applications, `createApp()` handles all boilerplate:
+
+```typescript
+import { createApp } from 'blecsd';
+
+const app = await createApp({ fps: 30 });
+// app.world, app.program, app.render(), app.start(), app.shutdown()
+```
+
+See [Game Loop](./core/gameLoop.md) for lower-level control.
+
+---
+
 ## Widgets
 
 Pre-built UI widgets with chainable APIs. Each widget wraps ECS components for easier use.

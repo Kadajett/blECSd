@@ -2,6 +2,8 @@
 
 > **Module:** `systems/spatialHash`
 
+> **Tip:** For standard applications, [`createApp()`](../core/gameLoop.md#quick-start-with-createapp) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
+
 Spatial hash grid for O(1) collision lookups using uniform grid partitioning with incremental update support.
 
 ## Overview

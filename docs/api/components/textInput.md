@@ -439,3 +439,15 @@ setTextInputConfig(world, passwordInput, {
 - [Form Component](./form.md) - Form container for field management
 - Checkbox Component - Boolean toggle
 - [Select Component](./select.md) - Dropdown selection
+
+## Namespace API
+
+The `textInput` namespace groups all related functions into a single import:
+
+```typescript
+import { textInput } from 'blecsd/components';
+
+// Available methods: attach,is,getState,isInState,sendEvent,handleKeyPress,focus,blur, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

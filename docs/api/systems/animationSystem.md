@@ -2,7 +2,7 @@
 
 The animation system updates sprite animations for all entities with the Animation component. It processes frame timing, direction, looping, and automatically updates sprite frames.
 
-> **Note**: For most applications, use [`createApp()`](../app.md) which sets up the game loop automatically. You only need to register this system if you're managing the loop manually.
+> **Tip:** For most applications, [`createApp()`](../app.md) handles system execution automatically. Register this system with the scheduler only when you need custom phase control.
 
 ## Import
 

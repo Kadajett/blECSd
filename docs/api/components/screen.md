@@ -263,3 +263,15 @@ console.log(hasScreenSingleton(world)); // false
 | `setFullUnicode(world, eid, enabled)` | Set Unicode support |
 | `isAutoPadding(world, eid)` | Check auto padding |
 | `setAutoPadding(world, eid, enabled)` | Set auto padding |
+
+## Namespace API
+
+The `screenComponent` namespace groups all related functions into a single import:
+
+```typescript
+import { screenComponent } from 'blecsd/components';
+
+// Available methods: get,has,is,getData,getSize,init,destroy,resize, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

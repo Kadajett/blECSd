@@ -357,3 +357,15 @@ const values = getFormValues(world, form);
 - [Form Component](./form.md) - Form container for field management
 - RadioButton Component - Single selection from group
 - [TextInput Component](./textInput.md) - Text entry field
+
+## Namespace API
+
+The `checkbox` namespace groups all related functions into a single import:
+
+```typescript
+import { checkbox } from 'blecsd/components';
+
+// Available methods: attach,is,getState,isInState,sendEvent,handleKeyPress,check,uncheck, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.

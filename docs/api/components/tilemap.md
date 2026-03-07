@@ -331,3 +331,15 @@ interface RenderedTileCell {
   readonly bg: number;
 }
 ```
+
+## Namespace API
+
+The `tilemap` namespace groups all related functions into a single import:
+
+```typescript
+import { tilemap } from 'blecsd/components';
+
+// Available methods: get,has,set,remove,getDataId,render,tile,get, ...
+```
+
+This is equivalent to importing individual functions but provides better discoverability. See the [namespace pattern](../index.md#namespace-pattern) for details.
