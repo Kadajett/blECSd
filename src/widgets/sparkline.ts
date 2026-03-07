@@ -299,8 +299,8 @@ export function createSparkline(world: World, config: SparklineConfig = {}): Spa
 	// Set position
 	setPosition(world, eid, validated.x, validated.y);
 
-	// Set dimensions (height is always 1 for sparkline)
-	setDimensions(world, eid, validated.width, validated.height ?? 1);
+	// Set dimensions
+	setDimensions(world, eid, validated.width, validated.height);
 
 	// Set component flags
 	Sparkline.isSparkline[eid] = 1;
