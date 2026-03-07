@@ -102,3 +102,14 @@ export {
 	hasValidationError,
 	validateTextInput,
 } from './validation';
+// Re-export vi mode functions
+export {
+	getViMode,
+	getViModeIndicator,
+	getViYankRegister,
+	handleViKeyPress,
+	isViModeEnabled,
+	resetViModeStores,
+	setViMode,
+} from './viMode';
+export type { ViModeConfig, ViModeState } from './viMode';
