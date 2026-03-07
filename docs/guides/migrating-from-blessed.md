@@ -38,6 +38,35 @@ This guide helps you transition from the original blessed.js library to blECSd's
 ✅ **Actively maintained**: Regular updates, responsive to issues
 ✅ **Explicit control**: You control the game loop
 
+## Recommended Setup Pattern
+
+**For new projects, use `createApp()` for streamlined setup:**
+
+```typescript
+import { createApp } from 'blecsd';
+
+// One-line setup with sensible defaults
+const { world, run, stop } = createApp();
+
+// Add your UI components
+const box = createBox(world, { x: 10, y: 5, width: 30, height: 10 });
+setText(world, box, 'Hello World!');
+
+// Start rendering
+await run();
+
+// Later: cleanup
+await stop();
+```
+
+**`createApp()` handles:**
+- World creation
+- System registration (render, output, input)
+- Terminal program lifecycle
+- Graceful cleanup on exit
+
+For more control, you can still use the manual setup shown below.
+
 ## Key Architectural Differences
 
 ### blessed.js: Object-Oriented

@@ -2,6 +2,14 @@
 
 This guide explains ECS (Entity Component System) for developers new to the paradigm, and how blECSd uses ECS to build high-performance terminal UIs.
 
+**Quick Start:** For new projects, use `createApp()` to skip manual ECS setup:
+
+```typescript
+import { createApp } from 'blecsd';
+const { world, run, stop } = createApp();
+// ... build your UI using ECS patterns shown below ...
+```
+
 ## What is ECS?
 
 Entity Component System (ECS) is a data-oriented architecture pattern where:

@@ -689,10 +689,10 @@ Use namespace imports from `'blecsd/components'`, `'blecsd/systems'`, etc. for:
 
 <!-- blecsd-doccheck:ignore -->
 ```typescript
-import { createWorld, addEntity } from 'blecsd/core';
+import { createWorld, createListEntity, addEntity } from 'blecsd/core';
 import { enableInput } from 'blecsd/components';
 import { renderSystem } from 'blecsd/systems';
-import { createPanel, createList } from 'blecsd/widgets';
+import { createPanel } from 'blecsd/widgets';
 import { createEventBus } from 'blecsd/core';
 
 // Setup
@@ -705,8 +705,7 @@ const panel = createPanel(world, {
   title: 'My App'
 });
 
-const entity = addEntity(world);
-const list = createList(world, entity, {
+const list = createListEntity(world, {
   items: [
     { label: 'Option 1', value: '1' },
     { label: 'Option 2', value: '2' }
@@ -728,7 +727,7 @@ render(world);
 <!-- blecsd-doccheck:ignore -->
 ```typescript
 // Create list with selection handling
-const list = createList(world, entity, { items: [...] });
+const list = createListEntity(world, { items: [...] });
 
 const inputBus = createEventBus();
 inputBus.on('key', (e) => {

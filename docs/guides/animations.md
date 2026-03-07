@@ -2,6 +2,15 @@
 
 Modern UIs use physics-based animations for natural, responsive interactions. blECSd provides the same animation primitives used by iOS, Android, and web frameworks, adapted for terminal applications.
 
+**Setup Note:** Examples show manual world creation. For new projects, use `createApp()`:
+
+```typescript
+import { createApp } from 'blecsd';
+const { world, run, stop } = createApp();
+// ... add animations ...
+await run();
+```
+
 ## Why Physics in UIs?
 
 Physics-based animations feel more natural than linear tweens:
