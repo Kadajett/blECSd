@@ -11,7 +11,7 @@ import { blur, focus, isFocused, setFocusable } from '../../components/focusable
 import { appendChild, getParent, NULL_ENTITY } from '../../components/hierarchy';
 import { moveBy, setPosition } from '../../components/position';
 import { markDirty, setStyle, setVisible } from '../../components/renderable';
-import { removeEntity } from '../../core/ecs';
+import { addEntity, removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { parseColor } from '../../utils/color';
 import {
@@ -40,7 +40,7 @@ import type {
  * Creates a Flexbox container widget for responsive layouts.
  *
  * @param world - The ECS world
- * @param entity - The entity to wrap
+ * @param entity - The entity to wrap (or creates a new one if not provided)
  * @param config - Container configuration
  * @returns The Flexbox container widget instance
  *
@@ -50,9 +50,9 @@ import type {
  * import { createFlexContainer, addFlexChild } from 'blecsd/widgets';
  *
  * const world = createWorld();
- * const containerEid = addEntity(world);
  *
- * const flex = createFlexContainer(world, containerEid, {
+ * // Pattern A: Self-creates entity
+ * const flex1 = createFlexContainer(world, {
  *   direction: 'row',
  *   justifyContent: 'space-between',
  *   alignItems: 'center',
@@ -62,24 +62,43 @@ import type {
  *   height: 24
  * });
  *
+ * // Pattern B: Use existing entity
+ * const containerEid = addEntity(world);
+ * const flex2 = createFlexContainer(world, containerEid, {
+ *   direction: 'column',
+ *   justifyContent: 'start',
+ *   alignItems: 'stretch',
+ *   gap: 1,
+ *   width: 80,
+ *   height: 24
+ * });
+ *
  * // Add children with flex options
  * const child1 = addEntity(world);
- * flex.addChild(child1, { flex: 1, flexBasis: 20 });
+ * flex1.addChild(child1, { flex: 1, flexBasis: 20 });
  *
  * const child2 = addEntity(world);
- * flex.addChild(child2, { flex: 2, alignSelf: 'end' });
+ * flex1.addChild(child2, { flex: 2, alignSelf: 'end' });
  *
  * // Apply layout
- * flex.layout();
+ * flex1.layout();
  * ```
  */
+export function createFlexContainer(world: World, config: FlexContainerConfig): FlexContainerWidget;
 export function createFlexContainer(
 	world: World,
 	entity: Entity,
-	config: FlexContainerConfig = {},
+	config?: FlexContainerConfig,
+): FlexContainerWidget;
+export function createFlexContainer(
+	world: World,
+	entityOrConfig: Entity | FlexContainerConfig,
+	maybeConfig?: FlexContainerConfig,
 ): FlexContainerWidget {
+	const isEntity = typeof entityOrConfig === 'number';
+	const eid = isEntity ? entityOrConfig : (addEntity(world) as Entity);
+	const config = isEntity ? (maybeConfig ?? {}) : entityOrConfig;
 	const validated = FlexContainerConfigSchema.parse(config) as ValidatedFlexContainerConfig;
-	const eid = entity;
 
 	// Mark as flex container
 	FlexContainer.isFlexContainer[eid] = 1;

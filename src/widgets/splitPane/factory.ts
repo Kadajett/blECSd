@@ -9,7 +9,7 @@ import { blur, focus, isFocused, setFocusable } from '../../components/focusable
 import { appendChild, getChildren } from '../../components/hierarchy';
 import { moveBy, setPosition } from '../../components/position';
 import { markDirty, setStyle, setVisible } from '../../components/renderable';
-import { removeEntity } from '../../core/ecs';
+import { addEntity, removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { SplitPaneConfigSchema } from './config';
 import {
@@ -97,7 +97,7 @@ function initSplitPaneComponents(
  * and vertical (top-bottom) splits.
  *
  * @param world - The ECS world
- * @param entity - The entity to wrap
+ * @param entity - The entity to wrap (or creates a new one if not provided)
  * @param config - Widget configuration
  * @returns The SplitPane widget instance
  *
@@ -107,10 +107,18 @@ function initSplitPaneComponents(
  * import { createSplitPane } from 'blecsd';
  *
  * const world = createWorld();
- * const eid = addEntity(world);
  *
- * // Two-pane horizontal split (like VS Code)
- * const split = createSplitPane(world, eid, {
+ * // Pattern A: Self-creates entity
+ * const split1 = createSplitPane(world, {
+ *   width: 120,
+ *   height: 40,
+ *   direction: 'horizontal',
+ *   ratios: [0.5, 0.5],
+ * });
+ *
+ * // Pattern B: Use existing entity
+ * const eid = addEntity(world);
+ * const split2 = createSplitPane(world, eid, {
  *   width: 120,
  *   height: 40,
  *   direction: 'horizontal',
@@ -120,20 +128,28 @@ function initSplitPaneComponents(
  * // Add pane content
  * const pane1 = addEntity(world);
  * const pane2 = addEntity(world);
- * split.append(pane1).append(pane2);
+ * split1.append(pane1).append(pane2);
  *
  * // Scroll panes independently
- * split.scrollPane(0, 0, 10);
- * split.scrollPane(1, 0, 20);
+ * split1.scrollPane(0, 0, 10);
+ * split1.scrollPane(1, 0, 20);
  * ```
  */
+export function createSplitPane(world: World, config: SplitPaneConfig): SplitPaneWidget;
 export function createSplitPane(
 	world: World,
 	entity: Entity,
-	config: SplitPaneConfig = {},
+	config?: SplitPaneConfig,
+): SplitPaneWidget;
+export function createSplitPane(
+	world: World,
+	entityOrConfig: Entity | SplitPaneConfig,
+	maybeConfig?: SplitPaneConfig,
 ): SplitPaneWidget {
+	const isEntity = typeof entityOrConfig === 'number';
+	const eid = isEntity ? entityOrConfig : (addEntity(world) as Entity);
+	const config = isEntity ? (maybeConfig ?? {}) : entityOrConfig;
 	const validated = SplitPaneConfigSchema.parse(config) as ValidatedSplitPaneConfig;
-	const eid = entity;
 
 	const direction: SplitDirection = validated.direction ?? 'horizontal';
 	const minPaneSize = validated.minPaneSize ?? 3;

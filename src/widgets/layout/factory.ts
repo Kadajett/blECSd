@@ -9,7 +9,7 @@ import { blur, focus, isFocused, setFocusable } from '../../components/focusable
 import { appendChild, getChildren } from '../../components/hierarchy';
 import { getPosition, moveBy, setPosition } from '../../components/position';
 import { markDirty, setStyle, setVisible } from '../../components/renderable';
-import { removeEntity } from '../../core/ecs';
+import { addEntity, removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { parseColor } from '../../utils/color';
 import { Layout } from './state';
@@ -396,13 +396,17 @@ export function calculateFlexLayout(
  * layout.recalculate();
  * ```
  */
+export function createLayout(world: World, config: LayoutConfig): LayoutWidget;
+export function createLayout(world: World, entity: Entity, config?: LayoutConfig): LayoutWidget;
 export function createLayout(
 	world: World,
-	entity: Entity,
-	config: LayoutConfig = {},
+	entityOrConfig: Entity | LayoutConfig,
+	maybeConfig?: LayoutConfig,
 ): LayoutWidget {
+	const isEntity = typeof entityOrConfig === 'number';
+	const eid = isEntity ? entityOrConfig : (addEntity(world) as Entity);
+	const config = isEntity ? (maybeConfig ?? {}) : entityOrConfig;
 	const validated = LayoutConfigSchema.parse(config) as ValidatedLayoutConfig;
-	const eid = entity;
 
 	// Set layout properties
 	const layoutMode = validated.layout ?? 'inline';

@@ -11,7 +11,7 @@ import { blur, focus, isFocused, setFocusable } from '../../components/focusable
 import { getChildren } from '../../components/hierarchy';
 import { moveBy, setPosition } from '../../components/position';
 import { markDirty, setVisible } from '../../components/renderable';
-import { removeEntity } from '../../core/ecs';
+import { addEntity, removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import { TabsConfigSchema, type ValidatedTabsConfig } from './config';
 import {
@@ -38,7 +38,7 @@ import type { TabConfig, TabData, TabsAction, TabsConfig, TabsWidget } from './t
  * between multiple content panels.
  *
  * @param world - The ECS world
- * @param entity - The entity to wrap
+ * @param entity - The entity to wrap (or creates a new one if not provided)
  * @param config - Widget configuration
  * @returns The Tabs widget instance
  *
@@ -48,10 +48,9 @@ import type { TabConfig, TabData, TabsAction, TabsConfig, TabsWidget } from './t
  * import { createTabs } from 'blecsd/widgets';
  *
  * const world = createWorld();
- * const eid = addEntity(world);
  *
- * // Basic tabs
- * const tabs = createTabs(world, eid, {
+ * // Pattern A: Self-creates entity
+ * const tabs1 = createTabs(world, {
  *   left: 0,
  *   top: 0,
  *   width: 60,
@@ -63,14 +62,35 @@ import type { TabConfig, TabData, TabsAction, TabsConfig, TabsWidget } from './t
  *   ],
  * });
  *
+ * // Pattern B: Use existing entity
+ * const eid = addEntity(world);
+ * const tabs2 = createTabs(world, eid, {
+ *   left: 0,
+ *   top: 25,
+ *   width: 60,
+ *   height: 20,
+ *   tabs: [
+ *     { label: 'Tab 1' },
+ *     { label: 'Tab 2' },
+ *   ],
+ * });
+ *
  * // Navigate between tabs
- * tabs.nextTab();
- * tabs.setActiveTab(2);
+ * tabs1.nextTab();
+ * tabs1.setActiveTab(2);
  * ```
  */
-export function createTabs(world: World, entity: Entity, config: TabsConfig = {}): TabsWidget {
+export function createTabs(world: World, config: TabsConfig): TabsWidget;
+export function createTabs(world: World, entity: Entity, config?: TabsConfig): TabsWidget;
+export function createTabs(
+	world: World,
+	entityOrConfig: Entity | TabsConfig,
+	maybeConfig?: TabsConfig,
+): TabsWidget {
+	const isEntity = typeof entityOrConfig === 'number';
+	const eid = isEntity ? entityOrConfig : (addEntity(world) as Entity);
+	const config = isEntity ? (maybeConfig ?? {}) : entityOrConfig;
 	const validated = TabsConfigSchema.parse(config) as ValidatedTabsConfig;
-	const eid = entity;
 
 	// Mark as tabs and initialize data
 	Tabs.isTabs[eid] = 1;

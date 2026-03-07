@@ -12,7 +12,7 @@ import { appendChild, getChildren } from '../../components/hierarchy';
 import { moveBy, setPosition } from '../../components/position';
 import { markDirty, setVisible } from '../../components/renderable';
 import type { ScrollableData, ScrollPercentage, ScrollPosition } from '../../components/scrollable';
-import { removeEntity } from '../../core/ecs';
+import { addEntity, removeEntity } from '../../core/ecs';
 import type { Entity, World } from '../../core/types';
 import {
 	canScroll,
@@ -59,7 +59,7 @@ import type { ScrollableBoxConfig, ScrollableBoxWidget } from './types';
  * It combines Box functionality with scrollable content support.
  *
  * @param world - The ECS world
- * @param entity - The entity to wrap
+ * @param entity - The entity to wrap (or creates a new one if not provided)
  * @param config - Widget configuration
  * @returns The ScrollableBox widget instance
  *
@@ -69,9 +69,9 @@ import type { ScrollableBoxConfig, ScrollableBoxWidget } from './types';
  * import { createScrollableBox } from 'blecsd/widgets';
  *
  * const world = createWorld();
- * const eid = addEntity(world);
  *
- * const scrollBox = createScrollableBox(world, eid, {
+ * // Pattern A: Self-creates entity
+ * const scrollBox1 = createScrollableBox(world, {
  *   left: 5,
  *   top: 5,
  *   width: 40,
@@ -81,23 +81,43 @@ import type { ScrollableBoxConfig, ScrollableBoxWidget } from './types';
  *   scrollbar: true,
  * });
  *
+ * // Pattern B: Use existing entity
+ * const eid = addEntity(world);
+ * const scrollBox2 = createScrollableBox(world, eid, {
+ *   left: 5,
+ *   top: 15,
+ *   width: 40,
+ *   height: 10,
+ *   scrollHeight: 100,
+ *   border: { type: 'line' },
+ *   scrollbar: true,
+ * });
+ *
  * // Scroll down
- * scrollBox.scrollBy(0, 5);
+ * scrollBox1.scrollBy(0, 5);
  *
  * // Scroll to 50%
- * scrollBox.setScrollPerc(0, 50);
+ * scrollBox1.setScrollPerc(0, 50);
  *
  * // Jump to bottom
- * scrollBox.scrollToBottom();
+ * scrollBox1.scrollToBottom();
  * ```
  */
+export function createScrollableBox(world: World, config: ScrollableBoxConfig): ScrollableBoxWidget;
 export function createScrollableBox(
 	world: World,
 	entity: Entity,
-	config: ScrollableBoxConfig = {},
+	config?: ScrollableBoxConfig,
+): ScrollableBoxWidget;
+export function createScrollableBox(
+	world: World,
+	entityOrConfig: Entity | ScrollableBoxConfig,
+	maybeConfig?: ScrollableBoxConfig,
 ): ScrollableBoxWidget {
+	const isEntity = typeof entityOrConfig === 'number';
+	const eid = isEntity ? entityOrConfig : (addEntity(world) as Entity);
+	const config = isEntity ? (maybeConfig ?? {}) : entityOrConfig;
 	const validated = ScrollableBoxConfigSchema.parse(config) as ValidatedScrollableBoxConfig;
-	const eid = entity;
 
 	// Mark as scrollable box
 	ScrollableBox.isScrollableBox[eid] = 1;
