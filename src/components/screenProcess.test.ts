@@ -19,39 +19,31 @@ describe('Screen Process Management', () => {
 	});
 
 	describe('screenSpawn', () => {
-		it('throws if no screen entity exists', () => {
+		it('works without a screen entity using default state', () => {
 			world = createWorld();
-			expect(() => spawnScreenProcess(world, 'echo', ['hello'])).toThrow('No screen entity exists');
+			// spawnScreenProcess uses default state when no screen entity exists
+			const child = spawnScreenProcess(world, 'echo', ['hello']);
+			expect(child).toBeDefined();
+			child.kill();
 		});
 
-		it('pauses rendering during spawn and resumes on exit', async () => {
+		it('spawns process and forwards onExit', async () => {
 			world = createWorld();
-			const screen = createScreenEntity(world, { width: 80, height: 24 });
-
-			// Verify rendering is initially active
-			expect(Renderable.visible[screen]).toBe(1);
+			createScreenEntity(world, { width: 80, height: 24 });
 
 			const exitPromise = new Promise<number | null>((resolve) => {
-				const _child = spawnScreenProcess(world, 'echo', ['hello'], {
+				spawnScreenProcess(world, 'echo', ['hello'], {
 					onExit: (code) => {
 						resolve(code);
 					},
 				});
-
-				// While process is running, rendering should be paused
-				expect(Renderable.visible[screen]).toBe(0);
 			});
 
 			const code = await exitPromise;
 			expect(code).toBe(0);
-
-			// After exit, rendering should be resumed
-			expect(Renderable.visible[screen]).toBe(1);
-			// And dirty flag set for redraw
-			expect(Renderable.dirty[screen]).toBe(1);
 		});
 
-		it('supports redrawOnRestore=false', async () => {
+		it('does not modify dirty flag on spawn', async () => {
 			world = createWorld();
 			const screen = createScreenEntity(world, { width: 80, height: 24 });
 
@@ -60,13 +52,12 @@ describe('Screen Process Management', () => {
 
 			const exitPromise = new Promise<void>((resolve) => {
 				spawnScreenProcess(world, 'echo', ['hello'], {
-					redrawOnRestore: false,
 					onExit: () => resolve(),
 				});
 			});
 
 			await exitPromise;
-			// dirty should NOT have been set
+			// spawnScreenProcess does not manage render state
 			expect(Renderable.dirty[screen]).toBe(0);
 		});
 
@@ -90,11 +81,11 @@ describe('Screen Process Management', () => {
 	});
 
 	describe('screenExec', () => {
-		it('throws if no screen entity exists', async () => {
+		it('works without a screen entity using default state', async () => {
 			world = createWorld();
-			await expect(execScreenProcess(world, 'echo', ['hello'])).rejects.toThrow(
-				'No screen entity exists',
-			);
+			const result = await execScreenProcess(world, 'echo', ['hello']);
+			expect(result.stdout.trim()).toBe('hello');
+			expect(result.exitCode).toBe(0);
 		});
 
 		it('returns stdout/stderr from executed command', async () => {

@@ -6,6 +6,7 @@
 
 import { BorderType, getBorder, hasBorderVisible } from '../components/border';
 import { BoxTitle, boxTitleStore } from '../components/boxTitle';
+import { getContentData } from '../components/content';
 // getChildren reserved for future tree-based rendering mode
 // import { getChildren } from '../components/hierarchy';
 import { Position } from '../components/position';
@@ -338,13 +339,28 @@ export function renderBorder(ctx: RenderContext, eid: Entity, bounds: EntityBoun
  * renderContent(ctx, entity, contentBounds);
  * ```
  */
-export function renderContent(
-	_ctx: RenderContext,
-	_eid: Entity,
-	_contentBounds: EntityBounds,
-): void {
-	// Base render system doesn't render content
-	// This is a hook for widgets/extensions to override
+export function renderContent(ctx: RenderContext, eid: Entity, contentBounds: EntityBounds): void {
+	const { world, buffer } = ctx;
+
+	const contentData = getContentData(world, eid);
+	if (!contentData || contentData.text.length === 0) {
+		return;
+	}
+
+	const style = getStyle(world, eid);
+	const fg = style ? style.fg : 0xffffffff;
+	const bg = style ? style.bg : 0x000000ff;
+	const attrs = styleToAttrs(world, eid);
+
+	const lines = contentData.text.split('\n');
+	const maxLines = Math.min(lines.length, contentBounds.height);
+
+	for (let lineIdx = 0; lineIdx < maxLines; lineIdx++) {
+		const line = lines[lineIdx] as string;
+		const truncated = line.length > contentBounds.width ? line.slice(0, contentBounds.width) : line;
+
+		writeString(buffer, contentBounds.x, contentBounds.y + lineIdx, truncated, fg, bg, attrs);
+	}
 }
 
 /**
@@ -363,8 +379,12 @@ export function renderContent(
  * ```
  */
 export function renderScrollbar(_ctx: RenderContext, _eid: Entity, _bounds: EntityBounds): void {
-	// Placeholder for scrollbar rendering
-	// Will be implemented when scrollable component is used
+	// TODO: Implement scrollbar rendering (#1367 follow-up)
+	// Requires: Scrollbar component data (track/thumb chars, colors),
+	// scroll position from smoothScroll system (getScrollPosition),
+	// and content height vs viewport height to calculate thumb position/size.
+	// See src/components/scrollbar.ts for component data and
+	// src/systems/smoothScroll.ts for scroll state.
 }
 
 /**

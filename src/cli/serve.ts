@@ -84,7 +84,7 @@ export function parseServeArgs(argv: readonly string[]): ServeConfig | null {
 		port,
 		host: opts.host ?? 'localhost',
 		title: opts.title ?? 'blECSd Terminal',
-		authToken: opts.authToken,
+		...(opts.authToken !== undefined ? { authToken: opts.authToken } : {}),
 	};
 }
 
@@ -132,7 +132,7 @@ export async function serveMain(argv: readonly string[]): Promise<void> {
 		port: config.port,
 		host: config.host,
 		title: config.title,
-		authToken: config.authToken,
+		...(config.authToken !== undefined ? { authToken: config.authToken } : {}),
 	});
 
 	try {
