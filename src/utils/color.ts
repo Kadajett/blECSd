@@ -113,16 +113,43 @@ export function colorToHex(color: number, includeAlpha = false): string {
 }
 
 /**
- * Parses a color value (hex string or packed number) to a packed color.
+ * Unified color helper — accepts any blECSd color format and returns a packed
+ * 32-bit ARGB integer suitable for all component color fields.
  *
- * @param color - Hex string (#RGB, #RRGGBB, etc.) or packed 32-bit number
- * @returns Packed 32-bit color value
+ * blECSd represents colors internally as packed 32-bit integers (`ARGB`).
+ * You can pass colors in two formats:
+ *
+ * - **Hex strings**: `'#RRGGBB'`, `'#RRGGBBAA'`, `'#RGB'`, `'#RGBA'`
+ *   (the `#` prefix is optional).
+ * - **Packed integers**: `0xAARRGGBB` (the raw packed value used internally).
+ *
+ * Prefer `parseColor` at call sites when the format may vary.  For
+ * performance-critical tight loops, use `packColor` directly.
+ *
+ * @param color - Hex string (`#RGB`, `#RRGGBB`, `#RRGGBBAA`, etc.) or a packed
+ *   32-bit ARGB integer (`0xAARRGGBB`).
+ * @returns Packed 32-bit ARGB color value.
  *
  * @example
  * ```typescript
- * const red = parseColor('#ff0000');
- * const blue = parseColor(0xff0000ff);
+ * import { parseColor } from 'blecsd';
+ *
+ * // Both produce the same internal value:
+ * const a = parseColor('#ff0000');       // hex string
+ * const b = parseColor(0xffff0000);      // packed integer (ARGB, fully opaque red)
+ *
+ * // Works with any component color field:
+ * setStyle(world, box, { fg: parseColor('#ffffff'), bg: parseColor('#0066cc') });
+ *
+ * // Useful when accepting user-supplied colors:
+ * function applyTheme(fg: string | number, bg: string | number) {
+ *   setStyle(world, entity, { fg: parseColor(fg), bg: parseColor(bg) });
+ * }
  * ```
+ *
+ * @see {@link packColor} for building colors from RGBA components.
+ * @see {@link hexToColor} for hex-string-only conversion.
+ * @see {@link colorToHex} for converting a packed color back to a hex string.
  */
 export function parseColor(color: string | number): number {
 	if (typeof color === 'string') {
